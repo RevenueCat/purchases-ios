@@ -7,6 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2DD778F8270E235B0079CBD4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778F7270E235B0079CBD4 /* AppDelegate.swift */; };
+		2DD778FA270E235B0079CBD4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778F9270E235B0079CBD4 /* SceneDelegate.swift */; };
+		2DD778FC270E235B0079CBD4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778FB270E235B0079CBD4 /* ViewController.swift */; };
+		2DD778FF270E235B0079CBD4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778FD270E235B0079CBD4 /* Main.storyboard */; };
+		2DD77901270E235C0079CBD4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DD77900270E235C0079CBD4 /* Assets.xcassets */; };
+		2DD77904270E235C0079CBD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD77902270E235C0079CBD4 /* LaunchScreen.storyboard */; };
+		2DD77909270E23870079CBD4 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
+		2DD7790A270E23870079CBD4 /* RCBackendErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F726EBE84F007DDB75 /* RCBackendErrorCodeAPI.m */; };
+		2DD7790B270E23870079CBD4 /* RCCustomerInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */; };
+		2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */; };
+		2DD7790E270E23870079CBD4 /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */; };
+		2DD7790F270E23870079CBD4 /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */; };
+		2DD77910270E23870079CBD4 /* RCPurchasesErrorUtilsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614E026EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m */; };
+		2DD77911270E23870079CBD4 /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */; };
+		2DD77912270E23870079CBD4 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */; };
+		2DD77913270E23870079CBD4 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614E926EBE84F007DDB75 /* RCEntitlementInfosAPI.m */; };
+		2DD77914270E23870079CBD4 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */; };
+		2DD77915270E23870079CBD4 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
+		2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
+		2DD77919270E23CC0079CBD4 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2DD77918270E23CC0079CBD4 /* RevenueCat */; };
+		A513AD31272B327A00E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
+		A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
 		A519264D26EBCEF6007D0BD1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A519264C26EBCEF6007D0BD1 /* main.m */; };
 		A52A8A3C26EC2AEC00F06846 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A52A8A3B26EC2AEC00F06846 /* RevenueCat */; };
 		A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */; };
@@ -35,6 +57,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2DD778F5270E235B0079CBD4 /* ObjCAPITesterIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjCAPITesterIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DD778F7270E235B0079CBD4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		2DD778F9270E235B0079CBD4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		2DD778FB270E235B0079CBD4 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		2DD778FE270E235B0079CBD4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		2DD77900270E235C0079CBD4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2DD77903270E235C0079CBD4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		2DD77905270E235C0079CBD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCRefundRequestStatusAPI.h; sourceTree = "<group>"; };
+		A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCRefundRequestStatusAPI.m; sourceTree = "<group>"; };
 		A519264926EBCEF6007D0BD1 /* ObjCAPITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjCAPITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		A519264C26EBCEF6007D0BD1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingsAPI.m; sourceTree = "<group>"; };
@@ -62,6 +94,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2DD778F2270E235B0079CBD4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2DD77919270E23CC0079CBD4 /* RevenueCat in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A519264626EBCEF6007D0BD1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -73,10 +113,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2DD778F6270E235B0079CBD4 /* ObjCAPITesterIOS */ = {
+			isa = PBXGroup;
+			children = (
+				2DD778F7270E235B0079CBD4 /* AppDelegate.swift */,
+				2DD778F9270E235B0079CBD4 /* SceneDelegate.swift */,
+				2DD778FB270E235B0079CBD4 /* ViewController.swift */,
+				2DD778FD270E235B0079CBD4 /* Main.storyboard */,
+				2DD77900270E235C0079CBD4 /* Assets.xcassets */,
+				2DD77902270E235C0079CBD4 /* LaunchScreen.storyboard */,
+				2DD77905270E235C0079CBD4 /* Info.plist */,
+			);
+			path = ObjCAPITesterIOS;
+			sourceTree = "<group>";
+		};
 		A519264026EBCEF6007D0BD1 = {
 			isa = PBXGroup;
 			children = (
 				A519264B26EBCEF6007D0BD1 /* ObjCAPITester */,
+				2DD778F6270E235B0079CBD4 /* ObjCAPITesterIOS */,
 				A519264A26EBCEF6007D0BD1 /* Products */,
 				A52A8A3A26EC2AEC00F06846 /* Frameworks */,
 			);
@@ -86,6 +141,7 @@
 			isa = PBXGroup;
 			children = (
 				A519264926EBCEF6007D0BD1 /* ObjCAPITester */,
+				2DD778F5270E235B0079CBD4 /* ObjCAPITesterIOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -116,6 +172,8 @@
 				A5D614E726EBE84F007DDB75 /* RCTransactionAPI.h */,
 				A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */,
 				A519264C26EBCEF6007D0BD1 /* main.m */,
+				A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */,
+				A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */,
 			);
 			path = ObjCAPITester;
 			sourceTree = "<group>";
@@ -130,6 +188,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2DD778F4270E235B0079CBD4 /* ObjCAPITesterIOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2DD77908270E235C0079CBD4 /* Build configuration list for PBXNativeTarget "ObjCAPITesterIOS" */;
+			buildPhases = (
+				2DD778F1270E235B0079CBD4 /* Sources */,
+				2DD778F2270E235B0079CBD4 /* Frameworks */,
+				2DD778F3270E235B0079CBD4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ObjCAPITesterIOS;
+			packageProductDependencies = (
+				2DD77918270E23CC0079CBD4 /* RevenueCat */,
+			);
+			productName = ObjCAPITesterIOS;
+			productReference = 2DD778F5270E235B0079CBD4 /* ObjCAPITesterIOS.app */;
+			productType = "com.apple.product-type.application";
+		};
 		A519264826EBCEF6007D0BD1 /* ObjCAPITester */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A519265026EBCEF6007D0BD1 /* Build configuration list for PBXNativeTarget "ObjCAPITester" */;
@@ -157,8 +235,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1300;
 				LastUpgradeCheck = 1300;
 				TargetAttributes = {
+					2DD778F4270E235B0079CBD4 = {
+						CreatedOnToolsVersion = 13.0;
+					};
 					A519264826EBCEF6007D0BD1 = {
 						CreatedOnToolsVersion = 13.0;
 						LastSwiftMigration = 1300;
@@ -182,11 +264,49 @@
 			projectRoot = "";
 			targets = (
 				A519264826EBCEF6007D0BD1 /* ObjCAPITester */,
+				2DD778F4270E235B0079CBD4 /* ObjCAPITesterIOS */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		2DD778F3270E235B0079CBD4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2DD77904270E235C0079CBD4 /* LaunchScreen.storyboard in Resources */,
+				2DD77901270E235C0079CBD4 /* Assets.xcassets in Resources */,
+				2DD778FF270E235B0079CBD4 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		2DD778F1270E235B0079CBD4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2DD778FC270E235B0079CBD4 /* ViewController.swift in Sources */,
+				2DD778F8270E235B0079CBD4 /* AppDelegate.swift in Sources */,
+				2DD77914270E23870079CBD4 /* RCOfferingAPI.m in Sources */,
+				A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */,
+				2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */,
+				2DD77915270E23870079CBD4 /* RCPackageAPI.m in Sources */,
+				2DD7790A270E23870079CBD4 /* RCBackendErrorCodeAPI.m in Sources */,
+				2DD77909270E23870079CBD4 /* RCAttributionNetworkAPI.m in Sources */,
+				2DD778FA270E235B0079CBD4 /* SceneDelegate.swift in Sources */,
+				2DD7790E270E23870079CBD4 /* RCIntroEligibilityAPI.m in Sources */,
+				2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */,
+				2DD7790F270E23870079CBD4 /* RCPurchasesAPI.m in Sources */,
+				2DD77911270E23870079CBD4 /* RCEntitlementInfoAPI.m in Sources */,
+				2DD77912270E23870079CBD4 /* RCOfferingsAPI.m in Sources */,
+				2DD77910270E23870079CBD4 /* RCPurchasesErrorUtilsAPI.m in Sources */,
+				2DD7790B270E23870079CBD4 /* RCCustomerInfoAPI.m in Sources */,
+				2DD77913270E23870079CBD4 /* RCEntitlementInfosAPI.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A519264526EBCEF6007D0BD1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -197,6 +317,7 @@
 				A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */,
 				A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */,
 				A5D6150626EBE84F007DDB75 /* RCEntitlementInfoAPI.m in Sources */,
+				A513AD31272B327A00E0C1BA /* RCRefundRequestStatusAPI.m in Sources */,
 				A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */,
 				A5D6150126EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m in Sources */,
 				A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */,
@@ -208,7 +329,95 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXVariantGroup section */
+		2DD778FD270E235B0079CBD4 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2DD778FE270E235B0079CBD4 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		2DD77902270E235C0079CBD4 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2DD77903270E235C0079CBD4 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
+		2DD77906270E235C0079CBD4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ObjCAPITesterIOS/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.ObjCAPITesterIOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.ObjCAPITesterIOS";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2DD77907270E235C0079CBD4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ObjCAPITesterIOS/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.sampleapp";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		A519264E26EBCEF6007D0BD1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -360,6 +569,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2DD77908270E235C0079CBD4 /* Build configuration list for PBXNativeTarget "ObjCAPITesterIOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2DD77906270E235C0079CBD4 /* Debug */,
+				2DD77907270E235C0079CBD4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A519264426EBCEF6007D0BD1 /* Build configuration list for PBXProject "ObjCAPITester" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -392,6 +610,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2DD77918270E23CC0079CBD4 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A519265326EBCFA6007D0BD1 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
 		A52A8A3B26EC2AEC00F06846 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A519265326EBCFA6007D0BD1 /* XCRemoteSwiftPackageReference "purchases-ios" */;

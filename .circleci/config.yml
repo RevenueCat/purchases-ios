@@ -19,6 +19,8 @@ release-tags: &release-tags
     branches:
       ignore: /.*/
 
+orbs:
+   macos: circleci/macos@dev:25cb9bd
 
 version: 2.1
 commands:
@@ -55,12 +57,10 @@ commands:
       - run: 
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
-      
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane scan
-
+          command: bundle exec fastlane test
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -112,7 +112,7 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -123,16 +123,12 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test
-          environment:
-            SCAN_SCHEME: RevenueCat
-      - store_test_results:
-          path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
   buildTvWatchAndMacOS:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -142,12 +138,12 @@ jobs:
           command: brew install swiftlint
       - install-dependencies
       - run:
-          name: Build AppleTV, WatchOS, and macOS
+          name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
   swift_apitest:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -155,11 +151,12 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Build SwiftAPITester
-          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITester
+          command: |
+              bundle exec fastlane build_swift_api_tester
 
   objc_apitest:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -167,26 +164,23 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Build ObjCAPITester
-          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITester
+          command: |
+              bundle exec fastlane build_objc_api_tester
 
-  storekit_tests:
+  backend_integration_tests:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - run:
-          name: Open simulator
-          command: xcrun instruments -w "iPhone 11 Pro (14.5) [" || true
-      
       - install-dependencies
       
       - run:
-          name: Run StoreKit Tests
-          command: bundle exec fastlane storekit_tests
+          name: Run backend_integration Tests
+          command: bundle exec fastlane backend_integration_tests
           environment:
-            SCAN_DEVICE: iPhone 11 Pro (14.5)
+            SCAN_DEVICE: iPhone 11 Pro (15.0)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -196,7 +190,7 @@ jobs:
 
   release-checks: 
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -228,7 +222,7 @@ jobs:
           
   docs-deploy:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -252,7 +246,7 @@ jobs:
   
   make-release:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -265,7 +259,7 @@ jobs:
 
   prepare-next-version:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -278,7 +272,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -299,7 +293,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -311,7 +305,7 @@ jobs:
 
   integration-tests-carthage:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -341,7 +335,7 @@ jobs:
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -352,7 +346,7 @@ jobs:
 
   lint:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -379,8 +373,8 @@ workflows:
       - swift_apitest
       - objc_apitest
       - buildTvWatchAndMacOS
-      - storekit_tests: *release-tags-and-branches
       - release-checks: *release-branches
+      - backend_integration_tests
       - integration-tests-cocoapods: *release-tags-and-branches
       - integration-tests-swift-package-manager: *release-tags-and-branches
       - integration-tests-carthage: *release-tags-and-branches

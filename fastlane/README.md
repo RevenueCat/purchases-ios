@@ -71,6 +71,16 @@ Run the carthage archive steps to prepare for carthage distribution
 fastlane ios archive
 ```
 archive
+### ios build_swift_api_tester
+```
+fastlane ios build_swift_api_tester
+```
+build Swift API tester
+### ios build_objc_api_tester
+```
+fastlane ios build_objc_api_tester
+```
+build ObjC API tester
 ### ios replace_api_key_integration_tests
 ```
 fastlane ios replace_api_key_integration_tests
@@ -96,11 +106,11 @@ Prepare next version
 fastlane ios export_xcframework
 ```
 Export XCFramework
-### ios storekit_tests
+### ios backend_integration_tests
 ```
-fastlane ios storekit_tests
+fastlane ios backend_integration_tests
 ```
-Run StoreKitTests
+Run BackendIntegrationTests
 ### ios update_swift_package_commit
 ```
 fastlane ios update_swift_package_commit

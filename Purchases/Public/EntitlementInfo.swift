@@ -306,7 +306,7 @@ private extension EntitlementInfo {
             return true
         }
 
-        let referenceDate: Date = requestDate ?? Date.init()
+        let referenceDate: Date = requestDate ?? Date()
         return expirationDate.timeIntervalSince(referenceDate) > 0
     }
 

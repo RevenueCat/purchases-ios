@@ -38,4 +38,6 @@ checkPurchasesErrorCodeEnums()
 checkPackageAPI()
 checkPackageEnums()
 
+checkRefundRequestStatusEnum()
+
 checkTransactionAPI()

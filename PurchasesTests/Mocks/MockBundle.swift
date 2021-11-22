@@ -34,7 +34,7 @@ class MockBundle: Bundle {
             return testBundle
                 .url(forResource: Self.mockAppStoreReceiptFileName, withExtension: "txt")
         case .emptyReceipt:
-            return Bundle.main.appStoreReceiptURL
+            return URL(string: "")
         case .sandboxReceipt:
             return testBundle
                 .url(forResource: Self.mockSandboxReceiptFileName, withExtension: "txt")

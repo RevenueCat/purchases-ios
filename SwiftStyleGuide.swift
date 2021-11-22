@@ -163,3 +163,10 @@ guard 1 == 1,
     print("Universe is broken")
     return
 }
+
+// use _ = Task<Void, Never> for task initialization, so that if a part of the
+// Task throws, the compiler forces us to handle the exception
+// More info here: https://rev.cat/catching-exceptions-from-tasks
+_ = Task<Void, Never> {
+    try await myMethodThatThrows()
+}

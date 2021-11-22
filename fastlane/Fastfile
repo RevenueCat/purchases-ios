@@ -39,12 +39,16 @@ platform :ios do
   end
 
   desc "Runs all the tests"
-  lane :test do
+  lane :test do |options|
     # Scan can't target two different platforms in devices
     # Need to run scan multiple times
     scan(
       step_name: "scan - iPhone", 
-      devices: ["iPhone 8", "iPhone 12"],
+      devices: ["iPhone 8 (14.5)", "iPhone 12 (15.0)"],
+      scheme: "UnitTests",
+      testplan: "UnitTests",
+      prelaunch_simulator: true,
+      scheme: "UnitTests",
       output_types: '',
       fail_build: false,
       result_bundle: true
@@ -53,7 +57,12 @@ platform :ios do
 
     scan(
       step_name: "scan - Apple TV",
+      devices: ["Apple TV (15.0)"],
+      scheme: "RevenueCat",
+      testplan: "RevenueCat",
+      prelaunch_simulator: true,
       devices: ["Apple TV"],
+      scheme: "RevenueCat",
       output_types: '',
       fail_build: false,
       result_bundle: true
@@ -139,7 +148,7 @@ platform :ios do
     check_no_github_release_exists(version_number)
   end
 
-  desc "tvOS, watchOS, and macOS build"
+  desc "build tvOS, watchOS, macOS"
   lane :build_tv_watch_mac do |options|
     check_pods
     carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
@@ -162,12 +171,38 @@ platform :ios do
     gym(export_method: "app-store")
   end
 
+  desc "build Swift API tester"
+  lane :build_swift_api_tester do
+      match(
+        type: "development",
+        git_url: ENV["CERTS_REPO_URL"],
+        storage_mode: "git",
+        type: "development",
+        app_identifier: ["com.revenuecat.SwiftAPITesterIOS"],
+        username: ENV["FASTLANE_USER"])
+      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'SwiftAPITesterIOS')
+      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'SwiftAPITester')
+  end
+  
+  desc "build ObjC API tester"
+  lane :build_objc_api_tester do
+      match(
+        type: "development",
+        git_url: ENV["CERTS_REPO_URL"],
+        storage_mode: "git",
+        type: "development",
+        app_identifier: ["com.revenuecat.ObjCAPITesterIOS"],
+        username: ENV["FASTLANE_USER"])
+      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'ObjCAPITesterIOS')
+      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'ObjCAPITester')
+  end
+
   desc "replace API KEY for integration tests"
   lane :replace_api_key_integration_tests do
-    replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../StoreKitTests/Constants.swift')
+    replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../BackendIntegrationTests/Constants.swift')
     replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
 
-    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../StoreKitTests/Constants.swift', allow_empty: true)
+    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../BackendIntegrationTests/Constants.swift', allow_empty: true)
     replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m', allow_empty: true)
   end
 
@@ -306,10 +341,10 @@ platform :ios do
 
   end
 
-  desc "Run StoreKitTests"
-  lane :storekit_tests do |options|
+  desc "Run BackendIntegrationTests"
+  lane :backend_integration_tests do |options|
     replace_api_key_integration_tests
-    scan(scheme: "StoreKitTests", derived_data_path: "scan_derived_data")
+    scan(scheme: "BackendIntegrationTests", derived_data_path: "scan_derived_data")
   end
 
   desc "Update swift package commit"

@@ -8,16 +8,16 @@ import StoreKit
 @testable import RevenueCat
 
 class MockProductResponse: SKProductsResponse {
-    var mockProducts: [MockSKProduct]
+    var mockProducts: [MockSK1Product]
 
     init(productIdentifiers: Set<String>) {
         self.mockProducts = productIdentifiers.map { identifier in
-            return MockSKProduct(mockProductIdentifier: identifier)
+            return MockSK1Product(mockProductIdentifier: identifier)
         }
         super.init()
     }
 
-    override var products: [SKProduct] {
+    override var products: [SK1Product] {
         return self.mockProducts
     }
 }

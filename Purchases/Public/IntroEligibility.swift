@@ -95,10 +95,6 @@ private extension IntroEligibilityStatus {
         self.status = status
     }
 
-    init(eligibilityStatusCode statusCode: NSNumber) throws {
-        self.status = try IntroEligibilityStatus(statusCode: statusCode.intValue)
-    }
-
     @objc private override init() {
         self.status = .unknown
     }

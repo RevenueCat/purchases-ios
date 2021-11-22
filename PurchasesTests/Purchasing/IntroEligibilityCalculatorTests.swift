@@ -7,22 +7,24 @@ import Nimble
 class IntroEligibilityCalculatorTests: XCTestCase {
 
     var calculator: IntroEligibilityCalculator!
-    let mockProductsManager = MockProductsManager()
+    var systemInfo: MockSystemInfo!
+    var mockProductsManager: MockProductsManager!
     let mockReceiptParser = MockReceiptParser()
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        systemInfo = try MockSystemInfo(platformFlavor: "xyz", platformFlavorVersion: "123", finishTransactions: true)
+        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
         calculator = IntroEligibilityCalculator(productsManager: mockProductsManager,
                                                 receiptParser: mockReceiptParser)
     }
 
     func testCheckTrialOrIntroductoryPriceEligibilityReturnsEmptyIfNoProductIds() {
         var receivedError: Error? = nil
-        var receivedEligibility: [String: NSNumber]? = nil
+        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
         var completionCalled = false
-        calculator.checkTrialOrIntroductoryPriceEligibility(with: Data(),
-                                                            productIdentifiers: Set()) { eligibilityByProductId,
-                                                                                         error in
+        calculator.checkEligibility(with: Data(),
+                                    productIdentifiers: Set()) { eligibilityByProductId, error in
             completionCalled = true
             receivedError = error
             receivedEligibility = eligibilityByProductId
@@ -36,14 +38,14 @@ class IntroEligibilityCalculatorTests: XCTestCase {
 
     func testCheckTrialOrIntroductoryPriceEligibilityReturnsErrorIfReceiptParserThrows() {
         var receivedError: Error? = nil
-        var receivedEligibility: [String: NSNumber]? = nil
+        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
         var completionCalled = false
         let productIdentifiers = Set(["com.revenuecat.test"])
 
         mockReceiptParser.stubbedParseError = ReceiptReadingError.receiptParsingError
 
-        calculator.checkTrialOrIntroductoryPriceEligibility(with: Data(),
-                                                            productIdentifiers: productIdentifiers) {
+        calculator.checkEligibility(with: Data(),
+                                    productIdentifiers: productIdentifiers) {
             eligibilityByProductId,
             error in
             completionCalled = true
@@ -65,12 +67,12 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         let receiptIdentifiers = receipt.purchasedIntroOfferOrFreeTrialProductIdentifiers()
 
         mockProductsManager.stubbedProductsCompletionResult = Set(["a", "b"].map {
-            MockSKProduct(mockProductIdentifier: $0)
+            MockSK1Product(mockProductIdentifier: $0)
         })
 
         let candidateIdentifiers = Set(["a", "b", "c"])
-        calculator.checkTrialOrIntroductoryPriceEligibility(with: Data(),
-                                                            productIdentifiers: Set(candidateIdentifiers)) { _, _ in
+        calculator.checkEligibility(with: Data(),
+                                    productIdentifiers: Set(candidateIdentifiers)) { _, _ in
             completionCalled = true
         }
 
@@ -81,16 +83,16 @@ class IntroEligibilityCalculatorTests: XCTestCase {
 
     func testCheckTrialOrIntroductoryPriceEligibilityGetsCorrectResult() {
         var receivedError: Error? = nil
-        var receivedEligibility: [String: NSNumber]? = nil
+        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
         var completionCalled = false
 
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
 
-        let product1 = MockSKProduct(mockProductIdentifier: "com.revenuecat.product1",
+        let product1 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
                                      mockSubscriptionGroupIdentifier: "group1")
         product1.mockDiscount = MockDiscount()
-        let product2 = MockSKProduct(mockProductIdentifier: "com.revenuecat.product2",
+        let product2 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product2",
                                      mockSubscriptionGroupIdentifier: "group2")
         product2.mockDiscount = MockDiscount()
 
@@ -100,9 +102,8 @@ class IntroEligibilityCalculatorTests: XCTestCase {
                                         "com.revenuecat.product2",
                                         "com.revenuecat.unknownProduct"])
 
-        calculator.checkTrialOrIntroductoryPriceEligibility(with: Data(),
-                                                            productIdentifiers: Set(candidateIdentifiers)) { eligibility,
-                                                                                                             error in
+        calculator.checkEligibility(with: Data(),
+                                    productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
             completionCalled = true
             receivedError = error
             receivedEligibility = eligibility
@@ -111,30 +112,28 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).to(beNil())
         expect(receivedEligibility) == [
-            "com.revenuecat.product1": IntroEligibilityStatus.eligible.toNSNumber(),
-            "com.revenuecat.product2": IntroEligibilityStatus.ineligible.toNSNumber(),
-            "com.revenuecat.unknownProduct": IntroEligibilityStatus.unknown.toNSNumber(),
+            "com.revenuecat.product1": IntroEligibilityStatus.eligible,
+            "com.revenuecat.product2": IntroEligibilityStatus.ineligible,
+            "com.revenuecat.unknownProduct": IntroEligibilityStatus.unknown,
         ]
     }
 
     func testCheckTrialOrIntroductoryPriceEligibilityForProductWithoutIntroTrialReturnsIneligible() {
         var receivedError: Error? = nil
-        var receivedEligibility: [String: NSNumber]? = nil
+        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
         var completionCalled = false
 
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
-        let mockProduct = MockSKProduct(mockProductIdentifier: "com.revenuecat.product1",
-                                        mockSubscriptionGroupIdentifier: "group1")
+        let mockProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
+                                         mockSubscriptionGroupIdentifier: "group1")
         mockProduct.mockDiscount = nil
         mockProductsManager.stubbedProductsCompletionResult = Set([mockProduct])
 
         let candidateIdentifiers = Set(["com.revenuecat.product1"])
 
-        calculator.checkTrialOrIntroductoryPriceEligibility(
-            with: Data(),
-            productIdentifiers: Set(candidateIdentifiers)
-        ) { eligibility, error in
+        calculator.checkEligibility(with: Data(),
+                                    productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
             completionCalled = true
             receivedError = error
             receivedEligibility = eligibility
@@ -143,7 +142,36 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).to(beNil())
         expect(receivedEligibility) == [
-            "com.revenuecat.product1": IntroEligibilityStatus.ineligible.toNSNumber()
+            "com.revenuecat.product1": IntroEligibilityStatus.ineligible
+        ]
+    }
+
+    func testCheckTrialOrIntroductoryPriceEligibilityForConsumableReturnsUnknown() {
+        var receivedError: Error? = nil
+        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
+        var completionCalled = false
+
+        let receipt = mockReceipt()
+        mockReceiptParser.stubbedParseResult = receipt
+        let mockProduct = MockSK1Product(mockProductIdentifier: "lifetime",
+                                         mockSubscriptionGroupIdentifier: "group1")
+        mockProduct.mockDiscount = nil
+        mockProduct.mockSubscriptionPeriod = nil
+        mockProductsManager.stubbedProductsCompletionResult = Set([mockProduct])
+
+        let candidateIdentifiers = Set(["lifetime"])
+
+        calculator.checkEligibility(with: Data(),
+                                    productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
+            completionCalled = true
+            receivedError = error
+            receivedEligibility = eligibility
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedError).to(beNil())
+        expect(receivedEligibility) == [
+            "lifetime": IntroEligibilityStatus.unknown
         ]
     }
 }

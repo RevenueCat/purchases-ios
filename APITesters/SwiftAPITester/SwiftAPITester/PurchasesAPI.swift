@@ -118,6 +118,16 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack, discount: skmd) { _, _, _, _  in }
     purchases.invalidateCustomerInfoCache()
 
+#if os(iOS) || targetEnvironment(macCatalyst)
+    let beginRefundRequestCompletion: (RefundRequestStatus, Error?) -> Void = { _, _ in }
+    purchases.beginRefundRequest(for: "asdf", completion: beginRefundRequestCompletion)
+    purchases.beginRefundRequest(for: "asdf") { _, _ in }
+#endif
+
+#if os(iOS)
+    purchases.presentCodeRedemptionSheet()
+#endif
+
     // PurchasesDelegate
     let customerInfo: CustomerInfo? = nil
     purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)

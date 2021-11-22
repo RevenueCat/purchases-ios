@@ -20,24 +20,24 @@ class IntroEligibilityCalculator {
     private let productsManager: ProductsManager
     private let receiptParser: ReceiptParser
 
-    init(productsManager: ProductsManager = ProductsManager(), receiptParser: ReceiptParser = ReceiptParser()) {
+    init(productsManager: ProductsManager,
+         receiptParser: ReceiptParser) {
         self.productsManager = productsManager
         self.receiptParser = receiptParser
     }
 
     @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
-    func checkTrialOrIntroductoryPriceEligibility(
-        with receiptData: Data,
-        productIdentifiers candidateProductIdentifiers: Set<String>,
-        completion: @escaping ([String: NSNumber], Error?) -> Void) {
+    func checkEligibility(with receiptData: Data,
+                          productIdentifiers candidateProductIdentifiers: Set<String>,
+                          completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
         guard candidateProductIdentifiers.count > 0 else {
             completion([:], nil)
             return
         }
         Logger.debug(Strings.customerInfo.checking_intro_eligibility_locally)
 
-        var result: [String: NSNumber] = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
-            resultDict[productId] = IntroEligibilityStatus.unknown.toNSNumber()
+        var result = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
+            resultDict[productId] = IntroEligibilityStatus.unknown
         }
         do {
             let receipt = try receiptParser.parse(from: receiptData)
@@ -55,7 +55,7 @@ class IntroEligibilityCalculator {
                     candidateProductIdentifiers.contains($0.productIdentifier)
                 }
 
-                let eligibility: [String: NSNumber] = self.checkIntroEligibility(
+                let eligibility = self.checkEligibility(
                     candidateProducts: candidateProducts,
                     purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffersOrFreeTrials)
                 result.merge(eligibility) { (_, new) in new }
@@ -65,7 +65,7 @@ class IntroEligibilityCalculator {
                 )
                 completion(result, nil)
             }
-        } catch let error {
+        } catch {
             Logger.error(Strings.customerInfo.checking_intro_eligibility_locally_error(error: error))
             completion([:], error)
             return
@@ -76,10 +76,15 @@ class IntroEligibilityCalculator {
 @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 private extension IntroEligibilityCalculator {
 
-    func checkIntroEligibility(candidateProducts: Set<SKProduct>,
-                               purchasedProductsWithIntroOffers: Set<SKProduct>) -> [String: NSNumber] {
-        var result: [String: NSNumber] = [:]
+    func checkEligibility(candidateProducts: Set<SK1Product>,
+                          purchasedProductsWithIntroOffers: Set<SK1Product>) -> [String: IntroEligibilityStatus] {
+        var result: [String: IntroEligibilityStatus] = [:]
+
         for candidate in candidateProducts {
+            guard candidate.subscriptionPeriod != nil else {
+                result[candidate.productIdentifier] = IntroEligibilityStatus.unknown
+                continue
+            }
             let usedIntroForProductIdentifier = purchasedProductsWithIntroOffers
                 .contains { purchased in
                     let foundByGroupId = (candidate.subscriptionGroupIdentifier != nil
@@ -89,18 +94,10 @@ private extension IntroEligibilityCalculator {
 
             let hasIntroductoryPrice = candidate.introductoryPrice != nil
             result[candidate.productIdentifier] = !hasIntroductoryPrice || usedIntroForProductIdentifier
-                ? IntroEligibilityStatus.ineligible.toNSNumber()
-                : IntroEligibilityStatus.eligible.toNSNumber()
+                ? IntroEligibilityStatus.ineligible
+                : IntroEligibilityStatus.eligible
         }
         return result
-    }
-
-}
-
-extension IntroEligibilityStatus {
-
-    func toNSNumber() -> NSNumber {
-        return self.rawValue as NSNumber
     }
 
 }

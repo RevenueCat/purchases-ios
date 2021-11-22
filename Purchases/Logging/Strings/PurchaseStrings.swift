@@ -38,6 +38,17 @@ enum PurchaseStrings {
     case purchases_delegate_set_multiple_times
     case purchases_delegate_set_to_nil
     case management_url_nil_opening_default
+    case requested_products_not_found(request: SKRequest)
+    case callback_not_found_for_request(request: SKRequest)
+    case unable_to_get_intro_eligibility_for_user(error: Error)
+    case duplicate_refund_request(details: String)
+    case failed_refund_request(details: String)
+    case unknown_refund_request_error(details: String)
+    case unknown_refund_request_error_type(details: String)
+    case unknown_refund_request_status
+    case product_unpurchased_or_missing
+    case transaction_unverified(productID: String, errorMessage: String)
+    case begin_refund_request_unsupported
 
 }
 
@@ -48,42 +59,42 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .cannot_purchase_product_appstore_configuration_error:
             return "Could not purchase SKProduct. " +
-                "There is a problem with your configuration in App Store Connect. " +
-                "More info here: https://errors.rev.cat/configuring-products"
+            "There is a problem with your configuration in App Store Connect. " +
+            "More info here: https://errors.rev.cat/configuring-products"
 
         case .entitlements_revoked_syncing_purchases(let productIdentifiers):
             return "Entitlements revoked for product " +
-                "identifiers: \(productIdentifiers). \nsyncing purchases"
+            "identifiers: \(productIdentifiers). \nsyncing purchases"
 
         case .finishing_transaction(let transaction):
             return "Finishing transaction \(transaction.payment.productIdentifier) " +
-                "\(transaction.transactionIdentifier ?? "") " +
-                "(\(transaction.original?.transactionIdentifier ?? ""))"
+            "\(transaction.transactionIdentifier ?? "") " +
+            "(\(transaction.original?.transactionIdentifier ?? ""))"
 
         case .purchasing_with_observer_mode_and_finish_transactions_false_warning:
             return "Observer mode is active (finishTransactions is set to false) and " +
-                "purchase has been initiated. RevenueCat will not finish the " +
-                "transaction, are you sure you want to do this?"
+            "purchase has been initiated. RevenueCat will not finish the " +
+            "transaction, are you sure you want to do this?"
 
         case .paymentqueue_removedtransaction(let transaction):
             let errorUserInfo = (transaction.error as NSError?)?.userInfo ?? [:]
             return "PaymentQueue removedTransaction: \(transaction.payment.productIdentifier) " +
-                "\(transaction.transactionIdentifier ?? "") " +
-                "(\(transaction.original?.transactionIdentifier ?? "") " +
-                "\(transaction.error?.localizedDescription ?? "") " +
-                "\(!errorUserInfo.isEmpty ? errorUserInfo.description : "") - " +
-                "\(transaction.transactionState.rawValue)"
+            "\(transaction.transactionIdentifier ?? "") " +
+            "(\(transaction.original?.transactionIdentifier ?? "") " +
+            "\(transaction.error?.localizedDescription ?? "") " +
+            "\(!errorUserInfo.isEmpty ? errorUserInfo.description : "") - " +
+            "\(transaction.transactionState.rawValue)"
 
         case .paymentqueue_revoked_entitlements_for_product_identifiers(let productIdentifiers):
             return "PaymentQueue " +
-                "didRevokeEntitlementsForProductIdentifiers: \(productIdentifiers)"
+            "didRevokeEntitlementsForProductIdentifiers: \(productIdentifiers)"
 
         case .paymentqueue_updatedtransaction(let transaction):
             return "PaymentQueue updatedTransaction: \(transaction.payment.productIdentifier) " +
-                "\(transaction.transactionIdentifier ?? "") " +
-                "(\(transaction.error?.localizedDescription ?? "")) " +
-                "\(transaction.original?.transactionIdentifier ?? "") - " +
-                "\(transaction.transactionState.rawValue)"
+            "\(transaction.transactionIdentifier ?? "") " +
+            "(\(transaction.error?.localizedDescription ?? "")) " +
+            "\(transaction.original?.transactionIdentifier ?? "") - " +
+            "\(transaction.transactionState.rawValue)"
 
         case .presenting_code_redemption_sheet:
             return "Presenting code redemption sheet."
@@ -99,23 +110,23 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .skpayment_missing_from_skpaymenttransaction:
             return "There is a problem with the " +
-                "SKPaymentTransaction missing an SKPayment - this is an issue with the App Store."
+            "SKPaymentTransaction missing an SKPayment - this is an issue with the App Store."
 
         case .skpayment_missing_product_identifier:
             return "There is a problem with the SKPayment missing " +
-                "a product identifier - this is an issue with the App Store."
+            "a product identifier - this is an issue with the App Store."
 
         case .could_not_purchase_product_id_not_found:
             return "makePurchase - Could not purchase SKProduct. " +
-                "Couldn't find its product identifier. This is possibly an App Store quirk."
+            "Couldn't find its product identifier. This is possibly an App Store quirk."
 
         case .product_identifier_nil:
             return "Apple returned a product where the productIdentifier is nil, " +
-                "this is possibly an App Store quirk"
+            "this is possibly an App Store quirk"
 
         case .payment_identifier_nil:
             return "Apple returned a payment where the productIdentifier is nil, " +
-                "this is possibly an App Store quirk"
+            "this is possibly an App Store quirk"
 
         case .purchases_nil:
             return "Purchases has not been configured. Please call Purchases.configure()"
@@ -125,13 +136,38 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .purchases_delegate_set_to_nil:
             return "Purchases delegate is being set to nil, " +
-                "you probably don't want to do this."
+            "you probably don't want to do this."
 
         case .management_url_nil_opening_default:
             return "managementURL is nil, opening Apple's subscription management page"
 
-        }
+        case .requested_products_not_found(let request):
+            return "requested products not found for request: \(request)"
 
+        case .callback_not_found_for_request(let request):
+            return "callback not found for failing request: \(request)"
+
+        case .unable_to_get_intro_eligibility_for_user(let error):
+            return "Unable to get intro eligibility for appUserID: \(error.localizedDescription)"
+        case .duplicate_refund_request(let details):
+            return "Refund already requested for this product and is either pending, already denied, " +
+            "or already approved: \(details)"
+        case .failed_refund_request(let details):
+            return "Refund request submission failed: \(details)"
+        case .unknown_refund_request_error_type(let details):
+            return "Unknown RefundRequestError type from the AppStore: \(details)"
+        case .unknown_refund_request_error(let details):
+            return "Unknown error type returned from AppStore: \(details)"
+        case .unknown_refund_request_status:
+            return "Unknown RefundRequestStatus returned from AppStore"
+        case .product_unpurchased_or_missing:
+            return "Product hasn't been purchased or doesn't exist."
+        case .transaction_unverified(let productID, let errorMessage):
+            return "Transaction for productID \(productID) is unverified by AppStore. " +
+                "Verification error \(errorMessage)"
+        case .begin_refund_request_unsupported:
+            return "Tried to call beginRefundRequest in a platform that doesn't support it!"
+        }
     }
 
 }

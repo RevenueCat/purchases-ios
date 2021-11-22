@@ -31,7 +31,7 @@ class ErrorUtils: NSObject {
     }
 
     /**
-     * Maps an ``BackendErrorCode`` code to a ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
+     * Maps a ``BackendErrorCode`` code to a ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
      * `NSUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
      * ``BackendErrorCode/toPurchasesErrorCode()``.
      *
@@ -46,7 +46,7 @@ class ErrorUtils: NSObject {
     }
 
     /**
-     * Maps an ``BackendErrorCode`` code to an ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
+     * Maps a ``BackendErrorCode`` code to an ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
      * `RCUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
      * ``BackendErrorCode/toPurchasesErrorCode()``.
      *
@@ -207,55 +207,64 @@ class ErrorUtils: NSObject {
         return error(with: errorCode, message: errorCode.description, underlyingError: skError)
     }
 
-}
+    /**
+     * Constructs an Error with the ``ErrorCode/purchaseCancelledError`` code.
+     *
+     * - Note: This error is used when  a purchase is cancelled by the user.
+     */
+    @objc static func purchaseCancelledError() -> Error {
+        let errorCode = ErrorCode.purchaseCancelledError
+        return ErrorUtils.error(with: errorCode,
+                                message: errorCode.description,
+                                underlyingError: nil)
+    }
 
-private extension SKError {
+    /**
+     * Constructs an Error with the ``ErrorCode/storeProblemError`` code.
+     *
+     * - Note: This error is used when there is a problem with the App Store.
+     */
+    @objc static func storeProblemError(withMessage message: String, error: Error? = nil) -> Error {
+        let errorCode = ErrorCode.storeProblemError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error)
+    }
 
-    // swiftlint:disable:next cyclomatic_complexity
-    func toPurchasesErrorCode() -> ErrorCode {
-        switch self.code {
-        case .cloudServiceNetworkConnectionFailed,
-             .cloudServiceRevoked,
-             .overlayTimeout,
-             .overlayPresentedInBackgroundScene:
-            return .storeProblemError
-        case .clientInvalid,
-             .paymentNotAllowed,
-             .cloudServicePermissionDenied,
-             .privacyAcknowledgementRequired:
-            return .purchaseNotAllowedError
-        case .paymentCancelled,
-             .overlayCancelled:
-            return .purchaseCancelledError
-        case .paymentInvalid,
-             .unauthorizedRequestData,
-             .missingOfferParams,
-             .invalidOfferPrice,
-             .invalidSignature,
-             .invalidOfferIdentifier:
-            return .purchaseInvalidError
-        case .storeProductNotAvailable:
-            return .productNotAvailableForPurchaseError
-        case .ineligibleForOffer,
-             .overlayInvalidConfiguration,
-             .unsupportedPlatform:
-            return .purchaseNotAllowedError
-        case .unknown:
-            if let error = self.userInfo[NSUnderlyingErrorKey] as? NSError {
-                switch (error.domain, error.code) {
-                case ("ASDServerErrorDomain", 3532): // "You’re currently subscribed to this"
-                    // See https://github.com/RevenueCat/purchases-ios/issues/392
-                    return .productAlreadyPurchasedError
+    /**
+     * Constructs an Error with the ``ErrorCode/customerInfoError`` code.
+     *
+     * - Note: This error is used when there is a problem related to the customer info.
+     */
+    @objc static func customerInfoError(withMessage message: String, error: Error? = nil) -> Error {
+        let errorCode = ErrorCode.customerInfoError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error)
+    }
 
-                default: break
-                }
-            }
+    /**
+     * Constructs an Error with the ``ErrorCode/systemInfoError`` code.
+     *
+     * - Note: This error is used when there is a problem related to the system info.
+     */
+    @objc static func systemInfoError(withMessage message: String, error: Error? = nil) -> Error {
+        let errorCode = ErrorCode.systemInfoError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error)
+    }
 
-            return .storeProblemError
-
-        @unknown default:
-            return .unknownError
-        }
+    /**
+     * Constructs an Error with the ``ErrorCode/beginRefundRequestError`` code.
+     *
+     * - Note: This error is used when there is a problem beginning a refund request.
+     */
+    @objc static func beginRefundRequestError(withMessage message: String, error: Error? = nil) -> Error {
+        let errorCode = ErrorCode.beginRefundRequestError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error)
     }
 
 }
@@ -351,7 +360,10 @@ private extension ErrorUtils {
                 .emptySubscriberAttributes,
                 .productDiscountMissingIdentifierError,
                 .missingAppUserIDForAliasCreationError,
-                .productDiscountMissingSubscriptionGroupIdentifierError:
+                .productDiscountMissingSubscriptionGroupIdentifierError,
+                .customerInfoError,
+                .systemInfoError,
+                .beginRefundRequestError:
             Logger.error(code.description)
 
         case .purchaseCancelledError,

@@ -30,8 +30,6 @@ NSString *appUserID;
 BOOL isAnonymous;
 
 + (void)checkAPI {
-    // TODO: iOS ONLY, TEST FOR THIS API BY LOOKING UP SELECTOR
-    // [p presentCodeRedemptionSheet];
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil];
@@ -147,6 +145,14 @@ shouldPurchasePromoProduct:skp
                                                          RCCustomerInfo * _Nullable info,
                                                          NSError * _Nullable error,
                                                          BOOL cancelled)) {}];
+
+#if TARGET_OS_IPHONE || TARGET_OS_MACCATALYST
+    [p beginRefundRequestFor:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+#endif
+
+#if TARGET_OS_IPHONE
+    [p presentCodeRedemptionSheet];
+#endif
 }
 
 + (void)checkEnums {

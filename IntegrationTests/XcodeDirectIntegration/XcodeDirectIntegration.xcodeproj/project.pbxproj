@@ -56,7 +56,7 @@
 			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DE20B6C264087FB004C597D;
-			remoteInfo = StoreKitTests;
+			remoteInfo = BackendIntegrationTests;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -184,7 +184,8 @@
 				B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */,
 				B3EAF56D26E29DCC00E0728D /* RevenueCatTests.xctest */,
 				B3EAF56F26E29DCC00E0728D /* StoreKitTestApp.app */,
-				B3EAF57126E29DCC00E0728D /* StoreKitTests.xctest */,
+				B3EAF57126E29DCC00E0728D /* BackendIntegrationTests.xctest */,
+				B3EAF57326E29DCC00E0728D /* APITester */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -313,10 +314,10 @@
 			remoteRef = B3EAF56E26E29DCC00E0728D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		B3EAF57126E29DCC00E0728D /* StoreKitTests.xctest */ = {
+		B3EAF57126E29DCC00E0728D /* BackendIntegrationTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = StoreKitTests.xctest;
+			path = BackendIntegrationTests.xctest;
 			remoteRef = B3EAF57026E29DCC00E0728D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};

@@ -20,7 +20,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     var mockReceiptFetcher: MockReceiptFetcher!
     let mockRequestFetcher = MockRequestFetcher()
-    let mockProductsManager = MockProductsManager()
+    var mockProductsManager: MockProductsManager!
     let mockBackend = MockBackend()
     let mockStoreKitWrapper = MockStoreKitWrapper()
     let mockNotificationCenter = MockNotificationCenter()
@@ -55,6 +55,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     ]]
     
     var mockOfferingsManager: MockOfferingsManager!
+    var mockManageSubsModalHelper: MockManageSubscriptionsModalHelper!
+    var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
     var purchases: Purchases!
 
@@ -73,11 +75,13 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             subscriberAttributeWeight.key: subscriberAttributeWeight
         ]
         self.mockOperationDispatcher = MockOperationDispatcher()
-        self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         self.mockReceiptParser = MockReceiptParser()
+        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
+        self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
+                                                                             receiptParser: mockReceiptParser)
         let systemInfoAttribution = try MockSystemInfo(platformFlavor: "iOS",
-                                                       platformFlavorVersion: "3.2.1",
-                                                       finishTransactions: true)
+                                                        platformFlavorVersion: "3.2.1",
+                                                        finishTransactions: true)
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfoAttribution)
         self.mockSubscriberAttributesManager = MockSubscriberAttributesManager(
@@ -99,8 +103,12 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                     systemInfo: systemInfo,
                                                     backend: mockBackend,
                                                     offeringsFactory: MockOfferingsFactory(),
-                                                    productsManager: MockProductsManager())
+                                                    productsManager: mockProductsManager)
         self.mockReceiptFetcher = MockReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: systemInfoAttribution)
+        self.mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
+                                                                            customerInfoManager: customerInfoManager,
+                                                                            identityManager: mockIdentityManager)
+        self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
     }
 
     override func tearDown() {
@@ -122,7 +130,16 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           backend: mockBackend,
                                                           identityManager: mockIdentityManager,
                                                           receiptParser: mockReceiptParser,
-                                                          deviceCache: mockDeviceCache)
+                                                          deviceCache: mockDeviceCache,
+                                                          manageSubscriptionsModalHelper: mockManageSubsModalHelper,
+                                                          beginRefundRequestHelper: mockBeginRefundRequestHelper)
+        let trialOrIntroductoryPriceEligibilityChecker =
+        TrialOrIntroPriceEligibilityChecker(receiptFetcher: mockReceiptFetcher,
+                                            introEligibilityCalculator: mockIntroEligibilityCalculator,
+                                            backend: mockBackend,
+                                            identityManager: mockIdentityManager,
+                                            operationDispatcher: mockOperationDispatcher,
+                                            productsManager: mockProductsManager)
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
@@ -142,7 +159,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
-                              purchasesOrchestrator: purchasesOrchestrator)
+                              purchasesOrchestrator: purchasesOrchestrator,
+                              trialOrIntroPriceEligibilityChecker: trialOrIntroductoryPriceEligibilityChecker)
         purchasesOrchestrator.maybeDelegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -569,7 +587,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessful() {
         setupPurchases()
-        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
@@ -595,7 +613,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessfullySynced() {
         setupPurchases()
-        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
@@ -623,7 +641,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendNotSuccessfullySynced() {
         setupPurchases()
-        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 

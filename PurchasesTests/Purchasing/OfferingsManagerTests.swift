@@ -25,12 +25,13 @@ class OfferingsManagerTests: XCTestCase {
                                              finishTransactions: true)
     let mockBackend = MockBackend()
     let mockOfferingsFactory = MockOfferingsFactory()
-    let mockProductsManager = MockProductsManager()
+    var mockProductsManager: MockProductsManager!
     var offeringsManager: OfferingsManager!
 
     override func setUp() {
         super.setUp()
-        
+
+        mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
         offeringsManager = OfferingsManager(deviceCache: mockDeviceCache,
                                             operationDispatcher: mockOperationDispatcher,
                                             systemInfo: mockSystemInfo,
@@ -79,7 +80,7 @@ extension OfferingsManagerTests {
         let obtainedOfferings = try XCTUnwrap(maybeObtainedOfferings)
         expect(obtainedOfferings["base"]).toNot(beNil())
         expect(obtainedOfferings["base"]!.monthly).toNot(beNil())
-        expect(obtainedOfferings["base"]!.monthly?.product).toNot(beNil())
+        expect(obtainedOfferings["base"]!.monthly?.productDetails).toNot(beNil())
     }
 
     func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {
@@ -125,7 +126,7 @@ extension OfferingsManagerTests {
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
         // given
         mockBackend.stubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
-        mockProductsManager.stubbedProductsCompletionResult = Set()
+        mockProductsManager.stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult = (Set(), ())
 
         // when
         var obtainedOfferings: Offerings?
@@ -232,7 +233,7 @@ extension OfferingsManagerTests {
 
         // when
         offeringsManager.offerings(appUserID: MockData.anyAppUserID, completion: nil)
-
+        
         // then
         expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockBackend.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
