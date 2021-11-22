@@ -19,9 +19,7 @@ class DeviceCache {
 
     // Thread-safe, but don't call from anywhere inside this class.
     var cachedAppUserID: String? {
-        self.userDefaults.perform {
-            Self.cachedAppUserID($0)
-        }
+        self.userDefaults.perform(Self.cachedAppUserID)
     }
     var cachedLegacyAppUserID: String? {
         self.userDefaults.perform {
