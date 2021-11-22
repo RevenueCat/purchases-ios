@@ -351,10 +351,7 @@ platform :ios do
   lane :update_swift_package_commit do
     project_file_locations = [
       '../IntegrationTests/SPMIntegration/SPMIntegration.xcodeproj/project.pbxproj',
-      '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
-      '../Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
-      '../APITesters/ObjCAPITester/ObjCAPITester.xcodeproj/project.pbxproj',
-      '../APITesters/SwiftAPITester/SwiftAPITester.xcodeproj/project.pbxproj',
+      '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 
     old_kind_line = "kind = branch;"
