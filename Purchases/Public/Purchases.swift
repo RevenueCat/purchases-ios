@@ -706,7 +706,7 @@ public extension Purchases {
 public extension Purchases {
 
     /**
-     * Get latest available purchaser info.
+     * Get latest available customer  info.
      *
      * - Parameter completion: A completion block called when customer info is available and not stale.
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
@@ -716,7 +716,7 @@ public extension Purchases {
     }
 
     /**
-     * Get latest available purchaser info.
+     * Get latest available customer  info.
      *
      * - Parameter completion: A completion block called when customer info is available and not stale.
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
