@@ -716,6 +716,28 @@ public extension Purchases {
     }
 
     /**
+     * Get latest available purchaser info.
+     *
+     * - Parameter completion: A completion block called when customer info is available and not stale.
+     * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func getCustomerInfo() async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            getCustomerInfo { maybeCustomerInfo, maybeError in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = maybeCustomerInfo else {
+                    fatalError("Expected non-nil result 'customerInfo' for nil error")
+                }
+                continuation.resume(returning: customerInfo)
+            }
+        }
+    }
+
+    /**
      * Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
      * Use this method if you aren't using `getOfferings(completion:)`.
      * You should use getOfferings though.
@@ -923,6 +945,9 @@ public extension Purchases {
      * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
      */
     @available(iOS 14.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(macOS, unavailable)
     @objc func presentCodeRedemptionSheet() {
         storeKitWrapper.presentCodeRedemptionSheet()
     }

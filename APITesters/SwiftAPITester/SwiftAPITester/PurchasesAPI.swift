@@ -99,6 +99,12 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getOfferings { _, _ in }
     purchases.getProducts([String]()) { _ in }
 
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        Task.init {
+            let _: CustomerInfo = try await purchases.getCustomerInfo()
+        }
+    }
+
     let skp: SKProduct = SKProduct()
     let skpd: SKProductDiscount = SKProductDiscount()
     let skmd: SKPaymentDiscount = SKPaymentDiscount()
