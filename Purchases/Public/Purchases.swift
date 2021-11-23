@@ -58,7 +58,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Delegate for `Purchases` instance. The delegate is responsible for handling promotional product purchases and
-     * changes to purchaser information.
+     * changes to customer information.
      */
     @objc public var delegate: PurchasesDelegate? {
         get { privateDelegate }
@@ -927,13 +927,13 @@ public extension Purchases {
         }
 
     /**
-     * Invalidates the cache for purchaser information.
+     * Invalidates the cache for customer information.
      *
      * Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
      * Refer to https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information for more information on
      * using the cache properly.
      *
-     * This is useful for cases where purchaser information might have been updated outside of the app, like if a
+     * This is useful for cases where customer information might have been updated outside of the app, like if a
      * promotional subscription is granted through the RevenueCat dashboard.
      */
     @objc func invalidateCustomerInfoCache() {
