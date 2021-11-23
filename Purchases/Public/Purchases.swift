@@ -629,12 +629,12 @@ public extension Purchases {
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func logIn(_ appUserID: String) async throws -> (CustomerInfo, Bool) {
         return try await withCheckedThrowingContinuation { continuation in
-            logIn(appUserID) { customerInfo, created, error in
-                if let error = error {
+            logIn(appUserID) { maybeCustomerInfo, created, maybeError in
+                if let error = maybeError {
                     continuation.resume(throwing: error)
                     return
                 }
-                guard let customerInfo = customerInfo else {
+                guard let customerInfo = maybeCustomerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
                 }
                 continuation.resume(returning: (customerInfo, created))
@@ -660,6 +660,28 @@ public extension Purchases {
             }
 
             self.updateAllCaches(completion: completion)
+        }
+    }
+
+    /**
+     * Logs out the Purchases client clearing the saved appUserID.
+     * This will generate a random user id and save it in the cache.
+     * If this method is called and the current user is anonymous, it will return an error.
+     * See https://docs.revenuecat.com/docs/user-ids
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func logOut() async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            logOut { maybeCustomerInfo, maybeError in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = maybeCustomerInfo else {
+                    fatalError("Expected non-nil result 'customerInfo' for nil error")
+                }
+                continuation.resume(returning: customerInfo)
+            }
         }
     }
 

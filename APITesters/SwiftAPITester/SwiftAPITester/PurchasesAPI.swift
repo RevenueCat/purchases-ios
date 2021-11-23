@@ -155,6 +155,7 @@ private func checkIdentity(purchases: Purchases) {
     if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
         Task.init {
             let (_, _): (CustomerInfo, Bool) = try await purchases.logIn("")
+            let _: CustomerInfo = try await purchases.logOut()
         }
     }
 }
