@@ -618,6 +618,31 @@ public extension Purchases {
     }
 
     /**
+     * This function will logIn the current user with an appUserID.
+     *
+     * - Parameter appUserID: The appUserID that should be linked to the current user.
+     *
+     * The callback will be called with the latest CustomerInfo for the user, as well as a boolean
+     * indicating whether the user was created for the first time in the RevenueCat backend.
+     * See https://docs.revenuecat.com/docs/user-ids
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0 , *)
+    func logIn(_ appUserID: String) async throws -> (CustomerInfo, Bool) {
+        return try await withCheckedThrowingContinuation { continuation in
+            logIn(appUserID) { customerInfo, created, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = customerInfo else {
+                    fatalError("Expected non-nil result 'customerInfo' for nil error")
+                }
+                continuation.resume(returning: (customerInfo, created))
+            }
+        }
+    }
+
+    /**
      * Logs out the Purchases client clearing the saved appUserID.
      * This will generate a random user id and save it in the cache.
      * If this method is called and the current user is anonymous, it will return an error.

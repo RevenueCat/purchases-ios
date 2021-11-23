@@ -152,6 +152,9 @@ private func checkIdentity(purchases: Purchases) {
     let loginComplete: (CustomerInfo?, Bool, Error?) -> Void = { _, _, _ in }
     purchases.logIn("", completion: loginComplete)
     purchases.logIn("") { _, _, _ in }
+    Task.init {
+        let (_, _): (CustomerInfo, Bool) = try await purchases.logIn("")
+    }
 }
 
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
