@@ -152,8 +152,10 @@ private func checkIdentity(purchases: Purchases) {
     let loginComplete: (CustomerInfo?, Bool, Error?) -> Void = { _, _, _ in }
     purchases.logIn("", completion: loginComplete)
     purchases.logIn("") { _, _, _ in }
-    Task.init {
-        let (_, _): (CustomerInfo, Bool) = try await purchases.logIn("")
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        Task.init {
+            let (_, _): (CustomerInfo, Bool) = try await purchases.logIn("")
+        }
     }
 }
 

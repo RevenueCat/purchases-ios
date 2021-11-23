@@ -626,7 +626,7 @@ public extension Purchases {
      * indicating whether the user was created for the first time in the RevenueCat backend.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0 , *)
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func logIn(_ appUserID: String) async throws -> (CustomerInfo, Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             logIn(appUserID) { customerInfo, created, error in
