@@ -216,7 +216,7 @@ class DeviceCacheTests: XCTestCase {
 
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
 
-        let expectedMessage = "[Purchases] - Cached appUserID has been deleted from user defaults.\n" +
+        let expectedMessage = "[\(Logger.frameworkDescription)] - Cached appUserID has been deleted from user defaults.\n" +
         "This leaves the SDK in an undetermined state. Please make sure that RevenueCat\n" +
         "entries in user defaults don\'t get deleted by anything other than the SDK.\n" +
         "More info: https://rev.cat/userdefaults-crash"

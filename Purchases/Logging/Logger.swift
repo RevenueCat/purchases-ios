@@ -29,71 +29,150 @@ import Foundation
 
 }
 
+/// A function that can handle a log message including file and method information.
+public typealias VerboseLogHandler = (_ level: LogLevel,
+                                      _ message: String,
+                                      _ file: String?,
+                                      _ function: String?,
+                                      _ line: UInt) -> Void
+
+/// A function that can handle a log message.
+public typealias LogHandler = (_ level: LogLevel,
+                               _ message: String) -> Void
+
 class Logger {
-
     static var logLevel: LogLevel = .info
-    static var logHandler: (LogLevel, String) -> Void = { level, message in
-        NSLog("%@", "[\(frameworkDescription)] - \(level.description): \(message)")
+    static var logHandler: VerboseLogHandler = { level, message, file, functionName, line in
+        let fileContext: String
+        if Logger.verbose, let file = file, let functionName = functionName {
+            let fileName = (file as NSString)
+                .lastPathComponent
+                .replacingOccurrences(of: ".swift", with: "")
+                .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+
+            fileContext = "\t\(fileName).\(functionName):\(line)"
+        } else {
+            fileContext = ""
+        }
+
+        NSLog("%@", "[\(frameworkDescription)] - \(level.description)\(fileContext): \(message)")
     }
 
-    private static let frameworkDescription = "Purchases"
+    static var verbose: Bool = false
 
-    static func debug(_ message: CustomStringConvertible) {
-        log(level: .debug, intent: .info, message: message.description)
+    internal static let frameworkDescription = "Purchases"
+
+    static func debug(_ message: CustomStringConvertible,
+                      fileName: String? = #fileID,
+                      functionName: String? = #function,
+                      line: UInt = #line) {
+        log(level: .debug, intent: .info, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func info(_ message: CustomStringConvertible) {
-        log(level: .info, intent: .info, message: message.description)
+    static func info(_ message: CustomStringConvertible,
+                     fileName: String? = #fileID,
+                     functionName: String? = #function,
+                     line: UInt = #line) {
+        log(level: .info, intent: .info, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func warn(_ message: CustomStringConvertible) {
-        log(level: .warn, intent: .warning, message: message.description)
+    static func warn(_ message: CustomStringConvertible,
+                     fileName: String? = #fileID,
+                     functionName: String? = #function,
+                     line: UInt = #line) {
+        log(level: .warn, intent: .warning, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func error(_ message: CustomStringConvertible) {
-        log(level: .error, intent: .rcError, message: message.description)
+    static func error(_ message: CustomStringConvertible,
+                      fileName: String = #fileID,
+                      functionName: String = #function,
+                      line: UInt = #line) {
+        log(level: .error, intent: .rcError, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
 }
 
 extension Logger {
 
-    static func appleError(_ message: CustomStringConvertible) {
-        log(level: .error, intent: .appleError, message: message.description)
+    static func appleError(_ message: CustomStringConvertible,
+                           fileName: String = #fileID,
+                           functionName: String = #function,
+                           line: UInt = #line) {
+        log(level: .error, intent: .appleError, message: message.description,
+            fileName: fileName,
+            functionName: functionName,
+            line: line)
     }
 
-    static func appleWarning(_ message: CustomStringConvertible) {
-        log(level: .warn, intent: .appleError, message: message.description)
+    static func appleWarning(_ message: CustomStringConvertible,
+                             fileName: String = #fileID,
+                             functionName: String = #function,
+                             line: UInt = #line) {
+        log(level: .warn, intent: .appleError, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func purchase(_ message: CustomStringConvertible) {
-        log(level: .debug, intent: .purchase, message: message.description)
+    static func purchase(_ message: CustomStringConvertible,
+                         fileName: String = #fileID,
+                         functionName: String = #function,
+                         line: UInt = #line) {
+        log(level: .debug, intent: .purchase, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func rcPurchaseSuccess(_ message: CustomStringConvertible) {
-        log(level: .info, intent: .rcPurchaseSuccess, message: message.description)
+    static func rcPurchaseSuccess(_ message: CustomStringConvertible,
+                                  fileName: String = #fileID,
+                                  functionName: String = #function,
+                                  line: UInt = #line) {
+        log(level: .info, intent: .rcPurchaseSuccess, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func rcSuccess(_ message: CustomStringConvertible) {
-        log(level: .debug, intent: .rcSuccess, message: message.description)
+    static func rcSuccess(_ message: CustomStringConvertible,
+                          fileName: String = #fileID,
+                          functionName: String = #function,
+                          line: UInt = #line) {
+        log(level: .debug, intent: .rcSuccess, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func user(_ message: CustomStringConvertible) {
-        log(level: .debug, intent: .user, message: message.description)
+    static func user(_ message: CustomStringConvertible,
+                     fileName: String? = #fileID,
+                     functionName: String? = #function,
+                     line: UInt = #line) {
+        log(level: .debug, intent: .user, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
     }
 
 }
 
 private extension Logger {
 
-    static func log(level: LogLevel, message: String) {
+    static func log(level: LogLevel,
+                    message: String,
+                    fileName: String? = #fileID,
+                    functionName: String? = #function,
+                    line: UInt = #line) {
         guard self.logLevel.rawValue <= level.rawValue else { return }
-        logHandler(level, message)
+        logHandler(level, message, fileName, functionName, line)
     }
 
-    static func log(level: LogLevel, intent: LogIntent, message: String) {
+    static func log(level: LogLevel,
+                    intent: LogIntent,
+                    message: String,
+                    fileName: String? = #fileID,
+                    functionName: String? = #function,
+                    line: UInt = #line) {
         let messageWithPrefix = "\(intent.prefix) \(message)"
-        Logger.log(level: level, message: messageWithPrefix)
+        Logger.log(level: level,
+                   message: messageWithPrefix,
+                   fileName: fileName,
+                   functionName: functionName,
+                   line: line)
     }
 
 }
