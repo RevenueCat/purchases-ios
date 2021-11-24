@@ -761,6 +761,33 @@ public extension Purchases {
     }
 
     /**
+     * Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
+     * Use this method if you aren't using `getOfferings(completion:)`.
+     * You should use getOfferings though.
+     *
+     * - Note: `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by
+     * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
+     * Also ensure that you have an active developer program subscription and you have signed the latest paid
+     * application agreements.
+     * If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
+     *
+     * - Parameter productIdentifiers: A set of product identifiers for in app purchases setup via AppStoreConnect:
+     * https://appstoreconnect.apple.com/
+     * This should be either hard coded in your application, from a file, or from a custom endpoint if you want
+     * to be able to deploy new IAPs without an app update.
+     * - Parameter completion: An @escaping callback that is called with the loaded products.
+     * If the fetch fails for any reason it will return an empty array.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func getProducts(_ productIdentifiers: [String]) async -> [SKProduct] {
+        return await withCheckedContinuation { continuation in
+            getProducts(productIdentifiers) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
+    /**
      * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
      * If you are using the Offerings system, use ``Purchases/purchase(package:completion:)`` instead.
      *
