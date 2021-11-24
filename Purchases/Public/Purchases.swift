@@ -628,18 +628,7 @@ public extension Purchases {
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func logIn(_ appUserID: String) async throws -> (CustomerInfo, Bool) {
-        return try await withCheckedThrowingContinuation { continuation in
-            logIn(appUserID) { maybeCustomerInfo, created, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: (customerInfo, created))
-            }
-        }
+        return try await logInAsync(appUserID)
     }
 
     /**
@@ -671,18 +660,7 @@ public extension Purchases {
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func logOut() async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            logOut { maybeCustomerInfo, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: customerInfo)
-            }
-        }
+        return try await logOutAsync()
     }
 
     /**
@@ -713,18 +691,7 @@ public extension Purchases {
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func offerings() async throws -> Offerings {
-        return try await withCheckedThrowingContinuation { continuation in
-            getOfferings { maybeOfferings, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let offerings = maybeOfferings else {
-                    fatalError("Expected non-nil result 'result' for nil error")
-                }
-                continuation.resume(returning: offerings)
-            }
-        }
+        return try await offeringsAsync()
     }
 
 }
@@ -750,18 +717,7 @@ public extension Purchases {
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func customerInfo() async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            getCustomerInfo { maybeCustomerInfo, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: customerInfo)
-            }
-        }
+        return try await customerInfoAsync()
     }
 
     /**

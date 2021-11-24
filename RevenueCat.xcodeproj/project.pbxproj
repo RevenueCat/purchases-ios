@@ -69,6 +69,7 @@
 		2DC5622E24EC636C0031F69B /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E355CBB3F3A31A32687B14 /* Transaction.swift */; };
 		2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */; };
 		2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597020F24BF6A710010506E /* TransactionsFactory.swift */; };
+		2DD9F4BE274EADC20031AE2C /* Purchases+async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */; };
 		2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E8DCF998D9DB63850F8 /* ProductsRequestFactory.swift */; };
 		2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */; };
 		2DDF419D24F6F331005BC22D /* IntroEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */; };
@@ -374,6 +375,7 @@
 		2DC5621E24EC63430031F69B /* RevenueCatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RevenueCatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC5622524EC63430031F69B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DD269162522A20A006AC4BC /* DictionaryExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryExtensionsTests.swift; sourceTree = "<group>"; };
+		2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+async.swift"; sourceTree = "<group>"; };
 		2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationDispatcher.swift; sourceTree = "<group>"; };
 		2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = verifyReceiptSample1.txt; sourceTree = "<group>"; };
 		2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base64encodedreceiptsample1.txt; sourceTree = "<group>"; };
@@ -1273,6 +1275,7 @@
 				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
 				2DC5621824EC63430031F69B /* RevenueCat.h */,
 				37E355CBB3F3A31A32687B14 /* Transaction.swift */,
+				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -1708,6 +1711,7 @@
 				B3AA6238268B926F00894871 /* SystemInfo.swift in Sources */,
 				2D294E5C26DECFD500B8FE4F /* StoreKit2TransactionListener.swift in Sources */,
 				2DDF41B524F6F387005BC22D /* AppleReceiptBuilder.swift in Sources */,
+				2DD9F4BE274EADC20031AE2C /* Purchases+async.swift in Sources */,
 				B3C4AAD526B8911300E1B3C8 /* Backend.swift in Sources */,
 				B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */,
 				B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */,
