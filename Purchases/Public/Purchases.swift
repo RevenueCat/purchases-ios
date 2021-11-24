@@ -1066,7 +1066,6 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-
     func purchase(package: Package, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (SKPaymentTransaction, CustomerInfo, Bool) {
@@ -1105,6 +1104,36 @@ public extension Purchases {
      */
     @objc func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
         purchasesOrchestrator.syncPurchases(completion: completion)
+    }
+
+    /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and
+     * become associated with the current ``appUserID``.
+     *
+     * If the receipt is being used by an existing user, the current ``appUserID`` will be aliased together with
+     * the `appUserID` of the existing user.
+     * Going forward, either `appUserID` will be able to reference the same user.
+     *
+     * - Warning: This function should only be called if you're not calling any purchase method.
+     *
+     * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
+     * on the device does not contain subscriptions, but the user has made subscription purchases, this method
+     * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func syncPurchases() async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            syncPurchases { maybeCustomerInfo, maybeError in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = maybeCustomerInfo else {
+                    fatalError("Expected non-nil result 'customerInfo' for nil error")
+                }
+                continuation.resume(returning: customerInfo)
+            }
+        }
     }
 
     /**
