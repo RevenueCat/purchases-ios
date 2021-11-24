@@ -1270,6 +1270,31 @@ public extension Purchases {
     }
 
     /**
+     * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
+     *
+     * - Parameter discount: The `SKProductDiscount` to apply to the product.
+     * - Parameter product: The `SKProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
+                         product: SKProduct) async throws -> SKPaymentDiscount {
+        return try await withCheckedThrowingContinuation { continuation in
+            paymentDiscount(forProductDiscount: discount, product: product) { maybeDiscount, maybeError in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let discount = maybeDiscount else {
+                    fatalError("Expected non-nil 'discount' for nil error")
+                }
+                continuation.resume(returning: discount)
+            }
+        }
+    }
+
+    /**
      * Use this function to open the manage subscriptions modal.
      * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
      * If managementURL is not available, the App Store's subscription management section will be opened.
