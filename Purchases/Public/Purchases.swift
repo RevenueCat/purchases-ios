@@ -1309,6 +1309,29 @@ public extension Purchases {
     }
 
     /**
+     * Use this function to open the manage subscriptions modal.
+     * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
+     * If managementURL is not available, the App Store's subscription management section will be opened.
+     *
+     * - Parameter completion: A completion block that is called when the modal is closed.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(iOS 15.0, macOS 12, *)
+    func showManageSubscriptionModal() async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            showManageSubscriptionModal { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: ())
+            }
+        }
+    }
+
+    /**
      * Presents a refund request sheet in the current window scene for
      * the latest transaction associated with the productID
      *

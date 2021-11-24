@@ -40,6 +40,7 @@ func checkPurchasesAPI() {
     checkIdentity(purchases: purch)
     checkPurchasesSubscriberAttributesAPI(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
+    checkPurchasesSupportAPI(purchases: purch)
 }
 
 var periodType: PeriodType!
@@ -143,8 +144,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
             let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) =
             try await purchases.purchase(package: pack, discount: paymentDiscount)
             let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroductoryPriceEligibility([String]())
-
-            let _: SKPaymentDiscount = try await purchases.paymentDiscount(forProductDiscount: productDiscount, product: skp)
+            let _: SKPaymentDiscount = try await purchases.paymentDiscount(forProductDiscount: productDiscount,
+                                                                           product: skp)
         }
     }
 
@@ -186,6 +187,15 @@ private func checkIdentity(purchases: Purchases) {
         Task.init {
             let (_, _): (CustomerInfo, Bool) = try await purchases.logIn("")
             let _: CustomerInfo = try await purchases.logOut()
+        }
+    }
+}
+
+private func checkPurchasesSupportAPI(purchases: Purchases) {
+    purchases.showManageSubscriptionModal { _ in }
+    if #available(iOS 15.0, macOS 12.0, *) {
+        Task.init {
+            try await purchases.showManageSubscriptionModal()
         }
     }
 }
