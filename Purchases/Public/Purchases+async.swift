@@ -195,4 +195,77 @@ extension Purchases {
         }
     }
 
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func restoreTransactionsAsync() async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            restoreTransactions { maybeCustomerInfo, maybeError in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = maybeCustomerInfo else {
+                    fatalError("Expected non-nil result 'customerInfo' for nil error")
+                }
+                continuation.resume(returning: customerInfo)
+            }
+        }
+    }
+
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func checkTrialOrIntroductoryPriceEligibilityAsync(_ productIdentifiers: [String]) async
+    -> [String: IntroEligibility] {
+        return await withCheckedContinuation { continuation in
+            checkTrialOrIntroductoryPriceEligibility(productIdentifiers) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func paymentDiscountAsync(forProductDiscount discount: SKProductDiscount,
+                         product: SKProduct) async throws -> SKPaymentDiscount {
+        return try await withCheckedThrowingContinuation { continuation in
+            paymentDiscount(forProductDiscount: discount, product: product) { maybeDiscount, maybeError in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let discount = maybeDiscount else {
+                    fatalError("Expected non-nil 'discount' for nil error")
+                }
+                continuation.resume(returning: discount)
+            }
+        }
+    }
+
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(iOS 15.0, macOS 12, *)
+    func showManageSubscriptionModalAsync() async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            showManageSubscriptionModal { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: ())
+            }
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc func beginRefundRequestAsync(for productID: String) async throws -> RefundRequestStatus {
+        return try await withCheckedThrowingContinuation { continuation in
+            beginRefundRequest(for: productID) { result, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
 }

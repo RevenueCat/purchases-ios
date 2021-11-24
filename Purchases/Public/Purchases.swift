@@ -1046,18 +1046,7 @@ public extension Purchases {
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func restoreTransactions() async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            restoreTransactions { maybeCustomerInfo, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: customerInfo)
-            }
-        }
+        return try await restoreTransactionsAsync()
     }
 
     /**
@@ -1097,11 +1086,7 @@ public extension Purchases {
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
-        return await withCheckedContinuation { continuation in
-            checkTrialOrIntroductoryPriceEligibility(productIdentifiers) { result in
-                continuation.resume(returning: result)
-            }
-        }
+        return await checkTrialOrIntroductoryPriceEligibilityAsync(productIdentifiers)
     }
 
     /**
@@ -1158,18 +1143,7 @@ public extension Purchases {
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func paymentDiscount(forProductDiscount discount: SKProductDiscount,
                          product: SKProduct) async throws -> SKPaymentDiscount {
-        return try await withCheckedThrowingContinuation { continuation in
-            paymentDiscount(forProductDiscount: discount, product: product) { maybeDiscount, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let discount = maybeDiscount else {
-                    fatalError("Expected non-nil 'discount' for nil error")
-                }
-                continuation.resume(returning: discount)
-            }
-        }
+        return try await paymentDiscountAsync(forProductDiscount: discount, product: product)
     }
 
     /**
@@ -1198,15 +1172,7 @@ public extension Purchases {
     @available(tvOS, unavailable)
     @available(iOS 15.0, macOS 12, *)
     func showManageSubscriptionModal() async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            showManageSubscriptionModal { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                continuation.resume(returning: ())
-            }
-        }
+        return try await showManageSubscriptionModalAsync()
     }
 
     /**
@@ -1241,15 +1207,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
-        return try await withCheckedThrowingContinuation { continuation in
-            beginRefundRequest(for: productID) { result, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                continuation.resume(returning: result)
-            }
-        }
+        return try await beginRefundRequestAsync(for: productID)
     }
 
 }
