@@ -712,7 +712,7 @@ public extension Purchases {
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-    @objc func getOfferings() async throws -> Offerings {
+    func getOfferings() async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
             getOfferings { maybeOfferings, maybeError in
                 if let error = maybeError {
@@ -838,6 +838,47 @@ public extension Purchases {
     func purchase(product: SKProduct, completion: @escaping PurchaseCompletedBlock) {
         let payment: SKMutablePayment = storeKitWrapper.payment(withProduct: product)
         purchase(product: product, payment: payment, presentedOfferingIdentifier: nil, completion: completion)
+    }
+
+    /**
+     * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
+     * If you are using the Offerings system, use ``Purchases/purchase(package:completion:)`` instead.
+     *
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     *
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter product: The `SKProduct` the user intends to purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     *
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     *
+     * If the purchase was not successful, there will be an `NSError`.
+     *
+     * If the user cancelled, `userCancelled` will be `YES`.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next large_tuple
+    func purchase(product: SKProduct) async throws -> (SKPaymentTransaction, CustomerInfo, Bool) {
+        return try await withCheckedThrowingContinuation { continuation in
+            purchase(product: product) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = maybeCustomerInfo else {
+                    fatalError("Expected non-nil result 'customerInfo' for nil error")
+                }
+                guard let transaction = maybeTransaction else {
+                    fatalError("Expected non-nil result 'transaction' for nil error")
+                }
+
+                continuation.resume(returning: (transaction, customerInfo, userCancelled))
+            }
+        }
     }
 
     /**

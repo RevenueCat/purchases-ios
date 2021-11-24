@@ -116,6 +116,12 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack) { _, _, _, _  in }
     purchases.syncPurchases { _, _ in }
 
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        Task.init {
+            let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: skp)
+        }
+    }
+
     let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
