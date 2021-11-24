@@ -904,6 +904,44 @@ public extension Purchases {
     }
 
     /**
+     * Purchase the passed ``Package``.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter package: The ``Package`` the user intends to purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     *
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     *
+     * If the purchase was not successful, there will be an `Error`.
+     *
+     * If the user cancelled, `userCancelled` will be `true`.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next large_tuple
+    func purchase(package: Package) async throws -> (SKPaymentTransaction, CustomerInfo, Bool) {
+        return try await withCheckedThrowingContinuation { continuation in
+            purchase(package: package) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = maybeCustomerInfo else {
+                    fatalError("Expected non-nil result 'customerInfo' for nil error")
+                }
+                guard let transaction = maybeTransaction else {
+                    fatalError("Expected non-nil result 'transaction' for nil error")
+                }
+
+                continuation.resume(returning: (transaction, customerInfo, userCancelled))
+            }
+        }
+    }
+
+    /**
      * Use this function if you are not using the Offerings system to purchase an `SKProduct` with an
      * applied `SKPaymentDiscount`.
      * If you are using the Offerings system, use ``Purchases/purchase(package:discount:completion:)`` instead.
