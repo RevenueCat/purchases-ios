@@ -108,8 +108,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     }
 
     let skp: SKProduct = SKProduct()
-    let skpd: SKProductDiscount = SKProductDiscount()
-    let skmd: SKPaymentDiscount = SKPaymentDiscount()
+    let productDiscount: SKProductDiscount = SKProductDiscount()
+    let paymentDiscount: SKPaymentDiscount = SKPaymentDiscount()
     let pack: Package! = nil
 
     purchases.purchase(product: skp) { _, _, _, _  in }
@@ -127,11 +127,18 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
 
-    purchases.paymentDiscount(forProductDiscount: skpd, product: skp) { _, _ in }
+    purchases.paymentDiscount(forProductDiscount: productDiscount, product: skp) { _, _ in }
 
-    purchases.purchase(product: skp, discount: skmd) { _, _, _, _  in }
-    purchases.purchase(package: pack, discount: skmd) { _, _, _, _  in }
+    purchases.purchase(product: skp, discount: paymentDiscount) { _, _, _, _  in }
+    purchases.purchase(package: pack, discount: paymentDiscount) { _, _, _, _  in }
     purchases.invalidateCustomerInfoCache()
+
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        Task.init {
+            let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) =
+            try await purchases.purchase(product: skp, discount: paymentDiscount)
+        }
+    }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     let beginRefundRequestCompletion: (RefundRequestStatus, Error?) -> Void = { _, _ in }
