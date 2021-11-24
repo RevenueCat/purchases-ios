@@ -1311,8 +1311,7 @@ public extension Purchases {
      * Keep in mind the status could be `userCancelled`
      * If the request was unsuccessful, there will be an `Error`.
      */
-    @available(iOS 15.0, *)
-    @available(macOS, unavailable)
+    @available(iOS 15.0, macOS 12.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
