@@ -1154,6 +1154,35 @@ public extension Purchases {
     }
 
     /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and become
+     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
+     * ``appUserID`` will be aliased together with the `appUserID` of the existing user.
+     *  Going forward, either `appUserID` will be able to reference the same user.
+     *
+     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
+     * by your app passing the same `appUserId` used to purchase originally.
+     *
+     * - Note: This may force your users to enter the App Store password so should only be performed on request of
+     * the user. Typically with a button in settings or near your purchase UI. Use
+     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func restoreTransactions() async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            restoreTransactions { maybeCustomerInfo, maybeError in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = maybeCustomerInfo else {
+                    fatalError("Expected non-nil result 'customerInfo' for nil error")
+                }
+                continuation.resume(returning: customerInfo)
+            }
+        }
+    }
+
+    /**
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
      * You should use this method to determine whether or not you show the user the normal product price or
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).

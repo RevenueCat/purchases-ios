@@ -121,6 +121,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
             let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: skp)
             let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
             let _: CustomerInfo = try await purchases.syncPurchases()
+            let _: CustomerInfo = try await purchases.restoreTransactions()
         }
     }
 
