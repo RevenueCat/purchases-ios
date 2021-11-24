@@ -101,9 +101,9 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
         Task.init {
-            let _: CustomerInfo = try await purchases.getCustomerInfo()
-            let _: [SKProduct] = await purchases.getProducts([String]())
-            let _: Offerings = try await purchases.getOfferings()
+            let _: CustomerInfo = try await purchases.customerInfo()
+            let _: [SKProduct] = await purchases.products([String]())
+            let _: Offerings = try await purchases.offerings()
         }
     }
 

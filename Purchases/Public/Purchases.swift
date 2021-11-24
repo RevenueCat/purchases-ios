@@ -712,7 +712,7 @@ public extension Purchases {
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-    func getOfferings() async throws -> Offerings {
+    func offerings() async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
             getOfferings { maybeOfferings, maybeError in
                 if let error = maybeError {
@@ -749,7 +749,7 @@ public extension Purchases {
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-    func getCustomerInfo() async throws -> CustomerInfo {
+    func customerInfo() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             getCustomerInfo { maybeCustomerInfo, maybeError in
                 if let error = maybeError {
@@ -806,7 +806,7 @@ public extension Purchases {
      * If the fetch fails for any reason it will return an empty array.
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-    func getProducts(_ productIdentifiers: [String]) async -> [SKProduct] {
+    func products(_ productIdentifiers: [String]) async -> [SKProduct] {
         return await withCheckedContinuation { continuation in
             getProducts(productIdentifiers) { result in
                 continuation.resume(returning: result)
