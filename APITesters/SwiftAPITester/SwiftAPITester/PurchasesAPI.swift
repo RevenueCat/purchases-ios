@@ -137,6 +137,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
         Task.init {
             let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) =
             try await purchases.purchase(product: skp, discount: paymentDiscount)
+            let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) =
+            try await purchases.purchase(package: pack, discount: paymentDiscount)
         }
     }
 
