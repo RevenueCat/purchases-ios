@@ -664,10 +664,10 @@ class BackendTests: XCTestCase {
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
-        backend?.getIntroEligibility(appUserID: userID,
-                                     receiptData: Data(),
-                                     productIdentifiers: [],
-                                     completion: { (eligibilities, error) in
+        backend?.fetchIntroEligibility(appUserID: userID,
+                                       receiptData: Data(),
+                                       productIdentifiers: [],
+                                       completion: { (eligibilities, error) in
             expect(error).to(beNil())
         })
         expect(self.httpClient.calls.count).to(equal(0))
@@ -684,10 +684,10 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
-        backend?.getIntroEligibility(appUserID: userID,
-                                     receiptData: Data(1...3),
-                                     productIdentifiers: products,
-                                     completion: {(productEligibility, error) in
+        backend?.fetchIntroEligibility(appUserID: userID,
+                                       receiptData: Data(1...3),
+                                       productIdentifiers: products,
+                                       completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
         })
@@ -722,10 +722,10 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(appUserID: userID,
-                                     receiptData: Data.init(1...2),
-                                     productIdentifiers: products,
-                                     completion: {(productEligibility, error) in
+        backend?.fetchIntroEligibility(appUserID: userID,
+                                       receiptData: Data.init(1...2),
+                                       productIdentifiers: products,
+                                       completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
         })
@@ -744,10 +744,10 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
         let products = ["producta"]
         var eventualError: NSError?
-        backend?.getIntroEligibility(appUserID: "",
-                                     receiptData: Data.init(1...2),
-                                     productIdentifiers: products,
-                                     completion: {(productEligibility, error) in
+        backend?.fetchIntroEligibility(appUserID: "",
+                                       receiptData: Data.init(1...2),
+                                       productIdentifiers: products,
+                                       completion: {(productEligibility, error) in
             eventualError = error as NSError?
             eligibility = productEligibility
         })
@@ -761,10 +761,10 @@ class BackendTests: XCTestCase {
         var wasRequestSent = errorComingFromBackend != nil
         expect(wasRequestSent) == false
 
-        backend?.getIntroEligibility(appUserID: "   ",
-                                     receiptData: Data.init(1...2),
-                                     productIdentifiers: products,
-                                     completion: {(productEligibility, error) in
+        backend?.fetchIntroEligibility(appUserID: "   ",
+                                       receiptData: Data.init(1...2),
+                                       productIdentifiers: products,
+                                       completion: {(productEligibility, error) in
             eventualError = error as NSError?
             eligibility = productEligibility
         })
@@ -798,10 +798,10 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(appUserID: userID,
-                                     receiptData: Data.init(1...2),
-                                     productIdentifiers: products,
-                                     completion: {(productEligbility, error) in
+        backend?.fetchIntroEligibility(appUserID: userID,
+                                       receiptData: Data.init(1...2),
+                                       productIdentifiers: products,
+                                       completion: {(productEligbility, error) in
             expect(error).to(beNil())
             eligibility = productEligbility
         })
@@ -1113,9 +1113,9 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(appUserID: userID,
-                                     receiptData: Data(),
-                                     productIdentifiers: products, completion: {(productEligibility, error) in
+        backend?.fetchIntroEligibility(appUserID: userID,
+                                       receiptData: Data(),
+                                       productIdentifiers: products, completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
         })

@@ -60,9 +60,9 @@ class TrialOrIntroPriceEligibilityChecker {
                                          productIdentifiers: productIdentifiers,
                                          completion: completion)
             } else {
-                self.fetchIntroEligibilityFromBackend(with: maybeData ?? Data(),
-                                                      productIdentifiers: productIdentifiers,
-                                                      completion: completion)
+                self.getIntroEligibility(with: maybeData ?? Data(),
+                                         productIdentifiers: productIdentifiers,
+                                         completion: completion)
             }
         }
     }
@@ -105,7 +105,7 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
                               productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
                 if let error = maybeError {
                     Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
-                    self.fetchIntroEligibilityFromBackend(with: receiptData,
+                    self.getIntroEligibility(with: receiptData,
                                                           productIdentifiers: productIdentifiers,
                                                           completion: completion)
                     return
@@ -121,12 +121,24 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
             }
     }
 
-    func fetchIntroEligibilityFromBackend(with receiptData: Data,
-                                          productIdentifiers: [String],
-                                          completion: @escaping ReceiveIntroEligibilityBlock) {
-        self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                         receiptData: receiptData,
-                                         productIdentifiers: productIdentifiers) { backendResult, maybeError in
+    func getIntroEligibility(with receiptData: Data,
+                             productIdentifiers: [String],
+                             completion: @escaping ReceiveIntroEligibilityBlock) {
+        var productIdsToIntroEligibleStatus: [String: IntroEligibility] = [:]
+        if #available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *) {
+            productIdsToIntroEligibleStatus = productsWithIntroOffers(productIdentifiers: productIdentifiers)
+        }
+
+        // Remove any productIds we already have intro pricing for so we don't try to fetch them from the backend.
+        let idsToFetchFromBackend = productIdentifiers.filter { productIdsToIntroEligibleStatus[$0] == nil }
+        if idsToFetchFromBackend.isEmpty {
+            completion(productIdsToIntroEligibleStatus)
+            return
+        }
+
+        self.backend.fetchIntroEligibility(appUserID: self.appUserID,
+                                           receiptData: receiptData,
+                                           productIdentifiers: productIdentifiers) { backendResult, maybeError in
             var result = backendResult
             if let error = maybeError {
                 Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
@@ -139,6 +151,27 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
                 completion(result)
             }
         }
+    }
+
+    @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
+    func productsWithIntroOffers(productIdentifiers: [String]) -> [String: IntroEligibility] {
+        var productIdsToIntroEligibleStatus: [String: IntroEligibility] = [:]
+        let group = DispatchGroup()
+        group.enter()
+        self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
+            let eligibility: [(String, IntroEligibility)] = Array(products).compactMap {
+                guard $0.introductoryPrice != nil else {
+                    return nil
+                }
+                return ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible))
+            }
+            eligibility.forEach { (productId, eligibility) in
+                productIdsToIntroEligibleStatus[productId] = eligibility
+            }
+            group.leave()
+        }
+        group.wait()
+        return productIdsToIntroEligibleStatus
     }
 
 }
