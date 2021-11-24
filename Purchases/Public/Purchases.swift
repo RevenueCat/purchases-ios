@@ -815,22 +815,7 @@ public extension Purchases {
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     // swiftlint:disable:next large_tuple
     func purchase(product: SKProduct) async throws -> (SKPaymentTransaction, CustomerInfo, Bool) {
-        return try await withCheckedThrowingContinuation { continuation in
-            purchase(product: product) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                guard let transaction = maybeTransaction else {
-                    fatalError("Expected non-nil result 'transaction' for nil error")
-                }
-
-                continuation.resume(returning: (transaction, customerInfo, userCancelled))
-            }
-        }
+        return try await purchaseAsync(product: product)
     }
 
     /**
@@ -875,22 +860,7 @@ public extension Purchases {
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     // swiftlint:disable:next large_tuple
     func purchase(package: Package) async throws -> (SKPaymentTransaction, CustomerInfo, Bool) {
-        return try await withCheckedThrowingContinuation { continuation in
-            purchase(package: package) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                guard let transaction = maybeTransaction else {
-                    fatalError("Expected non-nil result 'transaction' for nil error")
-                }
-
-                continuation.resume(returning: (transaction, customerInfo, userCancelled))
-            }
-        }
+        return try await purchaseAsync(package: package)
     }
 
     /**
@@ -946,24 +916,7 @@ public extension Purchases {
     func purchase(product: SKProduct, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (SKPaymentTransaction, CustomerInfo, Bool) {
-
-        return try await withCheckedThrowingContinuation { continuation in
-            purchase(product: product,
-                     discount: discount) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                guard let transaction = maybeTransaction else {
-                    fatalError("Expected non-nil result 'transaction' for nil error")
-                }
-
-                continuation.resume(returning: (transaction, customerInfo, userCancelled))
-            }
-        }
+        return try await purchaseAsync(product: product, discount: discount)
     }
 
     /**
@@ -1021,23 +974,7 @@ public extension Purchases {
     func purchase(package: Package, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (SKPaymentTransaction, CustomerInfo, Bool) {
-        return try await withCheckedThrowingContinuation { continuation in
-            purchase(package: package,
-                     discount: discount) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                guard let transaction = maybeTransaction else {
-                    fatalError("Expected non-nil result 'transaction' for nil error")
-                }
-
-                continuation.resume(returning: (transaction, customerInfo, userCancelled))
-            }
-        }
+        return try await purchaseAsync(package: package, discount: discount)
     }
 
     /**
@@ -1074,18 +1011,7 @@ public extension Purchases {
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func syncPurchases() async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            syncPurchases { maybeCustomerInfo, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = maybeCustomerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: customerInfo)
-            }
-        }
+        return try await syncPurchasesAsync()
     }
 
     /**
