@@ -12,6 +12,7 @@
 //  Created by Andrés Boedo on 24/11/21.
 
 import Foundation
+import StoreKit
 
 /// This extension holds the biolerplate logic to convert methods with completion blocks into async / await syntax.
 extension Purchases {
@@ -79,5 +80,15 @@ extension Purchases {
             }
         }
     }
+
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func productsAsync(_ productIdentifiers: [String]) async -> [SKProduct] {
+        return await withCheckedContinuation { continuation in
+            getProducts(productIdentifiers) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
 
 }
