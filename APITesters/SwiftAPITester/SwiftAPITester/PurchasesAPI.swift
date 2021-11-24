@@ -103,6 +103,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
         Task.init {
             let _: CustomerInfo = try await purchases.getCustomerInfo()
             let _: [SKProduct] = await purchases.getProducts([String]())
+            let _: Offerings = try await purchases.getOfferings()
         }
     }
 

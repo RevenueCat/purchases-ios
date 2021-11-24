@@ -700,6 +700,33 @@ public extension Purchases {
         offeringsManager.offerings(appUserID: appUserID, completion: completion)
     }
 
+    /**
+     * Fetch the configured offerings for this users. ``Offerings`` allows you to configure your in-app products
+     * via RevenueCat and greatly simplifies management.
+     * See the guide (https://docs.revenuecat.com/entitlements) for more info.
+     *
+     * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,
+     * your prices are loaded for your purchase flow. Time is money.
+     *
+     * - Parameter completion: A completion block called when offerings are available.
+     * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @objc func getOfferings() async throws -> Offerings {
+        return try await withCheckedThrowingContinuation { continuation in
+            getOfferings { maybeOfferings, maybeError in
+                if let error = maybeError {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let offerings = maybeOfferings else {
+                    fatalError("Expected non-nil result 'result' for nil error")
+                }
+                continuation.resume(returning: offerings)
+            }
+        }
+    }
+
 }
 
 // MARK: Purchasing
