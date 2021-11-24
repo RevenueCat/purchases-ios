@@ -94,6 +94,7 @@ private func checkStaticMethods() {
           forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isPurchasesConfigured)
 }
 
+// swiftlint:disable:next function_body_length
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getCustomerInfo { _, _ in }
     purchases.getOfferings { _, _ in }
