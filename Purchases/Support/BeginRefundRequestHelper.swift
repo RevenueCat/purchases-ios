@@ -23,7 +23,6 @@ class BeginRefundRequestHelper {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 15.0, *)
-    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
@@ -38,7 +37,6 @@ class BeginRefundRequestHelper {
      * on the current platform, else passes the request on to `beginRefundRequest(productID:)`.
      */
     @available(iOS 15.0, *)
-    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(productID: String, completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
@@ -58,7 +56,6 @@ class BeginRefundRequestHelper {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
 @available(iOS 15.0, *)
-@available(macOS, unavailable)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension BeginRefundRequestHelper {
@@ -69,7 +66,6 @@ private extension BeginRefundRequestHelper {
      */
     @MainActor
     @available(iOS 15.0, *)
-    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(productID: String) async -> Result<RefundRequestStatus, Error> {

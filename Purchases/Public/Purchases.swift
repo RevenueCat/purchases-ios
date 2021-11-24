@@ -1294,7 +1294,6 @@ public extension Purchases {
      * If the request was unsuccessful, there will be an `Error`.
      */
     @available(iOS 15.0, *)
-    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(for productID: String,
