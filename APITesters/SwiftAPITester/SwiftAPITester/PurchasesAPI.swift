@@ -141,6 +141,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
             try await purchases.purchase(product: skp, discount: paymentDiscount)
             let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) =
             try await purchases.purchase(package: pack, discount: paymentDiscount)
+            let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroductoryPriceEligibility([String]())
         }
     }
 

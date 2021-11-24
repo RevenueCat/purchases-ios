@@ -1201,7 +1201,30 @@ public extension Purchases {
                                                   completion: @escaping ([String: IntroEligibility]) -> Void) {
             trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
                                                                  completion: completion)
+    }
+
+    /**
+     * Computes whether or not a user is eligible for the introductory pricing period of a given product.
+     * You should use this method to determine whether or not you show the user the normal product price or
+     * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+     *
+     * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
+     * definitively compute the eligibilty, most likely because of missing group information, it will return
+     * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
+     * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
+     * version of iOS so that the subscription group can be collected by the SDK.
+     *
+     * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
+     * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+        return await withCheckedContinuation { continuation in
+            checkTrialOrIntroductoryPriceEligibility(productIdentifiers) { result in
+                continuation.resume(returning: result)
+            }
         }
+    }
 
     /**
      * Invalidates the cache for customer information.
