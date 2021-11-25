@@ -531,7 +531,6 @@
 		9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseStrings.swift; sourceTree = "<group>"; };
 		9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreStrings.swift; sourceTree = "<group>"; };
 		A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManager.swift; sourceTree = "<group>"; };
-		A55C3D002734ADB40016E9FD /* SKError+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SKError+Extensions.swift"; sourceTree = "<group>"; };
 		A55D082F2722368600D919E0 /* SK2BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
 		A55D08312722471200D919E0 /* MockSK2BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSK2BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
 		A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBeginRefundRequestHelper.swift; sourceTree = "<group>"; };
@@ -730,14 +729,6 @@
 				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
 			);
 			path = StoreKit1;
-			sourceTree = "<group>";
-		};
-		2D971CBF274432B00093F35F /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				A55C3D002734ADB40016E9FD /* SKError+Extensions.swift */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */ = {
@@ -981,7 +972,6 @@
 				3530C18722653E8F00D6DF52 /* Frameworks */,
 				2DBB3E10269C9B8700BBF431 /* SwiftStyleGuide.swift */,
 				2DEC0CFB24A2A1B100B0E5BB /* Package.swift */,
-				2D971CBF274432B00093F35F /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
