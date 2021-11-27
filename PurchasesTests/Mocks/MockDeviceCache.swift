@@ -55,7 +55,7 @@ class MockDeviceCache: DeviceCache {
 
     override func cachedCustomerInfoData(appUserID: String) -> Data? {
         cachedCustomerInfoCount += 1
-        return cachedCustomerInfo[appUserID];
+        return cachedCustomerInfo[appUserID]
     }
 
     override func isCustomerInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
