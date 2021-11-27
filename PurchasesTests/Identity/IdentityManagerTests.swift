@@ -66,6 +66,18 @@ class IdentityManagerTests: XCTestCase {
         assertCorrectlyIdentified(newManager, expectedAppUserID: newAppUserID)
     }
 
+    func testNilAppUserIDBecomesAnonimous() {
+        assertCorrectlyIdentifiedWithAnonymous(create(appUserID: nil))
+    }
+
+    func testEmptyAppUserIDBecomesAnonymous() {
+        assertCorrectlyIdentifiedWithAnonymous(create(appUserID: ""))
+    }
+
+    func testEmptyAppUserWithSpacesIDBecomesAnonymous() {
+        assertCorrectlyIdentifiedWithAnonymous(create(appUserID: "  "))
+    }
+
     func testMigrationFromRandomIDConfiguringAnonymously() {
         self.mockDeviceCache.stubbedLegacyAppUserID = "an_old_random"
 

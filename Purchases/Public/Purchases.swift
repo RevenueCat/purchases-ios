@@ -1299,7 +1299,8 @@ public extension Purchases {
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
      * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass nil if you want `Purchases` to generate this for you.
+     * purchases and subscriptions across devices. Pass `nil` if you want `Purchases` to generate this for you.
+     * An empty `appUserID` is equivalent to `nil`.
      *
      * - Returns: An instantiated `Purchases` object that has been set as a singleton.
      */
@@ -1317,7 +1318,8 @@ public extension Purchases {
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
      * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass nil if you want `Purchases` to generate this for you.
+     * purchases and subscriptions across devices. Pass `nil` if you want `Purchases` to generate this for you.
+     * An empty `appUserID` is equivalent to `nil`.
      *
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
@@ -1340,7 +1342,8 @@ public extension Purchases {
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
      * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass nil if you want `Purchases` to generate this for you.
+     * purchases and subscriptions across devices. Pass `nil` if you want `Purchases` to generate this for you.
+     * An empty `appUserID` is equivalent to `nil`.
      *
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
