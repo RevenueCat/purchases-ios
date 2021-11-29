@@ -1162,7 +1162,6 @@ public extension Purchases {
         purchasesOrchestrator.showManageSubscriptionModal(completion: completion)
     }
 
-
     /**
      * Use this function to open the manage subscriptions modal.
      * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
