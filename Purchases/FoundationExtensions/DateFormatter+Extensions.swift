@@ -14,32 +14,85 @@
 
 import Foundation
 
-extension DateFormatter {
+/// A type that can convert from and to `Dates`.
+public protocol DateFormatterType {
 
-    static let iso8601SecondsDateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        return dateFormatter
-    }()
+    /// Returns a date representation of a specified string that the system interprets
+    /// using the receiver’s current settings.
+    func string(from date: Date) -> String
+    /// Returns a string representation of a specified date that the system formats
+    /// using the receiver’s current settings.
+    func date(from string: String) -> Date?
 
-    static func date(fromISO8601SecondsOrMillisecondsString maybeDateString: String?) -> Date? {
-        return (Self.iso8601SecondsDateFormatter.date(fromString: maybeDateString)
-            ?? Self.iso8601MilliSecondsDateFormatter.date(fromString: maybeDateString))
-    }
+    /// Creates a `JSONDecoder.DateDecodingStrategy` from `self`
+    var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy { get }
+}
 
-    func date(fromString maybeDateString: String?) -> Date? {
-        guard let dateString = maybeDateString else { return nil }
-        return date(from: dateString)
+extension DateFormatter: DateFormatterType {
+
+    public var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
+        return .formatted(self)
     }
 
 }
 
-private extension DateFormatter {
+extension ISO8601DateFormatter: DateFormatterType {
 
-    static let iso8601MilliSecondsDateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-        return dateFormatter
+    public var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
+        return .iso8601
+    }
+
+}
+
+internal extension ISO8601DateFormatter {
+
+    private static let withMilliseconds: DateFormatterType = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
+
+        return formatter
     }()
+
+    private static let noMilliseconds: DateFormatterType = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [
+            .withInternetDateTime
+        ]
+
+        return formatter
+    }()
+
+    /// This behaves like a traditional `DateFormatter` with format
+    /// `yyyy-MM-dd'T'HH:mm:ssZ"`, so milliseconds are optional.
+    static let `default`: DateFormatterType = {
+        final class Formatter: DateFormatterType {
+            func date(from string: String) -> Date? {
+                return ISO8601DateFormatter.withMilliseconds.date(from: string)
+                    ?? ISO8601DateFormatter.noMilliseconds.date(from: string)
+            }
+
+            func string(from date: Date) -> String {
+                return ISO8601DateFormatter.withMilliseconds.string(from: date)
+            }
+
+            var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
+                return .iso8601
+            }
+        }
+
+        return Formatter()
+    }()
+
+}
+
+internal extension DateFormatterType {
+
+    func date(from maybeDateString: String?) -> Date? {
+        guard let dateString = maybeDateString else { return nil }
+        return date(from: dateString)
+    }
 
 }

@@ -246,7 +246,7 @@ import Foundation
                   entitlementData: entitlementData,
                   productData: productData,
                   requestDate: requestDate,
-                  dateFormatter: .iso8601SecondsDateFormatter,
+                  dateFormatter: ISO8601DateFormatter.default,
                   jsonDecoder: JSONDecoder())
     }
 
@@ -254,13 +254,13 @@ import Foundation
           entitlementData entitlementDataDict: [String: Any],
           productData productDataDict: [String: Any],
           requestDate: Date?,
-          dateFormatter: DateFormatter,
+          dateFormatter: DateFormatterType,
           jsonDecoder: JSONDecoder) {
         // Entitlement data
         guard let entitlementData: EntitlementData = try? jsonDecoder.decode(
             dictionary: entitlementDataDict,
             keyDecodingStrategy: .convertFromSnakeCase,
-            dateDecodingStrategy: .formatted(dateFormatter)
+            dateDecodingStrategy: dateFormatter.dateDecodingStrategy
         ) else {
             return nil
         }
@@ -269,7 +269,7 @@ import Foundation
         guard let productData: ProductData = try? jsonDecoder.decode(
             dictionary: productDataDict,
             keyDecodingStrategy: .convertFromSnakeCase,
-            dateDecodingStrategy: .formatted(dateFormatter)
+            dateDecodingStrategy: dateFormatter.dateDecodingStrategy
         ) else {
             return nil
         }
