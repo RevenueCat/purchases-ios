@@ -28,7 +28,7 @@ public typealias SK2Product = StoreKit.Product
         super.init()
 
         if self.localizedTitle.isEmpty {
-            Logger.warn("Empty Product titles are not supported: \(self)")
+            Logger.warn(Strings.offering.product_details_empty_title(productIdentifier: self.productIdentifier))
         }
     }
 
