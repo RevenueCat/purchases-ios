@@ -18,7 +18,7 @@ import StoreKit
 extension Purchases {
 
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-    func logInAsync(_ appUserID: String) async throws -> (CustomerInfo, Bool) {
+    func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             logIn(appUserID) { maybeCustomerInfo, created, maybeError in
                 if let error = maybeError {

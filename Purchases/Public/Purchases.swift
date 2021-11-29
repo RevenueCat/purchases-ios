@@ -627,7 +627,7 @@ public extension Purchases {
      * See https://docs.revenuecat.com/docs/user-ids
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-    func logIn(_ appUserID: String) async throws -> (CustomerInfo, Bool) {
+    func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await logInAsync(appUserID)
     }
 
