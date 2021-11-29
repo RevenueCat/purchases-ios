@@ -91,8 +91,8 @@ extension Purchases {
     }
 
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-    // swiftlint:disable:next large_tuple
     func purchaseAsync(product: SKProduct) async throws ->
+    // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
@@ -113,8 +113,8 @@ extension Purchases {
     }
 
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
-    // swiftlint:disable:next large_tuple
     func purchaseAsync(package: Package) async throws ->
+    // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
