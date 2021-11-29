@@ -173,6 +173,18 @@ class AttributionPosterTests: XCTestCase {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
+    func testPostAppleSearchAdsAttributionIfNeededSkipsIfIAdFrameworkNotIncluded() {
+        MockAttributionTypeFactory.shouldReturnAdClientProxy = false
+        MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
+
+        self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
+
+        expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
+    }
+
+    // `MockTrackingManagerProxy.mockAuthorizationStatus isn't available on tvOS
+    #if os(iOS)
+    
     func testPostAppleSearchAdsAttributionIfNeededPostsIfATTFrameworkNotIncludedOnOldOS() throws {
         guard #available(iOS 14, *) else { throw XCTSkip() }
 
@@ -183,15 +195,6 @@ class AttributionPosterTests: XCTestCase {
         self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
         expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
-    }
-
-    func testPostAppleSearchAdsAttributionIfNeededSkipsIfIAdFrameworkNotIncluded() {
-        MockAttributionTypeFactory.shouldReturnAdClientProxy = false
-        MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
-
-        self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
-
-        expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
     }
 
     func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorizedOnNewOS() throws {
@@ -291,4 +294,5 @@ class AttributionPosterTests: XCTestCase {
         expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
     }
 
+    #endif
 }
