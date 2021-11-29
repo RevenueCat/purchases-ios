@@ -53,6 +53,12 @@ class IdentityManagerTests: XCTestCase {
         assertCorrectlyIdentified(manager, expectedAppUserID: "cesar")
     }
 
+    func testAppUserIDDoesNotTrimTrailingOrLeadingSpaces() {
+        let name = "  user with spaces "
+        let manager = create(appUserID: name)
+        assertCorrectlyIdentified(manager, expectedAppUserID: name)
+    }
+
     func testConfigureCleansUpSubscriberAttributes() {
         _ = create(appUserID: "andy")
         expect(self.mockDeviceCache.invokedCleanupSubscriberAttributesCount) == 1
