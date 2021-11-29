@@ -286,6 +286,7 @@ class PurchasesOrchestrator {
 #if os(iOS)
 
     @available(iOS 15.0, *)
+    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(for productID: String, completion: @escaping (RefundRequestStatus, Error?) -> Void) {

@@ -23,6 +23,7 @@ class BeginRefundRequestHelper {
 
 #if os(iOS)
     @available(iOS 15.0, *)
+    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
@@ -54,6 +55,7 @@ class BeginRefundRequestHelper {
 
 #if os(iOS)
 @available(iOS 15.0, *)
+@available(macOS, unavailable)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension BeginRefundRequestHelper {
@@ -63,9 +65,6 @@ private extension BeginRefundRequestHelper {
      * transaction before calling into `SK2BeginRefundRequestHelper`'s `initiateRefundRequest`.
      */
     @MainActor
-    @available(iOS 15.0, *)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     func beginRefundRequest(productID: String) async -> Result<RefundRequestStatus, Error> {
         guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
             return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
