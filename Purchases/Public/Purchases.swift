@@ -1103,7 +1103,7 @@ public extension Purchases {
         customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
     }
 
-    #if os(iOS)
+#if os(iOS)
     /**
      * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
      */
@@ -1114,7 +1114,7 @@ public extension Purchases {
     @objc func presentCodeRedemptionSheet() {
         storeKitWrapper.presentCodeRedemptionSheet()
     }
-    #endif
+#endif
 
     /**
      * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
@@ -1146,6 +1146,8 @@ public extension Purchases {
         return try await paymentDiscountAsync(forProductDiscount: discount, product: product)
     }
 
+#if os(iOS) || os(macOS)
+
     /**
      * Use this function to open the manage subscriptions modal.
      * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
@@ -1159,6 +1161,7 @@ public extension Purchases {
     @objc func showManageSubscriptionModal(completion: @escaping (Error?) -> Void) {
         purchasesOrchestrator.showManageSubscriptionModal(completion: completion)
     }
+
 
     /**
      * Use this function to open the manage subscriptions modal.
@@ -1175,6 +1178,10 @@ public extension Purchases {
         return try await showManageSubscriptionModalAsync()
     }
 
+#endif
+
+#if os(iOS)
+
     /**
      * Presents a refund request sheet in the current window scene for
      * the latest transaction associated with the productID
@@ -1186,6 +1193,7 @@ public extension Purchases {
      * If the request was unsuccessful, there will be an `Error`.
      */
     @available(iOS 15.0, *)
+    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(for productID: String,
@@ -1203,12 +1211,15 @@ public extension Purchases {
      * Keep in mind the status could be `userCancelled`
      * If the request was unsuccessful, there will be an `Error`.
      */
-    @available(iOS 15.0, macOS 12.0, *)
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
         return try await beginRefundRequestAsync(for: productID)
     }
+
+#endif
 
 }
 

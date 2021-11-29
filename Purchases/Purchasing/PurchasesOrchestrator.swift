@@ -267,6 +267,8 @@ class PurchasesOrchestrator {
         storeKitWrapper.add(payment)
     }
 
+#if os(iOS) || os(macOS)
+
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showManageSubscriptionModal(completion: @escaping (Error?) -> Void) {
@@ -279,6 +281,9 @@ class PurchasesOrchestrator {
             }
         }
     }
+#endif
+
+#if os(iOS)
 
     @available(iOS 15.0, *)
     @available(watchOS, unavailable)
@@ -293,6 +298,8 @@ class PurchasesOrchestrator {
             }
         }
     }
+
+#endif
 
 }
 

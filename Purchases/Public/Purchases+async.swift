@@ -238,9 +238,12 @@ extension Purchases {
         }
     }
 
+
+#if os(iOS) || os(macOS)
+
+    @available(iOS 15.0, macOS 12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @available(iOS 15.0, macOS 12, *)
     func showManageSubscriptionModalAsync() async throws {
         return try await withCheckedThrowingContinuation { continuation in
             showManageSubscriptionModal { error in
@@ -253,7 +256,12 @@ extension Purchases {
         }
     }
 
-    @available(iOS 15.0, macOS 12.0, *)
+#endif
+
+#if os(iOS)
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequestAsync(for productID: String) async throws -> RefundRequestStatus {
@@ -267,5 +275,7 @@ extension Purchases {
             }
         }
     }
+
+#endif
 
 }
