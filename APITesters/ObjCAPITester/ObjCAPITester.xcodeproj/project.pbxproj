@@ -24,38 +24,12 @@
 		2DD77914270E23870079CBD4 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */; };
 		2DD77915270E23870079CBD4 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
 		2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
-		575885A02748274600CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859F2748274600CA2169 /* RevenueCat.framework */; };
-		575885A12748274600CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859F2748274600CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		575885A42748274E00CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 575885A32748274E00CA2169 /* RevenueCat.framework */; };
 		575885A52748274E00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 575885A32748274E00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A513AD31272B327A00E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
 		A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
-		A519264D26EBCEF6007D0BD1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A519264C26EBCEF6007D0BD1 /* main.m */; };
-		A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */; };
-		A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
-		A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */; };
-		A5D614FE26EBE84F007DDB75 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614E926EBE84F007DDB75 /* RCEntitlementInfosAPI.m */; };
-		A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
-		A5D6150026EBE84F007DDB75 /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */; };
-		A5D6150126EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */; };
-		A5D6150226EBE84F007DDB75 /* RCCustomerInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */; };
-		A5D6150326EBE84F007DDB75 /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */; };
-		A5D6150426EBE84F007DDB75 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
-		A5D6150626EBE84F007DDB75 /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		575885A22748274600CA2169 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				575885A12748274600CA2169 /* RevenueCat.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		575885A62748274E00CA2169 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -67,19 +41,10 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A519264726EBCEF6007D0BD1 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2DD778F5270E235B0079CBD4 /* ObjCAPITesterIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjCAPITesterIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DD778F5270E235B0079CBD4 /* ObjCAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjCAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DD778F7270E235B0079CBD4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2DD778F9270E235B0079CBD4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2DD778FB270E235B0079CBD4 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -93,7 +58,6 @@
 		575885A32748274E00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCRefundRequestStatusAPI.h; sourceTree = "<group>"; };
 		A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCRefundRequestStatusAPI.m; sourceTree = "<group>"; };
-		A519264926EBCEF6007D0BD1 /* ObjCAPITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjCAPITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		A519264C26EBCEF6007D0BD1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingsAPI.m; sourceTree = "<group>"; };
 		A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
@@ -128,14 +92,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A519264626EBCEF6007D0BD1 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				575885A02748274600CA2169 /* RevenueCat.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -166,8 +122,7 @@
 		A519264A26EBCEF6007D0BD1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A519264926EBCEF6007D0BD1 /* ObjCAPITester */,
-				2DD778F5270E235B0079CBD4 /* ObjCAPITesterIOS.app */,
+				2DD778F5270E235B0079CBD4 /* ObjCAPITester.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -218,9 +173,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2DD778F4270E235B0079CBD4 /* ObjCAPITesterIOS */ = {
+		2DD778F4270E235B0079CBD4 /* ObjCAPITester */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2DD77908270E235C0079CBD4 /* Build configuration list for PBXNativeTarget "ObjCAPITesterIOS" */;
+			buildConfigurationList = 2DD77908270E235C0079CBD4 /* Build configuration list for PBXNativeTarget "ObjCAPITester" */;
 			buildPhases = (
 				2DD778F1270E235B0079CBD4 /* Sources */,
 				2DD778F2270E235B0079CBD4 /* Frameworks */,
@@ -231,32 +186,12 @@
 			);
 			dependencies = (
 			);
-			name = ObjCAPITesterIOS;
-			packageProductDependencies = (
-			);
-			productName = ObjCAPITesterIOS;
-			productReference = 2DD778F5270E235B0079CBD4 /* ObjCAPITesterIOS.app */;
-			productType = "com.apple.product-type.application";
-		};
-		A519264826EBCEF6007D0BD1 /* ObjCAPITester */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A519265026EBCEF6007D0BD1 /* Build configuration list for PBXNativeTarget "ObjCAPITester" */;
-			buildPhases = (
-				A519264526EBCEF6007D0BD1 /* Sources */,
-				A519264626EBCEF6007D0BD1 /* Frameworks */,
-				A519264726EBCEF6007D0BD1 /* CopyFiles */,
-				575885A22748274600CA2169 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
 			name = ObjCAPITester;
 			packageProductDependencies = (
 			);
-			productName = ObjCAPITester;
-			productReference = A519264926EBCEF6007D0BD1 /* ObjCAPITester */;
-			productType = "com.apple.product-type.tool";
+			productName = ObjCAPITesterIOS;
+			productReference = 2DD778F5270E235B0079CBD4 /* ObjCAPITester.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -270,10 +205,6 @@
 				TargetAttributes = {
 					2DD778F4270E235B0079CBD4 = {
 						CreatedOnToolsVersion = 13.0;
-					};
-					A519264826EBCEF6007D0BD1 = {
-						CreatedOnToolsVersion = 13.0;
-						LastSwiftMigration = 1300;
 					};
 				};
 			};
@@ -292,8 +223,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A519264826EBCEF6007D0BD1 /* ObjCAPITester */,
-				2DD778F4270E235B0079CBD4 /* ObjCAPITesterIOS */,
+				2DD778F4270E235B0079CBD4 /* ObjCAPITester */,
 			);
 		};
 /* End PBXProject section */
@@ -334,26 +264,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A519264526EBCEF6007D0BD1 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A5D6150326EBE84F007DDB75 /* RCIntroEligibilityAPI.m in Sources */,
-				A5D6150226EBE84F007DDB75 /* RCCustomerInfoAPI.m in Sources */,
-				A519264D26EBCEF6007D0BD1 /* main.m in Sources */,
-				A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */,
-				A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */,
-				A5D6150626EBE84F007DDB75 /* RCEntitlementInfoAPI.m in Sources */,
-				A513AD31272B327A00E0C1BA /* RCRefundRequestStatusAPI.m in Sources */,
-				A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */,
-				A5D6150126EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m in Sources */,
-				A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */,
-				A5D6150426EBE84F007DDB75 /* RCTransactionAPI.m in Sources */,
-				A5D6150026EBE84F007DDB75 /* RCPurchasesAPI.m in Sources */,
-				A5D614FE26EBE84F007DDB75 /* RCEntitlementInfosAPI.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
@@ -379,6 +289,7 @@
 		2DD77906270E235C0079CBD4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -401,7 +312,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.ObjCAPITesterIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.ObjCAPITesterIOS";
-				SDKROOT = iphoneos;
+				SDKROOT = "";
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -413,6 +326,7 @@
 		2DD77907270E235C0079CBD4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -432,10 +346,12 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.ObjCAPITesterIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.sampleapp";
-				SDKROOT = iphoneos;
+				SDKROOT = "";
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -556,47 +472,10 @@
 			};
 			name = Release;
 		};
-		A519265126EBCEF6007D0BD1 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		A519265226EBCEF6007D0BD1 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2DD77908270E235C0079CBD4 /* Build configuration list for PBXNativeTarget "ObjCAPITesterIOS" */ = {
+		2DD77908270E235C0079CBD4 /* Build configuration list for PBXNativeTarget "ObjCAPITester" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2DD77906270E235C0079CBD4 /* Debug */,
@@ -610,15 +489,6 @@
 			buildConfigurations = (
 				A519264E26EBCEF6007D0BD1 /* Debug */,
 				A519264F26EBCEF6007D0BD1 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A519265026EBCEF6007D0BD1 /* Build configuration list for PBXNativeTarget "ObjCAPITester" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A519265126EBCEF6007D0BD1 /* Debug */,
-				A519265226EBCEF6007D0BD1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
