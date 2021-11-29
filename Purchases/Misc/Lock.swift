@@ -18,11 +18,11 @@ internal final class Lock {
     private let recursiveLock = NSRecursiveLock()
 
     @discardableResult
-    func perform<T>(_ block: () -> T) -> T {
+    func perform<T>(_ block: () throws -> T) rethrows -> T {
         recursiveLock.lock()
         defer { recursiveLock.unlock() }
 
-        return block()
+        return try block()
     }
 
 }

@@ -16,19 +16,17 @@ import Foundation
 
 class InMemoryCachedObject<T> {
 
+    private typealias Data = (cachedObject: T?, lastUpdated: Date?)
+
+    private let content: Atomic<Data> = .init((nil, nil))
+
     var lastUpdatedAt: Date? {
-        accessQueue.sync {
-            return lastUpdated
-        }
+        return self.content.value.lastUpdated
     }
 
-    private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
-    private var lastUpdated: Date?
-    private var cachedObject: T?
-
     func isCacheStale(durationInSeconds: Double) -> Bool {
-        accessQueue.sync {
-            guard let lastUpdated = lastUpdated else {
+        return self.content.withValue {
+            guard let lastUpdated = $0.lastUpdated else {
                 return true
             }
 
@@ -38,45 +36,30 @@ class InMemoryCachedObject<T> {
     }
 
     func clearCacheTimestamp() {
-        accessQueue.executeByLockingDatasource {
-            self.lastUpdated = nil
-        }
+        self.content.modify { $0.lastUpdated = nil }
     }
 
     func clearCache() {
-        accessQueue.executeByLockingDatasource {
-            self.lastUpdated = nil
-            self.cachedObject = nil
+        self.content.modify {
+            $0.cachedObject = nil
+            $0.lastUpdated = nil
         }
     }
 
     func updateCacheTimestamp(date: Date) {
-        accessQueue.executeByLockingDatasource {
-            self.lastUpdated = date
+        self.content.modify {
+            $0.lastUpdated = date
         }
     }
 
     func cache(instance: T) {
-        accessQueue.executeByLockingDatasource {
-            self.lastUpdated = Date()
-            self.cachedObject = instance
+        self.content.modify {
+            $0.lastUpdated = Date()
+            $0.cachedObject = instance
         }
     }
 
     func cachedInstance() -> T? {
-        accessQueue.sync {
-            return cachedObject
-        }
+        return self.content.value.cachedObject
     }
-
-}
-
-private extension DispatchQueue {
-
-    func executeByLockingDatasource<T>(execute work: () throws -> T) rethrows -> T {
-        // .barrier is not needed here because we're using `.sync` instead of the normal .async multi-reader
-        // single-writer dispatch queue synchronization pattern.
-        return try sync(execute: work)
-    }
-
 }
