@@ -80,12 +80,28 @@ class CatsViewController: UIViewController {
     @objc func beginRefundButtonTapped() {
         if #available(iOS 15.0, *) {
             // refund for pro_cat's productID
-            Purchases.shared.beginRefundRequest(for: "com.revenuecat.purchaseTester.annual_39.99.2_week_intro")
-            { status, maybeError in
-                switch status {
-                case .success: print("Refund request submitted!")
-                case .userCancelled: print("Refund request cancelled")
-                case .error: print("Issue submitting refund request: \(maybeError?.localizedDescription ?? "")")
+            _ = Task<Void, Never> {
+                do {
+                    let customerInfo = try await Purchases.shared.customerInfo()
+                    guard let activeEntitlement = customerInfo.entitlements.active.first else {
+                        print("no current entitlement available, can't begin a refund request!")
+                        return
+                    }
+
+                    let productID = activeEntitlement.value.productIdentifier
+
+                    Purchases.shared.beginRefundRequest(for: productID)
+                    { status, maybeError in
+                        switch status {
+                        case .success: print("Refund request submitted!")
+                        case .userCancelled: print("Refund request cancelled")
+                        case .error: print("Issue submitting refund request: \(maybeError?.localizedDescription ?? "")")
+                        }
+                    }
+
+                }
+                catch {
+                    print("Couldn't fetch customerInfo! Details: \(error.localizedDescription)")
                 }
             }
         } else {
