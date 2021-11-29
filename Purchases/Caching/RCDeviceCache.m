@@ -99,23 +99,24 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
 }
 
 - (void)cacheAppUserID:(NSString *)appUserID {
-    @synchronized (self) {
-        [self.userDefaults setObject:appUserID forKey:RCAppUserDefaultsKey];
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
+        [userDefaults setObject:appUserID forKey:RCAppUserDefaultsKey];
+
         self.appUserIDHasBeenSet = YES;
-    }
+    }];
 }
 
 - (void)clearCachesForAppUserID:(NSString *)oldAppUserID andSaveNewUserID:(NSString *)newUserID {
-    @synchronized (self) {
-        [self.userDefaults removeObjectForKey:RCLegacyGeneratedAppUserDefaultsKey];
-        [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:oldAppUserID]];
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
+        [userDefaults removeObjectForKey:RCLegacyGeneratedAppUserDefaultsKey];
+        [userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:oldAppUserID]];
         [self clearPurchaserInfoCacheTimestampForAppUserID:oldAppUserID];
         [self clearOfferingsCache];
 
         [self deleteAttributesIfSyncedForAppUserID:oldAppUserID];
 
         [self cacheAppUserID:newUserID];
-    }
+    }];
 }
 
 #pragma mark - purchaserInfo
@@ -125,11 +126,11 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
 }
 
 - (void)cachePurchaserInfo:(NSData *)data forAppUserID:(NSString *)appUserID {
-    @synchronized (self) {
-        [self.userDefaults setObject:data
-                              forKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
+        [userDefaults setObject:data
+                         forKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
         [self setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
-    }
+    }];
 }
 
 - (BOOL)isPurchaserInfoCacheStaleForAppUserID:(NSString *)appUserID isAppBackgrounded:(BOOL)isAppBackgrounded {
@@ -149,14 +150,17 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
 
 - (void)clearPurchaserInfoCacheTimestampForAppUserID:(NSString *)appUserID {
     NSString *cacheKey = [self purchaserInfoLastUpdatedCacheKeyForAppUserID:appUserID];
-    [self.userDefaults removeObjectForKey:cacheKey];
+
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
+        [userDefaults removeObjectForKey:cacheKey];
+    }];
 }
 
 - (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID {
-    @synchronized (self) {
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
         [self clearPurchaserInfoCacheTimestampForAppUserID:appUserID];
-        [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
-    }
+        [userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
+    }];
 }
 
 - (void)setPurchaserInfoCacheTimestampToNowForAppUserID:(NSString *)appUserID {
@@ -165,7 +169,10 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
 
 - (void)setPurchaserInfoCacheTimestamp:(NSDate *)timestamp forAppUserID:(NSString *)appUserID {
     NSString *cacheKey = [self purchaserInfoLastUpdatedCacheKeyForAppUserID:appUserID];
-    [self.userDefaults setObject:timestamp forKey:cacheKey];
+
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
+        [userDefaults setObject:timestamp forKey:cacheKey];
+    }];
 }
 
 - (nullable NSDate *)purchaserInfoCachesLastUpdatedForAppUserID:(NSString *)appUserID {
@@ -288,7 +295,9 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
 }
 
 - (void)storeAttributesForAllUsers:(NSMutableDictionary<NSString *, NSDictionary *> *)groupedAttributes {
-    [self.userDefaults setObject:groupedAttributes forKey:RCSubscriberAttributesKey];
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
+        [userDefaults setObject:groupedAttributes forKey:RCSubscriberAttributesKey];
+    }];
 }
 
 - (NSDictionary<NSString *, RCSubscriberAttributeDict> *)unsyncedAttributesForAllUsers {
@@ -414,17 +423,36 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
 - (void)setLatestNetworkAndAdvertisingIdsSent:(nullable NSDictionary *)latestNetworkAndAdvertisingIdsSent
                                  forAppUserID:(nullable NSString *)appUserID {
     NSString *cacheKey = [self attributionDataCacheKeyForAppForAppUserID:appUserID];
-    [self.userDefaults setObject:latestNetworkAndAdvertisingIdsSent
-                          forKey:cacheKey];
+
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
+        [userDefaults setObject:latestNetworkAndAdvertisingIdsSent
+                         forKey:cacheKey];
+    }];
 }
 
 - (void)clearLatestNetworkAndAdvertisingIdsSentForAppUserID:(nullable NSString *)appUserID {
     NSString *cacheKey = [self attributionDataCacheKeyForAppForAppUserID:appUserID];
-    [self.userDefaults removeObjectForKey:cacheKey];
+
+    [self storeInUserDefaults:^(NSUserDefaults *userDefaults) {
+        [userDefaults removeObjectForKey:cacheKey];
+    }];
 }
 
 - (NSString *)attributionDataCacheKeyForAppForAppUserID:(NSString *)appUserID {
     return [RCAttributionDataDefaultsKeyBase stringByAppendingString:appUserID];
+}
+
+#pragma mark - user defaults
+
+/**
+ * Invokes the given block and synchronizes `NSUserDefaults` afterwards.
+ */
+- (void)storeInUserDefaults:(void(^)(NSUserDefaults *))block {
+    @synchronized (self) {
+        block(self.userDefaults);
+
+        [self.userDefaults synchronize];
+    }
 }
 
 @end
