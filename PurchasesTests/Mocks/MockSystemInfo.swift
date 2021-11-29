@@ -13,6 +13,12 @@ import Foundation
 class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
 
+    convenience init(finishTransactions: Bool) {
+        try! self.init(platformFlavor: nil,
+                       platformFlavorVersion: nil,
+                       finishTransactions: finishTransactions)
+    }
+
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
         completion(stubbedIsApplicationBackgrounded ?? false)
     }

@@ -12,14 +12,7 @@ class IdentityManagerTests: XCTestCase {
 
     private var mockDeviceCache: MockDeviceCache!
     private let mockBackend = MockBackend()
-    private let mockCustomerInfoManager = MockCustomerInfoManager(
-        operationDispatcher: MockOperationDispatcher(),
-        deviceCache: MockDeviceCache(),
-        backend: MockBackend(),
-        systemInfo: try! MockSystemInfo(platformFlavor: nil,
-                                        platformFlavorVersion: nil,
-                                        finishTransactions: false)
-    )
+    private var mockCustomerInfoManager: MockCustomerInfoManager!
 
     private let mockCustomerInfo = CustomerInfo(testData: [
         "request_date": "2019-08-16T10:30:42Z",
@@ -40,7 +33,13 @@ class IdentityManagerTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        self.mockDeviceCache = MockDeviceCache()
+        let systemInfo = MockSystemInfo(finishTransactions: false)
+
+        self.mockDeviceCache = MockDeviceCache(systemInfo: systemInfo)
+        self.mockCustomerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
+                                                               deviceCache: self.mockDeviceCache,
+                                                               backend: MockBackend(),
+                                                               systemInfo: systemInfo)
     }
 
     func testConfigureWithAnonymousUserIDGeneratesAnAppUserID() {

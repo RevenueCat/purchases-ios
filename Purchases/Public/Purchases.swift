@@ -252,7 +252,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let storeKitWrapper = StoreKitWrapper()
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
-        let deviceCache = DeviceCache(userDefaults: userDefaults)
+        let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
         let receiptParser = ReceiptParser()
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
                                                         deviceCache: deviceCache,

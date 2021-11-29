@@ -7,7 +7,7 @@ class CustomerInfoManagerTests: XCTestCase {
     var mockBackend = MockBackend()
     var mockOperationDispatcher = MockOperationDispatcher()
     var mockDeviceCache: MockDeviceCache!
-    var mockSystemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+    var mockSystemInfo = MockSystemInfo(finishTransactions: true)
     let mockCustomerInfo = CustomerInfo(testData: [
         "request_date": "2018-12-21T02:40:36Z",
         "subscriber": [
@@ -25,7 +25,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        mockDeviceCache = MockDeviceCache()
+        mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         customerInfoManagerDelegateCallCount = 0
         customerInfoManagerDelegateCallCustomerInfo = nil
         customerInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,

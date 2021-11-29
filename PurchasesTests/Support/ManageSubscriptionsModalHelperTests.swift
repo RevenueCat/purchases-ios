@@ -40,7 +40,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        systemInfo = try MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
+        systemInfo = MockSystemInfo()
         customerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
                                                       deviceCache: MockDeviceCache(),
                                                       backend: MockBackend(),

@@ -29,12 +29,14 @@ class SubscriberAttributesManagerTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.mockDeviceCache = MockDeviceCache()
+        let systemInfo = try MockSystemInfo(platformFlavor: "iOS",
+                                            platformFlavorVersion: "3.2.1",
+                                            finishTransactions: true)
+
+        self.mockDeviceCache = MockDeviceCache(systemInfo: systemInfo)
         self.mockBackend = MockBackend()
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
-                                                             systemInfo: try MockSystemInfo(platformFlavor: "iOS",
-                                                                                            platformFlavorVersion: "3.2.1",
-                                                                                            finishTransactions: true))
+                                                             systemInfo: systemInfo)
         self.mockAttributionDataMigrator = MockAttributionDataMigrator()
         self.subscriberAttributesManager = SubscriberAttributesManager(backend: mockBackend,
                                                                          deviceCache: mockDeviceCache,
