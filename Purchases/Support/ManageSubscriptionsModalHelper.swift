@@ -27,6 +27,8 @@ class ManageSubscriptionsModalHelper {
         self.identityManager = identityManager
     }
 
+#if os(iOS) || os(macOS)
+
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showManageSubscriptionModal(completion: @escaping (Result<Void, Error>) -> Void) {
@@ -63,6 +65,8 @@ class ManageSubscriptionsModalHelper {
             self.openURL(managementURL, completion: completion)
         }
     }
+
+#endif
 
 }
 

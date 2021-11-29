@@ -21,8 +21,9 @@ class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS)
     @available(iOS 15.0, *)
+    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
@@ -32,30 +33,29 @@ class BeginRefundRequestHelper {
         self.systemInfo = systemInfo
     }
 
+#if os(iOS)
     /*
      * Entry point for beginning the refund request. fatalErrors if beginning a refund request is not supported
      * on the current platform, else passes the request on to `beginRefundRequest(productID:)`.
      */
     @available(iOS 15.0, *)
+    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(productID: String, completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
-#if os(iOS) || targetEnvironment(macCatalyst)
         _ = Task<Void, Never> {
             let result = await self.beginRefundRequest(productID: productID)
             completion(result)
         }
 
         return
-#else
-        fatalError(Strings.purchase.begin_refund_request_unsupported.description)
-#endif
     }
-
+#endif
 }
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS)
 @available(iOS 15.0, *)
+@available(macOS, unavailable)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension BeginRefundRequestHelper {
@@ -65,9 +65,6 @@ private extension BeginRefundRequestHelper {
      * transaction before calling into `SK2BeginRefundRequestHelper`'s `initiateRefundRequest`.
      */
     @MainActor
-    @available(iOS 15.0, *)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     func beginRefundRequest(productID: String) async -> Result<RefundRequestStatus, Error> {
         guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
             return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
@@ -92,9 +89,9 @@ private extension BeginRefundRequestHelper {
 
     /// User canceled submission of the refund request.
     @objc(RCRefundRequestUserCancelled) case userCancelled = 0
-     /// Apple has received the refund request.
+    /// Apple has received the refund request.
     @objc(RCRefundRequestSuccess) case success
-     /// There was an error with the request. See message for more details.
+    /// There was an error with the request. See message for more details.
     @objc(RCRefundRequestError) case error
 
 }

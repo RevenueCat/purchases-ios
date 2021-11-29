@@ -16,7 +16,7 @@ import Foundation
 
 @objc(RCCustomerInfo) public class CustomerInfo: NSObject {
 
-    /// ``EntitlementInfos`` attached to this purchaser info.
+    /// ``EntitlementInfos`` attached to this customer info.
     @objc public let entitlements: EntitlementInfos
 
     /// All *subscription* product identifiers with expiration dates in the future.

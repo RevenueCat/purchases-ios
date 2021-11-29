@@ -58,7 +58,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Delegate for `Purchases` instance. The delegate is responsible for handling promotional product purchases and
-     * changes to purchaser information.
+     * changes to customer information.
      */
     @objc public var delegate: PurchasesDelegate? {
         get { privateDelegate }
@@ -663,6 +663,20 @@ public extension Purchases {
     }
 
     /**
+     * This function will logIn the current user with an appUserID.
+     *
+     * - Parameter appUserID: The appUserID that should be linked to the current user.
+     *
+     * The callback will be called with the latest CustomerInfo for the user, as well as a boolean
+     * indicating whether the user was created for the first time in the RevenueCat backend.
+     * See https://docs.revenuecat.com/docs/user-ids
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+        return try await logInAsync(appUserID)
+    }
+
+    /**
      * Logs out the Purchases client clearing the saved appUserID.
      * This will generate a random user id and save it in the cache.
      * If this method is called and the current user is anonymous, it will return an error.
@@ -684,6 +698,17 @@ public extension Purchases {
     }
 
     /**
+     * Logs out the Purchases client clearing the saved appUserID.
+     * This will generate a random user id and save it in the cache.
+     * If this method is called and the current user is anonymous, it will return an error.
+     * See https://docs.revenuecat.com/docs/user-ids
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func logOut() async throws -> CustomerInfo {
+        return try await logOutAsync()
+    }
+
+    /**
      * Fetch the configured offerings for this users. ``Offerings`` allows you to configure your in-app products
      * via RevenueCat and greatly simplifies management.
      * See the guide (https://docs.revenuecat.com/entitlements) for more info.
@@ -698,19 +723,46 @@ public extension Purchases {
         offeringsManager.offerings(appUserID: appUserID, completion: completion)
     }
 
+    /**
+     * Fetch the configured offerings for this users. ``Offerings`` allows you to configure your in-app products
+     * via RevenueCat and greatly simplifies management.
+     * See the guide (https://docs.revenuecat.com/entitlements) for more info.
+     *
+     * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,
+     * your prices are loaded for your purchase flow. Time is money.
+     *
+     * - Parameter completion: A completion block called when offerings are available.
+     * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func offerings() async throws -> Offerings {
+        return try await offeringsAsync()
+    }
+
 }
 
 // MARK: Purchasing
 public extension Purchases {
 
     /**
-     * Get latest available purchaser info.
+     * Get latest available customer  info.
      *
      * - Parameter completion: A completion block called when customer info is available and not stale.
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
      */
     @objc func getCustomerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         customerInfoManager.customerInfo(appUserID: appUserID, completion: completion)
+    }
+
+    /**
+     * Get latest available customer  info.
+     *
+     * - Parameter completion: A completion block called when customer info is available and not stale.
+     * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func customerInfo() async throws -> CustomerInfo {
+        return try await customerInfoAsync()
     }
 
     /**
@@ -734,6 +786,29 @@ public extension Purchases {
     @objc(getProductsWithIdentifiers:completion:)
     func getProducts(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
+    }
+
+    /**
+     * Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
+     * Use this method if you aren't using `getOfferings(completion:)`.
+     * You should use getOfferings though.
+     *
+     * - Note: `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by
+     * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
+     * Also ensure that you have an active developer program subscription and you have signed the latest paid
+     * application agreements.
+     * If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
+     *
+     * - Parameter productIdentifiers: A set of product identifiers for in app purchases setup via AppStoreConnect:
+     * https://appstoreconnect.apple.com/
+     * This should be either hard coded in your application, from a file, or from a custom endpoint if you want
+     * to be able to deploy new IAPs without an app update.
+     * - Parameter completion: An @escaping callback that is called with the loaded products.
+     * If the fetch fails for any reason it will return an empty array.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func products(_ productIdentifiers: [String]) async -> [SKProduct] {
+        return await productsAsync(productIdentifiers)
     }
 
     /**
@@ -763,6 +838,32 @@ public extension Purchases {
     }
 
     /**
+     * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
+     * If you are using the Offerings system, use ``Purchases/purchase(package:completion:)`` instead.
+     *
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     *
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter product: The `SKProduct` the user intends to purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     *
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     *
+     * If the purchase was not successful, there will be an `NSError`.
+     *
+     * If the user cancelled, `userCancelled` will be `YES`.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next large_tuple
+    func purchase(product: SKProduct) async throws -> (SKPaymentTransaction, CustomerInfo, Bool) {
+        return try await purchaseAsync(product: product)
+    }
+
+    /**
      * Purchase the passed ``Package``.
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
      * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
@@ -782,6 +883,29 @@ public extension Purchases {
     @objc(purchasePackage:withCompletion:)
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(package: package, completion: completion)
+    }
+
+    /**
+     * Purchase the passed ``Package``.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter package: The ``Package`` the user intends to purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     *
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     *
+     * If the purchase was not successful, there will be an `Error`.
+     *
+     * If the user cancelled, `userCancelled` will be `true`.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next large_tuple
+    func purchase(package: Package) async throws -> (SKPaymentTransaction, CustomerInfo, Bool) {
+        return try await purchaseAsync(package: package)
     }
 
     /**
@@ -810,6 +934,34 @@ public extension Purchases {
     func purchase(product: SKProduct, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
         let payment = storeKitWrapper.payment(withProduct: product, discount: discount)
         purchase(product: product, payment: payment, presentedOfferingIdentifier: nil, completion: completion)
+    }
+
+    /**
+     * Use this function if you are not using the Offerings system to purchase an `SKProduct` with an
+     * applied `SKPaymentDiscount`.
+     * If you are using the Offerings system, use ``Purchases/purchase(package:discount:completion:)`` instead.
+     *
+     * Call this method when a user has decided to purchase a product with an applied discount.
+     * Only call this in direct response to user input.
+     *
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
+     * this for you.
+     *
+     * - Parameter product: The `SKProduct` the user intends to purchase
+     * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     *
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     * If the purchase was not successful, there will be an `Error`.
+     * If the user cancelled, `userCancelled` will be `true`.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func purchase(product: SKProduct, discount: SKPaymentDiscount) async throws ->
+    // swiftlint:disable:next large_tuple
+    (SKPaymentTransaction, CustomerInfo, Bool) {
+        return try await purchaseAsync(product: product, discount: discount)
     }
 
     /**
@@ -847,6 +999,30 @@ public extension Purchases {
     }
 
     /**
+     * Purchase the passed ``Package``.
+     * Call this method when a user has decided to purchase a product with an applied discount. Only call this in
+     * direct response to user input. From here `Purchases` will handle the purchase with `StoreKit` and call the
+     * `PurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
+     * this for you.
+     *
+     * - Parameter package: The ``Package`` the user intends to purchase
+     * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     *
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     * If the purchase was not successful, there will be an `Error`.
+     * If the user cancelled, `userCancelled` will be `true`.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func purchase(package: Package, discount: SKPaymentDiscount) async throws ->
+    // swiftlint:disable:next large_tuple
+    (SKPaymentTransaction, CustomerInfo, Bool) {
+        return try await purchaseAsync(package: package, discount: discount)
+    }
+
+    /**
      * This method will post all purchases associated with the current App Store account to RevenueCat and
      * become associated with the current ``appUserID``.
      *
@@ -865,6 +1041,25 @@ public extension Purchases {
     }
 
     /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and
+     * become associated with the current ``appUserID``.
+     *
+     * If the receipt is being used by an existing user, the current ``appUserID`` will be aliased together with
+     * the `appUserID` of the existing user.
+     * Going forward, either `appUserID` will be able to reference the same user.
+     *
+     * - Warning: This function should only be called if you're not calling any purchase method.
+     *
+     * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
+     * on the device does not contain subscriptions, but the user has made subscription purchases, this method
+     * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func syncPurchases() async throws -> CustomerInfo {
+        return try await syncPurchasesAsync()
+    }
+
+    /**
      * This method will post all purchases associated with the current App Store account to RevenueCat and become
      * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
      * ``appUserID`` will be aliased together with the `appUserID` of the existing user.
@@ -879,6 +1074,24 @@ public extension Purchases {
      */
     @objc func restoreTransactions(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         purchasesOrchestrator.restoreTransactions(completion: completion)
+    }
+
+    /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and become
+     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
+     * ``appUserID`` will be aliased together with the `appUserID` of the existing user.
+     *  Going forward, either `appUserID` will be able to reference the same user.
+     *
+     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
+     * by your app passing the same `appUserId` used to purchase originally.
+     *
+     * - Note: This may force your users to enter the App Store password so should only be performed on request of
+     * the user. Typically with a button in settings or near your purchase UI. Use
+     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func restoreTransactions() async throws -> CustomerInfo {
+        return try await restoreTransactionsAsync()
     }
 
     /**
@@ -900,31 +1113,53 @@ public extension Purchases {
                                                   completion: @escaping ([String: IntroEligibility]) -> Void) {
             trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
                                                                  completion: completion)
-        }
+    }
 
     /**
-     * Invalidates the cache for purchaser information.
+     * Computes whether or not a user is eligible for the introductory pricing period of a given product.
+     * You should use this method to determine whether or not you show the user the normal product price or
+     * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+     *
+     * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
+     * definitively compute the eligibilty, most likely because of missing group information, it will return
+     * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
+     * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
+     * version of iOS so that the subscription group can be collected by the SDK.
+     *
+     * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
+     * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+        return await checkTrialOrIntroductoryPriceEligibilityAsync(productIdentifiers)
+    }
+
+    /**
+     * Invalidates the cache for customer information.
      *
      * Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
      * Refer to https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information for more information on
      * using the cache properly.
      *
-     * This is useful for cases where purchaser information might have been updated outside of the app, like if a
+     * This is useful for cases where customer information might have been updated outside of the app, like if a
      * promotional subscription is granted through the RevenueCat dashboard.
      */
     @objc func invalidateCustomerInfoCache() {
         customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
     }
 
-    #if os(iOS)
+#if os(iOS)
     /**
      * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
      */
     @available(iOS 14.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(macOS, unavailable)
     @objc func presentCodeRedemptionSheet() {
         storeKitWrapper.presentCodeRedemptionSheet()
     }
-    #endif
+#endif
 
     /**
      * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
@@ -943,6 +1178,22 @@ public extension Purchases {
     }
 
     /**
+     * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
+     *
+     * - Parameter discount: The `SKProductDiscount` to apply to the product.
+     * - Parameter product: The `SKProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
+                         product: SKProduct) async throws -> SKPaymentDiscount {
+        return try await paymentDiscountAsync(forProductDiscount: discount, product: product)
+    }
+
+#if os(iOS) || os(macOS)
+
+    /**
      * Use this function to open the manage subscriptions modal.
      * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
      * If managementURL is not available, the App Store's subscription management section will be opened.
@@ -957,6 +1208,25 @@ public extension Purchases {
     }
 
     /**
+     * Use this function to open the manage subscriptions modal.
+     * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
+     * If managementURL is not available, the App Store's subscription management section will be opened.
+     *
+     * - Parameter completion: A completion block that is called when the modal is closed.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(iOS 15.0, macOS 12, *)
+    func showManageSubscriptionModal() async throws {
+        return try await showManageSubscriptionModalAsync()
+    }
+
+#endif
+
+#if os(iOS)
+
+    /**
      * Presents a refund request sheet in the current window scene for
      * the latest transaction associated with the productID
      *
@@ -967,12 +1237,33 @@ public extension Purchases {
      * If the request was unsuccessful, there will be an `Error`.
      */
     @available(iOS 15.0, *)
+    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(for productID: String,
                                   completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         purchasesOrchestrator.beginRefundRequest(for: productID, completion: completion)
     }
+
+    /**
+     * Presents a refund request sheet in the current window scene for
+     * the latest transaction associated with the productID
+     *
+     * - Parameter productID: The productID to begin a refund request for.
+     * - Parameter completion: A completion block that is called when the modal is closed.
+     * If the request was successful, there will be a `RefundRequestStatus`.
+     * Keep in mind the status could be `userCancelled`
+     * If the request was unsuccessful, there will be an `Error`.
+     */
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
+        return try await beginRefundRequestAsync(for: productID)
+    }
+
+#endif
 
 }
 

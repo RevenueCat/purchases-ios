@@ -16,7 +16,7 @@ import Foundation
 import StoreKit
 
 /**
- * Delegate for ``Purchases`` responsible for handling updating your app's state in response to updated purchaser info
+ * Delegate for ``Purchases`` responsible for handling updating your app's state in response to updated customer info
  * or promotional product purchases.
  *
  * - Note: Delegate methods can be called at any time after the `delegate` is set, not just in response to
@@ -37,7 +37,7 @@ import StoreKit
     optional func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: CustomerInfo)
 
     /**
-     * Called whenever ``Purchases`` receives updated purchaser info. This may happen periodically
+     * Called whenever ``Purchases`` receives updated customer info. This may happen periodically
      * throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).*
      * - Parameter purchases: Related ``Purchases`` object
      * - Parameter customerInfo: Updated ``CustomerInfo``
