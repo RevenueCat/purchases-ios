@@ -81,13 +81,13 @@ class SystemInfo {
         return Self.forceUniversalAppStore ? "iOS" : platformHeaderConstant
     }
 
-    static var identifierForVendor: String? {
+    var identifierForVendor: String? {
         #if os(iOS) || os(tvOS)
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
             return WKInterfaceDevice.current().identifierForVendor?.uuidString
         #elseif os(macOS) || targetEnvironment(macCatalyst)
-            return MacDevice.identifierForVendor?.uuidString
+        return isSandbox ? MacDevice.identifierForVendor?.uuidString : nil
         #else
             return nil
         #endif

@@ -359,7 +359,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var headerPresent = false
 
-        let idfv = SystemInfo.identifierForVendor!
+        let idfv = systemInfo.identifierForVendor!
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { request in
             headerPresent = true
