@@ -15,22 +15,17 @@
 import Foundation
 
 /// A type that can convert from and to `Dates`.
-public protocol DateFormatterType {
+protocol DateFormatterType {
 
-    /// Returns a date representation of a specified string that the system interprets
-    /// using the receiver’s current settings.
     func string(from date: Date) -> String
-    /// Returns a string representation of a specified date that the system formats
-    /// using the receiver’s current settings.
     func date(from string: String) -> Date?
 
-    /// Creates a `JSONDecoder.DateDecodingStrategy` from `self`
     var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy { get }
 }
 
 extension DateFormatter: DateFormatterType {
 
-    public var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
+    var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
         return .formatted(self)
     }
 
@@ -38,7 +33,7 @@ extension DateFormatter: DateFormatterType {
 
 extension ISO8601DateFormatter: DateFormatterType {
 
-    public var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
+    var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
         return .iso8601
     }
 
