@@ -16,11 +16,12 @@ class MockIdentityManager: IdentityManager {
     var mockAppUserID: String
 
     init(mockAppUserID: String) {
-        let mockDeviceCache = MockDeviceCache()
-        let mockBackend = MockBackend()
         let mockSystemInfo = try! MockSystemInfo(platformFlavor: nil,
                                                  platformFlavorVersion: nil,
                                                  finishTransactions: false)
+        let mockDeviceCache = MockDeviceCache(systemInfo: mockSystemInfo)
+        let mockBackend = MockBackend()
+
         self.mockAppUserID = mockAppUserID
         super.init(deviceCache: mockDeviceCache,
                    backend: mockBackend,

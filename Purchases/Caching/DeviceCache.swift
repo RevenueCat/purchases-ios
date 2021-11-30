@@ -28,6 +28,7 @@ class DeviceCache {
     }
     var cachedOfferings: Offerings? { offeringsCachedObject.cachedInstance() }
 
+    private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
     private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
@@ -36,17 +37,20 @@ class DeviceCache {
     /// cleared from under the SDK
     private var appUserIDHasBeenSet: Bool = false
 
-    private static let cacheDurationInSecondsInForeground = 60 * 5.0
-    private static let cacheDurationInSecondsInBackground = 60 * 60 * 25.0
-
-    convenience init(userDefaults: UserDefaults = UserDefaults.standard) {
-        self.init(userDefaults: userDefaults, offeringsCachedObject: nil, notificationCenter: nil)
+    convenience init(systemInfo: SystemInfo,
+                     userDefaults: UserDefaults = UserDefaults.standard) {
+        self.init(systemInfo: systemInfo,
+                  userDefaults: userDefaults,
+                  offeringsCachedObject: nil,
+                  notificationCenter: nil)
     }
 
-    init(userDefaults: UserDefaults = UserDefaults.standard,
+    init(systemInfo: SystemInfo,
+         userDefaults: UserDefaults = UserDefaults.standard,
          offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
          notificationCenter: NotificationCenter? = NotificationCenter.default) {
 
+        self.systemInfo = systemInfo
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default
         self.userDefaults = .init(userDefaults: userDefaults)
@@ -136,7 +140,8 @@ class DeviceCache {
             }
 
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-            let cacheDurationInSeconds = self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
+                                                                     isSandbox: self.systemInfo.isSandbox)
 
             return timeSinceLastCheck >= cacheDurationInSeconds
         }
@@ -174,8 +179,10 @@ class DeviceCache {
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
-        let cacheDurationInSeconds = cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
-        return offeringsCachedObject.isCacheStale(durationInSeconds: cacheDurationInSeconds)
+        return offeringsCachedObject.isCacheStale(
+            durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
+                                                           isSandbox: self.systemInfo.isSandbox)
+        )
     }
 
     func clearOfferingsCacheTimestamp() {
@@ -290,10 +297,9 @@ class DeviceCache {
         }
     }
 
-    private func cacheDurationInSeconds(isAppBackgrounded: Bool) -> Double {
-        return isAppBackgrounded
-        ? Self.cacheDurationInSecondsInBackground
-        : Self.cacheDurationInSecondsInForeground
+    private func cacheDurationInSeconds(isAppBackgrounded: Bool, isSandbox: Bool) -> TimeInterval {
+        return CacheDuration.duration(status: .init(backgrounded: isAppBackgrounded),
+                                      environment: .init(sandbox: isSandbox))
     }
 
     // MARK: - Helper functions
@@ -489,6 +495,48 @@ fileprivate extension UserDefaults {
 
     func dictionary(forKey defaultName: DeviceCache.CacheKeys) -> [String: Any]? {
         return dictionary(forKey: defaultName.rawValue)
+    }
+
+}
+
+private extension DeviceCache {
+
+    enum CacheDuration {
+
+        // swiftlint:disable:next nesting
+        enum AppStatus {
+
+            case foreground
+            case background
+
+            init(backgrounded: Bool) {
+                self = backgrounded ? .background : .foreground
+            }
+
+        }
+
+        // swiftlint:disable:next nesting
+        enum Environment {
+
+            case production
+            case sandbox
+
+            init(sandbox: Bool) {
+                self = sandbox ? .sandbox : .production
+            }
+
+        }
+
+        static func duration(status: AppStatus, environment: Environment) -> TimeInterval {
+            switch (environment, status) {
+            case (.production, .foreground): return 60 * 5.0
+            case (.production, .background): return 60 * 60 * 25.0
+
+            case (.sandbox, .foreground): return 60 * 5.0
+            case (.sandbox, .background): return 60 * 5.0
+            }
+        }
+
     }
 
 }

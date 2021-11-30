@@ -10,12 +10,15 @@ import Nimble
 
 class DeviceCacheTests: XCTestCase {
 
+    private var systemInfo: MockSystemInfo! = nil
     private var mockUserDefaults: MockUserDefaults! = nil
     private var deviceCache: DeviceCache! = nil
 
     override func setUp() {
+        self.systemInfo = MockSystemInfo(finishTransactions: false)
         self.mockUserDefaults = MockUserDefaults()
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults)
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: mockUserDefaults)
     }
 
     func testLegacyCachedUserIDUsesRightKey() {
@@ -135,7 +138,8 @@ class DeviceCacheTests: XCTestCase {
 
     func testCustomerInfoCacheIsStaleIfLongerThanFiveMinutes() {
         let oldDate: Date! = Calendar.current.date(byAdding: .minute, value: -(6), to: Date())
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults)
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults)
         let appUserID = "waldo"
         deviceCache.cache(customerInfo: Data(), appUserID: appUserID)
         let isAppBackgrounded = false
@@ -151,7 +155,8 @@ class DeviceCacheTests: XCTestCase {
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject,
                                        notificationCenter: nil)
         let offerings = Offerings(offerings: [:], currentOfferingID: "")
@@ -208,7 +213,8 @@ class DeviceCacheTests: XCTestCase {
         let mockNotificationCenter = MockNotificationCenter()
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "Rage Against the Machine"
 
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
@@ -226,7 +232,8 @@ class DeviceCacheTests: XCTestCase {
     func testDoesntCrashIfOtherSettingIsDeletedAndAppUserIDHadntBeenSet() {
         let mockNotificationCenter = MockNotificationCenter()
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
@@ -238,9 +245,10 @@ class DeviceCacheTests: XCTestCase {
         let appUserID = "myUser"
         let fourMinutesAgo = Calendar.current.date(byAdding: .minute, value: -4, to: Date())
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"] = fourMinutesAgo
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                         offeringsCachedObject: nil,
-                                         notificationCenter: mockNotificationCenter)
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
+                                       offeringsCachedObject: nil,
+                                       notificationCenter: mockNotificationCenter)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
                                                           isAppBackgrounded: false)) == false
@@ -251,9 +259,10 @@ class DeviceCacheTests: XCTestCase {
         let appUserID = "myUser"
         let fourDaysAgo = Calendar.current.date(byAdding: .day, value: -4, to: Date())
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"] = fourDaysAgo
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                         offeringsCachedObject: nil,
-                                         notificationCenter: mockNotificationCenter)
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
+                                       offeringsCachedObject: nil,
+                                       notificationCenter: mockNotificationCenter)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
                                                           isAppBackgrounded: false)) == true
@@ -262,9 +271,10 @@ class DeviceCacheTests: XCTestCase {
     func testNewDeviceCacheInstanceWithNoCachedCustomerInfoCacheIsStale() {
         let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                         offeringsCachedObject: nil,
-                                         notificationCenter: mockNotificationCenter)
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
+                                       offeringsCachedObject: nil,
+                                       notificationCenter: mockNotificationCenter)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
                                                           isAppBackgrounded: false)) == true
@@ -273,9 +283,10 @@ class DeviceCacheTests: XCTestCase {
     func testIsCustomerInfoCacheStaleForBackground() {
         let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                         offeringsCachedObject: nil,
-                                         notificationCenter: mockNotificationCenter)
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
+                                       offeringsCachedObject: nil,
+                                       notificationCenter: mockNotificationCenter)
         let outdatedCacheDateForBackground = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: outdatedCacheDateForBackground, appUserID: appUserID)
 
@@ -292,9 +303,10 @@ class DeviceCacheTests: XCTestCase {
     func testIsCustomerInfoCacheStaleForForeground() {
         let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                         offeringsCachedObject: nil,
-                                         notificationCenter: mockNotificationCenter)
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
+                                       offeringsCachedObject: nil,
+                                       notificationCenter: mockNotificationCenter)
         let outdatedCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -25, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: outdatedCacheDateForForeground, appUserID: appUserID)
 
@@ -311,9 +323,10 @@ class DeviceCacheTests: XCTestCase {
     func testIsCustomerInfoCacheWithCachedInfoButNoTimestamp() {
         let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                         offeringsCachedObject: nil,
-                                         notificationCenter: mockNotificationCenter)
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
+                                       offeringsCachedObject: nil,
+                                       notificationCenter: mockNotificationCenter)
 
         let data = Data()
         self.deviceCache.cache(customerInfo: data, appUserID: appUserID)
@@ -331,7 +344,8 @@ class DeviceCacheTests: XCTestCase {
         let mockNotificationCenter = MockNotificationCenter()
         let otherAppUserID = "some other user"
         let currentAppUserID = "myUser"
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
         let validCacheDate = Calendar.current.date(byAdding: .minute, value: -3, to: Date())!
@@ -345,7 +359,8 @@ class DeviceCacheTests: XCTestCase {
         let mockNotificationCenter = MockNotificationCenter()
         let mockCachedObject = InMemoryCachedObject<Offerings>()
 
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject,
                                        notificationCenter: mockNotificationCenter)
 

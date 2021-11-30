@@ -36,8 +36,10 @@ class AttributionPosterTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        
         let userID = "userID"
-        deviceCache = MockDeviceCache(userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
+        deviceCache = MockDeviceCache(systemInfo: MockSystemInfo(finishTransactions: false),
+                                      userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
         deviceCache.cache(appUserID: userID)
         backend = MockBackend()
         attributionFetcher = AttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)

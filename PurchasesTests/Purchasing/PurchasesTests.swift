@@ -32,9 +32,9 @@ class PurchasesTests: XCTestCase {
         try super.setUpWithError()
 
         userDefaults = UserDefaults(suiteName: "TestDefaults")
-        deviceCache = MockDeviceCache(userDefaults: userDefaults)
+        systemInfo = MockSystemInfo(finishTransactions: true)
+        deviceCache = MockDeviceCache(systemInfo: self.systemInfo, userDefaults: userDefaults)
         requestFetcher = MockRequestFetcher()
-        systemInfo = try MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockProductsManager = MockProductsManager(systemInfo: systemInfo)
         mockOperationDispatcher = MockOperationDispatcher()
         mockReceiptParser = MockReceiptParser()
@@ -46,6 +46,9 @@ class PurchasesTests: XCTestCase {
         receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher, systemInfo: systemInfoAttribution)
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfoAttribution)
+        backend = MockBackend(httpClient: MockHTTPClient(systemInfo: systemInfo,
+                                                         eTagManager: MockETagManager()),
+                              apiKey: "mockAPIKey")
         subscriberAttributesManager =
             MockSubscriberAttributesManager(backend: self.backend,
                                             deviceCache: self.deviceCache,
@@ -258,11 +261,7 @@ class PurchasesTests: XCTestCase {
     var receiptFetcher: MockReceiptFetcher!
     var requestFetcher: MockRequestFetcher!
     var mockProductsManager: MockProductsManager!
-    let backend = MockBackend(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
-                                                                                         platformFlavorVersion: nil,
-                                                                                         finishTransactions: false),
-                                                         eTagManager: MockETagManager()),
-                              apiKey: "mockAPIKey")
+    var backend: MockBackend!
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil

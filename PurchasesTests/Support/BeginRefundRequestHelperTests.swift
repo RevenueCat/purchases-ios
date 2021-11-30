@@ -32,7 +32,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        systemInfo = try MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
+        systemInfo = MockSystemInfo(finishTransactions: true)
         helper = BeginRefundRequestHelper(systemInfo: systemInfo)
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {

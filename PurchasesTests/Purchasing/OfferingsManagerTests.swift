@@ -18,7 +18,7 @@ import StoreKit
 
 class OfferingsManagerTests: XCTestCase {
 
-    let mockDeviceCache = MockDeviceCache()
+    var mockDeviceCache: MockDeviceCache!
     let mockOperationDispatcher = MockOperationDispatcher()
     let mockSystemInfo = try! MockSystemInfo(platformFlavor: "iOS",
                                              platformFlavorVersion: "3.2.1",
@@ -31,6 +31,7 @@ class OfferingsManagerTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
+        mockDeviceCache = MockDeviceCache(systemInfo: mockSystemInfo)
         mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
         offeringsManager = OfferingsManager(deviceCache: mockDeviceCache,
                                             operationDispatcher: mockOperationDispatcher,

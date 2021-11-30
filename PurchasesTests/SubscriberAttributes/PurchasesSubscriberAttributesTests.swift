@@ -32,9 +32,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!
-    let systemInfo: SystemInfo = try! MockSystemInfo(platformFlavor: nil,
-                                                     platformFlavorVersion: nil,
-                                                     finishTransactions: true)
+    let systemInfo: SystemInfo = MockSystemInfo(finishTransactions: true)
     var mockReceiptParser: MockReceiptParser!
     var mockAttributionFetcher: MockAttributionFetcher!
     var mockAttributionPoster: AttributionPoster!
@@ -64,7 +62,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         try super.setUpWithError()
 
         userDefaults = UserDefaults(suiteName: "TestDefaults")
-        self.mockDeviceCache = MockDeviceCache(userDefaults: userDefaults)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.systemInfo,
+                                               userDefaults: self.userDefaults)
 
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
