@@ -355,7 +355,6 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
 
-    #if !os(macOS)
     func testAlwaysPassesAppleDeviceIdentifier() {
         let path = "/a_random_path"
         var headerPresent = false
@@ -375,7 +374,6 @@ class HTTPClientTests: XCTestCase {
         
         expect(headerPresent).toEventually(equal(true))
     }
-    #endif
 
     func testDefaultsPlatformFlavorToNative() {
         let path = "/a_random_path"
