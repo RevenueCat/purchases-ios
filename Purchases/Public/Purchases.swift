@@ -858,8 +858,9 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `YES`.
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func purchase(product: SKProduct) async throws ->
     // swiftlint:disable:next large_tuple
-    func purchase(product: SKProduct) async throws -> (SKPaymentTransaction, CustomerInfo, Bool) {
+    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await purchaseAsync(product: product)
     }
 
@@ -903,8 +904,9 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    func purchase(package: Package) async throws ->
     // swiftlint:disable:next large_tuple
-    func purchase(package: Package) async throws -> (SKPaymentTransaction, CustomerInfo, Bool) {
+    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await purchaseAsync(package: package)
     }
 
@@ -960,7 +962,7 @@ public extension Purchases {
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func purchase(product: SKProduct, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
-    (SKPaymentTransaction, CustomerInfo, Bool) {
+    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await purchaseAsync(product: product, discount: discount)
     }
 
@@ -1018,7 +1020,7 @@ public extension Purchases {
     @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
     func purchase(package: Package, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
-    (SKPaymentTransaction, CustomerInfo, Bool) {
+    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await purchaseAsync(package: package, discount: discount)
     }
 
