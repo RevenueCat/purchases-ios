@@ -26,10 +26,10 @@ import Foundation
         self.purchaseDate = purchaseDate
     }
 
-    @objc public init?(with serverResponse: [String: Any], productId: String, dateFormatter: DateFormatter) {
+    internal init?(with serverResponse: [String: Any], productId: String, dateFormatter: DateFormatterType) {
         guard let revenueCatId = serverResponse["id"] as? String,
               let dateString = serverResponse["purchase_date"] as? String,
-              let purchaseDate = dateFormatter.date(fromString: dateString) else {
+              let purchaseDate = dateFormatter.date(from: dateString) else {
             Logger.error("Couldn't initialize Transaction from dictionary. " +
                          "Reason: unexpected format. Dictionary: \(serverResponse).")
             return nil

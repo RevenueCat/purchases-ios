@@ -163,11 +163,11 @@ import Foundation
 
     convenience init(data: [String: Any]) throws {
         try self.init(data: data,
-                      dateFormatter: .iso8601SecondsDateFormatter,
+                      dateFormatter: ISO8601DateFormatter.default,
                       transactionsFactory: TransactionsFactory())
     }
 
-    init(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) throws {
+    init(data: [String: Any], dateFormatter: DateFormatterType, transactionsFactory: TransactionsFactory) throws {
         guard let subscriberObject = data["subscriber"] as? [String: Any] else {
             Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
             throw CustomerInfoError.missingJsonObject
@@ -222,7 +222,7 @@ import Foundation
 
     private let allPurchases: [String: [String: Any]]
     private let subscriptionTransactionsByProductId: [String: [String: Any]]
-    private let dateFormatter: DateFormatter
+    private let dateFormatter: DateFormatterType
 
     private lazy var expirationDatesByProductId: [String: Date?] = {
         return parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)
@@ -266,7 +266,7 @@ import Foundation
         let allPurchases: [String: [String: Any]]
 
         init(subscriberData: [String: Any],
-             dateFormatter: DateFormatter,
+             dateFormatter: DateFormatterType,
              transactionsFactory: TransactionsFactory) throws {
             let maybeSubscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
             self.subscriptionTransactionsByProductId = maybeSubscriptions
@@ -275,13 +275,13 @@ import Foundation
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String
 
             self.originalPurchaseDate =
-            dateFormatter.date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
+            dateFormatter.date(from: subscriberData["original_purchase_date"] as? String ?? "")
 
             guard let firstSeenDateString = subscriberData["first_seen"] as? String else {
                 throw SubscriberDataError.firstSeenMissing
             }
 
-            guard let firstSeenDate = dateFormatter.date(fromString: firstSeenDateString) else {
+            guard let firstSeenDate = dateFormatter.date(from: firstSeenDateString) else {
                 throw SubscriberDataError.firstSeenFormat
             }
 
@@ -384,7 +384,7 @@ private extension CustomerInfo {
         // mapValues will keep the key-value pair in the dictionary for nil values, as desired
         return transactionsByProductId.mapValues { transaction in
             if let dateString = transaction[dateLabel] as? String {
-                return dateFormatter.date(fromString: dateString)
+                return dateFormatter.date(from: dateString)
             }
             return nil
         }
