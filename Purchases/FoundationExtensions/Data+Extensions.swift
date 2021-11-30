@@ -29,8 +29,7 @@ extension NSData {
     }
 
     var uuid: UUID? {
-        var bytes = [UInt8](repeating: 0, count: self.length)
-        self.getBytes(&bytes, length: self.length * MemoryLayout<UInt8>.size)
+        let bytes = [UInt8](self)
         return NSUUID(uuidBytes: bytes) as UUID
     }
 
