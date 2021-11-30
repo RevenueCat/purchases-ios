@@ -87,7 +87,7 @@ class SystemInfo {
         #elseif os(watchOS)
             return WKInterfaceDevice.current().identifierForVendor?.uuidString
         #elseif os(macOS) || targetEnvironment(macCatalyst)
-            return MacDevice.identifierForVendor
+            return MacDevice.identifierForVendor?.uuidString
         #else
             return nil
         #endif

@@ -28,6 +28,12 @@ extension NSData {
         return deviceTokenString
     }
 
+    var uuid: UUID? {
+        var bytes = [UInt8](repeating: 0, count: self.length)
+        self.getBytes(&bytes, length: self.length * MemoryLayout<UInt8>.size)
+        return NSUUID(uuidBytes: bytes) as UUID
+    }
+
 }
 
 extension Data {
@@ -39,6 +45,10 @@ extension Data {
     // Returns a string representing a fetch token.
     var asFetchToken: String {
         return self.base64EncodedString()
+    }
+
+    var uuid: UUID? {
+        (self as NSData).uuid
     }
 
 }

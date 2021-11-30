@@ -21,11 +21,11 @@ enum MacDevice {
     // Based on Apple's documentation, the mac address must
     // be used to validate receipts.
     // https://developer.apple.com/documentation/appstorereceipts/validating_receipts_on_the_device
-    static var identifierForVendor: String? {
-        networkInterfaceMacAddress?.base64EncodedString()
+    static var identifierForVendor: UUID? {
+        networkInterfaceMacAddressData?.uuid
     }
 
-    static var networkInterfaceMacAddress: Data? {
+    static var networkInterfaceMacAddressData: Data? {
         guard let service = getIOService(named: "en0", wantBuiltIn: true)
                 ?? getIOService(named: "en1", wantBuiltIn: true)
                 ?? getIOService(named: "en0", wantBuiltIn: false)
