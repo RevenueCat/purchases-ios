@@ -48,10 +48,10 @@ class CustomerInfoManager {
             self.backend.getSubscriberData(appUserID: appUserID) { maybeCustomerInfo, maybeError in
                 if let error = maybeError {
                     self.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
-                    Logger.warn(Strings.customerInfo.consumerinfo_updated_from_network_error(error: error))
+                    Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error: error))
                 } else if let info = maybeCustomerInfo {
                     self.cache(customerInfo: info, appUserID: appUserID)
-                    Logger.rcSuccess(Strings.customerInfo.consumerinfo_updated_from_network)
+                    Logger.rcSuccess(Strings.customerInfo.customerinfo_updated_from_network)
                 }
 
                 if let completion = maybeCompletion {
@@ -73,8 +73,8 @@ class CustomerInfoManager {
         let needsToRefresh = isCacheStale || maybeCachedCustomerInfo == nil
         if needsToRefresh {
             Logger.debug(isAppBackgrounded
-                            ? Strings.customerInfo.consumerinfo_stale_updating_in_background
-                            : Strings.customerInfo.consumerinfo_stale_updating_in_foreground)
+                            ? Strings.customerInfo.customerinfo_stale_updating_in_background
+                            : Strings.customerInfo.customerinfo_stale_updating_in_foreground)
             fetchAndCacheCustomerInfo(appUserID: appUserID,
                                       isAppBackgrounded: isAppBackgrounded,
                                       completion: completion)
@@ -160,7 +160,7 @@ class CustomerInfoManager {
                 deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
                 sendUpdateIfChanged(customerInfo: customerInfo)
             } catch {
-                Logger.error(Strings.customerInfo.error_getting_data_from_consumerinfo_json(error: error))
+                Logger.error(Strings.customerInfo.error_getting_data_from_customerinfo_json(error: error))
             }
         } else {
             Logger.error(Strings.customerInfo.invalid_json)
@@ -181,9 +181,9 @@ class CustomerInfoManager {
         }
 
         if lastSentCustomerInfo != nil {
-            Logger.debug(Strings.customerInfo.sending_updated_consumerinfo_to_delegate)
+            Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
         } else {
-            Logger.debug(Strings.customerInfo.sending_latest_consumerinfo_to_delegate)
+            Logger.debug(Strings.customerInfo.sending_latest_customerinfo_to_delegate)
         }
 
         self.lastSentCustomerInfo = customerInfo

@@ -223,7 +223,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func testShowManageSubscriptionModalCallsCompletionWithErrorIfThereIsAFailure() {
-        let message = "Failed to get managemementURL from ConsumerInfo. Details: customerInfo is nil."
+        let message = "Failed to get managemementURL from CustomerInfo. Details: customerInfo is nil."
         mockManageSubsModalHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
         var receivedError: Error?
         var completionCalled = false
