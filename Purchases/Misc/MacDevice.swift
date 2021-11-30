@@ -14,7 +14,9 @@
 #if os(macOS) || targetEnvironment(macCatalyst)
 
 import Foundation
+#if canImport(IOKit)
 import IOKit
+#endif
 
 enum MacDevice {
 
@@ -26,6 +28,7 @@ enum MacDevice {
     }
 
     static var networkInterfaceMacAddressData: Data? {
+        #if canImport(IOKit)
         guard let service = getIOService(named: "en0", wantBuiltIn: true)
                 ?? getIOService(named: "en1", wantBuiltIn: true)
                 ?? getIOService(named: "en0", wantBuiltIn: false)
@@ -40,8 +43,12 @@ enum MacDevice {
             kCFAllocatorDefault,
             IOOptionBits(kIORegistryIterateRecursively | kIORegistryIterateParents)
         ) as? Data
+        #else
+        return nil
+        #endif
     }
 
+    #if canImport(IOKit)
     static private func getIOService(named name: String, wantBuiltIn: Bool) -> io_service_t? {
         let defaultPort = kIOMasterPortDefault
         var iterator = io_iterator_t()
@@ -79,6 +86,7 @@ enum MacDevice {
 
         return nil
     }
+    #endif
 
 }
 
