@@ -23,9 +23,6 @@ public protocol PurchasesDeprecatable {
     static func addAttributionData(_ data: [String: Any],
                                    from network: AttributionNetwork,
                                    forNetworkUserId networkUserId: String?)
-    func createAlias(_ alias: String, _ completion: ((CustomerInfo?, Error?) -> Void)?)
-    func identify(_ appUserID: String, _ completion: ((CustomerInfo?, Error?) -> Void)?)
-    func reset(completion: ((CustomerInfo?, Error?) -> Void)?)
 
 }
 
@@ -57,21 +54,6 @@ class PurchasesDeprecation: PurchasesDeprecatable {
                                    from network: AttributionNetwork,
                                    forNetworkUserId networkUserId: String?) {
         Purchases.addAttributionData(data, from: network, forNetworkUserId: networkUserId)
-    }
-
-    @available(*, deprecated)
-    func createAlias(_ alias: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
-        purchases.createAlias(alias, completion)
-    }
-
-    @available(*, deprecated)
-    func identify(_ appUserID: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
-        purchases.identify(appUserID, completion)
-    }
-
-    @available(*, deprecated)
-    func reset(completion: ((CustomerInfo?, Error?) -> Void)?) {
-        purchases.reset(completion: completion)
     }
 
 }

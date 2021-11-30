@@ -260,7 +260,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                         systemInfo: systemInfo)
         let identityManager = IdentityManager(deviceCache: deviceCache,
                                               backend: backend,
-                                              customerInfoManager: customerInfoManager)
+                                              customerInfoManager: customerInfoManager,
+                                              appUserID: appUserID)
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let attributionDataMigrator = AttributionDataMigrator()
@@ -378,7 +379,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
         super.init()
 
-        identityManager.configure(appUserID: appUserID)
         self.purchasesOrchestrator.maybeDelegate = self
 
         systemInfo.isApplicationBackgrounded { isBackgrounded in
@@ -1470,72 +1470,6 @@ public extension Purchases {
                                     fromNetwork: network,
                                     forNetworkUserId: networkUserId)
         }
-    }
-
-    /**
-     * This function will alias two appUserIDs together.
-     *
-     * - Parameter alias: The new appUserID that should be linked to the currently identified appUserID
-     * - Parameter completion: An optional completion block called when the aliasing has been successful.
-     * This completion block will receive an error if there's been one.
-     */
-    @available(*, deprecated, message: "use logIn instead", renamed: "logIn")
-    @objc(createAlias:completion:)
-    func createAlias(_ alias: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
-        if alias == appUserID {
-            customerInfoManager.customerInfo(appUserID: appUserID, completion: completion)
-        } else {
-            identityManager.createAlias(appUserID: alias) { maybeError in
-                guard maybeError == nil else {
-                    if let completion = completion {
-                        self.operationDispatcher.dispatchOnMainThread {
-                            completion(nil, maybeError)
-                        }
-                    }
-                    return
-                }
-
-                self.updateAllCaches(completion: completion)
-            }
-        }
-    }
-
-    /**
-     * This function will identify the current user with an appUserID. Typically this would be used after a
-     * logout to identify a new user without calling configure.
-     *
-     * - Parameter appUserID: The appUserID that should be linked to the current user.
-     * - Parameter completion: An optional completion block called when the identify call has completed.
-     * This completion block will receive an error if there's been one.
-     */
-    @available(*, deprecated, message: "use logIn instead")
-    @objc(identify:completion:)
-    func identify(_ appUserID: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
-        if appUserID == identityManager.currentAppUserID {
-            customerInfoManager.customerInfo(appUserID: self.appUserID, completion: completion)
-        } else {
-            identityManager.identify(appUserID: appUserID) { maybeError in
-                guard maybeError == nil else {
-                    if let completion = completion {
-                        self.operationDispatcher.dispatchOnMainThread {
-                            completion(nil, maybeError)
-                        }
-                    }
-                    return
-                }
-                self.updateAllCaches(completion: completion)
-            }
-        }
-    }
-
-    /**
-     * Resets the Purchases client clearing the saved appUserID.
-     * This will generate a random user id and save it in the cache.
-     */
-    @available(*, deprecated, message: "use logOut instead", renamed: "logOut")
-    @objc func reset(completion: ((CustomerInfo?, Error?) -> Void)?) {
-        identityManager.resetAppUserID()
-        updateAllCaches(completion: completion)
     }
 
 }

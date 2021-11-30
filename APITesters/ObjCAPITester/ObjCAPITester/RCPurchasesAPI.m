@@ -125,16 +125,7 @@ BOOL isAnonymous;
     [p paymentDiscountForProductDiscount:skpd product:skp completion:^(SKPaymentDiscount *d, NSError *e) { }];
     [p purchaseProduct:skp withDiscount:skmd completion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p purchasePackage:pack withDiscount:skmd completion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-
-    // should have deprecation warning 'createAlias:completion:' is deprecated: Use logIn instead.
-    [p createAlias:@"" completion:^(RCCustomerInfo *i, NSError *e) { }];
-
-    // should have deprecation warning 'identify:completion:' is deprecated: Use logIn instead.
-    [p identify:@"" completion:^(RCCustomerInfo *i, NSError *e) { }];
-
-    // should have deprecation warning 'resetWithCompletion:' is deprecated: Use logOut instead.
-    [p resetWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
-
+    
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
 
