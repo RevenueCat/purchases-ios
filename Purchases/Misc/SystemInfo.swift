@@ -82,7 +82,7 @@ class SystemInfo {
     }
 
     static var identifierForVendor: String? {
-        #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        #if os(iOS) || os(tvOS)
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
             return WKInterfaceDevice.current().identifierForVendor?.uuidString
