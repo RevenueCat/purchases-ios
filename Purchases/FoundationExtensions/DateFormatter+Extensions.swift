@@ -25,26 +25,16 @@ protocol DateFormatterType {
 extension DateFormatter: DateFormatterType {}
 extension ISO8601DateFormatter: DateFormatterType {}
 
-internal extension ISO8601DateFormatter {
+extension DateFormatterType {
 
-    private static let withMilliseconds: DateFormatterType = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [
-            .withInternetDateTime,
-            .withFractionalSeconds
-        ]
+    func date(from maybeDateString: String?) -> Date? {
+        guard let dateString = maybeDateString else { return nil }
+        return date(from: dateString)
+    }
 
-        return formatter
-    }()
+}
 
-    private static let noMilliseconds: DateFormatterType = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [
-            .withInternetDateTime
-        ]
-
-        return formatter
-    }()
+extension ISO8601DateFormatter {
 
     /// This behaves like a traditional `DateFormatter` with format
     /// `yyyy-MM-dd'T'HH:mm:ssZ"`, so milliseconds are optional.
@@ -65,11 +55,25 @@ internal extension ISO8601DateFormatter {
 
 }
 
-internal extension DateFormatterType {
+private extension ISO8601DateFormatter {
 
-    func date(from maybeDateString: String?) -> Date? {
-        guard let dateString = maybeDateString else { return nil }
-        return date(from: dateString)
-    }
+    static let withMilliseconds: DateFormatterType = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
+
+        return formatter
+    }()
+
+    static let noMilliseconds: DateFormatterType = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [
+            .withInternetDateTime
+        ]
+
+        return formatter
+    }()
 
 }
