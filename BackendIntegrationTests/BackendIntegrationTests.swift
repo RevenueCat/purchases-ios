@@ -13,11 +13,11 @@ import StoreKitTest
 
 class TestPurchaseDelegate: NSObject, PurchasesDelegate {
     var maybeCustomerInfo: CustomerInfo?
-    var purchaserInfoUpdateCount = 0
+    var consumerInfoUpdateCount = 0
 
     func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
         self.maybeCustomerInfo = customerInfo
-        purchaserInfoUpdateCount += 1
+        consumerInfoUpdateCount += 1
     }
 
     func purchases(_ purchases: Purchases,
@@ -74,19 +74,19 @@ class BackendIntegrationTests: XCTestCase {
         configurePurchases()
 
         var completionCalled = false
-        purchaseMonthlyOffering { [self] purchaserInfo, error in
-            expect(purchaserInfo?.entitlements.all.count) == 1
+        purchaseMonthlyOffering { [self] consumerInfo, error in
+            expect(consumerInfo?.entitlements.all.count) == 1
             let entitlements = self.purchasesDelegate.maybeCustomerInfo?.entitlements
             expect(entitlements?["premium"]?.isActive) == true
 
             let anonUserID = Purchases.shared.appUserID
             let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
 
-            Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+            Purchases.shared.logIn(identifiedUserID) { identifiedConsumerInfo, created, error in
                 expect(error).to(beNil())
 
                 expect(created).to(beTrue())
-                expect(identifiedPurchaserInfo?.entitlements["premium"]?.isActive) == true
+                expect(identifiedConsumerInfo?.entitlements["premium"]?.isActive) == true
                 completionCalled = true
             }
         }
@@ -97,11 +97,11 @@ class BackendIntegrationTests: XCTestCase {
         configurePurchases()
         var completionCalled = false
         let existingUserID = "\(#function)\(UUID().uuidString)"
-        expect(self.purchasesDelegate.purchaserInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
+        expect(self.purchasesDelegate.consumerInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
 
         // log in to create the user, then log out
-        Purchases.shared.logIn(existingUserID) { logInPurchaserInfo, created, logInError in
-            Purchases.shared.logOut() { loggedOutPurchaserInfo, logOutError in
+        Purchases.shared.logIn(existingUserID) { logInConsumerInfo, created, logInError in
+            Purchases.shared.logOut() { loggedOutConsumerInfo, logOutError in
                 completionCalled = true
             }
         }
@@ -114,9 +114,9 @@ class BackendIntegrationTests: XCTestCase {
 
         completionCalled = false
 
-        Purchases.shared.logIn(existingUserID) { purchaserInfo, created, logInError in
+        Purchases.shared.logIn(existingUserID) { consumerInfo, created, logInError in
             completionCalled = true
-            self.assertNoPurchases(purchaserInfo)
+            self.assertNoPurchases(consumerInfo)
             expect(created).to(beFalse())
             expect(logInError).to(beNil())
         }
@@ -132,9 +132,9 @@ class BackendIntegrationTests: XCTestCase {
         configurePurchases()
         var completionCalled = false
         let existingUserID = UUID().uuidString
-        expect(self.purchasesDelegate.purchaserInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
+        expect(self.purchasesDelegate.consumerInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
 
-        Purchases.shared.logIn(existingUserID) { logInPurchaserInfo, created, logInError in
+        Purchases.shared.logIn(existingUserID) { logInConsumerInfo, created, logInError in
             self.purchaseMonthlyOffering()
             completionCalled = true
         }
@@ -145,8 +145,8 @@ class BackendIntegrationTests: XCTestCase {
 
         completionCalled = false
 
-        Purchases.shared.logOut { purchaserInfo, error in
-            self.assertNoPurchases(purchaserInfo)
+        Purchases.shared.logOut { consumerInfo, error in
+            self.assertNoPurchases(consumerInfo)
             expect(error).to(beNil())
             completionCalled = true
         }
@@ -165,11 +165,11 @@ class BackendIntegrationTests: XCTestCase {
         let identifiedUserID = "\(#function)_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
         var completionCalled = false
-        Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+        Purchases.shared.logIn(identifiedUserID) { identifiedConsumerInfo, created, error in
             expect(error).to(beNil())
             expect(created).to(beTrue())
-            Purchases.shared.logOut { loggedOutPurchaserInfo, logOutError in
-                Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+            Purchases.shared.logOut { loggedOutConsumerInfo, logOutError in
+                Purchases.shared.logIn(identifiedUserID) { identifiedConsumerInfo, created, error in
                     expect(error).to(beNil())
                     expect(created).to(beFalse())
                     completionCalled = true
@@ -186,7 +186,7 @@ class BackendIntegrationTests: XCTestCase {
         let userID1 = UUID().uuidString
         let userID2 = UUID().uuidString
 
-        Purchases.shared.logIn(userID1) { identifiedPurchaserInfo, created, error in
+        Purchases.shared.logIn(userID1) { identifiedConsumerInfo, created, error in
             self.purchaseMonthlyOffering()
         }
 
@@ -194,8 +194,8 @@ class BackendIntegrationTests: XCTestCase {
 
         testSession.clearTransactions()
 
-        Purchases.shared.logIn(userID2) { identifiedPurchaserInfo, created, error in
-            self.assertNoPurchases(identifiedPurchaserInfo)
+        Purchases.shared.logIn(userID2) { identifiedConsumerInfo, created, error in
+            self.assertNoPurchases(identifiedConsumerInfo)
             expect(error).to(beNil())
         }
 
@@ -210,11 +210,11 @@ class BackendIntegrationTests: XCTestCase {
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
-        Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+        Purchases.shared.logIn(identifiedUserID) { identifiedConsumerInfo, created, error in
             expect(error).to(beNil())
 
             expect(created).to(beTrue())
-            print("identifiedPurchaserInfo: \(String(describing: identifiedPurchaserInfo))")
+            print("identifiedConsumerInfo: \(String(describing: identifiedConsumerInfo))")
 
             self.purchaseMonthlyOffering()
         }
@@ -222,9 +222,9 @@ class BackendIntegrationTests: XCTestCase {
         waitUntilEntitlementsGoThrough()
 
         var completionCalled = false
-        Purchases.shared.logOut { loggedOutPurchaserInfo, logOutError in
+        Purchases.shared.logOut { loggedOutConsumerInfo, logOutError in
             expect(logOutError).to(beNil())
-            self.assertNoPurchases(loggedOutPurchaserInfo)
+            self.assertNoPurchases(loggedOutConsumerInfo)
             completionCalled = true
         }
 
@@ -266,19 +266,19 @@ class BackendIntegrationTests: XCTestCase {
         var receivedEligibility = try XCTUnwrap(maybeReceivedEligibility)
         expect(receivedEligibility[productID]?.status) == .eligible
         
-        purchaseMonthlyOffering { [self] purchaserInfo, error in
-            expect(purchaserInfo?.entitlements.all.count) == 1
+        purchaseMonthlyOffering { [self] consumerInfo, error in
+            expect(consumerInfo?.entitlements.all.count) == 1
             let entitlements = self.purchasesDelegate.maybeCustomerInfo?.entitlements
             expect(entitlements?["premium"]?.isActive) == true
             
             let anonUserID = Purchases.shared.appUserID
             let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
             
-            Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+            Purchases.shared.logIn(identifiedUserID) { identifiedConsumerInfo, created, error in
                 expect(error).to(beNil())
                 
                 expect(created).to(beTrue())
-                expect(identifiedPurchaserInfo?.entitlements["premium"]?.isActive) == true
+                expect(identifiedConsumerInfo?.entitlements["premium"]?.isActive) == true
                 completionCalled = true
             }
         }
@@ -312,11 +312,11 @@ private extension BackendIntegrationTests {
             expect(monthlyPackage).toNot(beNil())
 
             Purchases.shared.purchase(package: monthlyPackage!) { transaction,
-                                                                  purchaserInfo,
+                                                                  consumerInfo,
                                                                   purchaseError,
                                                                   userCancelled in
                 expect(purchaseError).to(beNil())
-                expect(purchaserInfo).toNot(beNil())
+                expect(consumerInfo).toNot(beNil())
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
@@ -340,7 +340,7 @@ private extension BackendIntegrationTests {
             .toEventually(equal(1), timeout: .seconds(10))
     }
 
-    func assertNoPurchases(_ purchaserInfo: CustomerInfo?) {
-        expect(purchaserInfo?.entitlements.all.count) == 0
+    func assertNoPurchases(_ consumerInfo: CustomerInfo?) {
+        expect(consumerInfo?.entitlements.all.count) == 0
     }
 }
