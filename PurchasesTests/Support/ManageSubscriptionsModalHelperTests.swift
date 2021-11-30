@@ -40,9 +40,9 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        systemInfo = MockSystemInfo()
+        systemInfo = MockSystemInfo(finishTransactions: true)
         customerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
-                                                      deviceCache: MockDeviceCache(),
+                                                      deviceCache: MockDeviceCache(systemInfo: systemInfo),
                                                       backend: MockBackend(),
                                                       systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")

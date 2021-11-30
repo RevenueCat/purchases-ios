@@ -42,7 +42,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         storeKitWrapper = MockStoreKitWrapper()
         operationDispatcher = MockOperationDispatcher()
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo)
-        deviceCache = MockDeviceCache()
+        deviceCache = MockDeviceCache(systemInfo: systemInfo)
         backend = MockBackend()
         customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
                                                       deviceCache: deviceCache,
