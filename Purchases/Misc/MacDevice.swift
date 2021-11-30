@@ -30,9 +30,9 @@ enum MacDevice {
                 ?? getIOService(named: "en1", wantBuiltIn: true)
                 ?? getIOService(named: "en0", wantBuiltIn: false)
             else { return nil }
-        
+
         defer { IOObjectRelease(service) }
-        
+
         return IORegistryEntrySearchCFProperty(
             service,
             kIOServicePlane,
@@ -43,16 +43,16 @@ enum MacDevice {
     }
 
     static private func getIOService(named name: String, wantBuiltIn: Bool) -> io_service_t? {
-        let default_port = kIOMasterPortDefault
+        let defaultPort = kIOMasterPortDefault
         var iterator = io_iterator_t()
         defer {
             if iterator != IO_OBJECT_NULL {
                 IOObjectRelease(iterator)
             }
         }
-        
-        guard let matchingDict = IOBSDNameMatching(default_port, 0, name),
-              IOServiceGetMatchingServices(default_port,
+
+        guard let matchingDict = IOBSDNameMatching(defaultPort, 0, name),
+              IOServiceGetMatchingServices(defaultPort,
                                            matchingDict as CFDictionary,
                                            &iterator) == KERN_SUCCESS,
               iterator != IO_OBJECT_NULL
@@ -66,6 +66,7 @@ enum MacDevice {
                                                             "IOBuiltin" as CFString,
                                                             kCFAllocatorDefault,
                                                             0) {
+                // swiftlint:disable:next force_cast
                 let isBuiltIn = cftype.takeRetainedValue() as! CFBoolean
                 if wantBuiltIn == CFBooleanGetValue(isBuiltIn) {
                     return candidate
@@ -78,7 +79,7 @@ enum MacDevice {
 
         return nil
     }
-    
+
 }
 
 #endif
