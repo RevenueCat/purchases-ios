@@ -18,7 +18,7 @@ enum IdentityStrings {
 
     case changing_app_user_id(from: String, to: String)
 
-    case logging_in_with_nil_appuserid
+    case logging_in_with_empty_appuserid
 
     case logging_in_with_same_appuserid
 
@@ -46,9 +46,9 @@ extension IdentityStrings: CustomStringConvertible {
         switch self {
         case .changing_app_user_id(let from, let to):
             return "Changing App User ID: \(from) -> \(to)"
-        case .logging_in_with_nil_appuserid:
-            return "The appUserID passed to logIn is nil or empty. " +
-                "Can't log in. This method should only be called with non-nil and non-empty values."
+        case .logging_in_with_empty_appuserid:
+            return "The appUserID is empty. " +
+                "This method should only be called with non-empty values."
         case .logging_in_with_same_appuserid:
             return "The appUserID passed to logIn is the same as the one " +
                 "already cached. No action will be taken."

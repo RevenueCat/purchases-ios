@@ -52,6 +52,12 @@ class IdentityManagerTests: XCTestCase {
         assertCorrectlyIdentified(manager, expectedAppUserID: "cesar")
     }
 
+    func testAppUserIDDoesNotTrimTrailingOrLeadingSpaces() {
+        let name = "  user with spaces "
+        let manager = create(appUserID: name)
+        assertCorrectlyIdentified(manager, expectedAppUserID: name)
+    }
+
     func testConfigureCleansUpSubscriberAttributes() {
         _ = create(appUserID: "andy")
         expect(self.mockDeviceCache.invokedCleanupSubscriberAttributesCount) == 1
@@ -63,6 +69,18 @@ class IdentityManagerTests: XCTestCase {
         let newAppUserID = "cesar"
         let newManager = create(appUserID: newAppUserID)
         assertCorrectlyIdentified(newManager, expectedAppUserID: newAppUserID)
+    }
+
+    func testNilAppUserIDBecomesAnonimous() {
+        assertCorrectlyIdentifiedWithAnonymous(create(appUserID: nil))
+    }
+
+    func testEmptyAppUserIDBecomesAnonymous() {
+        assertCorrectlyIdentifiedWithAnonymous(create(appUserID: ""))
+    }
+
+    func testEmptyAppUserWithSpacesIDBecomesAnonymous() {
+        assertCorrectlyIdentifiedWithAnonymous(create(appUserID: "  "))
     }
 
     func testMigrationFromRandomIDConfiguringAnonymously() {

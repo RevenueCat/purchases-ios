@@ -49,7 +49,11 @@ class IdentityManager {
         self.backend = backend
         self.customerInfoManager = customerInfoManager
 
-        let appUserID = appUserID
+        if appUserID?.isEmpty == true {
+            Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
+        }
+
+        let appUserID = appUserID?.notEmptyOrWhitespaces
             ?? deviceCache.cachedAppUserID
             ?? deviceCache.cachedLegacyAppUserID
             ?? Self.generateRandomID()
@@ -61,9 +65,9 @@ class IdentityManager {
     }
 
     func logIn(appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
-        let newAppUserID = appUserID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
-            Logger.error(Strings.identity.logging_in_with_nil_appuserid)
+            Logger.error(Strings.identity.logging_in_with_empty_appuserid)
             completion(nil, false, ErrorUtils.missingAppUserIDError())
             return
         }

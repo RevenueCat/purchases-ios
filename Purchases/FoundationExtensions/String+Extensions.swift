@@ -20,6 +20,30 @@ extension String {
         ROT13.string(self)
     }
 
+    /// Returns `nil` if `self` is an empty string.
+    var notEmpty: String? {
+        return self.isEmpty
+        ? nil
+        : self
+    }
+
+    /// Returns `nil` if `self` is an empty string or it only contains whitespaces.
+    var notEmptyOrWhitespaces: String? {
+        return self.trimmingWhitespacesAndNewLines.isEmpty
+        ? nil
+        : self
+    }
+
+    var trimmingWhitespacesAndNewLines: String {
+        return self.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+internal extension Optional where Wrapped == String {
+    /// Returns `nil` if `self` is an empty string.
+    var notEmpty: String? {
+        return self.flatMap { $0.notEmpty }
+    }
 }
 
 private struct ROT13 {
