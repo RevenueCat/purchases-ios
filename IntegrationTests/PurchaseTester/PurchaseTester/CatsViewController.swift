@@ -79,7 +79,6 @@ class CatsViewController: UIViewController {
 
     @objc func beginRefundButtonTapped() {
         if #available(iOS 15.0, *) {
-            // refund for pro_cat's productID
             _ = Task<Void, Never> {
                 do {
                     let customerInfo = try await Purchases.shared.customerInfo()
