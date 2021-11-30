@@ -37,6 +37,7 @@ enum OfferingStrings {
     case configuration_error_skproducts_not_found
     case configuration_error_no_products_for_offering
     case offering_empty(offeringIdentifier: String)
+    case product_details_empty_title(productIdentifier: String)
 
 }
 
@@ -116,6 +117,9 @@ extension OfferingStrings: CustomStringConvertible {
             "RevenueCat dashboard, App Store Connect (or the StoreKit Configuration file " +
             "if one is being used). \nTo configure products, follow the instructions in " +
             "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
+
+        case let .product_details_empty_title(identifier):
+            return "Empty Product titles are not supported. Found in product with identifier: \(identifier)"
 
         }
     }

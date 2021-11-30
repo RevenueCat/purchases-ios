@@ -24,6 +24,14 @@ public typealias SK2Product = StoreKit.Product
 
 /// Abstract class that provides access to all of StoreKit's product type's properties.
 @objc(RCProductDetails) public class ProductDetails: NSObject {
+    public override init() {
+        super.init()
+
+        if self.localizedTitle.isEmpty {
+            Logger.warn(Strings.offering.product_details_empty_title(productIdentifier: self.productIdentifier))
+        }
+    }
+
     public override func isEqual(_ object: Any?) -> Bool {
         return self.productIdentifier == (object as? ProductDetails)?.productIdentifier
     }
@@ -71,6 +79,8 @@ public typealias SK2Product = StoreKit.Product
 
     init(sk2Product: SK2Product) {
         self._underlyingSK2Product = sk2Product
+
+        super.init()
     }
 
     // We can't directly store instances of StoreKit.Product, since that causes
@@ -106,6 +116,8 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public init(sk1Product: SK1Product) {
         self.underlyingSK1Product = sk1Product
+
+        super.init()
     }
 
     @objc public let underlyingSK1Product: SK1Product
