@@ -20,24 +20,10 @@ protocol DateFormatterType {
     func string(from date: Date) -> String
     func date(from string: String) -> Date?
 
-    var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy { get }
 }
 
-extension DateFormatter: DateFormatterType {
-
-    var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
-        return .formatted(self)
-    }
-
-}
-
-extension ISO8601DateFormatter: DateFormatterType {
-
-    var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
-        return .iso8601
-    }
-
-}
+extension DateFormatter: DateFormatterType {}
+extension ISO8601DateFormatter: DateFormatterType {}
 
 internal extension ISO8601DateFormatter {
 
@@ -71,10 +57,6 @@ internal extension ISO8601DateFormatter {
 
             func string(from date: Date) -> String {
                 return ISO8601DateFormatter.withMilliseconds.string(from: date)
-            }
-
-            var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy {
-                return .iso8601
             }
         }
 
