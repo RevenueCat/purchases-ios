@@ -1,3 +1,7 @@
+## 3.13.1
+- RCDeviceCache: synchronize NSUserDefaults after writes
+    https://github.com/RevenueCat/purchases-ios/pull/1003
+    
 ## 3.13.0
 - Added support for Airship integration via `setAirshipChannelID`
     https://github.com/RevenueCat/purchases-ios/pull/933
