@@ -500,25 +500,31 @@ fileprivate extension UserDefaults {
 }
 
 private extension DeviceCache {
+
     enum CacheDuration {
+
         // swiftlint:disable:next nesting
         enum AppStatus {
+
             case foreground
             case background
 
             init(backgrounded: Bool) {
                 self = backgrounded ? .background : .foreground
             }
+
         }
 
         // swiftlint:disable:next nesting
         enum Environment {
+
             case production
             case sandbox
 
             init(sandbox: Bool) {
                 self = sandbox ? .sandbox : .production
             }
+
         }
 
         static func duration(status: AppStatus, environment: Environment) -> TimeInterval {
@@ -530,7 +536,9 @@ private extension DeviceCache {
             case (.sandbox, .background): return 60 * 5.0
             }
         }
+
     }
+
 }
 
 // swiftlint:enable file_length
