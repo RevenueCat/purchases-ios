@@ -755,7 +755,7 @@ extension CustomerInfo {
     convenience init?(testData: [String: Any]) {
         do {
             try self.init(data: testData,
-                          dateFormatter: .iso8601SecondsDateFormatter,
+                          dateFormatter: ISO8601DateFormatter.default,
                           transactionsFactory: TransactionsFactory())
         } catch {
             let errorDescription = (error as? DescribableError)?.description ?? error.localizedDescription

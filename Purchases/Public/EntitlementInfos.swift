@@ -58,13 +58,13 @@ import Foundation
         self.init(entitlementsData: entitlementsData,
                   purchasesData: purchasesData,
                   requestDate: requestDate,
-                  dateFormatter: .iso8601SecondsDateFormatter)
+                  dateFormatter: ISO8601DateFormatter.default)
     }
 
     init(entitlementsData: [String: Any]?,
          purchasesData: [String: Any],
          requestDate: Date?,
-         dateFormatter: DateFormatter) {
+         dateFormatter: DateFormatterType) {
         guard let entitlementsData = entitlementsData else {
             self.all = [:]
             return
