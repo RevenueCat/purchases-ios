@@ -298,7 +298,7 @@ private extension PurchasesOrchestratorTests {
     @MainActor
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchSk2StoreProduct() async throws -> SK2StoreProduct {
-        // can't store SK2StoreProduct directly because it causes linking issues on older OS versions
+        // can't store Storekit.Product directly because it causes linking issues on older OS versions
         // https://openradar.appspot.com/radar?id=4970535809187840
         let sk2Product: Any = try await fetchSk2Product()
         return SK2StoreProduct(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
