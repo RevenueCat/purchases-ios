@@ -12,6 +12,7 @@ import Foundation
 
 class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
+    var stubbedIsSandbox: Bool?
 
     convenience init(finishTransactions: Bool) {
         try! self.init(platformFlavor: nil,
@@ -27,4 +28,9 @@ class MockSystemInfo: SystemInfo {
     override public func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
         return stubbedIsOperatingSystemAtLeastVersion ?? true
     }
+
+    override var isSandbox: Bool {
+        return stubbedIsSandbox ?? super.isSandbox
+    }
+
 }

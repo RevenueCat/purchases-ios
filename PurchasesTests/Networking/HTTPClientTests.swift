@@ -15,7 +15,7 @@ import Nimble
 
 class HTTPClientTests: XCTestCase {
 
-    let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+    let systemInfo = MockSystemInfo(finishTransactions: true)
     var client: HTTPClient!
     var userDefaults: UserDefaults!
     var eTagManager: MockETagManager!
@@ -354,13 +354,45 @@ class HTTPClientTests: XCTestCase {
         
         expect(headerPresent).toEventually(equal(true))
     }
+    
+    #if os(macOS) || targetEnvironment(macCatalyst)
+    func testAlwaysPassesAppleDeviceIdentifierWhenIsSandbox() {
+        let path = "/a_random_path"
+        var headerPresent = false
+        systemInfo.stubbedIsSandbox = true
+        
+        let idfv = systemInfo.identifierForVendor!
+        
+        stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { request in
+            headerPresent = true
+            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+        }
+        
+        self.client.performPOSTRequest(serially: true,
+                                       path: path,
+                                       requestBody: Dictionary.init(),
+                                       headers: ["test_header": "value"],
+                                       completionHandler: nil)
+        
+        expect(headerPresent).toEventually(equal(true))
+    }
+    
+    func testAppleDeviceIdentifierNilWhenIsNotSandbox() {
+        systemInfo.stubbedIsSandbox = false
+        
+        let obtainedIdentifierForVendor = systemInfo.identifierForVendor
+        
+        expect(obtainedIdentifierForVendor).to(beNil())
+    }
+    
+    #endif
 
-    #if !os(macOS)
+    #if !os(macOS) && !targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifier() {
         let path = "/a_random_path"
         var headerPresent = false
 
-        let idfv = SystemInfo.identifierForVendor!
+        let idfv = systemInfo.identifierForVendor!
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { request in
             headerPresent = true

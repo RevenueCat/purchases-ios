@@ -82,7 +82,7 @@ private extension HTTPClient {
             headers["X-Platform-Flavor-Version"] = platformFlavorVersion
         }
 
-        if let idfv = SystemInfo.identifierForVendor {
+        if let idfv = systemInfo.identifierForVendor {
             headers["X-Apple-Device-Identifier"] = idfv
         }
         return headers
