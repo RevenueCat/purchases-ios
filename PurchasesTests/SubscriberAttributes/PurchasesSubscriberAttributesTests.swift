@@ -51,9 +51,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         "other_purchases": [:],
         "original_application_version": NSNull()
     ]]
-    
+
     var mockOfferingsManager: MockOfferingsManager!
-    var mockManageSubsModalHelper: MockManageSubscriptionsModalHelper!
+    var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
     var purchases: Purchases!
@@ -104,7 +104,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                     offeringsFactory: MockOfferingsFactory(),
                                                     productsManager: mockProductsManager)
         self.mockReceiptFetcher = MockReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: systemInfoAttribution)
-        self.mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
+        self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                             customerInfoManager: customerInfoManager,
                                                                             identityManager: mockIdentityManager)
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
@@ -130,7 +130,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           identityManager: mockIdentityManager,
                                                           receiptParser: mockReceiptParser,
                                                           deviceCache: mockDeviceCache,
-                                                          manageSubscriptionsModalHelper: mockManageSubsModalHelper,
+                                                          manageSubscriptionsHelper: mockManageSubsHelper,
                                                           beginRefundRequestHelper: mockBeginRefundRequestHelper)
         let trialOrIntroductoryPriceEligibilityChecker =
         TrialOrIntroPriceEligibilityChecker(receiptFetcher: mockReceiptFetcher,

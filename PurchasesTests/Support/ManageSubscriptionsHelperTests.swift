@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ManageSubscriptionsModalHelperTests.swift
+//  ManageSubscriptionsHelperTests.swift
 //
 //  Created by Andrés Boedo on 8/20/21.
 
@@ -19,12 +19,12 @@ import XCTest
 
 #if os(macOS) || os(iOS)
 
-class ManageSubscriptionsModalHelperTests: XCTestCase {
+class ManageSubscriptionsHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
     private var customerInfoManager: MockCustomerInfoManager!
     private var identityManager: MockIdentityManager!
-    private var helper: ManageSubscriptionsModalHelper!
+    private var helper: ManageSubscriptionsHelper!
     private let mockCustomerInfoData: [String: Any] = [
         "request_date": "2018-12-21T02:40:36Z",
         "subscriber": [
@@ -46,45 +46,45 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
                                                       backend: MockBackend(),
                                                       systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
-        helper = ManageSubscriptionsModalHelper(systemInfo: systemInfo,
+        helper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                 customerInfoManager: customerInfoManager,
                                                 identityManager: identityManager)
     }
 
-    func testShowManageSubscriptionModalMakesRightCalls() throws {
+    func testShowManageSubscriptionsMakesRightCalls() throws {
         guard #available(iOS 15.0, *) else { throw XCTSkip("Required API is not available for this test.") }
         // given
         var callbackCalled = false
         // swiftlint:disable force_try
         customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
         // swiftlint:disable force_try
-        
+
         // when
-        helper.showManageSubscriptionModal { result in
+        helper.showManageSubscriptions { result in
             callbackCalled = true
         }
-        
+
         // then
         expect(callbackCalled).toEventually(beTrue())
         expect(self.customerInfoManager.invokedCustomerInfo) == true
-        
+
         // we'd ideally also patch the UIApplication (or NSWorkspace for mac), as well as
         // AppStore, and check for the calls in those, but it gets very tricky.
     }
 
-    func testShowManageSubscriptionModalInIOS() throws {
+    func testShowManageSubscriptionsInIOS() throws {
 #if os(iOS)
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
         customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
-        
+
         // when
-        helper.showManageSubscriptionModal { result in
+        helper.showManageSubscriptions { result in
             callbackCalled = true
             receivedResult = result
         }
-        
+
         // then
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
@@ -100,19 +100,19 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 #endif
     }
 
-    func testShowManageSubscriptionModalSucceedsInMacOS() throws {
+    func testShowManageSubscriptionsSucceedsInMacOS() throws {
 #if os(macOS)
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
         customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
-        
+
         // when
-        helper.showManageSubscriptionModal { result in
+        helper.showManageSubscriptions { result in
             callbackCalled = true
             receivedResult = result
         }
-        
+
         // then
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
@@ -120,14 +120,14 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 #endif
     }
 
-    func testShowManageSubscriptionModalFailsIfCouldntGetCustomerInfo() throws {
+    func testShowManageSubscriptionsFailsIfCouldntGetCustomerInfo() throws {
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
         customerInfoManager.stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
 
         // when
-        helper.showManageSubscriptionModal { result in
+        helper.showManageSubscriptions { result in
             callbackCalled = true
             receivedResult = result
         }
@@ -135,14 +135,14 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         // then
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
-        let expectedErrorMessage = "Failed to get managemementURL from CustomerInfo. " +
+        let expectedErrorMessage = "Failed to get managementURL from CustomerInfo. " +
         "Details: The operation couldn’t be completed"
         let expectedError = ErrorUtils.customerInfoError(withMessage: expectedErrorMessage, error: customerInfoManager.stubbedError)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
         })
     }
-    
+
 }
 
 #endif

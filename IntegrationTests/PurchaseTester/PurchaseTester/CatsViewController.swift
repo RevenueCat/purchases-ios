@@ -70,9 +70,9 @@ class CatsViewController: UIViewController {
     }
 
     @objc func manageSubButtonTapped() {
-        Purchases.shared.showManageSubscriptionModal { maybeError in
+        Purchases.shared.showManageSubscriptions { maybeError in
             if let error = maybeError {
-                print("Error opening Manage Sub Modal: \(error.localizedDescription)")
+                print("Error opening Manage Subs Page: \(error.localizedDescription)")
             }
         }
     }

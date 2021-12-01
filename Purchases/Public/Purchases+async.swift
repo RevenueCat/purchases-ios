@@ -245,9 +245,9 @@ extension Purchases {
     @available(iOS 15.0, macOS 12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscriptionModalAsync() async throws {
+    func showManageSubscriptionsAsync() async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            showManageSubscriptionModal { error in
+            showManageSubscriptions { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return

@@ -69,9 +69,9 @@ class PurchasesTests: XCTestCase {
                                                     backend: backend,
                                                     offeringsFactory: offeringsFactory,
                                                     productsManager: mockProductsManager)
-        mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
-                                                                       customerInfoManager: customerInfoManager,
-                                                                       identityManager: identityManager)
+        mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
+                                                             customerInfoManager: customerInfoManager,
+                                                             identityManager: identityManager)
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
     }
 
@@ -279,7 +279,7 @@ class PurchasesTests: XCTestCase {
     var mockOfferingsManager: MockOfferingsManager!
     var purchasesOrchestrator: PurchasesOrchestrator!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
-    var mockManageSubsModalHelper: MockManageSubscriptionsModalHelper!
+    var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
     let purchasesDelegate = MockPurchasesDelegate()
@@ -316,7 +316,7 @@ class PurchasesTests: XCTestCase {
                                                       identityManager: identityManager,
                                                       receiptParser: mockReceiptParser,
                                                       deviceCache: deviceCache,
-                                                      manageSubscriptionsModalHelper: mockManageSubsModalHelper,
+                                                      manageSubscriptionsHelper: mockManageSubsHelper,
                                                       beginRefundRequestHelper: mockBeginRefundRequestHelper)
         trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                                                                       introEligibilityCalculator: mockIntroEligibilityCalculator,

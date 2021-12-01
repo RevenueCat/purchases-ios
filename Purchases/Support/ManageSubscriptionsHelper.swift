@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ManageSubscriptionModalHelper.swift
+//  ManageSubscriptionsHelper.swift
 //
 //  Created by Andrés Boedo on 16/8/21.
 
 import StoreKit
 
-class ManageSubscriptionsModalHelper {
+class ManageSubscriptionsHelper {
 
     private let systemInfo: SystemInfo
     private let customerInfoManager: CustomerInfoManager
@@ -31,17 +31,17 @@ class ManageSubscriptionsModalHelper {
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscriptionModal(completion: @escaping (Result<Void, Error>) -> Void) {
+    func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
         let currentAppUserID = identityManager.currentAppUserID
         customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
-                let message = "Failed to get managemementURL from CustomerInfo. Details: \(error.localizedDescription)"
+                let message = "Failed to get managementURL from CustomerInfo. Details: \(error.localizedDescription)"
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
                 return
             }
 
             guard let customerInfo = maybeCustomerInfo else {
-                let message = "Failed to get managemementURL from CustomerInfo. Details: customerInfo is nil."
+                let message = "Failed to get managementURL from CustomerInfo. Details: customerInfo is nil."
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
                 return
             }
@@ -72,7 +72,7 @@ class ManageSubscriptionsModalHelper {
 
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-private extension ManageSubscriptionsModalHelper {
+private extension ManageSubscriptionsHelper {
 
     func showAppleManageSubscriptions(managementURL: URL,
                                       completion: @escaping (Result<Void, Error>) -> Void) {

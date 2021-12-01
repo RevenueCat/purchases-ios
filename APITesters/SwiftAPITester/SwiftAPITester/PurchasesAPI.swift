@@ -183,12 +183,12 @@ private func checkIdentity(purchases: Purchases) {
 }
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {
-    purchases.showManageSubscriptionModal { _ in }
+    purchases.showManageSubscriptions { _ in }
     #if os(iOS)
     purchases.beginRefundRequest(for: "") { _, _ in }
     if #available(iOS 15.0, macOS 12.0, *) {
         Task.init {
-            try await purchases.showManageSubscriptionModal()
+            try await purchases.showManageSubscriptions()
             let _: RefundRequestStatus = try await purchases.beginRefundRequest(for: "")
         }
     }
