@@ -526,6 +526,8 @@
 		57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedUserDefaults.swift; sourceTree = "<group>"; };
 		57E2230627500BB1002DB06E /* AtomicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicTests.swift; sourceTree = "<group>"; };
 		57EAE526274324C60060EB74 /* Lock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lock.swift; sourceTree = "<group>"; };
+		57B425A12757FFAD0075BDC4 /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTests.xctestplan; sourceTree = "<group>"; };
+		57B425A2275800AB0075BDC4 /* Coverage.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Coverage.xctestplan; sourceTree = "<group>"; };
 		57EAE52A274332830060EB74 /* Obsoletions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obsoletions.swift; sourceTree = "<group>"; };
 		57EAE52C274468900060EB74 /* RawDataContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDataContainer.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
@@ -570,7 +572,7 @@
 		B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionPoster.swift; sourceTree = "<group>"; };
 		B3AA6235268A81C700894871 /* EntitlementInfos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfos.swift; sourceTree = "<group>"; };
 		B3AA6237268B926F00894871 /* SystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInfo.swift; sourceTree = "<group>"; };
-		B3B4E76026E036E700C200D3 /* RevenueCat.xctestplan */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = RevenueCat.xctestplan; path = RevenueCat.xcodeproj/RevenueCat.xctestplan; sourceTree = "<group>"; };
+		B3B4E76026E036E700C200D3 /* RevenueCat.xctestplan */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = RevenueCat.xctestplan; sourceTree = "<group>"; };
 		B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendErrorCode.swift; sourceTree = "<group>"; };
 		B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDetails.swift; sourceTree = "<group>"; };
 		B3B5FBBB269D121B00104A0C /* Offerings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Offerings.swift; sourceTree = "<group>"; };
@@ -973,9 +975,6 @@
 		352629F41F7C4B9100C04F2C = {
 			isa = PBXGroup;
 			children = (
-				B3B4E76026E036E700C200D3 /* RevenueCat.xctestplan */,
-				2D545DBF26F8F96D0044BAC9 /* UnitTests.xctestplan */,
-				57CC94C92757EEA9001F34D6 /* Coverage.xctestplan */,
 				2DC5621724EC63420031F69B /* Purchases */,
 				2DC5622224EC63430031F69B /* PurchasesTests */,
 				2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */,
@@ -984,6 +983,7 @@
 				2DEAC2DB26EFE46E006914ED /* UnitTestsHostApp */,
 				352629FF1F7C4B9100C04F2C /* Products */,
 				3530C18722653E8F00D6DF52 /* Frameworks */,
+				57B425A3275800B60075BDC4 /* Test Plans */,
 				2DBB3E10269C9B8700BBF431 /* SwiftStyleGuide.swift */,
 				2DEC0CFB24A2A1B100B0E5BB /* Package.swift */,
 			);
@@ -1206,6 +1206,17 @@
 				2DDF41AA24F6F37C005BC22D /* InAppPurchase.swift */,
 			);
 			path = BasicTypes;
+			sourceTree = "<group>";
+		};
+		57B425A3275800B60075BDC4 /* Test Plans */ = {
+			isa = PBXGroup;
+			children = (
+				B3B4E76026E036E700C200D3 /* RevenueCat.xctestplan */,
+				2D545DBF26F8F96D0044BAC9 /* UnitTests.xctestplan */,
+				57B425A12757FFAD0075BDC4 /* AllTests.xctestplan */,
+				57B425A2275800AB0075BDC4 /* Coverage.xctestplan */,
+			);
+			name = "Test Plans";
 			sourceTree = "<group>";
 		};
 		B324DC482720C15300103EE9 /* Error Handling */ = {
