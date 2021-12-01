@@ -21,10 +21,10 @@ class PartialMockProductsManager: ProductsManager {
     var invokedProductsFromOptimalStoreKitVersionCount = 0
     var invokedProductsFromOptimalStoreKitVersionParameters: (identifiers: Set<String>, Void)?
     var invokedProductsFromOptimalStoreKitVersionParametersList = [(identifiers: Set<String>, Void)]()
-    var stubbedProductsFromOptimalStoreKitVersionCompletionResult: (Set<ProductDetails>, Void)?
+    var stubbedProductsFromOptimalStoreKitVersionCompletionResult: (Set<StoreProduct>, Void)?
 
     override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
-                                                     completion: @escaping (Set<ProductDetails>) -> Void) {
+                                                     completion: @escaping (Set<StoreProduct>) -> Void) {
         invokedProductsFromOptimalStoreKitVersionWithIdentifiers = true
         invokedProductsFromOptimalStoreKitVersionCount += 1
         invokedProductsFromOptimalStoreKitVersionParameters = (identifiers, ())
@@ -42,7 +42,7 @@ class PartialMockProductsManager: ProductsManager {
                 }
                 return sk1Product
             }
-            let result = Set(products).map { SK1ProductDetails(sk1Product: $0) }
+            let result = Set(products).map { SK1StoreProduct(sk1Product: $0) }
 
             completion(Set(result))
         }

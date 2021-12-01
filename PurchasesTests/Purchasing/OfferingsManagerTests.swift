@@ -45,7 +45,7 @@ class OfferingsManagerTests: XCTestCase {
 
 extension OfferingsManagerTests {
 
-    func testOfferingsForAppUserIDReturnsNilIfMissingProductDetails() throws {
+    func testOfferingsForAppUserIDReturnsNilIfMissingStoreProduct() throws {
         // given
         mockOfferingsFactory.emptyOfferings = true
         mockBackend.stubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
@@ -81,7 +81,7 @@ extension OfferingsManagerTests {
         let obtainedOfferings = try XCTUnwrap(maybeObtainedOfferings)
         expect(obtainedOfferings["base"]).toNot(beNil())
         expect(obtainedOfferings["base"]!.monthly).toNot(beNil())
-        expect(obtainedOfferings["base"]!.monthly?.productDetails).toNot(beNil())
+        expect(obtainedOfferings["base"]!.monthly?.storeProduct).toNot(beNil())
     }
 
     func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {

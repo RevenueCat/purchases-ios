@@ -273,7 +273,7 @@ class SwiftPaywall: UIViewController {
     private func shouldShowDiscount(package: Package?) -> (Bool, Package?) {
         return (showDiscountPercentage == true
                 && mostAffordablePackages.count > 1
-                && mostAffordablePackages.first?.productDetails.productIdentifier == package?.productDetails.productIdentifier, mostAffordablePackages.last)
+                && mostAffordablePackages.first?.storeProduct.productIdentifier == package?.storeProduct.productIdentifier, mostAffordablePackages.last)
     }
     
     private var mostAffordablePackages : [Package] {
@@ -530,7 +530,7 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
             productDeselectedColor: productDeselectedColor)
         
         // Should this package be selected
-        if !didChangePackage && mostAffordablePackages.first?.productDetails.productIdentifier == package?.productDetails.productIdentifier {
+        if !didChangePackage && mostAffordablePackages.first?.storeProduct.productIdentifier == package?.storeProduct.productIdentifier {
             collectionView.selectItem(at: indexPath, animated: true, scrollPosition: [])
             collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: indexPath)
             cell.isSelected = true
@@ -546,8 +546,8 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
         if #available(iOS 11.2, *) {
             // todo: remove this check when sk2 products support introductory price
             // https://github.com/RevenueCat/purchases-ios/issues/848
-            if let sk1ProductDetails = offering?.availablePackages[indexPath.row].productDetails as? SK1ProductDetails,
-               let introPrice = sk1ProductDetails.underlyingSK1Product.introductoryPrice, introPrice.price == 0 {
+            if let sk1StoreProduct = offering?.availablePackages[indexPath.row].storeProduct as? SK1StoreProduct,
+               let introPrice = sk1StoreProduct.underlyingSK1Product.introductoryPrice, introPrice.price == 0 {
 
                 var trialLength = ""
                 var cancelDate : Date?
@@ -708,8 +708,8 @@ private class PackageCell : UICollectionViewCell {
     
     fileprivate func setMonthlyPriceLabel(_ package: Package, numberOfMonths: Int) {
         if let priceFormatter = maybePriceFormatter,
-           let sk1ProductDetails = package.productDetails as? SK1ProductDetails {
-            let monthlyPrice = sk1ProductDetails.underlyingSK1Product.price.dividing(by: Decimal(numberOfMonths) as NSDecimalNumber)
+           let sk1StoreProduct = package.storeProduct as? SK1StoreProduct {
+            let monthlyPrice = sk1StoreProduct.underlyingSK1Product.price.dividing(by: Decimal(numberOfMonths) as NSDecimalNumber)
             monthlyPriceLabel.text = "\(priceFormatter.string(from: monthlyPrice) ?? "") / mo"
         }
     }
@@ -752,10 +752,10 @@ private class PackageCell : UICollectionViewCell {
             discountLabel.text = "SAVE \(discountFormatter.string(from: discountBetween(highest: discount, current: package)) ?? "")"
         }
         
-        if let sk1ProductDetails = package.productDetails as? SK1ProductDetails {
+        if let sk1StoreProduct = package.storeProduct as? SK1StoreProduct {
             maybePriceFormatter = NumberFormatter()
             maybePriceFormatter?.numberStyle = .currency
-            maybePriceFormatter?.locale = sk1ProductDetails.underlyingSK1Product.priceLocale
+            maybePriceFormatter?.locale = sk1StoreProduct.underlyingSK1Product.priceLocale
         }
 
         
@@ -795,17 +795,17 @@ private class PackageCell : UICollectionViewCell {
         let highestAnnualCost : Decimal!
         switch highest.packageType {
         case .annual:
-            highestAnnualCost = highest.productDetails.price
+            highestAnnualCost = highest.storeProduct.price
         case .sixMonth:
-            highestAnnualCost = highest.productDetails.price * 2.0
+            highestAnnualCost = highest.storeProduct.price * 2.0
         case .threeMonth:
-            highestAnnualCost = highest.productDetails.price * 4.0
+            highestAnnualCost = highest.storeProduct.price * 4.0
         case .twoMonth:
-            highestAnnualCost = highest.productDetails.price * 6.0
+            highestAnnualCost = highest.storeProduct.price * 6.0
         case .monthly:
-            highestAnnualCost = highest.productDetails.price * 12.0
+            highestAnnualCost = highest.storeProduct.price * 12.0
         case .weekly:
-            highestAnnualCost = highest.productDetails.price * 52.0
+            highestAnnualCost = highest.storeProduct.price * 52.0
         case .lifetime, .custom, .unknown:
             return 0.0
         }
@@ -813,17 +813,17 @@ private class PackageCell : UICollectionViewCell {
         let currentAnnualCost : Decimal!
         switch current.packageType {
         case .annual:
-            currentAnnualCost = current.productDetails.price
+            currentAnnualCost = current.storeProduct.price
         case .sixMonth:
-            currentAnnualCost = current.productDetails.price * 2.0
+            currentAnnualCost = current.storeProduct.price * 2.0
         case .threeMonth:
-            currentAnnualCost = current.productDetails.price * 4.0
+            currentAnnualCost = current.storeProduct.price * 4.0
         case .twoMonth:
-            currentAnnualCost = current.productDetails.price * 6.0
+            currentAnnualCost = current.storeProduct.price * 6.0
         case .monthly:
-            currentAnnualCost = current.productDetails.price * 12.0
+            currentAnnualCost = current.storeProduct.price * 12.0
         case .weekly:
-            currentAnnualCost = current.productDetails.price * 52.0
+            currentAnnualCost = current.storeProduct.price * 52.0
         case .lifetime, .custom, .unknown:
             return 0.0
         }
@@ -885,17 +885,17 @@ fileprivate extension Package {
     func annualCost() -> Decimal {
         switch self.packageType {
         case .annual:
-            return self.productDetails.price
+            return self.storeProduct.price
         case .sixMonth:
-            return self.productDetails.price * 2
+            return self.storeProduct.price * 2
         case .threeMonth:
-            return self.productDetails.price * 4
+            return self.storeProduct.price * 4
         case .twoMonth:
-            return self.productDetails.price * 6
+            return self.storeProduct.price * 6
         case .monthly:
-            return self.productDetails.price * 12
+            return self.storeProduct.price * 12
         case .weekly:
-            return self.productDetails.price * 52
+            return self.storeProduct.price * 52
         case .lifetime, .custom, .unknown:
             return 0.0
         }

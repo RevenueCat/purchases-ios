@@ -102,10 +102,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
-        let productDetails = try await fetchSk2ProductDetails()
+        let storeProduct = try await fetchSk2StoreProduct()
         let package = Package(identifier: "package",
                               packageType: .monthly,
-                              productDetails: productDetails,
+                              storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
@@ -141,10 +141,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
-        let productDetails = try await fetchSk2ProductDetails()
+        let storeProduct = try await fetchSk2StoreProduct()
         let package = Package(identifier: "package",
                               packageType: .monthly,
-                              productDetails: productDetails,
+                              storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
         _ = await withCheckedContinuation { continuation in
@@ -169,10 +169,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
-        let productDetails = try await fetchSk2ProductDetails()
+        let storeProduct = try await fetchSk2StoreProduct()
         let package = Package(identifier: "package",
                               packageType: .monthly,
-                              productDetails: productDetails,
+                              storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
         _ = await withCheckedContinuation { continuation in
@@ -201,10 +201,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
-        let productDetails = try await fetchSk2ProductDetails()
+        let storeProduct = try await fetchSk2StoreProduct()
         let package = Package(identifier: "package",
                               packageType: .monthly,
-                              productDetails: productDetails,
+                              storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
@@ -297,11 +297,11 @@ private extension PurchasesOrchestratorTests {
 
     @MainActor
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func fetchSk2ProductDetails() async throws -> SK2ProductDetails {
-        // can't store SK2ProductDetails directly because it causes linking issues on older OS versions
+    func fetchSk2StoreProduct() async throws -> SK2StoreProduct {
+        // can't store SK2StoreProduct directly because it causes linking issues on older OS versions
         // https://openradar.appspot.com/radar?id=4970535809187840
         let sk2Product: Any = try await fetchSk2Product()
-        return SK2ProductDetails(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
+        return SK2StoreProduct(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
     }
 
     var mockCustomerInfo: CustomerInfo {

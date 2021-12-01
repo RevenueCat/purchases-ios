@@ -13,10 +13,10 @@ class MockProductsManager: ProductsManager {
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount = 0
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersParameters: (identifiers: Set<String>, Void)?
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersParametersList = [(identifiers: Set<String>, Void)]()
-    var stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult: (Set<ProductDetails>, Void)?
+    var stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult: (Set<StoreProduct>, Void)?
 
     override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
-                                                     completion: @escaping (Set<ProductDetails>) -> Void) {
+                                                     completion: @escaping (Set<StoreProduct>) -> Void) {
         invokedProductsFromOptimalStoreKitVersionWithIdentifiers = true
         invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount += 1
         invokedProductsFromOptimalStoreKitVersionWithIdentifiersParameters = (identifiers, ())
@@ -34,7 +34,7 @@ class MockProductsManager: ProductsManager {
                 }
                 return p
             }
-            let result = Set(products).map { SK1ProductDetails(sk1Product: $0) }
+            let result = Set(products).map { SK1StoreProduct(sk1Product: $0) }
 
             completion(Set(result))
         }
@@ -46,26 +46,26 @@ class MockProductsManager: ProductsManager {
     var invokedProductsFromOptimalStoreKitVersionParametersList = [(identifiers: Set<String>, Void)]()
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<ProductDetails> {
+    override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<StoreProduct> {
         invokedProductsFromOptimalStoreKitVersion = true
         invokedProductsFromOptimalStoreKitVersionCount += 1
         invokedProductsFromOptimalStoreKitVersionParameters = (identifiers, ())
         invokedProductsFromOptimalStoreKitVersionParametersList.append((identifiers, ()))
-        let result = stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult?.0 ?? Set<ProductDetails>()
+        let result = stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult?.0 ?? Set<StoreProduct>()
         return result
     }
 
-    var invokedSk2ProductDetails = false
-    var invokedSk2ProductDetailsCount = 0
-    var invokedSk2ProductDetailsParameters: (identifiers: Set<String>, Void)?
-    var invokedSk2ProductDetailsParametersList = [(identifiers: Set<String>, Void)]()
+    var invokedSk2StoreProduct = false
+    var invokedSk2StoreProductCount = 0
+    var invokedSk2StoreProductParameters: (identifiers: Set<String>, Void)?
+    var invokedSk2StoreProductParametersList = [(identifiers: Set<String>, Void)]()
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2ProductDetails(withIdentifiers identifiers: Set<String>) async -> Set<SK2ProductDetails> {
-        invokedSk2ProductDetails = true
-        invokedSk2ProductDetailsCount += 1
-        invokedSk2ProductDetailsParameters = (identifiers, ())
-        invokedSk2ProductDetailsParametersList.append((identifiers, ()))
+    override func sk2StoreProduct(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct> {
+        invokedSk2StoreProduct = true
+        invokedSk2StoreProductCount += 1
+        invokedSk2StoreProductParameters = (identifiers, ())
+        invokedSk2StoreProductParametersList.append((identifiers, ()))
         return Set()
     }
 

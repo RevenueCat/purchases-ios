@@ -20,7 +20,7 @@
 
 + (void)checkAPI {
     RCPackage *p;
-    RCProductDetails *pw = p.productDetails;
+    RCStoreProduct *pw = p.storeProduct;
     NSString *i = p.identifier;
     RCPackageType t = p.packageType;
     NSString *lps = p.localizedPriceString;
