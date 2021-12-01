@@ -46,9 +46,8 @@ platform :ios do
       step_name: "scan - iPhone", 
       devices: ["iPhone 8 (14.5)", "iPhone 12 (15.0)"],
       scheme: "UnitTests",
-      testplan: "UnitTests",
+      testplan: "Coverage",
       prelaunch_simulator: true,
-      scheme: "UnitTests",
       output_types: '',
       fail_build: false,
       result_bundle: true

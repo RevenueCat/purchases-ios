@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "0F20159C-1CBD-47B2-BA13-2AFF518106DE",
+      "name" : "Configuration 1",
+      "options" : {
+        "testTimeoutsEnabled" : true
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:RevenueCat.xcodeproj",
+      "identifier" : "2DEAC2D926EFE46E006914ED",
+      "name" : "UnitTestsHostApp"
+    },
+    "testExecutionOrdering" : "random",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DC5621D24EC63430031F69B",
+        "name" : "RevenueCatTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DAC5F7126F13C9800C5258F",
+        "name" : "StoreKitUnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}

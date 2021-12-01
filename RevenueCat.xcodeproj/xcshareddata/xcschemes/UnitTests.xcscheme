@@ -32,6 +32,9 @@
             reference = "container:UnitTests.xctestplan"
             default = "YES">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Coverage.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference

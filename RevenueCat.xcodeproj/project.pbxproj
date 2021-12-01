@@ -975,6 +975,7 @@
 			children = (
 				B3B4E76026E036E700C200D3 /* RevenueCat.xctestplan */,
 				2D545DBF26F8F96D0044BAC9 /* UnitTests.xctestplan */,
+				57CC94C92757EEA9001F34D6 /* Coverage.xctestplan */,
 				2DC5621724EC63420031F69B /* Purchases */,
 				2DC5622224EC63430031F69B /* PurchasesTests */,
 				2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */,
