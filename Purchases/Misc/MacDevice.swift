@@ -13,7 +13,6 @@
 
 #if os(macOS) || targetEnvironment(macCatalyst)
 
-import Foundation
 #if canImport(IOKit)
 import IOKit
 #endif
