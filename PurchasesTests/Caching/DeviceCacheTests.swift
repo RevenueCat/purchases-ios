@@ -189,7 +189,7 @@ class DeviceCacheTests: XCTestCase {
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
-        let optionalOffering = OfferingsFactory().createOffering(fromStoreProductsByID: products, offeringData: [
+        let optionalOffering = OfferingsFactory().createOffering(from: products, offeringData: [
             "identifier": offeringIdentifier,
             "description": serverDescription,
             "packages": [

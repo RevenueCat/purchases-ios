@@ -17,15 +17,14 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(fromStoreProductsByID storeProductsByID: [String: StoreProduct],
-                         data: [String: Any]) -> Offerings? {
+    func createOfferings(from storeProductsByID: [String: StoreProduct], data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
         }
 
         let offerings = offeringsData.reduce([String: Offering]()) { (dict, offeringData) -> [String: Offering] in
             var dict = dict
-            if let offering = createOffering(fromStoreProductsByID: storeProductsByID,
+            if let offering = createOffering(from: storeProductsByID,
                                              offeringData: offeringData) {
                 dict[offering.identifier] = offering
                 if offering.availablePackages.isEmpty {
@@ -44,8 +43,7 @@ class OfferingsFactory {
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    func createOffering(fromStoreProductsByID storeProductsByID: [String: StoreProduct],
-                        offeringData: [String: Any]) -> Offering? {
+    func createOffering(from storeProductsByID: [String: StoreProduct], offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],
               let serverDescription = offeringData["description"] as? String else {
@@ -53,7 +51,7 @@ class OfferingsFactory {
         }
 
         let availablePackages = packagesData.compactMap { packageData -> Package? in
-            createPackage(withData: packageData,
+            createPackage(with: packageData,
                           storeProductsByID: storeProductsByID,
                           offeringIdentifier: offeringIdentifier)
         }
@@ -65,7 +63,7 @@ class OfferingsFactory {
                 availablePackages: availablePackages)
     }
 
-    func createPackage(withData data: [String: Any],
+    func createPackage(with data: [String: Any],
                        storeProductsByID: [String: StoreProduct],
                        offeringIdentifier: String) -> Package? {
         guard let platformProductIdentifier = data["platform_product_identifier"] as? String,
