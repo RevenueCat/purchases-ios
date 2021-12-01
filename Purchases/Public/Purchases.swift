@@ -1220,7 +1220,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(iOS 15.0, macOS 12, *)
-    func showManageSubscription() async throws {
+    func showManageSubscriptions() async throws {
         return try await showManageSubscriptionsAsync()
     }
 
