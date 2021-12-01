@@ -1520,7 +1520,7 @@
 			mainGroup = 352629F41F7C4B9100C04F2C;
 			packageReferences = (
 				2D803F6126F144830069D717 /* XCRemoteSwiftPackageReference "nimble" */,
-				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */,
+				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -2535,7 +2535,7 @@
 				kind = branch;
 			};
 		};
-		2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */ = {
+		2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AliSoftware/OHHTTPStubs.git";
 			requirement = {
@@ -2563,22 +2563,22 @@
 		};
 		2D9C5ED026F2816F0057FC45 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubs;
 		};
 		2D9C5ED226F2816F0057FC45 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
 		2D9C5ED426F281750057FC45 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubs;
 		};
 		2D9C5ED626F281750057FC45 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
