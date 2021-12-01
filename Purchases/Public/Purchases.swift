@@ -1261,7 +1261,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
+    func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
         return try await beginRefundRequestAsync(for: productID)
     }
 
