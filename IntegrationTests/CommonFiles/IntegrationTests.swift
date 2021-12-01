@@ -25,7 +25,7 @@ class IntegrationTests: XCTestCase {
         RCIntegrationRunner().start()
     }
 
-    func testCanFetchPurchaserInfo() throws {
+    func testCanFetchCustomerInfo() throws {
         let integrationRunner = RCIntegrationRunner()
         integrationRunner.start()
         let expectation = XCTestExpectation(description: "get purchaserInfo")
