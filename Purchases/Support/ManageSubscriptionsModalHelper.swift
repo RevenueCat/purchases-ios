@@ -35,13 +35,13 @@ class ManageSubscriptionsModalHelper {
         let currentAppUserID = identityManager.currentAppUserID
         customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
-                let message = "Failed to get managemementURL from PurchaserInfo. Details: \(error.localizedDescription)"
+                let message = "Failed to get managemementURL from CustomerInfo. Details: \(error.localizedDescription)"
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
                 return
             }
 
             guard let customerInfo = maybeCustomerInfo else {
-                let message = "Failed to get managemementURL from PurchaserInfo. Details: customerInfo is nil."
+                let message = "Failed to get managemementURL from CustomerInfo. Details: customerInfo is nil."
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
                 return
             }

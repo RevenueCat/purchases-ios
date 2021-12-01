@@ -5,7 +5,7 @@ import Nimble
 
 class DateFormatterExtensionTests: XCTestCase {
     
-    func testDateFromBytesReturnsCorrectValueIfPossible() {
+    func testDateFromBytesReturnsCorrectValueIfPossible() throws {
         let timeZone = TimeZone(identifier: "UTC")
         let dateComponents = DateComponents(timeZone: timeZone,
                                             year: 2020,
@@ -14,12 +14,13 @@ class DateFormatterExtensionTests: XCTestCase {
                                             hour: 19,
                                             minute: 36,
                                             second: 40)
-        let date = Calendar.current.date(from: dateComponents)
-        guard let dateBytes = "2020-07-14T19:36:40Z".data(using: .ascii) else { fatalError() }
+        let date = try XCTUnwrap(Calendar.current.date(from: dateComponents))
+        let dateBytes = try XCTUnwrap("2020-07-14T19:36:40Z".data(using: .ascii))
+
         expect(ArraySlice(dateBytes).toDate()) == date
     }
 
-    func testDateWithMillisecondsFromBytesReturnsCorrectValueIfPossible() {
+    func testDateWithMillisecondsFromBytesReturnsCorrectValueIfPossible() throws {
         let timeZone = TimeZone(identifier: "UTC")
         let dateComponents = DateComponents(timeZone: timeZone,
                                             year: 2020,
@@ -29,10 +30,45 @@ class DateFormatterExtensionTests: XCTestCase {
                                             minute: 36,
                                             second: 40,
                                             nanosecond: 202_000_000)
-        let date = Calendar.current.date(from: dateComponents)
-        guard let dateBytes = "2020-07-14T19:36:40.202Z".data(using: .ascii) else { fatalError() }
-        let receivedDate = ArraySlice(dateBytes).toDate()
-        expect(receivedDate!.timeIntervalSince1970).to(beCloseTo(date!.timeIntervalSince1970))
+        let date = try XCTUnwrap(Calendar.current.date(from: dateComponents))
+        let dateBytes = try XCTUnwrap("2020-07-14T19:36:40.202Z".data(using: .ascii))
+        let receivedDate = try XCTUnwrap(ArraySlice(dateBytes).toDate())
+
+        expect(receivedDate.timeIntervalSince1970).to(beCloseTo(date.timeIntervalSince1970))
+    }
+
+    func testISODateFormatterDecodesDateWithMilliseconds() throws {
+        let timeZone = TimeZone(identifier: "UTC")
+        let dateComponents = DateComponents(timeZone: timeZone,
+                                            year: 2020,
+                                            month: 7,
+                                            day: 14,
+                                            hour: 19,
+                                            minute: 36,
+                                            second: 40,
+                                            nanosecond: 202_000_000)
+
+        let result = try XCTUnwrap(ISO8601DateFormatter.default.date(from: "2020-07-14T19:36:40.202Z"))
+        let expected = try XCTUnwrap(Calendar.current.date(from: dateComponents))
+
+        expect(result.timeIntervalSince1970).to(beCloseTo(expected.timeIntervalSince1970))
+    }
+
+    func testISODateFormatterDecodesDateWithNoMilliseconds() throws {
+        let timeZone = TimeZone(identifier: "UTC")
+        let dateComponents = DateComponents(timeZone: timeZone,
+                                            year: 2020,
+                                            month: 7,
+                                            day: 14,
+                                            hour: 19,
+                                            minute: 36,
+                                            second: 40,
+                                            nanosecond: 0)
+
+        let result = try XCTUnwrap(ISO8601DateFormatter.default.date(from: "2020-07-14T19:36:40Z"))
+        let expected = try XCTUnwrap(Calendar.current.date(from: dateComponents))
+
+        expect(result.timeIntervalSince1970).to(beCloseTo(expected.timeIntervalSince1970))
     }
 
     func testDateFromBytesReturnsNilIfItCantBeParsedAsString() {
@@ -49,13 +85,13 @@ class DateFormatterExtensionTests: XCTestCase {
     }
 
     func testDateFromStringReturnsNilIfStringCantBeParsed() {
-        expect(DateFormatter().date(fromString: "asdb")).to(beNil())
-        expect(DateFormatter.iso8601SecondsDateFormatter.date(fromString:"asdf")).to(beNil())
+        expect(DateFormatter().date(from: "asdb")).to(beNil())
+        expect(ISO8601DateFormatter().date(from: "asdf")).to(beNil())
     }
 
     func testDateFromStringReturnsNilIfStringIsNil() {
-        expect(DateFormatter().date(fromString: nil)).to(beNil())
-        expect(DateFormatter.iso8601SecondsDateFormatter.date(fromString: nil)).to(beNil())
+        expect(DateFormatter().date(from: nil)).to(beNil())
+        expect(ISO8601DateFormatter().date(from: nil)).to(beNil())
     }
     
 }
