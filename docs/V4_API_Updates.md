@@ -4,6 +4,8 @@ but a number of updates make our Swift API more idomatic. We'll be updating this
 
 To start us off, Our framework name changed from `Purchases` to `RevenueCat` 😻! We also updated all references of `Purchaser` to `Customer` to be more consistent across our platform. 
 
+If you're using `Carthage`, make sure to use the new `RevenueCat.framework` or `RevenueCat.xcframework` instead of the old `Purchases`.
+
 ### Xcode version requirements and updated deployment targets
 `purchases-ios` v4 requires using Xcode 13.0 or newer. 
 It also updates the minimum deployment targets for iOS, macOS and tvOS. 
@@ -134,6 +136,18 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>Purchases -productsWithIdentifiers:completion:</td>
 			<td>Purchases -getProductsWithIdentifiers:completion:</td>
 		</tr>
+		<tr>
+			<td>Purchases -createAlias:</td>
+			<td>Purchases -logIn:</td>
+		</tr>
+		<tr>
+			<td>Purchases -identify:</td>
+			<td>Purchases -logIn:</td>
+		</tr>
+		<tr>
+			<td>Purchases -reset:</td>
+			<td>Purchases -logOut:</td>
+		</tr>
 	</tbody>
 </table>
 
@@ -154,8 +168,12 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>Offering</td>
 		</tr>
 		<tr>
+			<td>Purchases.ErrorDomain</td>
+			<td>See error handling below</td>
+		</tr>
+		<tr>
 			<td>Purchases.ErrorCode.Code</td>
-			<td>RCPurchasesErrorCodeDomain</td>
+			<td>See error handling below</td>
 		</tr>
 		<tr>
 			<td>Purchases.Package</td>
@@ -214,6 +232,14 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>PackageType</td>
 		</tr>
 		<tr>
+			<td>Package.product</td>
+			<td>Package.productDetails</td>
+		</tr>
+		<tr>
+			<td>Package.product.price: NSDecimalNumber</td>
+			<td>Package.productDetails.price: Decimal</td>
+		</tr>
+		<tr>
 			<td>RCDeferredPromotionalPurchaseBlock</td>
 			<td>DeferredPromotionalPurchaseBlock</td>
 		</tr>
@@ -240,6 +266,10 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 				<tr>
 			<td>Purchases.RevenueCatBackendErrorCode</td>
 			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>Purchases.ErrorCode.operationAlreadyInProgressError</td>
+			<td>RevenueCat.ErrorCode.operationAlreadyInProgressForProductError</td>
 		</tr>
 		<tr>
 			<td>Purchases.ErrorUtils</td>
@@ -271,40 +301,52 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>invalidateCustomerInfoCache</td>
 		</tr>
 		<tr>
-			<td>logIn(_ appUserId, _ completion)</td>
-			<td>logIn(appUserId:completion)</td>
+			<td>logIn(_ appUserId:, _ completion:)</td>
+			<td>logIn(appUserId:completion:)</td>
 		</tr>
 		<tr>
-			<td>purchaserInfo(_ completion)</td>
-			<td>getCustomerInfo(completion)</td>
+			<td>createAlias(_ alias:, _ completion:)</td>
+			<td>logIn(_ appUserID:, completion:)</td>
 		</tr>
 		<tr>
-			<td>offerings(_completion)</td>
-			<td>getOfferings(completion)</td>
+			<td>identify(_ appUserID:, _ completion:)</td>
+			<td>logIn(_ appUserID:, completion:)</td>
 		</tr>
 		<tr>
-			<td>products(_ productIdentifiers, _ completion)</td>
-			<td>getProducts(identifiers: completion)</td>
+			<td>reset(completion:)</td>
+			<td>logOut(completion:)</td>
 		</tr>
 		<tr>
-			<td>purchaseProduct(_ product, _ completion)</td>
-			<td>purchase(product, completion)</td>
+			<td>purchaserInfo(_ completion:)</td>
+			<td>getCustomerInfo(completion:)</td>
 		</tr>
 		<tr>
-			<td>purchasePackage(_ package, _ completion)</td>
-			<td>purchase(package, completion)</td>
+			<td>offerings(_ completion:)</td>
+			<td>getOfferings(completion:)</td>
 		</tr>
 		<tr>
-			<td>restoreTransactions(_completion)</td>
-			<td>restoreTransactions(completion)</td>
+			<td>products(_ productIdentifiers:, _ completion:)</td>
+			<td>getProducts(identifiers: completion:)</td>
 		</tr>
 		<tr>
-			<td>syncPurchases(_ completion)</td>
-			<td>syncPurchases(completion)</td>
+			<td>purchaseProduct(_ product:, _ completion:)</td>
+			<td>purchase(product:, completion:)</td>
 		</tr>
 		<tr>
-			<td>paymentDiscount(for:product:completion)</td>
-			<td>paymentDiscount(forProductDiscount:product:completion)</td>
+			<td>purchasePackage(_ package:, _ completion:)</td>
+			<td>purchase(package:, completion:)</td>
+		</tr>
+		<tr>
+			<td>restoreTransactions(_ completion:)</td>
+			<td>restoreTransactions(completion:)</td>
+		</tr>
+		<tr>
+			<td>syncPurchases(_ completion:)</td>
+			<td>syncPurchases(completion:)</td>
+		</tr>
+		<tr>
+			<td>paymentDiscount(for:product:completion:)</td>
+			<td>paymentDiscount(forProductDiscount:product:completion:)</td>
 		</tr>
 		<tr>
 			<td>purchaseProduct(_:discount:_)</td>
@@ -319,10 +361,33 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		</tr>
 		<tr>
 			<td>purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo)</td>
-			<td>purchases(_ purchases: Purchases, didReceiveUpdated customerInfo: CustomerInfo)</td>
+			<td>purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo)</td>
 		</tr>
 	</tbody>
 </table>
+
+### Swift Error handling
+
+Prior to the Swift migration, `Purchases` exposed errors as `NSError`s, so one could detect errors like this:
+```swift
+if error.domain == Purchases.ErrorDomain {
+	switch Purchases.ErrorCode(_nsError: error).code {
+		case .purchaseInvalidError: break
+		default: break
+	}
+}
+```
+Starting from Version 4, this becomes much simpler:
+```swift
+if let error = error as? RevenueCat.ErrorCode {
+	switch error {
+		case .purchaseInvalidError: break
+		default: break
+	}
+} else {
+	// Error is a different type
+}
+```
 
 ## Reporting undocumented issues:
 
