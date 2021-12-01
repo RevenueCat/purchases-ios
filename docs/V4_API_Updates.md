@@ -136,6 +136,18 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>Purchases -productsWithIdentifiers:completion:</td>
 			<td>Purchases -getProductsWithIdentifiers:completion:</td>
 		</tr>
+		<tr>
+			<td>Purchases -createAlias:</td>
+			<td>Purchases -logIn:</td>
+		</tr>
+		<tr>
+			<td>Purchases -identify:</td>
+			<td>Purchases -logIn:</td>
+		</tr>
+		<tr>
+			<td>Purchases -reset:</td>
+			<td>Purchases -logOut:</td>
+		</tr>
 	</tbody>
 </table>
 
@@ -291,6 +303,18 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		<tr>
 			<td>logIn(_ appUserId:, _ completion:)</td>
 			<td>logIn(appUserId:completion:)</td>
+		</tr>
+		<tr>
+			<td>createAlias(_ alias:, _ completion:)</td>
+			<td>logIn(_ appUserID:, completion:)</td>
+		</tr>
+		<tr>
+			<td>identify(_ appUserID:, _ completion:)</td>
+			<td>logIn(_ appUserID:, completion:)</td>
+		</tr>
+		<tr>
+			<td>reset(completion:)</td>
+			<td>logOut(completion:)</td>
 		</tr>
 		<tr>
 			<td>purchaserInfo(_ completion:)</td>
