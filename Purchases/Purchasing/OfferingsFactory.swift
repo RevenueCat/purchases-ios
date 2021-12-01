@@ -17,7 +17,7 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(fromStoreProductByID storeProductsByID: [String: StoreProduct],
+    func createOfferings(fromStoreProductsByID storeProductsByID: [String: StoreProduct],
                          data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
@@ -25,7 +25,7 @@ class OfferingsFactory {
 
         let offerings = offeringsData.reduce([String: Offering]()) { (dict, offeringData) -> [String: Offering] in
             var dict = dict
-            if let offering = createOffering(fromStoreProductByID: storeProductsByID,
+            if let offering = createOffering(fromStoreProductsByID: storeProductsByID,
                                              offeringData: offeringData) {
                 dict[offering.identifier] = offering
                 if offering.availablePackages.isEmpty {
@@ -44,7 +44,7 @@ class OfferingsFactory {
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    func createOffering(fromStoreProductByID storeProductsByID: [String: StoreProduct],
+    func createOffering(fromStoreProductsByID storeProductsByID: [String: StoreProduct],
                         offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],

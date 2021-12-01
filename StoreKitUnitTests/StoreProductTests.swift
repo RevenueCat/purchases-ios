@@ -34,22 +34,22 @@ class StoreProductTests: StoreKitConfigTestCase {
         ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
         let sk1StoreProduct = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
-        let sk1StoreProductByID = sk1StoreProduct.reduce(into: [:]) { partialResult, wrapper in
+        let sk1StoreProductsByID = sk1StoreProduct.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
         let sk2Fetcher = ProductsFetcherSK2()
         let sk2StoreProduct = try await sk2Fetcher.products(identifiers: productIdentifiers)
-        let sk2StoreProductByID = sk2StoreProduct.reduce(into: [:]) { partialResult, wrapper in
+        let sk2StoreProductsByID = sk2StoreProduct.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
         expect(sk1StoreProduct.count) == productIdentifiers.count
         expect(sk1StoreProduct.count) == sk2StoreProduct.count
 
-        for sk1ProductID in sk1StoreProductByID.keys {
-            let sk1Product = try XCTUnwrap(sk1StoreProductByID[sk1ProductID])
-            let equivalentSK2Product = try XCTUnwrap(sk2StoreProductByID[sk1ProductID])
+        for sk1ProductID in sk1StoreProductsByID.keys {
+            let sk1Product = try XCTUnwrap(sk1StoreProductsByID[sk1ProductID])
+            let equivalentSK2Product = try XCTUnwrap(sk2StoreProductsByID[sk1ProductID])
 
             expect(sk1Product.productIdentifier) == equivalentSK2Product.productIdentifier
             expect(sk1Product.localizedDescription) == equivalentSK2Product.localizedDescription

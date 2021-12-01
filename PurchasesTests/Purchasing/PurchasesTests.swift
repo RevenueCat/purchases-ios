@@ -1801,7 +1801,7 @@ class PurchasesTests: XCTestCase {
     func testProductInfoIsCachedForOfferings() {
         setupPurchases()
         mockOfferingsManager.stubbedOfferingsCompletionResult =
-            (offeringsFactory.createOfferings(fromStoreProductByID: [:], data: [:]), nil)
+            (offeringsFactory.createOfferings(fromStoreProductsByID: [:], data: [:]), nil)
         self.purchases?.getOfferings { (newOfferings, _) in
             let storeProduct = newOfferings!["base"]!.monthly!.storeProduct;
             let product = (storeProduct as! SK1StoreProduct).underlyingSK1Product
@@ -2387,7 +2387,7 @@ class PurchasesTests: XCTestCase {
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()
         mockOfferingsManager.stubbedOfferingsCompletionResult =
-            (offeringsFactory.createOfferings(fromStoreProductByID: [:], data: [:]), nil)
+            (offeringsFactory.createOfferings(fromStoreProductsByID: [:], data: [:]), nil)
         self.purchases!.getOfferings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchase(package: package) { (tx, info, error, userCancelled) in
@@ -2438,7 +2438,7 @@ class PurchasesTests: XCTestCase {
         var receivedError: NSError? = nil
         var secondCompletionCalled = false
         mockOfferingsManager.stubbedOfferingsCompletionResult =
-            (offeringsFactory.createOfferings(fromStoreProductByID: [:], data: [:]), nil)
+            (offeringsFactory.createOfferings(fromStoreProductsByID: [:], data: [:]), nil)
         self.purchases!.getOfferings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchase(package: package) { _,_,_,_  in
