@@ -53,9 +53,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2CheckEligibilityAsync() async throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try checkForiOS15APIAvailableOrSkipTest()
 
         let products = ["product_id",
                         "com.revenuecat.monthly_4.99.1_week_intro",
@@ -80,9 +78,8 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityNoAsync() throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try checkForiOS15APIAvailableOrSkipTest()
+
         let products = ["product_id",
                         "com.revenuecat.monthly_4.99.1_week_intro",
                         "com.revenuecat.annual_39.99.2_week_intro",
