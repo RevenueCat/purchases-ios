@@ -32,9 +32,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testFetchProductsFromOptimalStoreKitVersion() throws {
-        guard #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
