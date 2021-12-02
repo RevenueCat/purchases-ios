@@ -52,6 +52,8 @@ func checkPurchasesEnums() {
          .intro,
          .trial:
         print(periodType!)
+    @unknown default:
+        fatalError()
     }
 
     switch oType! {
@@ -59,6 +61,8 @@ func checkPurchasesEnums() {
          .familyShared,
          .unknown:
         print(oType!)
+    @unknown default:
+        fatalError()
     }
 
     switch logLevel! {
@@ -67,6 +71,8 @@ func checkPurchasesEnums() {
          .debug,
          .error:
         print(logLevel!)
+    @unknown default:
+        fatalError()
     }
 }
 
