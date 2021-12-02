@@ -283,9 +283,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                 backend: backend,
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager)
-        let manageSubsModalHelper = ManageSubscriptionsModalHelper(systemInfo: systemInfo,
-                                                                   customerInfoManager: customerInfoManager,
-                                                                   identityManager: identityManager)
+        let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
+                                                         customerInfoManager: customerInfoManager,
+                                                         identityManager: identityManager)
         let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo)
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                                           storeKitWrapper: storeKitWrapper,
@@ -298,7 +298,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           identityManager: identityManager,
                                                           receiptParser: receiptParser,
                                                           deviceCache: deviceCache,
-                                                          manageSubscriptionsModalHelper: manageSubsModalHelper,
+                                                          manageSubscriptionsHelper: manageSubsHelper,
                                                           beginRefundRequestHelper: beginRefundRequestHelper)
         let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                                                            introEligibilityCalculator: introCalculator,
@@ -1196,8 +1196,8 @@ public extension Purchases {
 #if os(iOS) || os(macOS)
 
     /**
-     * Use this function to open the manage subscriptions modal.
-     * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
+     * Use this function to open the manage subscriptions page.
+     * If the manage subscriptions page can't be opened, the managementURL in the customerInfo will be opened.
      * If managementURL is not available, the App Store's subscription management section will be opened.
      *
      * - Parameter completion: A completion block that is called when the modal is closed.
@@ -1205,8 +1205,8 @@ public extension Purchases {
      */
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc func showManageSubscriptionModal(completion: @escaping (Error?) -> Void) {
-        purchasesOrchestrator.showManageSubscriptionModal(completion: completion)
+    @objc func showManageSubscriptions(completion: @escaping (Error?) -> Void) {
+        purchasesOrchestrator.showManageSubscription(completion: completion)
     }
 
     /**
@@ -1220,8 +1220,8 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(iOS 15.0, macOS 12, *)
-    func showManageSubscriptionModal() async throws {
-        return try await showManageSubscriptionModalAsync()
+    func showManageSubscriptions() async throws {
+        return try await showManageSubscriptionsAsync()
     }
 
 #endif
@@ -1261,7 +1261,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
+    func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
         return try await beginRefundRequestAsync(for: productID)
     }
 

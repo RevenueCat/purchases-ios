@@ -7,21 +7,21 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  MockManageSubsModalHelper.swift
+//  MockManageSubsHelper.swift
 //
 //  Created by César de la Vega on 10/8/21.
 
 import Foundation
 @testable import RevenueCat
 
-class MockManageSubscriptionsModalHelper: ManageSubscriptionsModalHelper {
+class MockManageSubscriptionsHelper: ManageSubscriptionsHelper {
 
     var mockError: Error?
 
 #if os(iOS) || os(macOS)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    override func showManageSubscriptionModal(completion: @escaping (Result<Void, Error>) -> Void) {
+    override func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
         if let error = mockError {
             completion(.failure(error))
         } else {

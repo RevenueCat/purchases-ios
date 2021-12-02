@@ -30,7 +30,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     var identityManager: MockIdentityManager!
     var receiptParser: MockReceiptParser!
     var deviceCache: MockDeviceCache!
-    var mockManageSubsModalHelper: MockManageSubscriptionsModalHelper!
+    var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
     var orchestrator: PurchasesOrchestrator!
@@ -57,7 +57,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             deviceCache: deviceCache,
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
-        mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
+        mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                        customerInfoManager: customerInfoManager,
                                                                        identityManager: identityManager)
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
@@ -72,7 +72,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              identityManager: identityManager,
                                              receiptParser: receiptParser,
                                              deviceCache: deviceCache,
-                                             manageSubscriptionsModalHelper: mockManageSubsModalHelper,
+                                             manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
         setUpStoreKit2Listener()
     }
@@ -222,12 +222,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(mockListener.invokedHandle) == false
     }
 
-    func testShowManageSubscriptionModalCallsCompletionWithErrorIfThereIsAFailure() {
-        let message = "Failed to get managemementURL from CustomerInfo. Details: customerInfo is nil."
-        mockManageSubsModalHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
+    func testShowManageSubscriptionsCallsCompletionWithErrorIfThereIsAFailure() {
+        let message = "Failed to get managementURL from CustomerInfo. Details: customerInfo is nil."
+        mockManageSubsHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
         var receivedError: Error?
         var completionCalled = false
-        orchestrator.showManageSubscriptionModal { maybeError in
+        orchestrator.showManageSubscription { maybeError in
             completionCalled = true
             receivedError = maybeError
         }

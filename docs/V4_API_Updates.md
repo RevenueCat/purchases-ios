@@ -389,6 +389,11 @@ if let error = error as? RevenueCat.ErrorCode {
 }
 ```
 
+### New APIs
+
+- `showManageSuscriptions(completion:)`: Use this method to show the subscription management for the current user. Depending on where they made the purchase and their OS version, this might take them to the `managementURL`, or open the iOS Subscription Management page. 
+- `beginRefundRequest(for:)`: Use this method to begin a refund request for a purchase, specifying the product identifier.
+
 ## Reporting undocumented issues:
 
 Feel free to file an issue! [New RevenueCat Issue](https://github.com/RevenueCat/purchases-ios/issues/new/).

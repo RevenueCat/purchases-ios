@@ -55,7 +55,7 @@ class PurchasesOrchestrator {
     private let identityManager: IdentityManager
     private let receiptParser: ReceiptParser
     private let deviceCache: DeviceCache
-    private let manageSubscriptionsModalHelper: ManageSubscriptionsModalHelper
+    private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let lock = NSRecursiveLock()
 
@@ -73,7 +73,7 @@ class PurchasesOrchestrator {
          identityManager: IdentityManager,
          receiptParser: ReceiptParser,
          deviceCache: DeviceCache,
-         manageSubscriptionsModalHelper: ManageSubscriptionsModalHelper,
+         manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper) {
         self.productsManager = productsManager
         self.storeKitWrapper = storeKitWrapper
@@ -86,7 +86,7 @@ class PurchasesOrchestrator {
         self.identityManager = identityManager
         self.receiptParser = receiptParser
         self.deviceCache = deviceCache
-        self.manageSubscriptionsModalHelper = manageSubscriptionsModalHelper
+        self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             storeKit2Listener.listenForTransactions()
@@ -271,8 +271,8 @@ class PurchasesOrchestrator {
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscriptionModal(completion: @escaping (Error?) -> Void) {
-        self.manageSubscriptionsModalHelper.showManageSubscriptionModal { result in
+    func showManageSubscription(completion: @escaping (Error?) -> Void) {
+        self.manageSubscriptionsHelper.showManageSubscriptions { result in
             switch result {
             case .failure(let error):
                 completion(error)
