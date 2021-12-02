@@ -13,7 +13,7 @@
 
 import Foundation
 
-struct FatalErrorUtil {
+enum FatalErrorUtil {
 
     fileprivate static var fatalErrorClosure: (String, StaticString, UInt) -> Never = defaultFatalErrorClosure
 

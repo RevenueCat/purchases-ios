@@ -12,6 +12,7 @@ excluded:
 opt_in_rules:
   - sorted_imports
   - missing_docs
+  - convenience_type
 
 identifier_name:
   max_length: 

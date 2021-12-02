@@ -323,7 +323,7 @@ class DeviceCache {
 
     }
 
-    fileprivate struct CacheKeyBases {
+    fileprivate enum CacheKeyBases {
 
         static let keyBase = "com.revenuecat.userdefaults."
         static let customerInfoAppUserDefaults = "\(keyBase)purchaserInfo."
