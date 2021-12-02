@@ -9,7 +9,6 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : false,
     "targetForVariableExpansion" : {
       "containerPath" : "container:RevenueCat.xcodeproj",
       "identifier" : "2DEAC2D926EFE46E006914ED",
@@ -19,6 +18,13 @@
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DC5621D24EC63430031F69B",
+        "name" : "RevenueCatTests"
+      }
+    },
     {
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
