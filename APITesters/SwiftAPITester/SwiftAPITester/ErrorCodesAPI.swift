@@ -50,5 +50,7 @@ func checkPurchasesErrorCodeEnums() {
          .systemInfoError,
          .beginRefundRequestError:
         print(errCode!)
+    @unknown default:
+        fatalError()
     }
 }

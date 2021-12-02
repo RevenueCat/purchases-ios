@@ -44,6 +44,8 @@ func checkEntitlementInfoEnums() {
          .promotional,
          .unknownStore:
         print(store!)
+    @unknown default:
+        fatalError()
     }
 
     switch pType! {
@@ -51,5 +53,7 @@ func checkEntitlementInfoEnums() {
          .trial,
          .normal:
         print(pType!)
+    @unknown default:
+        fatalError()
     }
 }
