@@ -22,7 +22,10 @@ class StoreKitConfigTestCase: XCTestCase {
 
     private static var hasWaited = false
     private static let waitLock = Lock()
-    private static let waitTimeInSeconds: Double = 20
+    private static let waitTimeInSeconds: Double? = {
+        ProcessInfo.processInfo.environment["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"]
+            .flatMap(Double.init)
+    }()
 
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
@@ -33,9 +36,32 @@ class StoreKitConfigTestCase: XCTestCase {
         testSession.disableDialogs = true
         testSession.clearTransactions()
 
+        self.waitForStoreKitTestIfNeeded()
+
         let suiteName = "StoreKitConfigTests"
         userDefaults = UserDefaults(suiteName: suiteName)
         userDefaults.removePersistentDomain(forName: suiteName)
+    }
+
+}
+
+private extension StoreKitConfigTestCase {
+
+    func waitForStoreKitTestIfNeeded() {
+        // StoreKitTest seems to take a few seconds to initialize, and running tests before that
+        // might result in failure. So we give it a few seconds to load before testing.
+
+        guard let waitTime = Self.waitTimeInSeconds else { return }
+
+        Self.waitLock.perform {
+            if !Self.hasWaited {
+                Logger.warn("Delaying tests for \(waitTime) seconds for StoreKit initialization...")
+
+                Thread.sleep(forTimeInterval: waitTime)
+
+                Self.hasWaited = true
+            }
+        }
     }
 
 }

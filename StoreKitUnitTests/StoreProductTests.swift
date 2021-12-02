@@ -18,6 +18,8 @@ import XCTest
 
 class StoreProductTests: StoreKitConfigTestCase {
 
+    private static let requestTimeout: DispatchTimeInterval = .seconds(20)
+
     // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
     // Although the method isn't supposed to be called because of our @available marks,
     // everything in this class will still be called by XCTest, and it will cause errors.
@@ -66,7 +68,8 @@ class StoreProductTests: StoreKitConfigTestCase {
 
     func testSk1DetailsWrapsCorrectly() throws {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
+        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
+                                            requestTimeout: Self.requestTimeout)
         var callbackCalled = false
 
         sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { storeProductSet in
@@ -84,7 +87,7 @@ class StoreProductTests: StoreKitConfigTestCase {
             expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
         }
 
-        expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
+        expect(callbackCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
     }
 
     // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
