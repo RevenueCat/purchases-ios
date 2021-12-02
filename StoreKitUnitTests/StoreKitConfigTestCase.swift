@@ -20,10 +20,6 @@ import XCTest
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class StoreKitConfigTestCase: XCTestCase {
 
-    private static var hasWaited = false
-    private static let waitLock = Lock()
-    private static let waitTimeInSeconds: Double = 20
-
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
 
