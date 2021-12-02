@@ -184,12 +184,12 @@ class DeviceCacheTests: XCTestCase {
 
     func testOfferingsAreProperlyCached() {
         let products = [
-            "com.myproduct.annual": SK1ProductDetails(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": SK1ProductDetails(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": SK1StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.monthly": SK1StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
-        let optionalOffering = OfferingsFactory().createOffering(fromProductDetailsByID: products, offeringData: [
+        let optionalOffering = OfferingsFactory().createOffering(from: products, offeringData: [
             "identifier": offeringIdentifier,
             "description": serverDescription,
             "packages": [

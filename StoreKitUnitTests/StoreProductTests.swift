@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ProductDetailsTests.swift
+//  StoreProductTests.swift
 //
 //  Created by Andrés Boedo on 1/9/21.
 
@@ -16,7 +16,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-class ProductDetailsTests: StoreKitConfigTestCase {
+class StoreProductTests: StoreKitConfigTestCase {
 
     // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
     // Although the method isn't supposed to be called because of our @available marks,
@@ -33,23 +33,23 @@ class ProductDetailsTests: StoreKitConfigTestCase {
             "lifetime"
         ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
-        let sk1ProductDetails = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
-        let sk1ProductDetailsByID = sk1ProductDetails.reduce(into: [:]) { partialResult, wrapper in
+        let sk1StoreProduct = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
+        let sk1StoreProductsByID = sk1StoreProduct.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
         let sk2Fetcher = ProductsFetcherSK2()
-        let sk2ProductDetails = try await sk2Fetcher.products(identifiers: productIdentifiers)
-        let sk2ProductDetailsByID = sk2ProductDetails.reduce(into: [:]) { partialResult, wrapper in
+        let sk2StoreProduct = try await sk2Fetcher.products(identifiers: productIdentifiers)
+        let sk2StoreProductsByID = sk2StoreProduct.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
-        expect(sk1ProductDetails.count) == productIdentifiers.count
-        expect(sk1ProductDetails.count) == sk2ProductDetails.count
+        expect(sk1StoreProduct.count) == productIdentifiers.count
+        expect(sk1StoreProduct.count) == sk2StoreProduct.count
 
-        for sk1ProductID in sk1ProductDetailsByID.keys {
-            let sk1Product = try XCTUnwrap(sk1ProductDetailsByID[sk1ProductID])
-            let equivalentSK2Product = try XCTUnwrap(sk2ProductDetailsByID[sk1ProductID])
+        for sk1ProductID in sk1StoreProductsByID.keys {
+            let sk1Product = try XCTUnwrap(sk1StoreProductsByID[sk1ProductID])
+            let equivalentSK2Product = try XCTUnwrap(sk2StoreProductsByID[sk1ProductID])
 
             expect(sk1Product.productIdentifier) == equivalentSK2Product.productIdentifier
             expect(sk1Product.localizedDescription) == equivalentSK2Product.localizedDescription
@@ -71,19 +71,19 @@ class ProductDetailsTests: StoreKitConfigTestCase {
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
         var callbackCalled = false
 
-        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { productDetailsSet in
+        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { storeProductSet in
             callbackCalled = true
-            guard let productDetails = productDetailsSet.first else { fatalError("couldn't get product!") }
+            guard let storeProduct = storeProductSet.first else { fatalError("couldn't get product!") }
 
-            expect(productDetails.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
-            expect(productDetails.localizedDescription) == "Monthly subscription with a 1-week free trial"
-            expect(productDetails.price.description) == "4.99"
-            expect(productDetails.localizedPriceString) == "$4.99"
-            expect(productDetails.productIdentifier) == productIdentifier
-            expect(productDetails.isFamilyShareable) == true
-            expect(productDetails.localizedTitle) == "Monthly Free Trial"
+            expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+            expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
+            expect(storeProduct.price.description) == "4.99"
+            expect(storeProduct.localizedPriceString) == "$4.99"
+            expect(storeProduct.productIdentifier) == productIdentifier
+            expect(storeProduct.isFamilyShareable) == true
+            expect(storeProduct.localizedTitle) == "Monthly Free Trial"
             // open the StoreKit Config file as source code to see the expected value
-            expect(productDetails.subscriptionGroupIdentifier) == "7096FF06"
+            expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
         }
 
         expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
@@ -101,19 +101,19 @@ class ProductDetailsTests: StoreKitConfigTestCase {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk2Fetcher = ProductsFetcherSK2()
 
-        let productDetailsSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+        let storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
 
-        let productDetails = try XCTUnwrap(productDetailsSet.first)
+        let storeProduct = try XCTUnwrap(storeProductSet.first)
 
-        expect(productDetails.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
-        expect(productDetails.localizedDescription) == "Monthly subscription with a 1-week free trial"
-        expect(productDetails.price.description) == "4.99"
-        expect(productDetails.localizedPriceString) == "$4.99"
-        expect(productDetails.productIdentifier) == productIdentifier
-        expect(productDetails.isFamilyShareable) == true
-        expect(productDetails.localizedTitle) == "Monthly Free Trial"
+        expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+        expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
+        expect(storeProduct.price.description) == "4.99"
+        expect(storeProduct.localizedPriceString) == "$4.99"
+        expect(storeProduct.productIdentifier) == productIdentifier
+        expect(storeProduct.isFamilyShareable) == true
+        expect(storeProduct.localizedTitle) == "Monthly Free Trial"
         // open the StoreKit Config file as source code to see the expected value
-        expect(productDetails.subscriptionGroupIdentifier) == "7096FF06"
+        expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
     }
 
 }

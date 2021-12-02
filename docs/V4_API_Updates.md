@@ -233,11 +233,11 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		</tr>
 		<tr>
 			<td>Package.product</td>
-			<td>Package.productDetails</td>
+			<td>Package.storeProduct</td>
 		</tr>
 		<tr>
 			<td>Package.product.price: NSDecimalNumber</td>
-			<td>Package.productDetails.price: Decimal</td>
+			<td>Package.storeProduct.price: Decimal</td>
 		</tr>
 		<tr>
 			<td>RCDeferredPromotionalPurchaseBlock</td>

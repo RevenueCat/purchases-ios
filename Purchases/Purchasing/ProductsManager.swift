@@ -30,13 +30,13 @@ class ProductsManager: NSObject {
     }
 
     func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
-                                            completion: @escaping (Set<ProductDetails>) -> Void) {
+                                            completion: @escaping (Set<StoreProduct>) -> Void) {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.useStoreKit2IfAvailable {
             _ = Task<Void, Never> {
-                let productDetails = await self.sk2ProductDetails(withIdentifiers: identifiers)
-                completion(productDetails)
+                let storeProduct = await self.sk2StoreProduct(withIdentifiers: identifiers)
+                completion(storeProduct)
             }
         } else {
             productsFetcherSK1.products(withIdentifiers: identifiers, completion: completion)
@@ -44,7 +44,7 @@ class ProductsManager: NSObject {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<ProductDetails> {
+    func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<StoreProduct> {
         return await withCheckedContinuation { continuation in
             productsFromOptimalStoreKitVersion(withIdentifiers: identifiers) { result in
                 continuation.resume(returning: result)
@@ -53,10 +53,10 @@ class ProductsManager: NSObject {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2ProductDetails(withIdentifiers identifiers: Set<String>) async -> Set<SK2ProductDetails> {
+    func sk2StoreProduct(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct> {
         do {
-            let productDetails = try await productsFetcherSK2.products(identifiers: identifiers)
-            return Set(productDetails)
+            let storeProduct = try await productsFetcherSK2.products(identifiers: identifiers)
+            return Set(storeProduct)
         } catch {
             Logger.error("Error when fetching SK2 products: \(error.localizedDescription)")
             return Set()

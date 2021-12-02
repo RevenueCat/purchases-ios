@@ -38,7 +38,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<ProductDetails>?
+        var maybeReceivedProducts: Set<StoreProduct>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
@@ -53,9 +53,9 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *),
             systemInfo.useStoreKit2IfAvailable {
-            expect(firstProduct as? SK2ProductDetails).toNot(beNil())
+            expect(firstProduct as? SK2StoreProduct).toNot(beNil())
         } else {
-            expect(firstProduct as? SK1ProductDetails).toNot(beNil())
+            expect(firstProduct as? SK1StoreProduct).toNot(beNil())
         }
         expect(firstProduct.productIdentifier) == identifier
     }
@@ -74,7 +74,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<ProductDetails>?
+        var maybeReceivedProducts: Set<StoreProduct>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
@@ -87,7 +87,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
 
-        expect(firstProduct).to(beAnInstanceOf(SK2ProductDetails.self))
+        expect(firstProduct).to(beAnInstanceOf(SK2StoreProduct.self))
     }
 
     func testFetchProductsFromOptimalStoreKitVersionPrefersSK1ByDefault() throws {
@@ -103,7 +103,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<ProductDetails>?
+        var maybeReceivedProducts: Set<StoreProduct>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
@@ -116,8 +116,8 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
 
-        expect(firstProduct as? SK1ProductDetails).toNot(beNil())
-        expect(firstProduct).to(beAnInstanceOf(SK1ProductDetails.self))
+        expect(firstProduct as? SK1StoreProduct).toNot(beNil())
+        expect(firstProduct).to(beAnInstanceOf(SK1StoreProduct.self))
     }
 
 }

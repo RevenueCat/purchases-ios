@@ -246,7 +246,7 @@ class BackendIntegrationTests: XCTestCase {
         var maybeReceivedEligibility: [String: IntroEligibility]?
         
         Purchases.shared.getOfferings { offerings, error in
-            maybeProductID = offerings?.current?.monthly?.productDetails.productIdentifier
+            maybeProductID = offerings?.current?.monthly?.storeProduct.productIdentifier
             completionCalled = true
         }
         

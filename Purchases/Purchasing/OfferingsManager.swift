@@ -117,7 +117,7 @@ private extension OfferingsManager {
                 result[product.productIdentifier] = product
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(fromProductDetailsByID: productsByID,
+            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
                                                                             data: data) {
                 self.logMissingProductsIfAppropriate(products: productsByID, offeringsData: data)
                 self.deviceCache.cache(offerings: createdOfferings)
@@ -151,7 +151,7 @@ private extension OfferingsManager {
         return Set(productIdenfitiersArray)
     }
 
-    func logMissingProductsIfAppropriate(products: [String: ProductDetails], offeringsData: [String: Any]) {
+    func logMissingProductsIfAppropriate(products: [String: StoreProduct], offeringsData: [String: Any]) {
         guard !products.isEmpty,
               !offeringsData.isEmpty else {
                   return

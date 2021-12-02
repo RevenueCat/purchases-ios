@@ -7,7 +7,7 @@
 //
 // opensource.org/licenses/MIT
 //
-// ProductDetails.swift
+// StoreProduct.swift
 //
 // Created by Andrés Boedo on 7/16/21.
 //
@@ -23,7 +23,7 @@ public typealias SK1Product = SKProduct
 public typealias SK2Product = StoreKit.Product
 
 /// Abstract class that provides access to all of StoreKit's product type's properties.
-@objc(RCProductDetails) public class ProductDetails: NSObject {
+@objc(RCStoreProduct) public class StoreProduct: NSObject {
     public override init() {
         super.init()
 
@@ -33,7 +33,7 @@ public typealias SK2Product = StoreKit.Product
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        return self.productIdentifier == (object as? ProductDetails)?.productIdentifier
+        return self.productIdentifier == (object as? StoreProduct)?.productIdentifier
     }
 
     @objc public var localizedDescription: String { fatalError() }
@@ -75,7 +75,7 @@ public typealias SK2Product = StoreKit.Product
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-@objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
+@objc(RCSK2StoreProduct) public class SK2StoreProduct: StoreProduct {
 
     init(sk2Product: SK2Product) {
         self._underlyingSK2Product = sk2Product
@@ -112,7 +112,7 @@ public typealias SK2Product = StoreKit.Product
 
 }
 
-@objc(RCSK1ProductDetails) public class SK1ProductDetails: ProductDetails {
+@objc(RCSK1StoreProduct) public class SK1StoreProduct: StoreProduct {
 
     @objc public init(sk1Product: SK1Product) {
         self.underlyingSK1Product = sk1Product

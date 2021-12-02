@@ -118,7 +118,7 @@ class PurchasesOrchestrator {
     }
 
     func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: [String],
-                                            completion: @escaping ([ProductDetails]) -> Void) {
+                                            completion: @escaping ([StoreProduct]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -193,7 +193,7 @@ class PurchasesOrchestrator {
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         // todo: clean up, move to new class along with the private funcs below
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           package.productDetails is SK2ProductDetails {
+           package.storeProduct is SK2StoreProduct {
             _ = Task<Void, Never> {
                 let result = await purchase(sk2Package: package)
                 DispatchQueue.main.async {
@@ -211,8 +211,8 @@ class PurchasesOrchestrator {
                 }
             }
         } else {
-            guard package.productDetails is SK1ProductDetails else {
-                fatalError("could not identify StoreKit version to use! ProductDetails: \(package.productDetails)")
+            guard package.storeProduct is SK1StoreProduct else {
+                fatalError("could not identify StoreKit version to use! StoreProduct: \(package.storeProduct)")
             }
             purchase(sk1Package: package, completion: completion)
         }
@@ -623,12 +623,12 @@ private extension PurchasesOrchestrator {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(sk2Package: Package) async -> Result<(CustomerInfo, Bool), Error> {
-        guard let sk2ProductDetails = sk2Package.productDetails as? SK2ProductDetails else {
+        guard let sk2StoreProduct = sk2Package.storeProduct as? SK2StoreProduct else {
             // todo: use custom error
             return .failure(ErrorUtils.unexpectedBackendResponseError())
         }
 
-        let sk2Product = sk2ProductDetails.underlyingSK2Product
+        let sk2Product = sk2StoreProduct.underlyingSK2Product
         do {
             let result = try await sk2Product.purchase()
             let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
@@ -653,10 +653,10 @@ private extension PurchasesOrchestrator {
     }
 
     func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
-        guard let sk1ProductDetails = sk1Package.productDetails as? SK1ProductDetails else {
+        guard let sk1StoreProduct = sk1Package.storeProduct as? SK1StoreProduct else {
             return
         }
-        let sk1Product = sk1ProductDetails.underlyingSK1Product
+        let sk1Product = sk1StoreProduct.underlyingSK1Product
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
         purchase(sk1Product: sk1Product,
                  payment: payment,

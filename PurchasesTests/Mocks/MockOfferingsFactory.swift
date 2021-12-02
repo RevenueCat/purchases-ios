@@ -10,8 +10,7 @@ class MockOfferingsFactory: OfferingsFactory {
     var emptyOfferings = false
     var nilOfferings = false
 
-    override func createOfferings(fromProductDetailsByID products: [String: ProductDetails],
-                                  data: [String: Any]) -> Offerings? {
+    override func createOfferings(from storeProductsByID: [String: StoreProduct], data: [String: Any]) -> Offerings? {
         if (emptyOfferings) {
             return Offerings(offerings: [:], currentOfferingID: "base")
         }
@@ -20,7 +19,7 @@ class MockOfferingsFactory: OfferingsFactory {
         }
 
         let product = MockSK1Product(mockProductIdentifier: "monthly_freetrial")
-        let productDetails = SK1ProductDetails(sk1Product: product)
+        let storeProduct = SK1StoreProduct(sk1Product: product)
         return Offerings(
             offerings: [
                 "base": Offering(
@@ -29,7 +28,7 @@ class MockOfferingsFactory: OfferingsFactory {
                     availablePackages: [
                         Package(identifier: "$rc_monthly",
                                 packageType: PackageType.monthly,
-                                productDetails: productDetails,
+                                storeProduct: storeProduct,
                                 offeringIdentifier: "base")
                     ]
                 )],

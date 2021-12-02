@@ -988,10 +988,10 @@ public extension Purchases {
     func purchase(package: Package, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
         // todo: add support for SK2 with discounts, move to new class
         // https://github.com/RevenueCat/purchases-ios/issues/848
-        guard let sk1ProductDetails = package.productDetails as? SK1ProductDetails else {
+        guard let sk1StoreProduct = package.storeProduct as? SK1StoreProduct else {
             return
         }
-        let sk1Product = sk1ProductDetails.underlyingSK1Product
+        let sk1Product = sk1StoreProduct.underlyingSK1Product
         let payment = storeKitWrapper.payment(withProduct: sk1Product,
                                               discount: discount)
         purchase(product: sk1Product,

@@ -19,7 +19,7 @@ var pack: Package!
 func checkPackageAPI() {
     let ident: String = pack.identifier
     let pType: PackageType = pack.packageType
-    let prod: ProductDetails = pack.productDetails
+    let prod: StoreProduct = pack.storeProduct
     let lps: String = pack.localizedPriceString
     let lips: String = pack.localizedIntroductoryPriceString
 
