@@ -123,6 +123,8 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test
+      - store_test_results:
+          path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
