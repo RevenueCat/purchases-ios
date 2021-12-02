@@ -35,7 +35,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<StoreProduct>?
+        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
@@ -43,7 +43,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         })
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts.count) == 1
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
@@ -71,7 +71,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<StoreProduct>?
+        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
@@ -79,7 +79,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         })
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts.count) == 1
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
@@ -100,7 +100,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<StoreProduct>?
+        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
@@ -108,7 +108,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         })
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts.count) == 1
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)

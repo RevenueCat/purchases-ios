@@ -112,7 +112,7 @@ class PurchasesOrchestrator {
 
         productsManager.products(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
-                completion(Array(products))
+                completion(Array(products.value ?? []))
             }
         }
     }
@@ -127,7 +127,7 @@ class PurchasesOrchestrator {
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
-                completion(Array(products))
+                completion(Array(products.value ?? []))
             }
         }
     }

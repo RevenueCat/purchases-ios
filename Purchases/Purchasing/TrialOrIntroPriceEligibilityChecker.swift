@@ -74,7 +74,9 @@ class TrialOrIntroPriceEligibilityChecker {
         var introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
             resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
         }
-        let products = await productsManager.sk2StoreProduct(withIdentifiers: identifiers)
+
+        // fixme: handle errors
+        let products = (try? await productsManager.sk2StoreProduct(withIdentifiers: identifiers)) ?? []
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
             let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer
