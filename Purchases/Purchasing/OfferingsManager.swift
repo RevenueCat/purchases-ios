@@ -105,8 +105,10 @@ private extension OfferingsManager {
             return
         }
 
-        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiers) { products in
-            guard !products.isEmpty else {
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiers) { result in
+            let products = result.value ?? []
+
+            guard products.isEmpty == false else {
                 let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
                 self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
                                                 completion: completion)

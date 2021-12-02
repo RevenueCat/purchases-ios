@@ -31,7 +31,7 @@ class StoreProductTests: StoreKitConfigTestCase {
             "lifetime"
         ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
-        let sk1StoreProduct = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
+        let sk1StoreProduct = try await sk1Fetcher.products(withIdentifiers: productIdentifiers)
         let sk1StoreProductsByID = sk1StoreProduct.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
@@ -71,7 +71,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { storeProductSet in
             callbackCalled = true
-            guard let storeProduct = storeProductSet.first else { fatalError("couldn't get product!") }
+            guard let storeProduct = storeProductSet.value?.first else { fatalError("couldn't get product!") }
 
             expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
             expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"

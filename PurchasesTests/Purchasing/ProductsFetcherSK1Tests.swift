@@ -26,7 +26,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
     func testProductsWithIdentifiersCallsCompletionCorrectly() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        var maybeReceivedProducts: Set<SK1Product>?
+        var maybeReceivedProducts: Result<Set<SK1Product>, Error>?
         var completionCalled = false
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
@@ -35,7 +35,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts.count) == productIdentifiers.count
         let receivedProductsSet = Set(receivedProducts.map { $0.productIdentifier })
         expect(receivedProductsSet) == productIdentifiers
@@ -90,7 +90,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
         failingRequest.fails = true
         productsRequestFactory.stubbedRequestResult = failingRequest
 
-        var receivedProducts: Set<SK1Product>?
+        var receivedProducts: Result<Set<SK1Product>, Error>?
         var completionCalled = false
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
@@ -98,7 +98,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
             receivedProducts = products
         }
         expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
-        expect(receivedProducts).to(beEmpty())
+        expect(receivedProducts?.error).toNot(beNil())
     }
     
     func testCacheProductCachesCorrectly() {
@@ -110,7 +110,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
         mockProducts.forEach { productsFetcherSK1.cacheProduct($0) }
 
         var completionCallCount = 0
-        var receivedProducts: Set<SK1Product>?
+        var receivedProducts: Result<Set<SK1Product>, Error>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
@@ -119,7 +119,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
         expect(completionCallCount).toEventually(equal(1), timeout: Self.defaultTimeout)
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0))
-        expect(receivedProducts) == mockProducts
+        try expect(receivedProducts?.get()) == mockProducts
     }
 
     func testProductsWithIdentifiersTimesOutIfMaxToleranceExceeded() throws {
@@ -135,7 +135,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
 
         var completionCallCount = 0
-        var maybeReceivedProducts: Set<SKProduct>?
+        var maybeReceivedProducts: Result<Set<SKProduct>, Error>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
@@ -144,7 +144,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
         expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts).to(beEmpty())
         expect(request.cancelCalled) == true
     }
@@ -162,7 +162,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
 
         var completionCallCount = 0
-        var maybeReceivedProducts: Set<SKProduct>?
+        var maybeReceivedProducts: Result<Set<SKProduct>, Error>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
@@ -171,7 +171,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
         expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts).toNot(beEmpty())
         expect(request.cancelCalled) == false
     }

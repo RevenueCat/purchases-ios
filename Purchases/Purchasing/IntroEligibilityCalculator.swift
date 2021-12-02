@@ -47,7 +47,9 @@ class IntroEligibilityCalculator {
             let allProductIdentifiers =
                 candidateProductIdentifiers.union(purchasedProductIdsWithIntroOffersOrFreeTrials)
 
-            productsManager.products(withIdentifiers: allProductIdentifiers) { allProducts in
+            productsManager.products(withIdentifiers: allProductIdentifiers) {
+                let allProducts = $0.value ?? []
+
                 let purchasedProductsWithIntroOffersOrFreeTrials = allProducts.filter {
                     purchasedProductIdsWithIntroOffersOrFreeTrials.contains($0.productIdentifier)
                 }
