@@ -144,8 +144,8 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
         expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
-        expect(receivedProducts).to(beEmpty())
+        let error = try XCTUnwrap(maybeReceivedProducts?.error as? ErrorCode)
+        expect(error) == ErrorCode.productRequestTimedOut
         expect(request.cancelCalled) == true
     }
 
