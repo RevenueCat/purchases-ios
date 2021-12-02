@@ -141,32 +141,6 @@ jobs:
           name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
-  swift_apitest:
-    macos:
-      xcode: "13.1.0"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - update-spm-integration-commit
-      - run:
-          name: Build SwiftAPITester
-          command: |
-              bundle exec fastlane build_swift_api_tester
-
-  objc_apitest:
-    macos:
-      xcode: "13.1.0"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - update-spm-integration-commit
-      - run:
-          name: Build ObjCAPITester
-          command: |
-              bundle exec fastlane build_objc_api_tester
-
   backend_integration_tests:
     macos:
       xcode: "13.1.0"
@@ -370,8 +344,6 @@ workflows:
     jobs:
       - lint
       - runtest
-      - swift_apitest
-      - objc_apitest
       - buildTvWatchAndMacOS
       - release-checks: *release-branches
       - backend_integration_tests
