@@ -14,7 +14,7 @@ class MockProductsRequestFactory: ProductsRequestFactory {
     var invokedRequestParameters: Set<String>?
     var invokedRequestParametersList = [Set<String>]()
     var stubbedRequestResult: MockProductsRequest!
-    var requestResponseTimeInSeconds: Int = 0
+    var requestResponseTime: DispatchTimeInterval = .seconds(0)
 
     override func request(productIdentifiers: Set<String>) -> SKProductsRequest {
         invokedRequest = true
@@ -22,6 +22,6 @@ class MockProductsRequestFactory: ProductsRequestFactory {
         invokedRequestParameters = productIdentifiers
         invokedRequestParametersList.append(productIdentifiers)
         return stubbedRequestResult ?? MockProductsRequest(productIdentifiers: productIdentifiers,
-                                                           responseTimeInSeconds: requestResponseTimeInSeconds)
+                                                           responseTime: requestResponseTime)
     }
 }

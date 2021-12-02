@@ -31,17 +31,17 @@ class MockProductsRequest: SKProductsRequest {
     var cancelCalled = false
     var requestedIdentifiers: Set<String>
     var fails = false
-    var responseTimeInSeconds: Int
+    var responseTime: DispatchTimeInterval
 
-    init(productIdentifiers: Set<String>, responseTimeInSeconds: Int = 0) {
+    init(productIdentifiers: Set<String>, responseTime: DispatchTimeInterval = .seconds(0)) {
         self.requestedIdentifiers = productIdentifiers
-        self.responseTimeInSeconds = responseTimeInSeconds
+        self.responseTime = responseTime
         super.init()
     }
 
     override func start() {
         startCalled = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(responseTimeInSeconds)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + self.responseTime) {
             if (self.fails) {
                 self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
             } else {
