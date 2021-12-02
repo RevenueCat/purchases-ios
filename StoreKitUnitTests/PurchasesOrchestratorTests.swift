@@ -94,7 +94,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageReturnsCorrectValues() async throws {
-        try checkForiOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
@@ -131,7 +131,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageHandlesPurchaseResult() async throws {
-        try checkForiOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
@@ -157,7 +157,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSendsReceiptToBackendIfSuccessful() async throws {
-        try checkForiOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
@@ -182,7 +182,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSkipsIfPurchaseFailed() async throws {
-        try checkForiOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         guard self.systemInfo.useStoreKit2IfAvailable else {
             throw XCTSkip("StoreKit 2 tests are disabled.")

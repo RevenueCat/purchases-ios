@@ -40,15 +40,6 @@ class StoreKitConfigTestCase: XCTestCase {
         userDefaults.removePersistentDomain(forName: suiteName)
     }
 
-    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
-    // Although the method isn't supposed to be called because of our @available marks in our subclasses,
-    // everything in this class will still be called by XCTest, and it will cause errors.
-    func checkForiOS15APIAvailableOrSkipTest() throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-    }
-
 }
 
 private extension StoreKitConfigTestCase {

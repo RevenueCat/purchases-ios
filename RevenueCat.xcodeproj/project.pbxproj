@@ -268,6 +268,7 @@
 		B3B5FBBC269D121B00104A0C /* Offerings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBBB269D121B00104A0C /* Offerings.swift */; };
 		B3B5FBBF269E081E00104A0C /* InMemoryCachedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */; };
 		B3B5FBC1269E17CE00104A0C /* DeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */; };
+		B3BE0264275942D500915B4C /* AvailabilityChecks.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BE0263275942D500915B4C /* AvailabilityChecks.swift */; };
 		B3C1AEFA268FF4DB0013D50D /* ProductInfoEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C1AEF9268FF4DB0013D50D /* ProductInfoEnums.swift */; };
 		B3C4AAD526B8911300E1B3C8 /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C4AAD426B8911300E1B3C8 /* Backend.swift */; };
 		B3DDB55926854865008CCF23 /* PurchaseOwnershipType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */; };
@@ -576,6 +577,7 @@
 		B3B5FBBB269D121B00104A0C /* Offerings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Offerings.swift; sourceTree = "<group>"; };
 		B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryCachedObject.swift; sourceTree = "<group>"; };
 		B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCache.swift; sourceTree = "<group>"; };
+		B3BE0263275942D500915B4C /* AvailabilityChecks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailabilityChecks.swift; sourceTree = "<group>"; };
 		B3C1AEF9268FF4DB0013D50D /* ProductInfoEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInfoEnums.swift; sourceTree = "<group>"; };
 		B3C4AAD426B8911300E1B3C8 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
@@ -752,6 +754,7 @@
 				2D9C5EC926F2805C0057FC45 /* ProductsManagerTests.swift */,
 				2D43017726EBFD7100BAB891 /* UnitTestsConfiguration.storekit */,
 				2D90F8CB26FD2BA1009B9142 /* StoreKitConfigTestCase.swift */,
+				B3BE0263275942D500915B4C /* AvailabilityChecks.swift */,
 			);
 			path = StoreKitUnitTests;
 			sourceTree = "<group>";
@@ -1647,6 +1650,7 @@
 				2D90F8B626FD2099009B9142 /* MockSubscriberAttributesManager.swift in Sources */,
 				2D90F8BF26FD20D6009B9142 /* MockAttributionFetcher.swift in Sources */,
 				2D90F8C526FD216A009B9142 /* MockSKDiscount.swift in Sources */,
+				B3BE0264275942D500915B4C /* AvailabilityChecks.swift in Sources */,
 				2D90F8B326FD2082009B9142 /* MockProductsManager.swift in Sources */,
 				2D90F8CA26FD257A009B9142 /* MockStoreKit2TransactionListener.swift in Sources */,
 				35B745A82711001A00458D46 /* MockManageSubscriptionsHelper.swift in Sources */,
