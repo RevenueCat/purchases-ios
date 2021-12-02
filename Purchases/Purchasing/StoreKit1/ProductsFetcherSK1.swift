@@ -16,12 +16,14 @@ import StoreKit
 
 class ProductsFetcherSK1: NSObject {
 
+    typealias Callback = (Result<Set<SK1Product>, Error>) -> Void
+
     private let productsRequestFactory: ProductsRequestFactory
 
     private var cachedProductsByIdentifier: [String: SK1Product] = [:]
     private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: ProductRequest] = [:]
-    private var completionHandlers: [Set<String>: [(Set<SK1Product>) -> Void]] = [:]
+    private var completionHandlers: [Set<String>: [Callback]] = [:]
     private let requestTimeout: DispatchTimeInterval
 
     private static let numberOfRetries: Int = 2
@@ -33,9 +35,9 @@ class ProductsFetcherSK1: NSObject {
     }
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
-                     completion: @escaping (Set<SK1Product>) -> Void) {
+                     completion: @escaping Callback) {
         guard identifiers.count > 0 else {
-            completion([])
+            completion(.success([]))
             return
         }
         queue.async { [self] in
@@ -43,7 +45,7 @@ class ProductsFetcherSK1: NSObject {
             if productsAlreadyCached.count == identifiers.count {
                 let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
                 Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
-                completion(productsAlreadyCachedSet)
+                completion(.success(productsAlreadyCachedSet))
                 return
             }
 
@@ -65,10 +67,7 @@ class ProductsFetcherSK1: NSObject {
     }
 
     @discardableResult
-    private func startRequest(
-        forIdentifiers identifiers: Set<String>,
-        retriesLeft: Int
-    ) -> SKProductsRequest {
+    private func startRequest(forIdentifiers identifiers: Set<String>, retriesLeft: Int) -> SKProductsRequest {
         let request = self.productsRequestFactory.request(productIdentifiers: identifiers)
         request.delegate = self
         self.productsByRequests[request] = .init(identifiers, retriesLeft: retriesLeft)
@@ -78,18 +77,20 @@ class ProductsFetcherSK1: NSObject {
     }
 
     func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Set<StoreProduct>) -> Void) {
+                  completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
         self.sk1Products(withIdentifiers: identifiers) { skProducts in
-            let wrappedProductsArray = skProducts.map { SK1StoreProduct(sk1Product: $0) }
-            completion(Set(wrappedProductsArray))
+            let result = skProducts
+                .map { Set<StoreProduct>($0.map { SK1StoreProduct(sk1Product: $0) }) }
+
+            completion(result)
         }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func products(withIdentifiers identifiers: Set<String>) async -> Set<StoreProduct> {
-        return await withCheckedContinuation { continuation in
+    func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
+        return try await withCheckedThrowingContinuation { continuation in
             products(withIdentifiers: identifiers) { result in
-                continuation.resume(returning: result)
+                continuation.resume(with: result)
             }
         }
     }
@@ -130,7 +131,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
 
             self.cacheProducts(response.products)
             for completion in completionBlocks {
-                completion(Set(response.products))
+                completion(.success(Set(response.products)))
             }
         }
     }
@@ -163,7 +164,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                 self.completionHandlers.removeValue(forKey: productRequest.identifiers)
                 self.productsByRequests.removeValue(forKey: request)
                 for completion in completionBlocks {
-                    completion(Set())
+                    completion(.failure(error))
                 }
             } else {
                 self.startRequest(forIdentifiers: productRequest.identifiers,
@@ -223,7 +224,7 @@ private extension ProductsFetcherSK1 {
             self.completionHandlers.removeValue(forKey: productRequest.identifiers)
             self.productsByRequests.removeValue(forKey: request)
             for completion in completionBlocks {
-                completion(Set())
+                completion(.failure(ErrorCode.productRequestTimedOut))
             }
         }
     }
