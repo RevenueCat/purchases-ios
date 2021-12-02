@@ -24,8 +24,13 @@ class ProductsManager: NSObject {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private(set) lazy var productsFetcherSK2 = ProductsFetcherSK2()
 
-    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(), systemInfo: SystemInfo) {
-        self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
+    init(
+        productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
+        systemInfo: SystemInfo,
+        requestTimeout: DispatchTimeInterval = .seconds(30)
+    ) {
+        self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
+                                                     requestTimeout: requestTimeout)
         self.systemInfo = systemInfo
     }
 

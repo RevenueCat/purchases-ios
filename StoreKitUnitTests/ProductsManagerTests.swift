@@ -22,10 +22,12 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     var productsManager: ProductsManager!
     var systemInfo: MockSystemInfo!
 
+    private static let defaultTimeout: DispatchTimeInterval = .seconds(30)
+
     override func setUpWithError() throws {
         try super.setUpWithError()
         systemInfo = try MockSystemInfo(platformFlavor: "xyz", platformFlavorVersion: "123", finishTransactions: true)
-        productsManager = ProductsManager(systemInfo: systemInfo)
+        productsManager = ProductsManager(systemInfo: systemInfo, requestTimeout: Self.defaultTimeout)
     }
 
     func testFetchProductsFromOptimalStoreKitVersion() throws {
@@ -40,7 +42,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             maybeReceivedProducts = products
         })
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
         let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
         expect(receivedProducts.count) == 1
 
@@ -61,7 +63,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
                                         platformFlavorVersion: "123",
                                         finishTransactions: true,
                                         useStoreKit2IfAvailable: true)
-        productsManager = ProductsManager(systemInfo: systemInfo)
+        productsManager = ProductsManager(systemInfo: systemInfo, requestTimeout: Self.defaultTimeout)
 
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
@@ -76,7 +78,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             maybeReceivedProducts = products
         })
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
         let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
         expect(receivedProducts.count) == 1
 
@@ -90,7 +92,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         systemInfo = try MockSystemInfo(platformFlavor: "xyz",
                                         platformFlavorVersion: "123",
                                         finishTransactions: true)
-        productsManager = ProductsManager(systemInfo: systemInfo)
+        productsManager = ProductsManager(systemInfo: systemInfo, requestTimeout: Self.defaultTimeout)
 
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
@@ -105,7 +107,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             maybeReceivedProducts = products
         })
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
         let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
         expect(receivedProducts.count) == 1
 
