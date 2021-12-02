@@ -377,7 +377,8 @@ private extension ErrorUtils {
                 .invalidAppleSubscriptionKeyError,
                 .ineligibleError,
                 .insufficientPermissionsError,
-                .paymentPendingError:
+                .paymentPendingError,
+                .productRequestTimedOut:
             Logger.appleError(code.description)
 
         @unknown default:
