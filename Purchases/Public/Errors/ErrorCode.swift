@@ -135,6 +135,17 @@ extension ErrorCode: DescribableError {
 
 }
 
+extension ErrorCode: CustomNSError {
+
+    public var errorUserInfo: [String: Any] {
+        return [
+            NSDebugDescriptionErrorKey: self.description,
+            "rc_code_name": self.codeName
+        ]
+    }
+    
+}
+
 extension ErrorCode {
 
     /**
