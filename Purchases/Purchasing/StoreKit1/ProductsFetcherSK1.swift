@@ -26,7 +26,7 @@ class ProductsFetcherSK1: NSObject {
     private var completionHandlers: [Set<String>: [Callback]] = [:]
     private let requestTimeout: DispatchTimeInterval
 
-    private static let numberOfRetries: Int = 2
+    private static let numberOfRetries: Int = 5
 
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
          requestTimeout: DispatchTimeInterval = .seconds(30)) {
@@ -167,8 +167,12 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                     completion(.failure(error))
                 }
             } else {
-                self.startRequest(forIdentifiers: productRequest.identifiers,
-                                  retriesLeft: productRequest.retriesLeft - 1)
+                let delayInSeconds = Int((self.requestTimeout.seconds / 10).rounded())
+
+                queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
+                    self.startRequest(forIdentifiers: productRequest.identifiers,
+                                      retriesLeft: productRequest.retriesLeft - 1)
+                }
             }
         }
     }
