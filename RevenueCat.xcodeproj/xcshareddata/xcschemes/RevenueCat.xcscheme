@@ -28,6 +28,34 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2DD778CF270E233F0079CBD4"
+               BuildableName = "SwiftAPITester.app"
+               BlueprintName = "SwiftAPITester"
+               ReferencedContainer = "container:APITesters/SwiftAPITester/SwiftAPITester.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2DD778F4270E235B0079CBD4"
+               BuildableName = "ObjCAPITester.app"
+               BlueprintName = "ObjCAPITester"
+               ReferencedContainer = "container:APITesters/ObjCAPITester/ObjCAPITester.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DC5621D24EC63430031F69B"
                BuildableName = "RevenueCatTests.xctest"
                BlueprintName = "RevenueCatTests"
