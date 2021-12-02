@@ -112,4 +112,39 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
     }
 
+    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
+    // Although the method isn't supposed to be called because of our @available marks,
+    // everything in this class will still be called by XCTest, and it will cause errors.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSk2PriceFormatterFormatsCorrectly() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
+        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let sk2Fetcher = ProductsFetcherSK2()
+
+        let storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+
+        let storeProduct = try XCTUnwrap(storeProductSet.first)
+        let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        let productPrice = storeProduct.price as NSNumber
+
+        expect(priceFormatter.string(from: productPrice)) == "$4.99"
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSk1PriceFormatterFormatsCorrectly() async throws {
+        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let sk1Fetcher = ProductsFetcherSK1()
+
+        let storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+
+        let storeProduct = try XCTUnwrap(storeProductSet.first)
+        let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        let productPrice = storeProduct.price as NSNumber
+
+        expect(priceFormatter.string(from: productPrice)) == "$4.99"
+    }
+
 }

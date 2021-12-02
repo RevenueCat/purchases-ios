@@ -47,6 +47,8 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     @objc public var subscriptionGroupIdentifier: String? { fatalError() }
 
+    @objc public var priceFormatter: NumberFormatter? { fatalError() }
+
     // todo: it looks like StoreKit 2 doesn't have support for these?
     //    YES if this product has content downloadable using SKDownload
     //    var isDownloadable: Bool { get }
@@ -106,8 +108,26 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
 
+    @objc public override var priceFormatter: NumberFormatter? {
+        guard let attributes = jsonDict["attributes"] as? [String: Any],
+              let offers = attributes["offers"] as? [[String: Any]],
+              let currencyCode: String = offers.first?["currencyCode"] as? String else {
+            Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
+            return nil
+        }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+        return formatter
+    }
+
     @objc public override var subscriptionGroupIdentifier: String? {
         underlyingSK2Product.subscription?.subscriptionGroupID
+    }
+
+    private var jsonDict: [String: Any] {
+        let decoded = try? JSONSerialization.jsonObject(with: self.underlyingSK2Product.jsonRepresentation, options: [])
+        return decoded as? [String: Any] ?? [:]
     }
 
 }
@@ -127,7 +147,7 @@ public typealias SK2Product = StoreKit.Product
     @objc public override var price: Decimal { return underlyingSK1Product.price as Decimal }
 
     @objc public override var localizedPriceString: String {
-        return formatter.string(from: underlyingSK1Product.price) ?? ""
+        return priceFormatter?.string(from: underlyingSK1Product.price) ?? ""
     }
 
     @objc public override var productIdentifier: String { return underlyingSK1Product.productIdentifier }
@@ -140,11 +160,11 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     override public var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
-    private lazy var formatter: NumberFormatter = {
+    @objc public override var priceFormatter: NumberFormatter? {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = underlyingSK1Product.priceLocale
         return formatter
-    }()
+    }
 
 }
