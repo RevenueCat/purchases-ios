@@ -137,11 +137,11 @@ shouldPurchasePromoProduct:skp
                                                          NSError * _Nullable error,
                                                          BOOL cancelled)) {}];
 
-#if TARGET_OS_IPHONE || TARGET_OS_MACCATALYST
+#if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV
     [p beginRefundRequestFor:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
 #endif
 
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE && !TARGET_OS_TV
     [p presentCodeRedemptionSheet];
 #endif
 }
