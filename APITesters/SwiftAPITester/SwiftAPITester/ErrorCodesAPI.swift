@@ -48,7 +48,8 @@ func checkPurchasesErrorCodeEnums() {
          .productDiscountMissingSubscriptionGroupIdentifierError,
          .customerInfoError,
          .systemInfoError,
-         .beginRefundRequestError:
+         .beginRefundRequestError,
+         .productRequestTimedOut:
         print(errCode!)
     @unknown default:
         fatalError()
