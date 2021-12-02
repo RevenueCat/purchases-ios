@@ -230,21 +230,3 @@ private extension ProductsFetcherSK1 {
     }
 
 }
-
-// swiftlint:disable identifier_name
-private extension DispatchTimeInterval {
-
-    var seconds: Double {
-        switch self {
-        case let .seconds(seconds): return Double(seconds)
-        case let .milliseconds(ms): return Double(ms) / 1000
-        case let .microseconds(ms): return Double(ms) / 1_000_000
-        case let .nanoseconds(ns): return Double(ns) / 1_000_000_000
-        case .never: return 0
-        @unknown default: fatalError("Unknown value: \(self)")
-        }
-    }
-
-}
-
-// swiftlint:enable identifier_name
