@@ -33,26 +33,9 @@ class StoreKitConfigTestCase: XCTestCase {
         testSession.disableDialogs = true
         testSession.clearTransactions()
 
-        self.waitForStoreKitTestIfNeeded()
-
         let suiteName = "StoreKitConfigTests"
         userDefaults = UserDefaults(suiteName: suiteName)
         userDefaults.removePersistentDomain(forName: suiteName)
-    }
-
-}
-
-private extension StoreKitConfigTestCase {
-
-    func waitForStoreKitTestIfNeeded() {
-        // StoreKitTest seems to take a few seconds to initialize, and running tests before that
-        // might result in failure. So we give it a few seconds to load before testing.
-        Self.waitLock.perform {
-            if !Self.hasWaited {
-                Self.hasWaited = true
-                Thread.sleep(forTimeInterval: Self.waitTimeInSeconds)
-            }
-        }
     }
 
 }
