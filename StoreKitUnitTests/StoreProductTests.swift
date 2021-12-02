@@ -18,6 +18,8 @@ import XCTest
 
 class StoreProductTests: StoreKitConfigTestCase {
 
+    private static let requestTimeout: DispatchTimeInterval = .seconds(20)
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK1AndSK2DetailsAreEquivalent() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -63,7 +65,8 @@ class StoreProductTests: StoreKitConfigTestCase {
 
     func testSk1DetailsWrapsCorrectly() throws {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
+        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
+                                            requestTimeout: Self.requestTimeout)
         var callbackCalled = false
 
         sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { storeProductSet in
@@ -84,7 +87,7 @@ class StoreProductTests: StoreKitConfigTestCase {
             expect(storeProduct.subscriptionPeriod?.value) == 1
         }
 
-        expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
+        expect(callbackCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
