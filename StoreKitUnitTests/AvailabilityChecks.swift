@@ -17,7 +17,7 @@ import XCTest
 // Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
 // Although the method isn't supposed to be called because of our @available marks in our subclasses,
 // everything in those classes will still be called by XCTest, and it will cause errors.
-class AvailabilityChecks {
+enum AvailabilityChecks {
 
     static func iOS15APIAvailableOrSkipTest() throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
