@@ -40,7 +40,7 @@ public typealias VerboseLogHandler = (_ level: LogLevel,
 public typealias LogHandler = (_ level: LogLevel,
                                _ message: String) -> Void
 
-class Logger {
+enum Logger {
     static var logLevel: LogLevel = .info
     static var logHandler: VerboseLogHandler = { level, message, file, functionName, line in
         let fileContext: String

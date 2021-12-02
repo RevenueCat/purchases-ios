@@ -46,7 +46,7 @@ internal extension Optional where Wrapped == String {
     }
 }
 
-private struct ROT13 {
+private enum ROT13 {
 
     private static var key = [Character: Character]()
 
