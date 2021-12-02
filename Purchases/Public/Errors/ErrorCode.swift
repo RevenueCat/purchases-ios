@@ -155,7 +155,7 @@ extension ErrorCode: CustomNSError {
             "rc_code_name": self.codeName
         ]
     }
-    
+
 }
 
 extension ErrorCode {
