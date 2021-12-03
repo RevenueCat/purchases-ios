@@ -32,27 +32,6 @@ import StoreKit
         case month = 2
         case year = 3
 
-        @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-        fileprivate static func from(sk1PeriodUnit: SK1Product.PeriodUnit) -> Self {
-            switch sk1PeriodUnit {
-            case .day: return .day
-            case .week: return .week
-            case .month: return .month
-            case .year: return .year
-            @unknown default: return .unknown
-            }
-        }
-
-        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8, *)
-        fileprivate static func from(sk2PeriodUnit: StoreKit.Product.SubscriptionPeriod.Unit) -> Self {
-            switch sk2PeriodUnit {
-            case .day: return .day
-            case .week: return .week
-            case .month: return .month
-            case .year: return .year
-            @unknown default: return .unknown
-            }
-        }
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
@@ -65,6 +44,32 @@ import StoreKit
     static func from(sk2SubscriptionPeriod: StoreKit.Product.SubscriptionPeriod) -> SubscriptionPeriod {
         return .init(value: sk2SubscriptionPeriod.value,
                      unit: SubscriptionPeriod.PeriodUnit.from(sk2PeriodUnit: sk2SubscriptionPeriod.unit))
+    }
+
+}
+
+fileprivate extension SubscriptionPeriod.PeriodUnit {
+
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    static func from(sk1PeriodUnit: SK1Product.PeriodUnit) -> Self {
+        switch sk1PeriodUnit {
+        case .day: return .day
+        case .week: return .week
+        case .month: return .month
+        case .year: return .year
+        @unknown default: return .unknown
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8, *)
+    static func from(sk2PeriodUnit: StoreKit.Product.SubscriptionPeriod.Unit) -> Self {
+        switch sk2PeriodUnit {
+        case .day: return .day
+        case .week: return .week
+        case .month: return .month
+        case .year: return .year
+        @unknown default: return .unknown
+        }
     }
 
 }
