@@ -48,17 +48,17 @@ class BackendIntegrationTests: XCTestCase {
         configurePurchases()
         var completionCalled = false
         var receivedError: Error? = nil
-        var receivedOfferings: Offerings? = nil
+        var maybeReceivedOfferings: Offerings? = nil
         Purchases.shared.getOfferings { offerings, error in
             completionCalled = true
             receivedError = error
-            receivedOfferings = offerings
+            maybeReceivedOfferings = offerings
         }
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
         expect(receivedError).to(beNil())
-        expect(receivedOfferings).toNot(beNil())
-        expect(receivedOfferings!.all).toNot(beEmpty())
+        let receivedOfferings = try XCTUnwrap(maybeReceivedOfferings)
+        expect(receivedOfferings.all).toNot(beEmpty())
     }
 
     func testCanMakePurchase() throws {
@@ -233,7 +233,7 @@ class BackendIntegrationTests: XCTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testEligibleForIntroBeforePurchaseAndIneligibleAfter() throws {
-        AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         configurePurchases()
         
         var maybeProductID: String?
