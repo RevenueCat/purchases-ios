@@ -20,6 +20,7 @@ import Foundation
 class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
+    private let customerInfoManager: CustomerInfoManager
 
 #if os(iOS)
     @available(iOS 15.0, *)
@@ -29,8 +30,9 @@ class BeginRefundRequestHelper {
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
 #endif
 
-    init(systemInfo: SystemInfo) {
+    init(systemInfo: SystemInfo, customerInfoManager: CustomerInfoManager) {
         self.systemInfo = systemInfo
+        self.customerInfoManager = customerInfoManager
     }
 
 #if os(iOS)
@@ -42,10 +44,79 @@ class BeginRefundRequestHelper {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(productID: String, completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
+    func beginRefundRequest(forProduct productID: String,
+                            completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
         _ = Task<Void, Never> {
             let result = await self.beginRefundRequest(productID: productID)
             completion(result)
+        }
+
+        return
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequest(forEntitlement entitlementID: String,
+                            completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
+
+        customerInfoManager.customerInfo(appUserID: "1234") { maybeCustomerInfo, maybeError in
+            if let error = maybeError {
+                let message = "Failed to get CustomerInfo to proceed with refund for entitlement \(entitlementID). Details: \(error.localizedDescription)"
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
+                return
+            }
+
+            guard let customerInfo = maybeCustomerInfo else {
+                let message = "Failed to get entitlement \(entitlementID) for refund. customerInfo is nil."
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
+                return
+            }
+
+            guard let entitlement = customerInfo.entitlements[entitlementID] else {
+                completion(.failure(ErrorUtils.beginRefundRequestError(withMessage: "Could not find entitlement for refund")))
+                return
+            }
+
+            _ = Task<Void, Never> {
+                let result = await self.beginRefundRequest(productID: entitlement.productIdentifier)
+                completion(result)
+            }
+        }
+
+        return
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequestForActiveEntitlement(completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
+
+        customerInfoManager.customerInfo(appUserID: "1234") { maybeCustomerInfo, maybeError in
+            if let error = maybeError {
+                let message = "Failed to get CustomerInfo to proceed with refund for active entitlement. Details: \(error.localizedDescription)"
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
+                return
+            }
+
+            guard let customerInfo = maybeCustomerInfo else {
+                let message = "Failed to get active entitlement for refund. customerInfo is nil."
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
+                return
+            }
+
+            guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
+                completion(.failure(ErrorUtils.beginRefundRequestError(
+                    withMessage: "There is no active entitlement to refund")))
+                return
+            }
+
+            _ = Task<Void, Never> {
+                let result = await self.beginRefundRequest(productID: activeEntitlement.productIdentifier)
+                completion(result)
+            }
         }
 
         return

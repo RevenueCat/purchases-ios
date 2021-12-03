@@ -21,6 +21,7 @@ import XCTest
 class BeginRefundRequestHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
+    private var customerInfoManager: MockCustomerInfoManager!
     private var helper: BeginRefundRequestHelper!
     private let mockProductID = "1234"
 
@@ -33,7 +34,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         systemInfo = MockSystemInfo(finishTransactions: true)
-        helper = BeginRefundRequestHelper(systemInfo: systemInfo)
+        helper = BeginRefundRequestHelper(systemInfo: systemInfo, customerInfoManager: customerInfoManager)
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {
             helper.sk2Helper = sk2Helper
