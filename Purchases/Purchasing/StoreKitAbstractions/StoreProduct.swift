@@ -61,11 +61,8 @@ public typealias SK2Product = StoreKit.Product
     //    var downloadContentVersion: String { get }
     //
 
-    // todo: add subscription period
-    // https://github.com/RevenueCat/purchases-ios/issues/849
-    //    @available(iOS 11.2, *)
-    //    var subscriptionPeriod: SKProductSubscriptionPeriod? { get }
-    //
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc public var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
 
     // todo: add product discounts
     // https://github.com/RevenueCat/purchases-ios/issues/848
@@ -135,6 +132,13 @@ public typealias SK2Product = StoreKit.Product
         return decoded as? [String: Any] ?? [:]
     }
 
+    @objc public override var subscriptionPeriod: SubscriptionPeriod? {
+        guard let skSubscriptionPeriod = underlyingSK2Product.subscription?.subscriptionPeriod else {
+            return nil
+        }
+        return SubscriptionPeriod.from(sk2SubscriptionPeriod: skSubscriptionPeriod)
+    }
+
 }
 
 @objc(RCSK1StoreProduct) public class SK1StoreProduct: StoreProduct {
@@ -170,6 +174,14 @@ public typealias SK2Product = StoreKit.Product
         formatter.numberStyle = .currency
         formatter.locale = underlyingSK1Product.priceLocale
         return formatter
+    }
+
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc public override var subscriptionPeriod: SubscriptionPeriod? {
+        guard let skSubscriptionPeriod = underlyingSK1Product.subscriptionPeriod else {
+            return nil
+        }
+        return SubscriptionPeriod.from(sk1SubscriptionPeriod: skSubscriptionPeriod)
     }
 
 }
