@@ -22,11 +22,12 @@ class MockProductResponse: SKProductsResponse {
     }
 }
 
-enum StoreKitError: Error {
-    case unknown
-}
-
 class MockProductsRequest: SKProductsRequest {
+
+    enum Error: Swift.Error {
+        case unknown
+    }
+
     var startCalled = false
     var cancelCalled = false
     var requestedIdentifiers: Set<String>
@@ -43,7 +44,7 @@ class MockProductsRequest: SKProductsRequest {
         startCalled = true
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(responseTimeInSeconds)) {
             if (self.fails) {
-                self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
+                self.delegate?.request!(self, didFailWithError: Error.unknown)
             } else {
                 let response = MockProductResponse(productIdentifiers: self.requestedIdentifiers)
                 self.delegate?.productsRequest(self, didReceive: response)
