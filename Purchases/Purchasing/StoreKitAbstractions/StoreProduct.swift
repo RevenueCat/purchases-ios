@@ -62,7 +62,7 @@ public typealias SK2Product = StoreKit.Product
     //
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
+    @objc public var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
 
     // todo: add product discounts
     // https://github.com/RevenueCat/purchases-ios/issues/848
@@ -132,7 +132,7 @@ public typealias SK2Product = StoreKit.Product
         return decoded as? [String: Any] ?? [:]
     }
 
-    public override var subscriptionPeriod: SubscriptionPeriod? {
+    @objc public override var subscriptionPeriod: SubscriptionPeriod? {
         guard let skSubscriptionPeriod = underlyingSK2Product.subscription?.subscriptionPeriod else {
             return nil
         }
@@ -177,7 +177,7 @@ public typealias SK2Product = StoreKit.Product
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    public override var subscriptionPeriod: SubscriptionPeriod? {
+    @objc public override var subscriptionPeriod: SubscriptionPeriod? {
         guard let skSubscriptionPeriod = underlyingSK1Product.subscriptionPeriod else {
             return nil
         }
