@@ -136,4 +136,68 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSk1PriceFormatterReactsToStorefrontChanges() async throws {
+        testSession.locale = Locale(identifier: "es_ES")
+        testSession.storefront = "ESP"
+
+        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var sk1Fetcher = ProductsFetcherSK1()
+
+        var storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+
+        var storeProduct = try XCTUnwrap(storeProductSet.first)
+        var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        var productPrice = storeProduct.price as NSNumber
+
+        expect(priceFormatter.string(from: productPrice)) == "4,99 €"
+
+        testSession.locale = Locale(identifier: "en_EN")
+        testSession.storefront = "USA"
+
+        sk1Fetcher = ProductsFetcherSK1()
+
+        storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+
+        storeProduct = try XCTUnwrap(storeProductSet.first)
+        priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        productPrice = storeProduct.price as NSNumber
+
+        expect(priceFormatter.string(from: productPrice)) == "$4.99"
+
+        testSession.locale = Locale(identifier: "es_ES")
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSk2PriceFormatterReactsToStorefrontChanges() async throws {
+        testSession.locale = Locale(identifier: "es_ES")
+        testSession.storefront = "ESP"
+
+        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var sk2Fetcher = ProductsFetcherSK2()
+
+        var storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+
+        var storeProduct = try XCTUnwrap(storeProductSet.first)
+        var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        var productPrice = storeProduct.price as NSNumber
+
+        expect(priceFormatter.string(from: productPrice)) == "4,99 €"
+
+        testSession.locale = Locale(identifier: "en_EN")
+        testSession.storefront = "USA"
+
+        sk2Fetcher = ProductsFetcherSK2()
+
+        storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+
+        storeProduct = try XCTUnwrap(storeProductSet.first)
+        priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        productPrice = storeProduct.price as NSNumber
+
+        expect(priceFormatter.string(from: productPrice)) == "$4.99"
+
+        testSession.locale = Locale(identifier: "es_ES")
+    }
+
 }

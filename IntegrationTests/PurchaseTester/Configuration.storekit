@@ -49,6 +49,11 @@
               "description" : "Monthly subscription with a 1-week free trial",
               "displayName" : "Monthly Free Trial",
               "locale" : "en_US"
+            },
+            {
+              "description" : "Subscripción mensual con 1 semana gratis",
+              "displayName" : "Mensual con prueba gratis",
+              "locale" : "es_ES"
             }
           ],
           "productID" : "com.revenuecat.monthly_4.99.1_week_intro",
