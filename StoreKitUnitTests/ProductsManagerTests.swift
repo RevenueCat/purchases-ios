@@ -16,9 +16,6 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-// - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
-// Although the method isn't supposed to be called because of our @available marks,
-// everything in this class will still be called by XCTest, and it will cause errors.
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class ProductsManagerTests: StoreKitConfigTestCase {
 

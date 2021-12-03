@@ -231,14 +231,9 @@ class BackendIntegrationTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
 
-    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
-    // Although the method isn't supposed to be called because of our @available marks,
-    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testEligibleForIntroBeforePurchaseAndIneligibleAfter() throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         configurePurchases()
         
         var maybeProductID: String?
