@@ -3,16 +3,16 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		2DD778F8270E235B0079CBD4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778F7270E235B0079CBD4 /* AppDelegate.swift */; };
 		2DD778FA270E235B0079CBD4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778F9270E235B0079CBD4 /* SceneDelegate.swift */; };
 		2DD778FC270E235B0079CBD4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778FB270E235B0079CBD4 /* ViewController.swift */; };
-		2DD778FF270E235B0079CBD4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778FD270E235B0079CBD4 /* Main.storyboard */; };
+		2DD778FF270E235B0079CBD4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778FD270E235B0079CBD4 /* Main.storyboard */; platformFilters = (ios, maccatalyst, macos, watchos, ); };
 		2DD77901270E235C0079CBD4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DD77900270E235C0079CBD4 /* Assets.xcassets */; };
-		2DD77904270E235C0079CBD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD77902270E235C0079CBD4 /* LaunchScreen.storyboard */; };
+		2DD77904270E235C0079CBD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD77902270E235C0079CBD4 /* LaunchScreen.storyboard */; platformFilters = (ios, maccatalyst, macos, watchos, ); };
 		2DD77909270E23870079CBD4 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
 		2DD7790B270E23870079CBD4 /* RCCustomerInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */; };
 		2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */; };
@@ -319,7 +319,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 			};
 			name = Debug;
 		};
@@ -356,7 +356,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

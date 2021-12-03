@@ -343,6 +343,20 @@
 			remoteGlobalIDString = 2DEAC2D926EFE46E006914ED;
 			remoteInfo = UnitTestsHostApp;
 		};
+		570896BB27596E8800296F1C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
+			remoteInfo = SwiftAPITester;
+		};
+		570896C127596E8800296F1C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DD778F5270E235B0079CBD4;
+			remoteInfo = ObjCAPITester;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -530,6 +544,8 @@
 		570896B327595C8100296F1C /* RevenueCat.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat.xctestplan; path = TestPlans/RevenueCat.xctestplan; sourceTree = "<group>"; };
 		570896B427595C8100296F1C /* Coverage.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = Coverage.xctestplan; path = TestPlans/Coverage.xctestplan; sourceTree = "<group>"; };
 		570896B527595C8100296F1C /* UnitTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = UnitTests.xctestplan; path = TestPlans/UnitTests.xctestplan; sourceTree = "<group>"; };
+		570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftAPITester.xcodeproj; path = APITesters/SwiftAPITester/SwiftAPITester.xcodeproj; sourceTree = "<group>"; };
+		570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ObjCAPITester.xcodeproj; path = APITesters/ObjCAPITester/ObjCAPITester.xcodeproj; sourceTree = "<group>"; };
 		5791CE7F273F26A000E50C4B /* base64encoded_sandboxReceipt.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base64encoded_sandboxReceipt.txt; sourceTree = "<group>"; };
 		57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Atomic.swift; sourceTree = "<group>"; };
 		57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedUserDefaults.swift; sourceTree = "<group>"; };
@@ -1009,6 +1025,7 @@
 				352629FF1F7C4B9100C04F2C /* Products */,
 				3530C18722653E8F00D6DF52 /* Frameworks */,
 				57B425A3275800B60075BDC4 /* Test Plans */,
+				570896B627596E6E00296F1C /* APITesters */,
 				2DBB3E10269C9B8700BBF431 /* SwiftStyleGuide.swift */,
 				2DEC0CFB24A2A1B100B0E5BB /* Package.swift */,
 			);
@@ -1232,6 +1249,31 @@
 				2DDF41AA24F6F37C005BC22D /* InAppPurchase.swift */,
 			);
 			path = BasicTypes;
+			sourceTree = "<group>";
+		};
+		570896B627596E6E00296F1C /* APITesters */ = {
+			isa = PBXGroup;
+			children = (
+				570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */,
+				570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */,
+			);
+			name = APITesters;
+			sourceTree = "<group>";
+		};
+		570896B827596E8800296F1C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				570896BC27596E8800296F1C /* SwiftAPITester.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		570896BE27596E8800296F1C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				570896C227596E8800296F1C /* ObjCAPITester.app */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		57B425A3275800B60075BDC4 /* Test Plans */ = {
@@ -1562,6 +1604,16 @@
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 570896BE27596E8800296F1C /* Products */;
+					ProjectRef = 570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */;
+				},
+				{
+					ProductGroup = 570896B827596E8800296F1C /* Products */;
+					ProjectRef = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				2DC5621524EC63420031F69B /* RevenueCat */,
@@ -1573,6 +1625,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		570896BC27596E8800296F1C /* SwiftAPITester.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = SwiftAPITester.app;
+			remoteRef = 570896BB27596E8800296F1C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		570896C227596E8800296F1C /* ObjCAPITester.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = ObjCAPITester.app;
+			remoteRef = 570896C127596E8800296F1C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		2DAC5F7026F13C9800C5258F /* Resources */ = {
