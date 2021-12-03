@@ -79,6 +79,9 @@ class StoreProductTests: StoreKitConfigTestCase {
             expect(storeProduct.localizedTitle) == "Monthly Free Trial"
             // open the StoreKit Config file as source code to see the expected value
             expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
+
+            expect(storeProduct.subscriptionPeriod?.unit) == .month
+            expect(storeProduct.subscriptionPeriod?.value) == 1
         }
 
         expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
@@ -104,6 +107,9 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedTitle) == "Monthly Free Trial"
         // open the StoreKit Config file as source code to see the expected value
         expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
+
+        expect(storeProduct.subscriptionPeriod?.unit) == .month
+        expect(storeProduct.subscriptionPeriod?.value) == 1
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
