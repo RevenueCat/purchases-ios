@@ -265,9 +265,41 @@ extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc func beginRefundRequestAsync(for productID: String) async throws -> RefundRequestStatus {
+    @objc func beginRefundRequestAsync(forProduct productID: String) async throws -> RefundRequestStatus {
         return try await withCheckedThrowingContinuation { continuation in
-            beginRefundRequest(for: productID) { result, error in
+            beginRefundRequest(forProduct: productID) { result, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc func beginRefundRequestAsync(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
+        return try await withCheckedThrowingContinuation { continuation in
+            beginRefundRequest(forEntitlement: entitlementID) { result, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc func beginRefundRequestForActiveEntitlementAsync() async throws -> RefundRequestStatus {
+        return try await withCheckedThrowingContinuation { continuation in
+            beginRefundRequestForActiveEntitlement { result, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return

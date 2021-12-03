@@ -1249,16 +1249,16 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc func beginRefundRequest(for productID: String,
+    @objc func beginRefundRequest(forProduct productID: String,
                                   completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        purchasesOrchestrator.beginRefundRequest(for: productID, completion: completion)
+        purchasesOrchestrator.beginRefundRequest(forProduct: productID, completion: completion)
     }
 
     /**
      * Presents a refund request sheet in the current window scene for
-     * the latest transaction associated with the productID
+     * the latest transaction associated with the entitlement ID
      *
-     * - Parameter productID: The productID to begin a refund request for.
+     * - Parameter entitlementID: The entitlementID to begin a refund request for.
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If the request was successful, there will be a `RefundRequestStatus`.
      * Keep in mind the status could be `userCancelled`
@@ -1268,8 +1268,76 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(for productID: String) async throws -> RefundRequestStatus {
-        return try await beginRefundRequestAsync(for: productID)
+    @objc func beginRefundRequest(forEntitlement entitlementID: String,
+                                  completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+        purchasesOrchestrator.beginRefundRequest(forEntitlement: entitlementID, completion: completion)
+    }
+
+    /**
+     * Presents a refund request sheet in the current window scene for
+     * the latest transaction associated with the active entitlement.
+     *
+     * - Parameter completion: A completion block that is called when the modal is closed.
+     * If the request was successful, there will be a `RefundRequestStatus`.
+     * Keep in mind the status could be `userCancelled`
+     * If the request was unsuccessful or there is no active entitlement, there will be an `Error`.
+     */
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc func beginRefundRequestForActiveEntitlement(completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+        purchasesOrchestrator.beginRefundRequestForActiveEntitlement(completion: completion)
+    }
+
+    /**
+     * Presents a refund request sheet in the current window scene for
+     * the latest transaction associated with the productID
+     *
+     * - Parameter productID: The productID to begin a refund request for.
+     * If the request was successful, there will be a `RefundRequestStatus`.
+     * Keep in mind the status could be `userCancelled`
+     * If the request was unsuccessful, there will be an `Error`.
+     */
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
+        return try await beginRefundRequestAsync(forProduct: productID)
+    }
+
+    /**
+     * Presents a refund request sheet in the current window scene for
+     * the latest transaction associated with the entitlement ID
+     *
+     * - Parameter entitlementID: The entitlementID to begin a refund request for.
+     * If the request was successful, there will be a `RefundRequestStatus`.
+     * Keep in mind the status could be `userCancelled`
+     * If the request was unsuccessful, there will be an `Error`.
+     */
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
+        return try await beginRefundRequestAsync(forEntitlement: entitlementID)
+    }
+
+    /**
+     * Presents a refund request sheet in the current window scene for
+     * the latest transaction associated with the active entitlement.
+     *
+     * If the request was successful, there will be a `RefundRequestStatus`.
+     * Keep in mind the status could be `userCancelled`
+     * If the request was unsuccessful or there is no active entitlement, there will be an `Error`.
+     */
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
+        return try await beginRefundRequestForActiveEntitlementAsync()
     }
 
 #endif

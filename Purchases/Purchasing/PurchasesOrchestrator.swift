@@ -289,7 +289,7 @@ class PurchasesOrchestrator {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(for productID: String, completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+    func beginRefundRequest(forProduct productID: String, completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         beginRefundRequestHelper.beginRefundRequest(productID: productID) { result in
             switch result {
             case .failure(let error):
@@ -298,6 +298,27 @@ class PurchasesOrchestrator {
                 completion(status, nil)
             }
         }
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequestForActiveEntitlement(completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+        // TODO get active entitlement
+        let activeEntitlementID = ""
+        beginRefundRequest(forEntitlement: activeEntitlementID, completion: completion)
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequest(forEntitlement entitlementID: String,
+                            completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+        // TODO get productID from entitlement
+        let productID = ""
+        beginRefundRequest(forProduct: productID, completion: completion)
     }
 
 #endif
