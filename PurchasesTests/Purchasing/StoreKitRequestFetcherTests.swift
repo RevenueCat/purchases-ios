@@ -15,13 +15,17 @@ import StoreKit
 class StoreKitRequestFetcherTests: XCTestCase {
 
     class MockReceiptRequest: SKReceiptRefreshRequest {
+        enum Error: Swift.Error {
+            case unknown
+        }
+
         var startCalled = false
         var fails = false
         override func start() {
             startCalled = true
             DispatchQueue.main.async {
                 if (self.fails) {
-                    self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
+                    self.delegate?.request!(self, didFailWithError: Error.unknown)
                 } else {
                     self.delegate?.requestDidFinish!(self)
                 }
