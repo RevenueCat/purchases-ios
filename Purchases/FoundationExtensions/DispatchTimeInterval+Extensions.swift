@@ -27,6 +27,21 @@ extension DispatchTimeInterval {
         }
     }
 
+    fileprivate var milliseconds: Double {
+        switch self {
+        case let .seconds(seconds): return Double(seconds * 1000)
+        case let .milliseconds(ms): return Double(ms)
+        case let .microseconds(ms): return Double(ms) / 1_000
+        case let .nanoseconds(ns): return Double(ns) / 1_000_000
+        case .never: return 0
+        @unknown default: fatalError("Unknown value: \(self)")
+        }
+    }
+
 }
 
 // swiftlint:enable identifier_name
+
+func + (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInterval {
+    return .milliseconds(Int(lhs.milliseconds + rhs.milliseconds))
+}

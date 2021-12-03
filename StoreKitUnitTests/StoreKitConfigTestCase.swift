@@ -20,6 +20,8 @@ import XCTest
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class StoreKitConfigTestCase: XCTestCase {
 
+    static var requestTimeout: DispatchTimeInterval = .seconds(60)
+
     private static var hasWaited = false
     private static let waitLock = Lock()
     private static let waitTimeInSeconds: Double? = {
@@ -36,7 +38,7 @@ class StoreKitConfigTestCase: XCTestCase {
         testSession.disableDialogs = true
         testSession.clearTransactions()
 
-        self.waitForStoreKitTestIfNeeded()
+//        self.waitForStoreKitTestIfNeeded()
 
         let suiteName = "StoreKitConfigTests"
         userDefaults = UserDefaults(suiteName: suiteName)

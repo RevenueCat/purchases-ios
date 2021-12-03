@@ -26,7 +26,7 @@ class ProductsFetcherSK1: NSObject {
     private var completionHandlers: [Set<String>: [Callback]] = [:]
     private let requestTimeout: DispatchTimeInterval
 
-    private static let numberOfRetries: Int = 5
+    private static let numberOfRetries: Int = 10
 
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
          requestTimeout: DispatchTimeInterval = .seconds(30)) {

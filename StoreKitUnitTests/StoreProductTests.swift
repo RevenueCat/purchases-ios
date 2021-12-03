@@ -18,8 +18,6 @@ import XCTest
 
 class StoreProductTests: StoreKitConfigTestCase {
 
-    private static let requestTimeout: DispatchTimeInterval = .seconds(20)
-
     // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
     // Although the method isn't supposed to be called because of our @available marks,
     // everything in this class will still be called by XCTest, and it will cause errors.
@@ -32,7 +30,8 @@ class StoreProductTests: StoreKitConfigTestCase {
             "com.revenuecat.annual_39.99.2_week_intro",
             "lifetime"
         ])
-        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
+        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
+                                            requestTimeout: Self.requestTimeout)
         let sk1StoreProduct = try await sk1Fetcher.products(withIdentifiers: productIdentifiers)
         let sk1StoreProductsByID = sk1StoreProduct.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
