@@ -108,10 +108,8 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
 
-    // TODO: optimize
-    // This creates a new formatter for every product, which can be slow.
-    // Ideally, we'd have a single, shared formatter, and listen for storefront changes in
-    // order to create a new one.
+    /// Provides a `NumerFormatter`, useful for formatting the price for displaying.
+    /// - Note: This creates a new formatter for every product, which can be slow.
     @objc public override var priceFormatter: NumberFormatter? {
         // note: if we ever need more information from the jsonRepresentation object, we
         // should use Codable or another decoding method to clean up this code.
