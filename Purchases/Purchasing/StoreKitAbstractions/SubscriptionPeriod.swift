@@ -16,11 +16,11 @@ import StoreKit
 
 @objc public class SubscriptionPeriod: NSObject {
 
-    public let numberOfUnits: Int
+    public let value: Int
     public let unit: PeriodUnit
 
-    init(numberOfUnits: Int, unit: PeriodUnit) {
-        self.numberOfUnits = numberOfUnits
+    init(value: Int, unit: PeriodUnit) {
+        self.value = value
         self.unit = unit
     }
 
@@ -57,13 +57,13 @@ import StoreKit
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     static func from(sk1SubscriptionPeriod: SKProductSubscriptionPeriod) -> SubscriptionPeriod {
-        return .init(numberOfUnits: sk1SubscriptionPeriod.numberOfUnits,
+        return .init(value: sk1SubscriptionPeriod.numberOfUnits,
                      unit: SubscriptionPeriod.PeriodUnit.from(sk1PeriodUnit: sk1SubscriptionPeriod.unit))
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8, *)
     static func from(sk2SubscriptionPeriod: StoreKit.Product.SubscriptionPeriod) -> SubscriptionPeriod {
-        return .init(numberOfUnits: sk2SubscriptionPeriod.value,
+        return .init(value: sk2SubscriptionPeriod.value,
                      unit: SubscriptionPeriod.PeriodUnit.from(sk2PeriodUnit: sk2SubscriptionPeriod.unit))
     }
 
