@@ -124,6 +124,7 @@ public typealias SK2Product = StoreKit.Product
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = currencyCode
+        formatter.locale = .autoupdatingCurrent
         return formatter
     }
 
