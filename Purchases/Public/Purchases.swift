@@ -44,6 +44,12 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     """
     )
 #endif
+
+    /// Returns the already configured instance of `Purchases`.
+    /// - Note: this method will crash with `fatalError` if `Purchases` has not been initialized through `configure()`.
+    ///         If there's a chance that may have not happened yet, you can use ``isConfigured``
+    ///         to check if it's safe to call.
+    /// - Seealso: ``isConfigured``.
     @objc(sharedPurchases)
     public static var shared: Purchases {
         guard let purchases = purchases else {
@@ -54,6 +60,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     }
     private static var purchases: Purchases?
 
+    /// Returns `true` if RevenueCat has already been intialized through `configure()`.
     @objc public static var isConfigured: Bool { purchases != nil }
 
     /**
