@@ -49,18 +49,6 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public var priceFormatter: NumberFormatter? { fatalError() }
 
-    // todo: it looks like StoreKit 2 doesn't have support for these?
-    //    YES if this product has content downloadable using SKDownload
-    //    var isDownloadable: Bool { get }
-    //
-    //    var downloadContentLengths: [NSNumber] { get }
-    //
-    //    // Version of the downloadable content
-    //    var contentVersion: String { get }
-    //
-    //    var downloadContentVersion: String { get }
-    //
-
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
 
