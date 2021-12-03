@@ -3,16 +3,16 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		2DD778D3270E233F0079CBD4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778D2270E233F0079CBD4 /* AppDelegate.swift */; };
 		2DD778D5270E233F0079CBD4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778D4270E233F0079CBD4 /* SceneDelegate.swift */; };
 		2DD778D7270E233F0079CBD4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778D6270E233F0079CBD4 /* ViewController.swift */; };
-		2DD778DA270E233F0079CBD4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778D8270E233F0079CBD4 /* Main.storyboard */; };
+		2DD778DA270E233F0079CBD4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778D8270E233F0079CBD4 /* Main.storyboard */; platformFilters = (ios, maccatalyst, macos, watchos, ); };
 		2DD778DC270E23400079CBD4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778DB270E23400079CBD4 /* Assets.xcassets */; };
-		2DD778DF270E23400079CBD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778DD270E23400079CBD4 /* LaunchScreen.storyboard */; };
+		2DD778DF270E23400079CBD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778DD270E23400079CBD4 /* LaunchScreen.storyboard */; platformFilters = (ios, maccatalyst, macos, watchos, ); };
 		2DD778E4270E23460079CBD4 /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */; };
 		2DD778E5270E23460079CBD4 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */; };
 		2DD778E6270E23460079CBD4 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */; };
@@ -289,7 +289,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 			};
 			name = Debug;
 		};
@@ -324,7 +324,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
