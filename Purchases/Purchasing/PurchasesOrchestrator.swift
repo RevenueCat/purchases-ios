@@ -290,7 +290,7 @@ class PurchasesOrchestrator {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(forProduct productID: String, completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        beginRefundRequestHelper.beginRefundRequest(productID: productID) { result in
+        beginRefundRequestHelper.beginRefundRequest(forProduct: productID) { result in
             switch result {
             case .failure(let error):
                 completion(.error, error)
@@ -305,13 +305,14 @@ class PurchasesOrchestrator {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequestForActiveEntitlement(completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        // TODO should we force fetch of customer info? pass customerinfo to beginhelper
-        let maybeCachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
-        guard let activeEntitlement = maybeCachedCustomerInfo?.entitlements.active.first?.value else {
-            // TODO complete with error?
-            return
+        beginRefundRequestHelper.beginRefundRequestForActiveEntitlement { result in
+            switch result {
+            case .failure(let error):
+                completion(.error, error)
+            case .success(let status):
+                completion(status, nil)
+            }
         }
-        beginRefundRequest(forProduct: activeEntitlement.productIdentifier, completion: completion)
     }
 
     @available(iOS 15.0, *)
@@ -320,12 +321,14 @@ class PurchasesOrchestrator {
     @available(tvOS, unavailable)
     func beginRefundRequest(forEntitlement entitlementID: String,
                             completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        let maybeCachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
-        guard let entitlement = maybeCachedCustomerInfo?.entitlements[entitlementID] else {
-            // TODO complete with error
-            return
+        beginRefundRequestHelper.beginRefundRequest(forEntitlement: entitlementID) { result in
+            switch result {
+            case .failure(let error):
+                completion(.error, error)
+            case .success(let status):
+                completion(status, nil)
+            }
         }
-        beginRefundRequest(forProduct: entitlement.productIdentifier, completion: completion)
     }
 
 #endif

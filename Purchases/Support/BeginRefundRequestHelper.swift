@@ -21,6 +21,7 @@ class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
     private let customerInfoManager: CustomerInfoManager
+    private let identityManager: IdentityManager
 
 #if os(iOS)
     @available(iOS 15.0, *)
@@ -30,9 +31,10 @@ class BeginRefundRequestHelper {
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
 #endif
 
-    init(systemInfo: SystemInfo, customerInfoManager: CustomerInfoManager) {
+    init(systemInfo: SystemInfo, customerInfoManager: CustomerInfoManager, identityManager: IdentityManager) {
         self.systemInfo = systemInfo
         self.customerInfoManager = customerInfoManager
+        self.identityManager = identityManager
     }
 
 #if os(iOS)
@@ -60,8 +62,8 @@ class BeginRefundRequestHelper {
     @available(tvOS, unavailable)
     func beginRefundRequest(forEntitlement entitlementID: String,
                             completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
-
-        customerInfoManager.customerInfo(appUserID: "1234") { maybeCustomerInfo, maybeError in
+        let currentAppUserID = identityManager.currentAppUserID
+        customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
                 let message = "Failed to get CustomerInfo to proceed with refund for entitlement \(entitlementID). Details: \(error.localizedDescription)"
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
@@ -93,8 +95,8 @@ class BeginRefundRequestHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequestForActiveEntitlement(completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
-
-        customerInfoManager.customerInfo(appUserID: "1234") { maybeCustomerInfo, maybeError in
+        let currentAppUserID = identityManager.currentAppUserID
+        customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
                 let message = "Failed to get CustomerInfo to proceed with refund for active entitlement. Details: \(error.localizedDescription)"
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))

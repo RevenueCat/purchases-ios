@@ -294,7 +294,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                          customerInfoManager: customerInfoManager,
                                                          identityManager: identityManager)
         let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo,
-                                                                customerInfoManager: customerInfoManager)
+                                                                customerInfoManager: customerInfoManager,
+                                                                identityManager: identityManager)
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                                           storeKitWrapper: storeKitWrapper,
                                                           systemInfo: systemInfo,
