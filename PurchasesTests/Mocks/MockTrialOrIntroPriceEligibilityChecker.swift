@@ -72,4 +72,5 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
 
         return stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult
     }
+
 }

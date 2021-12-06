@@ -17,6 +17,7 @@ import StoreKit
 class TrialOrIntroPriceEligibilityChecker {
 
     typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
+
     private var appUserID: String { identityManager.currentAppUserID }
     private let receiptFetcher: ReceiptFetcher
     private let introEligibilityCalculator: IntroEligibilityCalculator
@@ -92,6 +93,23 @@ class TrialOrIntroPriceEligibilityChecker {
         return introDict
     }
 
+    @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
+    func productsWithIntroOffers(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock) {
+        self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
+            let eligibility: [(String, IntroEligibility)] = Array(products).compactMap {
+                guard $0.introductoryPrice != nil else {
+                    return nil
+                }
+                return ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible))
+            }
+            var productIdsToIntroEligibleStatus: [String: IntroEligibility] = [:]
+            eligibility.forEach { (productId, eligibility) in
+                productIdsToIntroEligibleStatus[productId] = eligibility
+            }
+            completion(productIdsToIntroEligibleStatus)
+        }
+    }
+
 }
 
 fileprivate extension TrialOrIntroPriceEligibilityChecker {
@@ -106,8 +124,8 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
                 if let error = maybeError {
                     Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
                     self.getIntroEligibility(with: receiptData,
-                                                          productIdentifiers: productIdentifiers,
-                                                          completion: completion)
+                                             productIdentifiers: productIdentifiers,
+                                             completion: completion)
                     return
                 }
                 var convertedEligibility: [String: IntroEligibility] = [:]
@@ -139,23 +157,6 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
         }
     }
 
-    @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
-    func productsWithIntroOffers(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock) {
-        self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
-            let eligibility: [(String, IntroEligibility)] = Array(products).compactMap {
-                guard $0.introductoryPrice != nil else {
-                    return nil
-                }
-                return ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible))
-            }
-            var productIdsToIntroEligibleStatus: [String: IntroEligibility] = [:]
-            eligibility.forEach { (productId, eligibility) in
-                productIdsToIntroEligibleStatus[productId] = eligibility
-            }
-            completion(productIdsToIntroEligibleStatus)
-        }
-    }
-
 }
 
 private extension TrialOrIntroPriceEligibilityChecker {
@@ -173,7 +174,7 @@ private extension TrialOrIntroPriceEligibilityChecker {
 
         self.backend.fetchIntroEligibility(appUserID: self.appUserID,
                                            receiptData: receiptData,
-                                           productIdentifiers: productIdentifiers) { backendResult, maybeError in
+                                           productIdentifiers: idsToFetchFromBackend) { backendResult, maybeError in
             var result = backendResult
             if let error = maybeError {
                 Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))

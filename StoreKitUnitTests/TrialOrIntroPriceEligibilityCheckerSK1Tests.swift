@@ -32,7 +32,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
                                             platformFlavorVersion: "123",
                                             finishTransactions: true)
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
-        let mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
+        self.mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
@@ -75,7 +75,8 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         expect(receivedEligibilities.count) == 1
     }
 
-    func testSK1EligibilityIsFetchedFromBackendIfErrorCalculatingEligibility() throws {
+    func testSK1EligibilityIsFetchedFromBackendIfErrorCalculatingEligibilityAndStoreKitDoesNotHaveIt() throws {
+        self.mockProductsManager.stubbedProductsCompletionResult = Set()
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
@@ -99,7 +100,32 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         expect(self.mockBackend.invokedGetIntroEligibilityCount) == 1
     }
 
+    func testSK1EligibilityIsNotFetchedFromBackendIfEligibilityAlreadyExists() throws {
+        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
+                                   code: ErrorCode.invalidAppUserIdError.rawValue,
+                                   userInfo: [:])
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroductoryPriceEligibilityResult = ([:], stubbedError)
+
+        let productId = "product_id"
+        let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
+        mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
+        var completionCalled = false
+        var maybeEligibilities: [String: IntroEligibility]?
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
+            completionCalled = true
+            maybeEligibilities = eligibilities
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
+        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.eligible
+
+        expect(self.mockBackend.invokedGetIntroEligibilityCount) == 0
+    }
+
     func testSK1ErrorFetchingFromBackendAfterErrorCalculatingEligibility() throws {
+        self.mockProductsManager.stubbedProductsCompletionResult = Set()
         let productId = "product_id"
 
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
