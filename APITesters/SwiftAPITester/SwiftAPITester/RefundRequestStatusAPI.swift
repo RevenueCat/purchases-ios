@@ -15,5 +15,7 @@ func checkRefundRequestStatusEnum() {
             .success,
             .error:
         print(refundStatus!)
+
+    @unknown default: fatalError()
     }
 }
