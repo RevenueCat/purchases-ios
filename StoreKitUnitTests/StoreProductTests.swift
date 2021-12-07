@@ -18,8 +18,6 @@ import XCTest
 
 class StoreProductTests: StoreKitConfigTestCase {
 
-    private static let requestTimeout: DispatchTimeInterval = .seconds(20)
-
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK1AndSK2DetailsAreEquivalent() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -137,7 +135,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk1Fetcher = ProductsFetcherSK1()
 
-        let storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        let storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
 
         let storeProduct = try XCTUnwrap(storeProductSet.first)
         let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
@@ -154,7 +152,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var sk1Fetcher = ProductsFetcherSK1()
 
-        var storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        var storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
 
         var storeProduct = try XCTUnwrap(storeProductSet.first)
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
@@ -167,7 +165,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         sk1Fetcher = ProductsFetcherSK1()
 
-        storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
 
         storeProduct = try XCTUnwrap(storeProductSet.first)
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
