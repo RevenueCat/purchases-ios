@@ -92,21 +92,24 @@ class ProductInfoTests: XCTestCase {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
         let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
                                          price: 11,
-                                         paymentMode: .payAsYouGo)
+                                         paymentMode: .payAsYouGo,
+                                         subscriptionPeriod: .init(value: 1, unit: .month))
         
         let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
                                          price: 12,
-                                         paymentMode: .payUpFront)
+                                         paymentMode: .payUpFront,
+                                         subscriptionPeriod: .init(value: 5, unit: .week))
         
         let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
                                          price: 13,
-                                         paymentMode: .freeTrial)
+                                         paymentMode: .freeTrial,
+                                         subscriptionPeriod: .init(value: 3, unit: .month))
         
         let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount1, discount2, discount3])
         
         expect(productInfo.asDictionary()["offers"] as? [[String: NSObject]]).toNot(beNil())
         let receivedOffers = try XCTUnwrap(productInfo.asDictionary()["offers"] as? [[String: NSObject]])
-        
+
         expect(receivedOffers[0]["offer_identifier"] as? String) == discount1.offerIdentifier
         expect(receivedOffers[0]["price"] as? Decimal) == discount1.price
         expect((receivedOffers[0]["payment_mode"] as? NSNumber)?.intValue) == discount1.paymentMode.rawValue
@@ -126,15 +129,18 @@ class ProductInfoTests: XCTestCase {
         
         let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
                                          price: 11,
-                                         paymentMode: .payAsYouGo)
+                                         paymentMode: .payAsYouGo,
+                                         subscriptionPeriod: .init(value: 1, unit: .month))
         
         let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
                                          price: 12,
-                                         paymentMode: .payUpFront)
+                                         paymentMode: .payUpFront,
+                                         subscriptionPeriod: .init(value: 2, unit: .year))
         
         let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
                                          price: 13,
-                                         paymentMode: .freeTrial)
+                                         paymentMode: .freeTrial,
+                                         subscriptionPeriod: .init(value: 3, unit: .day))
         
         let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: "cool_product",
                                                               paymentMode: .payUpFront,

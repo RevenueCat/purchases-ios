@@ -40,6 +40,7 @@ public class PromotionalOffer: NSObject {
     public let offerIdentifier: String?
     public let price: Decimal
     public let paymentMode: PaymentMode
+    public let subscriptionPeriod: SubscriptionPeriod
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     convenience init(with productDiscount: SKProductDiscount) {
@@ -47,7 +48,8 @@ public class PromotionalOffer: NSObject {
         let rcPaymentMode = PaymentMode(skProductDiscountPaymentMode: skPaymentMode)
         self.init(offerIdentifier: productDiscount.identifier,
                   price: productDiscount.price as Decimal,
-                  paymentMode: rcPaymentMode)
+                  paymentMode: rcPaymentMode,
+                  subscriptionPeriod: .from(sk1SubscriptionPeriod: productDiscount.subscriptionPeriod))
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -55,14 +57,21 @@ public class PromotionalOffer: NSObject {
         self.init(
             offerIdentifier: subscriptionOffer.id,
             price: subscriptionOffer.price,
-            paymentMode: PaymentMode(subscriptionOfferPaymentMode: subscriptionOffer.paymentMode)
+            paymentMode: PaymentMode(subscriptionOfferPaymentMode: subscriptionOffer.paymentMode),
+            subscriptionPeriod: .from(sk2SubscriptionPeriod: subscriptionOffer.period)
         )
     }
 
-    init(offerIdentifier: String?, price: Decimal, paymentMode: PaymentMode) {
+    init(
+        offerIdentifier: String?,
+        price: Decimal,
+        paymentMode: PaymentMode,
+        subscriptionPeriod: SubscriptionPeriod
+    ) {
         self.offerIdentifier = offerIdentifier
         self.price = price
         self.paymentMode = paymentMode
+        self.subscriptionPeriod = subscriptionPeriod
     }
 
 }
