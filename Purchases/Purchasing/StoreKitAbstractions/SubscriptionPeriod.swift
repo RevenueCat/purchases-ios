@@ -20,6 +20,8 @@ import StoreKit
     public let unit: PeriodUnit
 
     init(value: Int, unit: PeriodUnit) {
+        assert(value >= 0, "Invalid value: \(value)")
+
         self.value = value
         self.unit = unit
     }
@@ -46,6 +48,38 @@ import StoreKit
                      unit: SubscriptionPeriod.PeriodUnit.from(sk2PeriodUnit: sk2SubscriptionPeriod.unit))
     }
 
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? SubscriptionPeriod else { return false }
+
+        return self.value == other.value && self.unit == other.unit
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(self.value)
+        hasher.combine(self.unit)
+
+        return hasher.finalize()
+    }
+
+}
+
+extension SubscriptionPeriod.PeriodUnit: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .unknown: return "unknown"
+        case .day: return "day"
+        case .week: return "week"
+        case .month: return "month"
+        case .year: return "year"
+        }
+    }
+}
+
+extension SubscriptionPeriod {
+    public override var debugDescription: String {
+        return "SubscriptionPeriod: \(self.value) \(self.unit)"
+    }
 }
 
 fileprivate extension SubscriptionPeriod.PeriodUnit {
