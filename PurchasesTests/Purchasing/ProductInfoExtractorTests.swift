@@ -134,7 +134,7 @@ class ProductInfoExtractorTests: XCTestCase {
         } else {
             let receivedProductInfo = self.extract()
 
-            expect(receivedProductInfo.introDurationType) == IntroDurationType.none
+            expect(receivedProductInfo.introDurationType) == ProductInfo.IntroDurationType.none
         }
     }
 

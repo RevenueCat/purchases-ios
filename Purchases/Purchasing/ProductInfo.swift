@@ -50,6 +50,12 @@ struct ProductInfo {
         @unknown default:
             return .none
         }
+    enum IntroDurationType: Int {
+
+        case none = -1
+        case freeTrial = 0
+        case introPrice = 1
+
     }
 
     func asDictionary() -> [String: NSObject] {
