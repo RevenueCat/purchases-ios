@@ -29,7 +29,8 @@ class StoreProductTests: StoreKitConfigTestCase {
             "com.revenuecat.annual_39.99.2_week_intro",
             "lifetime"
         ])
-        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
+        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
+                                            requestTimeout: Self.requestTimeout)
         let sk1StoreProduct = try await sk1Fetcher.products(withIdentifiers: productIdentifiers)
         let sk1StoreProductsByID = sk1StoreProduct.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper

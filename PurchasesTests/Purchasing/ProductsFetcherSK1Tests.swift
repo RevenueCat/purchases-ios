@@ -8,7 +8,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
     var productsRequestFactory: MockProductsRequestFactory!
     var productsFetcherSK1: ProductsFetcherSK1!
 
-    private static let defaultTimeout: DispatchTimeInterval = .seconds(30)
+    private static let defaultTimeout: DispatchTimeInterval = .seconds(5)
 
     override func setUp() {
         super.setUp()
@@ -97,7 +97,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
             completionCalled = true
             receivedProducts = products
         }
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout + .seconds(1))
         expect(receivedProducts?.error).toNot(beNil())
     }
     
@@ -125,7 +125,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
     func testProductsWithIdentifiersTimesOutIfMaxToleranceExceeded() throws {
         let productIdentifiers = Set(["1", "2", "3"])
         let tolerance: DispatchTimeInterval = .seconds(1)
-        let productsRequestResponseTime: DispatchTimeInterval = .seconds(2)
+        let productsRequestResponseTime: DispatchTimeInterval = tolerance + .seconds(1)
         let request = MockProductsRequest(productIdentifiers: productIdentifiers,
                                           responseTime: productsRequestResponseTime)
         productsRequestFactory.stubbedRequestResult = request
@@ -142,7 +142,8 @@ class ProductsFetcherSK1Tests: XCTestCase {
             maybeReceivedProducts = products
         }
 
-        expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
+        expect(completionCallCount).toEventually(equal(1),
+                                                 timeout: productsRequestResponseTime + .seconds(1))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
         let error = try XCTUnwrap(maybeReceivedProducts?.error as? ErrorCode)
         expect(error) == ErrorCode.productRequestTimedOut
