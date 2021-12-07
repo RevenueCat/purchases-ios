@@ -16,16 +16,15 @@ import Foundation
 import StoreKit
 
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
+enum ISOPeriodFormatter {
 
-class ISOPeriodFormatter {
-
-    func string(fromProductSubscriptionPeriod period: SKProductSubscriptionPeriod) -> String {
-        let unitString = self.period(fromUnit: period.unit)
+    static func string(fromProductSubscriptionPeriod period: SKProductSubscriptionPeriod) -> String {
+        let unitString = Self.period(fromUnit: period.unit)
         let stringResult = "P\(period.numberOfUnits)\(unitString)"
         return stringResult
     }
 
-    private func period(fromUnit unit: SK1Product.PeriodUnit) -> String {
+    private static func period(fromUnit unit: SK1Product.PeriodUnit) -> String {
         switch unit {
         case .day:
             return "D"

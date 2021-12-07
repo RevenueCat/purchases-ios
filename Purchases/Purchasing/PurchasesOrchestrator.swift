@@ -452,7 +452,7 @@ private extension PurchasesOrchestrator {
         var maybeProductInfo: ProductInfo?
         var maybePresentedOfferingID: String?
         if let product = products.first {
-            let productInfo = ProductInfoExtractor().extractInfo(from: product)
+            let productInfo = ProductInfoExtractor.extractInfo(from: product)
             maybeProductInfo = productInfo
 
             let productID = productInfo.productIdentifier

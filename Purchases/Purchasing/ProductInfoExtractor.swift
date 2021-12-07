@@ -15,12 +15,9 @@
 import Foundation
 import StoreKit
 
-class ProductInfoExtractor {
+enum ProductInfoExtractor {
 
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
-    private lazy var isoPeriodFormatter = ISOPeriodFormatter()
-
-    func extractInfo(from product: SK1Product) -> ProductInfo {
+    static func extractInfo(from product: SK1Product) -> ProductInfo {
         let paymentMode = extractPaymentMode(for: product)
         let introPrice = extractIntroPrice(for: product)
 
@@ -51,7 +48,7 @@ class ProductInfoExtractor {
 
 private extension ProductInfoExtractor {
 
-    func extractIntroDurationType(for product: SK1Product) -> IntroDurationType {
+    static func extractIntroDurationType(for product: SK1Product) -> IntroDurationType {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
             return paymentMode == .freeTrial ? .freeTrial : .introPrice
@@ -60,7 +57,7 @@ private extension ProductInfoExtractor {
         }
     }
 
-    func extractSubscriptionGroup(for product: SK1Product) -> String? {
+    static func extractSubscriptionGroup(for product: SK1Product) -> String? {
         if #available(iOS 12.0, macOS 10.14.0, tvOS 12.0, *) {
             return product.subscriptionGroupIdentifier
         } else {
@@ -68,7 +65,7 @@ private extension ProductInfoExtractor {
         }
     }
 
-    func extractDiscounts(for product: SK1Product) -> [PromotionalOffer]? {
+    static func extractDiscounts(for product: SK1Product) -> [PromotionalOffer]? {
         if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
             return product.discounts.map(PromotionalOffer.init(withProductDiscount:))
         } else {
@@ -76,7 +73,7 @@ private extension ProductInfoExtractor {
         }
     }
 
-    func extractPaymentMode(for product: SK1Product) -> ProductInfo.PaymentMode {
+    static func extractPaymentMode(for product: SK1Product) -> ProductInfo.PaymentMode {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
             return ProductInfo.paymentMode(fromSKProductDiscountPaymentMode: paymentMode)
@@ -85,7 +82,7 @@ private extension ProductInfoExtractor {
         }
     }
 
-    func extractIntroPrice(for product: SK1Product) -> NSDecimalNumber? {
+    static func extractIntroPrice(for product: SK1Product) -> NSDecimalNumber? {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let introductoryPrice = product.introductoryPrice {
             return introductoryPrice.price
@@ -94,20 +91,20 @@ private extension ProductInfoExtractor {
         }
     }
 
-    func extractNormalDuration(for product: SK1Product) -> String? {
+    static func extractNormalDuration(for product: SK1Product) -> String? {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let subscriptionPeriod = product.subscriptionPeriod,
            subscriptionPeriod.numberOfUnits != 0 {
-            return isoPeriodFormatter.string(fromProductSubscriptionPeriod: subscriptionPeriod)
+            return ISOPeriodFormatter.string(fromProductSubscriptionPeriod: subscriptionPeriod)
         } else {
             return nil
         }
     }
 
-    func extractIntroDuration(for product: SK1Product) -> String? {
+    static func extractIntroDuration(for product: SK1Product) -> String? {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let subscriptionPeriod = product.introductoryPrice?.subscriptionPeriod {
-            return isoPeriodFormatter.string(fromProductSubscriptionPeriod: subscriptionPeriod)
+            return ISOPeriodFormatter.string(fromProductSubscriptionPeriod: subscriptionPeriod)
         } else {
             return nil
         }
