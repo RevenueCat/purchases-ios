@@ -18,19 +18,28 @@ import StoreKit
 class PromotionalOffer {
 
     let offerIdentifier: String?
-    let price: NSDecimalNumber
+    let price: Decimal
     let paymentMode: ProductInfo.PaymentMode
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    convenience init(withProductDiscount productDiscount: SKProductDiscount) {
+    convenience init(with productDiscount: SKProductDiscount) {
         let skPaymentMode = productDiscount.paymentMode
-        let rcPaymentMode = ProductInfo.paymentMode(fromSKProductDiscountPaymentMode: skPaymentMode)
+        let rcPaymentMode = ProductInfo.PaymentMode(skProductDiscountPaymentMode: skPaymentMode)
         self.init(offerIdentifier: productDiscount.identifier,
-                  price: productDiscount.price,
+                  price: productDiscount.price as Decimal,
                   paymentMode: rcPaymentMode)
     }
 
-    init(offerIdentifier: String?, price: NSDecimalNumber, paymentMode: ProductInfo.PaymentMode) {
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    convenience init(with subscriptionOffer: Product.SubscriptionOffer) {
+        self.init(
+            offerIdentifier: subscriptionOffer.id,
+            price: subscriptionOffer.price,
+            paymentMode: ProductInfo.PaymentMode(subscriptionOfferPaymentMode: subscriptionOffer.paymentMode)
+        )
+    }
+
+    init(offerIdentifier: String?, price: Decimal, paymentMode: ProductInfo.PaymentMode) {
         self.offerIdentifier = offerIdentifier
         self.price = price
         self.paymentMode = paymentMode

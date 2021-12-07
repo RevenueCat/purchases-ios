@@ -91,15 +91,15 @@ class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsDiscountsCorrectly() throws {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
         let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
-                                         price: NSDecimalNumber(decimal: 11),
+                                         price: 11,
                                          paymentMode: .payAsYouGo)
         
         let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
-                                         price: NSDecimalNumber(decimal: 12),
+                                         price: 12,
                                          paymentMode: .payUpFront)
         
         let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
-                                         price: NSDecimalNumber(decimal: 13),
+                                         price: 13,
                                          paymentMode: .freeTrial)
         
         let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount1, discount2, discount3])
@@ -108,15 +108,15 @@ class ProductInfoTests: XCTestCase {
         let receivedOffers = try XCTUnwrap(productInfo.asDictionary()["offers"] as? [[String: NSObject]])
         
         expect(receivedOffers[0]["offer_identifier"] as? String) == discount1.offerIdentifier
-        expect(receivedOffers[0]["price"] as? NSDecimalNumber) == discount1.price
+        expect(receivedOffers[0]["price"] as? Decimal) == discount1.price
         expect((receivedOffers[0]["payment_mode"] as? NSNumber)?.intValue) == discount1.paymentMode.rawValue
         
         expect(receivedOffers[1]["offer_identifier"] as? String) == discount2.offerIdentifier
-        expect(receivedOffers[1]["price"] as? NSDecimalNumber) == discount2.price
+        expect(receivedOffers[1]["price"] as? Decimal) == discount2.price
         expect((receivedOffers[1]["payment_mode"] as? NSNumber)?.intValue) == discount2.paymentMode.rawValue
         
         expect(receivedOffers[2]["offer_identifier"] as? String) == discount3.offerIdentifier
-        expect(receivedOffers[2]["price"] as? NSDecimalNumber) == discount3.price
+        expect(receivedOffers[2]["price"] as? Decimal) == discount3.price
         expect((receivedOffers[2]["payment_mode"] as? NSNumber)?.intValue) == discount3.paymentMode.rawValue
         
     }
@@ -125,15 +125,15 @@ class ProductInfoTests: XCTestCase {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
         
         let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
-                                         price: NSDecimalNumber(decimal: 11),
+                                         price: 11,
                                          paymentMode: .payAsYouGo)
         
         let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
-                                         price: NSDecimalNumber(decimal: 12),
+                                         price: 12,
                                          paymentMode: .payUpFront)
         
         let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
-                                         price: NSDecimalNumber(decimal: 13),
+                                         price: 13,
                                          paymentMode: .freeTrial)
         
         let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: "cool_product",

@@ -158,7 +158,7 @@ class ProductInfoExtractorTests: XCTestCase {
             let mockDiscount = MockDiscount()
             let paymentMode: SKProductDiscount.PaymentMode = .freeTrial
             mockDiscount.mockPaymentMode = paymentMode
-            let price: NSDecimalNumber = 10.99
+            let price: Decimal = 10.99
             mockDiscount.mockPrice = price
             let discountID = "cool_discount"
             mockDiscount.mockIdentifier = discountID

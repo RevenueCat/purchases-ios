@@ -67,7 +67,7 @@ private extension ProductInfoExtractor {
 
     static func extractDiscounts(for product: SK1Product) -> [PromotionalOffer]? {
         if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
-            return product.discounts.map(PromotionalOffer.init(withProductDiscount:))
+            return product.discounts.map(PromotionalOffer.init(with:))
         } else {
             return nil
         }
