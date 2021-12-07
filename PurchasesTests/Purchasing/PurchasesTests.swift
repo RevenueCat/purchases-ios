@@ -115,7 +115,7 @@ class PurchasesTests: XCTestCase {
         var postedIsRestore: Bool?
         var postedProductID: String?
         var postedPrice: NSDecimalNumber?
-        var postedPaymentMode: ProductInfo.PaymentMode?
+        var postedPaymentMode: PromotionalOffer.PaymentMode?
         var postedIntroPrice: NSDecimalNumber?
         var postedCurrencyCode: String?
         var postedSubscriptionGroup: String?
@@ -814,10 +814,10 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedPrice).to(equal(product.price))
 
             if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
-                expect(self.backend.postedPaymentMode).to(equal(ProductInfo.PaymentMode.payAsYouGo))
+                expect(self.backend.postedPaymentMode).to(equal(PromotionalOffer.PaymentMode.payAsYouGo))
                 expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price))
             } else {
-                expect(self.backend.postedPaymentMode).to(equal(ProductInfo.PaymentMode.none))
+                expect(self.backend.postedPaymentMode).to(equal(PromotionalOffer.PaymentMode.none))
                 expect(self.backend.postedIntroPrice).to(beNil())
             }
 
@@ -830,7 +830,7 @@ class PurchasesTests: XCTestCase {
                 let postedDiscount: PromotionalOffer = self.backend.postedDiscounts![0]
                 expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
                 expect(postedDiscount.price).to(equal(1.99))
-                expect(postedDiscount.paymentMode.rawValue).to(equal(ProductInfo.PaymentMode.payAsYouGo.rawValue))
+                expect(postedDiscount.paymentMode.rawValue).to(equal(PromotionalOffer.PaymentMode.payAsYouGo.rawValue))
             }
 
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))

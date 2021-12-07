@@ -11,7 +11,7 @@ class ProductInfoTests: XCTestCase {
     }
 
     func testAsDictionaryConvertsPaymentModeCorrectly() {
-        var paymentMode: ProductInfo.PaymentMode = .none
+        var paymentMode: PromotionalOffer.PaymentMode = .none
         var productInfo: ProductInfo = .createMockProductInfo(paymentMode: paymentMode)
         expect(productInfo.asDictionary()["payment_mode"]).to(beNil())
 

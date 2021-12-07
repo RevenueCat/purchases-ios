@@ -18,32 +18,15 @@ import StoreKit
 struct ProductInfo {
 
     let productIdentifier: String
-    let paymentMode: PaymentMode
+    let paymentMode: PromotionalOffer.PaymentMode
     let currencyCode: String?
     let price: NSDecimalNumber
     let normalDuration: String?
     let introDuration: String?
-    let introDurationType: IntroDurationType
+    let introDurationType: PromotionalOffer.IntroDurationType
     let introPrice: NSDecimalNumber?
     let subscriptionGroup: String?
     let discounts: [PromotionalOffer]?
-
-    enum PaymentMode: Int {
-
-        case none = -1
-        case payAsYouGo = 0
-        case payUpFront = 1
-        case freeTrial = 2
-
-    }
-
-    enum IntroDurationType: Int {
-
-        case none = -1
-        case freeTrial = 0
-        case introPrice = 1
-
-    }
 
     func asDictionary() -> [String: NSObject] {
         var dict: [String: NSObject] = [:]
@@ -135,35 +118,4 @@ struct ProductInfo {
         return durations
     }
 
-}
-
-extension ProductInfo.PaymentMode {
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    init(skProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) {
-        switch paymentMode {
-        case .payUpFront:
-            self = .payUpFront
-        case .payAsYouGo:
-            self = .payAsYouGo
-        case .freeTrial:
-            self = .freeTrial
-        @unknown default:
-            self = .none
-        }
-    }
-
-    // TODO: test?
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    init(subscriptionOfferPaymentMode paymentMode: Product.SubscriptionOffer.PaymentMode) {
-        switch paymentMode {
-        case .payUpFront:
-            self = .payUpFront
-        case .payAsYouGo:
-            self = .payAsYouGo
-        case .freeTrial:
-            self = .freeTrial
-        default:
-            self = .none
-        }
-    }
 }

@@ -8,12 +8,12 @@ import Foundation
 
 extension ProductInfo {
     static func createMockProductInfo(productIdentifier: String = "product_id",
-                                      paymentMode: ProductInfo.PaymentMode = .none,
+                                      paymentMode: PromotionalOffer.PaymentMode = .none,
                                       currencyCode: String = "UYU",
                                       price: NSDecimalNumber = 15.99,
                                       normalDuration: String? = nil,
                                       introDuration: String? = nil,
-                                      introDurationType: IntroDurationType = .none,
+                                      introDurationType: PromotionalOffer.IntroDurationType = .none,
                                       introPrice: NSDecimalNumber? = nil,
                                       subscriptionGroup: String? = nil,
                                       discounts: [PromotionalOffer]? = nil) -> ProductInfo {

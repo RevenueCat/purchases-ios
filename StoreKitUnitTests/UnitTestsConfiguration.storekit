@@ -33,7 +33,23 @@
       "subscriptions" : [
         {
           "adHocOffers" : [
-
+            {
+              "displayPrice" : "40.99",
+              "internalID" : "FF459F3D",
+              "offerID" : "com.revenuecat.monthly_4.99.1_week_intro.year_discount",
+              "paymentMode" : "payUpFront",
+              "referenceName" : "year discount",
+              "subscriptionPeriod" : "P1Y"
+            },
+            {
+              "displayPrice" : "20.15",
+              "internalID" : "DE6B065C",
+              "numberOfPeriods" : 10,
+              "offerID" : "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go",
+              "paymentMode" : "payAsYouGo",
+              "referenceName" : "pay as you go",
+              "subscriptionPeriod" : "P1M"
+            }
           ],
           "displayPrice" : "4.99",
           "familyShareable" : true,

@@ -48,7 +48,7 @@ enum ProductInfoExtractor {
 
 private extension ProductInfoExtractor {
 
-    static func extractIntroDurationType(for product: SK1Product) -> ProductInfo.IntroDurationType {
+    static func extractIntroDurationType(for product: SK1Product) -> PromotionalOffer.IntroDurationType {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
             return paymentMode == .freeTrial ? .freeTrial : .introPrice
@@ -73,10 +73,10 @@ private extension ProductInfoExtractor {
         }
     }
 
-    static func extractPaymentMode(for product: SK1Product) -> ProductInfo.PaymentMode {
+    static func extractPaymentMode(for product: SK1Product) -> PromotionalOffer.PaymentMode {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
-            return ProductInfo.PaymentMode(skProductDiscountPaymentMode: paymentMode)
+            return PromotionalOffer.PaymentMode(skProductDiscountPaymentMode: paymentMode)
         } else {
             return .none
         }

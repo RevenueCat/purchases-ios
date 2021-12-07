@@ -375,7 +375,7 @@ class BackendTests: XCTestCase {
 
         let currencyCode = "BFD"
 
-        let paymentMode: ProductInfo.PaymentMode = .none
+        let paymentMode: PromotionalOffer.PaymentMode = .none
 
         var completionCalled = false
         let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
@@ -454,7 +454,7 @@ class BackendTests: XCTestCase {
         expect(call.body!["price"]).toNot(beNil())
     }
 
-    func postPaymentMode(paymentMode: ProductInfo.PaymentMode) {
+    func postPaymentMode(paymentMode: PromotionalOffer.PaymentMode) {
         var completionCalled = false
 
         let productInfo: ProductInfo = .createMockProductInfo(paymentMode: paymentMode)
@@ -1238,7 +1238,7 @@ class BackendTests: XCTestCase {
         let price = 4.99 as NSDecimalNumber
         let group = "sub_group"
         let currencyCode = "BFD"
-        let paymentMode: ProductInfo.PaymentMode = .none
+        let paymentMode: PromotionalOffer.PaymentMode = .none
         var completionCalled = false
         let discount = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
         let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
