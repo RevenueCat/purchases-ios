@@ -93,23 +93,6 @@ class TrialOrIntroPriceEligibilityChecker {
         return introDict
     }
 
-    @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
-    func productsWithIntroOffers(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock) {
-        self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
-            let eligibility: [(String, IntroEligibility)] = Array(products).compactMap {
-                guard $0.introductoryPrice != nil else {
-                    return nil
-                }
-                return ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible))
-            }
-            var productIdsToIntroEligibleStatus: [String: IntroEligibility] = [:]
-            eligibility.forEach { (productId, eligibility) in
-                productIdsToIntroEligibleStatus[productId] = eligibility
-            }
-            completion(productIdsToIntroEligibleStatus)
-        }
-    }
-
 }
 
 fileprivate extension TrialOrIntroPriceEligibilityChecker {
@@ -160,6 +143,18 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
 }
 
 private extension TrialOrIntroPriceEligibilityChecker {
+
+    @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
+    func productsWithIntroOffers(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock) {
+        self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
+            let eligibility: [(String, IntroEligibility)] = Array(products)
+                .filter { $0.introductoryPrice != nil }
+                .map { ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible)) }
+
+            let productIdsToIntroEligibleStatus = Dictionary(uniqueKeysWithValues: eligibility)
+            completion(productIdsToIntroEligibleStatus)
+        }
+    }
 
     func getIntroEligibility(with receiptData: Data,
                              productIdentifiers: [String],
