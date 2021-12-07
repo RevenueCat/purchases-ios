@@ -128,8 +128,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        let isRestore = arc4random_uniform(2) == 0
-        let observerMode = arc4random_uniform(2) == 0
+        let isRestore = Bool.random()
+        let observerMode = Bool.random()
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -171,8 +171,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = arc4random_uniform(2) == 0
-        let observerMode = arc4random_uniform(2) == 0
+        let isRestore = Bool.random()
+        let observerMode = Bool.random()
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -206,8 +206,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = arc4random_uniform(2) == 0
-        let observerMode = arc4random_uniform(2) == 0
+        let isRestore = Bool.random()
+        let observerMode = Bool.random()
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -241,8 +241,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = arc4random_uniform(2) == 0
-        let observerMode = arc4random_uniform(2) == 0
+        let isRestore = Bool.random()
+        let observerMode = Bool.random()
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -276,8 +276,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = arc4random_uniform(2) == 0
-        let observerMode = arc4random_uniform(2) == 0
+        let isRestore = Bool.random()
+        let observerMode = Bool.random()
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -312,8 +312,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = arc4random_uniform(2) == 0
-        let observerMode = arc4random_uniform(2) == 0
+        let isRestore = Bool.random()
+        let observerMode = Bool.random()
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -1198,8 +1198,8 @@ class BackendTests: XCTestCase {
         
         var completionCalled = 0
         
-        let isRestore = arc4random_uniform(2) == 0
-        let observerMode = arc4random_uniform(2) == 0
+        let isRestore = Bool.random()
+        let observerMode = Bool.random()
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -1557,8 +1557,8 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
         
         var completionCalled = 0
-        let isRestore = arc4random_uniform(2) == 0
-        let observerMode = arc4random_uniform(2) == 0
+        let isRestore = Bool.random()
+        let observerMode = Bool.random()
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
