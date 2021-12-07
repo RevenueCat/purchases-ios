@@ -143,8 +143,10 @@ private extension BeginRefundRequestHelper {
             }
 
             if let entitlementID = maybeEntitlementID {
+                // TODO does it have to be active for refund to be possible
                 guard let entitlement = customerInfo.entitlements[entitlementID] else {
-                    let message = Strings.purchase.begin_refund_no_active_entitlement.description
+                    let message = Strings.purchase.begin_refund_no_active_entitlement(
+                        entitlementID: entitlementID).description
                     completion(.failure(ErrorUtils.beginRefundRequestError(withMessage: message)))
                     return
                 }
@@ -153,8 +155,9 @@ private extension BeginRefundRequestHelper {
             }
 
             guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
+                let message = Strings.purchase.begin_refund_no_active_entitlement(entitlementID: nil).description
                 completion(.failure(ErrorUtils.beginRefundRequestError(
-                    withMessage: "There is no active entitlement to refund")))
+                    withMessage: message)))
                 return
             }
 

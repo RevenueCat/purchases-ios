@@ -50,7 +50,7 @@ enum PurchaseStrings {
     case transaction_unverified(productID: String, errorMessage: String)
     case begin_refund_request_unsupported
     case begin_refund_for_entitlement_nil_customer_info(entitlementID: String?)
-    case begin_refund_no_active_entitlement
+    case begin_refund_no_active_entitlement(entitlementID: String?)
     case begin_refund_customer_info_error(entitlementID: String?)
 
 }
@@ -171,13 +171,12 @@ extension PurchaseStrings: CustomStringConvertible {
         case .begin_refund_request_unsupported:
             return "Tried to call beginRefundRequest in a platform that doesn't support it!"
         case .begin_refund_for_entitlement_nil_customer_info(let entitlementID):
-            return "Failed to get active entitlement \(String(describing: entitlementID)) for refund. " +
+            return "Failed to get entitlement\( entitlementID ?? "") for refund. " +
                 "CustomerInfo is nil."
-        case .begin_refund_no_active_entitlement:
-            return "Could not find active entitlement for refund"
+        case .begin_refund_no_active_entitlement(let entitlementID):
+            return "Could not find entitlement\(entitlementID ?? "") for refund."
         case .begin_refund_customer_info_error(let entitlementID):
-            return "Failed to get CustomerInfo to proceed with refund for" +
-                "entitlement \(String(describing: entitlementID))"
+            return "Failed to get CustomerInfo to proceed with refund for entitlement\( entitlementID ?? "")."
         }
     }
 
