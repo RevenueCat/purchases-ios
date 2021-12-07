@@ -28,6 +28,10 @@ class ProductsFetcherSK1: NSObject {
 
     private static let numberOfRetries: Int = 10
 
+    /// - Parameter requestTimeout: requests made by this class will return after whichever condition comes first:
+    ///     - A success
+    ///     - Retries up to ``Self.numberOfRetries``
+    //      - Timeout specified by this parameter
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
          requestTimeout: DispatchTimeInterval = .seconds(30)) {
         self.productsRequestFactory = productsRequestFactory
