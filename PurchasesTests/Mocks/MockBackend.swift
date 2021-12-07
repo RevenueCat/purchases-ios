@@ -91,10 +91,10 @@ class MockBackend: Backend {
         completion: IntroEligibilityResponseHandler?)]()
     var stubbedGetIntroEligibilityCompletionResult: (eligibilities: [String: IntroEligibility], error: Error?)?
 
-    override func getIntroEligibility(appUserID: String,
-                                      receiptData: Data,
-                                      productIdentifiers: [String],
-                                      completion: @escaping IntroEligibilityResponseHandler) {
+    override func fetchIntroEligibility(appUserID: String,
+                                        receiptData: Data,
+                                        productIdentifiers: [String],
+                                        completion: @escaping IntroEligibilityResponseHandler) {
         invokedGetIntroEligibility = true
         invokedGetIntroEligibilityCount += 1
         invokedGetIntroEligibilityParameters = (appUserID, receiptData, productIdentifiers, completion)

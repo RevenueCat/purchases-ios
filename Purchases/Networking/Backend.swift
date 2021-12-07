@@ -372,10 +372,10 @@ class Backend {
         }
     }
 
-    func getIntroEligibility(appUserID: String,
-                             receiptData: Data,
-                             productIdentifiers: [String],
-                             completion: @escaping IntroEligibilityResponseHandler) {
+    func fetchIntroEligibility(appUserID: String,
+                               receiptData: Data,
+                               productIdentifiers: [String],
+                               completion: @escaping IntroEligibilityResponseHandler) {
         guard productIdentifiers.count > 0 else {
             completion([:], nil)
             return
