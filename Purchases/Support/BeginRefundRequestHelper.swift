@@ -52,8 +52,6 @@ class BeginRefundRequestHelper {
             let result = await self.beginRefundRequest(productID: productID)
             completion(result)
         }
-
-        return
     }
 
     @available(iOS 15.0, *)
@@ -62,32 +60,17 @@ class BeginRefundRequestHelper {
     @available(tvOS, unavailable)
     func beginRefundRequest(forEntitlement entitlementID: String,
                             completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
-        let currentAppUserID = identityManager.currentAppUserID
-        customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
-            if let error = maybeError {
-                let message = "Failed to get CustomerInfo to proceed with refund for entitlement \(entitlementID). Details: \(error.localizedDescription)"
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
-                return
-            }
-
-            guard let customerInfo = maybeCustomerInfo else {
-                let message = "Failed to get entitlement \(entitlementID) for refund. customerInfo is nil."
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
-                return
-            }
-
-            guard let entitlement = customerInfo.entitlements[entitlementID] else {
-                completion(.failure(ErrorUtils.beginRefundRequestError(withMessage: "Could not find entitlement for refund")))
-                return
-            }
-
-            _ = Task<Void, Never> {
-                let result = await self.beginRefundRequest(productID: entitlement.productIdentifier)
-                completion(result)
+        getEntitlement(maybeEntitlementID: entitlementID) { entitlementResult in
+            switch entitlementResult {
+            case .failure(let error):
+                completion(.failure(error))
+            case .success(let entitlement):
+                _ = Task<Void, Never> {
+                    let refundResult = await self.beginRefundRequest(productID: entitlement.productIdentifier)
+                    completion(refundResult)
+                }
             }
         }
-
-        return
     }
 
     @available(iOS 15.0, *)
@@ -95,33 +78,17 @@ class BeginRefundRequestHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequestForActiveEntitlement(completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
-        let currentAppUserID = identityManager.currentAppUserID
-        customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
-            if let error = maybeError {
-                let message = "Failed to get CustomerInfo to proceed with refund for active entitlement. Details: \(error.localizedDescription)"
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
-                return
-            }
-
-            guard let customerInfo = maybeCustomerInfo else {
-                let message = "Failed to get active entitlement for refund. customerInfo is nil."
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
-                return
-            }
-
-            guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
-                completion(.failure(ErrorUtils.beginRefundRequestError(
-                    withMessage: "There is no active entitlement to refund")))
-                return
-            }
-
-            _ = Task<Void, Never> {
-                let result = await self.beginRefundRequest(productID: activeEntitlement.productIdentifier)
-                completion(result)
+        getEntitlement(maybeEntitlementID: nil) { entitlementResult in
+            switch entitlementResult {
+            case .failure(let error):
+                completion(.failure(error))
+            case .success(let entitlement):
+                _ = Task<Void, Never> {
+                    let refundResult = await self.beginRefundRequest(productID: entitlement.productIdentifier)
+                    completion(refundResult)
+                }
             }
         }
-
-        return
     }
 #endif
 }
@@ -152,6 +119,48 @@ private extension BeginRefundRequestHelper {
             return await sk2Helper.initiateRefundRequest(transactionID: transactionID,
                                                          windowScene: windowScene)
         }
+    }
+
+    /*
+     * Gets entitlement with the given `entitlementID` from customerInfo, or the active entitlement
+     * if no ID passed in.
+     */
+    func getEntitlement(maybeEntitlementID: String?,
+                        completion: @escaping (Result<EntitlementInfo, Error>) -> Void) {
+        let currentAppUserID = identityManager.currentAppUserID
+        customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
+            if let error = maybeError {
+                let message = Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
+                return
+            }
+
+            guard let customerInfo = maybeCustomerInfo else {
+                let message = Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
+                    entitlementID: nil).description
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
+                return
+            }
+
+            if let entitlementID = maybeEntitlementID {
+                guard let entitlement = customerInfo.entitlements[entitlementID] else {
+                    let message = Strings.purchase.begin_refund_no_active_entitlement.description
+                    completion(.failure(ErrorUtils.beginRefundRequestError(withMessage: message)))
+                    return
+                }
+                completion(.success(entitlement))
+                return
+            }
+
+            guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
+                completion(.failure(ErrorUtils.beginRefundRequestError(
+                    withMessage: "There is no active entitlement to refund")))
+                return
+            }
+
+            return completion(.success(activeEntitlement))
+        }
+        return
     }
 
 }
