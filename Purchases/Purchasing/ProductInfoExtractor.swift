@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-class ProductInfoExtractor {
+enum ProductInfoExtractor {
 
     static func extractInfo(from product: SK1Product) -> ProductInfo {
         let paymentMode = extractPaymentMode(for: product)
