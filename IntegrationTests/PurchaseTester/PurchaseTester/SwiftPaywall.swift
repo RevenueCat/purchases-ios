@@ -543,16 +543,14 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
         
         didChangePackage = true
 
-        if #available(iOS 11.2, *) {
-            // todo: remove this check when sk2 products support introductory price
-            // https://github.com/RevenueCat/purchases-ios/issues/848
-            if let sk1StoreProduct = offering?.availablePackages[indexPath.row].storeProduct as? SK1StoreProduct,
-               let introPrice = sk1StoreProduct.underlyingSK1Product.introductoryPrice, introPrice.price == 0 {
+        if #available(iOS 12.2, *) {
+            if let product = offering?.availablePackages[indexPath.row].storeProduct,
+               let introPrice = product.introductoryPrice, introPrice.price == 0 {
 
                 var trialLength = ""
                 var cancelDate : Date?
                 var cancelString = "end of trial"
-                let numUnits = introPrice.subscriptionPeriod.numberOfUnits
+                let numUnits = introPrice.subscriptionPeriod.value
 
                 switch introPrice.subscriptionPeriod.unit {
                 case .day:
@@ -569,8 +567,10 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
                     trialLength = "\(numUnits)-year"
                     cancelDate = Calendar.current.date(byAdding: .year, value: numUnits, to: Date())
                     cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
+                case .unknown:
+                    fallthrough
                 @unknown default:
-                    fatalError()
+                    fatalError("Unknown unit: \(introPrice.subscriptionPeriod.unit)")
                 }
 
                 let dateFormatter = DateFormatter()
