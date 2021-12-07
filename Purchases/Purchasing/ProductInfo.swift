@@ -37,19 +37,6 @@ struct ProductInfo {
 
     }
 
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    static func paymentMode(fromSKProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) ->
-        PaymentMode {
-        switch paymentMode {
-        case .payUpFront:
-            return .payUpFront
-        case .payAsYouGo:
-            return .payAsYouGo
-        case .freeTrial:
-            return .freeTrial
-        @unknown default:
-            return .none
-        }
     enum IntroDurationType: Int {
 
         case none = -1
@@ -148,4 +135,35 @@ struct ProductInfo {
         return durations
     }
 
+}
+
+extension ProductInfo.PaymentMode {
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    init(skProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) {
+        switch paymentMode {
+        case .payUpFront:
+            self = .payUpFront
+        case .payAsYouGo:
+            self = .payAsYouGo
+        case .freeTrial:
+            self = .freeTrial
+        @unknown default:
+            self = .none
+        }
+    }
+
+    // TODO: test?
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    init(subscriptionOfferPaymentMode paymentMode: Product.SubscriptionOffer.PaymentMode) {
+        switch paymentMode {
+        case .payUpFront:
+            self = .payUpFront
+        case .payAsYouGo:
+            self = .payAsYouGo
+        case .freeTrial:
+            self = .freeTrial
+        default:
+            self = .none
+        }
+    }
 }

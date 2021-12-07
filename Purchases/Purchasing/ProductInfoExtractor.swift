@@ -76,7 +76,7 @@ private extension ProductInfoExtractor {
     static func extractPaymentMode(for product: SK1Product) -> ProductInfo.PaymentMode {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
-            return ProductInfo.paymentMode(fromSKProductDiscountPaymentMode: paymentMode)
+            return ProductInfo.PaymentMode(skProductDiscountPaymentMode: paymentMode)
         } else {
             return .none
         }
