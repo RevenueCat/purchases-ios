@@ -39,13 +39,24 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     @available(tvOS, unavailable)
     override func beginRefundRequest(forEntitlement entitlementID: String,
                             completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
+        if let error = maybeMockError {
+            completion(.failure(error))
+        } else {
+            completion(.success(maybeMockRefundRequestStatus ?? RefundRequestStatus.success))
+        }
     }
 
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    override func beginRefundRequestForActiveEntitlement(completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
+    override func beginRefundRequestForActiveEntitlement(
+        completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
+            if let error = maybeMockError {
+                completion(.failure(error))
+            } else {
+                completion(.success(maybeMockRefundRequestStatus ?? RefundRequestStatus.success))
+            }
     }
 #endif
 
