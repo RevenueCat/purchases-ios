@@ -61,7 +61,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                        customerInfoManager: customerInfoManager,
                                                                        identityManager: identityManager)
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
-                                                                    customerInfoManager: customerInfoManager)
+                                                                    customerInfoManager: customerInfoManager,
+                                                                    identityManager: identityManager)
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                              storeKitWrapper: storeKitWrapper,
                                              systemInfo: systemInfo,

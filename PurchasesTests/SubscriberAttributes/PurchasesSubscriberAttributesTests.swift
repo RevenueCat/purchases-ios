@@ -108,7 +108,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                                             customerInfoManager: customerInfoManager,
                                                                             identityManager: mockIdentityManager)
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
-                                                                         customerInfoManager: customerInfoManager)
+                                                                         customerInfoManager: customerInfoManager,
+                                                                         identityManager: mockIdentityManager)
     }
 
     override func tearDown() {

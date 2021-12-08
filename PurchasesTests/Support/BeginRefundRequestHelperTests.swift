@@ -22,6 +22,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
     private var customerInfoManager: MockCustomerInfoManager!
+    private var identityManager: MockIdentityManager!
     private var helper: BeginRefundRequestHelper!
     private let mockProductID = "1234"
 
@@ -34,11 +35,18 @@ class BeginRefundRequestHelperTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         systemInfo = MockSystemInfo(finishTransactions: true)
-        helper = BeginRefundRequestHelper(systemInfo: systemInfo, customerInfoManager: customerInfoManager)
+        customerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
+                                                      deviceCache: MockDeviceCache(systemInfo: systemInfo),
+                                                      backend: MockBackend(),
+                                                      systemInfo: systemInfo)
+        identityManager = MockIdentityManager(mockAppUserID: "appUserID")
+        helper = BeginRefundRequestHelper(systemInfo: systemInfo,
+                                          customerInfoManager: customerInfoManager,
+                                          identityManager: identityManager)
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {
             helper.sk2Helper = sk2Helper
-        }
+        } 
     }
 
     func testBeginRefundRequestFatalErrorIfNotIosOrCatalyst() {
@@ -64,7 +72,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         var callbackCalled = false
         var receivedResult: Result<RefundRequestStatus, Error>?
 
-        helper.beginRefundRequest(productID: mockProductID) { result in
+        helper.beginRefundRequest(forProduct: mockProductID) { result in
             callbackCalled = true
             receivedResult = result
         }
@@ -91,7 +99,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         var callbackCalled = false
         var receivedResult: Result<RefundRequestStatus, Error>?
 
-        helper.beginRefundRequest(productID: mockProductID) { result in
+        helper.beginRefundRequest(forProduct: mockProductID) { result in
             callbackCalled = true
             receivedResult = result
         }
@@ -116,7 +124,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         var callbackCalled = false
         var receivedResult: Result<RefundRequestStatus, Error>?
 
-        helper.beginRefundRequest(productID: mockProductID) { result in
+        helper.beginRefundRequest(forProduct: mockProductID) { result in
             callbackCalled = true
             receivedResult = result
         }
@@ -140,7 +148,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         var callbackCalled = false
         var receivedResult: Result<RefundRequestStatus, Error>?
 
-        helper.beginRefundRequest(productID: mockProductID) { result in
+        helper.beginRefundRequest(forProduct: mockProductID) { result in
             callbackCalled = true
             receivedResult = result
         }
