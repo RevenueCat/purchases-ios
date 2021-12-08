@@ -28,7 +28,7 @@ public class PromotionalOffer: NSObject {
 
     }
 
-    // TODO: remove?
+    // Fixme: remove in favor of `PaymentMode`: https://github.com/RevenueCat/purchases-ios/issues/1045
     internal enum IntroDurationType: Int {
 
         case none = -1

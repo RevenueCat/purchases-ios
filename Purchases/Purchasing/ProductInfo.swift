@@ -15,6 +15,7 @@
 import Foundation
 import StoreKit
 
+// Fixme: remove and simply encode data in `StoreProduct`: https://github.com/RevenueCat/purchases-ios/issues/1045
 struct ProductInfo {
 
     let productIdentifier: String
