@@ -149,7 +149,7 @@ private extension TrialOrIntroPriceEligibilityChecker {
     @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
     func productsWithIntroOffers(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock) {
         self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
-            let eligibility: [(String, IntroEligibility)] = Array(products)
+            let eligibility: [(String, IntroEligibility)] = Array(products.value ?? [])
                 .filter { $0.introductoryPrice != nil }
                 .map { ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible)) }
 
