@@ -39,6 +39,7 @@ public typealias SK2Product = StoreKit.Product
     @objc public var localizedDescription: String { fatalError() }
     @objc public var localizedTitle: String { fatalError() }
     @objc public var price: Decimal { fatalError() }
+    /// The price of this product using ``priceFormatter``.
     @objc public var localizedPriceString: String { fatalError() }
     @objc public var productIdentifier: String { fatalError() }
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
@@ -47,6 +48,9 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     @objc public var subscriptionGroupIdentifier: String? { fatalError() }
 
+    /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
+    /// - Note: This creates a new formatter for every product, which can be slow.
+    /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
     @objc public var priceFormatter: NumberFormatter? { fatalError() }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
@@ -91,8 +95,6 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
 
-    /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
-    /// - Note: This creates a new formatter for every product, which can be slow.
     @objc public override var priceFormatter: NumberFormatter? {
         // note: if we ever need more information from the jsonRepresentation object, we
         // should use Codable or another decoding method to clean up this code.
