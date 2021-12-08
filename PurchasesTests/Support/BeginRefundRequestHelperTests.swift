@@ -25,6 +25,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
     private var identityManager: MockIdentityManager!
     private var helper: BeginRefundRequestHelper!
     private let mockProductID = "1234"
+    private let mockEntitlementID = "1234"
 
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
@@ -46,13 +47,30 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {
             helper.sk2Helper = sk2Helper
-        } 
+        }
+        
     }
 
-    func testBeginRefundRequestFatalErrorIfNotIosOrCatalyst() {
+    func testBeginRefundRequestForProductFatalErrorIfNotIosOrCatalyst() {
         #if os(watchOS) || os(macOS) || os(tvOS)
         expectFatalError(expectedMessage: Strings.purchase.begin_refund_request_unsupported.description) {
-            helper.beginRefundRequest(productID: mockProductID) { result in }
+            helper.beginRefundRequest(forProduct: mockProductID) { result in }
+        }
+        #endif
+    }
+
+    func testBeginRefundRequestForEntitlementFatalErrorIfNotIosOrCatalyst() {
+        #if os(watchOS) || os(macOS) || os(tvOS)
+        expectFatalError(expectedMessage: Strings.purchase.begin_refund_request_unsupported.description) {
+            helper.beginRefundRequest(forEntitlement: mockEntitlementID) { result in }
+        }
+        #endif
+    }
+
+    func testBeginRefundRequestForActiveEntitlementFatalErrorIfNotIosOrCatalyst() {
+        #if os(watchOS) || os(macOS) || os(tvOS)
+        expectFatalError(expectedMessage: Strings.purchase.begin_refund_request_unsupported.description) {
+            helper.beginRefundRequestforActiveEntitlement { result in }
         }
         #endif
     }
@@ -160,9 +178,30 @@ class BeginRefundRequestHelperTests: XCTestCase {
         })
     }
 
-    func testBeginRefundMapsSK2FailuresCorrectly(){
-        
+    func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() {
+
     }
+
+    func testBeginRefundForActiveEntitlementFailsOnCustomerInfoFetchFail() {
+
+    }
+
+    func testBeginRefundForEntitlementFailsIfCustomerInfoNil() {
+
+    }
+
+    func testBeginRefundForActiveEntitlementFailsIfCustomerInfoNil() {
+
+    }
+
+    func testBeginRefundForEntitlementFailsIfEntitlementNotInCustomerInfo() {
+
+    }
+
+    func testBeginRefundForActiveEntitlementFailsIfNoActiveEntitlement() {
+
+    }
+
 #endif
 
 }

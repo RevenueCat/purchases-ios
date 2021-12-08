@@ -65,8 +65,7 @@ class BeginRefundRequestHelper {
             case .failure(let error):
                 completion(.failure(error))
             case .success(let entitlement):
-                _ = Task<Void, Never> {
-                    let refundResult = await self.beginRefundRequest(productID: entitlement.productIdentifier)
+                self.beginRefundRequest(forProduct: entitlement.productIdentifier) { refundResult in
                     completion(refundResult)
                 }
             }
@@ -83,8 +82,7 @@ class BeginRefundRequestHelper {
             case .failure(let error):
                 completion(.failure(error))
             case .success(let entitlement):
-                _ = Task<Void, Never> {
-                    let refundResult = await self.beginRefundRequest(productID: entitlement.productIdentifier)
+                self.beginRefundRequest(forProduct: entitlement.productIdentifier) { refundResult in
                     completion(refundResult)
                 }
             }
