@@ -92,7 +92,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(intro.price) == 0.0
         expect(intro.paymentMode) == .freeTrial
         expect(intro.offerIdentifier).to(beNil())
-        expect(intro.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .week)
+        expect(intro.subscriptionPeriod) == SubscriptionPeriod(value: 3, unit: .month)
 
         let offers = try XCTUnwrap(storeProduct.discounts)
         expect(offers).to(haveCount(2))
@@ -106,8 +106,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(offers[1].paymentMode) == .payAsYouGo
         expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
 
-        // TODO: this isn't working with 10?
-        expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 10, unit: .month)
+        expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -141,7 +140,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(intro.price) == 0.0
         expect(intro.paymentMode) == .freeTrial
         expect(intro.offerIdentifier).to(beNil())
-        expect(intro.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .week)
+        expect(intro.subscriptionPeriod) == SubscriptionPeriod(value: 3, unit: .month)
 
         let offers = try XCTUnwrap(storeProduct.discounts)
         expect(offers).to(haveCount(2))
@@ -155,8 +154,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(offers[1].paymentMode) == .payAsYouGo
         expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
 
-        // TODO: this isn't working with 10?
-        expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 10, unit: .month)
+        expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
