@@ -43,4 +43,30 @@ class SubscriptionPeriodTests: XCTestCase {
         expect(subscriptionPeriod.unit) == .week
     }
 
+    // Note: can't test creation from `StoreKit.Product.SubscriptionPeriod` because it has no public constructors.
+
+    func testPricePerMonth() {
+        let expectations: [(period: SubscriptionPeriod, price: Decimal, expected: Decimal)] = [
+            (p(1, .day), 2, 60),
+            (p(15, .day), 5, 10),
+            (p(1, .week), 10, 40),
+            (p(2, .week), 10, 20),
+            (p(1, .month), 14.99, 14.99),
+            (p(2, .month), 30, 15),
+            (p(1, .year), 120, 10),
+            (p(3, .year), 720, 20)
+        ]
+
+        for expectation in expectations {
+            let result = Double(truncating: expectation.period.pricePerMonth(withTotalPrice: expectation.price) as NSDecimalNumber)
+            let expected = Double(truncating: expectation.expected as NSDecimalNumber)
+
+            expect(result).to(beCloseTo(expected),
+                              description: "\(expectation.price) / \(expectation.period.debugDescription)")
+        }
+    }
+
+    private func p(_ value: Int, _ unit: SubscriptionPeriod.Unit) -> SubscriptionPeriod {
+        return .init(value: value, unit: unit)
+    }
 }

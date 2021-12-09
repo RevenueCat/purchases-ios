@@ -64,6 +64,22 @@ import StoreKit
 
 }
 
+extension SubscriptionPeriod {
+    func pricePerMonth(withTotalPrice price: Decimal) -> Decimal {
+        let periodsPerMonth: Decimal = {
+            switch self.unit {
+            case .day: return 1 / 30
+            case .week: return 1 / 4
+            case .month: return 1
+            case .year: return 12
+            case .unknown: return 1
+            }
+        }() * Decimal(self.value)
+
+        return price / periodsPerMonth
+    }
+}
+
 extension SubscriptionPeriod.Unit: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
