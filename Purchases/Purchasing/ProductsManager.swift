@@ -24,19 +24,28 @@ class ProductsManager: NSObject {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private(set) lazy var productsFetcherSK2 = ProductsFetcherSK2()
 
-    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(), systemInfo: SystemInfo) {
-        self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
+    init(
+        productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
+        systemInfo: SystemInfo,
+        requestTimeout: DispatchTimeInterval = .seconds(30)
+    ) {
+        self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
+                                                     requestTimeout: requestTimeout)
         self.systemInfo = systemInfo
     }
 
     func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
-                                            completion: @escaping (Set<StoreProduct>) -> Void) {
+                                            completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.useStoreKit2IfAvailable {
             _ = Task<Void, Never> {
-                let storeProduct = await self.sk2StoreProduct(withIdentifiers: identifiers)
-                completion(storeProduct)
+                do {
+                    let storeProduct = try await self.sk2StoreProduct(withIdentifiers: identifiers)
+                    completion(.success(storeProduct))
+                } catch {
+                    completion(.failure(error))
+                }
             }
         } else {
             productsFetcherSK1.products(withIdentifiers: identifiers, completion: completion)
@@ -44,27 +53,25 @@ class ProductsManager: NSObject {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<StoreProduct> {
-        return await withCheckedContinuation { continuation in
+    func productsFromOptimalStoreKitVersion(
+        withIdentifiers identifiers: Set<String>
+    ) async throws -> Set<StoreProduct> {
+        return try await withCheckedThrowingContinuation { continuation in
             productsFromOptimalStoreKitVersion(withIdentifiers: identifiers) { result in
-                continuation.resume(returning: result)
+                continuation.resume(with: result)
             }
         }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2StoreProduct(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct> {
-        do {
-            let storeProduct = try await productsFetcherSK2.products(identifiers: identifiers)
-            return Set(storeProduct)
-        } catch {
-            Logger.error("Error when fetching SK2 products: \(error.localizedDescription)")
-            return Set()
-        }
+    func sk2StoreProduct(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
+        let storeProduct = try await productsFetcherSK2.products(identifiers: identifiers)
+
+        return Set(storeProduct)
     }
 
     func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Set<SK1Product>) -> Void) {
+                  completion: @escaping (Result<Set<SK1Product>, Error>) -> Void) {
         return productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
     }
 

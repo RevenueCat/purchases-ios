@@ -55,6 +55,8 @@ import Foundation
     case systemInfoError = 30
     @objc(RCBeginRefundRequestError)
     case beginRefundRequestError = 31
+    @objc(RCProductRequestTimedOut)
+    case productRequestTimedOut = 32
 
 }
 
@@ -140,6 +142,8 @@ extension ErrorCode: DescribableError {
             return "There was a problem related to the system info."
         case .beginRefundRequestError:
             return "Error when trying to begin refund request."
+        case .productRequestTimedOut:
+            return "SKProductsRequest took too long to complete."
         @unknown default:
             return "Something went wrong."
         }
@@ -229,6 +233,8 @@ extension ErrorCode {
             return "SYSTEM_INFO_ERROR"
         case .beginRefundRequestError:
             return "BEGIN_REFUND_REQUEST_ERROR"
+        case .productRequestTimedOut:
+            return "PRODUCT_REQUEST_TIMED_OUT_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

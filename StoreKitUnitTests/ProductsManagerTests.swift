@@ -25,7 +25,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         systemInfo = try MockSystemInfo(platformFlavor: "xyz", platformFlavorVersion: "123", finishTransactions: true)
-        productsManager = ProductsManager(systemInfo: systemInfo)
+        productsManager = ProductsManager(systemInfo: systemInfo, requestTimeout: Self.requestTimeout)
     }
 
     func testFetchProductsFromOptimalStoreKitVersion() throws {
@@ -33,15 +33,15 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<StoreProduct>?
+        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
             maybeReceivedProducts = products
         })
 
-        expect(completionCalled).toEventually(beTrue())
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts.count) == 1
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
@@ -61,7 +61,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
                                         platformFlavorVersion: "123",
                                         finishTransactions: true,
                                         useStoreKit2IfAvailable: true)
-        productsManager = ProductsManager(systemInfo: systemInfo)
+        productsManager = ProductsManager(systemInfo: systemInfo, requestTimeout: Self.requestTimeout)
 
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
@@ -69,15 +69,15 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<StoreProduct>?
+        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
             maybeReceivedProducts = products
         })
 
-        expect(completionCalled).toEventually(beTrue())
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts.count) == 1
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
@@ -90,7 +90,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         systemInfo = try MockSystemInfo(platformFlavor: "xyz",
                                         platformFlavorVersion: "123",
                                         finishTransactions: true)
-        productsManager = ProductsManager(systemInfo: systemInfo)
+        productsManager = ProductsManager(systemInfo: systemInfo, requestTimeout: Self.requestTimeout)
 
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
@@ -98,15 +98,15 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<StoreProduct>?
+        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
             maybeReceivedProducts = products
         })
 
-        expect(completionCalled).toEventually(beTrue())
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts.count) == 1
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)

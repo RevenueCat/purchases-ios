@@ -20,9 +20,14 @@ import XCTest
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class StoreKitConfigTestCase: XCTestCase {
 
+    static var requestTimeout: DispatchTimeInterval = .seconds(60)
+
     private static var hasWaited = false
     private static let waitLock = Lock()
-    private static let waitTimeInSeconds: Double = 20
+    private static let waitTimeInSeconds: Double? = {
+        ProcessInfo.processInfo.environment["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"]
+            .flatMap(Double.init)
+    }()
 
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
@@ -47,10 +52,16 @@ private extension StoreKitConfigTestCase {
     func waitForStoreKitTestIfNeeded() {
         // StoreKitTest seems to take a few seconds to initialize, and running tests before that
         // might result in failure. So we give it a few seconds to load before testing.
+
+        guard let waitTime = Self.waitTimeInSeconds else { return }
+
         Self.waitLock.perform {
             if !Self.hasWaited {
+                Logger.warn("Delaying tests for \(waitTime) seconds for StoreKit initialization...")
+
+                Thread.sleep(forTimeInterval: waitTime)
+
                 Self.hasWaited = true
-                Thread.sleep(forTimeInterval: Self.waitTimeInSeconds)
             }
         }
     }

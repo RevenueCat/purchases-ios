@@ -27,8 +27,9 @@ class StoreProductTests: StoreKitConfigTestCase {
             "com.revenuecat.annual_39.99.2_week_intro",
             "lifetime"
         ])
-        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
-        let sk1StoreProduct = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
+        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
+                                            requestTimeout: Self.requestTimeout)
+        let sk1StoreProduct = try await sk1Fetcher.products(withIdentifiers: productIdentifiers)
         let sk1StoreProductsByID = sk1StoreProduct.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
@@ -63,12 +64,13 @@ class StoreProductTests: StoreKitConfigTestCase {
 
     func testSk1DetailsWrapsCorrectly() throws {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
+        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
+                                            requestTimeout: Self.requestTimeout)
         var callbackCalled = false
 
         sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { storeProductSet in
             callbackCalled = true
-            guard let storeProduct = storeProductSet.first else { fatalError("couldn't get product!") }
+            guard let storeProduct = storeProductSet.value?.first else { fatalError("couldn't get product!") }
 
             expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
             expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
@@ -84,7 +86,7 @@ class StoreProductTests: StoreKitConfigTestCase {
             expect(storeProduct.subscriptionPeriod?.value) == 1
         }
 
-        expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
+        expect(callbackCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -133,7 +135,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk1Fetcher = ProductsFetcherSK1()
 
-        let storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        let storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
 
         let storeProduct = try XCTUnwrap(storeProductSet.first)
         let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
@@ -150,7 +152,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var sk1Fetcher = ProductsFetcherSK1()
 
-        var storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        var storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
 
         var storeProduct = try XCTUnwrap(storeProductSet.first)
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
@@ -163,7 +165,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         sk1Fetcher = ProductsFetcherSK1()
 
-        storeProductSet = await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
 
         storeProduct = try XCTUnwrap(storeProductSet.first)
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)

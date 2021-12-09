@@ -153,8 +153,13 @@ class ErrorCodeTests: XCTestCase {
                                               expectedRawValue: 31)
     }
 
+    func testProductRequestTimedOut() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .productRequestTimedOut,
+                                              expectedRawValue: 32)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases.count).to(equal(32))
+        expect(ErrorCode.allCases.count).to(equal(33))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {

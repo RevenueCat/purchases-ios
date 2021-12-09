@@ -14,14 +14,14 @@
 import Foundation
 import StoreKit
 
-enum ProductsManagerSK2Error: Error {
-
-    case productsRequestError(innerError: Error)
-
-}
-
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 actor ProductsFetcherSK2 {
+
+    enum Error: Swift.Error {
+
+        case productsRequestError(innerError: Swift.Error)
+
+    }
 
     private var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
 
@@ -40,7 +40,21 @@ actor ProductsFetcherSK2 {
             let sk2StoreProduct = storeKitProducts.map { SK2StoreProduct(sk2Product: $0) }
             return Set(sk2StoreProduct)
         } catch {
-            throw ProductsManagerSK2Error.productsRequestError(innerError: error)
+            throw Error.productsRequestError(innerError: error)
+        }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension ProductsFetcherSK2.Error: CustomNSError {
+
+    var errorUserInfo: [String: Any] {
+        switch self {
+        case let .productsRequestError(inner):
+            return [
+                NSUnderlyingErrorKey: inner
+            ]
         }
     }
 

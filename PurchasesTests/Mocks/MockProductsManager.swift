@@ -16,13 +16,13 @@ class MockProductsManager: ProductsManager {
     var stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult: (Set<StoreProduct>, Void)?
 
     override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
-                                                     completion: @escaping (Set<StoreProduct>) -> Void) {
+                                                     completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
         invokedProductsFromOptimalStoreKitVersionWithIdentifiers = true
         invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount += 1
         invokedProductsFromOptimalStoreKitVersionWithIdentifiersParameters = (identifiers, ())
         invokedProductsFromOptimalStoreKitVersionWithIdentifiersParametersList.append((identifiers, ()))
         if let result = stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult {
-            completion(result.0)
+            completion(.success(result.0))
         } else {
             let products: [SK1Product] = identifiers.map { (identifier) -> MockSK1Product in
                 let p = MockSK1Product(mockProductIdentifier: identifier)
@@ -36,7 +36,7 @@ class MockProductsManager: ProductsManager {
             }
             let result = Set(products).map { SK1StoreProduct(sk1Product: $0) }
 
-            completion(Set(result))
+            completion(.success(Set(result)))
         }
     }
 
@@ -75,13 +75,16 @@ class MockProductsManager: ProductsManager {
     var invokedProductsParametersList = [Set<String>]()
     var stubbedProductsCompletionResult: Set<SK1Product>?
 
-    override func products(withIdentifiers identifiers: Set<String>, completion: @escaping (Set<SK1Product>) -> Void) {
+    override func products(
+        withIdentifiers identifiers: Set<String>,
+        completion: @escaping (Result<Set<SK1Product>, Error>) -> Void
+    ) {
         invokedProducts = true
         invokedProductsCount += 1
         invokedProductsParameters = identifiers
         invokedProductsParametersList.append(identifiers)
         if let result = stubbedProductsCompletionResult {
-            completion(result)
+            completion(.success(result))
         } else {
             let products: [SK1Product] = identifiers.map { (identifier) -> MockSK1Product in
                 let p = MockSK1Product(mockProductIdentifier: identifier)
@@ -93,7 +96,7 @@ class MockProductsManager: ProductsManager {
                 }
                 return p
             }
-            completion(Set(products))
+            completion(.success(Set(products)))
         }
     }
 
