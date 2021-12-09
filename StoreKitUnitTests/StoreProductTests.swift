@@ -66,13 +66,17 @@ class StoreProductTests: StoreKitConfigTestCase {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
                                             requestTimeout: Self.requestTimeout)
-        var storeProduct: StoreProduct!
+        var result: Result<Set<StoreProduct>, Error>!
 
-        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { storeProductSet in
-            storeProduct = storeProductSet.value?.first
+        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { products in
+            result = products
         }
 
-        expect(storeProduct).toEventuallyNot(beNil(), timeout: Self.requestTimeout)
+        expect(result).toEventuallyNot(beNil(), timeout: Self.requestTimeout + .seconds(5))
+
+        let products = try result.get()
+        expect(products).to(haveCount(1))
+        let storeProduct = try XCTUnwrap(products.first)
 
         expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
