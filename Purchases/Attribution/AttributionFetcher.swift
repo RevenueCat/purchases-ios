@@ -43,16 +43,7 @@ class AttributionFetcher {
     }
 
     var identifierForVendor: String? {
-        // Should match available platforms in
-        // https://developer.apple.com/documentation/uikit/uidevice?language=swift
-        // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
-#if os(iOS) || os(tvOS)
-        UIDevice.current.identifierForVendor?.uuidString
-#elseif os(watchOS)
-        WKInterfaceDevice.current().identifierForVendor?.uuidString
-#else
-        nil
-#endif
+        return self.systemInfo.identifierForVendor
     }
 
     var identifierForAdvertisers: String? {
