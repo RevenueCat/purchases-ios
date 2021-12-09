@@ -73,7 +73,10 @@ class ManageSubscriptionsHelperTests: XCTestCase {
     }
 
     func testShowManageSubscriptionsInIOS() throws {
-#if os(iOS)
+        guard #available(iOS 10.0, *) else {
+            throw XCTSkip("Not supported")
+        }
+
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
@@ -89,15 +92,17 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beSuccess())
-#endif
     }
 
     func testShowManageSubscriptionsSucceedsInMacOS() throws {
-#if os(macOS)
+        guard #available(macOS 10.0, *) else {
+            throw XCTSkip("Not supported")
+        }
+
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
-        customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
+        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
 
         // when
         helper.showManageSubscriptions { result in
@@ -109,7 +114,6 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beSuccess())
-#endif
     }
 
     func testShowManageSubscriptionsFailsIfCouldntGetCustomerInfo() throws {
