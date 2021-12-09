@@ -27,6 +27,68 @@ class BeginRefundRequestHelperTests: XCTestCase {
     private let mockProductID = "1234"
     private let mockEntitlementID = "1234"
 
+    var mockCustomerInfoResponseWithMockEntitlementActive: [String: Any] {
+        get {
+            return [
+                "request_date": "2018-10-19T02:40:36Z",
+                "subscriber": [
+                    "original_app_user_id": "app_user_id",
+                    "original_application_version": "2083",
+                    "first_seen": "2019-06-17T16:05:33Z",
+                    "non_subscriptions": [],
+                    "subscriptions": [],
+                    "entitlements": [
+                        "\(mockEntitlementID)" : [
+                            "expires_date" : "2100-08-30T02:40:36Z",
+                            "product_identifier": "onemonth_freetrial",
+                            "purchase_date": "2018-10-26T23:17:53Z"
+                        ]
+                    ]
+                ]
+            ]
+        }
+    }
+
+    var mockCustomerInfoResponseWithNoActiveEntitlement: [String: Any] {
+        get {
+            return [
+                "request_date": "2018-10-19T02:40:36Z",
+                "subscriber": [
+                    "original_app_user_id": "app_user_id",
+                    "original_application_version": "2083",
+                    "first_seen": "2019-06-17T16:05:33Z",
+                    "non_subscriptions": [],
+                    "subscriptions": [],
+                    "entitlements": [
+                        "\(mockEntitlementID)" : [
+                            "expires_date" : "2000-08-30T02:40:36Z",
+                            "product_identifier": "onemonth_freetrial",
+                            "purchase_date": "2018-10-26T23:17:53Z"
+                        ]
+                    ]
+                ]
+            ]
+        }
+    }
+
+    let mockCustomerInfoResponseWithoutMockEntitlement: [String: Any] = [
+        "request_date": "2018-10-19T02:40:36Z",
+        "subscriber": [
+            "original_app_user_id": "app_user_id",
+            "original_application_version": "2083",
+            "first_seen": "2019-06-17T16:05:33Z",
+            "non_subscriptions": [],
+            "subscriptions": [],
+            "entitlements": [
+                "pro" : [
+                    "expires_date" : "2100-08-30T02:40:36Z",
+                    "product_identifier": "onemonth_freetrial",
+                    "purchase_date": "2018-10-26T23:17:53Z"
+                ]
+            ]
+        ]
+    ]
+
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -48,7 +110,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         if #available(iOS 15.0, macCatalyst 15.0, *) {
             helper.sk2Helper = sk2Helper
         }
-        
+
     }
 
     func testBeginRefundRequestForProductFatalErrorIfNotIosOrCatalyst() {
@@ -178,28 +240,155 @@ class BeginRefundRequestHelperTests: XCTestCase {
         })
     }
 
-    func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() {
+    func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() throws {
+        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
+        var callbackCalled = false
+        var receivedResult: Result<RefundRequestStatus, Error>?
+
+        let customerInfoError = ErrorUtils.customerInfoError(withMessage: "")
+        customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "", error: customerInfoError)
+
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description, error: customerInfoError)
+
+        helper.beginRefundRequest(forEntitlement: mockEntitlementID) { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+
+        expect(callbackCalled).toEventually(beTrue())
+        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
+        expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error).to(matchError(expectedError))
+        })
+    }
+
+    func testBeginRefundForActiveEntitlementFailsOnCustomerInfoFetchFail() throws {
+        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
+        var callbackCalled = false
+        var receivedResult: Result<RefundRequestStatus, Error>?
+
+        let customerInfoError = ErrorUtils.customerInfoError(withMessage: "")
+        customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "", error: customerInfoError)
+
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description, error: customerInfoError)
+
+        helper.beginRefundRequestForActiveEntitlement { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+
+        expect(callbackCalled).toEventually(beTrue())
+        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
+        expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error).to(matchError(expectedError))
+        })
 
     }
 
-    func testBeginRefundForActiveEntitlementFailsOnCustomerInfoFetchFail() {
+    func testBeginRefundForEntitlementFailsIfCustomerInfoNil() throws {
+        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
+        var callbackCalled = false
+        var receivedResult: Result<RefundRequestStatus, Error>?
+
+        customerInfoManager.stubbedCustomerInfo = nil
+
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(entitlementID: nil).description)
+
+        helper.beginRefundRequest(forEntitlement: mockEntitlementID) { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+
+        expect(callbackCalled).toEventually(beTrue())
+        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
+        expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error).to(matchError(expectedError))
+        })
     }
 
-    func testBeginRefundForEntitlementFailsIfCustomerInfoNil() {
+    func testBeginRefundForActiveEntitlementFailsIfCustomerInfoNil() throws {
+        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
+        var callbackCalled = false
+        var receivedResult: Result<RefundRequestStatus, Error>?
+
+        customerInfoManager.stubbedCustomerInfo = nil
+
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(entitlementID: nil).description)
+
+        helper.beginRefundRequestForActiveEntitlement { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+
+        expect(callbackCalled).toEventually(beTrue())
+        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
+        expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error).to(matchError(expectedError))
+        })
     }
 
-    func testBeginRefundForActiveEntitlementFailsIfCustomerInfoNil() {
+    func testBeginRefundForEntitlementFailsIfEntitlementNotInCustomerInfo() throws {
+        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
+        var callbackCalled = false
+        var receivedResult: Result<RefundRequestStatus, Error>?
+
+        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoResponseWithoutMockEntitlement)
+
+        let expectedMessage =
+            Strings.purchase.begin_refund_no_active_entitlement(entitlementID: mockEntitlementID).description
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: expectedMessage)
+
+        helper.beginRefundRequest(forEntitlement: mockEntitlementID) { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+
+        expect(callbackCalled).toEventually(beTrue())
+        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
+        expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error).to(matchError(expectedError))
+        })
     }
 
-    func testBeginRefundForEntitlementFailsIfEntitlementNotInCustomerInfo() {
+    func testBeginRefundForActiveEntitlementFailsIfNoActiveEntitlement() throws {
+        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
-    }
+        var callbackCalled = false
+        var receivedResult: Result<RefundRequestStatus, Error>?
 
-    func testBeginRefundForActiveEntitlementFailsIfNoActiveEntitlement() {
+        customerInfoManager.stubbedCustomerInfo =
+            try CustomerInfo(data: mockCustomerInfoResponseWithNoActiveEntitlement)
 
+        let expectedMessage = Strings.purchase.begin_refund_no_active_entitlement(entitlementID: nil).description
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: expectedMessage)
+
+        helper.beginRefundRequestForActiveEntitlement { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+
+        expect(callbackCalled).toEventually(beTrue())
+        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
+        expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error).to(matchError(expectedError))
+        })
     }
 
 #endif

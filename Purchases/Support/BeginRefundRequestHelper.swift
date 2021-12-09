@@ -129,19 +129,18 @@ private extension BeginRefundRequestHelper {
         customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
                 let message = Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
+                completion(.failure(ErrorUtils.beginRefundRequestError(withMessage: message, error: error)))
                 return
             }
 
             guard let customerInfo = maybeCustomerInfo else {
                 let message = Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
                     entitlementID: nil).description
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
+                completion(.failure(ErrorUtils.beginRefundRequestError(withMessage: message)))
                 return
             }
 
             if let entitlementID = maybeEntitlementID {
-                // TODO does it have to be active for refund to be possible
                 guard let entitlement = customerInfo.entitlements[entitlementID] else {
                     let message = Strings.purchase.begin_refund_no_active_entitlement(
                         entitlementID: entitlementID).description
