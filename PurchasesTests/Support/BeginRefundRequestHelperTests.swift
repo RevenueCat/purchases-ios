@@ -311,6 +311,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error.localizedDescription) == expectedError.localizedDescription
             expect(error).to(matchError(expectedError))
         })
     }
@@ -336,6 +337,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
+            expect(error.localizedDescription) == expectedError.localizedDescription
         })
     }
 
@@ -350,7 +352,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoResponseWithoutMockEntitlement)
 
         let expectedMessage =
-            Strings.purchase.begin_refund_no_active_entitlement(entitlementID: mockEntitlementID).description
+            Strings.purchase.begin_refund_no_entitlement_found(entitlementID: mockEntitlementID).description
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: expectedMessage)
 
         helper.beginRefundRequest(forEntitlement: mockEntitlementID) { result in
@@ -362,6 +364,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
+            expect(error.localizedDescription) == expectedError.localizedDescription
         })
     }
 
@@ -376,7 +379,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         customerInfoManager.stubbedCustomerInfo =
             try CustomerInfo(data: mockCustomerInfoResponseWithNoActiveEntitlement)
 
-        let expectedMessage = Strings.purchase.begin_refund_no_active_entitlement(entitlementID: nil).description
+        let expectedMessage = Strings.purchase.begin_refund_no_active_entitlement.description
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: expectedMessage)
 
         helper.beginRefundRequestForActiveEntitlement { result in
@@ -388,6 +391,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
+            expect(error.localizedDescription) == expectedError.localizedDescription
         })
     }
 

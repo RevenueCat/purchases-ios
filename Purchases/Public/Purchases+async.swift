@@ -267,12 +267,12 @@ extension Purchases {
     @available(tvOS, unavailable)
     @objc func beginRefundRequestAsync(forProduct productID: String) async throws -> RefundRequestStatus {
         return try await withCheckedThrowingContinuation { continuation in
-            beginRefundRequest(forProduct: productID) { result, error in
+            beginRefundRequest(forProduct: productID) { status, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
-                continuation.resume(returning: result)
+                continuation.resume(returning: status)
             }
         }
     }
@@ -283,12 +283,12 @@ extension Purchases {
     @available(tvOS, unavailable)
     @objc func beginRefundRequestAsync(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
         return try await withCheckedThrowingContinuation { continuation in
-            beginRefundRequest(forEntitlement: entitlementID) { result, error in
+            beginRefundRequest(forEntitlement: entitlementID) { status, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
-                continuation.resume(returning: result)
+                continuation.resume(returning: status)
             }
         }
     }
@@ -299,12 +299,12 @@ extension Purchases {
     @available(tvOS, unavailable)
     @objc func beginRefundRequestForActiveEntitlementAsync() async throws -> RefundRequestStatus {
         return try await withCheckedThrowingContinuation { continuation in
-            beginRefundRequestForActiveEntitlement { result, error in
+            beginRefundRequestForActiveEntitlement { status, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
-                continuation.resume(returning: result)
+                continuation.resume(returning: status)
             }
         }
     }
