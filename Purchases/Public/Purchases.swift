@@ -12,7 +12,7 @@
 //  Created by Joshua Liebowitz on 8/18/21.
 //
 
-// swiftlint:disable file_length function_parameter_count type_body_length
+// swiftlint:disable file_length type_body_length
 import Foundation
 import StoreKit
 
