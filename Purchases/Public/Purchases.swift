@@ -221,22 +221,14 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     fileprivate static let initLock = NSLock()
 
-    convenience init(apiKey: String, appUserID: String?) {
-        self.init(apiKey: apiKey,
-                  appUserID: appUserID,
-                  userDefaults: nil,
-                  observerMode: false,
-                  platformFlavor: nil,
-                  platformFlavorVersion: nil)
-    }
-
     // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
                      appUserID: String?,
-                     userDefaults: UserDefaults?,
-                     observerMode: Bool,
-                     platformFlavor: String?,
-                     platformFlavorVersion: String?) {
+                     userDefaults: UserDefaults? = nil,
+                     observerMode: Bool = false,
+                     platformFlavor: String? = nil,
+                     platformFlavorVersion: String? = nil,
+                     useStoreKit2IfAvailable: Bool = false) {
         let operationDispatcher = OperationDispatcher()
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
@@ -245,7 +237,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         do {
             systemInfo = try SystemInfo(platformFlavor: platformFlavor,
                                         platformFlavorVersion: platformFlavorVersion,
-                                        finishTransactions: !observerMode)
+                                        finishTransactions: !observerMode,
+                                        useStoreKit2IfAvailable: useStoreKit2IfAvailable)
         } catch {
             fatalError(error.localizedDescription)
         }
@@ -1357,7 +1350,7 @@ public extension Purchases {
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
      *
-     * - Parameter userDefaults: Custom userDefaults to use
+     * - Parameter userDefaults: Custom `UserDefaults` to use
      *
      * - Returns: An instantiated `Purchases` object that has been set as a singleton.
      */
@@ -1366,30 +1359,52 @@ public extension Purchases {
                                              appUserID: String?,
                                              observerMode: Bool,
                                              userDefaults: UserDefaults?) -> Purchases {
-        configure(apiKey: apiKey,
-                  appUserID: appUserID,
-                  observerMode: observerMode,
-                  userDefaults: userDefaults,
-                  platformFlavor: nil,
-                  platformFlavorVersion: nil)
+        configure(
+            withAPIKey: apiKey,
+            appUserID: appUserID,
+            observerMode: observerMode,
+            userDefaults: userDefaults,
+            useStoreKit2IfAvailable: false
+        )
     }
 
-    static internal func configure(apiKey: String,
-                                   appUserID: String?,
-                                   observerMode: Bool,
-                                   userDefaults: UserDefaults?,
-                                   platformFlavor: String?,
-                                   platformFlavorVersion: String?) -> Purchases {
+    /**
+     * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
+     * sync status across a shared container, such as between a host app and an extension. The instance of the
+     * Purchases SDK will be set as a singleton.
+     * You should access the singleton instance using ``Purchases.shared``
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want `Purchases`
+     * to generate this for you.
+     *
+     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is `false`.
+     *
+     * - Parameter userDefaults: Custom `UserDefaults` to use
+     *
+     * - Parameter useStoreKit2IfAvailable: opt in to using StoreKit 2 on devices that support it.
+     *
+     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
+     */
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                   appUserID: appUserID,
                                   userDefaults: userDefaults,
                                   observerMode: observerMode,
-                                  platformFlavor: platformFlavor,
-                                  platformFlavorVersion: platformFlavorVersion)
+                                  platformFlavor: nil,
+                                  platformFlavorVersion: nil,
+                                  useStoreKit2IfAvailable: useStoreKit2IfAvailable)
         setDefaultInstance(purchases)
         return purchases
     }
-
 }
 
 // MARK: Delegate implementation
