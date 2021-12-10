@@ -28,7 +28,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     var customerInfoManager: MockCustomerInfoManager!
     var backend: MockBackend!
     var identityManager: MockIdentityManager!
-    var receiptParser: MockReceiptParser!
     var transactionsManager: MockTransactionsManager!
     var deviceCache: MockDeviceCache!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
@@ -50,8 +49,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                       backend: backend,
                                                       systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
-        receiptParser = MockReceiptParser()
-        transactionsManager = MockTransactionsManager(receiptParser: receiptParser,
+        transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser(),
                                                       systemInfo: systemInfo)
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                         systemInfo: systemInfo)
@@ -61,8 +59,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
-                                                                       customerInfoManager: customerInfoManager,
-                                                                       identityManager: identityManager)
+                                                             customerInfoManager: customerInfoManager,
+                                                             identityManager: identityManager)
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                              storeKitWrapper: storeKitWrapper,

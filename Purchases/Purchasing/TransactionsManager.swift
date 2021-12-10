@@ -28,16 +28,11 @@ class TransactionsManager {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.useStoreKit2IfAvailable {
             _ = Task<Void, Never> {
-                var hasTransactions = false
-                for await _ in StoreKit.Transaction.all {
-                    hasTransactions = true
-                    break
-                }
+                let hasTransactions = await StoreKit.Transaction.all.contains { _ in true }
                 completion(hasTransactions)
             }
         } else {
-            let hasTransactions = receiptParser.receiptHasTransactions(receiptData: receiptData)
-            completion(hasTransactions)
+            completion(receiptParser.receiptHasTransactions(receiptData: receiptData))
         }
     }
 

@@ -20,7 +20,7 @@ class MockTransactionsManager: TransactionsManager {
     var invokedCustomerHasTransactionsCount = 0
     var invokedCustomerHasTransactionsParameters: Data?
     var invokedCustomerHasTransactionsParametersList = [Data]()
-    var stubbedCustomerHasTransactionsCompletionParameter: Bool! = false
+    var stubbedCustomerHasTransactionsCompletionParameter = false
     
     override func customerHasTransactions(receiptData: Data, completion: @escaping (Bool) -> Void) {
         invokedCustomerHasTransactions = true

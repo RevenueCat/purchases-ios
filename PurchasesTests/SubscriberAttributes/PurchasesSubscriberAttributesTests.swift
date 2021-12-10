@@ -156,7 +156,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               subscriberAttributesManager: mockSubscriberAttributesManager,
                               operationDispatcher: mockOperationDispatcher,
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
-                              receiptParser: mockReceiptParser,
                               customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
