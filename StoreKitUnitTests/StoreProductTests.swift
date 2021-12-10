@@ -66,27 +66,51 @@ class StoreProductTests: StoreKitConfigTestCase {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
                                             requestTimeout: Self.requestTimeout)
-        var callbackCalled = false
+        var result: Result<Set<StoreProduct>, Error>!
 
-        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { storeProductSet in
-            callbackCalled = true
-            guard let storeProduct = storeProductSet.value?.first else { fatalError("couldn't get product!") }
-
-            expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
-            expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
-            expect(storeProduct.price.description) == "4.99"
-            expect(storeProduct.localizedPriceString) == "$4.99"
-            expect(storeProduct.productIdentifier) == productIdentifier
-            expect(storeProduct.isFamilyShareable) == true
-            expect(storeProduct.localizedTitle) == "Monthly Free Trial"
-            // open the StoreKit Config file as source code to see the expected value
-            expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
-
-            expect(storeProduct.subscriptionPeriod?.unit) == .month
-            expect(storeProduct.subscriptionPeriod?.value) == 1
+        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { products in
+            result = products
         }
 
-        expect(callbackCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
+        expect(result).toEventuallyNot(beNil(), timeout: Self.requestTimeout + .seconds(5))
+
+        let products = try result.get()
+        expect(products).to(haveCount(1))
+        let storeProduct = try XCTUnwrap(products.first)
+
+        expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+        expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
+        expect(storeProduct.price.description) == "4.99"
+        expect(storeProduct.localizedPriceString) == "$4.99"
+        expect(storeProduct.productIdentifier) == productIdentifier
+        expect(storeProduct.isFamilyShareable) == true
+        expect(storeProduct.localizedTitle) == "Monthly Free Trial"
+        // open the StoreKit Config file as source code to see the expected value
+        expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
+
+        expect(storeProduct.subscriptionPeriod?.unit) == .month
+        expect(storeProduct.subscriptionPeriod?.value) == 1
+
+        let intro = try XCTUnwrap(storeProduct.introductoryPrice)
+
+        expect(intro.price) == 0.0
+        expect(intro.paymentMode) == .freeTrial
+        expect(intro.offerIdentifier).to(beNil())
+        expect(intro.subscriptionPeriod) == SubscriptionPeriod(value: 3, unit: .month)
+
+        let offers = try XCTUnwrap(storeProduct.discounts)
+        expect(offers).to(haveCount(2))
+
+        expect(offers[0].price) == 40.99
+        expect(offers[0].paymentMode) == .payUpFront
+        expect(offers[0].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.year_discount"
+        expect(offers[0].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+
+        expect(offers[1].price) == 20.15
+        expect(offers[1].paymentMode) == .payAsYouGo
+        expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
+
+        expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -97,6 +121,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         let sk2Fetcher = ProductsFetcherSK2()
 
         let storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+
+        expect(storeProductSet).to(haveCount(1))
 
         let storeProduct = try XCTUnwrap(storeProductSet.first)
 
@@ -112,6 +138,27 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(storeProduct.subscriptionPeriod?.unit) == .month
         expect(storeProduct.subscriptionPeriod?.value) == 1
+
+        let intro = try XCTUnwrap(storeProduct.introductoryPrice)
+
+        expect(intro.price) == 0.0
+        expect(intro.paymentMode) == .freeTrial
+        expect(intro.offerIdentifier).to(beNil())
+        expect(intro.subscriptionPeriod) == SubscriptionPeriod(value: 3, unit: .month)
+
+        let offers = try XCTUnwrap(storeProduct.discounts)
+        expect(offers).to(haveCount(2))
+
+        expect(offers[0].price) == 40.99
+        expect(offers[0].paymentMode) == .payUpFront
+        expect(offers[0].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.year_discount"
+        expect(offers[0].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+
+        expect(offers[1].price) == 20.15
+        expect(offers[1].paymentMode) == .payAsYouGo
+        expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
+
+        expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

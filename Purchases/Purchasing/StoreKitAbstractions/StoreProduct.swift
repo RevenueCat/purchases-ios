@@ -52,13 +52,11 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
 
-    // todo: add product discounts
-    // https://github.com/RevenueCat/purchases-ios/issues/848
-    //    @available(iOS 11.2, *)
-    //    var introductoryPrice: SKProductDiscount? { get }
-    //    //
-    //    @available(iOS 12.2, *)
-    //    var discounts: [SKProductDiscount] { get }
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public var introductoryPrice: PromotionalOffer? { fatalError() }
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public var discounts: [PromotionalOffer] { fatalError() }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -127,6 +125,16 @@ public typealias SK2Product = StoreKit.Product
         return SubscriptionPeriod.from(sk2SubscriptionPeriod: skSubscriptionPeriod)
     }
 
+    @objc public override var introductoryPrice: PromotionalOffer? {
+        self.underlyingSK2Product.subscription?.introductoryOffer
+            .map(PromotionalOffer.init)
+    }
+
+    @objc public override var discounts: [PromotionalOffer] {
+        (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
+            .compactMap(PromotionalOffer.init)
+    }
+
 }
 
 @objc(RCSK1StoreProduct) public class SK1StoreProduct: StoreProduct {
@@ -170,6 +178,18 @@ public typealias SK2Product = StoreKit.Product
             return nil
         }
         return SubscriptionPeriod.from(sk1SubscriptionPeriod: skSubscriptionPeriod)
+    }
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public override var introductoryPrice: PromotionalOffer? {
+        return self.underlyingSK1Product.introductoryPrice
+            .map(PromotionalOffer.init)
+    }
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public override var discounts: [PromotionalOffer] {
+        return self.underlyingSK1Product.discounts
+            .map(PromotionalOffer.init)
     }
 
 }
