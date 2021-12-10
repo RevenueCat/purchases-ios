@@ -49,8 +49,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                       backend: backend,
                                                       systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
-        transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser(),
-                                                      systemInfo: systemInfo)
+        transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser())
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                         systemInfo: systemInfo)
         subscriberAttributesManager = MockSubscriberAttributesManager(

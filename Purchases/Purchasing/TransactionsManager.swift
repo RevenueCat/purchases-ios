@@ -16,24 +16,28 @@ import StoreKit
 class TransactionsManager {
 
     private let receiptParser: ReceiptParser
-    private let systemInfo: SystemInfo
 
-    init(receiptParser: ReceiptParser,
-         systemInfo: SystemInfo) {
+    init(receiptParser: ReceiptParser) {
         self.receiptParser = receiptParser
-        self.systemInfo = systemInfo
     }
 
     func customerHasTransactions(receiptData: Data, completion: @escaping (Bool) -> Void) {
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           self.systemInfo.useStoreKit2IfAvailable {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             _ = Task<Void, Never> {
-                let hasTransactions = await StoreKit.Transaction.all.contains { _ in true }
-                completion(hasTransactions)
+                completion(await sk2CheckCustomerHasTransactions())
             }
         } else {
-            completion(receiptParser.receiptHasTransactions(receiptData: receiptData))
+            completion(sk1CheckCustomerHasTransactions(receiptData: receiptData))
         }
+    }
+
+    func sk1CheckCustomerHasTransactions(receiptData: Data) -> Bool {
+        receiptParser.receiptHasTransactions(receiptData: receiptData)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2CheckCustomerHasTransactions() async -> Bool {
+        await StoreKit.Transaction.all.contains { _ in true }
     }
 
 }

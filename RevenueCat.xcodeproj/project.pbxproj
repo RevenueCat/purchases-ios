@@ -282,6 +282,8 @@
 		F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F530E4FE275646EF001AF6BD /* MacDevice.swift */; };
 		F55FFA5A27634C3F00995146 /* MockTransactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA5927634C3F00995146 /* MockTransactionsManager.swift */; };
 		F55FFA5D27634E1900995146 /* MockTransactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA5927634C3F00995146 /* MockTransactionsManager.swift */; };
+		F55FFA632763F60700995146 /* TransactionsManagertSK1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA622763F60700995146 /* TransactionsManagertSK1Tests.swift */; };
+		F55FFA672763FAC300995146 /* TransactionsManagertSK2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA662763FAC300995146 /* TransactionsManagertSK2Tests.swift */; };
 		F56E2E7727622B5E009FED5B /* TransactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F56E2E7627622B5E009FED5B /* TransactionsManager.swift */; };
 		F5714EA526D6C24D00635477 /* JSONDecoder+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EA426D6C24D00635477 /* JSONDecoder+Extensions.swift */; };
 		F5714EA826D7A83A00635477 /* Store+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EA726D7A83A00635477 /* Store+Extensions.swift */; };
@@ -618,6 +620,8 @@
 		EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsFetcherSK1.swift; sourceTree = "<group>"; };
 		F530E4FE275646EF001AF6BD /* MacDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDevice.swift; sourceTree = "<group>"; };
 		F55FFA5927634C3F00995146 /* MockTransactionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTransactionsManager.swift; sourceTree = "<group>"; };
+		F55FFA622763F60700995146 /* TransactionsManagertSK1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsManagertSK1Tests.swift; sourceTree = "<group>"; };
+		F55FFA662763FAC300995146 /* TransactionsManagertSK2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsManagertSK2Tests.swift; sourceTree = "<group>"; };
 		F56E2E7627622B5E009FED5B /* TransactionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsManager.swift; sourceTree = "<group>"; };
 		F5714EA426D6C24D00635477 /* JSONDecoder+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+Extensions.swift"; sourceTree = "<group>"; };
 		F5714EA726D7A83A00635477 /* Store+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Store+Extensions.swift"; sourceTree = "<group>"; };
@@ -806,6 +810,8 @@
 				2D43017726EBFD7100BAB891 /* UnitTestsConfiguration.storekit */,
 				2D90F8CB26FD2BA1009B9142 /* StoreKitConfigTestCase.swift */,
 				B3BE0263275942D500915B4C /* AvailabilityChecks.swift */,
+				F55FFA622763F60700995146 /* TransactionsManagertSK1Tests.swift */,
+				F55FFA662763FAC300995146 /* TransactionsManagertSK2Tests.swift */,
 			);
 			path = StoreKitUnitTests;
 			sourceTree = "<group>";
@@ -1760,8 +1766,10 @@
 				2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */,
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
 				A55D083527235E2800D919E0 /* ManageSubscriptionsHelperTests.swift in Sources */,
+				F55FFA632763F60700995146 /* TransactionsManagertSK1Tests.swift in Sources */,
 				2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */,
 				2D90F8C826FD2225009B9142 /* MockAppleReceiptBuilder.swift in Sources */,
+				F55FFA672763FAC300995146 /* TransactionsManagertSK2Tests.swift in Sources */,
 				2D90F8C026FD20DF009B9142 /* MockAttributionDataMigrator.swift in Sources */,
 				F55FFA5D27634E1900995146 /* MockTransactionsManager.swift in Sources */,
 				2D90F8B826FD20AA009B9142 /* MockReceiptFetcher.swift in Sources */,
