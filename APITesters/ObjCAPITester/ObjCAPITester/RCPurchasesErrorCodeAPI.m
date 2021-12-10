@@ -53,6 +53,7 @@
         case RCUnsupportedError:
         case RCCustomerInfoError:
         case RCSystemInfoError:
+        case RCProductRequestTimedOut:
         case RCBeginRefundRequestError:
             NSLog(@"%ld", (long)errCode);
     }
