@@ -20,7 +20,7 @@ import StoreKit
     public let unit: Unit
 
     public init(value: Int, unit: Unit) {
-        assert(value >= 0, "Invalid value: \(value)")
+        assert(value > 0, "Invalid value: \(value)")
 
         self.value = value
         self.unit = unit
