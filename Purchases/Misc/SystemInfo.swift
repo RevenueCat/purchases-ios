@@ -82,6 +82,10 @@ class SystemInfo {
     }
 
     var identifierForVendor: String? {
+        // Should match available platforms in
+        // https://developer.apple.com/documentation/uikit/uidevice?language=swift
+        // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
+
         #if os(iOS) || os(tvOS)
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
