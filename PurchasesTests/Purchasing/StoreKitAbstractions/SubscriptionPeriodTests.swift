@@ -53,7 +53,10 @@ class SubscriptionPeriodTests: XCTestCase {
             (p(2, .week), 10, 20),
             (p(1, .month), 14.99, 14.99),
             (p(2, .month), 30, 15),
+            (p(3, .month), 40, 13.33),
             (p(1, .year), 120, 10),
+            (p(1, .year), 50, 4.16),
+            (p(1, .year), 29.99, 2.49),
             (p(3, .year), 720, 20)
         ]
 

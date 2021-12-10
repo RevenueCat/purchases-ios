@@ -76,8 +76,19 @@ extension SubscriptionPeriod {
             }
         }() * Decimal(self.value)
 
-        return price / periodsPerMonth
+        return (price as NSDecimalNumber)
+            .dividing(by: periodsPerMonth as NSDecimalNumber,
+                      withBehavior: Self.roundingBehavior) as Decimal
     }
+
+    private static let roundingBehavior = NSDecimalNumberHandler(
+        roundingMode: .down,
+        scale: 2,
+        raiseOnExactness: false,
+        raiseOnOverflow: false,
+        raiseOnUnderflow: false,
+        raiseOnDivideByZero: false
+    )
 }
 
 extension SubscriptionPeriod.Unit: CustomDebugStringConvertible {
