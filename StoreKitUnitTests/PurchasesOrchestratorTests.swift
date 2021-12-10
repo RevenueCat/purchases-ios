@@ -29,6 +29,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     var backend: MockBackend!
     var identityManager: MockIdentityManager!
     var receiptParser: MockReceiptParser!
+    var transactionsManager: MockTransactionsManager!
     var deviceCache: MockDeviceCache!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
@@ -50,6 +51,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                       systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
         receiptParser = MockReceiptParser()
+        transactionsManager = MockTransactionsManager(receiptParser: receiptParser,
+                                                      systemInfo: systemInfo)
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                         systemInfo: systemInfo)
         subscriberAttributesManager = MockSubscriberAttributesManager(
@@ -70,7 +73,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              customerInfoManager: customerInfoManager,
                                              backend: backend,
                                              identityManager: identityManager,
-                                             receiptParser: receiptParser,
+                                             transactionManager: transactionsManager,
                                              deviceCache: deviceCache,
                                              manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)

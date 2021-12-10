@@ -261,6 +261,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let userDefaults = userDefaults ?? UserDefaults.standard
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
         let receiptParser = ReceiptParser()
+        let transactionsManager = TransactionsManager(receiptParser: receiptParser,
+                                                      systemInfo: systemInfo)
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
                                                         deviceCache: deviceCache,
                                                         backend: backend,
@@ -303,7 +305,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           customerInfoManager: customerInfoManager,
                                                           backend: backend,
                                                           identityManager: identityManager,
-                                                          receiptParser: receiptParser,
+                                                          transactionManager: transactionsManager,
                                                           deviceCache: deviceCache,
                                                           manageSubscriptionsHelper: manageSubsHelper,
                                                           beginRefundRequestHelper: beginRefundRequestHelper)

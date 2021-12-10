@@ -73,6 +73,8 @@ class PurchasesTests: XCTestCase {
                                                              customerInfoManager: customerInfoManager,
                                                              identityManager: identityManager)
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
+        mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser,
+                                                          systemInfo: systemInfo)
     }
 
     override func tearDown() {
@@ -273,6 +275,7 @@ class PurchasesTests: XCTestCase {
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockReceiptParser: MockReceiptParser!
+    var mockTransactionsManager: MockTransactionsManager!
     var attributionFetcher: MockAttributionFetcher!
     var attributionPoster: AttributionPoster!
     var customerInfoManager: CustomerInfoManager!
@@ -314,7 +317,7 @@ class PurchasesTests: XCTestCase {
                                                       customerInfoManager: customerInfoManager,
                                                       backend: backend,
                                                       identityManager: identityManager,
-                                                      receiptParser: mockReceiptParser,
+                                                      transactionManager: mockTransactionsManager,
                                                       deviceCache: deviceCache,
                                                       manageSubscriptionsHelper: mockManageSubsHelper,
                                                       beginRefundRequestHelper: mockBeginRefundRequestHelper)
@@ -1172,7 +1175,7 @@ class PurchasesTests: XCTestCase {
         let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
-        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
 
         setupPurchases()
         purchases!.restoreTransactions()
@@ -1181,7 +1184,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testRestoringPurchasesPostsIfReceiptEmptyAndCustomerInfoNotLoaded() {
-        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
 
         setupPurchases()
         purchases!.restoreTransactions()
@@ -1206,7 +1209,7 @@ class PurchasesTests: XCTestCase {
         let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
-        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
 
         setupPurchases()
         purchases!.restoreTransactions()
@@ -1215,7 +1218,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testRestoringPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoNotLoaded() {
-        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
 
         setupPurchases()
         purchases!.restoreTransactions()
@@ -1302,7 +1305,7 @@ class PurchasesTests: XCTestCase {
         let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
-        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
 
         setupPurchases()
         purchases!.syncPurchases(completion: nil)
@@ -1311,7 +1314,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSyncPurchasesPostsIfReceiptEmptyAndCustomerInfoNotLoaded() {
-        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
 
         setupPurchases()
         purchases!.syncPurchases(completion: nil)
@@ -1336,7 +1339,7 @@ class PurchasesTests: XCTestCase {
         let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
-        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
 
         setupPurchases()
         purchases!.syncPurchases(completion: nil)
@@ -1345,7 +1348,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSyncPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoNotLoaded() {
-        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
 
         setupPurchases()
         purchases!.syncPurchases(completion: nil)
