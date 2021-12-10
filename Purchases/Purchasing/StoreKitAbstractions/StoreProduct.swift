@@ -139,6 +139,23 @@ public typealias SK2Product = StoreKit.Product
 
 }
 
+public extension StoreProduct {
+    /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
+    /// - Returns: `nil` if there is no `introductoryPrice`.
+    @objc var localizedIntroductoryPriceString: String? {
+        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
+              let formatter = self.priceFormatter,
+              let intro = self.introductoryPrice
+        else {
+            return nil
+        }
+
+        return formatter.string(from: intro.price as NSDecimalNumber)
+    }
+}
+
+// MARK: - Subsclasses
+
 @objc(RCSK1StoreProduct) public class SK1StoreProduct: StoreProduct {
 
     @objc public init(sk1Product: SK1Product) {

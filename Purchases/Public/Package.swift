@@ -82,14 +82,7 @@ private extension PackageType {
     /// The price of the `StoreProduct.introductoryPrice` formatted using ``priceFormatter``.
     /// - Returns: `nil` if there is no `introductoryPrice`.
     @objc public var localizedIntroductoryPriceString: String? {
-        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
-              let formatter = storeProduct.priceFormatter,
-              let intro = storeProduct.introductoryPrice
-        else {
-            return nil
-        }
-
-        return formatter.string(from: intro.price as NSDecimalNumber)
+        return self.storeProduct.localizedIntroductoryPriceString
     }
 
     init(identifier: String, packageType: PackageType, storeProduct: StoreProduct, offeringIdentifier: String) {
