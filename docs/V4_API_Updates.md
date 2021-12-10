@@ -240,6 +240,10 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>Package.storeProduct.price: Decimal</td>
 		</tr>
 		<tr>
+			<td>Package.localizedIntroductoryPriceString: String</td>
+			<td>Package.localizedIntroductoryPriceString: String?</td>
+		</tr>
+		<tr>
 			<td>RCDeferredPromotionalPurchaseBlock</td>
 			<td>DeferredPromotionalPurchaseBlock</td>
 		</tr>
