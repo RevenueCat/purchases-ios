@@ -26,7 +26,9 @@ func resolveTargets() -> [Target] {
                 exclude: [infoPlist],
                 sources: ["Purchases"],
                 publicHeadersPath: "Purchases/Public",
-                cSettings: objcSources.map { CSetting.headerSearchPath($0) }
+                cSettings: objcSources.map { CSetting.headerSearchPath($0) } + [
+                    .define("NS_BLOCK_ASSERTIONS", to: "1", .when(configuration: .release))
+                ]
         ),
         .target(name: "PurchasesCoreSwift",
                 dependencies: [],
