@@ -107,7 +107,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getOfferings { _, _ in }
     purchases.getProducts([String]()) { _ in }
 
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) {
         Task.init {
             let _: CustomerInfo = try await purchases.customerInfo()
             let _: [SKProduct] = await purchases.products([String]())
@@ -124,7 +124,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack) { _, _, _, _  in }
     purchases.syncPurchases { _, _ in }
 
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) {
         Task.init {
             let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: skp)
             let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
@@ -143,7 +143,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack, discount: paymentDiscount) { _, _, _, _  in }
     purchases.invalidateCustomerInfoCache()
 
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) {
         Task.init {
             let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) =
             try await purchases.purchase(product: skp, discount: paymentDiscount)
@@ -180,7 +180,7 @@ private func checkIdentity(purchases: Purchases) {
     let loginComplete: (CustomerInfo?, Bool, Error?) -> Void = { _, _, _ in }
     purchases.logIn("", completion: loginComplete)
     purchases.logIn("") { _, _, _ in }
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) {
         Task.init {
             let (_, _): (CustomerInfo, Bool) = try await purchases.logIn("")
             let _: CustomerInfo = try await purchases.logOut()
@@ -192,7 +192,7 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     #if os(iOS)
     purchases.showManageSubscriptions { _ in }
     purchases.beginRefundRequest(for: "") { _, _ in }
-    if #available(iOS 15.0, macOS 12.0, *) {
+    if #available(iOS 13.0, macOS 10.15, *) {
         Task.init {
             try await purchases.showManageSubscriptions()
             let _: RefundRequestStatus = try await purchases.beginRefundRequest(for: "")
