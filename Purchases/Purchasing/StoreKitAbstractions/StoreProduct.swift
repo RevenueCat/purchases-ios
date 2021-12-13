@@ -72,6 +72,7 @@ public typealias SK2Product = StoreKit.Product
     ///
     /// Configure your in-app purchases to allow Family Sharing in App Store Connect.
     /// For more information about setting up Family Sharing, see Turn-on Family Sharing for in-app purchases.
+    /// - Seealso: https://support.apple.com/en-us/HT201079
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     @objc public var isFamilyShareable: Bool { fatalError() }
 
