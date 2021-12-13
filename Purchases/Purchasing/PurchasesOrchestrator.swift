@@ -53,7 +53,7 @@ class PurchasesOrchestrator {
     private let customerInfoManager: CustomerInfoManager
     private let backend: Backend
     private let identityManager: IdentityManager
-    private let receiptParser: ReceiptParser
+    private let transactionsManager: TransactionsManager
     private let deviceCache: DeviceCache
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
@@ -71,7 +71,7 @@ class PurchasesOrchestrator {
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
          identityManager: IdentityManager,
-         receiptParser: ReceiptParser,
+         transactionsManager: TransactionsManager,
          deviceCache: DeviceCache,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper) {
@@ -84,10 +84,11 @@ class PurchasesOrchestrator {
         self.customerInfoManager = customerInfoManager
         self.backend = backend
         self.identityManager = identityManager
-        self.receiptParser = receiptParser
+        self.transactionsManager = transactionsManager
         self.deviceCache = deviceCache
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
+
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             storeKit2Listener.listenForTransactions()
         }
@@ -548,30 +549,31 @@ private extension PurchasesOrchestrator {
                       return
                   }
 
-            let maybeCachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
-            let hasOriginalPurchaseDate = maybeCachedCustomerInfo?.originalPurchaseDate != nil
-            let receiptHasTransactions = self.receiptParser.receiptHasTransactions(receiptData: receiptData)
+            self.transactionsManager.customerHasTransactions(receiptData: receiptData) { hasTransactions in
+                let maybeCachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
+                let hasOriginalPurchaseDate = maybeCachedCustomerInfo?.originalPurchaseDate != nil
 
-            if !receiptHasTransactions && hasOriginalPurchaseDate {
-                if let completion = maybeCompletion {
-                    self.operationDispatcher.dispatchOnMainThread {
-                        completion(maybeCachedCustomerInfo, nil)
+                if !hasTransactions && hasOriginalPurchaseDate {
+                    if let completion = maybeCompletion {
+                        self.operationDispatcher.dispatchOnMainThread {
+                            completion(maybeCachedCustomerInfo, nil)
+                        }
                     }
+                    return
                 }
-                return
-            }
 
-            self.backend.post(receiptData: receiptData,
-                              appUserID: currentAppUserID,
-                              isRestore: isRestore,
-                              productInfo: nil,
-                              presentedOfferingIdentifier: nil,
-                              observerMode: !self.finishTransactions,
-                              subscriberAttributes: unsyncedAttributes) { maybeCustomerInfo, maybeError in
-                self.handleReceiptPost(withCustomerInfo: maybeCustomerInfo,
-                                       error: maybeError,
-                                       subscriberAttributes: unsyncedAttributes,
-                                       completion: maybeCompletion)
+                self.backend.post(receiptData: receiptData,
+                                  appUserID: currentAppUserID,
+                                  isRestore: isRestore,
+                                  productInfo: nil,
+                                  presentedOfferingIdentifier: nil,
+                                  observerMode: !self.finishTransactions,
+                                  subscriberAttributes: unsyncedAttributes) { maybeCustomerInfo, maybeError in
+                    self.handleReceiptPost(withCustomerInfo: maybeCustomerInfo,
+                                           error: maybeError,
+                                           subscriberAttributes: unsyncedAttributes,
+                                           completion: maybeCompletion)
+                }
             }
         }
     }
