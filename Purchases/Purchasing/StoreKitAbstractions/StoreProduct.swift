@@ -38,9 +38,15 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public var localizedDescription: String { fatalError() }
     @objc public var localizedTitle: String { fatalError() }
+
+    /// The decimal representation of the cost of the product, in local currency.
+    /// For a string representation of the price to display to customers, use ``localizedPriceString``.
+    /// - Seealso: `pricePerMonth`.
     @objc public var price: Decimal { fatalError() }
+
     /// The price of this product using ``priceFormatter``.
     @objc public var localizedPriceString: String { fatalError() }
+
     @objc public var productIdentifier: String { fatalError() }
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     @objc public var isFamilyShareable: Bool { fatalError() }
@@ -53,6 +59,8 @@ public typealias SK2Product = StoreKit.Product
     /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
     @objc public var priceFormatter: NumberFormatter? { fatalError() }
 
+    /// The period details for products that are subscriptions.
+    /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
 
@@ -62,6 +70,24 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var discounts: [PromotionalOffer] { fatalError() }
 }
+
+public extension StoreProduct {
+
+    /// Calculates the price of this subscription product per month.
+    /// - Returns: `nil` if the product is not a subscription.
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var pricePerMonth: NSDecimalNumber? {
+        guard let period = self.subscriptionPeriod,
+              period.unit != .unknown else {
+                  return nil
+              }
+
+        return period.pricePerMonth(withTotalPrice: self.price) as NSDecimalNumber?
+    }
+
+}
+
+// MARK: - Subclasses
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 @objc(RCSK2StoreProduct) public class SK2StoreProduct: StoreProduct {
