@@ -123,18 +123,20 @@ private extension ManageSubscriptionsHelper {
                   return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
         }
 
-        do {
-
 #if os(iOS)
-            try await AppStore.showManageSubscriptions(in: windowScene)
+            _ = Task.init {
+                do {
+                    try await AppStore.showManageSubscriptions(in: windowScene)
+                } catch {
+                    let message = "Error when trying to show manage subscription: \(error.localizedDescription)"
+                    Logger.appleError(message)
+                }
+            }
+
             return .success(())
 #else
             fatalError("tried to call AppStore.showManageSubscriptions in a platform that doesn't support it!")
 #endif
-        } catch {
-            let message = "Error when trying to show manage subscription: \(error.localizedDescription)"
-            return .failure(ErrorUtils.storeProblemError(withMessage: message, error: error))
-        }
     }
 #endif
 

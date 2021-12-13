@@ -88,15 +88,7 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         // then
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
-        if #available(iOS 15.0, *) {
-            // in tests in iOS 15, this method always fails, since the currentWindow scene can't be obtained.
-            expect(nonNilReceivedResult).to(beFailure { error in
-                expect(error).to(matchError(ErrorCode.storeProblemError))
-            })
-        } else {
-            expect(nonNilReceivedResult).to(beSuccess())
-        }
-
+        expect(nonNilReceivedResult).to(beSuccess())
 #endif
     }
 
