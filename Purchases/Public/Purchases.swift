@@ -353,6 +353,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     ) {
 
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
+        if systemInfo.useStoreKit2IfAvailable {
+            Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
+        }
         Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion), fileName: nil)
         Logger.user(Strings.configure.initial_app_user_id(appUserID: appUserID), fileName: nil)
 

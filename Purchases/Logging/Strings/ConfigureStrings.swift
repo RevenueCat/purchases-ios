@@ -25,6 +25,8 @@ enum ConfigureStrings {
 
     case debug_enabled
 
+    case store_kit_2_enabled
+
     case delegate_set
 
     case purchase_instance_already_set
@@ -50,6 +52,8 @@ extension ConfigureStrings: CustomStringConvertible {
                 " with URL: \(url)"
         case .debug_enabled:
             return "Debug logging enabled"
+        case .store_kit_2_enabled:
+            return "StoreKit 2 support enabled"
         case .delegate_set:
             return "Delegate set"
         case .purchase_instance_already_set:
