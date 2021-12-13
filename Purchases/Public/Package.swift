@@ -74,18 +74,15 @@ private extension PackageType {
     @objc public let storeProduct: StoreProduct
     @objc public let offeringIdentifier: String
 
+    /// The price of this product using ``priceFormatter``.
     @objc public var localizedPriceString: String {
         return storeProduct.localizedPriceString
     }
 
-    @objc public var localizedIntroductoryPriceString: String {
-        if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
-            // todo: uncomment when product discounts are supported in product details
-            // return storeProduct.localizedIntroductoryPriceString
-            return ""
-        } else {
-            return ""
-        }
+    /// The price of the `StoreProduct.introductoryPrice` formatted using ``priceFormatter``.
+    /// - Returns: `nil` if there is no `introductoryPrice`.
+    @objc public var localizedIntroductoryPriceString: String? {
+        return self.storeProduct.localizedIntroductoryPriceString
     }
 
     init(identifier: String, packageType: PackageType, storeProduct: StoreProduct, offeringIdentifier: String) {

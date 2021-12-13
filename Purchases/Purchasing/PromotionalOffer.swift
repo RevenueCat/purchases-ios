@@ -15,25 +15,93 @@
 import Foundation
 import StoreKit
 
-class PromotionalOffer {
+@objc(RCPromotionalOffer)
+public class PromotionalOffer: NSObject {
 
-    let offerIdentifier: String?
-    let price: NSDecimalNumber
-    let paymentMode: ProductInfo.PaymentMode
+    @objc(RCPaymentMode)
+    public enum PaymentMode: Int {
 
-    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    convenience init(withProductDiscount productDiscount: SKProductDiscount) {
-        let skPaymentMode = productDiscount.paymentMode
-        let rcPaymentMode = ProductInfo.paymentMode(fromSKProductDiscountPaymentMode: skPaymentMode)
-        self.init(offerIdentifier: productDiscount.identifier,
-                  price: productDiscount.price,
-                  paymentMode: rcPaymentMode)
+        case none = -1
+        case payAsYouGo = 0
+        case payUpFront = 1
+        case freeTrial = 2
+
     }
 
-    init(offerIdentifier: String?, price: NSDecimalNumber, paymentMode: ProductInfo.PaymentMode) {
+    // Fixme: remove in favor of `PaymentMode`: https://github.com/RevenueCat/purchases-ios/issues/1045
+    internal enum IntroDurationType: Int {
+
+        case none = -1
+        case freeTrial = 0
+        case introPrice = 1
+
+    }
+
+    public let offerIdentifier: String?
+    public let price: Decimal
+    public let paymentMode: PaymentMode
+    public let subscriptionPeriod: SubscriptionPeriod
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    convenience init(with productDiscount: SKProductDiscount) {
+        let skPaymentMode = productDiscount.paymentMode
+        let rcPaymentMode = PaymentMode(skProductDiscountPaymentMode: skPaymentMode)
+        self.init(offerIdentifier: productDiscount.identifier,
+                  price: productDiscount.price as Decimal,
+                  paymentMode: rcPaymentMode,
+                  subscriptionPeriod: .from(sk1SubscriptionPeriod: productDiscount.subscriptionPeriod))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    convenience init(with subscriptionOffer: Product.SubscriptionOffer) {
+        self.init(
+            offerIdentifier: subscriptionOffer.id,
+            price: subscriptionOffer.price,
+            paymentMode: PaymentMode(subscriptionOfferPaymentMode: subscriptionOffer.paymentMode),
+            subscriptionPeriod: .from(sk2SubscriptionPeriod: subscriptionOffer.period)
+        )
+    }
+
+    init(
+        offerIdentifier: String?,
+        price: Decimal,
+        paymentMode: PaymentMode,
+        subscriptionPeriod: SubscriptionPeriod
+    ) {
         self.offerIdentifier = offerIdentifier
         self.price = price
         self.paymentMode = paymentMode
+        self.subscriptionPeriod = subscriptionPeriod
     }
 
+}
+
+extension PromotionalOffer.PaymentMode {
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    init(skProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) {
+        switch paymentMode {
+        case .payUpFront:
+            self = .payUpFront
+        case .payAsYouGo:
+            self = .payAsYouGo
+        case .freeTrial:
+            self = .freeTrial
+        @unknown default:
+            self = .none
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    init(subscriptionOfferPaymentMode paymentMode: Product.SubscriptionOffer.PaymentMode) {
+        switch paymentMode {
+        case .payUpFront:
+            self = .payUpFront
+        case .payAsYouGo:
+            self = .payAsYouGo
+        case .freeTrial:
+            self = .freeTrial
+        default:
+            self = .none
+        }
+    }
 }

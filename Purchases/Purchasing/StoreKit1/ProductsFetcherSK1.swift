@@ -90,7 +90,7 @@ class ProductsFetcherSK1: NSObject {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
         return try await withCheckedThrowingContinuation { continuation in
             products(withIdentifiers: identifiers) { result in

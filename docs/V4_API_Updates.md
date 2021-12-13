@@ -7,7 +7,7 @@ To start us off, Our framework name changed from `Purchases` to `RevenueCat` ðŸ˜
 If you're using `Carthage`, make sure to use the new `RevenueCat.framework` or `RevenueCat.xcframework` instead of the old `Purchases`.
 
 ### Xcode version requirements and updated deployment targets
-`purchases-ios` v4 requires using Xcode 13.0 or newer. 
+`purchases-ios` v4 requires using Xcode 13.2 or newer. 
 It also updates the minimum deployment targets for iOS, macOS and tvOS. 
 
 ##### Minimum deployment targets
@@ -238,6 +238,10 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		<tr>
 			<td>Package.product.price: NSDecimalNumber</td>
 			<td>Package.storeProduct.price: Decimal</td>
+		</tr>
+		<tr>
+			<td>Package.localizedIntroductoryPriceString: String</td>
+			<td>Package.localizedIntroductoryPriceString: String?</td>
 		</tr>
 		<tr>
 			<td>RCDeferredPromotionalPurchaseBlock</td>

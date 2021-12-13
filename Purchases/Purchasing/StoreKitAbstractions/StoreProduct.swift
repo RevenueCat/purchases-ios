@@ -38,8 +38,15 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public var localizedDescription: String { fatalError() }
     @objc public var localizedTitle: String { fatalError() }
+
+    /// The decimal representation of the cost of the product, in local currency.
+    /// For a string representation of the price to display to customers, use ``localizedPriceString``.
+    /// - Seealso: `pricePerMonth`.
     @objc public var price: Decimal { fatalError() }
+
+    /// The price of this product using ``priceFormatter``.
     @objc public var localizedPriceString: String { fatalError() }
+
     @objc public var productIdentifier: String { fatalError() }
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     @objc public var isFamilyShareable: Bool { fatalError() }
@@ -47,19 +54,40 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     @objc public var subscriptionGroupIdentifier: String? { fatalError() }
 
+    /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
+    /// - Note: This creates a new formatter for every product, which can be slow.
+    /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
     @objc public var priceFormatter: NumberFormatter? { fatalError() }
 
+    /// The period details for products that are subscriptions.
+    /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
 
-    // todo: add product discounts
-    // https://github.com/RevenueCat/purchases-ios/issues/848
-    //    @available(iOS 11.2, *)
-    //    var introductoryPrice: SKProductDiscount? { get }
-    //    //
-    //    @available(iOS 12.2, *)
-    //    var discounts: [SKProductDiscount] { get }
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public var introductoryPrice: PromotionalOffer? { fatalError() }
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public var discounts: [PromotionalOffer] { fatalError() }
 }
+
+public extension StoreProduct {
+
+    /// Calculates the price of this subscription product per month.
+    /// - Returns: `nil` if the product is not a subscription.
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var pricePerMonth: NSDecimalNumber? {
+        guard let period = self.subscriptionPeriod,
+              period.unit != .unknown else {
+                  return nil
+              }
+
+        return period.pricePerMonth(withTotalPrice: self.price) as NSDecimalNumber?
+    }
+
+}
+
+// MARK: - Subclasses
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 @objc(RCSK2StoreProduct) public class SK2StoreProduct: StoreProduct {
@@ -93,8 +121,6 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
 
-    /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
-    /// - Note: This creates a new formatter for every product, which can be slow.
     @objc public override var priceFormatter: NumberFormatter? {
         // note: if we ever need more information from the jsonRepresentation object, we
         // should use Codable or another decoding method to clean up this code.
@@ -127,7 +153,34 @@ public typealias SK2Product = StoreKit.Product
         return SubscriptionPeriod.from(sk2SubscriptionPeriod: skSubscriptionPeriod)
     }
 
+    @objc public override var introductoryPrice: PromotionalOffer? {
+        self.underlyingSK2Product.subscription?.introductoryOffer
+            .map(PromotionalOffer.init)
+    }
+
+    @objc public override var discounts: [PromotionalOffer] {
+        (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
+            .compactMap(PromotionalOffer.init)
+    }
+
 }
+
+public extension StoreProduct {
+    /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
+    /// - Returns: `nil` if there is no `introductoryPrice`.
+    @objc var localizedIntroductoryPriceString: String? {
+        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
+              let formatter = self.priceFormatter,
+              let intro = self.introductoryPrice
+        else {
+            return nil
+        }
+
+        return formatter.string(from: intro.price as NSDecimalNumber)
+    }
+}
+
+// MARK: - Subsclasses
 
 @objc(RCSK1StoreProduct) public class SK1StoreProduct: StoreProduct {
 
@@ -170,6 +223,18 @@ public typealias SK2Product = StoreKit.Product
             return nil
         }
         return SubscriptionPeriod.from(sk1SubscriptionPeriod: skSubscriptionPeriod)
+    }
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public override var introductoryPrice: PromotionalOffer? {
+        return self.underlyingSK1Product.introductoryPrice
+            .map(PromotionalOffer.init)
+    }
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public override var discounts: [PromotionalOffer] {
+        return self.underlyingSK1Product.discounts
+            .map(PromotionalOffer.init)
     }
 
 }

@@ -375,7 +375,7 @@ class BackendTests: XCTestCase {
 
         let currencyCode = "BFD"
 
-        let paymentMode: ProductInfo.PaymentMode = .none
+        let paymentMode: PromotionalOffer.PaymentMode = .none
 
         var completionCalled = false
         let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
@@ -454,7 +454,7 @@ class BackendTests: XCTestCase {
         expect(call.body!["price"]).toNot(beNil())
     }
 
-    func postPaymentMode(paymentMode: ProductInfo.PaymentMode) {
+    func postPaymentMode(paymentMode: PromotionalOffer.PaymentMode) {
         var completionCalled = false
 
         let productInfo: ProductInfo = .createMockProductInfo(paymentMode: paymentMode)
@@ -1212,7 +1212,10 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        let discount = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
+        let discount = PromotionalOffer(offerIdentifier: "offerid",
+                                        price: 12,
+                                        paymentMode: .payAsYouGo,
+                                        subscriptionPeriod: .init(value: 10, unit: .month))
         let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount])
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -1238,9 +1241,12 @@ class BackendTests: XCTestCase {
         let price = 4.99 as NSDecimalNumber
         let group = "sub_group"
         let currencyCode = "BFD"
-        let paymentMode: ProductInfo.PaymentMode = .none
+        let paymentMode: PromotionalOffer.PaymentMode = .none
         var completionCalled = false
-        let discount = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
+        let discount = PromotionalOffer(offerIdentifier: "offerid",
+                                        price: 12,
+                                        paymentMode: .payAsYouGo,
+                                        subscriptionPeriod: .init(value: 1, unit: .year))
         let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
                                                               paymentMode: paymentMode,
                                                               currencyCode: currencyCode,
@@ -1570,8 +1576,6 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        _ = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
-        
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
