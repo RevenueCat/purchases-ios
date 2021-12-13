@@ -676,8 +676,12 @@ private class PackageCell : UICollectionViewCell {
         return label
     }()
     
-    let discountFormatter = NumberFormatter()
-    var maybePriceFormatter: NumberFormatter? = nil
+    private let discountFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .percent
+
+        return formatter
+    }()
     var highlightColor : UIColor?
     var secondaryColor : UIColor?
     
@@ -706,12 +710,16 @@ private class PackageCell : UICollectionViewCell {
         }
     }
     
-    fileprivate func setMonthlyPriceLabel(_ package: Package, numberOfMonths: Int) {
-        if let priceFormatter = maybePriceFormatter,
-           let sk1StoreProduct = package.storeProduct as? SK1StoreProduct {
-            let monthlyPrice = sk1StoreProduct.underlyingSK1Product.price.dividing(by: Decimal(numberOfMonths) as NSDecimalNumber)
-            monthlyPriceLabel.text = "\(priceFormatter.string(from: monthlyPrice) ?? "") / mo"
+    fileprivate func setMonthlyPriceLabel(_ package: Package) {
+        guard let formatter = package.storeProduct.priceFormatter else {
+            return
         }
+
+        guard let monthlyPrice = package.storeProduct.pricePerMonth else {
+            fatalError("Package is not a subscription: \(package)")
+        }
+
+        monthlyPriceLabel.text = "\(formatter.string(from: monthlyPrice as NSDecimalNumber) ?? "") / mo"
     }
 
     func setupWith(
@@ -748,17 +756,12 @@ private class PackageCell : UICollectionViewCell {
         discountLabel.isHidden = !discount.0
         
         if discount.0, let discount = discount.1 {
-            discountFormatter.numberStyle = .percent
-            discountLabel.text = "SAVE \(discountFormatter.string(from: discountBetween(highest: discount, current: package)) ?? "")"
-        }
-        
-        if let sk1StoreProduct = package.storeProduct as? SK1StoreProduct {
-            maybePriceFormatter = NumberFormatter()
-            maybePriceFormatter?.numberStyle = .currency
-            maybePriceFormatter?.locale = sk1StoreProduct.underlyingSK1Product.priceLocale
-        }
+            let d = Self.discountBetween(highest: discount, current: package)
+            let save = self.discountFormatter.string(from: d as NSDecimalNumber)
 
-        
+            discountLabel.text = "SAVE \(save ?? "")"
+        }
+            
         priceLabel.text = package.localizedPriceString
         
         switch package.packageType {
@@ -768,16 +771,16 @@ private class PackageCell : UICollectionViewCell {
             discountLabel.isHidden = true
         case .annual:
             durationLabel.text = "1\nYEAR"
-            setMonthlyPriceLabel(package, numberOfMonths: 12)
+            setMonthlyPriceLabel(package)
         case .sixMonth:
             durationLabel.text = "6\nMONTHS"
-            setMonthlyPriceLabel(package, numberOfMonths: 6)
+            setMonthlyPriceLabel(package)
         case .threeMonth:
             durationLabel.text = "3\nMONTHS"
-            setMonthlyPriceLabel(package, numberOfMonths: 3)
+            setMonthlyPriceLabel(package)
         case .twoMonth:
             durationLabel.text = "2\nMONTHS"
-            setMonthlyPriceLabel(package, numberOfMonths: 2)
+            setMonthlyPriceLabel(package)
         case .monthly:
             durationLabel.text = "1\nMONTH"
             monthlyPriceLabel.text = "\(package.localizedPriceString) / mo"
@@ -791,7 +794,7 @@ private class PackageCell : UICollectionViewCell {
         }
     }
     
-    func discountBetween(highest: Package, current: Package) -> NSNumber {
+    private static func discountBetween(highest: Package, current: Package) -> Decimal {
         let highestAnnualCost : Decimal!
         switch highest.packageType {
         case .annual:
@@ -828,7 +831,7 @@ private class PackageCell : UICollectionViewCell {
             return 0.0
         }
         
-        return NSNumber(nonretainedObject: (highestAnnualCost - currentAnnualCost) / highestAnnualCost)
+        return (highestAnnualCost - currentAnnualCost) / highestAnnualCost
     }
     
     func buildSubviews() {
