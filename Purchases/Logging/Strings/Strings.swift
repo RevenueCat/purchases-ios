@@ -20,6 +20,7 @@ enum Strings {
     static let backendError = BackendErrorStrings.self
     static let customerInfo = CustomerInfoStrings.self
     static let identity = IdentityStrings.self
+    static let manageSubscription = ManageSubscriptionStrings.self
     static let network = NetworkStrings.self
     static let offering = OfferingStrings.self
     static let purchase = PurchaseStrings.self

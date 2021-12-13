@@ -35,22 +35,22 @@ class ManageSubscriptionsHelper {
         let currentAppUserID = identityManager.currentAppUserID
         customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
-                let message = "Failed to get managementURL from CustomerInfo. Details: \(error.localizedDescription)"
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
+                let message = Strings.manageSubscription.failed_to_get_management_url_error_unknown(error: error)
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message.description, error: error)))
                 return
             }
 
             guard let customerInfo = maybeCustomerInfo else {
-                let message = "Failed to get managementURL from CustomerInfo. Details: customerInfo is nil."
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
+                let message = Strings.manageSubscription.failed_to_get_management_url_nil_customer_info
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message.description)))
                 return
             }
 
             guard let managementURL = customerInfo.managementURL else {
                 Logger.debug(Strings.purchase.management_url_nil_opening_default)
                 guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
-                    let message = "Error when trying to form the Apple Subscriptions URL."
-                    completion(.failure(ErrorUtils.systemInfoError(withMessage: message)))
+                    let message = Strings.manageSubscription.cant_form_apple_subscriptions_url
+                    completion(.failure(ErrorUtils.systemInfoError(withMessage: message.description)))
                     return
                 }
                 self.showAppleManageSubscriptions(managementURL: appleSubscriptionsURL, completion: completion)
@@ -123,22 +123,26 @@ private extension ManageSubscriptionsHelper {
     func showSK2ManageSubscriptions() async -> Result<Void, Error> {
         guard let application = systemInfo.sharedUIApplication,
               let windowScene = application.currentWindowScene else {
-                  return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
+                  let message = Strings.manageSubscription.failed_to_get_window_scene
+                  return .failure(ErrorUtils.storeProblemError(withMessage: message.description))
         }
 
 #if os(iOS)
-            _ = Task.init {
-                do {
-                    try await AppStore.showManageSubscriptions(in: windowScene)
-                } catch {
-                    let message = "Error when trying to show manage subscription: \(error.localizedDescription)"
-                    Logger.appleError(message)
-                }
+        // Note: we're ignoring the result of AppStore.showManageSubscriptions(in:) because as of
+        // iOS 15.2, it only returns after the sheet is dismissed, which isn't desired.
+        _ = Task.init {
+            do {
+                try await AppStore.showManageSubscriptions(in: windowScene)
+                Logger.info(Strings.manageSubscription.susbscription_management_sheet_dismissed)
+            } catch {
+                let message = Strings.manageSubscription.error_from_appstore_show_manage_subscription(error: error)
+                Logger.appleError(message)
             }
+        }
 
-            return .success(())
+        return .success(())
 #else
-            fatalError("tried to call AppStore.showManageSubscriptions in a platform that doesn't support it!")
+        fatalError(Strings.manageSubscription.show_manage_subscriptions_called_in_unsupported_platform.description)
 #endif
     }
 #endif
