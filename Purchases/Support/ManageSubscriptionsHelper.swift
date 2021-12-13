@@ -79,6 +79,7 @@ private extension ManageSubscriptionsHelper {
 #if os(iOS) && !targetEnvironment(macCatalyst)
         if #available(iOS 15.0, *),
            // showManageSubscriptions doesn't work on iOS apps running on Apple Silicon
+           // https://developer.apple.com/documentation/storekit/appstore/3803198-showmanagesubscriptions#
            !ProcessInfo().isiOSAppOnMac {
             _ = Task<Void, Never> {
                 let result = await self.showSK2ManageSubscriptions()
