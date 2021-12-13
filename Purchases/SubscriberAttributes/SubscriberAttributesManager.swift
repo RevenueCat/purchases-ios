@@ -19,7 +19,7 @@ class SubscriberAttributesManager {
     private let deviceCache: DeviceCache
     private let attributionFetcher: AttributionFetcher
     private let attributionDataMigrator: AttributionDataMigrator
-    private let lock = NSRecursiveLock()
+    private let lock = Lock()
 
     init(backend: Backend,
          deviceCache: DeviceCache,
@@ -163,18 +163,18 @@ class SubscriberAttributesManager {
 
         Logger.info(Strings.attribution.marking_attributes_synced(appUserID: appUserID, attributes: attributesToSync))
 
-        lock.lock()
-        var unsyncedAttributes = unsyncedAttributesByKey(appUserID: appUserID)
-        for (key, attribute) in attributesToSync {
-            if let unsyncedAttribute = unsyncedAttributes[key] {
-                if unsyncedAttribute.value == attribute.value {
-                    unsyncedAttribute.isSynced = true
-                    unsyncedAttributes[key] = unsyncedAttribute
+        self.lock.perform {
+            var unsyncedAttributes = unsyncedAttributesByKey(appUserID: appUserID)
+            for (key, attribute) in attributesToSync {
+                if let unsyncedAttribute = unsyncedAttributes[key] {
+                    if unsyncedAttribute.value == attribute.value {
+                        unsyncedAttribute.isSynced = true
+                        unsyncedAttributes[key] = unsyncedAttribute
+                    }
                 }
             }
+            deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
         }
-        deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
-        lock.unlock()
     }
 
     func setAttributes(fromAttributionData attributionData: [String: Any],
