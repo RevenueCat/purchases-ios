@@ -37,7 +37,6 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         "managementURL": NSNull()
     ]
 
-
     override func setUpWithError() throws {
         try super.setUpWithError()
         systemInfo = MockSystemInfo(finishTransactions: true)
@@ -55,12 +54,10 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         guard #available(iOS 15.0, *) else { throw XCTSkip("Required API is not available for this test.") }
         // given
         var callbackCalled = false
-        // swiftlint:disable force_try
         customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
-        // swiftlint:disable force_try
 
         // when
-        helper.showManageSubscriptions { result in
+        helper.showManageSubscriptions { _ in
             callbackCalled = true
         }
 
@@ -95,7 +92,7 @@ class ManageSubscriptionsHelperTests: XCTestCase {
     }
 
     func testShowManageSubscriptionsSucceedsInMacOS() throws {
-        guard #available(macOS 10.0, *) else {
+        guard #available(macOS 11.0, *) else {
             throw XCTSkip("Not supported")
         }
 
@@ -133,7 +130,8 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         let expectedErrorMessage = "Failed to get managementURL from CustomerInfo. " +
         "Details: The operation couldn’t be completed"
-        let expectedError = ErrorUtils.customerInfoError(withMessage: expectedErrorMessage, error: customerInfoManager.stubbedError)
+        let expectedError = ErrorUtils.customerInfoError(withMessage: expectedErrorMessage,
+                                                         error: customerInfoManager.stubbedError)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
         })
