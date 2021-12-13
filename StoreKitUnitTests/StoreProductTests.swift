@@ -229,6 +229,8 @@ class StoreProductTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterReactsToStorefrontChanges() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         testSession.locale = Locale(identifier: "es_ES")
         testSession.storefront = "ESP"
 
