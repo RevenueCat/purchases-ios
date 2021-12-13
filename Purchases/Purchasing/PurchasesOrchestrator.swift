@@ -224,7 +224,7 @@ class PurchasesOrchestrator {
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
                   completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
-        guard let productIdentifier = extractProductIdentifier(fromProduct: sk1Product, orPayment: payment) else {
+        guard let productIdentifier = sk1Product.extractProductIdentifier(withPayment: payment) else {
             Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
             completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
@@ -597,25 +597,6 @@ private extension PurchasesOrchestrator {
                 }
             }
         }
-    }
-
-    // Although both SK1Product.productIdentifier and SKPayment.productIdentifier
-    // are supposed to be non-null, we've seen instances where this is not true.
-    // so we cast into optionals in order to check nullability, and try to fall back if possible.
-    func extractProductIdentifier(fromProduct product: SK1Product, orPayment payment: SKPayment) -> String? {
-        if let identifierFromProduct = product.productIdentifier as String?,
-           !identifierFromProduct.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return identifierFromProduct
-        }
-        Logger.appleWarning(Strings.purchase.product_identifier_nil)
-
-        if let identifierFromPayment = payment.productIdentifier as String?,
-           !identifierFromPayment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return identifierFromPayment
-        }
-        Logger.appleWarning(Strings.purchase.payment_identifier_nil)
-
-        return nil
     }
 
     func preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: String) {
