@@ -749,33 +749,25 @@ private extension Backend {
 
     func getOfferingsCallbacksAndClearCache(forKey key: String) -> [OfferingsResponseHandler] {
         return callbackQueue.sync { [self] in
-            let callbacks = offeringsCallbacksCache.removeValue(forKey: key)
-            assert(callbacks != nil)
-            return callbacks ?? []
+            return offeringsCallbacksCache.removeValue(forKey: key)!
         }
     }
 
     func getCustomerInfoCallbacksAndClearCache(forKey key: String) -> [BackendCustomerInfoResponseHandler] {
         return callbackQueue.sync { [self] in
-            let callbacks = customerInfoCallbacksCache.removeValue(forKey: key)
-            assert(callbacks != nil)
-            return callbacks ?? []
+            return customerInfoCallbacksCache.removeValue(forKey: key)!
         }
     }
 
     func getCreateAliasCallbacksAndClearCache(forKey key: String) -> [PostRequestResponseHandler?] {
         return callbackQueue.sync { [self] in
-            let callbacks = createAliasCallbacksCache.removeValue(forKey: key)
-            assert(callbacks != nil)
-            return callbacks ?? []
+            return createAliasCallbacksCache.removeValue(forKey: key)!
         }
     }
 
     func getIdentifyCallbacksAndClearCache(forKey key: String) -> [IdentifyResponseHandler] {
         return callbackQueue.sync { [self] in
-            let callbacks = identifyCallbacksCache.removeValue(forKey: key)
-            assert(callbacks != nil)
-            return callbacks ?? []
+            return identifyCallbacksCache.removeValue(forKey: key)!
         }
     }
 

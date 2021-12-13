@@ -65,7 +65,7 @@ class BackendTests: XCTestCase {
                                     requestBody: [String : Any]?,
                                     headers: [String : String],
                                     completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
-            assert(mocks[path] != nil, "Path " + path + " not mocked")
+            XCTAssert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
