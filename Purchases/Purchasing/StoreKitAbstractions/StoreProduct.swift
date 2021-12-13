@@ -43,7 +43,14 @@ public typealias SK2Product = StoreKit.Product
         return hasher.finalize()
     }
 
+    /// A description of the product.
+    /// - Note: The description's language is determined by the storefront that the user's device is connected to,
+    /// not the preferred language set on the device.
     @objc public var localizedDescription: String { fatalError() }
+
+    /// The name of the product.
+    /// - Note: The title's language is determined by the storefront that the user's device is connected to,
+    /// not the preferred language set on the device.
     @objc public var localizedTitle: String { fatalError() }
 
     /// The decimal representation of the cost of the product, in local currency.
@@ -54,10 +61,25 @@ public typealias SK2Product = StoreKit.Product
     /// The price of this product using ``priceFormatter``.
     @objc public var localizedPriceString: String { fatalError() }
 
+    /// The string that identifies the product to the Apple App Store.
     @objc public var productIdentifier: String { fatalError() }
+
+    /// A Boolean value that indicates whether the product is available for family sharing in App Store Connect.
+    /// Check the value of `isFamilyShareable` to learn whether an in-app purchase is sharable with the family group.
+    ///
+    /// When displaying in-app purchases in your app, indicate whether the product includes Family Sharing
+    /// to help customers make a selection that best fits their needs.
+    ///
+    /// Configure your in-app purchases to allow Family Sharing in App Store Connect.
+    /// For more information about setting up Family Sharing, see Turn-on Family Sharing for in-app purchases.
+    /// - Seealso: https://support.apple.com/en-us/HT201079
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     @objc public var isFamilyShareable: Bool { fatalError() }
 
+    /// The identifier of the subscription group to which the subscription belongs.
+    /// All auto-renewable subscriptions must be a part of a group.
+    /// You create the group identifiers in App Store Connect.
+    /// This property is `nil` if the product is not an auto-renewable subscription.
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     @objc public var subscriptionGroupIdentifier: String? { fatalError() }
 
@@ -71,9 +93,17 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
 
+    /// The object containing introductory price information for the product.
+    /// If you've set up introductory prices in App Store Connect, the introductory price property will be populated.
+    /// This property is `nil` if the product has no introductory price.
+    ///
+    /// Before displaying UI that offers the introductory price,
+    /// you must first determine if the user is eligible to receive it.
+    /// - Seealso: `Purchases.checkTrialOrIntroductoryPriceEligibility` to  determine eligibility.
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var introductoryPrice: PromotionalOffer? { fatalError() }
 
+    /// An array of subscription offers available for the auto-renewable subscription.
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var discounts: [PromotionalOffer] { fatalError() }
 }
