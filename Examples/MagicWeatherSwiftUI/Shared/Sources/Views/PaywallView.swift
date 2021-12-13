@@ -80,7 +80,7 @@ struct PackageCellView: View {
         HStack {
             VStack {
                 HStack {
-                    Text(package.product.localizedTitle)
+                    Text(package.storeProduct.localizedTitle)
                         .font(.title3)
                         .bold()
                     
