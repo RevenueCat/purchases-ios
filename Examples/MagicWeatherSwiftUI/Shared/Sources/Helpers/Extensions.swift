@@ -19,11 +19,11 @@ extension Package: Identifiable {
 
 extension Package {
     func terms(for package: Package) -> String {
-        if let intro = package.product.introductoryPrice {
+        if let intro = package.storeProduct.introductoryPrice {
             if intro.price == 0 {
-                return "\(intro.subscriptionPeriod.periodTitle()) free trial"
+                return "\(intro.subscriptionPeriod.periodTitle) free trial"
             } else {
-                return  "\(package.localizedIntroductoryPriceString) for \(intro.subscriptionPeriod.periodTitle())"
+                return "\(package.localizedIntroductoryPriceString!) for \(intro.subscriptionPeriod.periodTitle)"
             }
         } else {
             return "Unlocks Premium"
@@ -31,20 +31,21 @@ extension Package {
     }
 }
 
-extension SKProductSubscriptionPeriod {
+extension SubscriptionPeriod {
     var durationTitle: String {
         switch self.unit {
         case .day: return "day"
         case .week: return "week"
         case .month: return "month"
         case .year: return "year"
+        case .unknown: fallthrough
         @unknown default: return "Unknown"
         }
     }
     
-    func periodTitle() -> String {
-        let periodString = "\(self.numberOfUnits) \(self.durationTitle)"
-        let pluralized = self.numberOfUnits > 1 ?  periodString + "s" : periodString
+    var periodTitle: String {
+        let periodString = "\(self.value) \(self.durationTitle)"
+        let pluralized = self.value > 1 ?  periodString + "s" : periodString
         return pluralized
     }
 }
