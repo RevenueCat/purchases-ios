@@ -35,21 +35,21 @@ class ManageSubscriptionsHelper {
         let currentAppUserID = identityManager.currentAppUserID
         customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
-                let message = ManageSubscriptionsStrings.failed_to_get_management_url_error_unknown(error: error)
+                let message = Strings.failed_to_get_management_url_error_unknown(error: error)
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message.description, error: error)))
                 return
             }
 
             guard let customerInfo = maybeCustomerInfo else {
-                let message = ManageSubscriptionsStrings.failed_to_get_management_url_nil_customer_info
+                let message = Strings.failed_to_get_management_url_nil_customer_info
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message.description)))
                 return
             }
 
             guard let managementURL = customerInfo.managementURL else {
-                Logger.debug(Strings.purchase.management_url_nil_opening_default)
+                Logger.debug(Strings.management_url_nil_opening_default)
                 guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
-                    let message = ManageSubscriptionsStrings.cant_form_apple_subscriptions_url
+                    let message = Strings.cant_form_apple_subscriptions_url
                     completion(.failure(ErrorUtils.systemInfoError(withMessage: message.description)))
                     return
                 }
@@ -123,7 +123,7 @@ private extension ManageSubscriptionsHelper {
     func showSK2ManageSubscriptions() async -> Result<Void, Error> {
         guard let application = systemInfo.sharedUIApplication,
               let windowScene = application.currentWindowScene else {
-                  let message = ManageSubscriptionsStrings.failed_to_get_window_scene
+                  let message = Strings.failed_to_get_window_scene
                   return .failure(ErrorUtils.storeProblemError(withMessage: message.description))
         }
 
@@ -133,16 +133,16 @@ private extension ManageSubscriptionsHelper {
         _ = Task.init {
             do {
                 try await AppStore.showManageSubscriptions(in: windowScene)
-                Logger.info(ManageSubscriptionsStrings.susbscription_management_sheet_dismissed)
+                Logger.info(Strings.susbscription_management_sheet_dismissed)
             } catch {
-                let message = ManageSubscriptionsStrings.error_from_appstore_show_manage_subscription(error: error)
+                let message = Strings.error_from_appstore_show_manage_subscription(error: error)
                 Logger.appleError(message)
             }
         }
 
         return .success(())
 #else
-        fatalError(ManageSubscriptionsStrings.manageSubscription.show_manage_subscriptions_called_in_unsupported_platform.description)
+        fatalError(Strings.manageSubscription.show_manage_subscriptions_called_in_unsupported_platform.description)
 #endif
     }
 #endif
