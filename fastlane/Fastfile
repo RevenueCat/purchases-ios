@@ -44,7 +44,7 @@ platform :ios do
     # Need to run scan multiple times
     scan(
       step_name: "scan - iPhone", 
-      devices: ["iPhone 8 (14.5)", "iPhone 12 (15.0)"],
+      devices: ["iPhone 8 (14.5)", "iPhone 12 (15.2)"],
       scheme: "RevenueCat",
       testplan: "Coverage",
       prelaunch_simulator: true,
@@ -56,7 +56,7 @@ platform :ios do
 
     scan(
       step_name: "scan - Apple TV",
-      devices: ["Apple TV (15.0)"],
+      devices: ["Apple TV (15.2)"],
       scheme: "RevenueCat",
       testplan: "RevenueCat",
       prelaunch_simulator: true,

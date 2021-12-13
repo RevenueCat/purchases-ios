@@ -156,7 +156,7 @@ jobs:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests
           environment:
-            SCAN_DEVICE: iPhone 11 Pro (15.0)
+            SCAN_DEVICE: iPhone 11 Pro (15.2)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
