@@ -17,7 +17,7 @@ import UIKit
 
 extension UIApplication {
 
-    @available(iOS 15.0, *)
+    @available(iOS 13.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)

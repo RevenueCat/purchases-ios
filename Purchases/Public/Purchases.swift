@@ -678,7 +678,7 @@ public extension Purchases {
      * indicating whether the user was created for the first time in the RevenueCat backend.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await logInAsync(appUserID)
     }
@@ -710,7 +710,7 @@ public extension Purchases {
      * If this method is called and the current user is anonymous, it will return an error.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func logOut() async throws -> CustomerInfo {
         return try await logOutAsync()
     }
@@ -741,7 +741,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when offerings are available.
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func offerings() async throws -> Offerings {
         return try await offeringsAsync()
     }
@@ -767,7 +767,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when customer info is available and not stale.
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func customerInfo() async throws -> CustomerInfo {
         return try await customerInfoAsync()
     }
@@ -813,7 +813,7 @@ public extension Purchases {
      * - Parameter completion: An @escaping callback that is called with the loaded products.
      * If the fetch fails for any reason it will return an empty array.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func products(_ productIdentifiers: [String]) async -> [SKProduct] {
         return await productsAsync(productIdentifiers)
     }
@@ -864,7 +864,7 @@ public extension Purchases {
      *
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func purchase(product: SKProduct) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
@@ -910,7 +910,7 @@ public extension Purchases {
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func purchase(package: Package) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
@@ -966,7 +966,7 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func purchase(product: SKProduct, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
@@ -1024,7 +1024,7 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func purchase(package: Package, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
@@ -1063,7 +1063,7 @@ public extension Purchases {
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
      * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func syncPurchases() async throws -> CustomerInfo {
         return try await syncPurchasesAsync()
     }
@@ -1098,7 +1098,7 @@ public extension Purchases {
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func restoreTransactions() async throws -> CustomerInfo {
         return try await restoreTransactionsAsync()
     }
@@ -1138,7 +1138,7 @@ public extension Purchases {
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
         return await checkTrialOrIntroductoryPriceEligibilityAsync(productIdentifiers)
     }
@@ -1194,7 +1194,7 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
      * If it was not successful, there will be an `Error`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func paymentDiscount(forProductDiscount discount: SKProductDiscount,
                          product: SKProduct) async throws -> SKPaymentDiscount {
         return try await paymentDiscountAsync(forProductDiscount: discount, product: product)
@@ -1226,7 +1226,7 @@ public extension Purchases {
      */
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @available(iOS 15.0, macOS 12, *)
+    @available(iOS 13.0, macOS 10.15, *)
     func showManageSubscriptions() async throws {
         return try await showManageSubscriptionsAsync()
     }

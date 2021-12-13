@@ -177,8 +177,10 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
     func testSk1PriceFormatterFormatsCorrectly() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk1Fetcher = ProductsFetcherSK1()
 
@@ -191,8 +193,10 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
     func testSk1PriceFormatterReactsToStorefrontChanges() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
         testSession.locale = Locale(identifier: "es_ES")
         testSession.storefront = "ESP"
 
