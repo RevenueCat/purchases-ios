@@ -76,8 +76,10 @@ private extension ManageSubscriptionsHelper {
 
     func showAppleManageSubscriptions(managementURL: URL,
                                       completion: @escaping (Result<Void, Error>) -> Void) {
-#if os(iOS)
-        if #available(iOS 15.0, *) {
+#if os(iOS) && !targetEnvironment(macCatalyst)
+        if #available(iOS 15.0, *),
+           // showManageSubscriptions doesn't work on iOS apps running on Apple Silicon
+           !ProcessInfo().isiOSAppOnMac {
             _ = Task<Void, Never> {
                 let result = await self.showSK2ManageSubscriptions()
                 completion(result)
