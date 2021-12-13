@@ -36,6 +36,13 @@ public typealias SK2Product = StoreKit.Product
         return self.productIdentifier == (object as? StoreProduct)?.productIdentifier
     }
 
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(self.productIdentifier)
+
+        return hasher.finalize()
+    }
+
     @objc public var localizedDescription: String { fatalError() }
     @objc public var localizedTitle: String { fatalError() }
 
