@@ -14,19 +14,24 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-enum ManageSubscriptionStrings {
 
-    case cant_form_apple_subscriptions_url
-    case error_from_appstore_show_manage_subscription(error: Error)
-    case failed_to_get_management_url_error_unknown(error: Error)
-    case failed_to_get_management_url_nil_customer_info
-    case failed_to_get_window_scene
-    case show_manage_subscriptions_called_in_unsupported_platform
-    case susbscription_management_sheet_dismissed
+extension ManageSubscriptionsHelper {
+
+    enum ManageSubscriptionsStrings {
+
+        case cant_form_apple_subscriptions_url
+        case error_from_appstore_show_manage_subscription(error: Error)
+        case failed_to_get_management_url_error_unknown(error: Error)
+        case failed_to_get_management_url_nil_customer_info
+        case failed_to_get_window_scene
+        case show_manage_subscriptions_called_in_unsupported_platform
+        case susbscription_management_sheet_dismissed
+
+    }
 
 }
 
-extension ManageSubscriptionStrings: CustomStringConvertible {
+extension ManageSubscriptionsHelper.ManageSubscriptionsStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
