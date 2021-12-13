@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TransactionsManagertSK2Tests.swift
+//  TransactionsManagerSK2Tests.swift
 //
 //  Created by Juanpe Catalán on 10/12/21.
 
@@ -16,7 +16,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-class TransactionsManagertSK2Tests: StoreKitConfigTestCase {
+class TransactionsManagerSK2Tests: StoreKitConfigTestCase {
 
     var mockReceiptParser: MockReceiptParser!
     var transactionsManager: TransactionsManager!
@@ -28,21 +28,15 @@ class TransactionsManagertSK2Tests: StoreKitConfigTestCase {
         transactionsManager = TransactionsManager(receiptParser: mockReceiptParser)
     }
 
-    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
-    // Although the method isn't supposed to be called because of our @available marks,
-    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2CheckCustomerHasTransactionsWithoutPurchasesAsync() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let receivedHasTransactionsValue = await transactionsManager.sk2CheckCustomerHasTransactions()
 
-        expect(receivedHasTransactionsValue).to(beFalse())
+        expect(receivedHasTransactionsValue) == false
     }
 
-    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
-    // Although the method isn't supposed to be called because of our @available marks,
-    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2CheckCustomerHasTransactionsWithOnePurchaseAsync() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -51,12 +45,12 @@ class TransactionsManagertSK2Tests: StoreKitConfigTestCase {
 
         let receivedHasTransactionsValue = await transactionsManager.sk2CheckCustomerHasTransactions()
 
-        expect(receivedHasTransactionsValue).to(beTrue())
+        expect(receivedHasTransactionsValue) == true
     }
 
 }
 
-private extension TransactionsManagertSK2Tests {
+private extension TransactionsManagerSK2Tests {
 
     @MainActor
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

@@ -53,7 +53,7 @@ class PurchasesOrchestrator {
     private let customerInfoManager: CustomerInfoManager
     private let backend: Backend
     private let identityManager: IdentityManager
-    private let transactionManager: TransactionsManager
+    private let transactionsManager: TransactionsManager
     private let deviceCache: DeviceCache
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
@@ -71,7 +71,7 @@ class PurchasesOrchestrator {
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
          identityManager: IdentityManager,
-         transactionManager: TransactionsManager,
+         transactionsManager: TransactionsManager,
          deviceCache: DeviceCache,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper) {
@@ -84,7 +84,7 @@ class PurchasesOrchestrator {
         self.customerInfoManager = customerInfoManager
         self.backend = backend
         self.identityManager = identityManager
-        self.transactionManager = transactionManager
+        self.transactionsManager = transactionsManager
         self.deviceCache = deviceCache
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
@@ -549,7 +549,7 @@ private extension PurchasesOrchestrator {
                       return
                   }
 
-            self.transactionManager.customerHasTransactions(receiptData: receiptData) { hasTransactions in
+            self.transactionsManager.customerHasTransactions(receiptData: receiptData) { hasTransactions in
                 let maybeCachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
                 let hasOriginalPurchaseDate = maybeCachedCustomerInfo?.originalPurchaseDate != nil
 

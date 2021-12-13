@@ -303,7 +303,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           customerInfoManager: customerInfoManager,
                                                           backend: backend,
                                                           identityManager: identityManager,
-                                                          transactionManager: transactionsManager,
+                                                          transactionsManager: transactionsManager,
                                                           deviceCache: deviceCache,
                                                           manageSubscriptionsHelper: manageSubsHelper,
                                                           beginRefundRequestHelper: beginRefundRequestHelper)

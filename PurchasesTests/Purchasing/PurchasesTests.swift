@@ -316,7 +316,7 @@ class PurchasesTests: XCTestCase {
                                                       customerInfoManager: customerInfoManager,
                                                       backend: backend,
                                                       identityManager: identityManager,
-                                                      transactionManager: mockTransactionsManager,
+                                                      transactionsManager: mockTransactionsManager,
                                                       deviceCache: deviceCache,
                                                       manageSubscriptionsHelper: mockManageSubsHelper,
                                                       beginRefundRequestHelper: mockBeginRefundRequestHelper)

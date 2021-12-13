@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TransactionsManagertSK1Tests.swift
+//  TransactionsManagerSK1Tests.swift
 //
 //  Created by Juanpe Catalán on 10/12/21.
 
@@ -15,7 +15,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class TransactionsManagertSK1Tests: StoreKitConfigTestCase {
+class TransactionsManagerSK1Tests: StoreKitConfigTestCase {
 
     var mockReceiptParser: MockReceiptParser!
     var transactionsManager: TransactionsManager!
@@ -29,13 +29,13 @@ class TransactionsManagertSK1Tests: StoreKitConfigTestCase {
 
     func testSK1CheckCustomerHasTransactionsParserIsCalled() {
         _ = transactionsManager.sk1CheckCustomerHasTransactions(receiptData: Data())
-        expect(self.mockReceiptParser.invokedReceiptHasTransactions).to(beTrue())
+        expect(self.mockReceiptParser.invokedReceiptHasTransactions) ==  true
     }
 
     func testSK1CheckCustomerHasTransactionsCalculatedFromReceiptData() {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
         let receivedHasTransactionsValue = transactionsManager.sk1CheckCustomerHasTransactions(receiptData: Data())
-        expect(receivedHasTransactionsValue).to(beTrue())
+        expect(receivedHasTransactionsValue) == true
     }
 
 }

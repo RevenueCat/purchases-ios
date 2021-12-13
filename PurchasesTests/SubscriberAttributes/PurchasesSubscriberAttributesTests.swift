@@ -129,7 +129,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           customerInfoManager: customerInfoManager,
                                                           backend: mockBackend,
                                                           identityManager: mockIdentityManager,
-                                                          transactionManager: mockTransactionsManager,
+                                                          transactionsManager: mockTransactionsManager,
                                                           deviceCache: mockDeviceCache,
                                                           manageSubscriptionsHelper: mockManageSubsHelper,
                                                           beginRefundRequestHelper: mockBeginRefundRequestHelper)

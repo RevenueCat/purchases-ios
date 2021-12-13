@@ -70,7 +70,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              customerInfoManager: customerInfoManager,
                                              backend: backend,
                                              identityManager: identityManager,
-                                             transactionManager: transactionsManager,
+                                             transactionsManager: transactionsManager,
                                              deviceCache: deviceCache,
                                              manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
