@@ -363,7 +363,14 @@ platform :ios do
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
     replace_api_key_integration_tests
-    scan(scheme: "BackendIntegrationTests", derived_data_path: "scan_derived_data")
+    scan(
+      scheme: "BackendIntegrationTests", 
+      derived_data_path: "scan_derived_data",
+      output_types: '',
+      fail_build: false,
+      result_bundle: true
+    )
+    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/ios")
   end
 
   desc "Update swift package commit"

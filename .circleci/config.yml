@@ -160,8 +160,8 @@ jobs:
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
 
 
   release-checks: 
