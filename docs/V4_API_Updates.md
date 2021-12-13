@@ -37,7 +37,7 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 You can opt in to using `StoreKit 2` features when you configure `Purchases`:
 ```swift
 Purchases.configure(
-	withAPIKey: "",
+	withAPIKey: "your_api_key",
 	appUserID: nil,
 	observerMode: false,
 	userDefaults: nil,
