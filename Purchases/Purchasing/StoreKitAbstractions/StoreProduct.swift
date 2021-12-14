@@ -24,8 +24,10 @@ public typealias SK2Product = StoreKit.Product
 
 /// Abstract class that provides access to all of StoreKit's product type's properties.
 @objc(RCStoreProduct) public class StoreProduct: NSObject {
-    public override init() {
+    fileprivate override init() {
         super.init()
+
+        precondition(type(of: self) != StoreProduct.self, "StoreProduct is an abstract class")
 
         if self.localizedTitle.isEmpty {
             Logger.warn(Strings.offering.product_details_empty_title(productIdentifier: self.productIdentifier))
