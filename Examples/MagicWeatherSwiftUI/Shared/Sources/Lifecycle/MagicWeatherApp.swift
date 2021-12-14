@@ -22,10 +22,12 @@ struct MagicWeatherApp: App {
          
          - observerMode is false, so Purchases will automatically handle finishing transactions. Read more about Observer Mode here: https://docs.revenuecat.com/docs/observer-mode
          */
-        
+
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
-                            observerMode: false)
+                            observerMode: false,
+                            userDefaults: nil,
+                            useStoreKit2IfAvailable: true)
         
         /* Set the delegate to our shared instance of PurchasesDelegateHandler */
         Purchases.shared.delegate = PurchasesDelegateHandler.shared
