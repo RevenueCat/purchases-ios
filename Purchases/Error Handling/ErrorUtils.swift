@@ -346,6 +346,18 @@ enum ErrorUtils {
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
+    /**
+     * Constructs an Error with the ``ErrorCode/productRequestTimedOut`` code.
+     *
+     * - Note: This error is used  when fetching products times out.
+     */
+    static func productRequestTimedOutError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return ErrorUtils.error(with: .productRequestTimedOut,
+                                fileName: fileName, functionName: functionName, line: line)
+    }
+
 }
 
 extension ErrorUtils {

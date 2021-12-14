@@ -232,7 +232,7 @@ private extension ProductsFetcherSK1 {
             self.completionHandlers.removeValue(forKey: productRequest.identifiers)
             self.productsByRequests.removeValue(forKey: request)
             for completion in completionBlocks {
-                completion(.failure(ErrorCode.productRequestTimedOut))
+                completion(.failure(ErrorUtils.productRequestTimedOutError()))
             }
         }
     }
