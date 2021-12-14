@@ -83,13 +83,13 @@ class OfferingsManager {
         }
     }
 
-    func getMissingProductIDs(productsFromStore: [String: StoreProduct],
+    func getMissingProductIDs(productIDsFromStore: Set<String>,
                               productIDsFromBackend: Set<String>) -> Set<String> {
         guard !productIDsFromBackend.isEmpty else {
             return []
         }
 
-        return productIDsFromBackend.subtracting(productsFromStore.keys)
+        return productIDsFromBackend.subtracting(productIDsFromStore)
     }
 
 }
@@ -117,7 +117,7 @@ private extension OfferingsManager {
 
             let productsByID = products.dictionaryWithKeys { $0.productIdentifier }
 
-            let missingProductIDs = self.getMissingProductIDs(productsFromStore: productsByID,
+            let missingProductIDs = self.getMissingProductIDs(productIDsFromStore: Set(productsByID.keys),
                                                               productIDsFromBackend: productIdentifiers)
             if !missingProductIDs.isEmpty {
                 Logger.appleWarning(
