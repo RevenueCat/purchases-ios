@@ -628,8 +628,10 @@ private extension PurchasesOrchestrator {
         let sk2Product = sk2StoreProduct.underlyingSK2Product
 
         do {
-            var options = Set<Product.PurchaseOption>()
-            options.insert(Product.PurchaseOption.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox))
+            let options: Set<Product.PurchaseOption> = [
+                .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
+            ]
+
             let result = try await sk2Product.purchase(options: options)
             let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
 

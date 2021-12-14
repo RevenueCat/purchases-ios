@@ -126,7 +126,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Set this property to true *only* when testing the ask-to-buy / SCA purchases flow. More information:
-     * http://errors.rev.cat/ask-to-buy
+     * http://rev.cat/ask-to-buy
+     * - Seealso: https://support.apple.com/en-us/HT201089
      */
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     @objc public static var simulatesAskToBuyInSandbox: Bool {
