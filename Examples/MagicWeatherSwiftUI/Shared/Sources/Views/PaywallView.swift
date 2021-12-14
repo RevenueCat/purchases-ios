@@ -52,8 +52,8 @@ struct PaywallView: View {
                             }
                         }
                     }
-                    
-                }.listStyle(InsetGroupedListStyle())
+                }
+                .listStyle(InsetGroupedListStyle())
                 .navigationBarTitle("✨ Magic Weather Premium")
                 .navigationBarTitleDisplayMode(.inline)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -100,7 +100,9 @@ struct PackageCellView: View {
             Text(package.localizedPriceString)
                 .font(.title3)
                 .bold()
-        }.onTapGesture {
+        }
+        .contentShape(Rectangle()) // Make the whole cell tappable
+        .onTapGesture {
             onSelection(package)
         }
     }
