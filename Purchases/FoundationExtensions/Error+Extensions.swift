@@ -22,12 +22,11 @@ extension Error {
      * - Returns: a new error matching `self` but with the `extraContext` and `error` added.
      */
     func addingUnderlyingError(_ maybeError: Error?, extraContext: String? = nil) -> Error {
-        guard let attachedError = maybeError else {
+        guard let underlyingNSError = maybeError as NSError? else {
             return self
         }
 
         let asNSError = self as NSError
-        let underlyingNSError = attachedError as NSError
         var userInfo = asNSError.userInfo as [NSError.UserInfoKey: Any]
         userInfo[NSUnderlyingErrorKey as NSString] = underlyingNSError
         userInfo[ErrorDetails.extraContextKey] = extraContext ?? underlyingNSError.localizedDescription
