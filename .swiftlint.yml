@@ -13,6 +13,7 @@ opt_in_rules:
   - sorted_imports
   - missing_docs
   - convenience_type
+  - multiline_parameters
 
 identifier_name:
   max_length: 

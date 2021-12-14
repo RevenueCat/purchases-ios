@@ -80,6 +80,23 @@ struct MyStruct {
         print(self.mercury)
     }
 
+    func whenMethodIsTooLongToFitInOneLine(becauseOfTooMany: Int,
+                                           parameters: String,
+                                           eachOne: Float,
+                                           shouldBeInItsOwnLine: Double) {}
+
+    // swiftlint:disable:next multiline_parameters
+    func whenMethodIsTooLongToFitInOneLine(
+        becauseOfTooMany: Int,
+        parameters: String,
+        eachOne: Float,
+        shouldBeInItsOwnLine: Double,
+        // special file / function / line parameters may be grouped together in their own line
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) {
+
+    }
+
 }
 
 // separate protocol conformance into extension
