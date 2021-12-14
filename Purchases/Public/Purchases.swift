@@ -255,9 +255,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let receiptParser = ReceiptParser()
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
-                                                        deviceCache: deviceCache,
-                                                        backend: backend,
-                                                        systemInfo: systemInfo)
+                                                      deviceCache: deviceCache,
+                                                      backend: backend,
+                                                      systemInfo: systemInfo)
         let identityManager = IdentityManager(deviceCache: deviceCache,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,

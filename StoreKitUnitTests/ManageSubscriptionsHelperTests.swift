@@ -46,8 +46,8 @@ class ManageSubscriptionsHelperTests: XCTestCase {
                                                       systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
         helper = ManageSubscriptionsHelper(systemInfo: systemInfo,
-                                                customerInfoManager: customerInfoManager,
-                                                identityManager: identityManager)
+                                           customerInfoManager: customerInfoManager,
+                                           identityManager: identityManager)
     }
 
     func testShowManageSubscriptionsMakesRightCalls() throws {
