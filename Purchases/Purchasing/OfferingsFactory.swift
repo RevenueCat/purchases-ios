@@ -60,7 +60,7 @@ class OfferingsFactory {
         }
 
         return Offering(identifier: offeringIdentifier, serverDescription: serverDescription,
-                availablePackages: availablePackages)
+                        availablePackages: availablePackages)
     }
 
     func createPackage(with data: [String: Any],
