@@ -27,9 +27,10 @@ extension Error {
         }
 
         let asNSError = self as NSError
+        let underlyingNSError = attachedError as NSError
         var userInfo = asNSError.userInfo as [NSError.UserInfoKey: Any]
-        userInfo[NSUnderlyingErrorKey as NSString] = attachedError
-        userInfo[ErrorDetails.extraContextKey] = extraContext
+        userInfo[NSUnderlyingErrorKey as NSString] = underlyingNSError
+        userInfo[ErrorDetails.extraContextKey] = extraContext ?? underlyingNSError.localizedDescription
         let nsErrorWithUserInfo = NSError(domain: asNSError.domain,
                                           code: asNSError.code,
                                           userInfo: userInfo as [String: Any])
