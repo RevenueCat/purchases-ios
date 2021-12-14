@@ -194,9 +194,9 @@ class PurchasesOrchestrator {
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         // todo: clean up, move to new class along with the private funcs below
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           package.storeProduct is SK2StoreProduct {
+           let storeProduct = package.storeProduct as? SK2StoreProduct {
             _ = Task<Void, Never> {
-                let result = await purchase(sk2Package: package)
+                let result = await purchase(sk2StoreProduct: storeProduct)
                 DispatchQueue.main.async {
                     switch result {
                     case .failure(let error):
@@ -624,13 +624,9 @@ private extension PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(sk2Package: Package) async -> Result<(CustomerInfo, Bool), Error> {
-        guard let sk2StoreProduct = sk2Package.storeProduct as? SK2StoreProduct else {
-            // todo: use custom error
-            return .failure(ErrorUtils.unexpectedBackendResponseError())
-        }
-
+    private func purchase(sk2StoreProduct: SK2StoreProduct) async -> Result<(CustomerInfo, Bool), Error> {
         let sk2Product = sk2StoreProduct.underlyingSK2Product
+
         do {
             let result = try await sk2Product.purchase()
             let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
