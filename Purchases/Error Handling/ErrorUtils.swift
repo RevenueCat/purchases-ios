@@ -210,20 +210,11 @@ enum ErrorUtils {
      * Constructs an Error with the ``ErrorCode/unknownError`` code and optional message.
      */
     static func unknownError(
-        message: String? = nil,
-        fileName: String = #fileID, functionName: String = #function, line: UInt = #line) -> Error {
-        return error(with: ErrorCode.unknownError, message: message,
-                     fileName: fileName, functionName: functionName, line: line)
-    }
-
-    /**
-     * Constructs an Error with the ``ErrorCode/unknownError`` code.
-     */
-    static func unknownError(
+        message: String? = nil, error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        return error(with: ErrorCode.unknownError, message: nil,
-                     fileName: fileName, functionName: functionName, line: line)
+        return ErrorUtils.error(with: ErrorCode.unknownError, message: message, underlyingError: error,
+                                fileName: fileName, functionName: functionName, line: line)
     }
 
     /**
@@ -268,6 +259,17 @@ enum ErrorUtils {
     }
 
     /**
+     * Maps a `StoreKitError` to an `Error` with a ``ErrorCode``.
+     * Adds a underlying error in the `NSError.userInfo` dictionary.
+     *
+     * - Parameter skError: The originating `StoreKitError`.
+     */
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    static func purchasesError(withStoreKitError storeKitError: Error) -> Error {
+        return (storeKitError as? StoreKitError)?.toPurchasesError() ?? self.unknownError()
+    }
+
+    /**
      * Constructs an Error with the ``ErrorCode/purchaseCancelledError`` code.
      *
      * - Note: This error is used when  a purchase is cancelled by the user.
@@ -283,12 +285,25 @@ enum ErrorUtils {
     }
 
     /**
+     * Constructs an Error with the ``ErrorCode/productNotAvailableForPurchaseError`` code.
+     *
+     * - Seealso: ``StoreKitError.notAvailableInStorefront``
+     */
+    static func productNotAvailableForPurchaseError(
+        error: Error? = nil,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return ErrorUtils.error(with: .productNotAvailableForPurchaseError,
+                                underlyingError: error)
+    }
+
+    /**
      * Constructs an Error with the ``ErrorCode/storeProblemError`` code.
      *
      * - Note: This error is used when there is a problem with the App Store.
      */
     static func storeProblemError(
-        withMessage message: String, error: Error? = nil,
+        withMessage message: String? = nil, error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         let errorCode = ErrorCode.storeProblemError
