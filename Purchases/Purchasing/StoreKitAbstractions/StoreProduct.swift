@@ -22,20 +22,34 @@ public typealias SK1Product = SKProduct
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Product = StoreKit.Product
 
-/// Abstract class that provides access to all of StoreKit's product type's properties.
-@objc(RCStoreProduct) public class StoreProduct: NSObject {
-    fileprivate override init() {
-        super.init()
+// Note: this class inherits its docs from `StoreProductType`
+// It's an @objc wrapper of a `StoreProductType`. Swift-only code can use the protocol directly.
+/// Type that provides access to all of `StoreKit`'s product type's properties.
+@objc(RCStoreProduct) public final class StoreProduct: NSObject, StoreProductType {
 
-        precondition(type(of: self) != StoreProduct.self, "StoreProduct is an abstract class")
+    let product: StoreProductType
+
+    /// Designated initializer.
+    /// - Seealso: ``StoreProduct.from(product:)`` to wrap an instance of `StoreProduct`
+    private init(_ product: StoreProductType) {
+        self.product = product
+
+        super.init()
 
         if self.localizedTitle.isEmpty {
             Logger.warn(Strings.offering.product_details_empty_title(productIdentifier: self.productIdentifier))
         }
     }
 
+    /// Creates an instance from any `StoreProductType`.
+    /// If `product` is already a wrapped `StoreProduct` then this returns it instead.
+    static func from(product: StoreProductType) -> StoreProduct {
+        return product as? StoreProduct
+            ?? StoreProduct(product)
+    }
+
     public override func isEqual(_ object: Any?) -> Bool {
-        return self.productIdentifier == (object as? StoreProduct)?.productIdentifier
+        return self.productIdentifier == (object as? StoreProductType)?.productIdentifier
     }
 
     public override var hash: Int {
@@ -45,26 +59,58 @@ public typealias SK2Product = StoreKit.Product
         return hasher.finalize()
     }
 
+    @objc public var localizedDescription: String { self.product.localizedDescription }
+
+    @objc public var localizedTitle: String { self.product.localizedTitle }
+
+    @objc public var price: Decimal { self.product.price }
+
+    @objc public var localizedPriceString: String { self.product.localizedPriceString}
+
+    @objc public var productIdentifier: String { self.product.productIdentifier }
+
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
+    @objc public var isFamilyShareable: Bool { self.product.isFamilyShareable }
+
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
+    @objc public var subscriptionGroupIdentifier: String? { self.product.subscriptionGroupIdentifier}
+
+    @objc public var priceFormatter: NumberFormatter? { self.product.priceFormatter }
+
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc public var subscriptionPeriod: SubscriptionPeriod? { self.product.subscriptionPeriod }
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public var introductoryPrice: PromotionalOffer? { self.product.introductoryPrice }
+
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @objc public var discounts: [PromotionalOffer] { self.product.discounts }
+
+}
+
+/// Type that provides access to all of `StoreKit`'s product type's properties.
+internal protocol StoreProductType {
+
     /// A description of the product.
     /// - Note: The description's language is determined by the storefront that the user's device is connected to,
     /// not the preferred language set on the device.
-    @objc public var localizedDescription: String { fatalError() }
+    var localizedDescription: String { get }
 
     /// The name of the product.
     /// - Note: The title's language is determined by the storefront that the user's device is connected to,
     /// not the preferred language set on the device.
-    @objc public var localizedTitle: String { fatalError() }
+    var localizedTitle: String { get }
 
     /// The decimal representation of the cost of the product, in local currency.
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
     /// - Seealso: `pricePerMonth`.
-    @objc public var price: Decimal { fatalError() }
+    var price: Decimal { get }
 
     /// The price of this product using ``priceFormatter``.
-    @objc public var localizedPriceString: String { fatalError() }
+    var localizedPriceString: String { get }
 
     /// The string that identifies the product to the Apple App Store.
-    @objc public var productIdentifier: String { fatalError() }
+    var productIdentifier: String { get }
 
     /// A Boolean value that indicates whether the product is available for family sharing in App Store Connect.
     /// Check the value of `isFamilyShareable` to learn whether an in-app purchase is sharable with the family group.
@@ -76,24 +122,24 @@ public typealias SK2Product = StoreKit.Product
     /// For more information about setting up Family Sharing, see Turn-on Family Sharing for in-app purchases.
     /// - Seealso: https://support.apple.com/en-us/HT201079
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
-    @objc public var isFamilyShareable: Bool { fatalError() }
+    var isFamilyShareable: Bool { get }
 
     /// The identifier of the subscription group to which the subscription belongs.
     /// All auto-renewable subscriptions must be a part of a group.
     /// You create the group identifiers in App Store Connect.
     /// This property is `nil` if the product is not an auto-renewable subscription.
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
-    @objc public var subscriptionGroupIdentifier: String? { fatalError() }
+    var subscriptionGroupIdentifier: String? { get }
 
     /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
     /// - Note: This creates a new formatter for every product, which can be slow.
     /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
-    @objc public var priceFormatter: NumberFormatter? { fatalError() }
+    var priceFormatter: NumberFormatter? { get }
 
     /// The period details for products that are subscriptions.
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    @objc public var subscriptionPeriod: SubscriptionPeriod? { fatalError() }
+    var subscriptionPeriod: SubscriptionPeriod? { get }
 
     /// The object containing introductory price information for the product.
     /// If you've set up introductory prices in App Store Connect, the introductory price property will be populated.
@@ -103,11 +149,12 @@ public typealias SK2Product = StoreKit.Product
     /// you must first determine if the user is eligible to receive it.
     /// - Seealso: `Purchases.checkTrialOrIntroductoryPriceEligibility` to  determine eligibility.
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public var introductoryPrice: PromotionalOffer? { fatalError() }
+    var introductoryPrice: PromotionalOffer? { get }
 
     /// An array of subscription offers available for the auto-renewable subscription.
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public var discounts: [PromotionalOffer] { fatalError() }
+    var discounts: [PromotionalOffer] { get }
+
 }
 
 public extension StoreProduct {
@@ -124,43 +171,79 @@ public extension StoreProduct {
         return period.pricePerMonth(withTotalPrice: self.price) as NSDecimalNumber?
     }
 
+    /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
+    /// - Returns: `nil` if there is no `introductoryPrice`.
+    @objc var localizedIntroductoryPriceString: String? {
+        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
+              let formatter = self.priceFormatter,
+              let intro = self.introductoryPrice
+        else {
+            return nil
+        }
+
+        return formatter.string(from: intro.price as NSDecimalNumber)
+    }
+
+}
+
+// MARK: - Wrapper constructors / getters
+
+extension StoreProduct {
+
+    internal convenience init(sk1Product: SK1Product) {
+        self.init(SK1StoreProduct(sk1Product: sk1Product))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    internal convenience init(sk2Product: SK2Product) {
+        self.init(SK2StoreProduct(sk2Product: sk2Product))
+    }
+
+    /// Returns the `SK1Product` if this `StoreProducts` contains one.
+    var sk1Product: SK1Product? {
+        return (self.product as? SK1StoreProduct)?.underlyingSK1Product
+    }
+
+    /// Returns the `SK2Product` if this `StoreProducts` contains one.
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    var sk2Product: SK2Product? {
+        return (self.product as? SK2StoreProduct)?.underlyingSK2Product
+    }
+
 }
 
 // MARK: - Subclasses
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-@objc(RCSK2StoreProduct) public class SK2StoreProduct: StoreProduct {
+internal struct SK2StoreProduct: StoreProductType {
 
     init(sk2Product: SK2Product) {
         self._underlyingSK2Product = sk2Product
-
-        super.init()
     }
 
     // We can't directly store instances of StoreKit.Product, since that causes
     // linking issues in iOS < 15, even with @available checks correctly in place.
     // So instead, we store the underlying product as Any and wrap it with casting.
     // https://openradar.appspot.com/radar?id=4970535809187840
-    private var _underlyingSK2Product: Any
-    public var underlyingSK2Product: SK2Product {
+    private let _underlyingSK2Product: Any
+    var underlyingSK2Product: SK2Product {
         // swiftlint:disable:next force_cast
-        get { _underlyingSK2Product as! SK2Product }
-        set { _underlyingSK2Product = newValue }
+        _underlyingSK2Product as! SK2Product
     }
 
-    @objc public override var localizedDescription: String { underlyingSK2Product.description }
+    var localizedDescription: String { underlyingSK2Product.description }
 
-    @objc public override var price: Decimal { underlyingSK2Product.price }
+    var price: Decimal { underlyingSK2Product.price }
 
-    @objc public override var localizedPriceString: String { underlyingSK2Product.displayPrice }
+    var localizedPriceString: String { underlyingSK2Product.displayPrice }
 
-    @objc public override var productIdentifier: String { underlyingSK2Product.id }
+    var productIdentifier: String { underlyingSK2Product.id }
 
-    @objc public override var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
+    var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
 
-    @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
+    var localizedTitle: String { underlyingSK2Product.displayName }
 
-    @objc public override var priceFormatter: NumberFormatter? {
+    var priceFormatter: NumberFormatter? {
         // note: if we ever need more information from the jsonRepresentation object, we
         // should use Codable or another decoding method to clean up this code.
         guard let attributes = jsonDict["attributes"] as? [String: Any],
@@ -176,7 +259,7 @@ public extension StoreProduct {
         return formatter
     }
 
-    @objc public override var subscriptionGroupIdentifier: String? {
+    var subscriptionGroupIdentifier: String? {
         underlyingSK2Product.subscription?.subscriptionGroupID
     }
 
@@ -185,71 +268,52 @@ public extension StoreProduct {
         return decoded as? [String: Any] ?? [:]
     }
 
-    @objc public override var subscriptionPeriod: SubscriptionPeriod? {
+    var subscriptionPeriod: SubscriptionPeriod? {
         guard let skSubscriptionPeriod = underlyingSK2Product.subscription?.subscriptionPeriod else {
             return nil
         }
         return SubscriptionPeriod.from(sk2SubscriptionPeriod: skSubscriptionPeriod)
     }
 
-    @objc public override var introductoryPrice: PromotionalOffer? {
+    var introductoryPrice: PromotionalOffer? {
         self.underlyingSK2Product.subscription?.introductoryOffer
             .map(PromotionalOffer.init)
     }
 
-    @objc public override var discounts: [PromotionalOffer] {
+    var discounts: [PromotionalOffer] {
         (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
             .compactMap(PromotionalOffer.init)
     }
 
 }
 
-public extension StoreProduct {
-    /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
-    /// - Returns: `nil` if there is no `introductoryPrice`.
-    @objc var localizedIntroductoryPriceString: String? {
-        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
-              let formatter = self.priceFormatter,
-              let intro = self.introductoryPrice
-        else {
-            return nil
-        }
+internal struct SK1StoreProduct: StoreProductType {
 
-        return formatter.string(from: intro.price as NSDecimalNumber)
-    }
-}
-
-// MARK: - Subsclasses
-
-@objc(RCSK1StoreProduct) public class SK1StoreProduct: StoreProduct {
-
-    @objc public init(sk1Product: SK1Product) {
+    init(sk1Product: SK1Product) {
         self.underlyingSK1Product = sk1Product
-
-        super.init()
     }
 
-    @objc public let underlyingSK1Product: SK1Product
+    let underlyingSK1Product: SK1Product
 
-    @objc public override var localizedDescription: String { return underlyingSK1Product.localizedDescription }
+    var localizedDescription: String { return underlyingSK1Product.localizedDescription }
 
-    @objc public override var price: Decimal { return underlyingSK1Product.price as Decimal }
+    var price: Decimal { return underlyingSK1Product.price as Decimal }
 
-    @objc public override var localizedPriceString: String {
+    var localizedPriceString: String {
         return priceFormatter?.string(from: underlyingSK1Product.price) ?? ""
     }
 
-    @objc public override var productIdentifier: String { return underlyingSK1Product.productIdentifier }
+    var productIdentifier: String { return underlyingSK1Product.productIdentifier }
 
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
-    @objc public override var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
+    var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
 
-    @objc public override var localizedTitle: String { underlyingSK1Product.localizedTitle }
+    var localizedTitle: String { underlyingSK1Product.localizedTitle }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
-    override public var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
+    var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
-    @objc public override var priceFormatter: NumberFormatter? {
+    var priceFormatter: NumberFormatter? {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = underlyingSK1Product.priceLocale
@@ -257,7 +321,7 @@ public extension StoreProduct {
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    @objc public override var subscriptionPeriod: SubscriptionPeriod? {
+    var subscriptionPeriod: SubscriptionPeriod? {
         guard let skSubscriptionPeriod = underlyingSK1Product.subscriptionPeriod else {
             return nil
         }
@@ -265,15 +329,42 @@ public extension StoreProduct {
     }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public override var introductoryPrice: PromotionalOffer? {
+    var introductoryPrice: PromotionalOffer? {
         return self.underlyingSK1Product.introductoryPrice
             .map(PromotionalOffer.init)
     }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public override var discounts: [PromotionalOffer] {
+    var discounts: [PromotionalOffer] {
         return self.underlyingSK1Product.discounts
             .map(PromotionalOffer.init)
+    }
+
+}
+
+// MARK: - Extensions
+
+extension SK1StoreProduct: Hashable {
+
+    static func == (lhs: SK1StoreProduct, rhs: SK1StoreProduct) -> Bool {
+        return lhs.underlyingSK1Product == rhs.underlyingSK1Product
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.underlyingSK1Product)
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension SK2StoreProduct: Hashable {
+
+    static func == (lhs: SK2StoreProduct, rhs: SK2StoreProduct) -> Bool {
+        return lhs.underlyingSK2Product == rhs.underlyingSK2Product
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.underlyingSK2Product)
     }
 
 }

@@ -74,6 +74,25 @@ public class PromotionalOffer: NSObject {
         self.subscriptionPeriod = subscriptionPeriod
     }
 
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? PromotionalOffer else { return false }
+
+        return self.offerIdentifier == other.offerIdentifier
+            && self.price == other.price
+            && self.paymentMode == other.paymentMode
+            && self.subscriptionPeriod == other.subscriptionPeriod
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(self.offerIdentifier)
+        hasher.combine(self.price)
+        hasher.combine(self.paymentMode)
+        hasher.combine(self.subscriptionPeriod)
+
+        return hasher.finalize()
+    }
+
 }
 
 extension PromotionalOffer.PaymentMode {

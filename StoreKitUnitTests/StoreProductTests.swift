@@ -18,6 +18,15 @@ import XCTest
 
 class StoreProductTests: StoreKitConfigTestCase {
 
+    private var sk1Fetcher: ProductsFetcherSK1!
+
+    override func setUp() {
+        super.setUp()
+
+        self.sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
+                                             requestTimeout: Self.requestTimeout)
+    }
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK1AndSK2DetailsAreEquivalent() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -27,13 +36,10 @@ class StoreProductTests: StoreKitConfigTestCase {
             "com.revenuecat.annual_39.99.2_week_intro",
             "lifetime"
         ])
-        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
-                                            requestTimeout: Self.requestTimeout)
-        let sk1StoreProducts = try await sk1Fetcher.products(withIdentifiers: productIdentifiers)
+        let sk1StoreProducts = try await self.sk1Fetcher.products(withIdentifiers: productIdentifiers)
         let sk1StoreProductsByID = sk1StoreProducts.dictionaryWithKeys { $0.productIdentifier }
 
-        let sk2Fetcher = ProductsFetcherSK2()
-        let sk2StoreProducts = try await sk2Fetcher.products(identifiers: productIdentifiers)
+        let sk2StoreProducts = try await ProductsFetcherSK2().products(identifiers: productIdentifiers)
         let sk2StoreProductsByID = sk2StoreProducts.dictionaryWithKeys { $0.productIdentifier }
 
         expect(sk1StoreProducts.count) == productIdentifiers.count
@@ -43,28 +49,33 @@ class StoreProductTests: StoreKitConfigTestCase {
             let sk1Product = try XCTUnwrap(sk1StoreProductsByID[sk1ProductID])
             let equivalentSK2Product = try XCTUnwrap(sk2StoreProductsByID[sk1ProductID])
 
-            expect(sk1Product.productIdentifier) == equivalentSK2Product.productIdentifier
-            expect(sk1Product.localizedDescription) == equivalentSK2Product.localizedDescription
-            expect(sk1Product.price) == equivalentSK2Product.price
-            expect(sk1Product.localizedPriceString) == equivalentSK2Product.localizedPriceString
-            expect(sk1Product.productIdentifier) == equivalentSK2Product.productIdentifier
-            expect(sk1Product.isFamilyShareable) == equivalentSK2Product.isFamilyShareable
-            expect(sk1Product.localizedTitle) == equivalentSK2Product.localizedTitle
-            if sk1Product.subscriptionGroupIdentifier != nil {
-                expect(sk1Product.subscriptionGroupIdentifier) == equivalentSK2Product.subscriptionGroupIdentifier
-            } else {
-                expect(equivalentSK2Product.subscriptionGroupIdentifier).to(beNil())
-            }
+            expectEqualProducts(sk1Product, equivalentSK2Product)
         }
+    }
+
+    func testSK1AndStoreProductDetailsAreEquivalent() async throws {
+        let products = try await self.sk1Fetcher.products(withIdentifiers: ["com.revenuecat.monthly_4.99.1_week_intro"])
+        let product = try XCTUnwrap(products.first)
+
+        expectEqualProducts(product, StoreProduct.from(product: product))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSK2AndStoreProductDetailsAreEquivalent() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let products = try await ProductsFetcherSK2()
+            .products(identifiers: ["com.revenuecat.monthly_4.99.1_week_intro"])
+        let product = try XCTUnwrap(products.first)
+
+        expectEqualProducts(product, StoreProduct.from(product: product))
     }
 
     func testSk1DetailsWrapsCorrectly() throws {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
-                                            requestTimeout: Self.requestTimeout)
-        var result: Result<Set<StoreProduct>, Error>!
+        var result: Result<Set<SK1StoreProduct>, Error>!
 
-        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { products in
+        self.sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { products in
             result = products
         }
 
@@ -178,9 +189,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        let sk1Fetcher = ProductsFetcherSK1()
 
-        let storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        let storeProductSet = try await self.sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
 
         let storeProduct = try XCTUnwrap(storeProductSet.first)
         let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
@@ -257,4 +267,35 @@ class StoreProductTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
     }
 
+    private func expectEqualProducts(_ productA: StoreProductType, _ productB: StoreProductType) {
+        expect(productA.productIdentifier) == productB.productIdentifier
+        expect(productA.localizedDescription) == productB.localizedDescription
+        expect(productA.price) == productB.price
+        expect(productA.localizedPriceString) == productB.localizedPriceString
+        expect(productA.productIdentifier) == productB.productIdentifier
+        expect(productA.isFamilyShareable) == productB.isFamilyShareable
+        expect(productA.localizedTitle) == productB.localizedTitle
+
+        expect(productA.isFamilyShareable) == productB.isFamilyShareable
+
+        expect(productA.discounts) == productB.discounts
+
+        if productA.subscriptionPeriod == nil {
+            expect(productB.subscriptionPeriod).to(beNil())
+        } else {
+            expect(productA.subscriptionPeriod) == productB.subscriptionPeriod
+        }
+
+        if productA.introductoryPrice == nil {
+            expect(productB.introductoryPrice).to(beNil())
+        } else {
+            expect(productA.introductoryPrice) == productB.introductoryPrice
+        }
+
+        if productA.subscriptionGroupIdentifier == nil {
+            expect(productB.subscriptionGroupIdentifier).to(beNil())
+        } else {
+            expect(productA.subscriptionGroupIdentifier) == productB.subscriptionGroupIdentifier
+        }
+    }
 }
