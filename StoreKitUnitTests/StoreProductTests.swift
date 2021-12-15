@@ -30,11 +30,11 @@ class StoreProductTests: StoreKitConfigTestCase {
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory(),
                                             requestTimeout: Self.requestTimeout)
         let sk1StoreProducts = try await sk1Fetcher.products(withIdentifiers: productIdentifiers)
-        let sk1StoreProductsByID = sk1StoreProducts.uniqueIndex { $0.productIdentifier }
+        let sk1StoreProductsByID = sk1StoreProducts.dictionaryWithKeys { $0.productIdentifier }
 
         let sk2Fetcher = ProductsFetcherSK2()
         let sk2StoreProducts = try await sk2Fetcher.products(identifiers: productIdentifiers)
-        let sk2StoreProductsByID = sk2StoreProducts.uniqueIndex { $0.productIdentifier }
+        let sk2StoreProductsByID = sk2StoreProducts.dictionaryWithKeys { $0.productIdentifier }
 
         expect(sk1StoreProducts.count) == productIdentifiers.count
         expect(sk1StoreProducts.count) == sk2StoreProducts.count

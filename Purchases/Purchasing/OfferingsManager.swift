@@ -115,7 +115,7 @@ private extension OfferingsManager {
                 return
             }
 
-            let productsByID = products.uniqueIndex { $0.productIdentifier }
+            let productsByID = products.dictionaryWithKeys { $0.productIdentifier }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
                                                                             data: data) {
