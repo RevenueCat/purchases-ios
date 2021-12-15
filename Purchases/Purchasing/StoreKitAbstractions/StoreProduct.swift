@@ -199,14 +199,14 @@ extension StoreProduct {
         self.init(SK2StoreProduct(sk2Product: sk2Product))
     }
 
-    /// Returns the `SK1Product` if this `StoreProducts` contains one.
-    var sk1Product: SK1Product? {
+    /// Returns the `SKProduct` if this `StoreProduct` represents a `StoreKit.SKProduct`.
+    public var sk1Product: SK1Product? {
         return (self.product as? SK1StoreProduct)?.underlyingSK1Product
     }
 
-    /// Returns the `SK2Product` if this `StoreProducts` contains one.
+    /// Returns the `Product` if this `StoreProduct` represents a `StoreKit.Product`.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    var sk2Product: SK2Product? {
+    public var sk2Product: SK2Product? {
         return (self.product as? SK2StoreProduct)?.underlyingSK2Product
     }
 
