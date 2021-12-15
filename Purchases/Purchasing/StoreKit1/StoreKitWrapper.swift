@@ -31,7 +31,7 @@ protocol StoreKitWrapperDelegate: AnyObject {
 
 class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
 
-    @available(macOS 10.14, macCatalyst 13.0, *)
+    @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     static var simulatesAskToBuyInSandbox = false
 
     weak var delegate: StoreKitWrapperDelegate? {
@@ -79,7 +79,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
     func payment(withProduct product: SK1Product) -> SKMutablePayment {
         let payment = SKMutablePayment(product: product)
 
-        if #available(macOS 10.14, watchOS 6.2, macCatalyst 13.0, *) {
+        if #available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *) {
             payment.simulatesAskToBuyInSandbox = Self.simulatesAskToBuyInSandbox
         }
         return payment

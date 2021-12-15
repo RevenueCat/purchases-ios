@@ -609,7 +609,11 @@ private extension PurchasesOrchestrator {
         let sk2Product = sk2StoreProduct.underlyingSK2Product
 
         do {
-            let result = try await sk2Product.purchase()
+            let options: Set<Product.PurchaseOption> = [
+                .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
+            ]
+
+            let result = try await sk2Product.purchase(options: options)
             let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
 
             return await withCheckedContinuation { continuation in
