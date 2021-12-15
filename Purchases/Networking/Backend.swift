@@ -495,14 +495,17 @@ private extension Backend {
         }
 
         do {
-            let customerInfo = try CustomerInfo(data: response)
+            let customerInfo = try parseCustomerInfo(fromMaybeResponse: maybeResponse)
             let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
             Logger.user(Strings.identity.login_success)
             completion(customerInfo, created, nil)
-        } catch {
+        } catch let customerInfoError {
             Logger.error(Strings.backendError.customer_info_instantiation_error(maybeResponse: response))
+            let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
             let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginResponseDecoding
-            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
+            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: customerInfoError,
+                                                                 generatedBy: "\(file) \(function)",
+                                                                 extraContext: extraContext)
             completion(nil, false, responseError)
         }
     }
