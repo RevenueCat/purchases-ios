@@ -212,10 +212,10 @@ class PurchasesOrchestrator {
                 }
             }
         } else {
-            guard package.storeProduct is SK1StoreProduct else {
+            guard let product = package.storeProduct as? SK1StoreProduct else {
                 fatalError("could not identify StoreKit version to use! StoreProduct: \(package.storeProduct)")
             }
-            purchase(sk1Package: package, completion: completion)
+            purchase(sk1Product: product.underlyingSK1Product, package: package, completion: completion)
         }
     }
 
@@ -631,15 +631,11 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
-        guard let sk1StoreProduct = sk1Package.storeProduct as? SK1StoreProduct else {
-            return
-        }
-        let sk1Product = sk1StoreProduct.underlyingSK1Product
+    func purchase(sk1Product: SK1Product, package: Package, completion: @escaping PurchaseCompletedBlock) {
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
         purchase(sk1Product: sk1Product,
                  payment: payment,
-                 presentedOfferingIdentifier: sk1Package.offeringIdentifier,
+                 presentedOfferingIdentifier: package.offeringIdentifier,
                  completion: completion)
     }
 
