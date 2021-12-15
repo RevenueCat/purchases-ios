@@ -193,8 +193,8 @@ private extension ProductsFetcherSK1 {
 
     func cacheProducts(_ products: [SK1Product]) {
         queue.async {
-            let productsByIdentifier = products.reduce(into: [:]) { resultDict, product in
-                resultDict[product.productIdentifier] = product
+            let productsByIdentifier = products.indexAllowingDuplicateKeys {
+                $0.productIdentifier
             }
 
             self.cachedProductsByIdentifier += productsByIdentifier

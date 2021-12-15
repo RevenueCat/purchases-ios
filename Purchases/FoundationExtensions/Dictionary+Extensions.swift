@@ -88,3 +88,23 @@ extension Dictionary {
     }
 
 }
+
+extension Sequence {
+    /// Creates a `Dictionary` with the values in the receiver sequence, and the keys provided by `key`.
+    /// - Precondition: The sequence must not have duplicate keys.
+    func uniqueIndex<Key>(
+        _ key: @escaping (Element) -> Key
+    ) -> [Key: Element] {
+        Dictionary(uniqueKeysWithValues: self.lazy.map { (key($0), $0) })
+    }
+
+    /// Creates a `Dictionary` with the values in the receiver sequence, and the keys provided by `key`.
+    func indexAllowingDuplicateKeys<Key>(
+        _ key: @escaping (Element) -> Key
+    ) -> [Key: Element] {
+        return Dictionary(
+            self.lazy.map { (key($0), $0) },
+            uniquingKeysWith: { (_, last) in last }
+        )
+    }
+}

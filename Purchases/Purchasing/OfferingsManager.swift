@@ -115,9 +115,7 @@ private extension OfferingsManager {
                 return
             }
 
-            let productsByID = products.reduce(into: [:]) { result, product in
-                result[product.productIdentifier] = product
-            }
+            let productsByID = products.uniqueIndex { $0.productIdentifier }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
                                                                             data: data) {

@@ -215,6 +215,8 @@
 		57A0FBF02749C0C2009E2FC3 /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */; };
 		57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */; };
 		57BD50AA27692B7500211D6D /* StoreKitError+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */; };
+		57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A17726276A721D0052D3A8 /* Set+Extensions.swift */; };
+		57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
 		57EAE527274324C60060EB74 /* Lock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE526274324C60060EB74 /* Lock.swift */; };
 		57EAE52B274332830060EB74 /* Obsoletions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE52A274332830060EB74 /* Obsoletions.swift */; };
@@ -563,6 +565,8 @@
 		57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Atomic.swift; sourceTree = "<group>"; };
 		57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedUserDefaults.swift; sourceTree = "<group>"; };
 		57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreKitError+Extensions.swift"; sourceTree = "<group>"; };
+		57A17726276A721D0052D3A8 /* Set+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Set+Extensions.swift"; sourceTree = "<group>"; };
+		57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetExtensionsTests.swift; sourceTree = "<group>"; };
 		57E2230627500BB1002DB06E /* AtomicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicTests.swift; sourceTree = "<group>"; };
 		57EAE526274324C60060EB74 /* Lock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lock.swift; sourceTree = "<group>"; };
 		57EAE52A274332830060EB74 /* Obsoletions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obsoletions.swift; sourceTree = "<group>"; };
@@ -721,6 +725,7 @@
 				37E353FD94A8FD5CD8796530 /* DateFormatter+Extensions.swift */,
 				B302206927271BCB008F1A0D /* Decoder+Extensions.swift */,
 				35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */,
+				57A17726276A721D0052D3A8 /* Set+Extensions.swift */,
 				B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */,
 				F5714EA426D6C24D00635477 /* JSONDecoder+Extensions.swift */,
 				2CD72947268A828400BFC976 /* Locale+Extensions.swift */,
@@ -1211,6 +1216,7 @@
 				37E3508EC20EEBAB4EAC4C82 /* NSDate+RCExtensionsTests.swift */,
 				37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */,
 				2DD269162522A20A006AC4BC /* DictionaryExtensionsTests.swift */,
+				57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */,
 				37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */,
 			);
 			path = FoundationExtensions;
@@ -1917,6 +1923,7 @@
 				37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */,
 				2D9F4A5526C30CA800B07B43 /* PurchasesOrchestrator.swift in Sources */,
 				37E3529267833EA8ED9F06BE /* DateFormatter+Extensions.swift in Sources */,
+				57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */,
 				37E350C67712B9E054FEF297 /* AttributionData.swift in Sources */,
 				37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */,
 				F5714EA526D6C24D00635477 /* JSONDecoder+Extensions.swift in Sources */,
@@ -2016,6 +2023,7 @@
 				351B517026D44E8D00BD2BD7 /* MockDateProvider.swift in Sources */,
 				2D1C3F3926B9D8B800112626 /* MockBundle.swift in Sources */,
 				351B515E26D44B9900BD2BD7 /* MockPurchasesDelegate.swift in Sources */,
+				57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */,
 				351B515A26D44B6200BD2BD7 /* MockAttributionFetcher.swift in Sources */,
 				351B51BD26D450E800BD2BD7 /* EntitlementInfosTests.swift in Sources */,
 				351B514526D449E600BD2BD7 /* MockAttributionTypeFactory.swift in Sources */,
