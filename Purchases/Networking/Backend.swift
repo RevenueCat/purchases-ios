@@ -504,8 +504,7 @@ private extension Backend {
             let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
             let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginResponseDecoding
             let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: customerInfoError,
-                                                                 generatedBy: "\(file) \(function)",
-                                                                 extraContext: extraContext)
+                                                                     extraContext: extraContext)
             completion(nil, false, responseError)
         }
     }
