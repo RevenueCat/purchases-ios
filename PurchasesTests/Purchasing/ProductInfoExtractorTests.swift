@@ -53,11 +53,11 @@ class ProductInfoExtractorTests: XCTestCase {
 
             let receivedProductInfo = self.extract()
 
-            expect(receivedProductInfo.paymentMode.rawValue) == ProductInfo.PaymentMode.freeTrial.rawValue
+            expect(receivedProductInfo.paymentMode.rawValue) == PromotionalOffer.PaymentMode.freeTrial.rawValue
         } else {
             let receivedProductInfo = self.extract()
 
-            expect(receivedProductInfo.paymentMode) == ProductInfo.PaymentMode.none
+            expect(receivedProductInfo.paymentMode) == PromotionalOffer.PaymentMode.none
         }
     }
 
@@ -134,7 +134,7 @@ class ProductInfoExtractorTests: XCTestCase {
         } else {
             let receivedProductInfo = self.extract()
 
-            expect(receivedProductInfo.introDurationType) == IntroDurationType.none
+            expect(receivedProductInfo.introDurationType) == PromotionalOffer.IntroDurationType.none
         }
     }
 
@@ -158,7 +158,7 @@ class ProductInfoExtractorTests: XCTestCase {
             let mockDiscount = MockDiscount()
             let paymentMode: SKProductDiscount.PaymentMode = .freeTrial
             mockDiscount.mockPaymentMode = paymentMode
-            let price: NSDecimalNumber = 10.99
+            let price: Decimal = 10.99
             mockDiscount.mockPrice = price
             let discountID = "cool_discount"
             mockDiscount.mockIdentifier = discountID

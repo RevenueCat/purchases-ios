@@ -41,6 +41,12 @@ func checkPurchasesAPI() {
     checkPurchasesSubscriberAttributesAPI(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
+
+    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) {
+        _ = Task.init {
+            await checkAsyncMethods(purchases: purch)
+        }
+    }
 }
 
 var periodType: PeriodType!
@@ -101,19 +107,10 @@ private func checkStaticMethods() {
           forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isPurchasesConfigured)
 }
 
-// swiftlint:disable:next function_body_length
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getCustomerInfo { _, _ in }
     purchases.getOfferings { _, _ in }
     purchases.getProducts([String]()) { _ in }
-
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-        Task.init {
-            let _: CustomerInfo = try await purchases.customerInfo()
-            let _: [SKProduct] = await purchases.products([String]())
-            let _: Offerings = try await purchases.offerings()
-        }
-    }
 
     let skp: SKProduct = SKProduct()
     let productDiscount: SKProductDiscount = SKProductDiscount()
@@ -124,15 +121,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack) { _, _, _, _  in }
     purchases.syncPurchases { _, _ in }
 
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-        Task.init {
-            let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: skp)
-            let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
-            let _: CustomerInfo = try await purchases.syncPurchases()
-            let _: CustomerInfo = try await purchases.restoreTransactions()
-        }
-    }
-
     let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
@@ -142,18 +130,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(product: skp, discount: paymentDiscount) { _, _, _, _  in }
     purchases.purchase(package: pack, discount: paymentDiscount) { _, _, _, _  in }
     purchases.invalidateCustomerInfoCache()
-
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-        Task.init {
-            let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) =
-            try await purchases.purchase(product: skp, discount: paymentDiscount)
-            let (_, _, _): (SKPaymentTransaction, CustomerInfo, Bool) =
-            try await purchases.purchase(package: pack, discount: paymentDiscount)
-            let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroductoryPriceEligibility([String]())
-            let _: SKPaymentDiscount = try await purchases.paymentDiscount(forProductDiscount: productDiscount,
-                                                                           product: skp)
-        }
-    }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     let beginRefundRequestCompletion: (RefundRequestStatus, Error?) -> Void = { _, _ in }
@@ -180,24 +156,12 @@ private func checkIdentity(purchases: Purchases) {
     let loginComplete: (CustomerInfo?, Bool, Error?) -> Void = { _, _, _ in }
     purchases.logIn("", completion: loginComplete)
     purchases.logIn("") { _, _, _ in }
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-        Task.init {
-            let (_, _): (CustomerInfo, Bool) = try await purchases.logIn("")
-            let _: CustomerInfo = try await purchases.logOut()
-        }
-    }
 }
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {
     #if os(iOS)
     purchases.showManageSubscriptions { _ in }
     purchases.beginRefundRequest(for: "") { _, _ in }
-    if #available(iOS 15.0, macOS 12.0, *) {
-        Task.init {
-            try await purchases.showManageSubscriptions()
-            let _: RefundRequestStatus = try await purchases.beginRefundRequest(for: "")
-        }
-    }
     #endif
 }
 
@@ -219,4 +183,32 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setKeyword("")
     purchases.setCreative("")
     purchases.collectDeviceIdentifiers()
+}
+
+private func checkAsyncMethods(purchases: Purchases) async {
+    let pack: Package! = nil
+
+    do {
+        let _: (CustomerInfo, Bool) = try await purchases.logIn("")
+        let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroductoryPriceEligibility([])
+        let _: CustomerInfo = try await purchases.logOut()
+        let _: Offerings = try await purchases.offerings()
+        let _: SKPaymentDiscount = try await purchases.paymentDiscount(forProductDiscount: SKProductDiscount(),
+                                                                       product: SKProduct())
+        let _: [SKProduct] = await purchases.products([])
+        let _: (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
+        let _: (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
+                                                                                         discount: SKPaymentDiscount())
+        let _: (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct())
+        let _: (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct(),
+                                                                                         discount: SKPaymentDiscount())
+        let _: CustomerInfo = try await purchases.customerInfo()
+        let _: CustomerInfo = try await purchases.restoreTransactions()
+        let _: CustomerInfo = try await purchases.syncPurchases()
+
+        #if os(iOS)
+        try await purchases.showManageSubscriptions()
+        let _: RefundRequestStatus = try await purchases.beginRefundRequest(for: "")
+        #endif
+    } catch {}
 }

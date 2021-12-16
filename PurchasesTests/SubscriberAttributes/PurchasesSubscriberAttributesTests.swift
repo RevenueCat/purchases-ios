@@ -36,7 +36,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var mockReceiptParser: MockReceiptParser!
     var mockAttributionFetcher: MockAttributionFetcher!
     var mockAttributionPoster: AttributionPoster!
-
+    var mockTransactionsManager: MockTransactionsManager!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
 
@@ -110,6 +110,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                          customerInfoManager: customerInfoManager,
                                                                          identityManager: mockIdentityManager)
+        self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
     }
 
     override func tearDown() {
@@ -130,7 +131,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           customerInfoManager: customerInfoManager,
                                                           backend: mockBackend,
                                                           identityManager: mockIdentityManager,
-                                                          receiptParser: mockReceiptParser,
+                                                          transactionsManager: mockTransactionsManager,
                                                           deviceCache: mockDeviceCache,
                                                           manageSubscriptionsHelper: mockManageSubsHelper,
                                                           beginRefundRequestHelper: mockBeginRefundRequestHelper)
@@ -156,7 +157,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               subscriberAttributesManager: mockSubscriberAttributesManager,
                               operationDispatcher: mockOperationDispatcher,
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
-                              receiptParser: mockReceiptParser,
                               customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,

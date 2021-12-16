@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 7/9/21.
 //
 
-import Foundation
+// swiftlint:disable file_length
 
 @objc(RCCustomerInfo) public class CustomerInfo: NSObject {
 
@@ -127,12 +127,15 @@ import Foundation
             return false
         }
 
-        var selfJson = self.jsonObject()
-        selfJson.removeValue(forKey: "request_date")
-        var otherJson = other.jsonObject()
-        otherJson.removeValue(forKey: "request_date")
+        return NSDictionary(dictionary: self.jsonObjectWithNoDate)
+            .isEqual(NSDictionary(dictionary: other.jsonObjectWithNoDate))
+    }
 
-        return NSDictionary(dictionary: selfJson).isEqual(NSDictionary(dictionary: otherJson))
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(NSDictionary(dictionary: self.jsonObjectWithNoDate))
+
+        return hasher.finalize()
     }
 
     public override var description: String {
@@ -218,6 +221,13 @@ import Foundation
             ["schema_version": CustomerInfo.currentSchemaVersion],
             strategy: .keepOriginalValue
         )
+    }
+
+    private var jsonObjectWithNoDate: [String: Any] {
+        var json = self.jsonObject()
+        json.removeValue(forKey: "request_date")
+
+        return json
     }
 
     private let allPurchases: [String: [String: Any]]

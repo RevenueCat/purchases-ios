@@ -33,8 +33,10 @@ class AttributionDataMigrator {
             convertedAttribution[ReservedSubscriberAttribute.gpsAdId.key] = value
         }
 
-        let networkSpecificSubscriberAttributes = convertNetworkSpecificSubscriberAttributes(for: network,
-                attributionData: attributionData)
+        let networkSpecificSubscriberAttributes = convertNetworkSpecificSubscriberAttributes(
+            for: network,
+            attributionData: attributionData
+        )
 
         return convertedAttribution.merging(networkSpecificSubscriberAttributes)
     }

@@ -53,7 +53,7 @@ class PurchasesOrchestrator {
     private let customerInfoManager: CustomerInfoManager
     private let backend: Backend
     private let identityManager: IdentityManager
-    private let receiptParser: ReceiptParser
+    private let transactionsManager: TransactionsManager
     private let deviceCache: DeviceCache
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
@@ -71,7 +71,7 @@ class PurchasesOrchestrator {
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
          identityManager: IdentityManager,
-         receiptParser: ReceiptParser,
+         transactionsManager: TransactionsManager,
          deviceCache: DeviceCache,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper) {
@@ -84,10 +84,11 @@ class PurchasesOrchestrator {
         self.customerInfoManager = customerInfoManager
         self.backend = backend
         self.identityManager = identityManager
-        self.receiptParser = receiptParser
+        self.transactionsManager = transactionsManager
         self.deviceCache = deviceCache
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
+
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             storeKit2Listener.listenForTransactions()
         }
@@ -193,13 +194,13 @@ class PurchasesOrchestrator {
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         // todo: clean up, move to new class along with the private funcs below
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           package.storeProduct is SK2StoreProduct {
+           let storeProduct = package.storeProduct as? SK2StoreProduct {
             _ = Task<Void, Never> {
-                let result = await purchase(sk2Package: package)
+                let result = await purchase(sk2StoreProduct: storeProduct)
                 DispatchQueue.main.async {
                     switch result {
                     case .failure(let error):
-                        completion(nil, nil, error, false)
+                        completion(nil, nil, ErrorUtils.purchasesError(withStoreKitError: error), false)
                     case .success(let (customerInfo, userCancelled)):
                         // todo: change API and send transaction
                         if userCancelled {
@@ -211,10 +212,10 @@ class PurchasesOrchestrator {
                 }
             }
         } else {
-            guard package.storeProduct is SK1StoreProduct else {
+            guard let product = package.storeProduct as? SK1StoreProduct else {
                 fatalError("could not identify StoreKit version to use! StoreProduct: \(package.storeProduct)")
             }
-            purchase(sk1Package: package, completion: completion)
+            purchase(sk1Product: product.underlyingSK1Product, package: package, completion: completion)
         }
     }
 
@@ -223,7 +224,7 @@ class PurchasesOrchestrator {
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
                   completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
-        guard let productIdentifier = extractProductIdentifier(fromProduct: sk1Product, orPayment: payment) else {
+        guard let productIdentifier = sk1Product.extractProductIdentifier(withPayment: payment) else {
             Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
             completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
@@ -579,30 +580,31 @@ private extension PurchasesOrchestrator {
                       return
                   }
 
-            let maybeCachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
-            let hasOriginalPurchaseDate = maybeCachedCustomerInfo?.originalPurchaseDate != nil
-            let receiptHasTransactions = self.receiptParser.receiptHasTransactions(receiptData: receiptData)
+            self.transactionsManager.customerHasTransactions(receiptData: receiptData) { hasTransactions in
+                let maybeCachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
+                let hasOriginalPurchaseDate = maybeCachedCustomerInfo?.originalPurchaseDate != nil
 
-            if !receiptHasTransactions && hasOriginalPurchaseDate {
-                if let completion = maybeCompletion {
-                    self.operationDispatcher.dispatchOnMainThread {
-                        completion(maybeCachedCustomerInfo, nil)
+                if !hasTransactions && hasOriginalPurchaseDate {
+                    if let completion = maybeCompletion {
+                        self.operationDispatcher.dispatchOnMainThread {
+                            completion(maybeCachedCustomerInfo, nil)
+                        }
                     }
+                    return
                 }
-                return
-            }
 
-            self.backend.post(receiptData: receiptData,
-                              appUserID: currentAppUserID,
-                              isRestore: isRestore,
-                              productInfo: nil,
-                              presentedOfferingIdentifier: nil,
-                              observerMode: !self.finishTransactions,
-                              subscriberAttributes: unsyncedAttributes) { maybeCustomerInfo, maybeError in
-                self.handleReceiptPost(withCustomerInfo: maybeCustomerInfo,
-                                       error: maybeError,
-                                       subscriberAttributes: unsyncedAttributes,
-                                       completion: maybeCompletion)
+                self.backend.post(receiptData: receiptData,
+                                  appUserID: currentAppUserID,
+                                  isRestore: isRestore,
+                                  productInfo: nil,
+                                  presentedOfferingIdentifier: nil,
+                                  observerMode: !self.finishTransactions,
+                                  subscriberAttributes: unsyncedAttributes) { maybeCustomerInfo, maybeError in
+                    self.handleReceiptPost(withCustomerInfo: maybeCustomerInfo,
+                                           error: maybeError,
+                                           subscriberAttributes: unsyncedAttributes,
+                                           completion: maybeCompletion)
+                }
             }
         }
     }
@@ -628,40 +630,21 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    // Although both SK1Product.productIdentifier and SKPayment.productIdentifier
-    // are supposed to be non-null, we've seen instances where this is not true.
-    // so we cast into optionals in order to check nullability, and try to fall back if possible.
-    func extractProductIdentifier(fromProduct product: SK1Product, orPayment payment: SKPayment) -> String? {
-        if let identifierFromProduct = product.productIdentifier as String?,
-           !identifierFromProduct.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return identifierFromProduct
-        }
-        Logger.appleWarning(Strings.purchase.product_identifier_nil)
-
-        if let identifierFromPayment = payment.productIdentifier as String?,
-           !identifierFromPayment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return identifierFromPayment
-        }
-        Logger.appleWarning(Strings.purchase.payment_identifier_nil)
-
-        return nil
-    }
-
     func preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: String) {
         deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
         deviceCache.setOfferingsCacheTimestampToNow()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(sk2Package: Package) async -> Result<(CustomerInfo, Bool), Error> {
-        guard let sk2StoreProduct = sk2Package.storeProduct as? SK2StoreProduct else {
-            // todo: use custom error
-            return .failure(ErrorUtils.unexpectedBackendResponseError())
-        }
-
+    private func purchase(sk2StoreProduct: SK2StoreProduct) async -> Result<(CustomerInfo, Bool), Error> {
         let sk2Product = sk2StoreProduct.underlyingSK2Product
+
         do {
-            let result = try await sk2Product.purchase()
+            let options: Set<Product.PurchaseOption> = [
+                .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
+            ]
+
+            let result = try await sk2Product.purchase(options: options)
             let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
 
             return await withCheckedContinuation { continuation in
@@ -683,15 +666,11 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
-        guard let sk1StoreProduct = sk1Package.storeProduct as? SK1StoreProduct else {
-            return
-        }
-        let sk1Product = sk1StoreProduct.underlyingSK1Product
+    func purchase(sk1Product: SK1Product, package: Package, completion: @escaping PurchaseCompletedBlock) {
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
         purchase(sk1Product: sk1Product,
                  payment: payment,
-                 presentedOfferingIdentifier: sk1Package.offeringIdentifier,
+                 presentedOfferingIdentifier: package.offeringIdentifier,
                  completion: completion)
     }
 

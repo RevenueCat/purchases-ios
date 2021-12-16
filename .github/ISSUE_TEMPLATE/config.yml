@@ -1,24 +1,24 @@
 blank_issues_enabled: false
 contact_links:
-  - name: RevenueCat System Status
+  - name: 🚥 RevenueCat system status
     url: https://status.revenuecat.com
     about: Check RevenueCat's API status
-  - name: Our online community
+  - name: 🙋 Our online community
     url: https://community.revenuecat.com
-    about: Please ask and answer questions here
-  - name: Account or billing support
+    about: Please ask and answer questions at https://community.revenuecat.com
+  - name: 🧾 Account or billing support
     url: https://app.revenuecat.com/settings/support
     about: Get help from our support team
-  - name: Feature Request
+  - name: ✨ Feature request
     url: https://app.revenuecat.com/settings/support
     about: Please use the Contact Us form instead of opening an issue. This is best channel that allows us to keep track of feature requests.
-  - name: Offerings, products, or available packages are empty
+  - name: ❓ Offerings, products, or available packages are empty
     url: https://community.revenuecat.com/search?q=why_are_offerings_empty&content_type[0]=discussion
     about: Why are my products, offerings, or available packages empty?
-  - name: Invalid Play Store credentials errors
+  - name: ❓ Invalid Play Store credentials errors
     url: https://community.revenuecat.com/search?q=invalid_play_store_credentials&content_type%5B0%5D=discussion
     about: How to solve Play Store credentials errors
-  - name: Unable to connect to the App Store (STORE_PROBLEM) errors
+  - name: ❓ Unable to connect to the App Store (STORE_PROBLEM) errors
     url: https://community.revenuecat.com/search?q=store%20problem&content_type%5B0%5D=discussion
     about: Why I get STORE_PROBLEM errors
     

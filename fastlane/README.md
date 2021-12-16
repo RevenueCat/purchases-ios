@@ -55,7 +55,7 @@ Release checks
 ```
 fastlane ios build_tv_watch_mac
 ```
-tvOS, watchOS, and macOS build
+build tvOS, watchOS, macOS
 ### ios build_mac
 ```
 fastlane ios build_mac

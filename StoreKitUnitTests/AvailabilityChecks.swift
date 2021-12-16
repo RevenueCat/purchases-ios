@@ -19,6 +19,12 @@ import XCTest
 // everything in those classes will still be called by XCTest, and it will cause errors.
 enum AvailabilityChecks {
 
+    static func iOS13APIAvailableOrSkipTest() throws {
+        guard #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+    }
+
     static func iOS15APIAvailableOrSkipTest() throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
             throw XCTSkip("Required API is not available for this test.")

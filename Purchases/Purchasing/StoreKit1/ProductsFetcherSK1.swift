@@ -90,7 +90,7 @@ class ProductsFetcherSK1: NSObject {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
         return try await withCheckedThrowingContinuation { continuation in
             products(withIdentifiers: identifiers) { result in
@@ -193,8 +193,8 @@ private extension ProductsFetcherSK1 {
 
     func cacheProducts(_ products: [SK1Product]) {
         queue.async {
-            let productsByIdentifier = products.reduce(into: [:]) { resultDict, product in
-                resultDict[product.productIdentifier] = product
+            let productsByIdentifier = products.dictionaryAllowingDuplicateKeys {
+                $0.productIdentifier
             }
 
             self.cachedProductsByIdentifier += productsByIdentifier
@@ -232,7 +232,7 @@ private extension ProductsFetcherSK1 {
             self.completionHandlers.removeValue(forKey: productRequest.identifiers)
             self.productsByRequests.removeValue(forKey: request)
             for completion in completionBlocks {
-                completion(.failure(ErrorCode.productRequestTimedOut))
+                completion(.failure(ErrorUtils.productRequestTimedOutError()))
             }
         }
     }

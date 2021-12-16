@@ -37,7 +37,6 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         "managementURL": NSNull()
     ]
 
-
     override func setUpWithError() throws {
         try super.setUpWithError()
         systemInfo = MockSystemInfo(finishTransactions: true)
@@ -47,20 +46,18 @@ class ManageSubscriptionsHelperTests: XCTestCase {
                                                       systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
         helper = ManageSubscriptionsHelper(systemInfo: systemInfo,
-                                                customerInfoManager: customerInfoManager,
-                                                identityManager: identityManager)
+                                           customerInfoManager: customerInfoManager,
+                                           identityManager: identityManager)
     }
 
     func testShowManageSubscriptionsMakesRightCalls() throws {
         guard #available(iOS 15.0, *) else { throw XCTSkip("Required API is not available for this test.") }
         // given
         var callbackCalled = false
-        // swiftlint:disable force_try
         customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
-        // swiftlint:disable force_try
 
         // when
-        helper.showManageSubscriptions { result in
+        helper.showManageSubscriptions { _ in
             callbackCalled = true
         }
 
@@ -73,7 +70,10 @@ class ManageSubscriptionsHelperTests: XCTestCase {
     }
 
     func testShowManageSubscriptionsInIOS() throws {
-#if os(iOS)
+        guard #available(iOS 10.0, *) else {
+            throw XCTSkip("Not supported")
+        }
+
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
@@ -88,24 +88,18 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         // then
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
-        if #available(iOS 15.0, *) {
-            // in tests in iOS 15, this method always fails, since the currentWindow scene can't be obtained.
-            expect(nonNilReceivedResult).to(beFailure { error in
-                expect(error).to(matchError(ErrorCode.storeProblemError))
-            })
-        } else {
-            expect(nonNilReceivedResult).to(beSuccess())
-        }
-
-#endif
+        expect(nonNilReceivedResult).to(beSuccess())
     }
 
     func testShowManageSubscriptionsSucceedsInMacOS() throws {
-#if os(macOS)
+        guard #available(macOS 11.0, *) else {
+            throw XCTSkip("Not supported")
+        }
+
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
-        customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
+        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
 
         // when
         helper.showManageSubscriptions { result in
@@ -117,7 +111,6 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beSuccess())
-#endif
     }
 
     func testShowManageSubscriptionsFailsIfCouldntGetCustomerInfo() throws {
@@ -137,7 +130,8 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         let expectedErrorMessage = "Failed to get managementURL from CustomerInfo. " +
         "Details: The operation couldn’t be completed"
-        let expectedError = ErrorUtils.customerInfoError(withMessage: expectedErrorMessage, error: customerInfoManager.stubbedError)
+        let expectedError = ErrorUtils.customerInfoError(withMessage: expectedErrorMessage,
+                                                         error: customerInfoManager.stubbedError)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
         })

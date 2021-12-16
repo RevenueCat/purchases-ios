@@ -15,42 +15,19 @@
 import Foundation
 import StoreKit
 
+// Fixme: remove and simply encode data in `StoreProduct`: https://github.com/RevenueCat/purchases-ios/issues/1045
 struct ProductInfo {
 
     let productIdentifier: String
-    let paymentMode: PaymentMode
+    let paymentMode: PromotionalOffer.PaymentMode
     let currencyCode: String?
     let price: NSDecimalNumber
     let normalDuration: String?
     let introDuration: String?
-    let introDurationType: IntroDurationType
+    let introDurationType: PromotionalOffer.IntroDurationType
     let introPrice: NSDecimalNumber?
     let subscriptionGroup: String?
     let discounts: [PromotionalOffer]?
-
-    enum PaymentMode: Int {
-
-        case none = -1
-        case payAsYouGo = 0
-        case payUpFront = 1
-        case freeTrial = 2
-
-    }
-
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    static func paymentMode(fromSKProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) ->
-        PaymentMode {
-        switch paymentMode {
-        case .payUpFront:
-            return .payUpFront
-        case .payAsYouGo:
-            return .payAsYouGo
-        case .freeTrial:
-            return .freeTrial
-        @unknown default:
-            return .none
-        }
-    }
 
     func asDictionary() -> [String: NSObject] {
         var dict: [String: NSObject] = [:]

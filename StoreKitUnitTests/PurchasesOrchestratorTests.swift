@@ -28,7 +28,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     var customerInfoManager: MockCustomerInfoManager!
     var backend: MockBackend!
     var identityManager: MockIdentityManager!
-    var receiptParser: MockReceiptParser!
+    var transactionsManager: MockTransactionsManager!
     var deviceCache: MockDeviceCache!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
@@ -49,7 +49,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                       backend: backend,
                                                       systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
-        receiptParser = MockReceiptParser()
+        transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser())
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                         systemInfo: systemInfo)
         subscriberAttributesManager = MockSubscriberAttributesManager(
@@ -90,7 +90,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              customerInfoManager: customerInfoManager,
                                              backend: backend,
                                              identityManager: identityManager,
-                                             receiptParser: receiptParser,
+                                             transactionsManager: transactionsManager,
                                              deviceCache: deviceCache,
                                              manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
@@ -178,10 +178,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSkipsIfPurchaseFailed() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        guard self.systemInfo.useStoreKit2IfAvailable else {
-            throw XCTSkip("StoreKit 2 tests are disabled.")
-        }
 
         testSession.failTransactionsEnabled = true
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo

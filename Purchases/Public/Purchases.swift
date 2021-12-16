@@ -12,7 +12,7 @@
 //  Created by Joshua Liebowitz on 8/18/21.
 //
 
-// swiftlint:disable file_length function_parameter_count type_body_length
+// swiftlint:disable file_length type_body_length
 import Foundation
 import StoreKit
 
@@ -126,7 +126,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Set this property to true *only* when testing the ask-to-buy / SCA purchases flow. More information:
-     * http://errors.rev.cat/ask-to-buy
+     * http://rev.cat/ask-to-buy
+     * - Seealso: https://support.apple.com/en-us/HT201089
      */
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     @objc public static var simulatesAskToBuyInSandbox: Bool {
@@ -213,7 +214,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     private let trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
-    private let receiptParser: ReceiptParser
     private let requestFetcher: StoreKitRequestFetcher
     private let storeKitWrapper: StoreKitWrapper
     private let subscriberAttributesManager: SubscriberAttributesManager
@@ -221,22 +221,14 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     fileprivate static let initLock = NSLock()
 
-    convenience init(apiKey: String, appUserID: String?) {
-        self.init(apiKey: apiKey,
-                  appUserID: appUserID,
-                  userDefaults: nil,
-                  observerMode: false,
-                  platformFlavor: nil,
-                  platformFlavorVersion: nil)
-    }
-
     // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
                      appUserID: String?,
-                     userDefaults: UserDefaults?,
-                     observerMode: Bool,
-                     platformFlavor: String?,
-                     platformFlavorVersion: String?) {
+                     userDefaults: UserDefaults? = nil,
+                     observerMode: Bool = false,
+                     platformFlavor: String? = nil,
+                     platformFlavorVersion: String? = nil,
+                     useStoreKit2IfAvailable: Bool = false) {
         let operationDispatcher = OperationDispatcher()
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
@@ -245,7 +237,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         do {
             systemInfo = try SystemInfo(platformFlavor: platformFlavor,
                                         platformFlavorVersion: platformFlavorVersion,
-                                        finishTransactions: !observerMode)
+                                        finishTransactions: !observerMode,
+                                        useStoreKit2IfAvailable: useStoreKit2IfAvailable)
         } catch {
             fatalError(error.localizedDescription)
         }
@@ -261,10 +254,11 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let userDefaults = userDefaults ?? UserDefaults.standard
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
         let receiptParser = ReceiptParser()
+        let transactionsManager = TransactionsManager(receiptParser: receiptParser)
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
-                                                        deviceCache: deviceCache,
-                                                        backend: backend,
-                                                        systemInfo: systemInfo)
+                                                      deviceCache: deviceCache,
+                                                      backend: backend,
+                                                      systemInfo: systemInfo)
         let identityManager = IdentityManager(deviceCache: deviceCache,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
@@ -305,7 +299,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           customerInfoManager: customerInfoManager,
                                                           backend: backend,
                                                           identityManager: identityManager,
-                                                          receiptParser: receiptParser,
+                                                          transactionsManager: transactionsManager,
                                                           deviceCache: deviceCache,
                                                           manageSubscriptionsHelper: manageSubsHelper,
                                                           beginRefundRequestHelper: beginRefundRequestHelper)
@@ -330,7 +324,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                   subscriberAttributesManager: subscriberAttributesManager,
                   operationDispatcher: operationDispatcher,
                   introEligibilityCalculator: introCalculator,
-                  receiptParser: receiptParser,
                   customerInfoManager: customerInfoManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
@@ -353,7 +346,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
          subscriberAttributesManager: SubscriberAttributesManager,
          operationDispatcher: OperationDispatcher,
          introEligibilityCalculator: IntroEligibilityCalculator,
-         receiptParser: ReceiptParser,
          customerInfoManager: CustomerInfoManager,
          productsManager: ProductsManager,
          offeringsManager: OfferingsManager,
@@ -362,6 +354,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     ) {
 
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
+        if systemInfo.useStoreKit2IfAvailable {
+            Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
+        }
         Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion), fileName: nil)
         Logger.user(Strings.configure.initial_app_user_id(appUserID: appUserID), fileName: nil)
 
@@ -379,7 +374,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         self.subscriberAttributesManager = subscriberAttributesManager
         self.operationDispatcher = operationDispatcher
         self.introEligibilityCalculator = introEligibilityCalculator
-        self.receiptParser = receiptParser
         self.customerInfoManager = customerInfoManager
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
@@ -680,7 +674,7 @@ public extension Purchases {
      * indicating whether the user was created for the first time in the RevenueCat backend.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await logInAsync(appUserID)
     }
@@ -712,7 +706,7 @@ public extension Purchases {
      * If this method is called and the current user is anonymous, it will return an error.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func logOut() async throws -> CustomerInfo {
         return try await logOutAsync()
     }
@@ -743,7 +737,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when offerings are available.
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func offerings() async throws -> Offerings {
         return try await offeringsAsync()
     }
@@ -769,7 +763,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when customer info is available and not stale.
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func customerInfo() async throws -> CustomerInfo {
         return try await customerInfoAsync()
     }
@@ -815,7 +809,7 @@ public extension Purchases {
      * - Parameter completion: An @escaping callback that is called with the loaded products.
      * If the fetch fails for any reason it will return an empty array.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func products(_ productIdentifiers: [String]) async -> [SKProduct] {
         return await productsAsync(productIdentifiers)
     }
@@ -866,7 +860,7 @@ public extension Purchases {
      *
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func purchase(product: SKProduct) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
@@ -912,7 +906,7 @@ public extension Purchases {
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func purchase(package: Package) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
@@ -968,7 +962,7 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func purchase(product: SKProduct, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
@@ -996,7 +990,7 @@ public extension Purchases {
     @objc(purchasePackage:withDiscount:completion:)
     func purchase(package: Package, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
         // todo: add support for SK2 with discounts, move to new class
-        // https://github.com/RevenueCat/purchases-ios/issues/848
+        // https://github.com/RevenueCat/purchases-ios/issues/1055
         guard let sk1StoreProduct = package.storeProduct as? SK1StoreProduct else {
             return
         }
@@ -1026,7 +1020,7 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func purchase(package: Package, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
@@ -1065,7 +1059,7 @@ public extension Purchases {
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
      * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func syncPurchases() async throws -> CustomerInfo {
         return try await syncPurchasesAsync()
     }
@@ -1100,7 +1094,7 @@ public extension Purchases {
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func restoreTransactions() async throws -> CustomerInfo {
         return try await restoreTransactionsAsync()
     }
@@ -1140,7 +1134,7 @@ public extension Purchases {
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
         return await checkTrialOrIntroductoryPriceEligibilityAsync(productIdentifiers)
     }
@@ -1196,7 +1190,7 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
      * If it was not successful, there will be an `Error`.
      */
-    @available(iOS 15.0, macOS 12, tvOS 15.0, watchOS 8.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func paymentDiscount(forProductDiscount discount: SKProductDiscount,
                          product: SKProduct) async throws -> SKPaymentDiscount {
         return try await paymentDiscountAsync(forProductDiscount: discount, product: product)
@@ -1228,7 +1222,7 @@ public extension Purchases {
      */
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @available(iOS 15.0, macOS 12, *)
+    @available(iOS 13.0, macOS 10.15, *)
     func showManageSubscriptions() async throws {
         return try await showManageSubscriptionsAsync()
     }
@@ -1424,7 +1418,7 @@ public extension Purchases {
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
      *
-     * - Parameter userDefaults: Custom userDefaults to use
+     * - Parameter userDefaults: Custom `UserDefaults` to use
      *
      * - Returns: An instantiated `Purchases` object that has been set as a singleton.
      */
@@ -1433,30 +1427,52 @@ public extension Purchases {
                                              appUserID: String?,
                                              observerMode: Bool,
                                              userDefaults: UserDefaults?) -> Purchases {
-        configure(apiKey: apiKey,
-                  appUserID: appUserID,
-                  observerMode: observerMode,
-                  userDefaults: userDefaults,
-                  platformFlavor: nil,
-                  platformFlavorVersion: nil)
+        configure(
+            withAPIKey: apiKey,
+            appUserID: appUserID,
+            observerMode: observerMode,
+            userDefaults: userDefaults,
+            useStoreKit2IfAvailable: false
+        )
     }
 
-    static internal func configure(apiKey: String,
-                                   appUserID: String?,
-                                   observerMode: Bool,
-                                   userDefaults: UserDefaults?,
-                                   platformFlavor: String?,
-                                   platformFlavorVersion: String?) -> Purchases {
+    /**
+     * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
+     * sync status across a shared container, such as between a host app and an extension. The instance of the
+     * Purchases SDK will be set as a singleton.
+     * You should access the singleton instance using ``Purchases.shared``
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want `Purchases`
+     * to generate this for you.
+     *
+     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is `false`.
+     *
+     * - Parameter userDefaults: Custom `UserDefaults` to use
+     *
+     * - Parameter useStoreKit2IfAvailable: opt in to using StoreKit 2 on devices that support it.
+     *
+     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
+     */
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                   appUserID: appUserID,
                                   userDefaults: userDefaults,
                                   observerMode: observerMode,
-                                  platformFlavor: platformFlavor,
-                                  platformFlavorVersion: platformFlavorVersion)
+                                  platformFlavor: nil,
+                                  platformFlavorVersion: nil,
+                                  useStoreKit2IfAvailable: useStoreKit2IfAvailable)
         setDefaultInstance(purchases)
         return purchases
     }
-
 }
 
 // MARK: Delegate implementation

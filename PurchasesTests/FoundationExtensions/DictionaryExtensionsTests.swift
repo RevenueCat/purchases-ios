@@ -98,4 +98,40 @@ class DictionaryExtensionsTests: XCTestCase {
         expect(original).to(equal(expectedDict))
     }
 
+
+    func testCreatingDictionaryWithNoValues() {
+        expect(Array<String>().dictionaryWithKeys { $0 }) == [:]
+    }
+
+    func testCreatingDictionaryAllowingDuplicateKeysWithNoValues() {
+        expect(Array<String>().dictionaryAllowingDuplicateKeys { $0 }) == [:]
+    }
+
+    func testCreatingDictionaryWithOneItem() {
+        let values = ["1"]
+
+        expect(values.dictionaryWithKeys { Int($0)! }) == [
+            1: "1"
+        ]
+    }
+
+    func testCreatingDictionaryWithMultipleValues() {
+        let values = ["1", "2", "3"]
+
+        expect(values.dictionaryWithKeys { Int($0)! + 1 }) == [
+            2: "1",
+            3: "2",
+            4: "3"
+        ]
+    }
+
+    func testCreatingDictionaryWithDuplicateKeys() {
+        let values = ["1", "2", "3", "2"]
+
+        expect(values.dictionaryAllowingDuplicateKeys { Int($0)! }) == [
+            1: "1",
+            2: "2",
+            3: "3"
+        ]
+    }
 }
