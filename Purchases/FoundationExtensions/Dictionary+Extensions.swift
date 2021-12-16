@@ -90,6 +90,7 @@ extension Dictionary {
 }
 
 extension Sequence {
+
     /// Creates a `Dictionary` with the values in the receiver sequence, and the keys provided by `key`.
     /// - Precondition: The sequence must not have duplicate keys.
     func dictionaryWithKeys<Key>(_ key: @escaping (Element) -> Key) -> [Key: Element] {
@@ -103,4 +104,5 @@ extension Sequence {
             uniquingKeysWith: { (_, last) in last }
         )
     }
+
 }
