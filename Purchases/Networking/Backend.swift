@@ -501,9 +501,11 @@ private extension Backend {
             completion(customerInfo, created, nil)
         } catch let customerInfoError {
             Logger.error(Strings.backendError.customer_info_instantiation_error(maybeResponse: response))
-            let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
-            let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginResponseDecoding
-            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: customerInfoError,
+            let extraContext = "statusCode: \(statusCode)"
+            let subErrorCode = UnexpectedBackendResponseSubErrorCode
+                .loginResponseDecoding
+                .addingUnderlyingError(customerInfoError)
+            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
                                                                      extraContext: extraContext)
             completion(nil, false, responseError)
         }
