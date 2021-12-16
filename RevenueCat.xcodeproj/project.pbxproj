@@ -214,6 +214,7 @@
 		5791CE80273F26A000E50C4B /* base64encoded_sandboxReceipt.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5791CE7F273F26A000E50C4B /* base64encoded_sandboxReceipt.txt */; };
 		57A0FBF02749C0C2009E2FC3 /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */; };
 		57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */; };
+		57BD50AA27692B7500211D6D /* StoreKitError+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
 		57EAE527274324C60060EB74 /* Lock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE526274324C60060EB74 /* Lock.swift */; };
 		57EAE52B274332830060EB74 /* Obsoletions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE52A274332830060EB74 /* Obsoletions.swift */; };
@@ -561,6 +562,7 @@
 		5791CE7F273F26A000E50C4B /* base64encoded_sandboxReceipt.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base64encoded_sandboxReceipt.txt; sourceTree = "<group>"; };
 		57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Atomic.swift; sourceTree = "<group>"; };
 		57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedUserDefaults.swift; sourceTree = "<group>"; };
+		57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreKitError+Extensions.swift"; sourceTree = "<group>"; };
 		57E2230627500BB1002DB06E /* AtomicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicTests.swift; sourceTree = "<group>"; };
 		57EAE526274324C60060EB74 /* Lock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lock.swift; sourceTree = "<group>"; };
 		57EAE52A274332830060EB74 /* Obsoletions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obsoletions.swift; sourceTree = "<group>"; };
@@ -1316,6 +1318,7 @@
 				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
 				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
 				2D971CC02744364C0093F35F /* SKError+Extensions.swift */,
+				57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */,
 				B302206B2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift */,
 			);
 			path = "Error Handling";
@@ -1808,6 +1811,7 @@
 				5791A1AA2767E42B00C972AA /* SKProduct+Extensions.swift in Sources */,
 				F5E4383826B8530700841CC8 /* SKPaymentTransaction+Extensions.swift in Sources */,
 				B3022072272B3DDC008F1A0D /* DescribableError.swift in Sources */,
+				57BD50AA27692B7500211D6D /* StoreKitError+Extensions.swift in Sources */,
 				F5C0196926E880800005D61E /* StoreKitStrings.swift in Sources */,
 				B302206C2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift in Sources */,
 				2D4E926526990AB1000E10B0 /* StoreKitWrapper.swift in Sources */,
