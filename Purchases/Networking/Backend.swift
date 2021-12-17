@@ -429,6 +429,21 @@ class Backend {
         }
     }
 
+    func parseCustomerInfo(fromMaybeResponse maybeResponse: [String: Any]?) throws -> CustomerInfo {
+        guard let customerJson = maybeResponse else {
+            throw UnexpectedBackendResponseSubErrorCode.customerInfoResponseMalformed
+        }
+
+        do {
+            return try CustomerInfo(data: customerJson)
+        } catch {
+            let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
+            let subError = parsingError.addingUnderlyingError(error,
+                                                              extraContext: customerJson.stringRepresentation)
+            throw subError
+        }
+    }
+
 }
 
 private extension Backend {
@@ -579,21 +594,6 @@ private extension Backend {
         }
 
         completion?(nil)
-    }
-
-    func parseCustomerInfo(fromMaybeResponse maybeResponse: [String: Any]?) throws -> CustomerInfo {
-        guard let customerJson = maybeResponse else {
-            throw UnexpectedBackendResponseSubErrorCode.customerInfoResponseMalformed
-        }
-
-        do {
-            return try CustomerInfo(data: customerJson)
-        } catch {
-            let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
-            let subError = parsingError.addingUnderlyingError(error,
-                                                              extraContext: customerJson.stringRepresentation)
-            throw subError
-        }
     }
 
     // swiftlint:disable:next function_body_length

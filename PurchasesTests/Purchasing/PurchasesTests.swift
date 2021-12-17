@@ -83,6 +83,36 @@ class PurchasesTests: XCTestCase {
         UserDefaults().removePersistentDomain(forName: "TestDefaults")
     }
 
+    func testCustomerParsingWithRealData() {
+        setupPurchases()
+        let jsonGoesHere = """
+{
+   \"request_date\":\"2021-12-11T19:28:10Z\",
+   \"request_date_ms\":1639250890283,
+   \"subscriber\":{
+      \"entitlements\":{
+      },
+      \"first_seen\":\"2021-12-11T20:28:11Z\",
+      \"last_seen\":\"2021-12-11T20:28:11Z\",
+      \"management_url\":null,
+      \"non_subscriptions\":{
+      },
+      \"original_app_user_id\":\"U12345678\",
+      \"original_application_version\":null,
+      \"original_purchase_date\":null,
+      \"other_purchases\":{
+
+      },
+      \"subscriptions\":{
+      }
+   }
+}
+"""
+
+        let customerInfo = self.purchases.parseCustomerInfo(fromJSONString: jsonGoesHere)
+        print("Start ***\n\(customerInfo)\n\n ***End")
+    }
+
     class MockBackend: Backend {
         var userID: String?
         var originalApplicationVersion: String?
