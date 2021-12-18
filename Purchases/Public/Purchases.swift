@@ -1247,7 +1247,15 @@ public extension Purchases {
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(forProduct productID: String,
                                   completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        purchasesOrchestrator.beginRefundRequest(forProduct: productID, completion: completion)
+        _ = Task<Void, Never> {
+            do {
+                let refundStatus = try await beginRefundRequest(forProduct: productID)
+                completion(refundStatus, nil)
+            }
+            catch {
+                completion(.error, error)
+            }
+        }
     }
 
     /**
@@ -1266,7 +1274,15 @@ public extension Purchases {
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(forEntitlement entitlementID: String,
                                   completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        purchasesOrchestrator.beginRefundRequest(forEntitlement: entitlementID, completion: completion)
+        _ = Task<Void, Never> {
+            do {
+                let refundStatus = try await beginRefundRequest(forEntitlement: entitlementID)
+                completion(refundStatus, nil)
+            }
+            catch {
+                completion(.error, error)
+            }
+        }
     }
 
     /**
@@ -1283,7 +1299,16 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequestForActiveEntitlement(completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        purchasesOrchestrator.beginRefundRequestForActiveEntitlement(completion: completion)
+        _ = Task<Void, Never> {
+            do {
+                let refundStatus = try await purchasesOrchestrator.beginRefundRequestForActiveEntitlement()
+                completion(refundStatus, nil)
+            }
+            catch {
+                completion(.error, error)
+            }
+        }
+
     }
 
     /**
@@ -1299,7 +1324,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
-        return try await beginRefundRequestAsync(forProduct: productID)
+        return try await purchasesOrchestrator.beginRefundRequest(forProduct: productID)
     }
 
     /**
@@ -1315,7 +1340,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
-        return try await beginRefundRequestAsync(forEntitlement: entitlementID)
+        return try await purchasesOrchestrator.beginRefundRequest(forEntitlement: entitlementID)
     }
 
     /**
@@ -1330,7 +1355,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
-        return try await beginRefundRequestForActiveEntitlementAsync()
+        return try await purchasesOrchestrator.beginRefundRequestForActiveEntitlement()
     }
 
 #endif

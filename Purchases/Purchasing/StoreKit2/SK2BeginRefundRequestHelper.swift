@@ -24,20 +24,19 @@ class SK2BeginRefundRequestHelper {
 
     /// Calls `initiateSK2RefundRequest` and maps the result for consumption by `BeginRefundRequestHelper`
     @MainActor
-    func initiateRefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
-    Result<RevenueCat.RefundRequestStatus, Error> {
+    func initiateRefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async throws -> RefundRequestStatus {
         let sk2Result = await initiateSK2RefundRequest(transactionID: transactionID, windowScene: windowScene)
-        return mapSk2Result(from: sk2Result)
+        return try mapSk2Result(from: sk2Result)
     }
 
     /* Checks with StoreKit2 that the given `productID` has an existing verified transaction, and maps the
      * result for consumption by `BeginRefundRequestHelper`.
      */
-    func verifyTransaction(productID: String) async -> Result<UInt64, Error> {
+    func verifyTransaction(productID: String) async throws -> UInt64 {
         let maybeResult = await StoreKit.Transaction.latest(for: productID)
         guard let nonNilResult = maybeResult else {
             let errorMessage = Strings.purchase.product_unpurchased_or_missing.description
-            return .failure(ErrorUtils.beginRefundRequestError(withMessage: errorMessage))
+            throw ErrorUtils.beginRefundRequestError(withMessage: errorMessage)
         }
 
         switch nonNilResult {
@@ -45,8 +44,8 @@ class SK2BeginRefundRequestHelper {
             let message = Strings.purchase.transaction_unverified(
                 productID: productID,
                 errorMessage: verificationError.localizedDescription).description
-            return .failure(ErrorUtils.beginRefundRequestError(withMessage: message))
-        case .verified(let transaction): return .success(transaction.id)
+            throw ErrorUtils.beginRefundRequestError(withMessage: message)
+        case .verified(let transaction): return transaction.id
         }
     }
 
@@ -97,17 +96,17 @@ private extension SK2BeginRefundRequestHelper {
      * - Returns The result expected by `BeginRefundRequestHelper`, converting from a StoreKit RefundRequestStatus
      * to our `RefundRequestStatus` type and adding more descriptive error messages where needed.
      */
-    func mapSk2Result(from sk2Result: Result<StoreKit.Transaction.RefundRequestStatus, Error>) ->
-        Result<RevenueCat.RefundRequestStatus, Error> {
+    func mapSk2Result(from sk2Result: Result<StoreKit.Transaction.RefundRequestStatus, Error>) throws ->
+        RevenueCat.RefundRequestStatus {
         switch sk2Result {
         case .success(let sk2Status):
             guard let rcStatus = RefundRequestStatus.from(sk2RefundRequestStatus: sk2Status) else {
-                return .failure(ErrorUtils.beginRefundRequestError(
-                    withMessage: Strings.purchase.unknown_refund_request_status.description))
+                throw ErrorUtils.beginRefundRequestError(
+                    withMessage: Strings.purchase.unknown_refund_request_status.description)
             }
-            return .success(rcStatus)
+            return rcStatus
         case .failure(let error):
-            return .failure(error)
+            throw error
         }
     }
 

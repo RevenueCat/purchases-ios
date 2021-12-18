@@ -290,46 +290,24 @@ class PurchasesOrchestrator {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(forProduct productID: String, completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        beginRefundRequestHelper.beginRefundRequest(forProduct: productID) { result in
-            switch result {
-            case .failure(let error):
-                completion(.error, error)
-            case .success(let status):
-                completion(status, nil)
-            }
-        }
+    func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
+        return try await beginRefundRequestHelper.beginRefundRequest(forProduct: productID)
     }
 
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequestForActiveEntitlement(completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        beginRefundRequestHelper.beginRefundRequestForActiveEntitlement { result in
-            switch result {
-            case .failure(let error):
-                completion(.error, error)
-            case .success(let status):
-                completion(status, nil)
-            }
-        }
+    func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
+        return try await beginRefundRequestHelper.beginRefundRequestForActiveEntitlement()
     }
 
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(forEntitlement entitlementID: String,
-                            completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        beginRefundRequestHelper.beginRefundRequest(forEntitlement: entitlementID) { result in
-            switch result {
-            case .failure(let error):
-                completion(.error, error)
-            case .success(let status):
-                completion(status, nil)
-            }
-        }
+    func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
+        return try await beginRefundRequestHelper.beginRefundRequest(forEntitlement: entitlementID)
     }
 
 #endif
