@@ -133,8 +133,14 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     let beginRefundRequestCompletion: (RefundRequestStatus, Error?) -> Void = { _, _ in }
-    purchases.beginRefundRequest(for: "asdf", completion: beginRefundRequestCompletion)
-    purchases.beginRefundRequest(for: "asdf") { _, _ in }
+    purchases.beginRefundRequest(forProduct: "asdf", completion: beginRefundRequestCompletion)
+    purchases.beginRefundRequest(forProduct: "asdf") { _, _ in }
+
+    purchases.beginRefundRequest(forEntitlement: "asdf", completion: beginRefundRequestCompletion)
+    purchases.beginRefundRequest(forEntitlement: "asdf") { _, _ in }
+
+    purchases.beginRefundRequestForActiveEntitlement(completion: beginRefundRequestCompletion)
+    purchases.beginRefundRequestForActiveEntitlement { _, _ in }
 #endif
 
 #if os(iOS)
@@ -161,7 +167,7 @@ private func checkIdentity(purchases: Purchases) {
 private func checkPurchasesSupportAPI(purchases: Purchases) {
     #if os(iOS)
     purchases.showManageSubscriptions { _ in }
-    purchases.beginRefundRequest(for: "") { _, _ in }
+    purchases.beginRefundRequest(forProduct: "") { _, _ in }
     #endif
 }
 
@@ -208,7 +214,9 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         #if os(iOS)
         try await purchases.showManageSubscriptions()
-        let _: RefundRequestStatus = try await purchases.beginRefundRequest(for: "")
+        let _: RefundRequestStatus = try await purchases.beginRefundRequest(forProduct: "")
+        let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
+        let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
         #endif
     } catch {}
 }

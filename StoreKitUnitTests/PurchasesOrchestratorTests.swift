@@ -58,8 +58,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
-                                                                       customerInfoManager: customerInfoManager,
-                                                                       identityManager: identityManager)
+                                                             customerInfoManager: customerInfoManager,
+                                                             identityManager: identityManager)
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                     customerInfoManager: customerInfoManager,
                                                                     identityManager: identityManager)

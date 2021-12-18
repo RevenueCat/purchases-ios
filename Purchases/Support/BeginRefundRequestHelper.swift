@@ -89,7 +89,7 @@ private extension BeginRefundRequestHelper {
 
         let transactionID = try await sk2Helper.verifyTransaction(productID: productID)
         return try await sk2Helper.initiateRefundRequest(transactionID: transactionID,
-                                                     windowScene: windowScene)
+                                                         windowScene: windowScene)
     }
 
     /*
@@ -102,7 +102,8 @@ private extension BeginRefundRequestHelper {
             customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
                 if let error = maybeError {
                     let message = Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description
-                    continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
+                    continuation.resume(
+                        throwing: ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
                 }
 
                 guard let customerInfo = maybeCustomerInfo else {

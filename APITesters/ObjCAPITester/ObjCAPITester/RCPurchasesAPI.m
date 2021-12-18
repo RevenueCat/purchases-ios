@@ -138,7 +138,9 @@ shouldPurchasePromoProduct:skp
                                                          BOOL cancelled)) {}];
 
 #if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV
-    [p beginRefundRequestFor:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+    [p beginRefundRequestForProductID:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+    [p beginRefundRequestForEntitlementID:@"" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+    [p beginRefundRequestForActiveEntitlementWithCompletion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
 #endif
 
 #if TARGET_OS_IPHONE && !TARGET_OS_TV
