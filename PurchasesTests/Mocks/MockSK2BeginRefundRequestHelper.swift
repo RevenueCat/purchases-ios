@@ -51,13 +51,13 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
         }
     }
 
-    override func verifyTransaction(productID: String) async -> Result<UInt64, Error> {
+    override func verifyTransaction(productID: String) async throws -> UInt64 {
         verifyTransactionCalled = true
         if transactionVerified {
-            return .success(UInt64())
+            return UInt64()
         } else {
             let message = "Test error"
-            return .failure(ErrorUtils.beginRefundRequestError(withMessage: message))
+            throw ErrorUtils.beginRefundRequestError(withMessage: message)
         }
     }
     

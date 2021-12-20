@@ -1245,7 +1245,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc(beginRefundRequestForProductID:completion:)
+    @objc(beginRefundRequestForProduct:completion:)
     func beginRefundRequest(forProduct productID: String,
                             completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         _ = Task<Void, Never> {
@@ -1272,9 +1272,9 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc(beginRefundRequestForEntitlementID:completion:)
+    @objc(beginRefundRequestForEntitlement:completion:)
     func beginRefundRequest(forEntitlement entitlementID: String,
-                                  completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+                            completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         _ = Task<Void, Never> {
             do {
                 let refundStatus = try await beginRefundRequest(forEntitlement: entitlementID)

@@ -138,7 +138,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    func testBeginRefundRequestFailsAndPassesErrorThroughIfPurchasesUnverified() throws {
+    func testBeginRefundRequestFailsAndPassesErrorThroughIfPurchasesUnverified() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
@@ -148,27 +148,19 @@ class BeginRefundRequestHelperTests: XCTestCase {
         sk2Helper.transactionVerified = false
         sk2Helper.maybeMockSK2Error = expectedError
 
+        do {
+            _ = try await helper.beginRefundRequest(forProduct: mockProductID)
+            XCTFail("beginRefundRequestForProduct should have thrown error")
+        } catch {
+            expect(self.sk2Helper.verifyTransactionCalled).to(beTrue())
+            // confirm we don't call refund request method if transaction not verified
+            expect(self.sk2Helper.refundRequestCalled).to(beFalse())
 
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
-
-        helper.beginRefundRequest(forProduct: mockProductID) { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
-        })
-        expect(self.sk2Helper.verifyTransactionCalled).to(beTrue())
-
-        // confirm we don't call refund request method if transaction not verified
-        expect(self.sk2Helper.refundRequestCalled).to(beFalse())
+        }
     }
 
-    func testBeginRefundRequestCallsStoreKitRefundRequestMethodForVerifiedTransaction() throws {
+    func testBeginRefundRequestCallsStoreKitRefundRequestMethodForVerifiedTransaction() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
@@ -176,48 +168,29 @@ class BeginRefundRequestHelperTests: XCTestCase {
         sk2Helper.maybeMockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
         sk2Helper.transactionVerified = true
 
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
-
-        helper.beginRefundRequest(forProduct: mockProductID) { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
+        let receivedStatus = try await helper.beginRefundRequest(forProduct: mockProductID)
         let expectedStatus = RefundRequestStatus.success
-        expect(nonNilReceivedResult).to(beSuccess { status in
-            expect(status) == expectedStatus
-        })
+
+        expect(receivedStatus) == expectedStatus
         expect(self.sk2Helper.verifyTransactionCalled).to(beTrue())
         expect(self.sk2Helper.refundRequestCalled).to(beTrue())
     }
 
-    func testBeginRefundReturnsSuccessOnStoreKitSuccess() throws {
+    func testBeginRefundReturnsSuccessOnStoreKitSuccess() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 
         sk2Helper.maybeMockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
 
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
 
-        helper.beginRefundRequest(forProduct: mockProductID) { result in
-            callbackCalled = true
-            receivedResult = result
-        }
+        let receivedStatus = try await helper.beginRefundRequest(forProduct: mockProductID)
 
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
         let expectedStatus = RefundRequestStatus.success
-        expect(nonNilReceivedResult).to(beSuccess { status in
-            expect(status) == expectedStatus
-        })
+        expect(receivedStatus) == expectedStatus
     }
 
-    func testBeginRefundReturnsFailureOnStoreKitRefundRequestFailure() throws {
+    func testBeginRefundReturnsFailureOnStoreKitRefundRequestFailure() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
@@ -225,129 +198,90 @@ class BeginRefundRequestHelperTests: XCTestCase {
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
         sk2Helper.maybeMockSK2Error = expectedError
 
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
 
-        helper.beginRefundRequest(forProduct: mockProductID) { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
+        do {
+            _ = try await helper.beginRefundRequest(forProduct: mockProductID)
+            XCTFail("beginRefundRequestForProduct should have thrown error")
+        } catch {
             expect(error).to(matchError(expectedError))
-        })
+        }
     }
 
-    func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() throws {
+    func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
-
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
 
         let customerInfoError = ErrorUtils.customerInfoError(withMessage: "")
         customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "", error: customerInfoError)
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description, error: customerInfoError)
 
-        helper.beginRefundRequest(forEntitlement: mockEntitlementID) { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
+        do {
+            _ = try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
+            XCTFail("beginRefundRequestForEntitlement should have thrown error")
+        } catch {
             expect(error).to(matchError(expectedError))
-        })
+        }
     }
 
-    func testBeginRefundForActiveEntitlementFailsOnCustomerInfoFetchFail() throws {
+    func testBeginRefundForActiveEntitlementFailsOnCustomerInfoFetchFail() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
-
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
 
         let customerInfoError = ErrorUtils.customerInfoError(withMessage: "")
         customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "", error: customerInfoError)
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description, error: customerInfoError)
 
-        helper.beginRefundRequestForActiveEntitlement { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
+        do {
+            _ = try await helper.beginRefundRequestForActiveEntitlement
+            XCTFail("beginRefundRequestForActiveEntitlement should have thrown error")
+        } catch {
             expect(error).to(matchError(expectedError))
-        })
-
+        }
     }
 
-    func testBeginRefundForEntitlementFailsIfCustomerInfoNil() throws {
+    func testBeginRefundForEntitlementFailsIfCustomerInfoNil() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
-
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
 
         customerInfoManager.stubbedCustomerInfo = nil
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(entitlementID: nil).description)
 
-        helper.beginRefundRequest(forEntitlement: mockEntitlementID) { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
+        do {
+            _ = try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
+            XCTFail("beginRefundRequestForEntitlement should have thrown error")
+        } catch {
             expect(error.localizedDescription) == expectedError.localizedDescription
             expect(error).to(matchError(expectedError))
-        })
+        }
     }
 
-    func testBeginRefundForActiveEntitlementFailsIfCustomerInfoNil() throws {
+    func testBeginRefundForActiveEntitlementFailsIfCustomerInfoNil() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
-
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
 
         customerInfoManager.stubbedCustomerInfo = nil
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(entitlementID: nil).description)
 
-        helper.beginRefundRequestForActiveEntitlement { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
+        do {
+            let _ = try await helper.beginRefundRequestForActiveEntitlement
+        } catch {
             expect(error).to(matchError(expectedError))
             expect(error.localizedDescription) == expectedError.localizedDescription
-        })
+        }
     }
 
-    func testBeginRefundForEntitlementFailsIfEntitlementNotInCustomerInfo() throws {
+    func testBeginRefundForEntitlementFailsIfEntitlementNotInCustomerInfo() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
-
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
 
         customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoResponseWithoutMockEntitlement)
 
@@ -355,26 +289,18 @@ class BeginRefundRequestHelperTests: XCTestCase {
             Strings.purchase.begin_refund_no_entitlement_found(entitlementID: mockEntitlementID).description
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: expectedMessage)
 
-        helper.beginRefundRequest(forEntitlement: mockEntitlementID) { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
+        do {
+            try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
+        } catch {
             expect(error).to(matchError(expectedError))
             expect(error.localizedDescription) == expectedError.localizedDescription
-        })
+        }
     }
 
-    func testBeginRefundForActiveEntitlementFailsIfNoActiveEntitlement() throws {
+    func testBeginRefundForActiveEntitlementFailsIfNoActiveEntitlement() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
-
-        var callbackCalled = false
-        var receivedResult: Result<RefundRequestStatus, Error>?
 
         customerInfoManager.stubbedCustomerInfo =
             try CustomerInfo(data: mockCustomerInfoResponseWithNoActiveEntitlement)
@@ -382,17 +308,13 @@ class BeginRefundRequestHelperTests: XCTestCase {
         let expectedMessage = Strings.purchase.begin_refund_no_active_entitlement.description
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: expectedMessage)
 
-        helper.beginRefundRequestForActiveEntitlement { result in
-            callbackCalled = true
-            receivedResult = result
-        }
-
-        expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<RefundRequestStatus, Error> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
+        do {
+            _ = try await helper.beginRefundRequestForActiveEntitlement
+            XCTFail("beginRefundRequestForActiveEntitlement should have thrown error")
+        } catch {
             expect(error).to(matchError(expectedError))
             expect(error.localizedDescription) == expectedError.localizedDescription
-        })
+        }
     }
 
 #endif
