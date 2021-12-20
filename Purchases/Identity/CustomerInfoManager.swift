@@ -13,15 +13,7 @@
 
 import Foundation
 
-protocol CustomerInfoManagerDelegate: AnyObject {
-
-    func customerInfoManagerDidReceiveUpdated(customerInfo: CustomerInfo)
-
-}
-
 class CustomerInfoManager {
-
-    weak var delegate: CustomerInfoManagerDelegate?
 
     private(set) var lastSentCustomerInfo: CustomerInfo?
     private let operationDispatcher: OperationDispatcher
@@ -174,9 +166,35 @@ class CustomerInfoManager {
         }
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    var customerInfoStream: AsyncStream<CustomerInfo> {
+        return AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
+            let disposable = self.monitorChanges { continuation.yield($0) }
+
+            continuation.onTermination = { @Sendable _ in disposable() }
+        }
+    }
+
+    private var customerInfoChanges: [Int: (CustomerInfo) -> Void] = [:]
+
+    /// Allows monitoring changes to the active `CustomerInfo`.
+    /// - Returns: closure that removes the created observation.
+    /// - Note: this method is not thread-safe.
+    func monitorChanges(_ changes: @escaping (CustomerInfo) -> Void) -> () -> Void {
+        let index = self.customerInfoChanges.keys
+            .sorted().last.map { $0 + 1 } // Next index
+            ?? 0 // Or default to 0
+
+        self.customerInfoChanges[index] = changes
+
+        return { [weak self] in
+            self?.customerInfoChanges.removeValue(forKey: index)
+        }
+    }
+
     private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
         customerInfoCacheLock.perform {
-            guard let delegate = self.delegate,
+            guard !self.customerInfoChanges.isEmpty,
                   lastSentCustomerInfo != customerInfo else {
                       return
                   }
@@ -189,7 +207,9 @@ class CustomerInfoManager {
 
             self.lastSentCustomerInfo = customerInfo
             operationDispatcher.dispatchOnMainThread {
-                delegate.customerInfoManagerDidReceiveUpdated(customerInfo: customerInfo)
+                for closure in self.customerInfoChanges.values {
+                    closure(customerInfo)
+                }
             }
         }
     }
