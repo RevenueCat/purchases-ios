@@ -17,6 +17,7 @@ import Nimble
 import StoreKit
 import XCTest
 
+// swiftlint:disable type_body_length
 class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     var productsManager: MockProductsManager!
@@ -340,3 +341,4 @@ private extension PurchasesOrchestratorTests {
     }
 
 }
+// swiftlint:enable type_body_length

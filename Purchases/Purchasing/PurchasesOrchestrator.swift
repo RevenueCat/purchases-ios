@@ -21,6 +21,7 @@ import StoreKit
 
 }
 
+// swiftlint:disable file_length type_body_length
 class PurchasesOrchestrator {
 
     var finishTransactions: Bool { systemInfo.finishTransactions }
@@ -192,7 +193,8 @@ class PurchasesOrchestrator {
     }
 
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
-        // todo: clean up, move to new class along with the private funcs below
+        // todo: clean up, move to new class along with the private funcs below, remove
+        // swiftlint disable for length warning
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            let storeProduct = package.storeProduct as? SK2StoreProduct {
             _ = Task<Void, Never> {
@@ -653,5 +655,4 @@ private extension PurchasesOrchestrator {
     }
 
 }
-
-// swiftlint:disable:this file_length
+// swiftlint:enable type_body_length file_length
