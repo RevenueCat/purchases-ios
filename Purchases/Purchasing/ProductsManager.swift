@@ -41,14 +41,17 @@ class ProductsManager: NSObject {
            self.systemInfo.useStoreKit2IfAvailable {
             _ = Task<Void, Never> {
                 do {
-                    let storeProduct = try await self.sk2StoreProduct(withIdentifiers: identifiers)
-                    completion(.success(storeProduct))
+                    let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
+                        .map(StoreProduct.from(product:))
+                    completion(.success(Set(products)))
                 } catch {
                     completion(.failure(error))
                 }
             }
         } else {
-            productsFetcherSK1.products(withIdentifiers: identifiers, completion: completion)
+            productsFetcherSK1.products(withIdentifiers: identifiers) { result in
+                completion(result.map { Set($0.map(StoreProduct.from(product:))) })
+            }
         }
     }
 
@@ -64,10 +67,10 @@ class ProductsManager: NSObject {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2StoreProduct(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        let storeProduct = try await productsFetcherSK2.products(identifiers: identifiers)
+    func sk2StoreProducts(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
+        let products = try await productsFetcherSK2.products(identifiers: identifiers)
 
-        return Set(storeProduct)
+        return Set(products)
     }
 
     func products(withIdentifiers identifiers: Set<String>,

@@ -81,17 +81,17 @@ class ProductsFetcherSK1: NSObject {
     }
 
     func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
+                  completion: @escaping (Result<Set<SK1StoreProduct>, Error>) -> Void) {
         self.sk1Products(withIdentifiers: identifiers) { skProducts in
             let result = skProducts
-                .map { Set<StoreProduct>($0.map { SK1StoreProduct(sk1Product: $0) }) }
+                .map { Set($0.map(SK1StoreProduct.init)) }
 
             completion(result)
         }
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-    func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
+    func products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK1StoreProduct> {
         return try await withCheckedThrowingContinuation { continuation in
             products(withIdentifiers: identifiers) { result in
                 continuation.resume(with: result)

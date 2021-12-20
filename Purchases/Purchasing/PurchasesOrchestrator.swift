@@ -194,9 +194,9 @@ class PurchasesOrchestrator {
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         // todo: clean up, move to new class along with the private funcs below
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           let storeProduct = package.storeProduct as? SK2StoreProduct {
+           let product = package.storeProduct.sk2Product {
             _ = Task<Void, Never> {
-                let result = await purchase(sk2StoreProduct: storeProduct)
+                let result = await purchase(sk2Product: product)
                 DispatchQueue.main.async {
                     switch result {
                     case .failure(let error):
@@ -212,10 +212,10 @@ class PurchasesOrchestrator {
                 }
             }
         } else {
-            guard let product = package.storeProduct as? SK1StoreProduct else {
+            guard let product = package.storeProduct.sk1Product else {
                 fatalError("could not identify StoreKit version to use! StoreProduct: \(package.storeProduct)")
             }
-            purchase(sk1Product: product.underlyingSK1Product, package: package, completion: completion)
+            purchase(sk1Product: product, package: package, completion: completion)
         }
     }
 
@@ -605,9 +605,7 @@ private extension PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func purchase(sk2StoreProduct: SK2StoreProduct) async -> Result<(CustomerInfo, Bool), Error> {
-        let sk2Product = sk2StoreProduct.underlyingSK2Product
-
+    private func purchase(sk2Product: SK2Product) async -> Result<(CustomerInfo, Bool), Error> {
         do {
             let options: Set<Product.PurchaseOption> = [
                 .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)

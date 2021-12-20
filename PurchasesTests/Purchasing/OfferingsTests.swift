@@ -22,33 +22,34 @@ class OfferingsTests: XCTestCase {
             "identifier": "$rc_monthly",
             "platform_product_identifier": "com.myproduct.monthly"
         ], storeProductsByID: [
-            "com.myproduct.annual": SK1StoreProduct(sk1Product: SK1Product())
+            "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
         ], offeringIdentifier: "offering")
 
         expect(package).to(beNil())
     }
 
-    func testPackageIsCreatedIfValidProducts() {
+    func testPackageIsCreatedIfValidProducts() throws {
         let productIdentifier = "com.myproduct.monthly"
         let product = MockSK1Product(mockProductIdentifier: productIdentifier)
         let packageIdentifier = "$rc_monthly"
-        let package = offeringsFactory.createPackage(with: [
-            "identifier": packageIdentifier,
-            "platform_product_identifier": productIdentifier
-        ], storeProductsByID: [
-            productIdentifier: SK1StoreProduct(sk1Product: product)
-        ], offeringIdentifier: "offering")
+        let package = try XCTUnwrap(
+            offeringsFactory.createPackage(with: [
+                "identifier": packageIdentifier,
+                "platform_product_identifier": productIdentifier
+            ], storeProductsByID: [
+                productIdentifier: StoreProduct(sk1Product: product)
+            ], offeringIdentifier: "offering")
+        )
 
-        expect(package).toNot(beNil())
-        expect(package?.storeProduct).to(beAnInstanceOf(SK1StoreProduct.self))
-        let sk1StoreProduct = package!.storeProduct as! SK1StoreProduct
+        expect(package.storeProduct.product).to(beAnInstanceOf(SK1StoreProduct.self))
+        let sk1StoreProduct = package.storeProduct.product as! SK1StoreProduct
         expect(sk1StoreProduct.underlyingSK1Product).to(equal(product))
-        expect(package?.identifier).to(equal(packageIdentifier))
-        expect(package?.packageType).to(equal(PackageType.monthly))
+        expect(package.identifier).to(equal(packageIdentifier))
+        expect(package.packageType).to(equal(PackageType.monthly))
     }
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
-        let products = ["com.myproduct.bad": SK1StoreProduct(sk1Product: SK1Product())]
+        let products = ["com.myproduct.bad": StoreProduct(sk1Product: SK1Product())]
         let offering = offeringsFactory.createOffering(from: products, offeringData: [
             "identifier": "offering_a",
             "description": "This is the base offering",
@@ -65,8 +66,8 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingIsCreatedIfValidPackages() {
         let products = [
-            "com.myproduct.annual": SK1StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": SK1StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.monthly": StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
@@ -119,8 +120,8 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingsIsCreated() throws {
         let products = [
-            "com.myproduct.annual": SK1StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": SK1StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.monthly": StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
         ]
         let maybeOfferings = offeringsFactory.createOfferings(from: products, data: [
             "offerings": [
@@ -198,8 +199,9 @@ class OfferingsTests: XCTestCase {
 
     func testCurrentOfferingWithBrokenProductReturnsNilForCurrentOfferingButContainsOtherOfferings() throws {
         let storeProductsByID = [
-            "com.myproduct.annual": SK1StoreProduct(sk1Product:
-                                                        MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.annual": StoreProduct(
+                sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
+            ),
         ]
 
         let data: [String : Any] = [
@@ -239,7 +241,7 @@ class OfferingsTests: XCTestCase {
         }
         let productIdentifier = "com.myproduct"
         let products = [
-            productIdentifier: SK1StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
+            productIdentifier: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
         ]
         let maybeOfferings = offeringsFactory.createOfferings(from: products, data: [
             "offerings": [

@@ -44,7 +44,7 @@ class PartialMockProductsManager: ProductsManager {
                 }
                 return sk1Product
             }
-            let result = Set(products).map { SK1StoreProduct(sk1Product: $0) }
+            let result = Set(products).map { StoreProduct(sk1Product: $0) }
 
             completion(.success(Set(result)))
         }

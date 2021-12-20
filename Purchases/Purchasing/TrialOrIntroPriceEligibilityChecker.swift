@@ -76,7 +76,7 @@ class TrialOrIntroPriceEligibilityChecker {
         }
 
         // fixme: handle errors
-        let products = (try? await productsManager.sk2StoreProduct(withIdentifiers: identifiers)) ?? []
+        let products = (try? await productsManager.sk2StoreProducts(withIdentifiers: identifiers)) ?? []
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
             let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer
