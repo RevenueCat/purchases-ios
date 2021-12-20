@@ -284,7 +284,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let expectedStatus = RefundRequestStatus.userCancelled
         mockBeginRefundRequestHelper.maybeMockRefundRequestStatus = expectedStatus
 
-        let receivedStatus = try await orchestrator.beginRefundRequestForActiveEntitlement
+        let receivedStatus = try await orchestrator.beginRefundRequestForActiveEntitlement()
         expect(receivedStatus) == expectedStatus
     }
 
@@ -292,12 +292,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    func testBeginRefundForActiveEntitlementCompletesWithErrorIfThereIsAFailure() {
+    func testBeginRefundForActiveEntitlementCompletesWithErrorIfThereIsAFailure() async {
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
         mockBeginRefundRequestHelper.maybeMockError = expectedError
 
         do {
-            _ = orchestrator.beginRefundRequestForActiveEntitlement
+            _ = try await orchestrator.beginRefundRequestForActiveEntitlement()
         } catch {
             expect(error).toNot(beNil())
             expect(error).to(matchError(expectedError))

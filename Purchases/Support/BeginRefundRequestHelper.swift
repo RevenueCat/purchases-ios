@@ -104,6 +104,7 @@ private extension BeginRefundRequestHelper {
                     let message = Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description
                     continuation.resume(
                         throwing: ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
+                    return
                 }
 
                 guard let customerInfo = maybeCustomerInfo else {
