@@ -44,7 +44,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
         expect(receivedProducts.count) == 1
 
-        let firstProduct = try XCTUnwrap(receivedProducts.first)
+        let firstProduct = try XCTUnwrap(receivedProducts.first).product
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *),
             systemInfo.useStoreKit2IfAvailable {
@@ -82,7 +82,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
 
-        expect(firstProduct).to(beAnInstanceOf(SK2StoreProduct.self))
+        expect(firstProduct.product).to(beAnInstanceOf(SK2StoreProduct.self))
     }
 
     func testFetchProductsFromOptimalStoreKitVersionPrefersSK1ByDefault() throws {
@@ -111,8 +111,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
 
-        expect(firstProduct as? SK1StoreProduct).toNot(beNil())
-        expect(firstProduct).to(beAnInstanceOf(SK1StoreProduct.self))
+        expect(firstProduct.product).to(beAnInstanceOf(SK1StoreProduct.self))
     }
 
 }

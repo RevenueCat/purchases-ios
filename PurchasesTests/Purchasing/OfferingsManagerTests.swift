@@ -243,14 +243,14 @@ extension OfferingsManagerTests {
 
     func testGetMissingProductIDs() {
         let productIDs: Set<String> = ["a", "b", "c"]
-        let skProducts = ["a" : SKProduct(), "b" : SKProduct()]
+        let productsFromStore: Set<String> = ["a", "b"]
 
-        expect(self.offeringsManager.getMissingProductIDs(productsFromStore: [:],
-                                                          productIDsFromBackend: productIDs)).to(equal(productIDs))
-        expect(self.offeringsManager.getMissingProductIDs(productsFromStore: skProducts,
-                                                          productIDsFromBackend: [])).to(equal([]))
-        expect(self.offeringsManager.getMissingProductIDs(productsFromStore: skProducts,
-                                                          productIDsFromBackend:productIDs)).to(equal(["c"]))
+        expect(self.offeringsManager.getMissingProductIDs(productIDsFromStore: [],
+                                                          productIDsFromBackend: productIDs)) == productIDs
+        expect(self.offeringsManager.getMissingProductIDs(productIDsFromStore: productsFromStore,
+                                                          productIDsFromBackend: [])) == []
+        expect(self.offeringsManager.getMissingProductIDs(productIDsFromStore: productsFromStore,
+                                                          productIDsFromBackend:productIDs)) == ["c"]
     }
 
 }

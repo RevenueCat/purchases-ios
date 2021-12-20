@@ -85,10 +85,10 @@ private extension PackageType {
         return self.storeProduct.localizedIntroductoryPriceString
     }
 
-    init(identifier: String, packageType: PackageType, storeProduct: StoreProduct, offeringIdentifier: String) {
+    init(identifier: String, packageType: PackageType, storeProduct: StoreProductType, offeringIdentifier: String) {
         self.identifier = identifier
         self.packageType = packageType
-        self.storeProduct = storeProduct
+        self.storeProduct = StoreProduct.from(product: storeProduct)
         self.offeringIdentifier = offeringIdentifier
     }
 

@@ -34,7 +34,7 @@ class MockProductsManager: ProductsManager {
                 }
                 return p
             }
-            let result = Set(products).map { SK1StoreProduct(sk1Product: $0) }
+            let result = Set(products).map { StoreProduct(sk1Product: $0) }
 
             completion(.success(Set(result)))
         }
@@ -61,7 +61,7 @@ class MockProductsManager: ProductsManager {
     var invokedSk2StoreProductParametersList = [(identifiers: Set<String>, Void)]()
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2StoreProduct(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct> {
+    override func sk2StoreProducts(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct> {
         invokedSk2StoreProduct = true
         invokedSk2StoreProductCount += 1
         invokedSk2StoreProductParameters = (identifiers, ())
