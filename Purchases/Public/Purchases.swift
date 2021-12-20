@@ -1235,7 +1235,7 @@ public extension Purchases {
      * Presents a refund request sheet in the current window scene for
      * the latest transaction associated with the productID
      *
-     * - Parameter forProduct: The productID to begin a refund request for.
+     * - Parameter productID: The productID to begin a refund request for.
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If the request was successful, there will be a `RefundRequestStatus`.
      * Keep in mind the status could be `userCancelled`
@@ -1262,7 +1262,7 @@ public extension Purchases {
      * Presents a refund request sheet in the current window scene for
      * the latest transaction associated with the entitlement ID
      *
-     * - Parameter forEntitlement: The entitlementID to begin a refund request for.
+     * - Parameter entitlementID: The entitlementID to begin a refund request for.
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If the request was successful, there will be a `RefundRequestStatus`.
      * Keep in mind the status could be `userCancelled`
