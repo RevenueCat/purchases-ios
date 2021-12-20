@@ -83,13 +83,13 @@ class OfferingsManager {
         }
     }
 
-    func getMissingProductIDs(productsFromStore: [String: SKProduct],
+    func getMissingProductIDs(productIDsFromStore: Set<String>,
                               productIDsFromBackend: Set<String>) -> Set<String> {
         guard !productIDsFromBackend.isEmpty else {
             return []
         }
 
-        return productIDsFromBackend.subtracting(productsFromStore.keys)
+        return productIDsFromBackend.subtracting(productIDsFromStore)
     }
 
 }
@@ -117,9 +117,16 @@ private extension OfferingsManager {
 
             let productsByID = products.dictionaryWithKeys { $0.productIdentifier }
 
+            let missingProductIDs = self.getMissingProductIDs(productIDsFromStore: Set(productsByID.keys),
+                                                              productIDsFromBackend: productIdentifiers)
+            if !missingProductIDs.isEmpty {
+                Logger.appleWarning(
+                    Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs)
+                )
+            }
+
             if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
                                                                             data: data) {
-                self.logMissingProductsIfAppropriate(products: productsByID, offeringsData: data)
                 self.deviceCache.cache(offerings: createdOfferings)
                 self.dispatchCompletionOnMainThreadIfPossible(completion,
                                                               offerings: createdOfferings,
@@ -149,20 +156,6 @@ private extension OfferingsManager {
             .compactMap { $0["platform_product_identifier"] as? String }
 
         return Set(productIdenfitiersArray)
-    }
-
-    func logMissingProductsIfAppropriate(products: [String: StoreProduct], offeringsData: [String: Any]) {
-        guard !products.isEmpty,
-              !offeringsData.isEmpty else {
-                  return
-              }
-
-        let productIdentifiers = extractProductIdentifiers(fromOfferingsData: offeringsData)
-        let missingProducts = Set(products.keys).intersection(productIdentifiers)
-
-        if !missingProducts.isEmpty {
-            Logger.appleWarning(Strings.offering.cannot_find_product_configuration_error(identifiers: missingProducts))
-        }
     }
 
     func dispatchCompletionOnMainThreadIfPossible(_ completion: ((Offerings?, Error?) -> Void)?,
