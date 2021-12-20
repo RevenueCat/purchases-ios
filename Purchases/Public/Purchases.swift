@@ -1239,15 +1239,14 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If the request was successful, there will be a `RefundRequestStatus`.
      * Keep in mind the status could be `userCancelled`
-     * If the request was unsuccessful, there will be an `Error`.
+     * If the request was unsuccessful, there will be an `Error` and `RefundRequestStatus.error`.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc(beginRefundRequestForProduct:completion:)
-    func beginRefundRequest(forProduct productID: String,
-                            completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+    @objc func beginRefundRequest(forProduct productID: String,
+                                  completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         _ = Task<Void, Never> {
             do {
                 let refundStatus = try await beginRefundRequest(forProduct: productID)
@@ -1266,15 +1265,13 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If the request was successful, there will be a `RefundRequestStatus`.
      * Keep in mind the status could be `userCancelled`
-     * If the request was unsuccessful or entitlement could not be found, there will be an `Error`.
+     * If the request was unsuccessful or entitlement could not be found, there will be an `Error` and `RefundRequestStatus.error`.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc(beginRefundRequestForEntitlement:completion:)
-    func beginRefundRequest(forEntitlement entitlementID: String,
-                            completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+    @objc func beginRefundRequest(forEntitlement entitlementID: String,completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         _ = Task<Void, Never> {
             do {
                 let refundStatus = try await beginRefundRequest(forEntitlement: entitlementID)
@@ -1292,7 +1289,7 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If the request was successful, there will be a `RefundRequestStatus`.
      * Keep in mind the status could be `userCancelled`
-     * If the request was unsuccessful or there is no active entitlement, there will be an `Error`.
+     * If the request was unsuccessful or there is no active entitlement, there will be an `Error` and `RefundRequestStatus.error`.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)

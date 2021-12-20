@@ -39,15 +39,22 @@ class BeginRefundRequestHelper {
 
 #if os(iOS)
     /*
-     * Entry point for beginning the refund request. fatalErrors if beginning a refund request is not supported
-     * on the current platform, else passes the request on to `beginRefundRequest(productID:)`.
+     * Entry point for beginning the refund request. Handles getting the current windowScene and verifying the
+     * transaction before calling into `SK2BeginRefundRequestHelper`'s `initiateRefundRequest`.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @MainActor
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
-        return try await self.beginRefundRequest(productID: productID)
+        guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
+            throw ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene")
+        }
+
+        let transactionID = try await sk2Helper.verifyTransaction(productID: productID)
+        return try await sk2Helper.initiateRefundRequest(transactionID: transactionID,
+                                                         windowScene: windowScene)
     }
 
     @available(iOS 15.0, *)
@@ -76,21 +83,6 @@ class BeginRefundRequestHelper {
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension BeginRefundRequestHelper {
-
-    /*
-     * Main worker function for beginning a refund request. Handles getting the current windowScene and verifying the
-     * transaction before calling into `SK2BeginRefundRequestHelper`'s `initiateRefundRequest`.
-     */
-    @MainActor
-    func beginRefundRequest(productID: String) async throws -> RefundRequestStatus {
-        guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
-            throw ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene")
-        }
-
-        let transactionID = try await sk2Helper.verifyTransaction(productID: productID)
-        return try await sk2Helper.initiateRefundRequest(transactionID: transactionID,
-                                                         windowScene: windowScene)
-    }
 
     /*
      * Gets entitlement with the given `entitlementID` from customerInfo, or the active entitlement

@@ -137,7 +137,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         #endif
     }
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS)
     func testBeginRefundRequestFailsAndPassesErrorThroughIfPurchasesUnverified() async throws {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
@@ -316,7 +316,6 @@ class BeginRefundRequestHelperTests: XCTestCase {
             expect(error.localizedDescription) == expectedError.localizedDescription
         }
     }
-
 #endif
 
 }
