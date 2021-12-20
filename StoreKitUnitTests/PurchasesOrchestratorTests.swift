@@ -77,8 +77,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     fileprivate func setUpSystemInfo() throws {
         systemInfo = try MockSystemInfo(platformFlavor: "xyz",
                                         platformFlavorVersion: "1.2.3",
-                                        finishTransactions: true,
-                                        useStoreKit2IfAvailable: true)
+                                        finishTransactions: true)
     }
 
     fileprivate func setUpOrchestrator() {
