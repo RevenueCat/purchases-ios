@@ -19,26 +19,31 @@ import XCTest
 
 class DNSCheckerTests: XCTestCase {
 
-    func testResolvedHost() {
-        let host = DNSChecker.resolvedHost(fromURL: URL(string: "https://api.revenuecat.com")!)
-        let validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    let apiURL = URL(string: "https://api.revenuecat.com")!
+    let fakeSubscribersURL1 = URL(string: "https://0.0.0.0/subscribers")!
+    let fakeSubscribersURL2 = URL(string: "https://127.0.0.1/subscribers")!
+    let fakeOffersURL = URL(string: "https://0.0.0.0/offers")!
 
-        expect(host!.range(of: validIpAddressRegex, options: .regularExpression)).toNot(beNil())
+    func testResolvedHost() {
+        let host = DNSChecker.resolvedHost(fromURL: apiURL)
+        let validIPAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+
+        expect(host!.range(of: validIPAddressRegex, options: .regularExpression)).toNot(beNil())
         expect(DNSChecker.invalidHosts.contains(host!)).to(equal(false))
     }
 
-    func testIsBlockedURL() {
+    func testIsBlockedURL() throws {
         let blockedURLs = ["https://127.0.0.1/subscribers", "https://0.0.0.0/offers"];
 
         for urlString in blockedURLs {
-            expect(DNSChecker.isBlockedURL(URL(string: urlString)!)) == true
+            expect(DNSChecker.isBlockedURL(try XCTUnwrap(URL(string: urlString)))) == true
         }
 
-        expect(DNSChecker.isBlockedURL(URL(string: "https://api.revenuecat.com/offers")!)) == false
+        expect(DNSChecker.isBlockedURL(try XCTUnwrap(URL(string: "https://api.revenuecat.com/offers")))) == false
     }
 
     func testIsBlockedHostFromError() {
-        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL2]
         let nsErrorWithUserInfo = NSError(domain: "Testing",
                                           code: -1,
                                           userInfo: userInfo as [String: Any])
@@ -47,7 +52,7 @@ class DNSCheckerTests: XCTestCase {
     }
 
     func testIsBlockedLocalHostIPAPIError() {
-        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL1]
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
@@ -55,7 +60,7 @@ class DNSCheckerTests: XCTestCase {
     }
 
     func testWrongErrorCode() {
-        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL2]
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: -1,
                                           userInfo: userInfo as [String: Any])
@@ -63,7 +68,7 @@ class DNSCheckerTests: XCTestCase {
     }
 
     func testWrongErrorDomain() {
-        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL2]
         let nsErrorWithUserInfo = NSError(domain: "FakeDomain",
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
@@ -71,7 +76,7 @@ class DNSCheckerTests: XCTestCase {
     }
 
     func testWrongErrorDomainAndWrongErrorCode() {
-        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL2]
         let nsErrorWithUserInfo = NSError(domain: "FakeDomain",
                                           code: -1,
                                           userInfo: userInfo as [String: Any])
@@ -79,7 +84,7 @@ class DNSCheckerTests: XCTestCase {
     }
 
     func testIsOnlyValidForCorrectErrorDomainAnd() {
-        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL2]
         let nsErrorWithUserInfo = NSError(domain: "FakeDomain",
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
@@ -87,7 +92,7 @@ class DNSCheckerTests: XCTestCase {
     }
 
     func testIsBlockedZerosIPHostAPIError() {
-        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://0.0.0.0/subscribers")!]
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL1]
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
