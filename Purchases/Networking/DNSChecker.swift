@@ -23,6 +23,10 @@ enum DNSChecker {
         }
 
         let nsError = error as NSError
+        guard nsError.domain == NSURLErrorDomain,
+              nsError.code == NSURLErrorCannotConnectToHost else {
+            return false
+        }
 
         guard let failedURL = nsError.userInfo[NSURLErrorFailingURLErrorKey] as? URL else {
             return false
@@ -60,7 +64,7 @@ enum DNSChecker {
             return nil
         }
 
-        let hostIP = String.init(cString: remoteIPAsC)
+        let hostIP = String(cString: remoteIPAsC)
         return hostIP
     }
 

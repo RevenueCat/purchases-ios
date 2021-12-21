@@ -48,16 +48,48 @@ class DNSCheckerTests: XCTestCase {
 
     func testIsBlockedLocalHostIPAPIError() {
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
-        let nsErrorWithUserInfo = NSError(domain: "Testing",
-                                          code: -1,
+        let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
+                                          code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == true
     }
 
+    func testWrongErrorCode() {
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
+                                          code: -1,
+                                          userInfo: userInfo as [String: Any])
+        expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
+    }
+
+    func testWrongErrorDomain() {
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let nsErrorWithUserInfo = NSError(domain: "FakeDomain",
+                                          code: NSURLErrorCannotConnectToHost,
+                                          userInfo: userInfo as [String: Any])
+        expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
+    }
+
+    func testWrongErrorDomainAndWrongErrorCode() {
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let nsErrorWithUserInfo = NSError(domain: "FakeDomain",
+                                          code: -1,
+                                          userInfo: userInfo as [String: Any])
+        expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
+    }
+
+    func testIsOnlyValidForCorrectErrorDomainAnd() {
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://127.0.0.1/subscribers")!]
+        let nsErrorWithUserInfo = NSError(domain: "FakeDomain",
+                                          code: NSURLErrorCannotConnectToHost,
+                                          userInfo: userInfo as [String: Any])
+        expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
+    }
+
     func testIsBlockedZerosIPHostAPIError() {
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: URL(string: "https://0.0.0.0/subscribers")!]
-        let nsErrorWithUserInfo = NSError(domain: "Testing",
-                                          code: -1,
+        let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
+                                          code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == true
     }
