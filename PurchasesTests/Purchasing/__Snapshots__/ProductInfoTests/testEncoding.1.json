@@ -6,33 +6,21 @@
     {
       "offer_identifier" : "offerid1",
       "payment_mode" : 0,
-      "price" : 11,
-      "subscription_period" : {
-        "unit" : 2,
-        "value" : 1
-      }
+      "price" : 11
     },
     {
       "offer_identifier" : "offerid2",
       "payment_mode" : 1,
-      "price" : 12,
-      "subscription_period" : {
-        "unit" : 3,
-        "value" : 2
-      }
+      "price" : 12
     },
     {
       "offer_identifier" : "offerid3",
       "payment_mode" : 2,
-      "price" : 13,
-      "subscription_period" : {
-        "unit" : 0,
-        "value" : 3
-      }
+      "price" : 13
     }
   ],
   "payment_mode" : 1,
-  "price" : 49.990000000000002,
+  "price" : 49.99,
   "product_id" : "cool_product",
   "subscription_group_id" : "cool_group",
   "trial_duration" : "P3W"
