@@ -14,7 +14,8 @@
 import Foundation
 import StoreKit
 
-@objc public class SubscriptionPeriod: NSObject {
+@objc(RCSubscriptionPeriod)
+public class SubscriptionPeriod: NSObject {
 
     public let value: Int
     public let unit: Unit
