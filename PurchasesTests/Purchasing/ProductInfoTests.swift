@@ -187,6 +187,7 @@ class ProductInfoTests: XCTestCase {
     }
 }
 
+// Remove once https://github.com/pointfreeco/swift-snapshot-testing/pull/552 is available in a release.
 extension Snapshotting where Value == Any, Format == String {
     static var json: Snapshotting {
         let options: JSONSerialization.WritingOptions = [
