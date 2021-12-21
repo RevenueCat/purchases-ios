@@ -370,7 +370,7 @@ class BackendTests: XCTestCase {
 
         let productIdentifier = "a_great_product"
         let offeringIdentifier = "a_offering"
-        let price = 4.99 as NSDecimalNumber
+        let price: Decimal = 4.99
         let group = "sub_group"
 
         let currencyCode = "BFD"
@@ -420,7 +420,7 @@ class BackendTests: XCTestCase {
 
             expect(call.path).to(equal(expectedCall.path))
             expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
-            XCTAssert(call.body!.keys == expectedCall.body!.keys)
+            expect(call.body!.keys) == expectedCall.body!.keys
 
             expect(call.headers["Authorization"]).toNot(beNil())
             expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
@@ -1238,7 +1238,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
         
         let productIdentifier = "a_great_product"
-        let price = 4.99 as NSDecimalNumber
+        let price: Decimal = 4.99
         let group = "sub_group"
         let currencyCode = "BFD"
         let paymentMode: PromotionalOffer.PaymentMode = .none

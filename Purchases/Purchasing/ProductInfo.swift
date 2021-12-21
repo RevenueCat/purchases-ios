@@ -21,43 +21,13 @@ struct ProductInfo {
     let productIdentifier: String
     let paymentMode: PromotionalOffer.PaymentMode
     let currencyCode: String?
-    let price: NSDecimalNumber
+    let price: Decimal
     let normalDuration: String?
     let introDuration: String?
     let introDurationType: PromotionalOffer.IntroDurationType
-    let introPrice: NSDecimalNumber?
+    let introPrice: Decimal?
     let subscriptionGroup: String?
     let discounts: [PromotionalOffer]?
-
-    func asDictionary() -> [String: NSObject] {
-        var dict: [String: NSObject] = [:]
-        dict["product_id"] = productIdentifier as NSString
-        dict["price"] = price
-
-        if let currencyCode = currencyCode {
-            dict["currency"] = currencyCode as NSObject
-        }
-
-        if paymentMode != .none {
-            dict["payment_mode"] = NSNumber(value: paymentMode.rawValue)
-        }
-
-        if let introPrice = introPrice {
-            dict["introductory_price"] = introPrice
-        }
-
-        if let subscriptionGroup = subscriptionGroup as NSString? {
-            dict["subscription_group_id"] = subscriptionGroup
-        }
-
-        if discounts != nil {
-            dict.merge(self.discountsAsDictionary()) { (_, new) in new }
-        }
-
-        dict.merge(self.productDurationsAsDictionary()) { (_, new) in new }
-
-        return dict
-    }
 
     var cacheKey: String {
         var key = """
@@ -69,54 +39,59 @@ struct ProductInfo {
             return key
         }
 
-        if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
-            for offer in discounts {
-                key += "-\(offer.offerIdentifier ?? "null offer id")"
-            }
+        for offer in discounts {
+            key += "-\(offer.offerIdentifier ?? "null offer id")"
         }
         return key
     }
 
-    private func discountsAsDictionary() -> [String: NSObject] {
-        var discountDict: [String: NSObject] = [:]
-            if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
-                if let discounts = self.discounts {
-                    let offers = NSMutableArray()
-                    for discount in discounts {
-                        guard let offerIdentifier = discount.offerIdentifier else {
-                            break
-                        }
+}
 
-                        offers.add(["offer_identifier": offerIdentifier,
-                                    "price": discount.price,
-                                    "payment_mode": discount.paymentMode.rawValue])
+extension ProductInfo: Encodable {
 
-                    }
-                    discountDict["offers"] = offers
-                }
-            }
-        return discountDict
+    public enum CodingKeys: String, CodingKey {
+
+        case productIdentifier = "product_id"
+        case paymentMode = "payment_mode"
+        case currencyCode = "currency"
+        case price
+        case normalDuration = "normal_duration"
+        case introDuration = "intro_duration"
+        case trialDuration = "trial_duration"
+        case introPrice = "introductory_price"
+        case subscriptionGroup = "subscription_group_id"
+        case discounts = "offers"
+
     }
 
-    private func productDurationsAsDictionary() -> [String: NSObject] {
-        var durations: [String: NSObject] = [:]
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
 
-        if let normalDuration = normalDuration as NSString? {
-            durations["normal_duration"] = normalDuration
-        }
+        try container.encode(self.productIdentifier, forKey: .productIdentifier)
 
-        guard let introDuration = introDuration as NSString? else {
-            return durations
+        if self.paymentMode != .none {
+            try container.encode(self.paymentMode, forKey: .paymentMode)
         }
+        try container.encode(self.currencyCode, forKey: .currencyCode)
+        try container.encode(self.price, forKey: .price)
+        try container.encodeIfPresent(self.subscriptionGroup, forKey: .subscriptionGroup)
+        try container.encodeIfPresent(self.discounts, forKey: .discounts)
 
-        if introDurationType == .introPrice {
-            durations["intro_duration"] = introDuration
-        }
-        if introDurationType == .freeTrial {
-            durations["trial_duration"] = introDuration
-        }
+        try container.encodeIfPresent(self.introPrice, forKey: .introPrice)
 
-        return durations
+        try container.encodeIfPresent(self.normalDuration, forKey: .normalDuration)
+
+        if let introDuration = self.introDuration {
+            switch self.introDurationType {
+            case .introPrice:
+                try container.encode(introDuration, forKey: .introDuration)
+
+            case .freeTrial:
+                try container.encode(introDuration, forKey: .trialDuration)
+
+            default: break
+            }
+        }
     }
 
 }

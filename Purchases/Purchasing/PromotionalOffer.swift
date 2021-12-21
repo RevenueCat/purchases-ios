@@ -124,3 +124,21 @@ extension PromotionalOffer.PaymentMode {
         }
     }
 }
+
+// MARK: - Encodable
+
+extension PromotionalOffer: Encodable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case offerIdentifier = "offer_identifier"
+        case price = "price"
+        case paymentMode = "payment_mode"
+        case subscriptionPeriod = "subscription_period"
+
+    }
+
+}
+
+extension PromotionalOffer.PaymentMode: Encodable { }
+extension PromotionalOffer.IntroDurationType: Encodable { }

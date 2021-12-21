@@ -115,9 +115,9 @@ class PurchasesTests: XCTestCase {
         var postedReceiptData: Data?
         var postedIsRestore: Bool?
         var postedProductID: String?
-        var postedPrice: NSDecimalNumber?
+        var postedPrice: Decimal?
         var postedPaymentMode: PromotionalOffer.PaymentMode?
-        var postedIntroPrice: NSDecimalNumber?
+        var postedIntroPrice: Decimal?
         var postedCurrencyCode: String?
         var postedSubscriptionGroup: String?
         var postedDiscounts: Array<PromotionalOffer>?
@@ -812,11 +812,11 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(product.price))
+            expect(self.backend.postedPrice).to(equal(product.price as Decimal))
 
             if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                 expect(self.backend.postedPaymentMode).to(equal(PromotionalOffer.PaymentMode.payAsYouGo))
-                expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price))
+                expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price as Decimal?))
             } else {
                 expect(self.backend.postedPaymentMode).to(equal(PromotionalOffer.PaymentMode.none))
                 expect(self.backend.postedIntroPrice).to(beNil())
@@ -1476,7 +1476,7 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
         expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-        expect(self.backend.postedPrice).to(equal(product.price))
+        expect(self.backend.postedPrice).to(equal(product.price as Decimal))
     }
 
     func testPromoPaymentDelegateMethodCachesProduct() {
@@ -1825,7 +1825,7 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(product.price))
+            expect(self.backend.postedPrice).to(equal(product.price as Decimal))
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
 
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
@@ -2410,7 +2410,7 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(package.storeProduct.productIdentifier))
-            expect(self.backend.postedPrice) == package.storeProduct.price as NSDecimalNumber
+            expect(self.backend.postedPrice) == package.storeProduct.price
             expect(self.backend.postedOfferingIdentifier).to(equal("base"))
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }

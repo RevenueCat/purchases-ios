@@ -135,3 +135,8 @@ fileprivate extension SubscriptionPeriod.Unit {
     }
 
 }
+
+// MARK: - Encodable
+
+extension SubscriptionPeriod.Unit: Encodable { }
+extension SubscriptionPeriod: Encodable { }
