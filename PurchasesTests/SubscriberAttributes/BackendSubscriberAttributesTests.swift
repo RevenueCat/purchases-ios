@@ -280,15 +280,15 @@ class BackendSubscriberAttributesTests: XCTestCase {
         ]
 
         backend.post(receiptData: receiptData,
-                                appUserID: appUserID,
-                                isRestore: false,
-                                productInfo: nil,
-                                presentedOfferingIdentifier: nil,
-                                observerMode: false,
-                                subscriberAttributes: subscriberAttributesByKey,
-                                completion: { (customerInfo, error) in
-                                    completionCallCount += 1
-                                })
+                     appUserID: appUserID,
+                     isRestore: false,
+                     productData: nil,
+                     presentedOfferingIdentifier: nil,
+                     observerMode: false,
+                     subscriberAttributes: subscriberAttributesByKey,
+                     completion: { (customerInfo, error) in
+            completionCallCount += 1
+        })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
 
@@ -324,7 +324,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: false,
-                     productInfo: nil,
+                     productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: subscriberAttributesByKey,
@@ -364,15 +364,15 @@ class BackendSubscriberAttributesTests: XCTestCase {
         var completionCallCount = 0
 
         backend.post(receiptData: receiptData,
-                                appUserID: appUserID,
-                                isRestore: false,
-                                productInfo: nil,
-                                presentedOfferingIdentifier: nil,
-                                observerMode: false,
-                                subscriberAttributes: nil,
-                                completion: { (customerInfo, error) in
-                                     completionCallCount += 1
-                                })
+                     appUserID: appUserID,
+                     isRestore: false,
+                     productData: nil,
+                     presentedOfferingIdentifier: nil,
+                     observerMode: false,
+                     subscriberAttributes: nil,
+                     completion: { (customerInfo, error) in
+            completionCallCount += 1
+        })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
 
@@ -402,16 +402,16 @@ class BackendSubscriberAttributesTests: XCTestCase {
         ]
         var receivedError: NSError? = nil
         backend.post(receiptData: receiptData,
-                                appUserID: appUserID,
-                                isRestore: false,
-                                productInfo: nil,
-                                presentedOfferingIdentifier: nil,
-                                observerMode: false,
-                                subscriberAttributes: subscriberAttributesByKey,
-                                completion: { (customerInfo, error) in
-                                    completionCallCount += 1
-                                    receivedError = error as NSError?
-                                })
+                     appUserID: appUserID,
+                     isRestore: false,
+                     productData: nil,
+                     presentedOfferingIdentifier: nil,
+                     observerMode: false,
+                     subscriberAttributes: subscriberAttributesByKey,
+                     completion: { (customerInfo, error) in
+            completionCallCount += 1
+            receivedError = error as NSError?
+        })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
         expect(receivedError).toNot(beNil())
@@ -447,16 +447,16 @@ class BackendSubscriberAttributesTests: XCTestCase {
         ]
         var receivedError: NSError? = nil
         backend.post(receiptData: receiptData,
-                                appUserID: appUserID,
-                                isRestore: false,
-                                productInfo: nil,
-                                presentedOfferingIdentifier: nil,
-                                observerMode: false,
-                                subscriberAttributes: subscriberAttributesByKey,
-                                completion: { (customerInfo, error) in
-                                    completionCallCount += 1
-                                    receivedError = error as NSError?
-                                })
+                     appUserID: appUserID,
+                     isRestore: false,
+                     productData: nil,
+                     presentedOfferingIdentifier: nil,
+                     observerMode: false,
+                     subscriberAttributes: subscriberAttributesByKey,
+                     completion: { (customerInfo, error) in
+            completionCallCount += 1
+            receivedError = error as NSError?
+        })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
 
