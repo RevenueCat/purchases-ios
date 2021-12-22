@@ -48,16 +48,21 @@ class DNSCheckerTests: XCTestCase {
         let nsErrorWithUserInfo = NSError(domain: "Testing",
                                           code: -1,
                                           userInfo: userInfo as [String: Any])
-        let blocked = DNSChecker.blockedHostFromError(nsErrorWithUserInfo as Error)
-        expect(blocked) == "127.0.0.1"
+        let error = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo as Error)! as NSError
+        expect(error.userInfo[DNSChecker.blockedHostNameReplacementErrorKey] as? String) == "127.0.0.1"
+        expect(error.isAPIBlockedError) == true
     }
 
     func testIsBlockedLocalHostIPAPIError() {
-        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL1]
+        let userInfo: [String: Any] = [
+            NSURLErrorFailingURLErrorKey: fakeSubscribersURL1,
+            DNSChecker.blockedErrorKey: true
+        ]
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == true
+        expect((nsErrorWithUserInfo as Error).isAPIBlockedError) == true
     }
 
     func testWrongErrorCode() {
@@ -66,6 +71,7 @@ class DNSCheckerTests: XCTestCase {
                                           code: -1,
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
+        expect((nsErrorWithUserInfo as Error).isAPIBlockedError) == false
     }
 
     func testWrongErrorDomain() {
@@ -74,6 +80,7 @@ class DNSCheckerTests: XCTestCase {
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
+        expect((nsErrorWithUserInfo as Error).isAPIBlockedError) == false
     }
 
     func testWrongErrorDomainAndWrongErrorCode() {

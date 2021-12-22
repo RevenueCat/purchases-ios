@@ -15,6 +15,10 @@ import Foundation
 
 extension Error {
 
+    var isAPIBlockedError: Bool {
+        return (self as NSError).userInfo[DNSChecker.blockedErrorKey] as? Bool ?? false
+    }
+
     /**
      * Addes a sub-error to the userInfo of a new `error` object as some extra context. Sometimes we have multiple error
      * Conditions but only a single place to surface them. This adds the second error as extra context to help during
@@ -54,6 +58,14 @@ extension NSError {
 
     var subscriberAttributesErrors: [String: String]? {
         return userInfo[Backend.RCAttributeErrorsKey as String] as? [String: String]
+    }
+
+    func clonedErrorWithMergedUserInfo(newUserInfoItems: [String: Any]) -> NSError {
+        var currentUserInfo = userInfo
+        newUserInfoItems.forEach { (key, value) in
+            currentUserInfo[key] = value
+        }
+        return NSError(domain: domain, code: code, userInfo: currentUserInfo)
     }
 
 }

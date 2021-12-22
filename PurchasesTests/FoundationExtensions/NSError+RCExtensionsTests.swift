@@ -16,6 +16,26 @@ class NSErrorRCExtensionsTests: XCTestCase {
         expect(error.successfullySynced) == false
     }
 
+    func testCloneActuallyClones() {
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: "https://api.revenuecat.com/getSome"]
+        let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
+                                          code: NSURLErrorCannotConnectToHost,
+                                          userInfo: userInfo as [String: Any])
+        expect(nsErrorWithUserInfo) == nsErrorWithUserInfo.clonedErrorWithMergedUserInfo(newUserInfoItems: [:])
+    }
+
+    func testCloneActuallyMergesUserInfo() {
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: "https://api.revenuecat.com/getSome"]
+        let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
+                                          code: NSURLErrorCannotConnectToHost,
+                                          userInfo: userInfo as [String: Any])
+        let clone = nsErrorWithUserInfo.clonedErrorWithMergedUserInfo(newUserInfoItems: ["taco": "yummy"])
+        expect(clone.domain) == nsErrorWithUserInfo.domain
+        expect(clone.code) == nsErrorWithUserInfo.code
+        expect((clone.userInfo["taco"] as! String)) == "yummy"
+        expect((clone.userInfo[NSURLErrorFailingURLErrorKey] as! String)) == "https://api.revenuecat.com/getSome"
+    }
+
     func testSuccessfullySyncedFalseIfNotShouldMarkSynced() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(

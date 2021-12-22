@@ -32,7 +32,8 @@ enum ErrorUtils {
         withUnderlyingError underlyingError: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        return error(with: .networkError, underlyingError: underlyingError,
+        let errorCode: ErrorCode = underlyingError.isAPIBlockedError ? .apiEndpointBlockedError : .networkError
+        return error(with: errorCode, underlyingError: underlyingError,
                      fileName: fileName, functionName: functionName, line: line)
     }
 

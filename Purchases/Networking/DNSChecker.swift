@@ -15,6 +15,8 @@ import Foundation
 
 enum DNSChecker {
 
+    static let blockedErrorKey: String = "RevenueCat API Blocked"
+    static let blockedHostNameReplacementErrorKey: String = "Host replaced with"
     static let invalidHosts = Set(["0.0.0.0", "127.0.0.1"])
 
     static func isBlockedAPIError(_ error: Error?) -> Bool {
@@ -35,12 +37,18 @@ enum DNSChecker {
         return isBlockedURL(failedURL)
     }
 
-    static func blockedHostFromError(_ error: Error?) -> String? {
-        guard let failedURL = (error as NSError?)?.userInfo[NSURLErrorFailingURLErrorKey] as? URL else {
+    static func errorWithBlockedHostFromError(_ error: Error?) -> Error? {
+        guard let failedURL = (error as NSError?)?.userInfo[NSURLErrorFailingURLErrorKey] as? URL,
+                let nsError = error as NSError? else {
             return nil
         }
 
-        return resolvedHost(fromURL: failedURL)
+        let host = resolvedHost(fromURL: failedURL)
+        let addToNewUserInfo: [String: Any] = [
+            self.blockedHostNameReplacementErrorKey: host ?? "<unknown>",
+            self.blockedErrorKey: true
+        ]
+        return nsError.clonedErrorWithMergedUserInfo(newUserInfoItems: addToNewUserInfo)
     }
 
     static func isBlockedURL(_ url: URL) -> Bool {
