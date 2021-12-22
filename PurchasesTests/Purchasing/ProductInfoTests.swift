@@ -125,17 +125,17 @@ class ProductInfoTests: XCTestCase {
     
     func testEncoding() throws {
         let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
-                                         price: 11,
+                                         price: 11.2,
                                          paymentMode: .payAsYouGo,
                                          subscriptionPeriod: .init(value: 1, unit: .month))
 
         let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
-                                         price: 12,
+                                         price: 12.2,
                                          paymentMode: .payUpFront,
                                          subscriptionPeriod: .init(value: 2, unit: .year))
 
         let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
-                                         price: 13,
+                                         price: 13.3,
                                          paymentMode: .freeTrial,
                                          subscriptionPeriod: .init(value: 3, unit: .day))
 

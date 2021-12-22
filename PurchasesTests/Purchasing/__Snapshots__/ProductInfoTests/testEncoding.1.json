@@ -6,17 +6,17 @@
     {
       "offer_identifier" : "offerid1",
       "payment_mode" : 0,
-      "price" : 11
+      "price" : 11.199999999999999
     },
     {
       "offer_identifier" : "offerid2",
       "payment_mode" : 1,
-      "price" : 12
+      "price" : 12.199999999999999
     },
     {
       "offer_identifier" : "offerid3",
       "payment_mode" : 2,
-      "price" : 13
+      "price" : 13.300000000000001
     }
   ],
   "payment_mode" : 1,
