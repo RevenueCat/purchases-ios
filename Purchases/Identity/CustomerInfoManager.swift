@@ -28,7 +28,7 @@ class CustomerInfoManager {
     private let deviceCache: DeviceCache
     private let backend: Backend
     private let systemInfo: SystemInfo
-    private let customerInfoCacheLock = NSRecursiveLock()
+    private let customerInfoCacheLock = Lock()
 
     init(operationDispatcher: OperationDispatcher,
          deviceCache: DeviceCache,
@@ -168,28 +168,29 @@ class CustomerInfoManager {
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
-        customerInfoCacheLock.lock()
-        deviceCache.clearCustomerInfoCache(appUserID: appUserID)
-        lastSentCustomerInfo = nil
-        customerInfoCacheLock.unlock()
+        customerInfoCacheLock.perform {
+            deviceCache.clearCustomerInfoCache(appUserID: appUserID)
+            lastSentCustomerInfo = nil
+        }
     }
 
     private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
-        guard let delegate = self.delegate,
-              lastSentCustomerInfo != customerInfo else {
-            return
-        }
+        customerInfoCacheLock.perform {
+            guard let delegate = self.delegate,
+                  lastSentCustomerInfo != customerInfo else {
+                      return
+                  }
 
-        if lastSentCustomerInfo != nil {
-            Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
-        } else {
-            Logger.debug(Strings.customerInfo.sending_latest_customerinfo_to_delegate)
-        }
+            if lastSentCustomerInfo != nil {
+                Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
+            } else {
+                Logger.debug(Strings.customerInfo.sending_latest_customerinfo_to_delegate)
+            }
 
-        self.lastSentCustomerInfo = customerInfo
-        operationDispatcher.dispatchOnMainThread {
-            self.customerInfoCacheLock.unlock()
-            delegate.customerInfoManagerDidReceiveUpdated(customerInfo: customerInfo)
+            self.lastSentCustomerInfo = customerInfo
+            operationDispatcher.dispatchOnMainThread {
+                delegate.customerInfoManagerDidReceiveUpdated(customerInfo: customerInfo)
+            }
         }
     }
 
