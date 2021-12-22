@@ -9,6 +9,7 @@
 import Foundation
 import XCTest
 import Nimble
+import SnapshotTesting
 
 @testable import RevenueCat
 
@@ -64,9 +65,17 @@ class BackendTests: XCTestCase {
                                     path: String,
                                     requestBody: [String : Any]?,
                                     headers: [String : String],
-                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                                    file: StaticString = #file) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
+
+            if let body = requestBody {
+                let test = CurrentTestCaseTracker.shared.currentTestCase!
+
+                assertSnapshot(matching: body, as: .json,
+                               file: file, testName: test.name)
+            }
 
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
                                      serially: performSerially,
@@ -117,9 +126,15 @@ class BackendTests: XCTestCase {
     var backend: Backend?
 
     override func setUp() {
+        super.setUp()
+
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
         httpClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         backend = Backend.init(httpClient: httpClient, apiKey: apiKey)
+    }
+
+    override class func setUp() {
+        XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
     }
 
     func testPostsReceiptDataCorrectly() {

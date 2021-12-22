@@ -1,0 +1,9 @@
+{
+  "app_user_id" : "user",
+  "currency" : "UYU",
+  "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+  "is_restore" : false,
+  "observer_mode" : false,
+  "price" : 15.99,
+  "product_id" : "product_id"
+}

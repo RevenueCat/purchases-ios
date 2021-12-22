@@ -1,0 +1,9 @@
+{
+  "app_user_id" : "user",
+  "currency" : "USD",
+  "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
+  "is_restore" : false,
+  "observer_mode" : true,
+  "price" : 15.99,
+  "product_id" : "product_id"
+}

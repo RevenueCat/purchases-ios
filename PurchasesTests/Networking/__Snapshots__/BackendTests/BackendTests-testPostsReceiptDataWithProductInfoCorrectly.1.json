@@ -1,0 +1,11 @@
+{
+  "app_user_id" : "user",
+  "currency" : "BFD",
+  "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+  "is_restore" : false,
+  "observer_mode" : false,
+  "presented_offering_identifier" : "a_offering",
+  "price" : 4.990000000000001024,
+  "product_id" : "a_great_product",
+  "subscription_group_id" : "sub_group"
+}
