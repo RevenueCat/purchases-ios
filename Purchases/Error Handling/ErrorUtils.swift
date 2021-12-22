@@ -481,7 +481,8 @@ private extension ErrorUtils {
                 .productDiscountMissingSubscriptionGroupIdentifierError,
                 .customerInfoError,
                 .systemInfoError,
-                .beginRefundRequestError:
+                .beginRefundRequestError,
+                .apiEndpointBlockedError:
             Logger.error(code.description)
 
         case .purchaseCancelledError,
