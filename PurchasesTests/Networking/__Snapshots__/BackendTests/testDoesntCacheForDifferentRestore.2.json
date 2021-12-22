@@ -1,6 +1,6 @@
 {
   "app_user_id" : "user",
   "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
-  "is_restore" : false,
-  "observer_mode" : true
+  "is_restore" : true,
+  "observer_mode" : false
 }

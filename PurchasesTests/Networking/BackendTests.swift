@@ -71,10 +71,8 @@ class BackendTests: XCTestCase {
             let response = mocks[path]!
 
             if let body = requestBody {
-                let test = CurrentTestCaseTracker.shared.currentTestCase!
-
                 assertSnapshot(matching: body, as: .json,
-                               file: file, testName: test.name)
+                               file: file, testName: CurrentTestCaseTracker.sanitizedTestName)
             }
 
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
@@ -143,8 +141,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = false
+        let observerMode = true
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -186,8 +184,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = true
+        let observerMode = false
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -221,8 +219,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = false
+        let observerMode = false
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -256,8 +254,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = true
+        let observerMode = true
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -291,8 +289,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = false
+        let observerMode = true
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -327,8 +325,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = true
+        let observerMode = false
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -1213,8 +1211,8 @@ class BackendTests: XCTestCase {
         
         var completionCalled = 0
         
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = true
+        let observerMode = false
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -1578,8 +1576,8 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
         
         var completionCalled = 0
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = false
+        let observerMode = true
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
