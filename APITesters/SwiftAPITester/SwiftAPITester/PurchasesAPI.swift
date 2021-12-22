@@ -131,18 +131,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack, discount: paymentDiscount) { _, _, _, _  in }
     purchases.invalidateCustomerInfoCache()
 
-#if os(iOS) || targetEnvironment(macCatalyst)
-    let beginRefundRequestCompletion: (RefundRequestStatus, Error?) -> Void = { _, _ in }
-    purchases.beginRefundRequest(forProduct: "asdf", completion: beginRefundRequestCompletion)
-    purchases.beginRefundRequest(forProduct: "asdf") { _, _ in }
-
-    purchases.beginRefundRequest(forEntitlement: "asdf", completion: beginRefundRequestCompletion)
-    purchases.beginRefundRequest(forEntitlement: "asdf") { _, _ in }
-
-    purchases.beginRefundRequestForActiveEntitlement(completion: beginRefundRequestCompletion)
-    purchases.beginRefundRequestForActiveEntitlement { _, _ in }
-#endif
-
 #if os(iOS)
     purchases.presentCodeRedemptionSheet()
 #endif
@@ -167,7 +155,6 @@ private func checkIdentity(purchases: Purchases) {
 private func checkPurchasesSupportAPI(purchases: Purchases) {
     #if os(iOS)
     purchases.showManageSubscriptions { _ in }
-    purchases.beginRefundRequest(forProduct: "") { _, _ in }
     #endif
 }
 
