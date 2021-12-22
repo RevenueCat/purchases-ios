@@ -134,7 +134,6 @@ extension PromotionalOffer: Encodable {
         case offerIdentifier = "offer_identifier"
         case price = "price"
         case paymentMode = "payment_mode"
-        case subscriptionPeriod = "subscription_period"
 
     }
 

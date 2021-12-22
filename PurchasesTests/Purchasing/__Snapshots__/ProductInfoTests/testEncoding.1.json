@@ -20,7 +20,7 @@
     }
   ],
   "payment_mode" : 1,
-  "price" : 49.99,
+  "price" : 49.990000000000002,
   "product_id" : "cool_product",
   "subscription_group_id" : "cool_group",
   "trial_duration" : "P3W"
