@@ -29,10 +29,10 @@ enum ErrorUtils {
      * is an `NSJSONSerialization` error.
      */
     static func networkError(
-        withUnderlyingError underlyingError: Error, generatedBy: String? = nil,
+        withUnderlyingError underlyingError: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        return error(with: .networkError, underlyingError: underlyingError, generatedBy: generatedBy,
+        return error(with: .networkError, underlyingError: underlyingError,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -105,12 +105,10 @@ enum ErrorUtils {
      */
     static func unexpectedBackendResponse(
         withSubError maybeSubError: Error?,
-        generatedBy maybeGeneratedBy: String? = nil,
         extraContext maybeExtraContext: String? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         return backendResponseError(withSubError: maybeSubError,
-                                    generatedBy: maybeGeneratedBy,
                                     extraContext: maybeExtraContext,
                                     fileName: fileName, functionName: functionName, line: line)
     }
@@ -405,7 +403,6 @@ private extension ErrorUtils {
     static func error(with code: ErrorCode,
                       message: String? = nil,
                       underlyingError: Error? = nil,
-                      generatedBy: String? = nil,
                       extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
                       fileName: String = #fileID,
                       functionName: String = #function,
@@ -415,7 +412,6 @@ private extension ErrorUtils {
         if let maybeUnderlyingError = underlyingError {
             userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeUnderlyingError
         }
-        userInfo[ErrorDetails.generatedByKey] = generatedBy
         userInfo[ErrorDetails.readableErrorCodeKey] = code.codeName
         userInfo[ErrorDetails.fileKey] = "\(fileName):\(line)"
         userInfo[ErrorDetails.functionKey] = functionName
@@ -432,7 +428,6 @@ private extension ErrorUtils {
 
     static func backendResponseError(
         withSubError maybeSubError: Error?,
-        generatedBy maybeGeneratedBy: String?,
         extraContext maybeExtraContext: String?,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
@@ -442,7 +437,6 @@ private extension ErrorUtils {
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = errorDescription
         userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeSubError
         userInfo[ErrorDetails.readableErrorCodeKey] = ErrorCode.unexpectedBackendResponseError.codeName
-        userInfo[ErrorDetails.generatedByKey] = maybeGeneratedBy
         userInfo[ErrorDetails.extraContextKey] = maybeExtraContext
         userInfo[ErrorDetails.fileKey] = "\(fileName):\(line)"
         userInfo[ErrorDetails.functionKey] = functionName
