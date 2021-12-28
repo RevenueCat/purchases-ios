@@ -269,6 +269,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         do {
             _ = try await orchestrator.beginRefundRequest(forEntitlement: "1234")
+            XCTFail("beginRefundRequestForEntitlement should have thrown error")
         } catch {
             expect(error).toNot(beNil())
             expect(error).to(matchError(expectedError))
@@ -298,6 +299,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         do {
             _ = try await orchestrator.beginRefundRequestForActiveEntitlement()
+            XCTFail("beginRefundRequestForActiveEntitlement should have thrown error")
         } catch {
             expect(error).toNot(beNil())
             expect(error).to(matchError(expectedError))
@@ -340,4 +342,3 @@ private extension PurchasesOrchestratorTests {
     }
 
 }
-// swiftlint:enable type_body_length

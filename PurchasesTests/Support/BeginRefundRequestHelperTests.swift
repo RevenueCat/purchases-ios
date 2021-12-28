@@ -113,27 +113,33 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
     }
 
-    func testBeginRefundRequestForProductFatalErrorIfNotIosOrCatalyst() {
+    func testBeginRefundRequestForProductFatalErrorIfNotIosOrCatalyst() throws {
         #if os(watchOS) || os(macOS) || os(tvOS)
         expectFatalError(expectedMessage: Strings.purchase.begin_refund_request_unsupported.description) {
             _ = try await helper.beginRefundRequest(forProduct: mockProductID)
         }
+        #else
+        throw XCTSkip("beginRefundRequestForProduct is not available for this test.")
         #endif
     }
 
-    func testBeginRefundRequestForEntitlementFatalErrorIfNotIosOrCatalyst() {
+    func testBeginRefundRequestForEntitlementFatalErrorIfNotIosOrCatalyst() throws {
         #if os(watchOS) || os(macOS) || os(tvOS)
         expectFatalError(expectedMessage: Strings.purchase.begin_refund_request_unsupported.description) {
             _ = try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
         }
+        #else
+        throw XCTSkip("beginRefundRequestForEntitlement is not available for this test.")
         #endif
     }
 
-    func testBeginRefundRequestForActiveEntitlementFatalErrorIfNotIosOrCatalyst() {
+    func testBeginRefundRequestForActiveEntitlementFatalErrorIfNotIosOrCatalyst() throws {
         #if os(watchOS) || os(macOS) || os(tvOS)
         expectFatalError(expectedMessage: Strings.purchase.begin_refund_request_unsupported.description) {
             _ = try await helper.beginRefundRequestforActiveEntitlement()
         }
+        #else
+        throw XCTSkip("beginRefundRequestForEntitlement is not available for this test.")
         #endif
     }
 
@@ -142,7 +148,6 @@ class BeginRefundRequestHelperTests: XCTestCase {
         guard #available(iOS 15.0, macCatalyst 15.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
-
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
 
         sk2Helper.transactionVerified = false
@@ -272,6 +277,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         do {
             let _ = try await helper.beginRefundRequestForActiveEntitlement()
+            XCTFail("beginRefundRequestForActiveEntitlement should have thrown error")
         } catch {
             expect(error).to(matchError(expectedError))
             expect(error.localizedDescription) == expectedError.localizedDescription
@@ -291,6 +297,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         do {
             _ = try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
+            XCTFail("beginRefundRequestForEntitlement should have thrown error")
         } catch {
             expect(error).to(matchError(expectedError))
             expect(error.localizedDescription) == expectedError.localizedDescription
