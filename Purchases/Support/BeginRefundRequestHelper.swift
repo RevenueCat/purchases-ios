@@ -93,7 +93,8 @@ private extension BeginRefundRequestHelper {
         return try await withCheckedThrowingContinuation { continuation in
             customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
                 if let error = maybeError {
-                    let message = Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description
+                    let message = Strings.purchase.begin_refund_customer_info_error(
+                        entitlementID: maybeEntitlementID).description
                     continuation.resume(
                         throwing: ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
                     return
@@ -101,7 +102,7 @@ private extension BeginRefundRequestHelper {
 
                 guard let customerInfo = maybeCustomerInfo else {
                     let message = Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
-                        entitlementID: nil).description
+                        entitlementID: maybeEntitlementID).description
                     continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
                     return
                 }

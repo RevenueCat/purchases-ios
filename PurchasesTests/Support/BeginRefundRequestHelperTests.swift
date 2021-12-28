@@ -217,16 +217,16 @@ class BeginRefundRequestHelperTests: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        let customerInfoError = ErrorUtils.customerInfoError(withMessage: "")
-        customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "", error: customerInfoError)
+        customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "")
 
-        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description, error: customerInfoError)
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: mockEntitlementID).description)
 
         do {
             _ = try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
             XCTFail("beginRefundRequestForEntitlement should have thrown error")
         } catch {
             expect(error).to(matchError(expectedError))
+            expect(error.localizedDescription) == expectedError.localizedDescription
         }
     }
 
@@ -235,16 +235,16 @@ class BeginRefundRequestHelperTests: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        let customerInfoError = ErrorUtils.customerInfoError(withMessage: "")
-        customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "", error: customerInfoError)
+        customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "")
 
-        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description, error: customerInfoError)
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description)
 
         do {
             _ = try await helper.beginRefundRequestForActiveEntitlement()
             XCTFail("beginRefundRequestForActiveEntitlement should have thrown error")
         } catch {
             expect(error).to(matchError(expectedError))
+            expect(error.localizedDescription) == expectedError.localizedDescription
         }
     }
 
@@ -255,7 +255,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         customerInfoManager.stubbedCustomerInfo = nil
 
-        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(entitlementID: nil).description)
+        let expectedError = ErrorUtils.beginRefundRequestError(
+            withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
+                entitlementID: mockEntitlementID).description)
 
         do {
             _ = try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
