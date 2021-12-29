@@ -10,7 +10,7 @@ import RevenueCat
 import SwiftUI
 
 /* Static shared model for UserView */
-class UserViewModel: NSObject, ObservableObject {
+class UserViewModel: ObservableObject {
     static let shared = UserViewModel()
     
     /* The latest CustomerInfo from RevenueCat. Updated by PurchasesDelegate whenever the Purchases SDK updates the cache */

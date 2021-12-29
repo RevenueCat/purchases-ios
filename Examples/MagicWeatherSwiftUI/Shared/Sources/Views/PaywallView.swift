@@ -18,13 +18,13 @@ struct PaywallView: View {
     @Binding var isPresented: Bool
     
     /// - State for displaying an overlay view
-    @State var isPurchasing: Bool = false
+    @State
+    private(set) var isPurchasing: Bool = false
     
     /// - The current offering saved from PurchasesDelegateHandler
-    var offering: Offering? = UserViewModel.shared.offerings?.current
+    private(set) var offering: Offering? = UserViewModel.shared.offerings?.current
     
-    #warning("Modify this value to reflect your app's Privacy Policy and Terms & Conditions agreements. Required to make it through App Review.")
-    var footerText = "Don't forget to add your subscription terms and conditions. Read more about this here: https://www.revenuecat.com/blog/schedule-2-section-3-8-b"
+    private let footerText = "Don't forget to add your subscription terms and conditions. Read more about this here: https://www.revenuecat.com/blog/schedule-2-section-3-8-b"
     
     var body: some View {
         NavigationView {
