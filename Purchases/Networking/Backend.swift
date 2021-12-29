@@ -114,7 +114,7 @@ class Backend {
 
         if let productInfo = productInfo {
             do {
-                body.merge(try productInfo.asDictionary()) { _, new in new }
+                body += try productInfo.asDictionary()
             } catch {
                 completion(nil, error)
                 return

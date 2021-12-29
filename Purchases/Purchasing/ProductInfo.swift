@@ -64,6 +64,8 @@ extension ProductInfo: Encodable {
 
     }
 
+    // Note: prices are encoded price as `String` (using `NSDecimalNumber.description`)
+    // to preserve precision and avoid values like "1.89999999"
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
