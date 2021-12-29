@@ -450,13 +450,13 @@ private extension PurchasesOrchestrator {
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
                      products: Set<SK1Product>) {
-        var maybeProductInfo: ProductInfo?
+        var maybeProductData: ProductRequestData?
         var maybePresentedOfferingID: String?
         if let product = products.first {
-            let productInfo = ProductInfoExtractor.extractInfo(from: product)
-            maybeProductInfo = productInfo
+            let productData = ProductRequestData(with: product)
+            maybeProductData = productData
 
-            let productID = productInfo.productIdentifier
+            let productID = productData.productIdentifier
             let presentedOfferingID = presentedOfferingIDsByProductID[productID]
             maybePresentedOfferingID = presentedOfferingID
 
@@ -467,7 +467,7 @@ private extension PurchasesOrchestrator {
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: allowSharingAppStoreAccount,
-                     productInfo: maybeProductInfo,
+                     productData: maybeProductData,
                      presentedOfferingIdentifier: maybePresentedOfferingID,
                      observerMode: !finishTransactions,
                      subscriberAttributes: unsyncedAttributes) { maybeCustomerInfo, maybeError in
@@ -565,7 +565,7 @@ private extension PurchasesOrchestrator {
                 self.backend.post(receiptData: receiptData,
                                   appUserID: currentAppUserID,
                                   isRestore: isRestore,
-                                  productInfo: nil,
+                                  productData: nil,
                                   presentedOfferingIdentifier: nil,
                                   observerMode: !self.finishTransactions,
                                   subscriberAttributes: unsyncedAttributes) { maybeCustomerInfo, maybeError in

@@ -89,7 +89,7 @@ class Backend {
     func post(receiptData: Data,
               appUserID: String,
               isRestore: Bool,
-              productInfo: ProductInfo?,
+              productData: ProductRequestData?,
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
@@ -104,7 +104,7 @@ class Backend {
 
         let cacheKey =
         """
-        \(appUserID)-\(isRestore)-\(fetchToken)-\(productInfo?.cacheKey ?? "")
+        \(appUserID)-\(isRestore)-\(fetchToken)-\(productData?.cacheKey ?? "")
         -\(offeringIdentifier ?? "")-\(observerMode)-\(subscriberAttributesByKey?.debugDescription ?? "")"
         """
 
@@ -112,9 +112,9 @@ class Backend {
             return
         }
 
-        if let productInfo = productInfo {
+        if let productData = productData {
             do {
-                body += try productInfo.asDictionary()
+                body += try productData.asDictionary()
             } catch {
                 completion(nil, error)
                 return

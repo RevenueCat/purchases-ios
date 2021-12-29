@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ProductInfo.swift
+//  ProductRequestData.swift
 //
 //  Created by Joshua Liebowitz on 7/2/21.
 //
@@ -15,8 +15,10 @@
 import Foundation
 import StoreKit
 
-// Fixme: remove and simply encode data in `StoreProduct`: https://github.com/RevenueCat/purchases-ios/issues/1045
-struct ProductInfo {
+/// Encapsulates `StoreProductType` information to be sent to the backend
+/// when posting receipts.
+/// - Seealso: `Backend.post(receiptData:appUserID:isRestore:productData:...`
+struct ProductRequestData {
 
     let productIdentifier: String
     let paymentMode: PromotionalOffer.PaymentMode
@@ -47,7 +49,7 @@ struct ProductInfo {
 
 }
 
-extension ProductInfo: Encodable {
+extension ProductRequestData: Encodable {
 
     public enum CodingKeys: String, CodingKey {
 

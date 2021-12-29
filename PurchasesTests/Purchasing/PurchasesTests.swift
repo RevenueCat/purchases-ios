@@ -132,7 +132,7 @@ class PurchasesTests: XCTestCase {
         override func post(receiptData: Data,
                            appUserID: String,
                            isRestore: Bool,
-                           productInfo: ProductInfo?,
+                           productData: ProductRequestData?,
                            presentedOfferingIdentifier: String?,
                            observerMode: Bool,
                            subscriberAttributes: [String: SubscriberAttribute]?,
@@ -141,16 +141,16 @@ class PurchasesTests: XCTestCase {
             postedReceiptData = receiptData
             postedIsRestore = isRestore
 
-            if let productInfo = productInfo {
-                postedProductID = productInfo.productIdentifier
-                postedPrice = productInfo.price
+            if let productData = productData {
+                postedProductID = productData.productIdentifier
+                postedPrice = productData.price
 
-                postedPaymentMode = productInfo.paymentMode
-                postedIntroPrice = productInfo.introPrice
-                postedSubscriptionGroup = productInfo.subscriptionGroup
+                postedPaymentMode = productData.paymentMode
+                postedIntroPrice = productData.introPrice
+                postedSubscriptionGroup = productData.subscriptionGroup
 
-                postedCurrencyCode = productInfo.currencyCode
-                postedDiscounts = productInfo.discounts
+                postedCurrencyCode = productData.currencyCode
+                postedDiscounts = productData.discounts
             }
 
             postedOfferingIdentifier = presentedOfferingIdentifier
@@ -632,7 +632,7 @@ class PurchasesTests: XCTestCase {
         expect(self.mockProductsManager.invokedCacheProductParameter) == product
     }
 
-    func testDoesntFetchProductInfoIfEmptyList() {
+    func testDoesntFetchProductDataIfEmptyList() {
         setupPurchases()
         var completionCalled = false
         mockProductsManager.resetMock()
@@ -788,7 +788,7 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
     }
 
-    func testSendsProductInfoIfProductIsCached() {
+    func testSendsProductDataIfProductIsCached() {
         setupPurchases()
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
         purchases!.getProducts(productIdentifiers) { (newProducts) in
@@ -840,7 +840,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    func testFetchesProductInfoIfNotCached() {
+    func testFetchesProductDataIfNotCached() {
         systemInfo.stubbedIsApplicationBackgrounded = true
         setupPurchases()
         let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
@@ -1799,7 +1799,7 @@ class PurchasesTests: XCTestCase {
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
     }
 
-    func testProductInfoIsCachedForOfferings() {
+    func testProductDataIsCachedForOfferings() {
         setupPurchases()
         mockOfferingsManager.stubbedOfferingsCompletionResult =
         (offeringsFactory.createOfferings(from: [:], data: [:]), nil)
