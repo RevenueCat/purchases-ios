@@ -195,7 +195,8 @@ platform :ios do
       xcframework_output_directory: output_directory,
       # bitcode produces issues with Catalyst when validating builds, 
       # with a message: "object not signed at all".
-      enable_bitcode: false
+      enable_bitcode: false,
+      include_debug_symbols: true
     )
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
