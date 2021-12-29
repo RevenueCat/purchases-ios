@@ -34,7 +34,6 @@ struct MagicWeatherApp: App {
         
         /* Fetch the available offerings */
         Purchases.shared.getOfferings { (offerings, error) in
-            UserViewModel.shared.objectWillChange.send()
             UserViewModel.shared.offerings = offerings
         }
     }
