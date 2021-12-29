@@ -10,11 +10,11 @@ extension ProductInfo {
     static func createMockProductInfo(productIdentifier: String = "product_id",
                                       paymentMode: PromotionalOffer.PaymentMode = .none,
                                       currencyCode: String = "UYU",
-                                      price: NSDecimalNumber = 15.99,
+                                      price: Decimal = 15.99,
                                       normalDuration: String? = nil,
                                       introDuration: String? = nil,
                                       introDurationType: PromotionalOffer.IntroDurationType = .none,
-                                      introPrice: NSDecimalNumber? = nil,
+                                      introPrice: Decimal? = nil,
                                       subscriptionGroup: String? = nil,
                                       discounts: [PromotionalOffer]? = nil) -> ProductInfo {
         ProductInfo(productIdentifier: productIdentifier,

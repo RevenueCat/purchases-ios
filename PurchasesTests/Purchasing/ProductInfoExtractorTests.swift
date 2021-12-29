@@ -24,7 +24,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsPrice() {
-        let price: NSDecimalNumber = 10.99
+        let price: Decimal = 10.99
         product.mockPrice = price
 
         let receivedProductInfo = self.extract()

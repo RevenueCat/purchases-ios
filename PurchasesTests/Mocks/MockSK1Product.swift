@@ -28,9 +28,9 @@ class MockSK1Product: SK1Product {
         return mockPriceLocale ?? Locale(identifier: "en_US")
     }
 
-    var mockPrice: NSDecimalNumber?
+    var mockPrice: Decimal?
     override var price: NSDecimalNumber {
-        return mockPrice ?? 2.99 as NSDecimalNumber
+        return (mockPrice ?? 2.99) as NSDecimalNumber
     }
 
     @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)

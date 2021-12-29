@@ -32,11 +32,11 @@ enum ProductInfoExtractor {
             productIdentifier: product.productIdentifier,
             paymentMode: paymentMode,
             currencyCode: product.priceLocale.rc_currencyCode(),
-            price: product.price,
+            price: product.price as Decimal,
             normalDuration: normalDuration,
             introDuration: introDuration,
             introDurationType: introDurationType,
-            introPrice: introPrice,
+            introPrice: introPrice as Decimal?,
             subscriptionGroup: subscriptionGroup,
             discounts: discounts
         )

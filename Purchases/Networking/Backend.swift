@@ -113,7 +113,12 @@ class Backend {
         }
 
         if let productInfo = productInfo {
-            body.merge(productInfo.asDictionary()) { _, new in new }
+            do {
+                body += try productInfo.asDictionary()
+            } catch {
+                completion(nil, error)
+                return
+            }
         }
 
         if let subscriberAttributesByKey = subscriberAttributesByKey {

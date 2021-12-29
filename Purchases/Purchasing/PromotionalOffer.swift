@@ -124,3 +124,30 @@ extension PromotionalOffer.PaymentMode {
         }
     }
 }
+
+// MARK: - Encodable
+
+extension PromotionalOffer: Encodable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case offerIdentifier = "offer_identifier"
+        case price = "price"
+        case paymentMode = "payment_mode"
+
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(self.offerIdentifier, forKey: .offerIdentifier)
+        // Note: price is encoded price as `String` (using `NSDecimalNumber.description`)
+        // to preserve precision and avoid values like "1.89999999"
+        try container.encode((self.price as NSDecimalNumber).description, forKey: .price)
+        try container.encode(self.paymentMode, forKey: .paymentMode)
+    }
+
+}
+
+extension PromotionalOffer.PaymentMode: Encodable { }
+extension PromotionalOffer.IntroDurationType: Encodable { }
