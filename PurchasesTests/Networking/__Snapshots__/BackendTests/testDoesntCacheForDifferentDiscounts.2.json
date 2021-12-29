@@ -8,9 +8,9 @@
     {
       "offer_identifier" : "offerid",
       "payment_mode" : 0,
-      "price" : 12
+      "price" : "12"
     }
   ],
-  "price" : 15.99,
+  "price" : "15.99",
   "product_id" : "product_id"
 }
