@@ -13,7 +13,7 @@ extension ProductInfo {
                                       price: Decimal = 15.99,
                                       normalDuration: String? = nil,
                                       introDuration: String? = nil,
-                                      introDurationType: PromotionalOffer.IntroDurationType = .none,
+                                      introDurationType: PromotionalOffer.PaymentMode = .none,
                                       introPrice: Decimal? = nil,
                                       subscriptionGroup: String? = nil,
                                       discounts: [PromotionalOffer]? = nil) -> ProductInfo {

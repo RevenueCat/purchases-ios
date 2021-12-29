@@ -24,7 +24,7 @@ struct ProductInfo {
     let price: Decimal
     let normalDuration: String?
     let introDuration: String?
-    let introDurationType: PromotionalOffer.IntroDurationType
+    let introDurationType: PromotionalOffer.PaymentMode
     let introPrice: Decimal?
     let subscriptionGroup: String?
     let discounts: [PromotionalOffer]?
@@ -86,7 +86,7 @@ extension ProductInfo: Encodable {
 
         if let introDuration = self.introDuration {
             switch self.introDurationType {
-            case .introPrice:
+            case .payUpFront:
                 try container.encode(introDuration, forKey: .introDuration)
 
             case .freeTrial:

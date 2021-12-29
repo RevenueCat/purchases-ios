@@ -64,7 +64,7 @@ class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsIntroDurationCorrectlyForIntroPrice() throws {
         let introDuration = "P3M"
         let productInfo: ProductInfo = .createMockProductInfo(introDuration: introDuration,
-                                               introDurationType: .introPrice)
+                                               introDurationType: .payUpFront)
         expect(try productInfo.asDictionary()["intro_duration"] as? String) == introDuration
         expect(try productInfo.asDictionary()["trial_duration"]).to(beNil())
     }
@@ -181,7 +181,7 @@ class ProductInfoTests: XCTestCase {
                                                               introPrice: 0,
                                                               subscriptionGroup: "cool_group",
                                                               discounts: [discount1, discount2, discount3])
-        expect(productInfo.cacheKey) == "cool_product-49.99-UYU-1-0-cool_group-P3Y-P3W-0-offerid1-offerid2-offerid3"
+        expect(productInfo.cacheKey) == "cool_product-49.99-UYU-1-0-cool_group-P3Y-P3W-2-offerid1-offerid2-offerid3"
     }
 }
 

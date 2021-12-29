@@ -28,15 +28,6 @@ public class PromotionalOffer: NSObject {
 
     }
 
-    // Fixme: remove in favor of `PaymentMode`: https://github.com/RevenueCat/purchases-ios/issues/1045
-    internal enum IntroDurationType: Int {
-
-        case none = -1
-        case freeTrial = 0
-        case introPrice = 1
-
-    }
-
     public let offerIdentifier: String?
     public let price: Decimal
     public let paymentMode: PaymentMode
@@ -150,4 +141,3 @@ extension PromotionalOffer: Encodable {
 }
 
 extension PromotionalOffer.PaymentMode: Encodable { }
-extension PromotionalOffer.IntroDurationType: Encodable { }
