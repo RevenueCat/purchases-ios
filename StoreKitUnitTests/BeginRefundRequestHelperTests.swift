@@ -18,6 +18,7 @@ import XCTest
 
 @testable import RevenueCat
 
+// swiftlint:disable type_body_length
 class BeginRefundRequestHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
@@ -28,47 +29,43 @@ class BeginRefundRequestHelperTests: XCTestCase {
     private let mockEntitlementID = "1234"
 
     var mockCustomerInfoResponseWithMockEntitlementActive: [String: Any] {
-        get {
-            return [
-                "request_date": "2018-10-19T02:40:36Z",
-                "subscriber": [
-                    "original_app_user_id": "app_user_id",
-                    "original_application_version": "2083",
-                    "first_seen": "2019-06-17T16:05:33Z",
-                    "non_subscriptions": [],
-                    "subscriptions": [],
-                    "entitlements": [
-                        "\(mockEntitlementID)" : [
-                            "expires_date" : "2100-08-30T02:40:36Z",
-                            "product_identifier": "onemonth_freetrial",
-                            "purchase_date": "2018-10-26T23:17:53Z"
-                        ]
+        return [
+            "request_date": "2018-10-19T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [],
+                "subscriptions": [],
+                "entitlements": [
+                    "\(mockEntitlementID)": [
+                        "expires_date": "2100-08-30T02:40:36Z",
+                        "product_identifier": "onemonth_freetrial",
+                        "purchase_date": "2018-10-26T23:17:53Z"
                     ]
                 ]
             ]
-        }
+        ]
     }
 
     var mockCustomerInfoResponseWithNoActiveEntitlement: [String: Any] {
-        get {
-            return [
-                "request_date": "2018-10-19T02:40:36Z",
-                "subscriber": [
-                    "original_app_user_id": "app_user_id",
-                    "original_application_version": "2083",
-                    "first_seen": "2019-06-17T16:05:33Z",
-                    "non_subscriptions": [],
-                    "subscriptions": [],
-                    "entitlements": [
-                        "\(mockEntitlementID)" : [
-                            "expires_date" : "2000-08-30T02:40:36Z",
-                            "product_identifier": "onemonth_freetrial",
-                            "purchase_date": "2018-10-26T23:17:53Z"
-                        ]
+        return [
+            "request_date": "2018-10-19T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [],
+                "subscriptions": [],
+                "entitlements": [
+                    "\(mockEntitlementID)": [
+                        "expires_date": "2000-08-30T02:40:36Z",
+                        "product_identifier": "onemonth_freetrial",
+                        "purchase_date": "2018-10-26T23:17:53Z"
                     ]
                 ]
             ]
-        }
+        ]
     }
 
     let mockCustomerInfoResponseWithoutMockEntitlement: [String: Any] = [
@@ -80,8 +77,8 @@ class BeginRefundRequestHelperTests: XCTestCase {
             "non_subscriptions": [],
             "subscriptions": [],
             "entitlements": [
-                "pro" : [
-                    "expires_date" : "2100-08-30T02:40:36Z",
+                "pro": [
+                    "expires_date": "2100-08-30T02:40:36Z",
                     "product_identifier": "onemonth_freetrial",
                     "purchase_date": "2018-10-26T23:17:53Z"
                 ]
@@ -188,7 +185,6 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         sk2Helper.maybeMockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
 
-
         let receivedStatus = try await helper.beginRefundRequest(forProduct: mockProductID)
 
         let expectedStatus = RefundRequestStatus.success
@@ -202,7 +198,6 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
         sk2Helper.maybeMockSK2Error = expectedError
-
 
         do {
             _ = try await helper.beginRefundRequest(forProduct: mockProductID)
@@ -283,7 +278,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
                 entitlementID: nil).description)
 
         do {
-            let _ = try await helper.beginRefundRequestForActiveEntitlement()
+            _ = try await helper.beginRefundRequestForActiveEntitlement()
             XCTFail("beginRefundRequestForActiveEntitlement should have thrown error")
         } catch {
             expect(error).to(matchError(expectedError))
