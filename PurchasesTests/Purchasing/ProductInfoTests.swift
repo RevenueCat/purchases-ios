@@ -44,7 +44,7 @@ class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsPriceCorrectly() throws {
         let price: NSDecimalNumber = 9.99
         let productInfo: ProductInfo = .createMockProductInfo(price: price as Decimal)
-        expect(try productInfo.asDictionary()["price"] as? NSNumber) == price
+        expect(try productInfo.asDictionary()["price"] as? String) == price.description
     }
 
     func testAsDictionaryConvertsNormalDurationCorrectly() throws {
@@ -80,7 +80,7 @@ class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsIntroPriceCorrectly() throws {
         let introPrice: NSDecimalNumber = 6.99
         let productInfo: ProductInfo = .createMockProductInfo(introPrice: introPrice as Decimal)
-        expect(try productInfo.asDictionary()["introductory_price"] as? NSNumber) == introPrice
+        expect(try productInfo.asDictionary()["introductory_price"]) as? String == introPrice.description
     }
 
     func testAsDictionaryConvertsSubscriptionGroupCorrectly() {
@@ -111,15 +111,15 @@ class ProductInfoTests: XCTestCase {
         let receivedOffers = try XCTUnwrap(dictionary["offers"] as? [[String: NSObject]])
 
         expect(receivedOffers[0]["offer_identifier"] as? String) == discount1.offerIdentifier
-        expect(receivedOffers[0]["price"] as? NSNumber) == discount1.price as NSDecimalNumber
+        expect(receivedOffers[0]["price"] as? String) == discount1.price.description
         expect((receivedOffers[0]["payment_mode"] as? NSNumber)?.intValue) == discount1.paymentMode.rawValue
         
         expect(receivedOffers[1]["offer_identifier"] as? String) == discount2.offerIdentifier
-        expect(receivedOffers[1]["price"] as? NSNumber) == discount2.price as NSDecimalNumber
+        expect(receivedOffers[1]["price"] as? String) == discount2.price.description
         expect((receivedOffers[1]["payment_mode"] as? NSNumber)?.intValue) == discount2.paymentMode.rawValue
         
         expect(receivedOffers[2]["offer_identifier"] as? String) == discount3.offerIdentifier
-        expect(receivedOffers[2]["price"] as? NSNumber) == discount3.price as NSDecimalNumber
+        expect(receivedOffers[2]["price"] as? String) == discount3.price.description
         expect((receivedOffers[2]["payment_mode"] as? NSNumber)?.intValue) == discount3.paymentMode.rawValue
     }
     
@@ -146,7 +146,7 @@ class ProductInfoTests: XCTestCase {
                                                               normalDuration: "P3Y",
                                                               introDuration: "P3W",
                                                               introDurationType: .freeTrial,
-                                                              introPrice: 0,
+                                                              introPrice: 15.13,
                                                               subscriptionGroup: "cool_group",
                                                               discounts: [discount1, discount2, discount3])
 

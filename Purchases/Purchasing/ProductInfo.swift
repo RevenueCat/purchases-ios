@@ -73,11 +73,12 @@ extension ProductInfo: Encodable {
             try container.encode(self.paymentMode, forKey: .paymentMode)
         }
         try container.encode(self.currencyCode, forKey: .currencyCode)
-        try container.encode(self.price, forKey: .price)
+        try container.encode((self.price as NSDecimalNumber).description, forKey: .price)
         try container.encodeIfPresent(self.subscriptionGroup, forKey: .subscriptionGroup)
         try container.encodeIfPresent(self.discounts, forKey: .discounts)
 
-        try container.encodeIfPresent(self.introPrice, forKey: .introPrice)
+        try container.encodeIfPresent((self.introPrice as NSDecimalNumber?)?.description,
+                                      forKey: .introPrice)
 
         try container.encodeIfPresent(self.normalDuration, forKey: .normalDuration)
 
