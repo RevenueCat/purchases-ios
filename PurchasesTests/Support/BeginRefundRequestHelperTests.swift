@@ -219,7 +219,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "")
 
-        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: mockEntitlementID).description)
+        let expectedError = ErrorUtils.beginRefundRequestError(
+            withMessage: Strings.purchase.begin_refund_customer_info_error(
+                entitlementID: mockEntitlementID).description)
 
         do {
             _ = try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
@@ -237,7 +239,8 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "")
 
-        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description)
+        let expectedError = ErrorUtils.beginRefundRequestError(
+            withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description)
 
         do {
             _ = try await helper.beginRefundRequestForActiveEntitlement()
@@ -275,7 +278,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
         customerInfoManager.stubbedCustomerInfo = nil
 
-        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(entitlementID: nil).description)
+        let expectedError = ErrorUtils.beginRefundRequestError(
+            withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
+                entitlementID: nil).description)
 
         do {
             let _ = try await helper.beginRefundRequestForActiveEntitlement()
