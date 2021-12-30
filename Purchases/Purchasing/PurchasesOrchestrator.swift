@@ -21,6 +21,7 @@ import StoreKit
 
 }
 
+// swiftlint:disable file_length type_body_length
 class PurchasesOrchestrator {
 
     var finishTransactions: Bool { systemInfo.finishTransactions }
@@ -192,7 +193,8 @@ class PurchasesOrchestrator {
     }
 
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
-        // todo: clean up, move to new class along with the private funcs below
+        // todo: clean up, move to new class along with the private funcs below, remove
+        // swiftlint disable for length warning
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            let product = package.storeProduct.sk2Product {
             _ = Task<Void, Never> {
@@ -290,15 +292,24 @@ class PurchasesOrchestrator {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(for productID: String, completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        beginRefundRequestHelper.beginRefundRequest(productID: productID) { result in
-            switch result {
-            case .failure(let error):
-                completion(.error, error)
-            case .success(let status):
-                completion(status, nil)
-            }
-        }
+    func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
+        return try await beginRefundRequestHelper.beginRefundRequest(forProduct: productID)
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
+        return try await beginRefundRequestHelper.beginRefundRequestForActiveEntitlement()
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
+        return try await beginRefundRequestHelper.beginRefundRequest(forEntitlement: entitlementID)
     }
 
 #endif
@@ -642,5 +653,3 @@ private extension PurchasesOrchestrator {
     }
 
 }
-
-// swiftlint:disable:this file_length

@@ -72,7 +72,9 @@ class PurchasesTests: XCTestCase {
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                              customerInfoManager: customerInfoManager,
                                                              identityManager: identityManager)
-        mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
+        mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
+                                                                    customerInfoManager: customerInfoManager,
+                                                                    identityManager: identityManager)
         mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
     }
 

@@ -107,7 +107,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                             customerInfoManager: customerInfoManager,
                                                                             identityManager: mockIdentityManager)
-        self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
+        self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
+                                                                         customerInfoManager: customerInfoManager,
+                                                                         identityManager: mockIdentityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
     }
 

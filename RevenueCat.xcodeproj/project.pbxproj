@@ -821,6 +821,7 @@
 		2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */,
 				359E3ABD26FBE8AB0094617C /* Mocks */,
 				2D8FC8AB26E01AE70049A85C /* PurchasesOrchestratorTests.swift */,
 				2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */,
@@ -862,7 +863,6 @@
 		2DC5622224EC63430031F69B /* PurchasesTests */ = {
 			isa = PBXGroup;
 			children = (
-				35E840C8270FB51C00899AE2 /* Support */,
 				F5BE444626985E6E00254A30 /* Attribution */,
 				37E35AE0CDC4C2AA8260FB58 /* Caching */,
 				35F82BBB26A9BFA60051DF03 /* FoundationExtensions */,
@@ -1210,14 +1210,6 @@
 			children = (
 				35E840C5270FB47C00899AE2 /* ManageSubscriptionsHelper.swift */,
 				A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */,
-			);
-			path = Support;
-			sourceTree = "<group>";
-		};
-		35E840C8270FB51C00899AE2 /* Support */ = {
-			isa = PBXGroup;
-			children = (
-				A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";

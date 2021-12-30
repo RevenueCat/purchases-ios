@@ -259,24 +259,4 @@ extension Purchases {
 
 #endif
 
-#if os(iOS)
-
-    @available(iOS 15.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    @objc func beginRefundRequestAsync(for productID: String) async throws -> RefundRequestStatus {
-        return try await withCheckedThrowingContinuation { continuation in
-            beginRefundRequest(for: productID) { result, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                continuation.resume(returning: result)
-            }
-        }
-    }
-
-#endif
-
 }

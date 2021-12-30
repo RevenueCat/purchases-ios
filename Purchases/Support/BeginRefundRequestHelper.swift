@@ -20,6 +20,8 @@ import Foundation
 class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
+    private let customerInfoManager: CustomerInfoManager
+    private let identityManager: IdentityManager
 
 #if os(iOS)
     @available(iOS 15.0, *)
@@ -29,26 +31,48 @@ class BeginRefundRequestHelper {
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
 #endif
 
-    init(systemInfo: SystemInfo) {
+    init(systemInfo: SystemInfo, customerInfoManager: CustomerInfoManager, identityManager: IdentityManager) {
         self.systemInfo = systemInfo
+        self.customerInfoManager = customerInfoManager
+        self.identityManager = identityManager
     }
 
 #if os(iOS)
     /*
-     * Entry point for beginning the refund request. fatalErrors if beginning a refund request is not supported
-     * on the current platform, else passes the request on to `beginRefundRequest(productID:)`.
+     * Entry point for beginning the refund request. Handles getting the current windowScene and verifying the
+     * transaction before calling into `SK2BeginRefundRequestHelper`'s `initiateRefundRequest`.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(productID: String, completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
-        _ = Task<Void, Never> {
-            let result = await self.beginRefundRequest(productID: productID)
-            completion(result)
+    @MainActor
+    func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
+        guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
+            throw ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene")
         }
 
-        return
+        let transactionID = try await sk2Helper.verifyTransaction(productID: productID)
+        return try await sk2Helper.initiateRefundRequest(transactionID: transactionID,
+                                                         windowScene: windowScene)
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
+        let entitlement = try await getEntitlement(maybeEntitlementID: entitlementID)
+        return try await self.beginRefundRequest(forProduct: entitlement.productIdentifier)
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
+        let activeEntitlement = try await getEntitlement(maybeEntitlementID: nil)
+        return try await self.beginRefundRequest(forProduct: activeEntitlement.productIdentifier)
     }
 #endif
 }
@@ -61,23 +85,51 @@ class BeginRefundRequestHelper {
 private extension BeginRefundRequestHelper {
 
     /*
-     * Main worker function for beginning a refund request. Handles getting the current windowScene and verifying the
-     * transaction before calling into `SK2BeginRefundRequestHelper`'s `initiateRefundRequest`.
+     * Gets entitlement with the given `entitlementID` from customerInfo, or the active entitlement
+     * if no ID passed in.
      */
-    @MainActor
-    func beginRefundRequest(productID: String) async -> Result<RefundRequestStatus, Error> {
-        guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
-            return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
-        }
+    func getEntitlement(maybeEntitlementID: String?) async throws -> EntitlementInfo {
+        let currentAppUserID = identityManager.currentAppUserID
+        return try await withCheckedThrowingContinuation { continuation in
+            customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
+                if let error = maybeError {
+                    let message = Strings.purchase.begin_refund_customer_info_error(
+                        entitlementID: maybeEntitlementID).description
+                    continuation.resume(
+                        throwing: ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
+                    Logger.error(message)
+                    return
+                }
 
-        let transactionVerificationResult = await sk2Helper.verifyTransaction(productID: productID)
+                guard let customerInfo = maybeCustomerInfo else {
+                    let message = Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
+                        entitlementID: maybeEntitlementID).description
+                    continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
+                    Logger.error(message)
+                    return
+                }
 
-        switch transactionVerificationResult {
-        case .failure(let verificationError):
-            return .failure(verificationError)
-        case .success(let transactionID):
-            return await sk2Helper.initiateRefundRequest(transactionID: transactionID,
-                                                         windowScene: windowScene)
+                if let entitlementID = maybeEntitlementID {
+                    guard let entitlement = customerInfo.entitlements[entitlementID] else {
+                        let message = Strings.purchase.begin_refund_no_entitlement_found(
+                            entitlementID: entitlementID).description
+                        continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
+                        Logger.error(message)
+                        return
+                    }
+                    continuation.resume(returning: entitlement)
+                    return
+                }
+
+                guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
+                    let message = Strings.purchase.begin_refund_no_active_entitlement.description
+                    continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
+                    Logger.error(message)
+                    return
+                }
+
+                continuation.resume(returning: activeEntitlement)
+            }
         }
     }
 

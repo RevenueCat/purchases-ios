@@ -19,17 +19,40 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     var maybeMockError: Error?
     var maybeMockRefundRequestStatus: RefundRequestStatus?
 
-#if os(iOS) || targetEnvironment(macCatalyst)
-    @available(iOS 15.0, macCatalyst 15, *)
-    @available(watchOS, unavailable)
+#if os(iOS)
+    @available(iOS 15.0, *)
     @available(macOS, unavailable)
+    @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    override func beginRefundRequest(productID: String,
-                                     completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
+    override func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
         if let error = maybeMockError {
-            completion(.failure(error))
+            throw error
         } else {
-            completion(.success(maybeMockRefundRequestStatus ?? RefundRequestStatus.success))
+            return maybeMockRefundRequestStatus ?? RefundRequestStatus.success
+        }
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    override func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
+        if let error = maybeMockError {
+            throw error
+        } else {
+            return maybeMockRefundRequestStatus ?? RefundRequestStatus.success
+        }
+    }
+
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    override func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
+        if let error = maybeMockError {
+            throw error
+        } else {
+            return maybeMockRefundRequestStatus ?? RefundRequestStatus.success
         }
     }
 #endif
