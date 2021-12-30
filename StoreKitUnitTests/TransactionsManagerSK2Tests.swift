@@ -21,6 +21,16 @@ class TransactionsManagerSK2Tests: StoreKitConfigTestCase {
     var mockReceiptParser: MockReceiptParser!
     var transactionsManager: TransactionsManager!
 
+    override class func setUp() {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            _ = Task {
+                // Silence warning in tests:
+                // "Making a purchase without listening for transaction updates risks missing successful purchases.
+                for await _ in Transaction.updates {}
+            }
+        }
+    }
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
