@@ -97,6 +97,7 @@ private extension BeginRefundRequestHelper {
                         entitlementID: maybeEntitlementID).description
                     continuation.resume(
                         throwing: ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
+                    Logger.error(message)
                     return
                 }
 
@@ -104,6 +105,7 @@ private extension BeginRefundRequestHelper {
                     let message = Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
                         entitlementID: maybeEntitlementID).description
                     continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
+                    Logger.error(message)
                     return
                 }
 
@@ -112,6 +114,7 @@ private extension BeginRefundRequestHelper {
                         let message = Strings.purchase.begin_refund_no_entitlement_found(
                             entitlementID: entitlementID).description
                         continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
+                        Logger.error(message)
                         return
                     }
                     continuation.resume(returning: entitlement)
@@ -121,6 +124,7 @@ private extension BeginRefundRequestHelper {
                 guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
                     let message = Strings.purchase.begin_refund_no_active_entitlement.description
                     continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
+                    Logger.error(message)
                     return
                 }
 
