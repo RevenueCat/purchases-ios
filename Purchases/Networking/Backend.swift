@@ -89,7 +89,7 @@ class Backend {
     func post(receiptData: Data,
               appUserID: String,
               isRestore: Bool,
-              productInfo: ProductInfo?,
+              productData: ProductRequestData?,
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
@@ -104,7 +104,7 @@ class Backend {
 
         let cacheKey =
         """
-        \(appUserID)-\(isRestore)-\(fetchToken)-\(productInfo?.cacheKey ?? "")
+        \(appUserID)-\(isRestore)-\(fetchToken)-\(productData?.cacheKey ?? "")
         -\(offeringIdentifier ?? "")-\(observerMode)-\(subscriberAttributesByKey?.debugDescription ?? "")"
         """
 
@@ -112,8 +112,13 @@ class Backend {
             return
         }
 
-        if let productInfo = productInfo {
-            body.merge(productInfo.asDictionary()) { _, new in new }
+        if let productData = productData {
+            do {
+                body += try productData.asDictionary()
+            } catch {
+                completion(nil, error)
+                return
+            }
         }
 
         if let subscriberAttributesByKey = subscriberAttributesByKey {
@@ -602,9 +607,11 @@ private extension Backend {
                 maybeError: Error?,
                 file: String = #fileID,
                 function: String = #function,
+                line: UInt = #line,
                 completion: BackendCustomerInfoResponseHandler) {
         if let error = maybeError {
-            completion(nil, ErrorUtils.networkError(withUnderlyingError: error, generatedBy: "\(file) \(function)"))
+            completion(nil, ErrorUtils.networkError(withUnderlyingError: error,
+                                                    fileName: file, functionName: function, line: line))
             return
         }
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
@@ -629,8 +636,8 @@ private extension Backend {
         if !isErrorStatusCode && maybeCustomerInfo == nil {
             let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
             completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: maybeCustomerInfoError,
-                                                                 generatedBy: "\(file) \(function)",
-                                                                 extraContext: extraContext))
+                                                                 extraContext: extraContext,
+                                                                 fileName: file, functionName: function, line: line))
             return
         }
 

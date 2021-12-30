@@ -75,6 +75,7 @@ private extension HTTPClient {
             "X-Platform-Flavor": systemInfo.platformFlavor,
             "X-Client-Version": SystemInfo.appVersion,
             "X-Client-Build-Version": SystemInfo.buildVersion,
+            "X-StoreKit2-Enabled": "\(self.systemInfo.useStoreKit2IfAvailable)",
             "X-Observer-Mode-Enabled": observerMode
         ]
 
@@ -222,6 +223,11 @@ private extension HTTPClient {
                     shouldBeginNextRequestWhenFinished = true
                 }
             }
+        }
+
+        if DNSChecker.isBlockedAPIError(maybeNetworkError),
+            let resolvedHost = DNSChecker.blockedHostFromError(maybeNetworkError) {
+            Logger.error(NetworkStrings.blocked_network(newHost: resolvedHost))
         }
 
         if let httpResponse = maybeHTTPResponse,

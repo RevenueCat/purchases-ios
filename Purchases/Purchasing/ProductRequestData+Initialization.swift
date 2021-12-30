@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ProductInfoExtractor.swift
+//  ProductRequestData+Initialization.swift
 //
 //  Created by Juanpe Catalán on 8/7/21.
 //
@@ -15,28 +15,29 @@
 import Foundation
 import StoreKit
 
-enum ProductInfoExtractor {
+extension ProductRequestData {
 
-    static func extractInfo(from product: SK1Product) -> ProductInfo {
-        let paymentMode = extractPaymentMode(for: product)
-        let introPrice = extractIntroPrice(for: product)
+    /// Initializes a `ProductRequestData` from an `SK1Product`
+    init(with product: SK1Product) {
+        let paymentMode = Self.extractPaymentMode(for: product)
+        let introPrice = Self.extractIntroPrice(for: product)
 
-        let normalDuration = extractNormalDuration(for: product)
-        let introDuration = extractIntroDuration(for: product)
-        let introDurationType = extractIntroDurationType(for: product)
+        let normalDuration = Self.extractNormalDuration(for: product)
+        let introDuration = Self.extractIntroDuration(for: product)
+        let introDurationType = Self.extractIntroDurationType(for: product)
 
-        let subscriptionGroup = extractSubscriptionGroup(for: product)
-        let discounts = extractDiscounts(for: product)
+        let subscriptionGroup = Self.extractSubscriptionGroup(for: product)
+        let discounts = Self.extractDiscounts(for: product)
 
-        return ProductInfo(
+        self.init(
             productIdentifier: product.productIdentifier,
             paymentMode: paymentMode,
-            currencyCode: product.priceLocale.rc_currencyCode(),
-            price: product.price,
+            currencyCode: product.priceLocale.currencyCode,
+            price: product.price as Decimal,
             normalDuration: normalDuration,
             introDuration: introDuration,
             introDurationType: introDurationType,
-            introPrice: introPrice,
+            introPrice: introPrice as Decimal?,
             subscriptionGroup: subscriptionGroup,
             discounts: discounts
         )
@@ -46,12 +47,12 @@ enum ProductInfoExtractor {
 
 // MARK: - private methods
 
-private extension ProductInfoExtractor {
+private extension ProductRequestData {
 
-    static func extractIntroDurationType(for product: SK1Product) -> PromotionalOffer.IntroDurationType {
+    static func extractIntroDurationType(for product: SK1Product) -> PromotionalOffer.PaymentMode {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
-            return paymentMode == .freeTrial ? .freeTrial : .introPrice
+            return .init(skProductDiscountPaymentMode: paymentMode)
         } else {
             return .none
         }

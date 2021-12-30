@@ -14,7 +14,8 @@
 import Foundation
 import StoreKit
 
-@objc public class SubscriptionPeriod: NSObject {
+@objc(RCSubscriptionPeriod)
+public class SubscriptionPeriod: NSObject {
 
     public let value: Int
     public let unit: Unit
@@ -134,3 +135,8 @@ fileprivate extension SubscriptionPeriod.Unit {
     }
 
 }
+
+// MARK: - Encodable
+
+extension SubscriptionPeriod.Unit: Encodable { }
+extension SubscriptionPeriod: Encodable { }

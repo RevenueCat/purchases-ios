@@ -41,6 +41,6 @@ if which swiftlint >/dev/null; then
   echo "linter command: ${lint_command}"
   $lint_command
 else
-  echo "error: SwiftLint not installed in ${HOMEBREW_BINARY_DESTINATION}, download from https://github.com/realm/SwiftLint"
+  echo "Warning: SwiftLint not installed in ${HOMEBREW_BINARY_DESTINATION}, download from https://github.com/realm/SwiftLint"
 fi
 

@@ -117,9 +117,9 @@ class PurchasesTests: XCTestCase {
         var postedReceiptData: Data?
         var postedIsRestore: Bool?
         var postedProductID: String?
-        var postedPrice: NSDecimalNumber?
+        var postedPrice: Decimal?
         var postedPaymentMode: PromotionalOffer.PaymentMode?
-        var postedIntroPrice: NSDecimalNumber?
+        var postedIntroPrice: Decimal?
         var postedCurrencyCode: String?
         var postedSubscriptionGroup: String?
         var postedDiscounts: Array<PromotionalOffer>?
@@ -134,7 +134,7 @@ class PurchasesTests: XCTestCase {
         override func post(receiptData: Data,
                            appUserID: String,
                            isRestore: Bool,
-                           productInfo: ProductInfo?,
+                           productData: ProductRequestData?,
                            presentedOfferingIdentifier: String?,
                            observerMode: Bool,
                            subscriberAttributes: [String: SubscriberAttribute]?,
@@ -143,16 +143,16 @@ class PurchasesTests: XCTestCase {
             postedReceiptData = receiptData
             postedIsRestore = isRestore
 
-            if let productInfo = productInfo {
-                postedProductID = productInfo.productIdentifier
-                postedPrice = productInfo.price
+            if let productData = productData {
+                postedProductID = productData.productIdentifier
+                postedPrice = productData.price
 
-                postedPaymentMode = productInfo.paymentMode
-                postedIntroPrice = productInfo.introPrice
-                postedSubscriptionGroup = productInfo.subscriptionGroup
+                postedPaymentMode = productData.paymentMode
+                postedIntroPrice = productData.introPrice
+                postedSubscriptionGroup = productData.subscriptionGroup
 
-                postedCurrencyCode = productInfo.currencyCode
-                postedDiscounts = productInfo.discounts
+                postedCurrencyCode = productData.currencyCode
+                postedDiscounts = productData.discounts
             }
 
             postedOfferingIdentifier = presentedOfferingIdentifier
@@ -634,7 +634,7 @@ class PurchasesTests: XCTestCase {
         expect(self.mockProductsManager.invokedCacheProductParameter) == product
     }
 
-    func testDoesntFetchProductInfoIfEmptyList() {
+    func testDoesntFetchProductDataIfEmptyList() {
         setupPurchases()
         var completionCalled = false
         mockProductsManager.resetMock()
@@ -790,7 +790,7 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
     }
 
-    func testSendsProductInfoIfProductIsCached() {
+    func testSendsProductDataIfProductIsCached() {
         setupPurchases()
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
         purchases!.getProducts(productIdentifiers) { (newProducts) in
@@ -814,11 +814,11 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(product.price))
+            expect(self.backend.postedPrice).to(equal(product.price as Decimal))
 
             if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                 expect(self.backend.postedPaymentMode).to(equal(PromotionalOffer.PaymentMode.payAsYouGo))
-                expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price))
+                expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price as Decimal?))
             } else {
                 expect(self.backend.postedPaymentMode).to(equal(PromotionalOffer.PaymentMode.none))
                 expect(self.backend.postedIntroPrice).to(beNil())
@@ -842,7 +842,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    func testFetchesProductInfoIfNotCached() {
+    func testFetchesProductDataIfNotCached() {
         systemInfo.stubbedIsApplicationBackgrounded = true
         setupPurchases()
         let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
@@ -1478,7 +1478,7 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
         expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-        expect(self.backend.postedPrice).to(equal(product.price))
+        expect(self.backend.postedPrice).to(equal(product.price as Decimal))
     }
 
     func testPromoPaymentDelegateMethodCachesProduct() {
@@ -1801,7 +1801,7 @@ class PurchasesTests: XCTestCase {
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
     }
 
-    func testProductInfoIsCachedForOfferings() {
+    func testProductDataIsCachedForOfferings() {
         setupPurchases()
         mockOfferingsManager.stubbedOfferingsCompletionResult =
         (offeringsFactory.createOfferings(from: [:], data: [:]), nil)
@@ -1827,7 +1827,7 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(product.price))
+            expect(self.backend.postedPrice).to(equal(product.price as Decimal))
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
 
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
@@ -2412,7 +2412,7 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(package.storeProduct.productIdentifier))
-            expect(self.backend.postedPrice) == package.storeProduct.price as NSDecimalNumber
+            expect(self.backend.postedPrice) == package.storeProduct.price
             expect(self.backend.postedOfferingIdentifier).to(equal("base"))
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }

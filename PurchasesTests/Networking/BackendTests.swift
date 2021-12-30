@@ -134,7 +134,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -177,7 +177,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -188,7 +188,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -212,7 +212,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -223,7 +223,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: !isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -247,7 +247,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -258,7 +258,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData2,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -282,19 +282,19 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
                       completion: { (customerInfo, error) in
             completionCalled += 1
         })
-        let productInfo: ProductInfo = .createMockProductInfo(currencyCode: "USD")
+        let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
 
         backend?.post(receiptData: receiptData2,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: productInfo,
+                      productData: productData,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -318,7 +318,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: "offering_a",
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -329,7 +329,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData2,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: "offering_b",
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -364,13 +364,13 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
     }
 
-    func testPostsReceiptDataWithProductInfoCorrectly() {
+    func testPostsReceiptDataWithProductRequestDataCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
         let productIdentifier = "a_great_product"
         let offeringIdentifier = "a_offering"
-        let price = 4.99 as NSDecimalNumber
+        let price: Decimal = 4.99
         let group = "sub_group"
 
         let currencyCode = "BFD"
@@ -378,16 +378,16 @@ class BackendTests: XCTestCase {
         let paymentMode: PromotionalOffer.PaymentMode = .none
 
         var completionCalled = false
-        let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
-                                                              paymentMode: paymentMode,
-                                                              currencyCode: currencyCode,
-                                                              price: price,
-                                                              subscriptionGroup: group)
+        let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
+                                                                     paymentMode: paymentMode,
+                                                                     currencyCode: currencyCode,
+                                                                     price: price,
+                                                                     subscriptionGroup: group)
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
-                      productInfo: productInfo,
+                      productData: productData,
                       presentedOfferingIdentifier: offeringIdentifier,
                       observerMode: false,
                       subscriberAttributes: nil,
@@ -420,7 +420,7 @@ class BackendTests: XCTestCase {
 
             expect(call.path).to(equal(expectedCall.path))
             expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
-            XCTAssert(call.body!.keys == expectedCall.body!.keys)
+            expect(call.body!.keys) == expectedCall.body!.keys
 
             expect(call.headers["Authorization"]).toNot(beNil())
             expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
@@ -435,11 +435,11 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        let productInfo: ProductInfo = .createMockProductInfo()
+        let productData: ProductRequestData = .createMockProductData()
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
-                      productInfo: productInfo,
+                      productData: productData,
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
@@ -457,12 +457,12 @@ class BackendTests: XCTestCase {
     func postPaymentMode(paymentMode: PromotionalOffer.PaymentMode) {
         var completionCalled = false
 
-        let productInfo: ProductInfo = .createMockProductInfo(paymentMode: paymentMode)
+        let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
-                      productInfo: productInfo,
+                      productData: productData,
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
@@ -513,7 +513,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
@@ -540,7 +540,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
@@ -566,7 +566,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
@@ -1053,7 +1053,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: true,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
@@ -1204,7 +1204,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -1216,11 +1216,11 @@ class BackendTests: XCTestCase {
                                         price: 12,
                                         paymentMode: .payAsYouGo,
                                         subscriptionPeriod: .init(value: 10, unit: .month))
-        let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount])
+        let productData: ProductRequestData = .createMockProductData(discounts: [discount])
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: productInfo,
+                      productData: productData,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
@@ -1238,7 +1238,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
         
         let productIdentifier = "a_great_product"
-        let price = 4.99 as NSDecimalNumber
+        let price: Decimal = 4.99
         let group = "sub_group"
         let currencyCode = "BFD"
         let paymentMode: PromotionalOffer.PaymentMode = .none
@@ -1247,17 +1247,17 @@ class BackendTests: XCTestCase {
                                         price: 12,
                                         paymentMode: .payAsYouGo,
                                         subscriptionPeriod: .init(value: 1, unit: .year))
-        let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
-                                                              paymentMode: paymentMode,
-                                                              currencyCode: currencyCode,
-                                                              price: price,
-                                                              subscriptionGroup: group,
-                                                              discounts: [discount])
+        let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
+                                                                     paymentMode: paymentMode,
+                                                                     currencyCode: currencyCode,
+                                                                     price: price,
+                                                                     subscriptionGroup: group,
+                                                                     discounts: [discount])
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
-                      productInfo: productInfo,
+                      productData: productData,
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
@@ -1569,7 +1569,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil, completion: { (customerInfo, error) in
@@ -1579,7 +1579,7 @@ class BackendTests: XCTestCase {
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: isRestore,
-                      productInfo: nil,
+                      productData: nil,
                       presentedOfferingIdentifier: "offering_a",
                       observerMode: observerMode,
                       subscriberAttributes: nil,
