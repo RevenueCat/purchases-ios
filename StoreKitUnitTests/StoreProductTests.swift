@@ -182,6 +182,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
+        expect(storeProduct.localizedPriceString) == "$4.99"
     }
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
@@ -197,6 +198,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
+        expect(storeProduct.localizedPriceString) == "$4.99"
     }
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
@@ -229,8 +231,6 @@ class StoreProductTests: StoreKitConfigTestCase {
         productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
-
-        testSession.locale = Locale(identifier: "es_ES")
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -240,8 +240,9 @@ class StoreProductTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         testSession.storefront = "ESP"
 
+        let sk2Fetcher = ProductsFetcherSK2()
+
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        var sk2Fetcher = ProductsFetcherSK2()
 
         var storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
 
@@ -254,8 +255,6 @@ class StoreProductTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "en_EN")
         testSession.storefront = "USA"
 
-        sk2Fetcher = ProductsFetcherSK2()
-
         storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
 
         storeProduct = try XCTUnwrap(storeProductSet.first)
@@ -263,8 +262,6 @@ class StoreProductTests: StoreKitConfigTestCase {
         productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
-
-        testSession.locale = Locale(identifier: "es_ES")
     }
 
     private func expectEqualProducts(_ productA: StoreProductType, _ productB: StoreProductType) {
