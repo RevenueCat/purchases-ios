@@ -20,8 +20,6 @@ class EmptyCustomerInfoTests: XCTestCase {
     }
 }
 
-// swiftlint:disable type_body_length
-// swiftlint:disable file_length
 class BasicCustomerInfoTests: XCTestCase {
     let validSubscriberResponse: [String: Any] = [
         "request_date": "2018-10-19T02:40:36Z",
@@ -282,7 +280,6 @@ class BasicCustomerInfoTests: XCTestCase {
         expect(self.customerInfo!.requestDate).toNot(beNil())
     }
 
-    // swiftlint:disable:next function_body_length
     func testIfRequestDateIsNilUsesCurrentTime() {
         let response = [
             "request_date": "2019-08-16T10:30:42Z",
@@ -482,7 +479,6 @@ class BasicCustomerInfoTests: XCTestCase {
         expect(info1).toNot(equal(info2))
     }
 
-    // swiftlint:disable:next function_body_length
     func testDifferentEntitlementsNotEqual() {
         let info1 = CustomerInfo(testData: [
             "request_date": "2018-12-20T02:40:36Z",
@@ -539,7 +535,6 @@ class BasicCustomerInfoTests: XCTestCase {
         expect(info1).toNot(equal(info2))
     }
 
-    // swiftlint:disable:next function_body_length
     func testSameEntitlementsDifferentRequestDateEqual() {
         let info1 = CustomerInfo(testData: [
             "request_date": "2018-12-21T02:40:36Z",

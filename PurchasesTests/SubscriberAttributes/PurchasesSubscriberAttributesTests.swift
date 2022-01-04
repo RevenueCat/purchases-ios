@@ -16,8 +16,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable type_body_length
-// swiftlint:disable file_length
 class PurchasesSubscriberAttributesTests: XCTestCase {
 
     var mockReceiptFetcher: MockReceiptFetcher!
@@ -61,7 +59,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     var purchases: Purchases!
 
-    // swiftlint:disable:next function_body_length
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -126,7 +123,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         UserDefaults().removePersistentDomain(forName: "TestDefaults")
     }
 
-    // swiftlint:disable:next function_body_length
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.mockIdentityManager.mockIsAnonymous = false

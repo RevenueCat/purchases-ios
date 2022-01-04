@@ -12,7 +12,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable file_length
 class EntitlementInfosTests: XCTestCase {
 
     private let formatter = DateFormatter()
@@ -45,7 +44,6 @@ extension EntitlementInfosTests {
         ]
     }
 
-    // swiftlint:disable:next function_body_length
     func testMultipleEntitlements() {
         stubResponse(
             entitlements: [
@@ -561,7 +559,6 @@ extension EntitlementInfosTests {
 
     }
 
-    // swiftlint:disable:next function_body_length
     func testParseStoreFromSubscription() {
         stubResponse(
                 entitlements: [
@@ -697,7 +694,6 @@ extension EntitlementInfosTests {
         verifyStore(Store.unknownStore)
     }
 
-    // swiftlint:disable:next function_body_length
     func testParseStoreFromNonSubscription() {
         stubResponse(
                 entitlements: [
@@ -880,7 +876,6 @@ extension EntitlementInfosTests {
         verifyStore(Store.unknownStore)
     }
 
-    // swiftlint:disable:next function_body_length
     func testParsePeriod() {
         stubResponse(
                 entitlements: [

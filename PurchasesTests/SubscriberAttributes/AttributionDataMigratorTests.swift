@@ -4,9 +4,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable identifier_name
-// swiftlint:disable type_body_length
-// swiftlint:disable file_length
 class AttributionDataMigratorTests: XCTestCase {
 
     static let defaultIdfa = "00000000-0000-0000-0000-000000000000"
@@ -652,7 +649,6 @@ private extension AttributionDataMigratorTests {
         return data
     }
 
-    // swiftlint:disable:next function_body_length
     func appsFlyerData(withIDFA idfa: KeyPresence = .defaultValue,
                        appsFlyerId: KeyPresence = .defaultValue,
                        networkID: KeyPresence = .notPresent,

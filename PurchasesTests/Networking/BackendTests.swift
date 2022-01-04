@@ -12,7 +12,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable file_length
 class BackendTests: XCTestCase {
     struct HTTPRequest {
         let HTTPMethod: String
@@ -149,10 +148,6 @@ class BackendTests: XCTestCase {
         httpClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         backend = Backend.init(httpClient: httpClient, apiKey: apiKey)
     }
-
-}
-
-extension BackendTests {
 
     func testPostsReceiptDataCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
@@ -395,7 +390,6 @@ extension BackendTests {
         expect(self.httpClient.calls.count).to(equal(2))
     }
 
-    // swiftlint:disable:next function_body_length
     func testPostsReceiptDataWithProductRequestDataCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
@@ -1240,7 +1234,6 @@ extension BackendTests {
     }
 
     @available(iOS 11.2, *)
-    // swiftlint:disable:next function_body_length
     func testPostsReceiptDataWithDiscountInfoCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
@@ -1323,7 +1316,6 @@ extension BackendTests {
         expect(completionCalled).toEventually(beTrue())
     }
 
-    // swiftlint:disable:next function_body_length
     func testOfferForSigningCorrectly() {
         let validSigningResponse: [String: Any] = [
             "offers": [

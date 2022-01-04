@@ -15,8 +15,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable type_body_length
-// swiftlint:disable file_length
 class SubscriberAttributesManagerTests: XCTestCase {
 
     var mockBackend: MockBackend!

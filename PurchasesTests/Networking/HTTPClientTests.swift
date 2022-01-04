@@ -13,7 +13,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable file_length
 class HTTPClientTests: XCTestCase {
 
     let systemInfo = MockSystemInfo(finishTransactions: true)
@@ -665,7 +664,6 @@ extension HTTPClientTests {
         expect(secondRequestFinished).toEventually(beTrue())
     }
 
-    // swiftlint:disable:next function_body_length
     func testPerformSerialRequestWaitsUntilRequestsAreDoneBeforeStartingNext() {
         let path = "/a_random_path"
         var firstRequestFinished = false

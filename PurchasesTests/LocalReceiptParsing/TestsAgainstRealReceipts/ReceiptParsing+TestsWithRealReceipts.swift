@@ -27,7 +27,6 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(receipt.expirationDate).to(beNil())
     }
 
-    // swiftlint:disable:next function_body_length
     func testInAppPurchasesAttributesForSample1() throws {
         let receiptData = sampleReceiptData(receiptName: receipt1Name)
         let receipt = try ReceiptParser().parse(from: receiptData)

@@ -8,8 +8,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable type_body_length
-// swiftlint:disable file_length
 class BackendSubscriberAttributesTests: XCTestCase {
 
     let appUserID = "abc123"

@@ -8,7 +8,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable file_length
 class DeviceCacheTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo! = nil

@@ -3,8 +3,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable file_length
-// swiftlint:disable type_body_length
 class CustomerInfoManagerTests: XCTestCase {
     var mockBackend = MockBackend()
     var mockOperationDispatcher = MockOperationDispatcher()

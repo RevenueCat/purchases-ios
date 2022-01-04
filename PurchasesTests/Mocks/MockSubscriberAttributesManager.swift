@@ -6,7 +6,6 @@
 @testable import RevenueCat
 
 // swiftlint:disable identifier_name
-// swiftlint:disable type_body_length
 // swiftlint:disable large_tuple
 // swiftlint:disable line_length
 class MockSubscriberAttributesManager: SubscriberAttributesManager {

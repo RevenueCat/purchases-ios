@@ -237,7 +237,6 @@ class OfferingsTests: XCTestCase {
 }
 
 private extension OfferingsTests {
-    // swiftlint:disable:next function_body_length
     func testPackageType(packageType: PackageType) throws {
         var identifier = Package.string(from: packageType)
         if identifier == nil {
