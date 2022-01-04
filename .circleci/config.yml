@@ -111,6 +111,7 @@ commands:
 
 jobs:
   runtest:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios
@@ -129,6 +130,7 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
   buildTvWatchAndMacOS:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios
@@ -144,6 +146,7 @@ jobs:
           command: bundle exec fastlane build_tv_watch_mac
 
   backend_integration_tests:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios
@@ -165,6 +168,7 @@ jobs:
 
 
   release-checks: 
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios
@@ -197,6 +201,7 @@ jobs:
           destination: test_report.html
           
   docs-deploy:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios
@@ -221,6 +226,7 @@ jobs:
           command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
   
   make-release:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios/
@@ -234,6 +240,7 @@ jobs:
           command: bundle exec fastlane release
 
   prepare-next-version:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios/
@@ -247,6 +254,7 @@ jobs:
           command: bundle exec fastlane prepare_next_version
 
   integration-tests-cocoapods:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios/
@@ -268,6 +276,7 @@ jobs:
           directory: IntegrationTests/CocoapodsIntegration
       
   integration-tests-swift-package-manager:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios/
@@ -280,6 +289,7 @@ jobs:
           directory: IntegrationTests/SPMIntegration/
 
   integration-tests-carthage:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios/
@@ -310,6 +320,7 @@ jobs:
           directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios/
@@ -321,6 +332,7 @@ jobs:
           directory: IntegrationTests/XcodeDirectIntegration/
 
   lint:
+    resource_class: macos.x86.medium.gen2
     macos:
       xcode: "13.2.0"
     working_directory: ~/purchases-ios/
