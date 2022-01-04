@@ -42,10 +42,6 @@ class IdentityManagerTests: XCTestCase {
                                                                systemInfo: systemInfo)
     }
 
-}
-
-extension IdentityManagerTests {
-
     func testConfigureWithAnonymousUserIDGeneratesAnAppUserID() {
         let manager = create(appUserID: nil)
         assertCorrectlyIdentifiedWithAnonymous(manager)

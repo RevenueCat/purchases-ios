@@ -7,15 +7,15 @@ import Foundation
 @testable import RevenueCat
 import StoreKit
 
-// swiftlint:disable line_length
-// swiftlint:disable identifier_name
 class MockProductsManager: ProductsManager {
 
+    // swiftlint:disable identifier_name
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiers = false
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount = 0
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersParameters: (identifiers: Set<String>, Void)?
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersParametersList = [(identifiers: Set<String>, Void)]()
     var stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult: (Set<StoreProduct>, Void)?
+    // swiftlint:enable identifier_name
 
     override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
                                                      completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
@@ -48,7 +48,9 @@ class MockProductsManager: ProductsManager {
     var invokedProductsFromOptimalStoreKitVersionParametersList = [(identifiers: Set<String>, Void)]()
 
     @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-    override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<StoreProduct> {
+    override func productsFromOptimalStoreKitVersion(
+        withIdentifiers identifiers: Set<String>
+    ) async -> Set<StoreProduct> {
         invokedProductsFromOptimalStoreKitVersion = true
         invokedProductsFromOptimalStoreKitVersionCount += 1
         invokedProductsFromOptimalStoreKitVersionParameters = (identifiers, ())

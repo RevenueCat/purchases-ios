@@ -98,12 +98,12 @@ class BackendTests: XCTestCase {
     let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
     let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!
 
-    let noOfferingsResponse: [String: Any?] = [
+    private let noOfferingsResponse: [String: Any?] = [
         "offerings": [],
         "current_offering_id": nil
     ]
 
-    let oneOfferingResponse: [String: Any] = [
+    private let oneOfferingResponse: [String: Any] = [
         "offerings": [
             [
                 "identifier": "offering_a",
@@ -123,7 +123,7 @@ class BackendTests: XCTestCase {
         "current_offering_id": "offering_a"
     ]
 
-    let validSubscriberResponse: [String: Any] = [
+    private let validSubscriberResponse: [String: Any] = [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
             "first_seen": "2019-07-17T00:05:54Z",
@@ -136,7 +136,7 @@ class BackendTests: XCTestCase {
         ]
     ]
 
-    let serverErrorResponse = [
+    private let serverErrorResponse = [
         "code": "7225",
         "message": "something is bad up in the cloud"
     ]

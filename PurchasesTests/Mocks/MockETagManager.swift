@@ -29,7 +29,7 @@ class MockETagManager: ETagManager {
         }
     }
 
-    struct InvokedHTTPResultFromCacheOrBackendParams {
+    private struct InvokedHTTPResultFromCacheOrBackendParams {
         let response: HTTPURLResponse
         let responseObject: [String: Any]?
         let error: Error?
@@ -39,8 +39,8 @@ class MockETagManager: ETagManager {
 
     var invokedHTTPResultFromCacheOrBackend = false
     var invokedHTTPResultFromCacheOrBackendCount = 0
-    var invokedHTTPResultFromCacheOrBackendParameters: InvokedHTTPResultFromCacheOrBackendParams?
-    var invokedHTTPResultFromCacheOrBackendParametersList = [InvokedHTTPResultFromCacheOrBackendParams]()
+    private var invokedHTTPResultFromCacheOrBackendParameters: InvokedHTTPResultFromCacheOrBackendParams?
+    private var invokedHTTPResultFromCacheOrBackendParametersList = [InvokedHTTPResultFromCacheOrBackendParams]()
     var stubbedHTTPResultFromCacheOrBackendResult: HTTPResponse!
     var shouldReturnResultFromBackend = true
 
