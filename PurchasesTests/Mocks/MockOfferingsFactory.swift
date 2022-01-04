@@ -11,10 +11,10 @@ class MockOfferingsFactory: OfferingsFactory {
     var nilOfferings = false
 
     override func createOfferings(from storeProductsByID: [String: StoreProduct], data: [String: Any]) -> Offerings? {
-        if (emptyOfferings) {
+        if emptyOfferings {
             return Offerings(offerings: [:], currentOfferingID: "base")
         }
-        if (nilOfferings) {
+        if nilOfferings {
             return nil
         }
 

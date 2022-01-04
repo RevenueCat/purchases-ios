@@ -5,7 +5,7 @@
 
 @testable import RevenueCat
 
-class MockInMemoryCachedOfferings<T: Offerings> : InMemoryCachedObject<Offerings> {
+class MockInMemoryCachedOfferings<T: Offerings>: InMemoryCachedObject<Offerings> {
 
     var invokedIsCacheStale = false
     var invokedIsCacheStaleCount = 0

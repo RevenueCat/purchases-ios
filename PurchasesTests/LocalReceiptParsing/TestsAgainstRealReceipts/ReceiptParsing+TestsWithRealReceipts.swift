@@ -7,33 +7,34 @@
 //
 
 import Foundation
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
 class ReceiptParsingRealReceiptTests: XCTestCase {
-    
+
     let receipt1Name = "base64encodedreceiptsample1"
 
     func testBasicReceiptAttributesForSample1() throws {
         let receiptData = sampleReceiptData(receiptName: receipt1Name)
         let receipt = try ReceiptParser().parse(from: receiptData)
-        
+
         expect(receipt.applicationVersion) == "4"
         expect(receipt.bundleId) == "com.revenuecat.sampleapp"
         expect(receipt.originalApplicationVersion) == "1.0"
         expect(receipt.creationDate) == Date(timeIntervalSince1970: 1595439548)
         expect(receipt.expirationDate).to(beNil())
     }
-    
+
+    // swiftlint:disable:next function_body_length
     func testInAppPurchasesAttributesForSample1() throws {
         let receiptData = sampleReceiptData(receiptName: receipt1Name)
         let receipt = try ReceiptParser().parse(from: receiptData)
         let inAppPurchases = receipt.inAppPurchases
-        
+
         expect(inAppPurchases.count) == 9
-        
+
         let inAppPurchase0 = inAppPurchases[0]
         expect(inAppPurchase0.quantity) == 1
         expect(inAppPurchase0.productId) == "com.revenuecat.monthly_4.99.1_week_intro"
@@ -48,7 +49,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase0.isInIntroOfferPeriod) == false
         expect(inAppPurchase0.webOrderLineItemId) == Int64(1000000054042695)
         expect(inAppPurchase0.promotionalOfferIdentifier).to(beNil())
-        
+
         let inAppPurchase1 = inAppPurchases[1]
         expect(inAppPurchase1.quantity) == 1
         expect(inAppPurchase1.productId) == "com.revenuecat.monthly_4.99.1_week_intro"
@@ -63,7 +64,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase1.isInIntroOfferPeriod) == false
         expect(inAppPurchase1.webOrderLineItemId) == Int64(1000000054042739)
         expect(inAppPurchase1.promotionalOfferIdentifier).to(beNil())
-        
+
         let inAppPurchase2 = inAppPurchases[2]
         expect(inAppPurchase2.quantity) == 1
         expect(inAppPurchase2.productId) == "com.revenuecat.monthly_4.99.1_week_intro"
@@ -173,11 +174,11 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
 }
 
 private extension ReceiptParsingRealReceiptTests {
-    
+
     func sampleReceiptData(receiptName: String) -> Data {
         NSDataExtensionsTests.sampleReceiptData(receiptName: receiptName)
     }
-    
+
     func readFile(named filename: String) -> String {
         NSDataExtensionsTests.readFile(named: filename)
     }

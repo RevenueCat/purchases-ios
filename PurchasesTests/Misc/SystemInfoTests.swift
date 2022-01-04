@@ -1,5 +1,5 @@
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -77,30 +77,30 @@ class SystemInfoTests: XCTestCase {
                                     finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
     }
-    
+
     func testIsSandbox() throws {
         expect(try SystemInfo.withReceiptResult(.sandboxReceipt).isSandbox) == true
     }
-    
+
     func testIsNotSandbox() throws {
         expect(try SystemInfo.withReceiptResult(.receiptWithData).isSandbox) == false
     }
-    
+
     func testIsNotSandboxIfNoReceiptURL() throws {
         expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
     }
 }
 
 private extension SystemInfo {
-    
+
     static func withReceiptResult(_ result: MockBundle.ReceiptURLResult) throws -> SystemInfo {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
-        
+
         return try SystemInfo(platformFlavor: nil,
                               platformFlavorVersion: nil,
                               finishTransactions: false,
                               bundle: bundle)
     }
-    
+
 }

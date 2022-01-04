@@ -11,8 +11,8 @@
 //
 //  Created by Nacho Soto on 12/15/21.
 
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -39,5 +39,5 @@ class SetExtensionsTests: XCTestCase {
             "3": 4
         ]
     }
-    
+
 }

@@ -9,12 +9,12 @@
 import Foundation
 @testable import RevenueCat
 
-
 class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
 
     convenience init(finishTransactions: Bool) {
+        // swiftlint:disable:next force_try
         try! self.init(platformFlavor: nil,
                        platformFlavorVersion: nil,
                        finishTransactions: finishTransactions)

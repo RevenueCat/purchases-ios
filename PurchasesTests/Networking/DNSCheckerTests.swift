@@ -26,6 +26,7 @@ class DNSCheckerTests: XCTestCase {
 
     func testResolvedHost() {
         let host = DNSChecker.resolvedHost(fromURL: apiURL)
+        // swiftlint:disable:next line_length
         let validIPAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
 
         expect(host!.range(of: validIPAddressRegex, options: .regularExpression)).toNot(beNil())
@@ -33,7 +34,7 @@ class DNSCheckerTests: XCTestCase {
     }
 
     func testIsBlockedURL() throws {
-        let blockedURLs = ["https://127.0.0.1/subscribers", "https://0.0.0.0/offers"];
+        let blockedURLs = ["https://127.0.0.1/subscribers", "https://0.0.0.0/offers"]
 
         for urlString in blockedURLs {
             expect(DNSChecker.isBlockedURL(try XCTUnwrap(URL(string: urlString)))) == true

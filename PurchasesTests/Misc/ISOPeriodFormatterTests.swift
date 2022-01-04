@@ -14,7 +14,7 @@ import XCTest
 @testable import RevenueCat
 
 class ISOPeriodFormatterTests: XCTestCase {
-    
+
     func testStringFromProductSubscriptionPeriodDay() throws {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) else {
             throw XCTSkip()
@@ -32,7 +32,7 @@ class ISOPeriodFormatterTests: XCTestCase {
         period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .day)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P8D"
     }
-    
+
     func testStringFromProductSubscriptionPeriodMonth() throws {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) else {
             throw XCTSkip()
@@ -68,7 +68,7 @@ class ISOPeriodFormatterTests: XCTestCase {
         period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .week)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P8W"
     }
-    
+
     func testStringFromProductSubscriptionPeriodYear() throws {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) else {
             throw XCTSkip()

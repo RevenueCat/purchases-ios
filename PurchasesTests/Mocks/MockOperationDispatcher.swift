@@ -30,9 +30,9 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchOnWorkerThreadCount = 0
     var shouldInvokeDispatchOnWorkerThreadBlock = true
     var forwardToOriginalDispatchOnWorkerThread = false
-    var invokedDispatchOnWorkerThreadRandomDelayParam: Bool? = nil
+    var invokedDispatchOnWorkerThreadRandomDelayParam: Bool?
 
-    public override func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping () -> ()) {
+    public override func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping () -> Void) {
         invokedDispatchOnWorkerThreadRandomDelayParam = withRandomDelay
         invokedDispatchOnWorkerThread = true
         invokedDispatchOnWorkerThreadCount += 1

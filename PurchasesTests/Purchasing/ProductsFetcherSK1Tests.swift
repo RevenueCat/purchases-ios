@@ -1,6 +1,6 @@
-import XCTest
 import Nimble
 import StoreKit
+import XCTest
 
 @testable import RevenueCat
 
@@ -45,10 +45,10 @@ class ProductsFetcherSK1Tests: XCTestCase {
         let productIdentifiers = Set(["1", "2", "3"])
         var completionCallCount = 0
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in
             completionCallCount += 1
 
-            self.productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
+            self.productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in
                 completionCallCount += 1
             }
         }
@@ -100,10 +100,10 @@ class ProductsFetcherSK1Tests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout + .seconds(1))
         expect(receivedProducts?.error).toNot(beNil())
     }
-    
+
     func testCacheProductCachesCorrectly() {
         let productIdentifiers = Set(["1", "2", "3"])
-        let mockProducts:Set<SK1Product> = Set(productIdentifiers.map {
+        let mockProducts: Set<SK1Product> = Set(productIdentifiers.map {
             MockSK1Product(mockProductIdentifier: $0)
         })
 
@@ -133,7 +133,6 @@ class ProductsFetcherSK1Tests: XCTestCase {
         productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
                                                 requestTimeout: tolerance)
 
-
         var completionCallCount = 0
         var maybeReceivedProducts: Result<Set<SKProduct>, Error>?
 
@@ -160,7 +159,6 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
         productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
                                                 requestTimeout: tolerance)
-
 
         var completionCallCount = 0
         var maybeReceivedProducts: Result<Set<SKProduct>, Error>?

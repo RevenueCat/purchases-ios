@@ -24,23 +24,23 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
 
     var invokedDelegateSetter = false
     var invokedDelegateSetterCount = 0
-    var invokedDelegate: StoreKit2TransactionListenerDelegate?
+    weak var invokedDelegate: StoreKit2TransactionListenerDelegate?
     var invokedDelegateList = [StoreKit2TransactionListenerDelegate?]()
     var invokedDelegateGetter = false
     var invokedDelegateGetterCount = 0
-    var stubbedDelegate: StoreKit2TransactionListenerDelegate!
+    weak var stubbedDelegate: StoreKit2TransactionListenerDelegate!
 
     override var delegate: StoreKit2TransactionListenerDelegate? {
+        get {
+            invokedDelegateGetter = true
+            invokedDelegateGetterCount += 1
+            return stubbedDelegate
+        }
         set {
             invokedDelegateSetter = true
             invokedDelegateSetterCount += 1
             invokedDelegate = newValue
             invokedDelegateList.append(newValue)
-        }
-        get {
-            invokedDelegateGetter = true
-            invokedDelegateGetterCount += 1
-            return stubbedDelegate
         }
     }
 

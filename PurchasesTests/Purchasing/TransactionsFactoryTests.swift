@@ -7,8 +7,8 @@
 //
 
 import Nimble
-import XCTest
 @testable import RevenueCat
+import XCTest
 
 class TransactionsFactoryTests: XCTestCase {
 
@@ -61,7 +61,10 @@ class TransactionsFactoryTests: XCTestCase {
     }
 
     func testNonSubscriptionsIsCorrectlyCreated() {
-        let nonSubscriptionTransactions = transactionsFactory.nonSubscriptionTransactions(withSubscriptionsData: sampleTransactions, dateFormatter: dateFormatter)
+        let nonSubscriptionTransactions = transactionsFactory.nonSubscriptionTransactions(
+            withSubscriptionsData: sampleTransactions,
+            dateFormatter: dateFormatter
+        )
         expect(nonSubscriptionTransactions.count) == 5
 
         sampleTransactions.forEach { productId, transactionsData in
@@ -77,7 +80,10 @@ class TransactionsFactoryTests: XCTestCase {
     }
 
     func testNonSubscriptionsIsEmptyIfThereAreNoNonSubscriptions() {
-        let list = transactionsFactory.nonSubscriptionTransactions(withSubscriptionsData: [:], dateFormatter: dateFormatter)
+        let list = transactionsFactory.nonSubscriptionTransactions(
+            withSubscriptionsData: [:],
+            dateFormatter: dateFormatter
+        )
         expect(list).to(beEmpty())
     }
 
@@ -98,8 +104,11 @@ class TransactionsFactoryTests: XCTestCase {
                 ]
             ]
         ]
-        
-        let nonSubscriptionTransactions = transactionsFactory.nonSubscriptionTransactions(withSubscriptionsData: subscriptionsData, dateFormatter: dateFormatter)
+
+        let nonSubscriptionTransactions = transactionsFactory.nonSubscriptionTransactions(
+            withSubscriptionsData: subscriptionsData,
+            dateFormatter: dateFormatter
+        )
         expect(nonSubscriptionTransactions.count) == 1
         expect(nonSubscriptionTransactions.first!.productId) == "lifetime_access"
     }

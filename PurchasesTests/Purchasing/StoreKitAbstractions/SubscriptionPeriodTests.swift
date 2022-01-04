@@ -61,7 +61,8 @@ class SubscriptionPeriodTests: XCTestCase {
         ]
 
         for expectation in expectations {
-            let result = Double(truncating: expectation.period.pricePerMonth(withTotalPrice: expectation.price) as NSDecimalNumber)
+            let pricePerMonth = expectation.period.pricePerMonth(withTotalPrice: expectation.price) as NSDecimalNumber
+            let result = Double(truncating: pricePerMonth)
             let expected = Double(truncating: expectation.expected as NSDecimalNumber)
 
             expect(result).to(beCloseTo(expected),

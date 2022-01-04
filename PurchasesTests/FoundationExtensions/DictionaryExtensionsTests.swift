@@ -6,20 +6,20 @@
 //  Copyright © 2020 Purchases. All rights reserved.
 //
 
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
 class DictionaryExtensionsTests: XCTestCase {
 
     func testRemovingNSNullValuesFiltersCorrectly() {
-        let testValues: [String : Any] = [
+        let testValues: [String: Any] = [
             "instrument": "guitar",
             "type": 1,
             "volume": NSNull()
         ]
-        let expectedValues: [String : Any] = [
+        let expectedValues: [String: Any] = [
             "instrument": "guitar",
             "type": 1
         ]
@@ -31,7 +31,7 @@ class DictionaryExtensionsTests: XCTestCase {
             expect(value as? NSObject) == expectedValues[key] as? NSObject
         }
     }
-    
+
     func testRemovingNSNullValuesReturnsEmptyIfOriginalIsEmpty() {
         let testValues: [String: Any] = [:]
 
@@ -98,13 +98,12 @@ class DictionaryExtensionsTests: XCTestCase {
         expect(original).to(equal(expectedDict))
     }
 
-
     func testCreatingDictionaryWithNoValues() {
-        expect(Array<String>().dictionaryWithKeys { $0 }) == [:]
+        expect([String]().dictionaryWithKeys { $0 }) == [:]
     }
 
     func testCreatingDictionaryAllowingDuplicateKeysWithNoValues() {
-        expect(Array<String>().dictionaryAllowingDuplicateKeys { $0 }) == [:]
+        expect([String]().dictionaryAllowingDuplicateKeys { $0 }) == [:]
     }
 
     func testCreatingDictionaryWithOneItem() {

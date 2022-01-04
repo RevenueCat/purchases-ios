@@ -11,15 +11,16 @@
 //
 //  Created by Juanpe Catalán on 9/8/21.
 
-import XCTest
 import Nimble
-import StoreKit
 @testable import RevenueCat
+import StoreKit
+import XCTest
 
 class OfferingsManagerTests: XCTestCase {
 
     var mockDeviceCache: MockDeviceCache!
     let mockOperationDispatcher = MockOperationDispatcher()
+    // swiftlint:disable:next force_try
     let mockSystemInfo = try! MockSystemInfo(platformFlavor: "iOS",
                                              platformFlavorVersion: "3.2.1",
                                              finishTransactions: true)
@@ -146,7 +147,6 @@ extension OfferingsManagerTests {
         expect((error as NSError).code) == ErrorCode.configurationError.rawValue
     }
 
-
     func testOfferingsForAppUserIDReturnsUnexpectedBackendResponseIfOfferingsFactoryCantCreateOfferings() throws {
         // given
         mockBackend.stubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
@@ -168,7 +168,6 @@ extension OfferingsManagerTests {
         let error = try XCTUnwrap(obtainedError)
         expect((error as NSError).code) == ErrorCode.unexpectedBackendResponseError.rawValue
     }
-
 
     func testOfferingsForAppUserIDReturnsNilUnexpectedBackendResponseIfBackendReturnsNilDataAndNilOfferings() throws {
         // given
@@ -234,7 +233,7 @@ extension OfferingsManagerTests {
 
         // when
         offeringsManager.offerings(appUserID: MockData.anyAppUserID, completion: nil)
-        
+
         // then
         expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockBackend.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
@@ -250,7 +249,7 @@ extension OfferingsManagerTests {
         expect(self.offeringsManager.getMissingProductIDs(productIDsFromStore: productsFromStore,
                                                           productIDsFromBackend: [])) == []
         expect(self.offeringsManager.getMissingProductIDs(productIDsFromStore: productsFromStore,
-                                                          productIDsFromBackend:productIDs)) == ["c"]
+                                                          productIDsFromBackend: productIDs)) == ["c"]
     }
 
 }

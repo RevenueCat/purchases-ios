@@ -13,6 +13,9 @@
 
 @testable import RevenueCat
 
+// swiftlint:disable identifier_name
+// swiftlint:disable line_length
+// swiftlint:disable force_try
 class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker {
 
     convenience init() {
@@ -64,7 +67,7 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2CheckEligibility(_ productIdentifiers: [String]) async -> [String : IntroEligibility] {
+    override func sk2CheckEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
         invokedSk2checkTrialOrIntroPriceEligibility = true
         invokedSk2checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk2checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())

@@ -21,7 +21,7 @@ class MockStoreKitWrapper: StoreKitWrapper {
         finishCalled = true
     }
 
-    var mockDelegate: StoreKitWrapperDelegate?
+    weak var mockDelegate: StoreKitWrapperDelegate?
     override var delegate: StoreKitWrapperDelegate? {
         get {
             return mockDelegate

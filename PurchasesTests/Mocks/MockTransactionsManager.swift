@@ -15,13 +15,13 @@ import Foundation
 @testable import RevenueCat
 
 class MockTransactionsManager: TransactionsManager {
-    
+
     var invokedCustomerHasTransactions = false
     var invokedCustomerHasTransactionsCount = 0
     var invokedCustomerHasTransactionsParameters: Data?
     var invokedCustomerHasTransactionsParametersList = [Data]()
     var stubbedCustomerHasTransactionsCompletionParameter = false
-    
+
     override func customerHasTransactions(receiptData: Data, completion: @escaping (Bool) -> Void) {
         invokedCustomerHasTransactions = true
         invokedCustomerHasTransactionsCount += 1
@@ -29,5 +29,5 @@ class MockTransactionsManager: TransactionsManager {
         invokedCustomerHasTransactionsParametersList.append(receiptData)
         completion(stubbedCustomerHasTransactionsCompletionParameter)
     }
-    
+
 }

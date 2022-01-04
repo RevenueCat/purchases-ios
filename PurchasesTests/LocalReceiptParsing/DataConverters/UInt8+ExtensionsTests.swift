@@ -1,10 +1,10 @@
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
 class UInt8ExtensionsTests: XCTestCase {
-    
+
     func testBitAtIndexGetsCorrectValue() {
         expect(try UInt8(0b10000000).bitAtIndex(0)) == 1
         expect(try UInt8(0b10000000).bitAtIndex(1)) == 0
@@ -20,7 +20,7 @@ class UInt8ExtensionsTests: XCTestCase {
         expect { _ = try UInt8(0b1).bitAtIndex(7) }.notTo(throwError())
         expect { _ = try UInt8(0b1).bitAtIndex(8) }.to(throwError(BitShiftError.invalidIndex(8)))
     }
-    
+
     func testValueInRangeGetsCorrectValue() {
         expect(try UInt8(0b10000000).valueInRange(from: 0, to: 1)) == 0b10
         expect(try UInt8(0b10000000).valueInRange(from: 0, to: 4)) == 0b10000
@@ -30,10 +30,13 @@ class UInt8ExtensionsTests: XCTestCase {
         expect(try UInt8(0b10001111).valueInRange(from: 2, to: 5)) == 0b0011
         expect(try UInt8(0b10000010).valueInRange(from: 6, to: 6)) == 0b1
     }
-    
+
     func testValueInRangeRaisesIfInvalidRange() {
-        expect{ _ = try UInt8(0b10000010).valueInRange(from: 1, to: 6)}.notTo(throwError())
-        expect{ _ = try UInt8(0b10000010).valueInRange(from: 6, to: 1)}.to(throwError(BitShiftError.rangeFlipped(from: 6, to: 1)))
-        expect{ _ = try UInt8(0b10000010).valueInRange(from: 6, to: 8)}.to(throwError(BitShiftError.invalidIndex(8)))
+        expect { _ = try UInt8(0b10000010).valueInRange(from: 1, to: 6)}.notTo(throwError())
+        expect {
+            _ = try UInt8(0b10000010).valueInRange(from: 6, to: 1)
+        }
+        .to(throwError(BitShiftError.rangeFlipped(from: 6, to: 1)))
+        expect { _ = try UInt8(0b10000010).valueInRange(from: 6, to: 8)}.to(throwError(BitShiftError.invalidIndex(8)))
     }
 }

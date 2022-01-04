@@ -12,8 +12,8 @@
 //  Created by Joshua Liebowitz on 9/16/21.
 
 import Foundation
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -115,7 +115,6 @@ class ErrorCodeTests: XCTestCase {
     func testConfigurationError() {
         ensureEnumCaseMatchesExpectedRawValue(errorCode: .configurationError, expectedRawValue: 23)
     }
-
 
     func testUnsupportedError() {
         ensureEnumCaseMatchesExpectedRawValue(errorCode: .unsupportedError, expectedRawValue: 24)

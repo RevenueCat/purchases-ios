@@ -14,16 +14,15 @@
 import Foundation
 import XCTest
 
-@testable import RevenueCat
 import Nimble
-
+@testable import RevenueCat
 
 class ReceiptFetcherTests: XCTestCase {
     var receiptFetcher: ReceiptFetcher!
     var mockRequestFetcher: MockRequestFetcher!
     var mockBundle: MockBundle!
     var mockSystemInfo: MockSystemInfo!
-    
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -35,7 +34,7 @@ class ReceiptFetcherTests: XCTestCase {
                                             bundle: mockBundle)
         receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: mockSystemInfo)
     }
-    
+
     func testReceiptDataWithRefreshPolicyNeverReturnsReceiptData() {
         var completionCalled = false
         var receivedData: Data?
@@ -68,7 +67,7 @@ class ReceiptFetcherTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         expect(receivedData).toNot(beNil())
     }
-    
+
     func testReceiptDataWithRefreshPolicyNeverDoesntRefreshIfEmpty() {
         var completionCalled = false
         mockBundle.receiptURLResult = .emptyReceipt
@@ -95,7 +94,7 @@ class ReceiptFetcherTests: XCTestCase {
         expect(receivedData).toNot(beNil())
         expect(receivedData).to(beEmpty())
     }
-    
+
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyRefreshesIfNil() {
         var completionCalled = false
         mockBundle.receiptURLResult = .nilURL
@@ -109,7 +108,6 @@ class ReceiptFetcherTests: XCTestCase {
         expect(receivedData).toNot(beNil())
         expect(receivedData).to(beEmpty())
     }
-
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyDoesntRefreshIfTheresData() {
         var completionCalled = false
@@ -125,7 +123,6 @@ class ReceiptFetcherTests: XCTestCase {
         expect(receivedData).toNot(beEmpty())
     }
 
-
     func testReceiptDataWithRefreshPolicyAlwaysRefreshesEvenIfTheresData() {
         var completionCalled = false
         mockBundle.receiptURLResult = .receiptWithData
@@ -139,5 +136,5 @@ class ReceiptFetcherTests: XCTestCase {
         expect(receivedData).toNot(beNil())
         expect(receivedData).toNot(beEmpty())
     }
-    
+
 }

@@ -9,6 +9,8 @@
 import Foundation
 @testable import RevenueCat
 
+// swiftlint:disable line_length
+// swiftlint:disable identifier_name
 class MockAttributionDataMigrator: AttributionDataMigrator {
 
     var invokedConvertAttributionDataToSubscriberAttributes = false

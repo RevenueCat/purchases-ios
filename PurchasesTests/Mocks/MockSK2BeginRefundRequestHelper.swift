@@ -30,6 +30,7 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
     private var untypedSK2Status: Any?
     var maybeMockSK2Status: StoreKit.Transaction.RefundRequestStatus? {
         get {
+            // swiftlint:disable:next force_cast
             return untypedSK2Status as! StoreKit.Transaction.RefundRequestStatus?
         }
         set {
@@ -60,5 +61,5 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
             throw ErrorUtils.beginRefundRequestError(withMessage: message)
         }
     }
-    
+
 }

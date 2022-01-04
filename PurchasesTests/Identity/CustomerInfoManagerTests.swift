@@ -1,8 +1,10 @@
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
+// swiftlint:disable file_length
+// swiftlint:disable type_body_length
 class CustomerInfoManagerTests: XCTestCase {
     var mockBackend = MockBackend()
     var mockOperationDispatcher = MockOperationDispatcher()
@@ -29,19 +31,18 @@ class CustomerInfoManagerTests: XCTestCase {
         customerInfoManagerDelegateCallCount = 0
         customerInfoManagerDelegateCallCustomerInfo = nil
         customerInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
-                                                    deviceCache: mockDeviceCache,
-                                                    backend: mockBackend,
-                                                    systemInfo: mockSystemInfo)
+                                                  deviceCache: mockDeviceCache,
+                                                  backend: mockBackend,
+                                                  systemInfo: mockSystemInfo)
         customerInfoManager.delegate = self
     }
 
     func testFetchAndCacheCustomerInfoCallsBackendWithRandomDelayIfAppBackgrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
-
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                        isAppBackgrounded: true,
-                                                        completion: nil)
+                                                      isAppBackgrounded: true,
+                                                      completion: nil)
 
         expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThread).toEventually(beTrue())
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
@@ -52,8 +53,8 @@ class CustomerInfoManagerTests: XCTestCase {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                        isAppBackgrounded: false,
-                                                        completion: nil)
+                                                      isAppBackgrounded: false,
+                                                      completion: nil)
 
         expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThread).toEventually(beTrue())
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
@@ -69,7 +70,7 @@ class CustomerInfoManagerTests: XCTestCase {
         var receivedCustomerInfo: CustomerInfo?
         var receivedError: Error?
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                        isAppBackgrounded: false) { customerInfo, error in
+                                                      isAppBackgrounded: false) { customerInfo, error in
             completionCalled = true
             receivedCustomerInfo = customerInfo
             receivedError = error
@@ -87,7 +88,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
         var completionCalled = false
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                        isAppBackgrounded: false) { customerInfo, error in
+                                                      isAppBackgrounded: false) { _, _ in
             completionCalled = true
         }
         expect(completionCalled).toEventually(beTrue())
@@ -103,7 +104,7 @@ class CustomerInfoManagerTests: XCTestCase {
         var receivedCustomerInfo: CustomerInfo?
         var receivedError: Error?
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                        isAppBackgrounded: false) { customerInfo, error in
+                                                      isAppBackgrounded: false) { customerInfo, error in
             completionCalled = true
             receivedCustomerInfo = customerInfo
             receivedError = error
@@ -124,7 +125,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
         var completionCalled = false
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                        isAppBackgrounded: false) { customerInfo, error in
+                                                      isAppBackgrounded: false) { _, _ in
             completionCalled = true
         }
 
@@ -141,13 +142,13 @@ class CustomerInfoManagerTests: XCTestCase {
 
         let appUserID = "myUser"
         customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
-                                                               isAppBackgrounded: false) { customerInfo, error in
+                                                             isAppBackgrounded: false) { _, _ in
             firstCompletionCalled = true
         }
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
         customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
-                                                               isAppBackgrounded: false) { customerInfo, error in
+                                                             isAppBackgrounded: false) { _, _ in
             secondCompletionCalled = true
         }
 
@@ -163,7 +164,7 @@ class CustomerInfoManagerTests: XCTestCase {
         var completionCalled = false
 
         customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
-                                                               isAppBackgrounded: false) { customerInfo, error in
+                                                             isAppBackgrounded: false) { _, _ in
             completionCalled = true
         }
 
@@ -176,7 +177,7 @@ class CustomerInfoManagerTests: XCTestCase {
         var completionCalled = false
 
         customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: "myUser",
-                                                               isAppBackgrounded: false) { customerInfo, error in
+                                                             isAppBackgrounded: false) { _, _ in
             completionCalled = true
         }
 
@@ -192,7 +193,7 @@ class CustomerInfoManagerTests: XCTestCase {
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
-            ]]);
+            ]])
 
         let jsonObject = info!.jsonObject()
 
@@ -213,7 +214,7 @@ class CustomerInfoManagerTests: XCTestCase {
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
-            ]]);
+            ]])
 
         var jsonObject = oldInfo!.jsonObject()
 
@@ -230,7 +231,7 @@ class CustomerInfoManagerTests: XCTestCase {
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
-            ]]);
+            ]])
 
         jsonObject = newInfo!.jsonObject()
 
@@ -249,7 +250,7 @@ class CustomerInfoManagerTests: XCTestCase {
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
-            ]]);
+            ]])
 
         let jsonObject = oldInfo!.jsonObject()
 
@@ -287,7 +288,7 @@ class CustomerInfoManagerTests: XCTestCase {
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
 
         var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: appUserID) { customerInfo, error in
+        customerInfoManager.customerInfo(appUserID: appUserID) { _, _ in
             completionCalled = true
         }
 
@@ -299,7 +300,7 @@ class CustomerInfoManagerTests: XCTestCase {
         let appUserID = "myUser"
 
         var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: appUserID) { customerInfo, error in
+        customerInfoManager.customerInfo(appUserID: appUserID) { _, _ in
             completionCalled = true
 
             // checking here to ensure that completion gets called from the backend call
@@ -318,7 +319,7 @@ class CustomerInfoManagerTests: XCTestCase {
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
-            ]]);
+            ]])
 
         let jsonObject = info!.jsonObject()
 
@@ -344,7 +345,7 @@ class CustomerInfoManagerTests: XCTestCase {
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
-            ]]);
+            ]])
 
         let jsonObject = info!.jsonObject()
 

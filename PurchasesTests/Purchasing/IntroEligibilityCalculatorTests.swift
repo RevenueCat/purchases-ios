@@ -1,5 +1,5 @@
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -20,8 +20,8 @@ class IntroEligibilityCalculatorTests: XCTestCase {
     }
 
     func testCheckTrialOrIntroductoryPriceEligibilityReturnsEmptyIfNoProductIds() {
-        var receivedError: Error? = nil
-        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
+        var receivedError: Error?
+        var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
         calculator.checkEligibility(with: Data(),
                                     productIdentifiers: Set()) { eligibilityByProductId, error in
@@ -37,17 +37,15 @@ class IntroEligibilityCalculatorTests: XCTestCase {
     }
 
     func testCheckTrialOrIntroductoryPriceEligibilityReturnsErrorIfReceiptParserThrows() {
-        var receivedError: Error? = nil
-        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
+        var receivedError: Error?
+        var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
         let productIdentifiers = Set(["com.revenuecat.test"])
 
         mockReceiptParser.stubbedParseError = ReceiptReadingError.receiptParsingError
 
         calculator.checkEligibility(with: Data(),
-                                    productIdentifiers: productIdentifiers) {
-            eligibilityByProductId,
-            error in
+                                    productIdentifiers: productIdentifiers) { eligibilityByProductId, error in
             completionCalled = true
             receivedError = error
             receivedEligibility = eligibilityByProductId
@@ -82,18 +80,18 @@ class IntroEligibilityCalculatorTests: XCTestCase {
     }
 
     func testCheckTrialOrIntroductoryPriceEligibilityGetsCorrectResult() {
-        var receivedError: Error? = nil
-        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
+        var receivedError: Error?
+        var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
 
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
 
         let product1 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
-                                     mockSubscriptionGroupIdentifier: "group1")
+                                      mockSubscriptionGroupIdentifier: "group1")
         product1.mockDiscount = MockDiscount()
         let product2 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product2",
-                                     mockSubscriptionGroupIdentifier: "group2")
+                                      mockSubscriptionGroupIdentifier: "group2")
         product2.mockDiscount = MockDiscount()
 
         mockProductsManager.stubbedProductsCompletionResult = Set([product1, product2])
@@ -114,13 +112,13 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         expect(receivedEligibility) == [
             "com.revenuecat.product1": IntroEligibilityStatus.eligible,
             "com.revenuecat.product2": IntroEligibilityStatus.ineligible,
-            "com.revenuecat.unknownProduct": IntroEligibilityStatus.unknown,
+            "com.revenuecat.unknownProduct": IntroEligibilityStatus.unknown
         ]
     }
 
     func testCheckTrialOrIntroductoryPriceEligibilityForProductWithoutIntroTrialReturnsIneligible() {
-        var receivedError: Error? = nil
-        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
+        var receivedError: Error?
+        var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
 
         let receipt = mockReceipt()
@@ -147,8 +145,8 @@ class IntroEligibilityCalculatorTests: XCTestCase {
     }
 
     func testCheckTrialOrIntroductoryPriceEligibilityForConsumableReturnsUnknown() {
-        var receivedError: Error? = nil
-        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
+        var receivedError: Error?
+        var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
 
         let receipt = mockReceipt()

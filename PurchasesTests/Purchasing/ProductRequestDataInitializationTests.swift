@@ -1,8 +1,9 @@
-import XCTest
 import Nimble
-import StoreKit
 @testable import RevenueCat
+import StoreKit
+import XCTest
 
+// swiftlint:disable type_name
 class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
 
     private var product: MockSK1Product!

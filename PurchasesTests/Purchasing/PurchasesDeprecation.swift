@@ -15,6 +15,7 @@ import Foundation
 import RevenueCat
 
 // Protocol that enables us to call deprecated methods without triggering warnings.
+// swiftlint:disable missing_docs
 public protocol PurchasesDeprecatable {
 
     var allowSharingAppStoreAccount: Bool { get set }
@@ -36,11 +37,11 @@ class PurchasesDeprecation: PurchasesDeprecatable {
 
     @available(*, deprecated)
     var allowSharingAppStoreAccount: Bool {
-        set {
-            purchases.allowSharingAppStoreAccount = newValue
-        }
         get {
             return purchases.allowSharingAppStoreAccount
+        }
+        set {
+            purchases.allowSharingAppStoreAccount = newValue
         }
     }
 
@@ -50,7 +51,7 @@ class PurchasesDeprecation: PurchasesDeprecatable {
     }
 
     @available(*, deprecated)
-    static func addAttributionData(_ data: [String : Any],
+    static func addAttributionData(_ data: [String: Any],
                                    from network: AttributionNetwork,
                                    forNetworkUserId networkUserId: String?) {
         Purchases.addAttributionData(data, from: network, forNetworkUserId: networkUserId)
