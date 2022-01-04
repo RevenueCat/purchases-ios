@@ -358,7 +358,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
         }
         Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion), fileName: nil)
-        Logger.user(Strings.configure.initial_app_user_id(appUserID: appUserID), fileName: nil)
+        Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil), fileName: nil)
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher

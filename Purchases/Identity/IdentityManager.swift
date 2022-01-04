@@ -58,7 +58,7 @@ class IdentityManager {
             ?? deviceCache.cachedLegacyAppUserID
             ?? Self.generateRandomID()
 
-        Logger.user(Strings.identity.identifying_app_user_id(appUserID: appUserID))
+        Logger.user(Strings.identity.identifying_app_user_id)
 
         deviceCache.cache(appUserID: appUserID)
         deviceCache.cleanupSubscriberAttributes()
@@ -93,7 +93,7 @@ class IdentityManager {
     }
 
     func logOut(completion: (Error?) -> Void) {
-        Logger.info(Strings.identity.log_out_called_for_user(appUserID: currentAppUserID))
+        Logger.info(Strings.identity.log_out_called_for_user)
 
         if currentUserIsAnonymous {
             completion(ErrorUtils.logOutAnonymousUserError())
