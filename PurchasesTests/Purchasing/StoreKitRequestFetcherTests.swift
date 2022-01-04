@@ -6,15 +6,16 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
-import XCTest
 import Nimble
 import StoreKit
+import XCTest
 
 @testable import RevenueCat
 
 class StoreKitRequestFetcherTests: XCTestCase {
 
     class MockReceiptRequest: SKReceiptRefreshRequest {
+        // swiftlint:disable:next nesting
         enum Error: Swift.Error {
             case unknown
         }
@@ -24,7 +25,7 @@ class StoreKitRequestFetcherTests: XCTestCase {
         override func start() {
             startCalled = true
             DispatchQueue.main.async {
-                if (self.fails) {
+                if self.fails {
                     self.delegate?.request!(self, didFailWithError: Error.unknown)
                 } else {
                     self.delegate?.requestDidFinish!(self)
@@ -43,10 +44,10 @@ class StoreKitRequestFetcherTests: XCTestCase {
         var requests: [SKRequest] = []
 
         override func receiptRefreshRequest() -> SKReceiptRefreshRequest {
-            let r = MockReceiptRequest()
-            requests.append(r)
-            r.fails = self.fails
-            return r
+            let request = MockReceiptRequest()
+            requests.append(request)
+            request.fails = self.fails
+            return request
         }
     }
 
@@ -65,11 +66,11 @@ class StoreKitRequestFetcherTests: XCTestCase {
             self.receiptFetched = true
             self.receiptFetchedCallbackCount += 1
         }
-        
+
         self.fetcher!.fetchReceiptData {
             self.receiptFetchedCallbackCount += 1
         }
-        
+
         self.fetcher!.fetchReceiptData {
             self.receiptFetchedCallbackCount += 1
         }
@@ -85,9 +86,10 @@ class StoreKitRequestFetcherTests: XCTestCase {
         expect(self.factory!.requests[0].delegate).toEventually(be(self.fetcher), timeout: .seconds(1))
     }
 
-    func testCallsStartOnRequest() {
+    func testCallsStartOnRequest() throws {
         setupFetcher(fails: false)
-        expect((self.factory!.requests[0] as! MockReceiptRequest).startCalled).toEventually(beTrue(), timeout: .seconds(1))
+        let request = try XCTUnwrap(self.factory?.requests[0] as? MockReceiptRequest)
+        expect(request.startCalled).toEventually(beTrue(), timeout: .seconds(1))
     }
     func testFetchesReceipt() {
         setupFetcher(fails: false)
@@ -98,29 +100,29 @@ class StoreKitRequestFetcherTests: XCTestCase {
         setupFetcher(fails: true)
         expect(self.receiptFetched).toEventually(beTrue())
     }
-    
+
     func testCanSupportMultipleReceiptCalls() {
         setupFetcher(fails: false)
         expect(self.receiptFetchedCallbackCount).toEventually(equal(3))
     }
-    
+
     func testOnlyCreatesOneRefreshRequest() {
         setupFetcher(fails: false)
         expect(self.factory?.requests).toEventually(haveCount(1))
     }
-    
+
     func testFetchesReceiptMultipleTimes() {
         setupFetcher(fails: false)
         expect(self.receiptFetched).toEventually(beTrue())
         var fetchedAgain = false
-        
+
         self.fetcher!.fetchReceiptData {
             fetchedAgain = true
         }
-        
+
         expect(fetchedAgain).toEventually(beTrue())
-        
+
         expect(self.factory?.requests).to(haveCount(2))
     }
-    
+
 }

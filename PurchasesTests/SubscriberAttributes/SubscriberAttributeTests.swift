@@ -3,8 +3,8 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -21,7 +21,7 @@ class SubscriberAttributeTests: XCTestCase {
         expect(subscriberAttribute.isSynced) == false
     }
 
-    func testAsDictionaryReturnsCorrectFormat() {
+    func testAsDictionaryReturnsCorrectFormat() throws {
         let key = "some key"
         let value = "some value"
         let now = Date()
@@ -37,10 +37,11 @@ class SubscriberAttributeTests: XCTestCase {
         expect(receivedDictionary["key"] as? String) == key
         expect(receivedDictionary["value"] as? String) == value
         expect(receivedDictionary["setTime"] as? Date) == now
-        expect((receivedDictionary["isSynced"] as! NSNumber).boolValue) == false
+        let isSynced = try XCTUnwrap((receivedDictionary["isSynced"] as? NSNumber)?.boolValue)
+        expect(isSynced) == false
     }
 
-    func testAsBackendDictionaryReturnsCorrectFormat() {
+    func testAsBackendDictionaryReturnsCorrectFormat() throws {
         let key = "some key"
         let value = "some value"
         let now = Date()
@@ -54,7 +55,7 @@ class SubscriberAttributeTests: XCTestCase {
         expect(receivedDictionary.keys.count) == 2
 
         expect(receivedDictionary["value"] as? String) == value
-        let updatedAtEpoch = (receivedDictionary["updated_at_ms"] as! NSNumber).uint64Value
+        let updatedAtEpoch = try XCTUnwrap((receivedDictionary["updated_at_ms"] as? NSNumber)?.uint64Value)
         expect(updatedAtEpoch) == (now as NSDate).millisecondsSince1970AsUInt64()
     }
 }
