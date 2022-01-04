@@ -7,11 +7,12 @@
 //
 
 import Foundation
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
+// swiftlint:disable file_length
 class EntitlementInfosTests: XCTestCase {
 
     private let formatter = DateFormatter()
@@ -23,6 +24,10 @@ class EntitlementInfosTests: XCTestCase {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         stubResponse()
     }
+
+}
+
+extension EntitlementInfosTests {
 
     func stubResponse(entitlements: [String: Any] = [:],
                       nonSubscriptions: [String: Any] = [:],
@@ -39,7 +44,8 @@ class EntitlementInfosTests: XCTestCase {
             ]
         ]
     }
-    
+
+    // swiftlint:disable:next function_body_length
     func testMultipleEntitlements() {
         stubResponse(
             entitlements: [
@@ -69,7 +75,7 @@ class EntitlementInfosTests: XCTestCase {
                         "original_purchase_date": "2019-07-26T23:45:40Z",
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store"
-                    ],
+                    ]
                 ]
             ],
             subscriptions: [
@@ -85,7 +91,7 @@ class EntitlementInfosTests: XCTestCase {
                 ]
             ]
         )
-        
+
         let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         expect(subscriberInfo.entitlements.all.count).to(equal(2))
         // The default is "pro_cat"
@@ -109,7 +115,7 @@ class EntitlementInfosTests: XCTestCase {
                       expectedEntitlement: "lifetime_cat"
         )
     }
-    
+
     func testStringAccessor() {
         stubResponse(
             entitlements: [
@@ -132,9 +138,9 @@ class EntitlementInfosTests: XCTestCase {
                 ]
             ]
         )
-        
+
         let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
-        
+
         expect(subscriberInfo.entitlements["pro_cat"]).toNot(beNil())
         expect(subscriberInfo.entitlements.active["pro_cat"]).toNot(beNil())
     }
@@ -231,7 +237,6 @@ class EntitlementInfosTests: XCTestCase {
         verifyProduct()
     }
 
-
     func testCreatesEntitlementWithNonSubscriptionsAndSubscription() {
         stubResponse(
                 entitlements: [
@@ -256,7 +261,7 @@ class EntitlementInfosTests: XCTestCase {
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
-                        ],
+                        ]
                     ]
                 ],
                 subscriptions: [
@@ -285,8 +290,7 @@ class EntitlementInfosTests: XCTestCase {
                       expectedExpirationDate: nil)
     }
 
-
-    func testSubscriptionWillRenew(){
+    func testSubscriptionWillRenew() {
         stubResponse(
                 entitlements: [
                     "pro_cat": [
@@ -403,7 +407,11 @@ class EntitlementInfosTests: XCTestCase {
 
         verifySubscriberInfo()
         verifyEntitlementActive()
-        verifyRenewal(false, expectedUnsubscribeDetectedAt: formatter.date(from: "2019-07-27T23:30:41Z"), expectedBillingIssueDetectedAt: formatter.date(from: "2019-07-27T22:30:41Z"))
+        verifyRenewal(
+            false,
+            expectedUnsubscribeDetectedAt: formatter.date(from: "2019-07-27T23:30:41Z"),
+            expectedBillingIssueDetectedAt: formatter.date(from: "2019-07-27T22:30:41Z")
+        )
         verifyPeriodType()
         verifyStore()
         verifySandbox()
@@ -450,9 +458,9 @@ class EntitlementInfosTests: XCTestCase {
             "period_type": "normal",
             "purchase_date": "2019-07-26T23:45:40Z",
             "store": "app_store",
-            "unsubscribe_detected_at": nil,
+            "unsubscribe_detected_at": nil
         ]
-        if (ownershipType != nil) {
+        if ownershipType != nil {
             monthly["ownership_type"] = ownershipType!
         }
         return [
@@ -510,7 +518,7 @@ class EntitlementInfosTests: XCTestCase {
         expect(entitlement!.ownershipType) == .purchased
     }
 
-    func testNonSubscription(){
+    func testNonSubscription() {
         stubResponse(
                 entitlements: [
                     "pro_cat": [
@@ -534,7 +542,7 @@ class EntitlementInfosTests: XCTestCase {
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
-                        ],
+                        ]
                     ]
                 ],
                 subscriptions: [:]
@@ -553,6 +561,7 @@ class EntitlementInfosTests: XCTestCase {
 
     }
 
+    // swiftlint:disable:next function_body_length
     func testParseStoreFromSubscription() {
         stubResponse(
                 entitlements: [
@@ -576,7 +585,7 @@ class EntitlementInfosTests: XCTestCase {
                 ])
 
         verifyStore(Store.appStore)
-        
+
         stubResponse(
             entitlements: [
                 "pro_cat": [
@@ -598,7 +607,7 @@ class EntitlementInfosTests: XCTestCase {
                 ]
             ])
         verifyStore(Store.macAppStore)
-        
+
         stubResponse(
             entitlements: [
                 "pro_cat": [
@@ -620,7 +629,7 @@ class EntitlementInfosTests: XCTestCase {
                 ]
             ])
         verifyStore(Store.playStore)
-        
+
         stubResponse(
             entitlements: [
                 "pro_cat": [
@@ -642,7 +651,7 @@ class EntitlementInfosTests: XCTestCase {
                 ]
             ])
         verifyStore(Store.promotional)
-        
+
         stubResponse(
             entitlements: [
                 "pro_cat": [
@@ -664,7 +673,7 @@ class EntitlementInfosTests: XCTestCase {
                 ]
             ])
         verifyStore(Store.stripe)
-        
+
         stubResponse(
             entitlements: [
                 "pro_cat": [
@@ -688,6 +697,7 @@ class EntitlementInfosTests: XCTestCase {
         verifyStore(Store.unknownStore)
     }
 
+    // swiftlint:disable:next function_body_length
     func testParseStoreFromNonSubscription() {
         stubResponse(
                 entitlements: [
@@ -712,7 +722,7 @@ class EntitlementInfosTests: XCTestCase {
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
-                        ],
+                        ]
                     ]
                 ],
                 subscriptions: [:]
@@ -742,7 +752,7 @@ class EntitlementInfosTests: XCTestCase {
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "mac_app_store"
-                        ],
+                        ]
                     ]
                 ],
                 subscriptions: [:]
@@ -772,7 +782,7 @@ class EntitlementInfosTests: XCTestCase {
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "play_store"
-                        ],
+                        ]
                     ]
                 ],
                 subscriptions: [:]
@@ -802,7 +812,7 @@ class EntitlementInfosTests: XCTestCase {
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "promotional"
-                        ],
+                        ]
                     ]
                 ],
                 subscriptions: [:]
@@ -832,7 +842,7 @@ class EntitlementInfosTests: XCTestCase {
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "stripe"
-                        ],
+                        ]
                     ]
                 ],
                 subscriptions: [:]
@@ -862,7 +872,7 @@ class EntitlementInfosTests: XCTestCase {
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "tienda"
-                        ],
+                        ]
                     ]
                 ],
                 subscriptions: [:]
@@ -870,6 +880,7 @@ class EntitlementInfosTests: XCTestCase {
         verifyStore(Store.unknownStore)
     }
 
+    // swiftlint:disable:next function_body_length
     func testParsePeriod() {
         stubResponse(
                 entitlements: [
@@ -985,7 +996,7 @@ class EntitlementInfosTests: XCTestCase {
                         "original_purchase_date": "2019-07-26T23:45:40Z",
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store"
-                    ],
+                    ]
                 ]
             ],
             subscriptions: [:]
@@ -1044,21 +1055,24 @@ class EntitlementInfosTests: XCTestCase {
         let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.willRenew) == expectedWillRenew
-        
-        if (expectedUnsubscribeDetectedAt != nil) {
+
+        if expectedUnsubscribeDetectedAt != nil {
             expect(proCat.unsubscribeDetectedAt) == expectedUnsubscribeDetectedAt
         } else {
             expect(proCat.unsubscribeDetectedAt).to(beNil())
         }
-        
-        if (expectedBillingIssueDetectedAt != nil) {
+
+        if expectedBillingIssueDetectedAt != nil {
             expect(proCat.billingIssueDetectedAt) == expectedBillingIssueDetectedAt
         } else {
             expect(proCat.billingIssueDetectedAt).to(beNil())
         }
     }
 
-    func verifyPeriodType(_ expectedPeriodType: PeriodType = PeriodType.normal, expectedEntitlement: String = "pro_cat") {
+    func verifyPeriodType(
+        _ expectedPeriodType: PeriodType = PeriodType.normal,
+        expectedEntitlement: String = "pro_cat"
+    ) {
         let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
@@ -1078,7 +1092,7 @@ class EntitlementInfosTests: XCTestCase {
 
         expect(proCat.isSandbox) == expectedIsSandbox
     }
-    
+
     func verifyProduct(expectedIdentifier: String = "monthly_freetrial", expectedEntitlement: String = "pro_cat") {
         verifyProduct(expectedIdentifier: expectedIdentifier,
                       expectedLatestPurchaseDate: formatter.date(from: "2019-07-26T23:45:40Z"),
@@ -1096,24 +1110,24 @@ class EntitlementInfosTests: XCTestCase {
         let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
-        if (expectedLatestPurchaseDate != nil) {
+        if expectedLatestPurchaseDate != nil {
             expect(proCat.latestPurchaseDate) == expectedLatestPurchaseDate
         } else {
             expect(proCat.latestPurchaseDate).to(beNil())
         }
 
-        if (expectedOriginalPurchaseDate != nil) {
+        if expectedOriginalPurchaseDate != nil {
             expect(proCat.originalPurchaseDate) == expectedOriginalPurchaseDate
         } else {
             expect(proCat.originalPurchaseDate).to(beNil())
         }
-        
-        if (expectedExpirationDate != nil) {
+
+        if expectedExpirationDate != nil {
             expect(proCat.expirationDate) == expectedExpirationDate
         } else {
             expect(proCat.expirationDate).to(beNil())
         }
-        
+
         expect(proCat.productIdentifier) == expectedIdentifier
     }
 }

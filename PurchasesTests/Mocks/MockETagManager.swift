@@ -10,6 +10,7 @@ import Foundation
 
 @testable import RevenueCat
 
+// swiftlint:disable type_name
 class MockETagManager: ETagManager {
 
     var invokedETagHeader = false
@@ -27,11 +28,19 @@ class MockETagManager: ETagManager {
             return stubbedETagHeaderResult
         }
     }
-    
+
+    struct InvokedHTTPResultFromCacheOrBackendParams {
+        let response: HTTPURLResponse
+        let responseObject: [String: Any]?
+        let error: Error?
+        let request: URLRequest
+        let retried: Bool
+    }
+
     var invokedHTTPResultFromCacheOrBackend = false
     var invokedHTTPResultFromCacheOrBackendCount = 0
-    var invokedHTTPResultFromCacheOrBackendParameters: (response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)?
-    var invokedHTTPResultFromCacheOrBackendParametersList = [(response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)]()
+    var invokedHTTPResultFromCacheOrBackendParameters: InvokedHTTPResultFromCacheOrBackendParams?
+    var invokedHTTPResultFromCacheOrBackendParametersList = [InvokedHTTPResultFromCacheOrBackendParams]()
     var stubbedHTTPResultFromCacheOrBackendResult: HTTPResponse!
     var shouldReturnResultFromBackend = true
 
@@ -43,8 +52,15 @@ class MockETagManager: ETagManager {
         return lock.perform {
             invokedHTTPResultFromCacheOrBackend = true
             invokedHTTPResultFromCacheOrBackendCount += 1
-            invokedHTTPResultFromCacheOrBackendParameters = (response, jsonObject, error, request, retried)
-            invokedHTTPResultFromCacheOrBackendParametersList.append((response, jsonObject, error, request, retried))
+            let params = InvokedHTTPResultFromCacheOrBackendParams(
+                response: response,
+                responseObject: jsonObject,
+                error: error,
+                request: request,
+                retried: retried
+            )
+            invokedHTTPResultFromCacheOrBackendParameters = params
+            invokedHTTPResultFromCacheOrBackendParametersList.append(params)
             if shouldReturnResultFromBackend {
                 return HTTPResponse(statusCode: response.statusCode, jsonObject: jsonObject)
             }
@@ -61,7 +77,7 @@ class MockETagManager: ETagManager {
             invokedClearCachesCount += 1
         }
     }
-    
+
     private let lock = Lock()
-    
+
 }

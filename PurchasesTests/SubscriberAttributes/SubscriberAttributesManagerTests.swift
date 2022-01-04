@@ -10,11 +10,13 @@
 // Created by RevenueCat on 2/28/20.
 //
 
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
+// swiftlint:disable type_body_length
+// swiftlint:disable file_length
 class SubscriberAttributesManagerTests: XCTestCase {
 
     var mockBackend: MockBackend!
@@ -38,10 +40,12 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfo)
         self.mockAttributionDataMigrator = MockAttributionDataMigrator()
-        self.subscriberAttributesManager = SubscriberAttributesManager(backend: mockBackend,
-                                                                         deviceCache: mockDeviceCache,
-                                                                         attributionFetcher: mockAttributionFetcher,
-                                                                         attributionDataMigrator: mockAttributionDataMigrator)
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator
+        )
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
         self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
@@ -458,7 +462,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let allAttributes: [String: [String: SubscriberAttribute]] = [
             userID1: userID1Attributes,
             userID2: userID2Attributes,
-            userID3: userID3Attributes,
+            userID3: userID3Attributes
         ]
         mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
@@ -466,14 +470,14 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 3
 
         expect(self.mockBackend.invokedPostSubscriberAttributesParametersList).to(contain(
-            MockBackend.InvokedPostSubscriberAttributesParameters(subscriberAttributes: userID1Attributes,
-                                                                  appUserID: userID1)))
+            MockBackend.InvokedPostSubscriberAttributesParams(subscriberAttributes: userID1Attributes,
+                                                              appUserID: userID1)))
         expect(self.mockBackend.invokedPostSubscriberAttributesParametersList).to(contain(
-            MockBackend.InvokedPostSubscriberAttributesParameters(subscriberAttributes: userID2Attributes,
-                                                                  appUserID: userID2)))
+            MockBackend.InvokedPostSubscriberAttributesParams(subscriberAttributes: userID2Attributes,
+                                                              appUserID: userID2)))
         expect(self.mockBackend.invokedPostSubscriberAttributesParametersList).to(contain(
-            MockBackend.InvokedPostSubscriberAttributesParameters(subscriberAttributes: userID3Attributes,
-                                                                  appUserID: userID3)))
+            MockBackend.InvokedPostSubscriberAttributesParams(subscriberAttributes: userID3Attributes,
+                                                              appUserID: userID3)))
     }
 
     func testSyncAttributesForAllUsersSyncsDeletesAttributesForOtherUsersIfSynced() {
@@ -492,7 +496,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         ]
         let allAttributes: [String: [String: SubscriberAttribute]] = [
             userID1: userID1Attributes,
-            userID2: userID2Attributes,
+            userID2: userID2Attributes
         ]
         mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
@@ -517,7 +521,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         ]
         let allAttributes: [String: [String: SubscriberAttribute]] = [
             userID1: userID1Attributes,
-            userID2: userID2Attributes,
+            userID2: userID2Attributes
         ]
         mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
@@ -543,7 +547,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         ]
         let allAttributes: [String: [String: SubscriberAttribute]] = [
             currentUserID: userID1Attributes,
-            otherUserID: userID2Attributes,
+            otherUserID: userID2Attributes
         ]
         mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
@@ -588,7 +592,6 @@ class SubscriberAttributesManagerTests: XCTestCase {
                                                                                     value: adjustID)
 
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
-
 
         expect(self.mockDeviceCache.invokedStoreCount) == 3
     }
@@ -662,7 +665,6 @@ class SubscriberAttributesManagerTests: XCTestCase {
                                                                                     value: appsflyerID)
 
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
-
 
         expect(self.mockDeviceCache.invokedStoreCount) == 3
     }
@@ -810,7 +812,6 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
 
-
         expect(self.mockDeviceCache.invokedStoreCount) == 3
     }
 
@@ -879,10 +880,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetOnesignalIDSkipsIfSameValue() {
         let onesignalID = "onesignalID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$onesignalId",value: onesignalID)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$onesignalId",
+                                                                                    value: onesignalID)
 
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
-
 
         expect(self.mockDeviceCache.invokedStoreCount) == 3
     }
@@ -1025,10 +1026,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetMediaSourceSkipsIfSameValue() {
         let mediaSource = "mediaSource"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$mediaSource", value: mediaSource)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$mediaSource",
+                                                                                    value: mediaSource)
 
         self.subscriberAttributesManager.setMediaSource(mediaSource, appUserID: "kratos")
-
 
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
@@ -1093,7 +1094,6 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
         self.subscriberAttributesManager.setCampaign(campaign, appUserID: "kratos")
 
-
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
@@ -1156,7 +1156,6 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
         self.subscriberAttributesManager.setAdGroup(adGroup, appUserID: "kratos")
 
-
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
@@ -1184,21 +1183,21 @@ class SubscriberAttributesManagerTests: XCTestCase {
     // endregion
     // region Ad
     func testSetAd() {
-        let ad = "ad"
-        self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
+        let adValue = "ad"
+        self.subscriberAttributesManager.setAd(adValue, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
         let receivedAttribute = invokedParams.attribute
         expect(receivedAttribute.key) == "$ad"
-        expect(receivedAttribute.value) == ad
+        expect(receivedAttribute.value) == adValue
         expect(receivedAttribute.isSynced) == false
     }
 
     func testSetAdSetsEmptyIfNil() {
-        let ad = "ad"
-        self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
+        let adValue = "ad"
+        self.subscriberAttributesManager.setAd(adValue, appUserID: "kratos")
 
         self.subscriberAttributesManager.setAd(nil, appUserID: "kratos")
 
@@ -1213,26 +1212,25 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetAdSkipsIfSameValue() {
-        let ad = "ad"
+        let adValue = "ad"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$ad", value: ad)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$ad", value: adValue)
 
-        self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
-
+        self.subscriberAttributesManager.setAd(adValue, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
     func testSetAdOverwritesIfNewValue() {
         let oldSyncTime = Date()
-        let ad = "ad"
+        let adValue = "ad"
 
         self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$ad",
                                                                                     value: "old_id",
                                                                                     isSynced: true,
                                                                                     setTime: oldSyncTime)
 
-        self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
+        self.subscriberAttributesManager.setAd(adValue, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
@@ -1240,7 +1238,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         }
         let receivedAttribute = invokedParams.attribute
         expect(receivedAttribute.key) == "$ad"
-        expect(receivedAttribute.value) == ad
+        expect(receivedAttribute.value) == adValue
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
     }
@@ -1281,7 +1279,6 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$keyword", value: keyword)
 
         self.subscriberAttributesManager.setKeyword(keyword, appUserID: "kratos")
-
 
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
@@ -1341,10 +1338,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetCreativeSkipsIfSameValue() {
         let creative = "creative"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$creative", value: creative)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$creative",
+                                                                                    value: creative)
 
         self.subscriberAttributesManager.setCreative(creative, appUserID: "kratos")
-
 
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
@@ -1376,19 +1373,21 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testConvertAttributionDataAndSetAsSubscriberAttributesConvertsAndSetsTheAttributes() {
         let expectedConversionKey = "converted"
         let expectedConvertedValue = "that"
-        self.mockAttributionDataMigrator.stubbedConvertAttributionDataToSubscriberAttributesResult = [expectedConversionKey: expectedConvertedValue]
+        self.mockAttributionDataMigrator.stubbedConvertAttributionDataToSubscriberAttributesResult = [
+            expectedConversionKey: expectedConvertedValue
+        ]
         let expectedAttributionData = ["convert": "any", "to": "something"]
 
         self.subscriberAttributesManager.setAttributes(fromAttributionData: expectedAttributionData,
                                                        network: .adjust,
                                                        appUserID: "user_id")
         expect(self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributes) == true
-        let invokedParameters = self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributesParameters
-        expect(invokedParameters!.attributionData.count) == expectedAttributionData.count
+        let invokedParams = mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributesParameters
+        expect(invokedParams!.attributionData.count) == expectedAttributionData.count
         for (key, value) in expectedAttributionData {
-            expect(invokedParameters!.attributionData[key] as? String) == value
+            expect(invokedParams!.attributionData[key] as? String) == value
         }
-        expect(invokedParameters!.network) == AttributionNetwork.adjust.rawValue
+        expect(invokedParams!.network) == AttributionNetwork.adjust.rawValue
 
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1407,12 +1406,12 @@ class SubscriberAttributesManagerTests: XCTestCase {
                                                        network: .adjust,
                                                        appUserID: "user_id")
         expect(self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributes) == true
-        let invokedParameters = self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributesParameters
-        expect(invokedParameters!.attributionData.count) == expectedAttributionData.count
+        let invokedParams = mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributesParameters
+        expect(invokedParams!.attributionData.count) == expectedAttributionData.count
         for (key, value) in expectedAttributionData {
-            expect(invokedParameters!.attributionData[key] as? String) == value
+            expect(invokedParams!.attributionData[key] as? String) == value
         }
-        expect(invokedParameters!.network) == AttributionNetwork.adjust.rawValue
+        expect(invokedParams!.network) == AttributionNetwork.adjust.rawValue
 
         expect(self.mockDeviceCache.invokedStoreParameters).to(beNil())
     }

@@ -42,7 +42,7 @@ class OfferingsTests: XCTestCase {
         )
 
         expect(package.storeProduct.product).to(beAnInstanceOf(SK1StoreProduct.self))
-        let sk1StoreProduct = package.storeProduct.product as! SK1StoreProduct
+        let sk1StoreProduct = try XCTUnwrap(package.storeProduct.product as? SK1StoreProduct)
         expect(sk1StoreProduct.underlyingSK1Product).to(equal(product))
         expect(package.identifier).to(equal(packageIdentifier))
         expect(package.packageType).to(equal(PackageType.monthly))
@@ -65,9 +65,11 @@ class OfferingsTests: XCTestCase {
     }
 
     func testOfferingIsCreatedIfValidPackages() {
+        let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
         let products = [
-            "com.myproduct.annual": StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
+            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
@@ -110,7 +112,7 @@ class OfferingsTests: XCTestCase {
                         ["identifier": "$rc_monthly",
                          "platform_product_identifier": "com.myproduct.monthly"]
                     ]
-                ],
+                ]
             ],
             "current_offering_id": "offering_a"
         ])
@@ -119,9 +121,11 @@ class OfferingsTests: XCTestCase {
     }
 
     func testOfferingsIsCreated() throws {
+        let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
         let products = [
-            "com.myproduct.annual": StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
+            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
         ]
         let maybeOfferings = offeringsFactory.createOfferings(from: products, data: [
             "offerings": [
@@ -140,7 +144,7 @@ class OfferingsTests: XCTestCase {
                         ["identifier": "$rc_monthly",
                          "platform_product_identifier": "com.myproduct.monthly"]
                     ]
-                ],
+                ]
             ],
             "current_offering_id": "offering_a"
         ])
@@ -192,7 +196,7 @@ class OfferingsTests: XCTestCase {
             "offerings": [],
             "current_offering_id": nil
         ]
-        let maybeOfferings = offeringsFactory.createOfferings(from: [:], data: data as [String : Any])
+        let maybeOfferings = offeringsFactory.createOfferings(from: [:], data: data as [String: Any])
 
         expect(maybeOfferings).to(beNil())
     }
@@ -201,10 +205,10 @@ class OfferingsTests: XCTestCase {
         let storeProductsByID = [
             "com.myproduct.annual": StoreProduct(
                 sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
-            ),
+            )
         ]
 
-        let data: [String : Any] = [
+        let data: [String: Any] = [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -224,16 +228,20 @@ class OfferingsTests: XCTestCase {
     }
 
     func testBadOfferingsDataReturnsNil() {
-        let data = [:] as [String : Any]
-        let offerings = offeringsFactory.createOfferings(from: [:], data: data as [String : Any])
+        let data = [:] as [String: Any]
+        let offerings = offeringsFactory.createOfferings(from: [:], data: data as [String: Any])
 
         expect(offerings).to(beNil())
     }
 
-    private func testPackageType(packageType: PackageType) throws {
+}
+
+private extension OfferingsTests {
+    // swiftlint:disable:next function_body_length
+    func testPackageType(packageType: PackageType) throws {
         var identifier = Package.string(from: packageType)
-        if (identifier == nil) {
-            if (packageType == PackageType.unknown) {
+        if identifier == nil {
+            if packageType == PackageType.unknown {
                 identifier = "$rc_unknown_id_from_the_future"
             } else {
                 identifier = "custom"
@@ -259,37 +267,37 @@ class OfferingsTests: XCTestCase {
 
         let offerings = try XCTUnwrap(maybeOfferings)
         expect(offerings.current).toNot(beNil())
-        if (packageType == PackageType.lifetime) {
+        if packageType == PackageType.lifetime {
             expect(offerings.current?.lifetime).toNot(beNil())
         } else {
             expect(offerings.current?.lifetime).to(beNil())
         }
-        if (packageType == PackageType.annual) {
+        if packageType == PackageType.annual {
             expect(offerings.current?.annual).toNot(beNil())
         } else {
             expect(offerings.current?.annual).to(beNil())
         }
-        if (packageType == PackageType.sixMonth) {
+        if packageType == PackageType.sixMonth {
             expect(offerings.current?.sixMonth).toNot(beNil())
         } else {
             expect(offerings.current?.sixMonth).to(beNil())
         }
-        if (packageType == PackageType.threeMonth) {
+        if packageType == PackageType.threeMonth {
             expect(offerings.current?.threeMonth).toNot(beNil())
         } else {
             expect(offerings.current?.threeMonth).to(beNil())
         }
-        if (packageType == PackageType.twoMonth) {
+        if packageType == PackageType.twoMonth {
             expect(offerings.current?.twoMonth).toNot(beNil())
         } else {
             expect(offerings.current?.twoMonth).to(beNil())
         }
-        if (packageType == PackageType.monthly) {
+        if packageType == PackageType.monthly {
             expect(offerings.current?.monthly).toNot(beNil())
         } else {
             expect(offerings.current?.monthly).to(beNil())
         }
-        if (packageType == PackageType.weekly) {
+        if packageType == PackageType.weekly {
             expect(offerings.current?.weekly).toNot(beNil())
         } else {
             expect(offerings.current?.weekly).to(beNil())

@@ -3,8 +3,8 @@
 // Copyright (c) 2019 RevenueCat. All rights reserved.
 //
 
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -29,7 +29,7 @@ class IdentityManagerTests: XCTestCase {
                                customerInfoManager: mockCustomerInfoManager,
                                appUserID: appUserID)
     }
- 
+
     override func setUp() {
         super.setUp()
 
@@ -41,6 +41,10 @@ class IdentityManagerTests: XCTestCase {
                                                                backend: MockBackend(),
                                                                systemInfo: systemInfo)
     }
+
+}
+
+extension IdentityManagerTests {
 
     func testConfigureWithAnonymousUserIDGeneratesAnAppUserID() {
         let manager = create(appUserID: nil)
@@ -129,7 +133,7 @@ class IdentityManagerTests: XCTestCase {
         let manager = create(appUserID: nil)
 
         mockDeviceCache.stubbedAppUserID = appUserID
-        manager.logIn(appUserID: appUserID){ customerInfo, created, error in
+        manager.logIn(appUserID: appUserID) { _, _, _ in
             completionCalled = true
         }
 
@@ -251,7 +255,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockCustomerInfo, true, nil)
 
-        manager.logIn(appUserID: newAppUserID) { customerInfo, created, error in
+        manager.logIn(appUserID: newAppUserID) { _, _, _ in
             completionCalled = true
         }
 
@@ -271,7 +275,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockCustomerInfo, true, nil)
 
-        manager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
+        manager.logIn(appUserID: newAppUserID) { _, _, _ in
             completionCalled = true
         }
 
@@ -316,7 +320,7 @@ class IdentityManagerTests: XCTestCase {
 
         mockDeviceCache.stubbedAppUserID = "myUser"
         var completionCalled = false
-        manager.logOut { error in
+        manager.logOut { _ in
             completionCalled = true
         }
         expect(completionCalled).toEventually(beTrue())
@@ -331,14 +335,23 @@ private extension IdentityManagerTests {
 
     func assertCorrectlyIdentified(_ manager: IdentityManager, expectedAppUserID: String) {
         expect(manager.currentAppUserID).to(equal(expectedAppUserID))
-        expect(self.mockDeviceCache.userIDStoredInCache!).to(equal(expectedAppUserID));
+        expect(self.mockDeviceCache.userIDStoredInCache!).to(equal(expectedAppUserID))
         expect(manager.currentUserIsAnonymous).to(beFalse())
     }
 
     func assertCorrectlyIdentifiedWithAnonymous(_ manager: IdentityManager, usingOldID: Bool = false) {
-        if (!usingOldID) {
-            expect(manager.currentAppUserID.range(of: IdentityManager.anonymousRegex, options: .regularExpression)).toNot(beNil())
-            expect(self.mockDeviceCache.userIDStoredInCache!.range(of: IdentityManager.anonymousRegex, options: .regularExpression)).toNot(beNil())
+        if !usingOldID {
+            var obtainedRange = manager.currentAppUserID.range(
+                of: IdentityManager.anonymousRegex,
+                options: .regularExpression
+            )
+            expect(obtainedRange).toNot(beNil())
+
+            obtainedRange = self.mockDeviceCache.userIDStoredInCache!.range(
+                of: IdentityManager.anonymousRegex,
+                options: .regularExpression
+            )
+            expect(obtainedRange).toNot(beNil())
         }
         expect(manager.currentUserIsAnonymous).to(beTrue())
     }

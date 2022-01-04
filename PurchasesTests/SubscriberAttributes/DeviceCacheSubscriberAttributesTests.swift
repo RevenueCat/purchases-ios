@@ -3,11 +3,13 @@
 // Copyright (c) 2019 RevenueCat. All rights reserved.
 //
 
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
+// swiftlint:disable type_body_length
+// swiftlint:disable file_length
 class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
     private var mockUserDefaults: MockUserDefaults! = nil
@@ -45,9 +47,9 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues.count) == 1
 
         guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
-            let storedDict = storedValue as? NSDictionary else {
-            fatalError("didn't actually store the value or it wasn't a dictionary")
-        }
+              let storedDict = storedValue as? NSDictionary else {
+                  fatalError("didn't actually store the value or it wasn't a dictionary")
+              }
         let expectedStoredDict = [
             appUserID: [
                 self.subscriberAttributeHeight.key: subscriberAttributeHeight.asDictionary()
@@ -72,9 +74,9 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedStoreKey
 
         guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
-            let storedDict = storedValue as? NSDictionary else {
-            fatalError("didn't actually store the value or it wasn't a dictionary")
-        }
+              let storedDict = storedValue as? NSDictionary else {
+                  fatalError("didn't actually store the value or it wasn't a dictionary")
+              }
         let expectedStoredDict = [
             appUserID: [
                 subscriberAttributeWeight.key: subscriberAttributeWeight.asDictionary(),
@@ -86,8 +88,8 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
     func testStoreSubscriberAttributeUpdatesExistingValue() {
         let oldSubscriberAttribute = SubscriberAttribute(withKey: "height",
-                                                           value: "183",
-                                                           dateProvider: mockDateProvider)
+                                                         value: "183",
+                                                         dateProvider: mockDateProvider)
         let appUserID = "waldo"
         self.deviceCache.store(subscriberAttribute: oldSubscriberAttribute, appUserID: appUserID)
 
@@ -100,15 +102,15 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedStoreKey
 
         guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
-            let storedDict = storedValue as? NSDictionary else {
-            fatalError("didn't actually store the value or it wasn't a dictionary")
-        }
+              let storedDict = storedValue as? NSDictionary else {
+                  fatalError("didn't actually store the value or it wasn't a dictionary")
+              }
 
         expect(self.mockUserDefaults.mockValues.count) == 1
 
         let expectedStoredDict = [
             appUserID: [
-                newSubscriberAttribute.key: newSubscriberAttribute.asDictionary(),
+                newSubscriberAttribute.key: newSubscriberAttribute.asDictionary()
             ]
         ]
         expect(storedDict) == expectedStoredDict as NSDictionary
@@ -125,9 +127,9 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues.count) == 1
 
         guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
-            let storedDict = storedValue as? NSDictionary else {
-            fatalError("didn't actually store the value or it wasn't a dictionary")
-        }
+              let storedDict = storedValue as? NSDictionary else {
+                  fatalError("didn't actually store the value or it wasn't a dictionary")
+              }
         let expectedStoredDict = [
             appUserID: [
                 subscriberAttributeWeight.key: subscriberAttributeWeight.asDictionary(),
@@ -160,9 +162,9 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues.count) == 1
 
         guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
-            let storedDict = storedValue as? NSDictionary else {
-            fatalError("didn't actually store the value or it wasn't a dictionary")
-        }
+              let storedDict = storedValue as? NSDictionary else {
+                  fatalError("didn't actually store the value or it wasn't a dictionary")
+              }
 
         let expectedStoredDict = [
             appUserID: [
@@ -192,9 +194,9 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues.count) == 1
 
         guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
-            let storedDict = storedValue as? NSDictionary else {
-            fatalError("didn't actually store the value or it wasn't a dictionary")
-        }
+              let storedDict = storedValue as? NSDictionary else {
+                  fatalError("didn't actually store the value or it wasn't a dictionary")
+              }
 
         let expectedStoredDict = [
             appUserID: [
@@ -232,23 +234,23 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
     func testUnsyncedAttributesByKeyReturnsCorrectlyWhenFound() {
         let subscriberAttribute1 = SubscriberAttribute(withKey: "height",
-                                                         value: "460",
-                                                         isSynced: true,
-                                                         setTime: now)
+                                                       value: "460",
+                                                       isSynced: true,
+                                                       setTime: now)
 
         let subscriberAttribute2 = SubscriberAttribute(withKey: "weight",
-                                                         value: "120",
-                                                         isSynced: false,
-                                                         setTime: now)
+                                                       value: "120",
+                                                       isSynced: false,
+                                                       setTime: now)
 
         let subscriberAttribute3 = SubscriberAttribute(withKey: "age",
-                                                         value: "66",
-                                                         isSynced: false,
-                                                         setTime: now)
+                                                       value: "66",
+                                                       isSynced: false,
+                                                       setTime: now)
         let subscriberAttribute4 = SubscriberAttribute(withKey: "device",
-                                                         value: "iPhone",
-                                                         isSynced: true,
-                                                         setTime: now)
+                                                       value: "iPhone",
+                                                       isSynced: true,
+                                                       setTime: now)
 
         self.deviceCache.store(subscriberAttributesByKey: [subscriberAttribute1.key: subscriberAttribute1,
                                                            subscriberAttribute2.key: subscriberAttribute2,
@@ -274,23 +276,23 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
     func testNumberOfUnsyncedAttributesReturnsCorrectlyWhenFound() {
         let subscriberAttribute1 = SubscriberAttribute(withKey: "height",
-                                                         value: "460",
-                                                         isSynced: true,
-                                                         setTime: now)
+                                                       value: "460",
+                                                       isSynced: true,
+                                                       setTime: now)
 
         let subscriberAttribute2 = SubscriberAttribute(withKey: "weight",
-                                                         value: "120",
-                                                         isSynced: false,
-                                                         setTime: now)
+                                                       value: "120",
+                                                       isSynced: false,
+                                                       setTime: now)
 
         let subscriberAttribute3 = SubscriberAttribute(withKey: "age",
-                                                         value: "66",
-                                                         isSynced: false,
-                                                         setTime: now)
+                                                       value: "66",
+                                                       isSynced: false,
+                                                       setTime: now)
         let subscriberAttribute4 = SubscriberAttribute(withKey: "device",
-                                                         value: "iPhone",
-                                                         isSynced: true,
-                                                         setTime: now)
+                                                       value: "iPhone",
+                                                       isSynced: true,
+                                                       setTime: now)
 
         self.deviceCache.store(subscriberAttributesByKey: [subscriberAttribute1.key: subscriberAttribute1,
                                                            subscriberAttribute2.key: subscriberAttribute2,
@@ -300,7 +302,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.deviceCache.numberOfUnsyncedAttributes(appUserID: "waldo")) == 2
     }
 
-    // mark: cleanupSubscriberAttributes
+    // MARK: cleanupSubscriberAttributes
 
     func testCleanupSubscriberAttributesMigratesIfOldAttributesFound() {
         let userID1 = "userID1"
@@ -327,7 +329,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         let storedAttributes = self.mockUserDefaults.mockValues[
             "com.revenuecat.userdefaults.subscriberAttributes"
-            ] as? [String: [String: [String: NSObject]]]
+        ] as? [String: [String: [String: NSObject]]]
 
         expect(storedAttributes) == newSubscriberAttributes
     }
@@ -347,21 +349,21 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let appUserIDKey = "com.revenuecat.userdefaults.appUserID.new"
         let valuesBeforeMigration = [
-                                        subscriberAttributesNewKey: [
-                                            userID1: userID1Attributes,
-                                            userID2: userID2Attributes
-                                        ],
-                                        appUserIDKey: userID1
-                                    ] as [String: AnyObject]
+            subscriberAttributesNewKey: [
+                userID1: userID1Attributes,
+                userID2: userID2Attributes
+            ],
+            appUserIDKey: userID1
+        ] as [String: AnyObject]
         mockUserDefaults.mockValues = valuesBeforeMigration
 
         deviceCache.cleanupSubscriberAttributes()
 
         expect(valuesBeforeMigration[subscriberAttributesNewKey] as? [String: [String: NSDictionary]])
-            == mockUserDefaults.mockValues[subscriberAttributesNewKey] as? [String: [String: NSDictionary]]
+        == mockUserDefaults.mockValues[subscriberAttributesNewKey] as? [String: [String: NSDictionary]]
 
         expect(valuesBeforeMigration[appUserIDKey] as? String) ==
-            mockUserDefaults.mockValues[appUserIDKey] as? String
+        mockUserDefaults.mockValues[appUserIDKey] as? String
     }
 
     func testCleanupSubscriberAttributesDeletesOldFormatAfterFinishing() {
@@ -417,24 +419,29 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         self.deviceCache.cleanupSubscriberAttributes()
 
         let receivedAttributes: [String: [String: NSObject]]? =
-            self.mockUserDefaults.mockValues[newAttributesKey] as? [String: [String: NSObject]]
+        self.mockUserDefaults.mockValues[newAttributesKey] as? [String: [String: NSObject]]
         expect(receivedAttributes?[userID]).toNot(beNil())
 
         let expectedAttributes: [String: [String: NSObject]] = [
             newAttributeBand.key: newAttributeBand.asDictionary(),
             newAttributeDrummer.key: newAttributeDrummer.asDictionary(),
-            legacyAttributeSong.key: legacyAttributeSong.asDictionary(),
+            legacyAttributeSong.key: legacyAttributeSong.asDictionary()
         ]
 
         expect(receivedAttributes?[userID] as? [String: [String: NSObject]]) == expectedAttributes
     }
 
-    func testCleanupSubscriberAttributesDeletesSyncedAttributesForOtherUsers() {
+    func testCleanupSubscriberAttributesDeletesSyncedAttributesForOtherUsers() throws {
         let userID1 = "userID1"
         let userID2 = "userID2"
         let currentUserID = "currentUserID"
         let date = Date()
-        let unsyncedAttribute = SubscriberAttribute(withKey: "song", value: "Ride the Lightning", isSynced: false, setTime: date)
+        let unsyncedAttribute = SubscriberAttribute(
+            withKey: "song",
+            value: "Ride the Lightning",
+            isSynced: false,
+            setTime: date
+        )
         let userID1Attributes = [
             "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin", isSynced: true, setTime: date)
                 .asDictionary(),
@@ -458,20 +465,25 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         self.deviceCache.cleanupSubscriberAttributes()
 
         let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
-        let receivedSubscriberAttributes = self.mockUserDefaults.mockValues[subscriberAttributesNewKey]
-            as! [String: [String: NSObject]]
-        expect(receivedSubscriberAttributes).toNot(beNil())
-        expect(receivedSubscriberAttributes[userID1]).to(beNil())
-        expect(receivedSubscriberAttributes[userID2]).toNot(beNil())
-        expect(receivedSubscriberAttributes[userID2]?[unsyncedAttribute.key] as? [String: NSObject]) ==
-            unsyncedAttribute.asDictionary()
+        let maybeReceivedAttributes = mockUserDefaults.mockValues[subscriberAttributesNewKey]
+        let receivedAttributes = try XCTUnwrap(maybeReceivedAttributes as? [String: [String: NSObject]])
+
+        expect(receivedAttributes[userID1]).to(beNil())
+        expect(receivedAttributes[userID2]).toNot(beNil())
+        expect(receivedAttributes[userID2]?[unsyncedAttribute.key] as? [String: NSObject]) ==
+        unsyncedAttribute.asDictionary()
     }
 
-    func testCleanupSubscriberAttributesDoesntDeleteSyncedAttributesForCurrentUser() {
+    func testCleanupSubscriberAttributesDoesntDeleteSyncedAttributesForCurrentUser() throws {
         let userID1 = "userID1"
         let currentUserID = "currentUserID"
         let date = Date()
-        let unsyncedAttribute = SubscriberAttribute(withKey: "song", value: "Ride the Lightning", isSynced: false, setTime: date)
+        let unsyncedAttribute = SubscriberAttribute(
+            withKey: "song",
+            value: "Ride the Lightning",
+            isSynced: false,
+            setTime: date
+        )
         let syncedAttribute = SubscriberAttribute(withKey: "band", value: "Metallica", isSynced: true, setTime: date)
         let userID1Attributes = [
             "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin", isSynced: true, setTime: date)
@@ -495,18 +507,18 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         self.deviceCache.cleanupSubscriberAttributes()
 
         let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
-        let receivedSubscriberAttributes = self.mockUserDefaults.mockValues[subscriberAttributesNewKey]
-            as! [String: [String: NSObject]]
-        expect(receivedSubscriberAttributes).toNot(beNil())
-        expect(receivedSubscriberAttributes[userID1]).to(beNil())
-        expect(receivedSubscriberAttributes[currentUserID]).toNot(beNil())
-        expect(receivedSubscriberAttributes[currentUserID]?[unsyncedAttribute.key] as? [String: NSObject]) ==
-            unsyncedAttribute.asDictionary()
-        expect(receivedSubscriberAttributes[currentUserID]?[syncedAttribute.key] as? [String: NSObject]) ==
-            syncedAttribute.asDictionary()
+        let maybeReceivedAttributes = mockUserDefaults.mockValues[subscriberAttributesNewKey]
+        let receivedAttributes = try XCTUnwrap(maybeReceivedAttributes as? [String: [String: NSObject]])
+
+        expect(receivedAttributes[userID1]).to(beNil())
+        expect(receivedAttributes[currentUserID]).toNot(beNil())
+        expect(receivedAttributes[currentUserID]?[unsyncedAttribute.key] as? [String: NSObject]) ==
+        unsyncedAttribute.asDictionary()
+        expect(receivedAttributes[currentUserID]?[syncedAttribute.key] as? [String: NSObject]) ==
+        syncedAttribute.asDictionary()
     }
 
-    // mark: unsyncedAttributesForAllUsers
+    // MARK: unsyncedAttributesForAllUsers
 
     func testUnsyncedAttributesByKeyForAllUsersReturnsCorrectly() {
         let attributeLedZeppelin = SubscriberAttribute(withKey: "band", value: "Led Zeppelin")
@@ -514,7 +526,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let attributeMetallica = SubscriberAttribute(withKey: "band", value: "Metallica")
         let attributeRideTheLightning = SubscriberAttribute(withKey: "song", value: "Ride the Lightning")
         let syncedAttribute = SubscriberAttribute(withKey: "album", value: "... And Justice for All", isSynced: true,
-                                                    setTime: Date())
+                                                  setTime: Date())
         mockUserDefaults.mockValues = [
             "com.revenuecat.userdefaults.subscriberAttributes": [
                 "userID1": [
@@ -536,7 +548,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         expect(receivedUnsyncedAttributes["userID2"]) == [
             "band": attributeMetallica,
-            "song": attributeRideTheLightning,
+            "song": attributeRideTheLightning
         ]
 
         expect(receivedUnsyncedAttributes["userID2"]?.keys).notTo(contain("album"))
@@ -546,7 +558,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let attributeLedZeppelin = SubscriberAttribute(withKey: "band", value: "Led Zeppelin")
         let attributeWholeLottaLove = SubscriberAttribute(withKey: "song", value: "Whole Lotta Love")
         let syncedAttribute = SubscriberAttribute(withKey: "album", value: "... And Justice for All", isSynced: true,
-                                                    setTime: Date())
+                                                  setTime: Date())
         mockUserDefaults.mockValues = [
             "com.revenuecat.userdefaults.subscriberAttributes": [
                 "userID1": [
@@ -566,20 +578,20 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(receivedUnsyncedAttributes["userID2"]).to(beNil())
     }
 
-    // mark: deleteAttributesIfSyncedForAppUserID
+    // MARK: deleteAttributesIfSyncedForAppUserID
 
     func testDeleteAttributesIfSyncedForAppUserIDDeletesIfSynced() {
         let userID = "userID"
         let subscriberAttributes = [
             userID: [
                 "band": SubscriberAttribute(withKey: "band",
-                                              value: "Led Zeppelin",
-                                              isSynced: true,
-                                              setTime: Date()).asDictionary(),
+                                            value: "Led Zeppelin",
+                                            isSynced: true,
+                                            setTime: Date()).asDictionary(),
                 "song": SubscriberAttribute(withKey: "song",
-                                              value: "Whole Lotta Love",
-                                              isSynced: true,
-                                              setTime: Date()).asDictionary()
+                                            value: "Whole Lotta Love",
+                                            isSynced: true,
+                                            setTime: Date()).asDictionary()
             ]
         ]
         mockUserDefaults.mockValues = [
@@ -590,7 +602,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         let storedAttributes: [String: [String: [String: NSObject]]]? = self.mockUserDefaults.mockValues[
             "com.revenuecat.userdefaults.subscriberAttributes"
-            ] as? [String: [String: [String: NSObject]]]
+        ] as? [String: [String: [String: NSObject]]]
         expect(storedAttributes?["userID"]).to(beNil())
     }
 
@@ -600,17 +612,17 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let subscriberAttributes: [String: [String: [String: NSObject]]] = [
             userIDToDelete: [
                 "band": SubscriberAttribute(withKey: "band",
-                                              value: "Led Zeppelin",
-                                              isSynced: true,
-                                              setTime: Date()).asDictionary(),
+                                            value: "Led Zeppelin",
+                                            isSynced: true,
+                                            setTime: Date()).asDictionary(),
                 "song": SubscriberAttribute(withKey: "song",
-                                              value: "Whole Lotta Love",
-                                              isSynced: true,
-                                              setTime: Date()).asDictionary()
+                                            value: "Whole Lotta Love",
+                                            isSynced: true,
+                                            setTime: Date()).asDictionary()
             ],
             userIDWithUnsyncedAttributes: [
                 "band": SubscriberAttribute(withKey: "band",
-                                              value: "Metallica").asDictionary()
+                                            value: "Metallica").asDictionary()
             ]
         ]
         mockUserDefaults.mockValues = [
@@ -621,7 +633,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         let storedAttributes: [String: [String: [String: NSObject]]]? = self.mockUserDefaults.mockValues[
             "com.revenuecat.userdefaults.subscriberAttributes"
-            ] as? [String: [String: [String: NSObject]]]
+        ] as? [String: [String: [String: NSObject]]]
         expect(storedAttributes?[userIDWithUnsyncedAttributes]) == subscriberAttributes[userIDWithUnsyncedAttributes]
     }
 

@@ -21,29 +21,46 @@ class MockOfferingsManager: OfferingsManager {
     var invokedOfferingsParameters: (appUserID: String, completion: ((Offerings?, Error?) -> Void)?)?
     var invokedOfferingsParametersList = [(appUserID: String, completion: ((Offerings?, Error?) -> Void)?)]()
     var stubbedOfferingsCompletionResult: (offerings: Offerings?, error: Error?)?
-    
+
     override func offerings(appUserID: String, completion: ((Offerings?, Error?) -> Void)?) {
         invokedOfferings = true
         invokedOfferingsCount += 1
         invokedOfferingsParameters = (appUserID, completion)
         invokedOfferingsParametersList.append((appUserID, completion))
-        
+
         completion?(stubbedOfferingsCompletionResult?.offerings, stubbedOfferingsCompletionResult?.error)
+    }
+
+    struct InvokedUpdateOfferingsCacheParameters {
+        let appUserID: String
+        let isAppBackgrounded: Bool
+        let completion: ((Offerings?, Error?) -> Void)?
     }
 
     var invokedUpdateOfferingsCache = false
     var invokedUpdateOfferingsCacheCount = 0
-    var invokedUpdateOfferingsCacheParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((Offerings?, Error?) -> Void)?)?
-    var invokedUpdateOfferingsCachesParametersList = [(appUserID: String, isAppBackgrounded: Bool,  completion: ((Offerings?, Error?) -> Void)?)]()
+    var invokedUpdateOfferingsCacheParameters: InvokedUpdateOfferingsCacheParameters?
+    var invokedUpdateOfferingsCachesParametersList = [InvokedUpdateOfferingsCacheParameters]()
     var stubbedUpdateOfferingsCompletionResult: (offerings: Offerings?, error: Error?)?
 
-    override func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ((Offerings?, Error?) -> Void)?) {
+    override func updateOfferingsCache(
+        appUserID: String,
+        isAppBackgrounded: Bool,
+        completion: ((Offerings?, Error?) -> Void)?
+    ) {
         invokedUpdateOfferingsCache = true
         invokedUpdateOfferingsCacheCount += 1
-        invokedUpdateOfferingsCacheParameters = (appUserID, isAppBackgrounded, completion)
-        invokedUpdateOfferingsCachesParametersList.append((appUserID, isAppBackgrounded, completion))
-        
+
+        let parameters = InvokedUpdateOfferingsCacheParameters(
+            appUserID: appUserID,
+            isAppBackgrounded: isAppBackgrounded,
+            completion: completion
+        )
+
+        invokedUpdateOfferingsCacheParameters = parameters
+        invokedUpdateOfferingsCachesParametersList.append(parameters)
+
         completion?(stubbedUpdateOfferingsCompletionResult?.offerings, stubbedUpdateOfferingsCompletionResult?.error)
     }
-    
+
 }
