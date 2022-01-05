@@ -2244,7 +2244,7 @@ class PurchasesTests: XCTestCase {
         expect(invokedParameters?.appUserID) == self.purchases?.appUserID
     }
 
-    func testAttributionDataSendsNetworkAppUserId() {
+    func testAttributionDataSendsNetworkAppUserId() throws {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
         Purchases.deprecated.addAttributionData(data,
@@ -2254,48 +2254,49 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         expect(self.backend.invokedPostAttributionData).toEventually(beTrue())
-        let maybeInvokedMethodParams = self.backend.invokedPostAttributionDataParameters
+
+        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
         for key in data.keys {
-            expect(maybeInvokedMethodParams?.data?.keys.contains(key)).to(beTrue())
+            expect(invokedMethodParams.data?.keys.contains(key)).to(beTrue())
         }
 
-        expect(maybeInvokedMethodParams?.data?.keys.contains("rc_idfa")) == true
-        expect(maybeInvokedMethodParams?.data?.keys.contains("rc_idfv")) == true
-        expect(maybeInvokedMethodParams?.data?.keys.contains("rc_attribution_network_id")) == true
-        expect(maybeInvokedMethodParams?.data?["rc_attribution_network_id"] as? String) == "newuser"
-        expect(maybeInvokedMethodParams?.network) == AttributionNetwork.appleSearchAds
-        expect(maybeInvokedMethodParams?.appUserID) == identityManager.currentAppUserID
+        expect(invokedMethodParams.data?.keys.contains("rc_idfa")) == true
+        expect(invokedMethodParams.data?.keys.contains("rc_idfv")) == true
+        expect(invokedMethodParams.data?.keys.contains("rc_attribution_network_id")) == true
+        expect(invokedMethodParams.data?["rc_attribution_network_id"] as? String) == "newuser"
+        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
+        expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
-    func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() {
+    func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() throws {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
         Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
 
         setupPurchases()
 
-        let maybeInvokedMethodParams = self.backend.invokedPostAttributionDataParameters
+        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
         for key in data.keys {
-            expect(maybeInvokedMethodParams?.data?.keys.contains(key)) == true
+            expect(invokedMethodParams.data?.keys.contains(key)) == true
         }
 
-        expect(maybeInvokedMethodParams?.data?.keys.contains("rc_idfa")) == true
-        expect(maybeInvokedMethodParams?.data?.keys.contains("rc_idfv")) == true
-        expect(maybeInvokedMethodParams?.data?.keys.contains("rc_attribution_network_id")) == false
-        expect(maybeInvokedMethodParams?.network) == AttributionNetwork.appleSearchAds
-        expect(maybeInvokedMethodParams?.appUserID) == identityManager.currentAppUserID
+        expect(invokedMethodParams.data?.keys.contains("rc_idfa")) == true
+        expect(invokedMethodParams.data?.keys.contains("rc_idfv")) == true
+        expect(invokedMethodParams.data?.keys.contains("rc_attribution_network_id")) == false
+        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
+        expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
     func testAdClientAttributionDataIsAutomaticallyCollected() throws {
         setupPurchases(automaticCollection: true)
 
-        let maybeInvokedMethodParams = self.backend.invokedPostAttributionDataParameters
+        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
 
-        expect(maybeInvokedMethodParams).toNot(beNil())
-        expect(maybeInvokedMethodParams?.network) == AttributionNetwork.appleSearchAds
+        expect(invokedMethodParams).toNot(beNil())
+        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
 
-        let maybeObtainedVersionData = try XCTUnwrap(maybeInvokedMethodParams?.data?["Version3.1"] as? NSDictionary)
-        expect(maybeObtainedVersionData["iad-campaign-id"]).toNot(beNil())
+        let obtainedVersionData = try XCTUnwrap(invokedMethodParams.data?["Version3.1"] as? NSDictionary)
+        expect(obtainedVersionData["iad-campaign-id"]).toNot(beNil())
     }
 
     func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
