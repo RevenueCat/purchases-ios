@@ -62,6 +62,10 @@ Purchases.configure(
 			<td>RCCustomerInfo</td>
 		</tr>
 		<tr>
+			<td>RCTransaction</td>
+			<td>RCStoreTransaction</td>
+		</tr>
+		<tr>
 			<td>(RCPurchasesErrorCode).RCOperationAlreadyInProgressError</td>
 			<td>RCOperationAlreadyInProgressForProductError</td>
 		</tr>
@@ -202,7 +206,7 @@ Purchases.configure(
 		</tr>
 		<tr>
 			<td>Purchases.Transaction</td>
-			<td>Transaction</td>
+			<td>StoreTransaction</td>
 		</tr>
 		<tr>
 			<td>Purchases.EntitlementInfo</td>
