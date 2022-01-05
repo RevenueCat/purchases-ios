@@ -23,8 +23,9 @@
     @objc public var activeSubscriptions: Set<String> { activeKeys(dates: expirationDatesByProductId) }
 
     /// All product identifiers purchases by the user regardless of expiration.
-    @objc public lazy var allPurchasedProductIdentifiers: Set<String> = {
-        return Set(self.expirationDatesByProductId.keys).union(self.nonSubscriptionTransactions.map { $0.productId })
+    @objc public private(set) lazy var allPurchasedProductIdentifiers: Set<String> = {
+        return Set(self.expirationDatesByProductId.keys)
+            .union(self.nonSubscriptionTransactions.map { $0.productId })
     }()
 
     /// Returns the latest expiration date of all products, nil if there are none.
