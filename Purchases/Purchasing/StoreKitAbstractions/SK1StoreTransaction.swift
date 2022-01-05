@@ -16,10 +16,14 @@ import StoreKit
 internal struct SK1StoreTransaction: StoreTransactionType {
 
     init(sk1Transaction: SK1Transaction) {
+        self.underlyingSK1Transaction = sk1Transaction
+
         self.productIdentifier = sk1Transaction.productIdentifier ?? ""
         self.purchaseDate = sk1Transaction.purchaseDate
         self.transactionIdentifier = sk1Transaction.transactionID
     }
+
+    let underlyingSK1Transaction: SK1Transaction
 
     let productIdentifier: String
     let purchaseDate: Date

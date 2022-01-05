@@ -22,6 +22,7 @@
 		5758859C2748272A00CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; };
 		5758859D2748272A00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5758EE4F2786493400B3B703 /* StoreProductAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE4E2786493300B3B703 /* StoreProductAPI.swift */; };
+		5758EE582786542200B3B703 /* StoreTransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE572786542200B3B703 /* StoreTransactionAPI.swift */; };
 		A513AD35272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */; };
 /* End PBXBuildFile section */
 
@@ -44,6 +45,7 @@
 		575885972748271100CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758859B2748272A00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758EE4E2786493300B3B703 /* StoreProductAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductAPI.swift; sourceTree = "<group>"; };
+		5758EE572786542200B3B703 /* StoreTransactionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTransactionAPI.swift; sourceTree = "<group>"; };
 		A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundRequestStatusAPI.swift; sourceTree = "<group>"; };
 		A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorCodesAPI.swift; sourceTree = "<group>"; };
 		A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsAPI.swift; sourceTree = "<group>"; };
@@ -114,6 +116,7 @@
 				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,
 				A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */,
 				5758EE4E2786493300B3B703 /* StoreProductAPI.swift */,
+				5758EE572786542200B3B703 /* StoreTransactionAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -205,6 +208,7 @@
 				2DD778EB270E23460079CBD4 /* ErrorCodesAPI.swift in Sources */,
 				2DD778E4270E23460079CBD4 /* AttributionNetworkAPI.swift in Sources */,
 				2DD778EC270E23460079CBD4 /* TransactionAPI.swift in Sources */,
+				5758EE582786542200B3B703 /* StoreTransactionAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

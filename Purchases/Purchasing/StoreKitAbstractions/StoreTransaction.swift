@@ -72,7 +72,7 @@ internal protocol StoreTransactionType {
     var transactionIdentifier: String { get }
 }
 
-// MARK: - Wrapper constructors
+// MARK: - Wrapper constructors / getters
 
 extension StoreTransaction {
     internal convenience init(sk1Transaction: SK1Transaction) {
@@ -83,4 +83,16 @@ extension StoreTransaction {
     internal convenience init(sk2Transaction: SK2Transaction) {
         self.init(SK2StoreTransaction(sk2Transaction: sk2Transaction))
     }
+
+    /// Returns the `SKPaymentTransaction` if this `StoreTransaction` represents a `SKPaymentTransaction`.
+    @objc public var sk1Transaction: SK1Transaction? {
+        return (self.transaction as? SK1StoreTransaction)?.underlyingSK1Transaction
+    }
+
+    /// Returns the `StoreKit.Transaction` if this `StoreTransaction` represents a `StoreKit.Transaction`.
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    public var sk2Transaction: SK2Transaction? {
+        return (self.transaction as? SK2StoreTransaction)?.underlyingSK2Transaction
+    }
+
 }
