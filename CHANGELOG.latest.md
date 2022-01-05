@@ -9,6 +9,18 @@
 - `reset`, previously deprecated, has been removed in favor of `logOut`.
 - `Package.product` has been replaced with `Package.storeProduct`. This is an abstraction of StoreKit 1's `SKProduct` and StoreKit 2's `StoreKit.Product`, but it also adds useful features like `pricePerMonth` and `priceFormatter`. The underlying objects from StoreKit are available through `StoreProduct.sk1Product` and `StoreProduct.sk2Product`.
 
+### Xcode version requirements and updated deployment targets
+`purchases-ios` v4 requires using Xcode 13.2 or newer. 
+It also updates the minimum deployment targets for iOS, macOS and tvOS. 
+
+##### Minimum deployment targets
+|  | v3 | v4 |
+| :-: | :-: | :-: |
+| iOS | 9.0 | 11.0 |
+| tvOS | 9.0 | 11.0 |
+| macOS | 10.12 | 10.13 |
+| watchOS | 6.2 | 6.2 (unchanged) |
+
 ### StoreKit 2 support:
 - This beta introduces new methods that add functionality using StoreKit 2:
     - `showManageSuscriptions(completion:)`
