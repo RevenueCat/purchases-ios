@@ -8,7 +8,32 @@ func resolveTargets() -> [Target] {
     let baseTargets: [Target] = [
         .target(name: "RevenueCat",
                 path: ".",
-                exclude: ["Purchases/Info.plist"],
+                exclude: [
+                    "APITesters",
+                    "BackendIntegrationTestApp",
+                    "BackendIntegrationTests",
+                    "CHANGELOG.latest.md",
+                    "CHANGELOG.md",
+                    "CODE_OF_CONDUCT.md",
+                    "CONTRIBUTING.md",
+                    "docs",
+                    "Examples",
+                    "fastlane",
+                    "Gemfile",
+                    "Gemfile.lock",
+                    "IntegrationTests",
+                    "LICENSE",
+                    "Purchases/Info.plist",
+                    "PurchasesTests",
+                    "README.md",
+                    "RELEASING.md",
+                    "RevenueCat.podspec",
+                    "scripts",
+                    "StoreKitUnitTests",
+                    "SwiftStyleGuide.swift",
+                    "TestPlans",
+                    "UnitTestsHostApp"
+                    ],
                 sources: ["Purchases"]
         )
     ]
