@@ -14,17 +14,43 @@
 
 import Foundation
 
-class TransactionsFactory {
+enum TransactionsFactory {
 
-    func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
-                                     dateFormatter: DateFormatterType) -> [Transaction] {
-        subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
-            transactionData.map {
-                Transaction(with: $0, productId: productId, dateFormatter: dateFormatter)
-            }.compactMap { $0 }
-        }.sorted {
-            $0.purchaseDate < $1.purchaseDate
-        }
+    static func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
+                                            dateFormatter: DateFormatterType) -> [StoreTransaction] {
+        subscriptionsData
+            .flatMap { (productId: String, transactionData: [[String: Any]]) -> [StoreTransaction] in
+                transactionData
+                    .map { SimpleTransaction(with: $0, productID: productId, dateFormatter: dateFormatter) }
+                    .compactMap { $0 }
+                    .map { StoreTransaction($0) }
+            }
+            .sorted { $0.purchaseDate < $1.purchaseDate }
+    }
+
+}
+
+/// `StoreTransactionType` backed by data parsed from the server
+private struct SimpleTransaction: StoreTransactionType {
+
+    let productIdentifier: String
+    let purchaseDate: Date
+    let transactionIdentifier: String
+
+    init?(with serverResponse: [String: Any], productID: String, dateFormatter: DateFormatterType) {
+        guard let revenueCatId = serverResponse["id"] as? String,
+              let dateString = serverResponse["purchase_date"] as? String,
+              let purchaseDate = dateFormatter.date(from: dateString) else {
+
+                  // todo: extract string
+                  Logger.error("Couldn't initialize Transaction from dictionary. " +
+                               "Reason: unexpected format. Dictionary: \(serverResponse).")
+                  return nil
+              }
+
+        self.transactionIdentifier = revenueCatId
+        self.purchaseDate = purchaseDate
+        self.productIdentifier = productID
     }
 
 }

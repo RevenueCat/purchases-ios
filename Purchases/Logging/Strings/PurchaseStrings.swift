@@ -31,6 +31,8 @@ enum PurchaseStrings {
     case purchasing_product(productIdentifier: String)
     case skpayment_missing_from_skpaymenttransaction
     case skpayment_missing_product_identifier
+    case sktransaction_missing_transaction_date
+    case sktransaction_missing_transaction_identifier
     case could_not_purchase_product_id_not_found
     case product_identifier_nil
     case payment_identifier_nil
@@ -120,6 +122,14 @@ extension PurchaseStrings: CustomStringConvertible {
         case .skpayment_missing_product_identifier:
             return "There is a problem with the SKPayment missing " +
             "a product identifier - this is an issue with the App Store."
+
+        case .sktransaction_missing_transaction_date:
+            return "There is a problem with the SKPaymentTransaction missing " +
+            "a transaction date - this is an issue with the App Store."
+
+        case .sktransaction_missing_transaction_identifier:
+            return "There is a problem with the SKPaymentTransaction missing " +
+            "a transaction identifier - this is an issue with the App Store."
 
         case .could_not_purchase_product_id_not_found:
             return "makePurchase - Could not purchase SKProduct. " +

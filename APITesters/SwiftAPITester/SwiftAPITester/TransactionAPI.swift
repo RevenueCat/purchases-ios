@@ -14,11 +14,11 @@
 import Foundation
 import RevenueCat
 
-var trans: Transaction!
+var trans: StoreTransaction!
 func checkTransactionAPI() {
 
-    let rci: String = trans.revenueCatId
-    let pid: String = trans.productId
+    let rci: String = trans.transactionIdentifier
+    let pid: String = trans.productIdentifier
     let date: Date = trans.purchaseDate
 
     print(trans!, rci, pid, date)
