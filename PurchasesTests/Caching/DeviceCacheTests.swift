@@ -391,12 +391,12 @@ extension DeviceCacheTests {
         let key = "some key"
         let value = "some value"
         let setTime = NSDate()
-        let isSynced: NSNumber = true
+        let isSynced = true
         let subscriberDict: [String: NSObject] = [
             "key": NSString(string: key),
             "value": NSString(string: value),
             "setTime": setTime,
-            "isSynced": isSynced
+            "isSynced": NSNumber(value: isSynced)
         ]
 
         let subscriberAttribute = DeviceCache.newAttribute(dictionary: subscriberDict)
@@ -404,6 +404,6 @@ extension DeviceCacheTests {
         expect(subscriberAttribute.key) == key
         expect(subscriberAttribute.value) == value
         expect(subscriberAttribute.setTime as NSDate) == setTime
-        expect(subscriberAttribute.isSynced) == isSynced.boolValue
+        expect(subscriberAttribute.isSynced) == isSynced
     }
 }
