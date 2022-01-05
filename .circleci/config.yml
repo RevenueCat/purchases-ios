@@ -20,7 +20,7 @@ release-tags: &release-tags
       ignore: /.*/
 
 orbs:
-   macos: circleci/macos@dev:25cb9bd
+   macos: circleci/macos@2.0.1
 
 version: 2.1
 commands:
