@@ -60,7 +60,6 @@ platform :ios do
       scheme: "RevenueCat",
       testplan: "RevenueCat",
       prelaunch_simulator: true,
-      devices: ["Apple TV"],
       output_types: '',
       fail_build: false,
       result_bundle: true
