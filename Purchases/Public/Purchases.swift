@@ -900,8 +900,6 @@ public extension Purchases {
         purchasesOrchestrator.purchase(package: package, completion: completion)
     }
 
-    // todo: document changes
-
     /**
      * Purchase the passed ``Package``.
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.

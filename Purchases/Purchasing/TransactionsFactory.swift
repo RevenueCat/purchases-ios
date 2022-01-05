@@ -41,8 +41,6 @@ private struct SimpleTransaction: StoreTransactionType {
         guard let revenueCatId = serverResponse["id"] as? String,
               let dateString = serverResponse["purchase_date"] as? String,
               let purchaseDate = dateFormatter.date(from: dateString) else {
-
-                  // todo: extract string
                   Logger.error("Couldn't initialize Transaction from dictionary. " +
                                "Reason: unexpected format. Dictionary: \(serverResponse).")
                   return nil

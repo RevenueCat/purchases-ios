@@ -14,8 +14,6 @@
 import Foundation
 import StoreKit
 
-// todo: API tester!
-
 /// TypeAlias to StoreKit 1's Transaction type, called `StoreKit.SKPaymentTransaction`
 public typealias SK1Transaction = SKPaymentTransaction
 
