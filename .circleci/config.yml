@@ -60,7 +60,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane test
+          command: bundle exec fastlane scan
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -299,9 +299,6 @@ jobs:
       - trust-github-key
       - update-carthage-integration-commit
       # Carthage
-      - restore_cache:
-          keys: 
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Update
           working_directory: IntegrationTests/CarthageIntegration/
@@ -311,11 +308,7 @@ jobs:
               ./carthage.sh update --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
               ./carthage.sh build --use-xcframeworks
-      - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-          paths:
-            - Carthage
-
+      
       - install-dependencies-scan-and-archive:
           directory: IntegrationTests/CarthageIntegration/
 
