@@ -1,5 +1,5 @@
 PODS:
-  - RevenueCat (4.0.0-beta.6)
+  - RevenueCat (4.0.0-beta.9)
 
 DEPENDENCIES:
   - RevenueCat (from `../../`)
@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  RevenueCat: ab83627a82043e58f91cdca72301538dd4f49ddb
+  RevenueCat: 396748469fbaeb3e58b8f531b466a251fe0bf552
 
 PODFILE CHECKSUM: 6710b07378ac75160af9fb583eb931b3c73b3726
 
