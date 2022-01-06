@@ -3,7 +3,7 @@
 - Ninth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
 
-[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.8...HEAD)
+[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.8...4.0.0-beta.9)
 - See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
 
 ### Breaking changes:
