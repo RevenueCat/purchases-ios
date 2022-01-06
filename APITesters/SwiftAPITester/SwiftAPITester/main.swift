@@ -41,3 +41,5 @@ checkPackageEnums()
 checkRefundRequestStatusEnum()
 
 checkTransactionAPI()
+
+checkStoreProductAPI()
