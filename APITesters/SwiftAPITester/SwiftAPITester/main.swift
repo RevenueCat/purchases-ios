@@ -13,33 +13,37 @@
 
 import Foundation
 
-checkAttributionNetworkEnums()
+func main() -> Int {
+    checkAttributionNetworkEnums()
 
-checkEntitlementInfoAPI()
-checkEntitlementInfoEnums()
+    checkEntitlementInfoAPI()
+    checkEntitlementInfoEnums()
 
-checkEntitlementInfosAPI()
+    checkEntitlementInfosAPI()
 
-checkIntroEligibilityAPI()
-checkIntroEligibilityEnums()
+    checkIntroEligibilityAPI()
+    checkIntroEligibilityEnums()
 
-checkOfferingAPI()
+    checkOfferingAPI()
 
-checkOfferingsAPI()
+    checkOfferingsAPI()
 
-checkCustomerInfoAPI()
+    checkCustomerInfoAPI()
 
-checkPurchasesAPI()
+    checkPurchasesAPI()
 
-checkPurchasesEnums()
+    checkPurchasesEnums()
 
-checkPurchasesErrorCodeEnums()
+    checkPurchasesErrorCodeEnums()
 
-checkPackageAPI()
-checkPackageEnums()
+    checkPackageAPI()
+    checkPackageEnums()
 
-checkRefundRequestStatusEnum()
+    checkRefundRequestStatusEnum()
 
-checkTransactionAPI()
+    checkTransactionAPI()
 
-checkStoreProductAPI()
+    checkStoreProductAPI()
+
+    return 0
+}
