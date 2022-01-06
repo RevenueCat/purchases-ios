@@ -12,6 +12,8 @@
 //  Created by Nacho Soto on 12/2/21.
 
 // swiftlint:disable identifier_name
+import Foundation
+
 extension DispatchTimeInterval {
 
     /// `DispatchTimeInterval` can only be used by specifying a unit of time.

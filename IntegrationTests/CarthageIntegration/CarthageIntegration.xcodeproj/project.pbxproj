@@ -166,7 +166,6 @@
 				2D6C02792549F76E0039CB92 /* Sources */,
 				2D6C027A2549F76E0039CB92 /* Frameworks */,
 				2D6C027B2549F76E0039CB92 /* Resources */,
-				2D6C03D2254A08F60039CB92 /* copy Carthage frameworks */,
 			);
 			buildRules = (
 			);
@@ -252,29 +251,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		2D6C03D2254A08F60039CB92 /* copy Carthage frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/RevenueCat.xcframework/ios-arm64_armv7/RevenueCat.framework",
-			);
-			name = "copy Carthage frameworks";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/RevenueCat.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2D6C02792549F76E0039CB92 /* Sources */ = {

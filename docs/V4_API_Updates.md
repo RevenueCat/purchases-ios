@@ -409,7 +409,9 @@ if let error = error as? RevenueCat.ErrorCode {
 ### New APIs
 
 - `showManageSuscriptions(completion:)`: Use this method to show the subscription management for the current user. Depending on where they made the purchase and their OS version, this might take them to the `managementURL`, or open the iOS Subscription Management page. 
-- `beginRefundRequest(for:)`: Use this method to begin a refund request for a purchase, specifying the product identifier.
+- `beginRefundRequestForCurrentEntitlement`: Use this method to begin a refund request for the purchase that granted the current entitlement.
+- `beginRefundRequest(forProduct:)`: Use this method to begin a refund request for a purchase, specifying the product identifier.
+- `beginRefundRequest(forEntitlement:)`: Use this method to begin a refund request for a purchase, specifying the entitlement identifier.
 
 ## Reporting undocumented issues:
 

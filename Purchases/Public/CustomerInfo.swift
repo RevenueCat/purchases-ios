@@ -13,6 +13,7 @@
 //
 
 // swiftlint:disable file_length
+import Foundation
 
 @objc(RCCustomerInfo) public class CustomerInfo: NSObject {
 
