@@ -68,7 +68,7 @@ class Backend {
             return
         }
 
-        Logger.user(Strings.identity.creating_alias(userA: appUserID, userB: newAppUserID))
+        Logger.user(Strings.identity.creating_alias)
         httpClient.performPOSTRequest(serially: true,
                                       path: "/subscribers/\(appUserID)/alias",
                                       requestBody: ["new_app_user_id": newAppUserID],

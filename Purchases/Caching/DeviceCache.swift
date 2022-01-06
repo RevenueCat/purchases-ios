@@ -68,14 +68,7 @@ class DeviceCache {
         }
 
         if appUserIDHasBeenSet && Self.cachedAppUserID(userDefaults) == nil {
-            fatalError(
-                """
-                [\(Logger.frameworkDescription)] - Cached appUserID has been deleted from user defaults.
-                This leaves the SDK in an undetermined state. Please make sure that RevenueCat
-                entries in user defaults don't get deleted by anything other than the SDK.
-                More info: https://rev.cat/userdefaults-crash
-                """
-            )
+            fatalError(Strings.purchase.cached_app_user_id_deleted.description)
         }
     }
 
@@ -267,7 +260,7 @@ class DeviceCache {
             var groupedAttributes = Self.storedAttributesForAllUsers($0)
             let attibutesForAppUserID = groupedAttributes.removeValue(forKey: appUserID)
             guard attibutesForAppUserID != nil else {
-                Logger.warn("Attempt to delete synced attributes for \(appUserID), but there were none to delete")
+                Logger.warn(Strings.identity.deleting_synced_attributes_none_found)
                 return
             }
             $0.setValue(groupedAttributes, forKey: CacheKeys.subscriberAttributes)
