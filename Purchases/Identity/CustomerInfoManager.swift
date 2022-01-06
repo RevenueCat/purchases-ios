@@ -175,26 +175,26 @@ class CustomerInfoManager {
         }
     }
 
-    private var customerInfoChanges: [Int: (CustomerInfo) -> Void] = [:]
+    private var customerInfoObserversByIdentifier: [Int: (CustomerInfo) -> Void] = [:]
 
     /// Allows monitoring changes to the active `CustomerInfo`.
     /// - Returns: closure that removes the created observation.
     /// - Note: this method is not thread-safe.
     func monitorChanges(_ changes: @escaping (CustomerInfo) -> Void) -> () -> Void {
-        let index = self.customerInfoChanges.keys
+        let identifier = self.customerInfoObserversByIdentifier.keys
             .sorted().last.map { $0 + 1 } // Next index
             ?? 0 // Or default to 0
 
-        self.customerInfoChanges[index] = changes
+        self.customerInfoObserversByIdentifier[identifier] = changes
 
         return { [weak self] in
-            self?.customerInfoChanges.removeValue(forKey: index)
+            self?.customerInfoObserversByIdentifier.removeValue(forKey: identifier)
         }
     }
 
     private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
         customerInfoCacheLock.perform {
-            guard !self.customerInfoChanges.isEmpty,
+            guard !self.customerInfoObserversByIdentifier.isEmpty,
                   lastSentCustomerInfo != customerInfo else {
                       return
                   }
@@ -207,7 +207,7 @@ class CustomerInfoManager {
 
             self.lastSentCustomerInfo = customerInfo
             operationDispatcher.dispatchOnMainThread {
-                for closure in self.customerInfoChanges.values {
+                for closure in self.customerInfoObserversByIdentifier.values {
                     closure(customerInfo)
                 }
             }
