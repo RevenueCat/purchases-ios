@@ -20,6 +20,7 @@
 		2DD778EF270E23460079CBD4 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */; };
 		5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */; };
 		5738F42127866F8F0096D623 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
+		5738F42A278673A80096D623 /* SubscriptionPeriodAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */; };
 		5758859C2748272A00CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; };
 		5758859D2748272A00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5758EE4F2786493400B3B703 /* StoreProductAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE4E2786493300B3B703 /* StoreProductAPI.swift */; };
@@ -44,6 +45,7 @@
 /* Begin PBXFileReference section */
 		2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductDiscountAPI.swift; sourceTree = "<group>"; };
+		5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPeriodAPI.swift; sourceTree = "<group>"; };
 		575885972748271100CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758859B2748272A00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758EE4E2786493300B3B703 /* StoreProductAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductAPI.swift; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 				5758EE4E2786493300B3B703 /* StoreProductAPI.swift */,
 				5758EE572786542200B3B703 /* StoreTransactionAPI.swift */,
 				5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */,
+				5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -213,6 +216,7 @@
 				2DD778EC270E23460079CBD4 /* TransactionAPI.swift in Sources */,
 				5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */,
 				5758EE582786542200B3B703 /* StoreTransactionAPI.swift in Sources */,
+				5738F42A278673A80096D623 /* SubscriptionPeriodAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

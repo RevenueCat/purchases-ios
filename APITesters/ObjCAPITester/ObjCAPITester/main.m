@@ -19,6 +19,7 @@
 #import "RCRefundRequestStatusAPI.h"
 #import "RCStoreProductAPI.h"
 #import "RCStoreProductDiscountAPI.h"
+#import "RCSubscriptionPeriodAPI.h"
 #import "RCTransactionAPI.h"
 
 @import StoreKit;
@@ -57,6 +58,9 @@ int main(int argc, const char * argv[]) {
         [RCStoreProductAPI checkAPI];
         [RCStoreProductDiscountAPI checkAPI];
         [RCStoreProductDiscountAPI checkPaymentModeEnum];
+
+        [RCSubscriptionPeriodAPI checkAPI];
+        [RCSubscriptionPeriodAPI checkUnitEnum];
     }
     return 0;
 }

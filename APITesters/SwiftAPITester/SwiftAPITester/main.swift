@@ -48,5 +48,8 @@ func main() -> Int {
     checkStoreProductDiscountAPI()
     checkPaymentModeEnum()
 
+    checkSubscriptionPeriodAPI()
+    checkSubscriptionPeriodUnit()
+
     return 0
 }

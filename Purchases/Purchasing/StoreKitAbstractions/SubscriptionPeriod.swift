@@ -17,8 +17,8 @@ import StoreKit
 @objc(RCSubscriptionPeriod)
 public class SubscriptionPeriod: NSObject {
 
-    public let value: Int
-    public let unit: Unit
+    @objc public let value: Int
+    @objc public let unit: Unit
 
     public init(value: Int, unit: Unit) {
         assert(value > 0, "Invalid value: \(value)")
@@ -27,7 +27,8 @@ public class SubscriptionPeriod: NSObject {
         self.unit = unit
     }
 
-    @objc public enum Unit: Int {
+    @objc(RCSubscriptionPeriodUnit)
+    public enum Unit: Int {
 
         case unknown = -1
         case day = 0
