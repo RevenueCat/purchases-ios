@@ -42,6 +42,12 @@ class TrialOrIntroPriceEligibilityChecker {
 
     func checkEligibility(productIdentifiers: [String],
                           completion: @escaping ReceiveIntroEligibilityBlock) {
+        guard !productIdentifiers.isEmpty else {
+            Logger.warn(Strings.purchase.check_eligibility_no_identifiers)
+            completion([:])
+            return
+        }
+
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             _ = Task<Void, Never> {
                 do {
