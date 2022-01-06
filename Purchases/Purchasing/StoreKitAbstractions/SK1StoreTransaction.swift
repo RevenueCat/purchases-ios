@@ -55,7 +55,7 @@ extension SKPaymentTransaction {
         guard let date = self.transactionDate else {
             Logger.appleWarning(Strings.purchase.sktransaction_missing_transaction_date)
 
-            return Date()
+            return Date(timeIntervalSince1970: 0)
         }
 
         return date
