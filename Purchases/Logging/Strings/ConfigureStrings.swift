@@ -31,7 +31,7 @@ enum ConfigureStrings {
 
     case purchase_instance_already_set
 
-    case initial_app_user_id(appUserID: String?)
+    case initial_app_user_id(isSet: Bool)
 
     case no_singleton_instance
 
@@ -59,8 +59,10 @@ extension ConfigureStrings: CustomStringConvertible {
         case .purchase_instance_already_set:
             return "Purchases instance already set. Did you mean to configure " +
                 "two Purchases objects?"
-        case .initial_app_user_id(let appUserID):
-            return "Initial App User ID - \(appUserID ?? "nil appUserID")"
+        case .initial_app_user_id(let isSet):
+            return isSet
+                ? "Initial App User ID set"
+                : "No initial App User ID"
         case .no_singleton_instance:
             return "There is no singleton instance. Make sure you configure Purchases before " +
                 "trying to get the default instance. More info here: https://errors.rev.cat/configuring-sdk"

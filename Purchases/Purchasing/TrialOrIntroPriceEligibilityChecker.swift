@@ -42,10 +42,20 @@ class TrialOrIntroPriceEligibilityChecker {
 
     func checkEligibility(productIdentifiers: [String],
                           completion: @escaping ReceiveIntroEligibilityBlock) {
+        guard !productIdentifiers.isEmpty else {
+            Logger.warn(Strings.purchase.check_eligibility_no_identifiers)
+            completion([:])
+            return
+        }
+
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             _ = Task<Void, Never> {
-                let eligibility = await sk2CheckEligibility(productIdentifiers)
-                completion(eligibility)
+                do {
+                    completion(try await sk2CheckEligibility(productIdentifiers))
+                } catch {
+                    Logger.appleError(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
+                    completion([:])
+                }
             }
         } else {
             sk1CheckEligibility(productIdentifiers, completion: completion)
@@ -69,14 +79,13 @@ class TrialOrIntroPriceEligibilityChecker {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2CheckEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+    func sk2CheckEligibility(_ productIdentifiers: [String]) async throws -> [String: IntroEligibility] {
         let identifiers = Set(productIdentifiers)
         var introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
             resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
         }
 
-        // fixme: handle errors
-        let products = (try? await productsManager.sk2StoreProducts(withIdentifiers: identifiers)) ?? []
+        let products = try await productsManager.sk2StoreProducts(withIdentifiers: identifiers)
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
             let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer

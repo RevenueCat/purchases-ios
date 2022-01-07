@@ -3,16 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2DD778F8270E235B0079CBD4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778F7270E235B0079CBD4 /* AppDelegate.swift */; };
-		2DD778FA270E235B0079CBD4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778F9270E235B0079CBD4 /* SceneDelegate.swift */; };
-		2DD778FC270E235B0079CBD4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778FB270E235B0079CBD4 /* ViewController.swift */; };
-		2DD778FF270E235B0079CBD4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD778FD270E235B0079CBD4 /* Main.storyboard */; platformFilters = (ios, maccatalyst, macos, watchos, ); };
-		2DD77901270E235C0079CBD4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DD77900270E235C0079CBD4 /* Assets.xcassets */; };
-		2DD77904270E235C0079CBD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DD77902270E235C0079CBD4 /* LaunchScreen.storyboard */; platformFilters = (ios, maccatalyst, macos, watchos, ); };
 		2DD77909270E23870079CBD4 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
 		2DD7790B270E23870079CBD4 /* RCCustomerInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */; };
 		2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */; };
@@ -24,8 +18,10 @@
 		2DD77914270E23870079CBD4 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */; };
 		2DD77915270E23870079CBD4 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
 		2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
+		5738F41C27866E6F0096D623 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A519264C26EBCEF6007D0BD1 /* main.m */; };
 		575885A42748274E00CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 575885A32748274E00CA2169 /* RevenueCat.framework */; };
 		575885A52748274E00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 575885A32748274E00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5758EE5227864A8500B3B703 /* RCStoreProductAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE5127864A8500B3B703 /* RCStoreProductAPI.m */; };
 		A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
 /* End PBXBuildFile section */
 
@@ -45,17 +41,12 @@
 
 /* Begin PBXFileReference section */
 		2DD778F5270E235B0079CBD4 /* ObjCAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjCAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		2DD778F7270E235B0079CBD4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		2DD778F9270E235B0079CBD4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		2DD778FB270E235B0079CBD4 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		2DD778FE270E235B0079CBD4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		2DD77900270E235C0079CBD4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2DD77903270E235C0079CBD4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		2DD77905270E235C0079CBD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5758858F274826CE00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		57588593274826DF00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758859F2748274600CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		575885A32748274E00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5758EE5027864A8500B3B703 /* RCStoreProductAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCStoreProductAPI.h; sourceTree = "<group>"; };
+		5758EE5127864A8500B3B703 /* RCStoreProductAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStoreProductAPI.m; sourceTree = "<group>"; };
 		A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCRefundRequestStatusAPI.h; sourceTree = "<group>"; };
 		A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCRefundRequestStatusAPI.m; sourceTree = "<group>"; };
 		A519264C26EBCEF6007D0BD1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -95,25 +86,10 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2DD778F6270E235B0079CBD4 /* ObjCAPITesterIOS */ = {
-			isa = PBXGroup;
-			children = (
-				2DD778F7270E235B0079CBD4 /* AppDelegate.swift */,
-				2DD778F9270E235B0079CBD4 /* SceneDelegate.swift */,
-				2DD778FB270E235B0079CBD4 /* ViewController.swift */,
-				2DD778FD270E235B0079CBD4 /* Main.storyboard */,
-				2DD77900270E235C0079CBD4 /* Assets.xcassets */,
-				2DD77902270E235C0079CBD4 /* LaunchScreen.storyboard */,
-				2DD77905270E235C0079CBD4 /* Info.plist */,
-			);
-			path = ObjCAPITesterIOS;
-			sourceTree = "<group>";
-		};
 		A519264026EBCEF6007D0BD1 = {
 			isa = PBXGroup;
 			children = (
 				A519264B26EBCEF6007D0BD1 /* ObjCAPITester */,
-				2DD778F6270E235B0079CBD4 /* ObjCAPITesterIOS */,
 				A519264A26EBCEF6007D0BD1 /* Products */,
 				A52A8A3A26EC2AEC00F06846 /* Frameworks */,
 			);
@@ -155,6 +131,8 @@
 				A519264C26EBCEF6007D0BD1 /* main.m */,
 				A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */,
 				A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */,
+				5758EE5027864A8500B3B703 /* RCStoreProductAPI.h */,
+				5758EE5127864A8500B3B703 /* RCStoreProductAPI.m */,
 			);
 			path = ObjCAPITester;
 			sourceTree = "<group>";
@@ -233,9 +211,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DD77904270E235C0079CBD4 /* LaunchScreen.storyboard in Resources */,
-				2DD77901270E235C0079CBD4 /* Assets.xcassets in Resources */,
-				2DD778FF270E235B0079CBD4 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,17 +221,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DD778FC270E235B0079CBD4 /* ViewController.swift in Sources */,
-				2DD778F8270E235B0079CBD4 /* AppDelegate.swift in Sources */,
 				2DD77914270E23870079CBD4 /* RCOfferingAPI.m in Sources */,
 				A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */,
 				2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */,
 				2DD77915270E23870079CBD4 /* RCPackageAPI.m in Sources */,
 				2DD77909270E23870079CBD4 /* RCAttributionNetworkAPI.m in Sources */,
-				2DD778FA270E235B0079CBD4 /* SceneDelegate.swift in Sources */,
 				2DD7790E270E23870079CBD4 /* RCIntroEligibilityAPI.m in Sources */,
 				2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */,
 				2DD7790F270E23870079CBD4 /* RCPurchasesAPI.m in Sources */,
+				5758EE5227864A8500B3B703 /* RCStoreProductAPI.m in Sources */,
+				5738F41C27866E6F0096D623 /* main.m in Sources */,
 				2DD77911270E23870079CBD4 /* RCEntitlementInfoAPI.m in Sources */,
 				2DD77912270E23870079CBD4 /* RCOfferingsAPI.m in Sources */,
 				2DD7790B270E23870079CBD4 /* RCCustomerInfoAPI.m in Sources */,
@@ -265,25 +239,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		2DD778FD270E235B0079CBD4 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2DD778FE270E235B0079CBD4 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		2DD77902270E235C0079CBD4 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2DD77903270E235C0079CBD4 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		2DD77906270E235C0079CBD4 /* Debug */ = {
@@ -298,9 +253,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ObjCAPITesterIOS/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -336,9 +289,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ObjCAPITesterIOS/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

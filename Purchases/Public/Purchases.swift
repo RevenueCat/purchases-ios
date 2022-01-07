@@ -39,7 +39,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 #if DEBUG
 #warning(
     """
-    You're using a beta release (4.0.0-beta.8). If that's not intentional, you'll want to point to one of the \
+    You're using a beta release (4.0.0-beta.9). If that's not intentional, you'll want to point to one of the \
     3.x release tags, or a specific branch instead of `main` see https://rev.cat/v4rmd for more information.
     """
     )
@@ -358,7 +358,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
         }
         Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion), fileName: nil)
-        Logger.user(Strings.configure.initial_app_user_id(appUserID: appUserID), fileName: nil)
+        Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil), fileName: nil)
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher

@@ -89,13 +89,12 @@ class CatsViewController: UIViewController {
 
                     let productID = activeEntitlement.value.productIdentifier
 
-                    Purchases.shared.beginRefundRequest(for: productID)
-                    { status, maybeError in
-                        switch status {
-                        case .success: print("Refund request submitted!")
-                        case .userCancelled: print("Refund request cancelled")
-                        case .error: print("Issue submitting refund request: \(maybeError?.localizedDescription ?? "")")
-                        }
+                    let status = try await Purchases.shared.beginRefundRequest(forProduct: productID)
+
+                    switch status {
+                    case .success: print("Refund request submitted!")
+                    case .userCancelled: print("Refund request cancelled")
+                    case .error: print("Issue submitting refund request")
                     }
 
                 }

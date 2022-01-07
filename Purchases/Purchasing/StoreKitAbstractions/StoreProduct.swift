@@ -200,7 +200,7 @@ extension StoreProduct {
     }
 
     /// Returns the `SKProduct` if this `StoreProduct` represents a `StoreKit.SKProduct`.
-    public var sk1Product: SK1Product? {
+    @objc public var sk1Product: SK1Product? {
         return (self.product as? SK1StoreProduct)?.underlyingSK1Product
     }
 
