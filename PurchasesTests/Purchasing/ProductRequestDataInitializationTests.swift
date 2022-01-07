@@ -3,7 +3,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-// swiftlint:disable type_name
+// swiftlint:disable:next type_name
 class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
 
     private var product: MockSK1Product!
