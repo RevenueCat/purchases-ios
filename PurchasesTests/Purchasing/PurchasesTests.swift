@@ -118,11 +118,11 @@ class PurchasesTests: XCTestCase {
         var postedIsRestore: Bool?
         var postedProductID: String?
         var postedPrice: Decimal?
-        var postedPaymentMode: PromotionalOffer.PaymentMode?
+        var postedPaymentMode: StoreProductDiscount.PaymentMode?
         var postedIntroPrice: Decimal?
         var postedCurrencyCode: String?
         var postedSubscriptionGroup: String?
-        var postedDiscounts: Array<PromotionalOffer>?
+        var postedDiscounts: Array<StoreProductDiscount>?
         var postedOfferingIdentifier: String?
         var postedObserverMode: Bool?
 
@@ -817,10 +817,10 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedPrice).to(equal(product.price as Decimal))
 
             if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
-                expect(self.backend.postedPaymentMode).to(equal(PromotionalOffer.PaymentMode.payAsYouGo))
+                expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.payAsYouGo))
                 expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price as Decimal?))
             } else {
-                expect(self.backend.postedPaymentMode).to(equal(PromotionalOffer.PaymentMode.none))
+                expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.none))
                 expect(self.backend.postedIntroPrice).to(beNil())
             }
 
@@ -830,10 +830,10 @@ class PurchasesTests: XCTestCase {
 
             if #available(iOS 12.2, *) {
                 expect(self.backend.postedDiscounts?.count).to(equal(1))
-                let postedDiscount: PromotionalOffer = self.backend.postedDiscounts![0]
+                let postedDiscount: StoreProductDiscount = self.backend.postedDiscounts![0]
                 expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
                 expect(postedDiscount.price).to(equal(1.99))
-                expect(postedDiscount.paymentMode.rawValue).to(equal(PromotionalOffer.PaymentMode.payAsYouGo.rawValue))
+                expect(postedDiscount.paymentMode.rawValue).to(equal(StoreProductDiscount.PaymentMode.payAsYouGo.rawValue))
             }
 
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))

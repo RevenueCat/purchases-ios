@@ -23,8 +23,8 @@
     NSString *subscriptionGroupIdentifier = product.subscriptionGroupIdentifier;
     NSNumberFormatter *priceFormatter = product.priceFormatter;
     RCSubscriptionPeriod *subscriptionPeriod = product.subscriptionPeriod;
-    RCPromotionalOffer *introductoryPrice = product.introductoryPrice;
-    NSArray<RCPromotionalOffer *> *discounts = product.discounts;
+    RCStoreProductDiscount *introductoryPrice = product.introductoryPrice;
+    NSArray<RCStoreProductDiscount *> *discounts = product.discounts;
     NSDecimalNumber *pricePerMonth = product.pricePerMonth;
     NSString *localizedIntroductoryPriceString = product.localizedIntroductoryPriceString;
 

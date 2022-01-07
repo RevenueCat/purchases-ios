@@ -21,15 +21,15 @@ import StoreKit
 struct ProductRequestData {
 
     let productIdentifier: String
-    let paymentMode: PromotionalOffer.PaymentMode
+    let paymentMode: StoreProductDiscount.PaymentMode
     let currencyCode: String?
     let price: Decimal
     let normalDuration: String?
     let introDuration: String?
-    let introDurationType: PromotionalOffer.PaymentMode
+    let introDurationType: StoreProductDiscount.PaymentMode
     let introPrice: Decimal?
     let subscriptionGroup: String?
-    let discounts: [PromotionalOffer]?
+    let discounts: [StoreProductDiscount]?
 
     var cacheKey: String {
         var key = """
