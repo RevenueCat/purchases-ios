@@ -33,10 +33,6 @@ class HTTPClientTests: XCTestCase {
         HTTPStubs.removeAllStubs()
     }
 
-}
-
-extension HTTPClientTests {
-
     func testUsesTheCorrectHost() {
         let path = "/a_random_path"
         var hostCorrect = false
@@ -529,10 +525,7 @@ extension HTTPClientTests {
         var completionCallCount = 0
 
         stub(condition: isPath("/v1" + path)) { request in
-            let requestData = request.ohhttpStubs_httpBody!
-            let requestBodyDict = try? JSONSerialization.jsonObject(with: requestData, options: []) as? [String: Any]
-
-            let requestNumber = requestBodyDict?["requestNumber"] as? Int
+            let requestNumber = self.extractRequestNumber(from: request)
             expect(requestNumber) == completionCallCount
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
@@ -559,10 +552,7 @@ extension HTTPClientTests {
 
         stub(condition: isPath("/v1" + path)) { request in
             usleep(30)
-            let requestData = request.ohhttpStubs_httpBody!
-            let requestBodyDict = try? JSONSerialization.jsonObject(with: requestData, options: []) as? [String: Any]
-
-            let requestNumber = requestBodyDict?["requestNumber"] as? Int
+            let requestNumber = self.extractRequestNumber(from: request)
             if requestNumber == 2 {
                 expect(firstRequestFinished) == true
             }
@@ -596,10 +586,7 @@ extension HTTPClientTests {
         var secondRequestFinished = false
 
         stub(condition: isPath("/v1" + path)) { request in
-            let requestData = request.ohhttpStubs_httpBody!
-            let requestBodyDict = try? JSONSerialization.jsonObject(with: requestData, options: []) as? [String: Any]
-
-            let requestNumber = requestBodyDict?["requestNumber"] as? Int
+            let requestNumber = self.extractRequestNumber(from: request)
             if requestNumber == 2 {
                 expect(firstRequestFinished) == false
             }
@@ -633,10 +620,7 @@ extension HTTPClientTests {
         var secondRequestFinished = false
 
         stub(condition: isPath("/v1" + path)) { request in
-            let requestData = request.ohhttpStubs_httpBody!
-            let requestBodyDict = try? JSONSerialization.jsonObject(with: requestData, options: []) as? [String: Any]
-
-            let requestNumber = requestBodyDict?["requestNumber"] as? Int
+            let requestNumber = self.extractRequestNumber(from: request)
             if requestNumber == 2 {
                 expect(firstRequestFinished) == false
             }
@@ -671,10 +655,7 @@ extension HTTPClientTests {
         var thirdRequestFinished = false
 
         stub(condition: isPath("/v1" + path)) { request in
-            let requestData = request.ohhttpStubs_httpBody!
-            let requestBodyDict = try? JSONSerialization.jsonObject(with: requestData, options: []) as? [String: Any]
-
-            let requestNumber = requestBodyDict?["requestNumber"] as? Int
+            let requestNumber = self.extractRequestNumber(from: request)
             var responseTime = 0.5
             if requestNumber == 1 {
                 expect(secondRequestFinished) == false
@@ -726,10 +707,7 @@ extension HTTPClientTests {
         var secondRequestFinished = false
 
         stub(condition: isPath("/v1" + path)) { request in
-            let requestData = request.ohhttpStubs_httpBody!
-            let requestBodyDict = try? JSONSerialization.jsonObject(with: requestData, options: []) as? [String: Any]
-
-            let requestNumber = requestBodyDict?["requestNumber"] as? Int
+            let requestNumber = self.extractRequestNumber(from: request)
             if requestNumber == 2 {
                 expect(firstRequestFinished) == false
             }
@@ -833,4 +811,21 @@ extension HTTPClientTests {
 
         expect(completionCalled).toEventually(equal(true), timeout: .seconds(1))
     }
+}
+
+private extension HTTPClientTests {
+
+    func extractRequestNumber(from urlRequest: URLRequest) -> Int {
+        do {
+            let requestData = urlRequest.ohhttpStubs_httpBody!
+            let requestBodyDict = try XCTUnwrap(try JSONSerialization.jsonObject(with: requestData,
+                                                                                 options: []) as? [String: Any])
+            return try XCTUnwrap(requestBodyDict["requestNumber"] as? Int)
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+
+        return -999
+    }
+
 }

@@ -15,8 +15,7 @@ import Foundation
 import RevenueCat
 
 // Protocol that enables us to call deprecated methods without triggering warnings.
-// swiftlint:disable missing_docs
-public protocol PurchasesDeprecatable {
+protocol PurchasesDeprecatable {
 
     var allowSharingAppStoreAccount: Bool { get set }
 

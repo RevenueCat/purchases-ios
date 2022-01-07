@@ -21,10 +21,6 @@ class DeviceCacheTests: XCTestCase {
                                        userDefaults: mockUserDefaults)
     }
 
-}
-
-extension DeviceCacheTests {
-
     func testLegacyCachedUserIDUsesRightKey() {
         self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "cesar"
         let userID: String? = self.deviceCache.cachedLegacyAppUserID

@@ -24,10 +24,6 @@ class EntitlementInfosTests: XCTestCase {
         stubResponse()
     }
 
-}
-
-extension EntitlementInfosTests {
-
     func stubResponse(entitlements: [String: Any] = [:],
                       nonSubscriptions: [String: Any] = [:],
                       subscriptions: [String: Any] = [:]) {
