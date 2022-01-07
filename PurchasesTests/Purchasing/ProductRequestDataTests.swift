@@ -12,7 +12,7 @@ class ProductRequestDataTests: XCTestCase {
     }
 
     func testAsDictionaryConvertsPaymentModeCorrectly() throws {
-        var paymentMode: PromotionalOffer.PaymentMode = .none
+        var paymentMode: StoreProductDiscount.PaymentMode = .none
         var productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
         expect(try productData.asDictionary()["payment_mode"]).to(beNil())
 
@@ -90,17 +90,17 @@ class ProductRequestDataTests: XCTestCase {
     }
 
     func testAsDictionaryConvertsDiscountsCorrectly() throws {
-        let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
+        let discount1 = StoreProductDiscount(offerIdentifier: "offerid1",
                                          price: 11.1,
                                          paymentMode: .payAsYouGo,
                                          subscriptionPeriod: .init(value: 1, unit: .month))
         
-        let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
+        let discount2 = StoreProductDiscount(offerIdentifier: "offerid2",
                                          price: 12.2,
                                          paymentMode: .payUpFront,
                                          subscriptionPeriod: .init(value: 5, unit: .week))
         
-        let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
+        let discount3 = StoreProductDiscount(offerIdentifier: "offerid3",
                                          price: 13.3,
                                          paymentMode: .freeTrial,
                                          subscriptionPeriod: .init(value: 3, unit: .month))
@@ -124,17 +124,17 @@ class ProductRequestDataTests: XCTestCase {
     }
     
     func testEncoding() throws {
-        let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
+        let discount1 = StoreProductDiscount(offerIdentifier: "offerid1",
                                          price: 11.2,
                                          paymentMode: .payAsYouGo,
                                          subscriptionPeriod: .init(value: 1, unit: .month))
 
-        let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
+        let discount2 = StoreProductDiscount(offerIdentifier: "offerid2",
                                          price: 12.2,
                                          paymentMode: .payUpFront,
                                          subscriptionPeriod: .init(value: 2, unit: .year))
 
-        let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
+        let discount3 = StoreProductDiscount(offerIdentifier: "offerid3",
                                          price: 13.3,
                                          paymentMode: .freeTrial,
                                          subscriptionPeriod: .init(value: 3, unit: .day))
@@ -156,17 +156,17 @@ class ProductRequestDataTests: XCTestCase {
     func testCacheKey() {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
         
-        let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
+        let discount1 = StoreProductDiscount(offerIdentifier: "offerid1",
                                          price: 11,
                                          paymentMode: .payAsYouGo,
                                          subscriptionPeriod: .init(value: 1, unit: .month))
         
-        let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
+        let discount2 = StoreProductDiscount(offerIdentifier: "offerid2",
                                          price: 12,
                                          paymentMode: .payUpFront,
                                          subscriptionPeriod: .init(value: 2, unit: .year))
         
-        let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
+        let discount3 = StoreProductDiscount(offerIdentifier: "offerid3",
                                          price: 13,
                                          paymentMode: .freeTrial,
                                          subscriptionPeriod: .init(value: 3, unit: .day))

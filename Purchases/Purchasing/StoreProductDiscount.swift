@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PromotionalOffer.swift
+//  StoreProductDiscount.swift
 //
 //  Created by Joshua Liebowitz on 7/2/21.
 //
@@ -15,8 +15,8 @@
 import Foundation
 import StoreKit
 
-@objc(RCPromotionalOffer)
-public class PromotionalOffer: NSObject {
+@objc(RCStoreProductDiscount)
+public class StoreProductDiscount: NSObject {
 
     @objc(RCPaymentMode)
     public enum PaymentMode: Int {
@@ -66,7 +66,7 @@ public class PromotionalOffer: NSObject {
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? PromotionalOffer else { return false }
+        guard let other = object as? StoreProductDiscount else { return false }
 
         return self.offerIdentifier == other.offerIdentifier
             && self.price == other.price
@@ -86,7 +86,7 @@ public class PromotionalOffer: NSObject {
 
 }
 
-extension PromotionalOffer.PaymentMode {
+extension StoreProductDiscount.PaymentMode {
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     init(skProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) {
         switch paymentMode {
@@ -118,7 +118,7 @@ extension PromotionalOffer.PaymentMode {
 
 // MARK: - Encodable
 
-extension PromotionalOffer: Encodable {
+extension StoreProductDiscount: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -140,4 +140,4 @@ extension PromotionalOffer: Encodable {
 
 }
 
-extension PromotionalOffer.PaymentMode: Encodable { }
+extension StoreProductDiscount.PaymentMode: Encodable { }

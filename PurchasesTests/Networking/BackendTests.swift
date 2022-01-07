@@ -375,7 +375,7 @@ class BackendTests: XCTestCase {
 
         let currencyCode = "BFD"
 
-        let paymentMode: PromotionalOffer.PaymentMode = .none
+        let paymentMode: StoreProductDiscount.PaymentMode = .none
 
         var completionCalled = false
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
@@ -454,7 +454,7 @@ class BackendTests: XCTestCase {
         expect(call.body!["price"]).toNot(beNil())
     }
 
-    func postPaymentMode(paymentMode: PromotionalOffer.PaymentMode) {
+    func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
         var completionCalled = false
 
         let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
@@ -1212,7 +1212,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        let discount = PromotionalOffer(offerIdentifier: "offerid",
+        let discount = StoreProductDiscount(offerIdentifier: "offerid",
                                         price: 12,
                                         paymentMode: .payAsYouGo,
                                         subscriptionPeriod: .init(value: 10, unit: .month))
@@ -1241,9 +1241,9 @@ class BackendTests: XCTestCase {
         let price: Decimal = 4.99
         let group = "sub_group"
         let currencyCode = "BFD"
-        let paymentMode: PromotionalOffer.PaymentMode = .none
+        let paymentMode: StoreProductDiscount.PaymentMode = .none
         var completionCalled = false
-        let discount = PromotionalOffer(offerIdentifier: "offerid",
+        let discount = StoreProductDiscount(offerIdentifier: "offerid",
                                         price: 12,
                                         paymentMode: .payAsYouGo,
                                         subscriptionPeriod: .init(value: 1, unit: .year))
