@@ -2095,7 +2095,14 @@ class PurchasesTests: XCTestCase {
             let keyIdentifier = "key_id"
             let nonce = UUID()
             let timestamp = 1234
-            let productDiscount = MockProductDiscount(identifier: discountIdentifier)
+            
+            let productDiscount = StoreProductDiscount(
+                offerIdentifier: discountIdentifier,
+                price: 2.99,
+                paymentMode: .none,
+                subscriptionPeriod: SubscriptionPeriod(value: 3, unit: .week)
+            )
+            
             self.backend.postOfferForSigningPaymentDiscountResponse["signature"] = signature
             self.backend.postOfferForSigningPaymentDiscountResponse["keyIdentifier"] = keyIdentifier
             self.backend.postOfferForSigningPaymentDiscountResponse["nonce"] = nonce
@@ -2130,7 +2137,14 @@ class PurchasesTests: XCTestCase {
             let keyIdentifier = "key_id"
             let nonce = UUID()
             let timestamp = 1234
-            let productDiscount = MockProductDiscount(identifier: nil)
+            
+            let productDiscount = StoreProductDiscount(
+                offerIdentifier: nil,
+                price: 2.99,
+                paymentMode: .none,
+                subscriptionPeriod: SubscriptionPeriod(value: 3, unit: .week)
+            )
+            
             self.backend.postOfferForSigningPaymentDiscountResponse["signature"] = signature
             self.backend.postOfferForSigningPaymentDiscountResponse["keyIdentifier"] = keyIdentifier
             self.backend.postOfferForSigningPaymentDiscountResponse["nonce"] = nonce
@@ -2155,7 +2169,13 @@ class PurchasesTests: XCTestCase {
             product.mockSubscriptionGroupIdentifier = "productGroup"
 
             let discountIdentifier = "id"
-            let productDiscount = MockProductDiscount(identifier: discountIdentifier)
+            
+            let productDiscount = StoreProductDiscount(
+                offerIdentifier: discountIdentifier,
+                price: 2.99,
+                paymentMode: .none,
+                subscriptionPeriod: SubscriptionPeriod(value: 3, unit: .week)
+            )
 
             self.receiptFetcher.shouldReturnReceipt = false
             var completionCalled = false
@@ -2184,7 +2204,13 @@ class PurchasesTests: XCTestCase {
             product.mockSubscriptionGroupIdentifier = "productGroup"
 
             let discountIdentifier = "id"
-            let productDiscount = MockProductDiscount(identifier: discountIdentifier)
+            
+            let productDiscount = StoreProductDiscount(
+                offerIdentifier: discountIdentifier,
+                price: 2.99,
+                paymentMode: .none,
+                subscriptionPeriod: SubscriptionPeriod(value: 3, unit: .week)
+            )
 
             self.receiptFetcher.shouldReturnReceipt = true
             self.receiptFetcher.shouldReturnZeroBytesReceipt = true
@@ -2424,7 +2450,13 @@ class PurchasesTests: XCTestCase {
             var receivedError: NSError? = nil
             var receivedPaymentDiscount: SKPaymentDiscount? = nil
             let product = MockSK1Product(mockProductIdentifier: "Tacos_with_free_guac")
-            let discount = MockDiscount()
+            
+            let discount = StoreProductDiscount(
+                offerIdentifier: "identifier",
+                price: 2.99,
+                paymentMode: .none,
+                subscriptionPeriod: SubscriptionPeriod(value: 3, unit: .week)
+            )
 
             purchases.paymentDiscount(forProductDiscount: discount, product: product) { discount, error in
                 receivedError = error as NSError?

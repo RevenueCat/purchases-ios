@@ -91,10 +91,10 @@ class IntroEligibilityCalculatorTests: XCTestCase {
 
         let product1 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
                                      mockSubscriptionGroupIdentifier: "group1")
-        product1.mockDiscount = MockDiscount()
+        product1.mockDiscount = MockSKProductDiscount()
         let product2 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product2",
                                      mockSubscriptionGroupIdentifier: "group2")
-        product2.mockDiscount = MockDiscount()
+        product2.mockDiscount = MockSKProductDiscount()
 
         mockProductsManager.stubbedProductsCompletionResult = Set([product1, product2])
 

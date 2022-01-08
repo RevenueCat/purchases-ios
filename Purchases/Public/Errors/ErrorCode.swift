@@ -131,7 +131,7 @@ extension ErrorCode: DescribableError {
         case .emptySubscriberAttributes:
             return "A request for subscriber attributes returned none."
         case .productDiscountMissingIdentifierError:
-            return "SKProductDiscount must have a non-empty identifier. This is possibly an App Store quirk."
+            return "StoreProductDiscount must have a non-empty identifier. This is possibly an App Store quirk."
         case .missingAppUserIDForAliasCreationError:
             return "Unable to create an alias when the alias is either nil or empty string"
         case .productDiscountMissingSubscriptionGroupIdentifierError:

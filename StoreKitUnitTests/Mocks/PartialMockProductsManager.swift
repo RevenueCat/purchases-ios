@@ -38,7 +38,7 @@ class PartialMockProductsManager: ProductsManager {
                 let sk1Product = MockSK1Product(mockProductIdentifier: identifier)
                 sk1Product.mockSubscriptionGroupIdentifier = "1234567"
                 if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
-                    let mockDiscount = MockDiscount()
+                    let mockDiscount = MockSKProductDiscount()
                     mockDiscount.mockIdentifier = "discount_id"
                     sk1Product.mockDiscount = mockDiscount
                 }
@@ -71,7 +71,7 @@ class PartialMockProductsManager: ProductsManager {
                 let sk1Product = MockSK1Product(mockProductIdentifier: identifier)
                 sk1Product.mockSubscriptionGroupIdentifier = "1234567"
                 if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
-                    let mockDiscount = MockDiscount()
+                    let mockDiscount = MockSKProductDiscount()
                     mockDiscount.mockIdentifier = "discount_id"
                     sk1Product.mockDiscount = mockDiscount
                 }

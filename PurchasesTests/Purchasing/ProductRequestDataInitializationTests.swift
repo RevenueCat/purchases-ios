@@ -46,7 +46,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsPaymentMode() {
         if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
-            let mockDiscount = MockDiscount()
+            let mockDiscount = MockSKProductDiscount()
             mockDiscount.mockPaymentMode = .freeTrial
 
             product.mockDiscount = mockDiscount
@@ -63,7 +63,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsIntroPrice() {
         if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
-            let mockDiscount = MockDiscount()
+            let mockDiscount = MockSKProductDiscount()
             mockDiscount.mockPrice = 10.99
 
             product.mockDiscount = mockDiscount
@@ -107,7 +107,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsIntroDuration() {
         if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
-            let mockDiscount = MockDiscount()
+            let mockDiscount = MockSKProductDiscount()
             mockDiscount.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .year)
 
             product.mockDiscount = mockDiscount
@@ -124,7 +124,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsIntroDurationType() {
         if #available(iOS 11.2, macOS 10.14.4, tvOS 11.2, *) {
-            let mockDiscount = MockDiscount()
+            let mockDiscount = MockSKProductDiscount()
             mockDiscount.mockPaymentMode = .freeTrial
 
             product.mockDiscount = mockDiscount
@@ -155,7 +155,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsDiscounts() {
         if #available(iOS 12.2, tvOS 12.2, macOS 10.13.2, *) {
-            let mockDiscount = MockDiscount()
+            let mockDiscount = MockSKProductDiscount()
             let paymentMode: SKProductDiscount.PaymentMode = .freeTrial
             mockDiscount.mockPaymentMode = paymentMode
             let price: Decimal = 10.99

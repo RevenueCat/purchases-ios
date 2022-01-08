@@ -224,7 +224,7 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-    func paymentDiscountAsync(forProductDiscount discount: SKProductDiscount,
+    func paymentDiscountAsync(forProductDiscount discount: StoreProductDiscount,
                               product: SKProduct) async throws -> SKPaymentDiscount {
         return try await withCheckedThrowingContinuation { continuation in
             paymentDiscount(forProductDiscount: discount, product: product) { maybeDiscount, maybeError in
