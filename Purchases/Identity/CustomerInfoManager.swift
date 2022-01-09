@@ -181,14 +181,17 @@ class CustomerInfoManager {
     /// - Returns: closure that removes the created observation.
     /// - Note: this method is not thread-safe.
     func monitorChanges(_ changes: @escaping (CustomerInfo) -> Void) -> () -> Void {
-        let identifier = self.customerInfoObserversByIdentifier.keys
-            .sorted().last.map { $0 + 1 } // Next index
+        let lastIdentifier = self.customerInfoObserversByIdentifier.keys
+            .sorted()
+            .last
+        let nextIdentifier = lastIdentifier
+            .map { $0 + 1 } // Next index
             ?? 0 // Or default to 0
 
-        self.customerInfoObserversByIdentifier[identifier] = changes
+        self.customerInfoObserversByIdentifier[nextIdentifier] = changes
 
         return { [weak self] in
-            self?.customerInfoObserversByIdentifier.removeValue(forKey: identifier)
+            self?.customerInfoObserversByIdentifier.removeValue(forKey: nextIdentifier)
         }
     }
 
