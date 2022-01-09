@@ -199,6 +199,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: CustomerInfo = try await purchases.restoreTransactions()
         let _: CustomerInfo = try await purchases.syncPurchases()
 
+        for try await _: CustomerInfo in purchases.customerInfoStream {}
+
         #if os(iOS)
         try await purchases.showManageSubscriptions()
         let _: RefundRequestStatus = try await purchases.beginRefundRequest(forProduct: "")

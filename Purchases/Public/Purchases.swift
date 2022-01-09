@@ -80,7 +80,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             }
 
             privateDelegate = newValue
-            customerInfoManager.delegate = self
             customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
             Logger.debug(Strings.configure.delegate_set)
         }
@@ -218,6 +217,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     private let storeKitWrapper: StoreKitWrapper
     private let subscriberAttributesManager: SubscriberAttributesManager
     private let systemInfo: SystemInfo
+    private var customerInfoObservationDisposable: (() -> Void)?
 
     fileprivate static let initLock = NSLock()
 
@@ -398,6 +398,11 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
+            guard let self = self else { return }
+            self.delegate?.purchases?(self, receivedUpdated: customerInfo)
+        }
     }
 
     /**
@@ -411,7 +416,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     deinit {
         notificationCenter.removeObserver(self)
         storeKitWrapper.delegate = nil
-        customerInfoManager.delegate = nil
+        customerInfoObservationDisposable?()
         privateDelegate = nil
         Self.automaticAppleSearchAdsAttributionCollection = false
         Self.proxyURL = nil
@@ -751,7 +756,7 @@ public extension Purchases {
      * Get latest available customer  info.
      *
      * - Parameter completion: A completion block called when customer info is available and not stale.
-     * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
+     * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil if an error occurred.
      */
     @objc func getCustomerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         customerInfoManager.customerInfo(appUserID: appUserID, completion: completion)
@@ -759,13 +764,23 @@ public extension Purchases {
 
     /**
      * Get latest available customer  info.
+     * Returns a value immediately if ``CustomerInfo`` is cached.
      *
-     * - Parameter completion: A completion block called when customer info is available and not stale.
-     * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
+     * - Seealso `Purchases.customerInfoStream`
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func customerInfo() async throws -> CustomerInfo {
         return try await customerInfoAsync()
+    }
+
+    /// Returns an ``AsyncStream`` of ``CustomerInfo`` changes.
+    ///
+    /// - Seealso `PurchasesDelegate.purchases(_ purchases: Purchases, didReceiveUpdated:)`
+    /// - Seealso `Purchases.customerInfo()`
+    /// - Note: this method is not thread-safe.
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    var customerInfoStream: AsyncStream<CustomerInfo> {
+        return self.customerInfoManager.customerInfoStream
     }
 
     /**
@@ -1423,13 +1438,6 @@ public extension Purchases {
 }
 
 // MARK: Delegate implementation
-extension Purchases: CustomerInfoManagerDelegate {
-
-    public func customerInfoManagerDidReceiveUpdated(customerInfo: CustomerInfo) {
-        delegate?.purchases?(self, receivedUpdated: customerInfo)
-    }
-
-}
 
 extension Purchases: PurchasesOrchestratorDelegate {
 
