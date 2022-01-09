@@ -21,8 +21,10 @@ enum TransactionsFactory {
         subscriptionsData
             .flatMap { (productId: String, transactionData: [[String: Any]]) -> [StoreTransaction] in
                 transactionData
-                    .map { SimpleTransaction(with: $0, productID: productId, dateFormatter: dateFormatter) }
-                    .compactMap { $0 }
+                    .lazy
+                    .compactMap { BackendParsedTransaction(with: $0,
+                                                           productID: productId,
+                                                           dateFormatter: dateFormatter) }
                     .map { StoreTransaction($0) }
             }
             .sorted { $0.purchaseDate < $1.purchaseDate }
@@ -31,7 +33,7 @@ enum TransactionsFactory {
 }
 
 /// `StoreTransactionType` backed by data parsed from the server
-private struct SimpleTransaction: StoreTransactionType {
+private struct BackendParsedTransaction: StoreTransactionType {
 
     let productIdentifier: String
     let purchaseDate: Date
