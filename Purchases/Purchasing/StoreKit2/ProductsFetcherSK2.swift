@@ -43,7 +43,12 @@ actor ProductsFetcherSK2 {
         }
     }
 
-    private func cachedProducts(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct>? {
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension ProductsFetcherSK2 {
+
+    func cachedProducts(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct>? {
         guard await self.cachedProductsStorefrontIdentifier == self.currentStorefrontIdentifier else {
             if !self.cachedProductsByIdentifier.isEmpty {
                 Logger.debug(Strings.offering.product_cache_invalid_for_storefront_change)
@@ -61,13 +66,8 @@ actor ProductsFetcherSK2 {
         }
     }
 
-    private func cache(products: Set<SK2StoreProduct>) async {
-        let storeFrontIdentifier = await self.currentStorefrontIdentifier
-
-        // Invalidate outdated products
-        if storeFrontIdentifier != self.cachedProductsStorefrontIdentifier {
-            self.clearCache()
-        }
+    func cache(products: Set<SK2StoreProduct>) async {
+        let storeFrontIdentifier = await self.invalidateOutdatedProductsIfNeeded()
 
         self.cachedProductsStorefrontIdentifier = storeFrontIdentifier
         self.cachedProductsByIdentifier += products.dictionaryWithKeys {
@@ -75,11 +75,25 @@ actor ProductsFetcherSK2 {
         }
     }
 
-    private func clearCache() {
+    /// - Returns: current `Storefront` identifier
+    func invalidateOutdatedProductsIfNeeded() async -> String? {
+        let storeFrontIdentifier = await self.currentStorefrontIdentifier
+
+        if storeFrontIdentifier != self.cachedProductsStorefrontIdentifier {
+            self.clearCache()
+        }
+
+        return storeFrontIdentifier
+    }
+
+    func clearCache() {
         self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
     }
 
-    private var currentStorefrontIdentifier: String? {
+    var currentStorefrontIdentifier: String? {
+        // Note: not using `Storefront.updates` because it's not currently possible
+        // to avoid race conditions. Updates never arrive on time for tests to detect
+        // changes and clear the cache.
         get async { await Storefront.current?.id }
     }
 
