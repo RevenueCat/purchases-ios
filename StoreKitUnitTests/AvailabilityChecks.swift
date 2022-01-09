@@ -20,7 +20,7 @@ import XCTest
 enum AvailabilityChecks {
 
     static func iOS13APIAvailableOrSkipTest() throws {
-        guard #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) else {
+        guard #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
     }
