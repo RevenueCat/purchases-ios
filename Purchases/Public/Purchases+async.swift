@@ -222,23 +222,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func paymentDiscountAsync(forProductDiscount discount: StoreProductDiscount,
-                              product: SKProduct) async throws -> SKPaymentDiscount {
-        return try await withCheckedThrowingContinuation { continuation in
-            paymentDiscount(forProductDiscount: discount, product: product) { maybeDiscount, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let discount = maybeDiscount else {
-                    fatalError("Expected non-nil 'discount' for nil error")
-                }
-                continuation.resume(returning: discount)
-            }
-        }
-    }
-
 #if os(iOS) || os(macOS)
 
     @available(iOS 13.0, macOS 10.15, *)

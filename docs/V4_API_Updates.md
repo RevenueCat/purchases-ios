@@ -154,6 +154,10 @@ Purchases.configure(
 			<td>Purchases -getProductsWithIdentifiers:completion:</td>
 		</tr>
 		<tr>
+			<td>Purchases -paymentDiscountForProductDiscount:product:completion:</td>
+			<td>Can be accessed from `RCStoreProduct.introductoryPrice` and `RCStoreProduct.introductoryPrice`</td>
+		</tr>
+		<tr>
 			<td>Purchases -createAlias:</td>
 			<td>Purchases -logIn:</td>
 		</tr>
@@ -367,7 +371,7 @@ Purchases.configure(
 		</tr>
 		<tr>
 			<td>paymentDiscount(for:product:completion:)</td>
-			<td>paymentDiscount(forProductDiscount:product:completion:)</td>
+			<td>Can be accessed from `StoreProduct.introductoryPrice` and `StoreProduct.introductoryPrice`</td>
 		</tr>
 		<tr>
 			<td>purchaseProduct(_:discount:_)</td>

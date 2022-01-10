@@ -45,10 +45,9 @@ import Foundation
     @objc(RCConfigurationError) case configurationError = 23
     @objc(RCUnsupportedError) case unsupportedError = 24
     @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 25
-    @objc(RCProductDiscountMissingIdentifierError) case productDiscountMissingIdentifierError = 26
+    // Deprecated: productDiscountMissingIdentifierError = 26
     @objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 27
-    @objc(RCProductDiscountMissingSubscriptionGroupIdentifierError)
-    case productDiscountMissingSubscriptionGroupIdentifierError = 28
+    // Deprecated: productDiscountMissingSubscriptionGroupIdentifierError = 28
     @objc(RCCustomerInfoError)
     case customerInfoError = 29
     @objc(RCSystemInfoError)
@@ -130,16 +129,8 @@ extension ErrorCode: DescribableError {
                    """
         case .emptySubscriberAttributes:
             return "A request for subscriber attributes returned none."
-        case .productDiscountMissingIdentifierError:
-            return """
-                   The SKProductDiscount or Product.SubscriptionOffer wrapped
-                   by StoreProductDiscount is missing an identifier.
-                   This is a required property and likely an AppStore quirk that it is missing.
-                   """
         case .missingAppUserIDForAliasCreationError:
             return "Unable to create an alias when the alias is either nil or empty string"
-        case .productDiscountMissingSubscriptionGroupIdentifierError:
-            return "Unable to create a discount offer, the product is missing a subscriptionGroupIdentifier."
         case .customerInfoError:
             return "There was a problem related to the customer info."
         case .systemInfoError:
@@ -225,12 +216,8 @@ extension ErrorCode {
             return "UNSUPPORTED_ERROR"
         case .emptySubscriberAttributes:
             return "EMPTY_SUBSCRIBER_ATTRIBUTES"
-        case .productDiscountMissingIdentifierError:
-            return "PRODUCT_DISCOUNT_MISSING_IDENTIFIER_ERROR"
         case .missingAppUserIDForAliasCreationError:
             return "MISSING_APP_USER_ID_FOR_ALIAS_CREATION_ERROR"
-        case .productDiscountMissingSubscriptionGroupIdentifierError:
-            return "PRODUCT_DISCOUNT_MISSING_SUBSCRIPTION_GROUP_IDENTIFIER_ERROR"
         case .customerInfoError:
             return "CUSTOMER_INFO_ERROR"
         case .systemInfoError:

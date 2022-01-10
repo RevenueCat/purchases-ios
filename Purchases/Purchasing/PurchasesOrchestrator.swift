@@ -21,7 +21,7 @@ import StoreKit
 
 }
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length
 class PurchasesOrchestrator {
 
     var finishTransactions: Bool { systemInfo.finishTransactions }
@@ -130,64 +130,6 @@ class PurchasesOrchestrator {
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(Array(products.value ?? []))
-            }
-        }
-    }
-
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func paymentDiscount(forProductDiscount productDiscount: StoreProductDiscount,
-                         product: SK1Product,
-                         completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
-        guard let discountIdentifier = productDiscount.offerIdentifier else {
-            completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
-            return
-        }
-
-        guard let subscriptionGroupIdentifier = product.subscriptionGroupIdentifier else {
-            completion(nil, ErrorUtils.productDiscountMissingSubscriptionGroupIdentifierError())
-            return
-        }
-
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
-            guard let receiptData = maybeReceiptData,
-                  !receiptData.isEmpty else {
-                      completion(nil, ErrorUtils.missingReceiptFileError())
-                      return
-                  }
-
-            self.backend.post(
-                offerIdForSigning: discountIdentifier,
-                productIdentifier: product.productIdentifier,
-                subscriptionGroup: subscriptionGroupIdentifier,
-                receiptData: receiptData,
-                appUserID: self.appUserID
-            ) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
-                if let error = maybeError {
-                    completion(nil, error)
-                    return
-                }
-                guard let keyIdentifier = maybeKeyIdentifier,
-                      let nonce = maybeNonce,
-                      let signature = maybeSignature,
-                      let timestamp = maybeTimestamp else {
-                          completion(
-                            nil,
-                            ErrorUtils.unexpectedBackendResponseError(extraUserInfo: [
-                                "keyIdentifier": String(describing: maybeKeyIdentifier),
-                                "nonce": String(describing: maybeNonce),
-                                "signature": String(describing: maybeSignature),
-                                "timestamp": String(describing: maybeTimestamp)
-                            ])
-                          )
-                          return
-                      }
-
-                let paymentDiscount = SKPaymentDiscount(identifier: discountIdentifier,
-                                                        keyIdentifier: keyIdentifier,
-                                                        nonce: nonce,
-                                                        signature: signature,
-                                                        timestamp: timestamp as NSNumber)
-                completion(paymentDiscount, nil)
             }
         }
     }
