@@ -24,24 +24,77 @@ actor ProductsFetcherSK2 {
     }
 
     private var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
+    private var cachedProductsStorefrontIdentifier: String?
 
     func products(identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
         do {
-            // todo: also cache requests, so that if a request is in flight for the same products,
-            // we don't need to make a new one
-            let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
-            if productsAlreadyCached.count == identifiers.count {
-                let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
-                Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
-                return productsAlreadyCachedSet
+            if let cachedProducts = await self.cachedProducts(withIdentifiers: identifiers) {
+                return cachedProducts
             }
 
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
-            let sk2StoreProduct = storeKitProducts.map { SK2StoreProduct(sk2Product: $0) }
-            return Set(sk2StoreProduct)
+            let sk2StoreProducts = Set(storeKitProducts.map { SK2StoreProduct(sk2Product: $0) })
+
+            await self.cache(products: sk2StoreProducts)
+
+            return sk2StoreProducts
         } catch {
             throw Error.productsRequestError(innerError: error)
         }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension ProductsFetcherSK2 {
+
+    func cachedProducts(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct>? {
+        guard await self.cachedProductsStorefrontIdentifier == self.currentStorefrontIdentifier else {
+            if !self.cachedProductsByIdentifier.isEmpty {
+                Logger.debug(Strings.offering.product_cache_invalid_for_storefront_change)
+            }
+
+            return nil
+        }
+
+        let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
+        if productsAlreadyCached.count == identifiers.count {
+            Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
+            return Set(productsAlreadyCached.values)
+        } else {
+            return nil
+        }
+    }
+
+    func cache(products: Set<SK2StoreProduct>) async {
+        let storeFrontIdentifier = await self.invalidateOutdatedProductsIfNeeded()
+
+        self.cachedProductsStorefrontIdentifier = storeFrontIdentifier
+        self.cachedProductsByIdentifier += products.dictionaryWithKeys {
+            $0.productIdentifier
+        }
+    }
+
+    /// - Returns: current `Storefront` identifier
+    func invalidateOutdatedProductsIfNeeded() async -> String? {
+        let storeFrontIdentifier = await self.currentStorefrontIdentifier
+
+        if storeFrontIdentifier != self.cachedProductsStorefrontIdentifier {
+            self.clearCache()
+        }
+
+        return storeFrontIdentifier
+    }
+
+    func clearCache() {
+        self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
+    }
+
+    var currentStorefrontIdentifier: String? {
+        // Note: not using `Storefront.updates` because it's not currently possible
+        // to avoid race conditions. Updates never arrive on time for tests to detect
+        // changes and clear the cache.
+        get async { await Storefront.current?.id }
     }
 
 }

@@ -27,6 +27,7 @@ enum OfferingStrings {
     case offerings_stale_updating_in_background
     case offerings_stale_updating_in_foreground
     case products_already_cached(identifiers: Set<String>)
+    case product_cache_invalid_for_storefront_change
     case vending_offerings_cache
     case retrieved_products(products: [SKProduct])
     case list_products(productIdentifier: String, product: SKProduct)
@@ -79,6 +80,9 @@ extension OfferingStrings: CustomStringConvertible {
         case .products_already_cached(let identifiers):
             return "Skipping products request because products were already " +
                 "cached. products: \(identifiers)"
+
+        case .product_cache_invalid_for_storefront_change:
+            return "Storefront change detected. Invalidating product cache."
 
         case .vending_offerings_cache:
             return "Vending Offerings from cache"
