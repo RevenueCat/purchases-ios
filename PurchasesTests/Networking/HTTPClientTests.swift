@@ -815,14 +815,15 @@ class HTTPClientTests: XCTestCase {
 
 private extension HTTPClientTests {
 
-    func extractRequestNumber(from urlRequest: URLRequest) -> Int {
+    func extractRequestNumber(from urlRequest: URLRequest) -> Int? {
         do {
             let requestData = urlRequest.ohhttpStubs_httpBody!
             let requestBodyDict = try XCTUnwrap(try JSONSerialization.jsonObject(with: requestData,
                                                                                  options: []) as? [String: Any])
             return try XCTUnwrap(requestBodyDict["requestNumber"] as? Int)
         } catch {
-            fatalError("Couldn't extract the request number from the URLRequest")
+            XCTFail("Couldn't extract the request number from the URLRequest")
+            return nil
         }
     }
 
