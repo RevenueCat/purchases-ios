@@ -54,11 +54,11 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
 
             let receivedProductData = self.extract()
 
-            expect(receivedProductData.paymentMode.rawValue) == PromotionalOffer.PaymentMode.freeTrial.rawValue
+            expect(receivedProductData.paymentMode.rawValue) == StoreProductDiscount.PaymentMode.freeTrial.rawValue
         } else {
             let receivedProductData = self.extract()
 
-            expect(receivedProductData.paymentMode) == PromotionalOffer.PaymentMode.none
+            expect(receivedProductData.paymentMode) == StoreProductDiscount.PaymentMode.none
         }
     }
 
@@ -135,7 +135,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
         } else {
             let receivedProductData = self.extract()
 
-            expect(receivedProductData.introDurationType) == PromotionalOffer.PaymentMode.none
+            expect(receivedProductData.introDurationType) == StoreProductDiscount.PaymentMode.none
         }
     }
 

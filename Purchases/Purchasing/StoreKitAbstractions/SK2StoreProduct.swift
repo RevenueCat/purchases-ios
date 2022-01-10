@@ -74,14 +74,14 @@ internal struct SK2StoreProduct: StoreProductType {
         return SubscriptionPeriod.from(sk2SubscriptionPeriod: skSubscriptionPeriod)
     }
 
-    var introductoryPrice: PromotionalOffer? {
+    var introductoryPrice: StoreProductDiscount? {
         self.underlyingSK2Product.subscription?.introductoryOffer
-            .map(PromotionalOffer.init)
+            .map(StoreProductDiscount.init)
     }
 
-    var discounts: [PromotionalOffer] {
+    var discounts: [StoreProductDiscount] {
         (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
-            .compactMap(PromotionalOffer.init)
+            .compactMap(StoreProductDiscount.init)
     }
 
 }

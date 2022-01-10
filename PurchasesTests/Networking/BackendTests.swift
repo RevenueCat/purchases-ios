@@ -8,6 +8,7 @@
 
 import Foundation
 import Nimble
+import SnapshotTesting
 import XCTest
 
 @testable import RevenueCat
@@ -65,9 +66,15 @@ class BackendTests: XCTestCase {
                                     path: String,
                                     requestBody: [String: Any]?,
                                     headers: [String: String],
-                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                                    file: StaticString = #file) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
+
+            if let body = requestBody {
+                assertSnapshot(matching: body, as: .json,
+                               file: file, testName: CurrentTestCaseTracker.sanitizedTestName)
+            }
 
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
                                      serially: performSerially,
@@ -144,9 +151,15 @@ class BackendTests: XCTestCase {
     var backend: Backend?
 
     override func setUp() {
+        super.setUp()
+
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
         httpClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         backend = Backend.init(httpClient: httpClient, apiKey: apiKey)
+    }
+
+    override class func setUp() {
+        XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
     }
 
     func testPostsReceiptDataCorrectly() {
@@ -155,8 +168,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = false
+        let observerMode = true
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -197,8 +210,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = true
+        let observerMode = false
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -232,8 +245,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = false
+        let observerMode = false
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -267,8 +280,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = true
+        let observerMode = true
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -302,8 +315,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = false
+        let observerMode = true
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -338,8 +351,8 @@ class BackendTests: XCTestCase {
 
         var completionCalled = 0
 
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = true
+        let observerMode = false
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -396,12 +409,12 @@ class BackendTests: XCTestCase {
 
         let productIdentifier = "a_great_product"
         let offeringIdentifier = "a_offering"
-        let price: Decimal = 4.99
+        let price: Decimal = 10.98
         let group = "sub_group"
 
         let currencyCode = "BFD"
 
-        let paymentMode: PromotionalOffer.PaymentMode = .none
+        let paymentMode: StoreProductDiscount.PaymentMode = .none
 
         var completionCalled = false
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
@@ -480,7 +493,7 @@ class BackendTests: XCTestCase {
         expect(call.body!["price"]).toNot(beNil())
     }
 
-    func postPaymentMode(paymentMode: PromotionalOffer.PaymentMode) {
+    func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
         var completionCalled = false
 
         let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
@@ -1198,9 +1211,8 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var completionCalled = 0
-
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = true
+        let observerMode = false
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -1213,10 +1225,10 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        let discount = PromotionalOffer(offerIdentifier: "offerid",
-                                        price: 12,
-                                        paymentMode: .payAsYouGo,
-                                        subscriptionPeriod: .init(value: 10, unit: .month))
+        let discount = StoreProductDiscount(offerIdentifier: "offerid",
+                                            price: 12,
+                                            paymentMode: .payAsYouGo,
+                                            subscriptionPeriod: .init(value: 10, unit: .month))
         let productData: ProductRequestData = .createMockProductData(discounts: [discount])
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -1239,15 +1251,15 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
 
         let productIdentifier = "a_great_product"
-        let price: Decimal = 4.99
+        let price: Decimal = 15.99
         let group = "sub_group"
         let currencyCode = "BFD"
-        let paymentMode: PromotionalOffer.PaymentMode = .none
+        let paymentMode: StoreProductDiscount.PaymentMode = .none
         var completionCalled = false
-        let discount = PromotionalOffer(offerIdentifier: "offerid",
-                                        price: 12,
-                                        paymentMode: .payAsYouGo,
-                                        subscriptionPeriod: .init(value: 1, unit: .year))
+        let discount = StoreProductDiscount(offerIdentifier: "offerid",
+                                            price: 12.1,
+                                            paymentMode: .payAsYouGo,
+                                            subscriptionPeriod: .init(value: 1, unit: .year))
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
                                                                      paymentMode: paymentMode,
                                                                      currencyCode: currencyCode,
@@ -1564,8 +1576,8 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var completionCalled = 0
-        let isRestore = Bool.random()
-        let observerMode = Bool.random()
+        let isRestore = false
+        let observerMode = true
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,

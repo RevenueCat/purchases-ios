@@ -49,7 +49,7 @@ extension ProductRequestData {
 
 private extension ProductRequestData {
 
-    static func extractIntroDurationType(for product: SK1Product) -> PromotionalOffer.PaymentMode {
+    static func extractIntroDurationType(for product: SK1Product) -> StoreProductDiscount.PaymentMode {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
             return .init(skProductDiscountPaymentMode: paymentMode)
@@ -66,18 +66,18 @@ private extension ProductRequestData {
         }
     }
 
-    static func extractDiscounts(for product: SK1Product) -> [PromotionalOffer]? {
+    static func extractDiscounts(for product: SK1Product) -> [StoreProductDiscount]? {
         if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
-            return product.discounts.map(PromotionalOffer.init(with:))
+            return product.discounts.map(StoreProductDiscount.init(with:))
         } else {
             return nil
         }
     }
 
-    static func extractPaymentMode(for product: SK1Product) -> PromotionalOffer.PaymentMode {
+    static func extractPaymentMode(for product: SK1Product) -> StoreProductDiscount.PaymentMode {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
-            return PromotionalOffer.PaymentMode(skProductDiscountPaymentMode: paymentMode)
+            return StoreProductDiscount.PaymentMode(skProductDiscountPaymentMode: paymentMode)
         } else {
             return .none
         }

@@ -18,8 +18,8 @@ func checkStoreProductAPI() {
     let subscriptionGroupIdentifier: String? = product.subscriptionGroupIdentifier
     let priceFormatter: NumberFormatter? = product.priceFormatter
     let subscriptionPeriod: SubscriptionPeriod? = product.subscriptionPeriod
-    let introductoryPrice: PromotionalOffer? = product.introductoryPrice
-    let discounts: [PromotionalOffer] = product.discounts
+    let introductoryPrice: StoreProductDiscount? = product.introductoryPrice
+    let discounts: [StoreProductDiscount] = product.discounts
 
     let pricePerMonth: NSDecimalNumber? = product.pricePerMonth
     let localizedIntroductoryPriceString: String? = product.localizedIntroductoryPriceString

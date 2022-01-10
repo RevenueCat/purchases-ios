@@ -8,15 +8,15 @@ import Foundation
 
 extension ProductRequestData {
     static func createMockProductData(productIdentifier: String = "product_id",
-                                      paymentMode: PromotionalOffer.PaymentMode = .none,
+                                      paymentMode: StoreProductDiscount.PaymentMode = .none,
                                       currencyCode: String = "UYU",
                                       price: Decimal = 15.99,
                                       normalDuration: String? = nil,
                                       introDuration: String? = nil,
-                                      introDurationType: PromotionalOffer.PaymentMode = .none,
+                                      introDurationType: StoreProductDiscount.PaymentMode = .none,
                                       introPrice: Decimal? = nil,
                                       subscriptionGroup: String? = nil,
-                                      discounts: [PromotionalOffer]? = nil) -> ProductRequestData {
+                                      discounts: [StoreProductDiscount]? = nil) -> ProductRequestData {
         ProductRequestData(productIdentifier: productIdentifier,
                            paymentMode: paymentMode,
                            currencyCode: currencyCode,
