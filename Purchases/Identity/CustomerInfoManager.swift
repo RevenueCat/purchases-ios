@@ -166,7 +166,7 @@ class CustomerInfoManager {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
         return AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
             let disposable = self.monitorChanges { continuation.yield($0) }

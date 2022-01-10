@@ -42,7 +42,7 @@ func checkPurchasesAPI() {
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
 
-    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) {
+    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
         _ = Task.init {
             await checkAsyncMethods(purchases: purch)
         }

@@ -47,7 +47,7 @@ class MockProductsManager: ProductsManager {
     var invokedProductsFromOptimalStoreKitVersionParameters: (identifiers: Set<String>, Void)?
     var invokedProductsFromOptimalStoreKitVersionParametersList = [(identifiers: Set<String>, Void)]()
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
     override func productsFromOptimalStoreKitVersion(
         withIdentifiers identifiers: Set<String>
     ) async -> Set<StoreProduct> {

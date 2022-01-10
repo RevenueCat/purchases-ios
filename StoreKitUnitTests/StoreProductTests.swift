@@ -184,7 +184,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testSk1PriceFormatterFormatsCorrectly() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -199,7 +199,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testSk1PriceFormatterReactsToStorefrontChanges() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
