@@ -18,7 +18,6 @@ import XCTest
 
 @testable import RevenueCat
 
-// swiftlint:disable type_body_length
 class BeginRefundRequestHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
