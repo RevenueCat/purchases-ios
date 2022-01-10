@@ -242,3 +242,9 @@ public extension Purchases {
 @available(watchOS, obsoleted: 1, renamed: "StoreTransaction")
 @available(macOS, obsoleted: 1, renamed: "StoreTransaction")
 @objc(RCTransaction) public class Transaction: NSObject { }
+
+@available(iOS, obsoleted: 1, renamed: "StoreProductDiscount")
+@available(tvOS, obsoleted: 1, renamed: "StoreProductDiscount")
+@available(watchOS, obsoleted: 1, renamed: "StoreProductDiscount")
+@available(macOS, obsoleted: 1, renamed: "StoreProductDiscount")
+@objc(RCPromotionalOffer) public class PromotionalOffer: NSObject { }
