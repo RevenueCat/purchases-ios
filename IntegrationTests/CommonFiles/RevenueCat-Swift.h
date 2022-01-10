@@ -228,7 +228,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCAttributionNetwork, "AttributionNetwork", 
 @class RCEntitlementInfos;
 @class NSString;
 @class NSDate;
-@class RCTransaction;
+@class RCStoreTransaction;
 @class NSURL;
 @class NSNumber;
 
@@ -239,14 +239,14 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 /// All <em>subscription</em> product identifiers with expiration dates in the future.
 @property (nonatomic, readonly, copy) NSSet<NSString *> * _Nonnull activeSubscriptions;
 /// All product identifiers purchases by the user regardless of expiration.
-@property (nonatomic, copy) NSSet<NSString *> * _Nonnull allPurchasedProductIdentifiers;
+@property (nonatomic, readonly, copy) NSSet<NSString *> * _Nonnull allPurchasedProductIdentifiers;
 /// Returns the latest expiration date of all products, nil if there are none.
 @property (nonatomic, readonly, copy) NSDate * _Nullable latestExpirationDate;
 /// Returns all product IDs of the non-subscription purchases a user has made.
 @property (nonatomic, readonly, copy) NSSet<NSString *> * _Nonnull nonConsumablePurchases SWIFT_DEPRECATED_MSG("use nonSubscriptionTransactions");
 /// Returns all the non-subscription purchases a user has made.
 /// The purchases are ordered by purchase date in ascending order.
-@property (nonatomic, readonly, copy) NSArray<RCTransaction *> * _Nonnull nonSubscriptionTransactions;
+@property (nonatomic, readonly, copy) NSArray<RCStoreTransaction *> * _Nonnull nonSubscriptionTransactions;
 /// Returns the fetch date of this CustomerInfo.
 @property (nonatomic, readonly, copy) NSDate * _Nonnull requestDate;
 /// The date this user was first seen in RevenueCat.
@@ -671,23 +671,6 @@ SWIFT_CLASS("_TtC10RevenueCat15ProductsManager")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-
-SWIFT_CLASS_NAMED("PromotionalOffer")
-@interface RCPromotionalOffer : NSObject
-- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
-@property (nonatomic, readonly) NSUInteger hash;
-- (nonnull instancetype)init SWIFT_UNAVAILABLE;
-+ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
-@end
-
-typedef SWIFT_ENUM_NAMED(NSInteger, RCPaymentMode, "PaymentMode", open) {
-  RCPaymentModeNone = -1,
-  RCPaymentModePayAsYouGo = 0,
-  RCPaymentModePayUpFront = 1,
-  RCPaymentModeFreeTrial = 2,
-};
-
-
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchaseOwnershipType, "PurchaseOwnershipType", open) {
 /// The purchase was made directly by this user.
   RCPurchaseOwnershipTypePurchased = 0,
@@ -804,13 +787,11 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-
 @class SKProduct;
-@class SKPaymentTransaction;
 
 SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @protocol PurchasesOrchestratorDelegate
-- (void)shouldPurchasePromoProduct:(SKProduct * _Nonnull)product defermentBlock:(void (^ _Nonnull)(void (^ _Nonnull)(SKPaymentTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))defermentBlock;
+- (void)shouldPurchasePromoProduct:(SKProduct * _Nonnull)product defermentBlock:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))defermentBlock;
 @end
 
 
@@ -823,7 +804,7 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 /// will not proceed with promotional purchases.
 /// \param product <code>SKProduct</code> the product that was selected from the app store.
 ///
-- (void)shouldPurchasePromoProduct:(SKProduct * _Nonnull)product defermentBlock:(void (^ _Nonnull)(void (^ _Nonnull)(SKPaymentTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))defermentBlock;
+- (void)shouldPurchasePromoProduct:(SKProduct * _Nonnull)product defermentBlock:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))defermentBlock;
 @end
 
 
@@ -1122,7 +1103,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Get latest available customer  info.
 /// \param completion A completion block called when customer info is available and not stale.
-/// Called immediately if <code>CustomerInfo</code> is cached. Customer info can be nil * if an error occurred.
+/// Called immediately if <code>CustomerInfo</code> is cached. Customer info can be nil if an error occurred.
 ///
 - (void)getCustomerInfoWithCompletion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// Fetches the <code>SKProducts</code> for your IAPs for given <code>productIdentifiers</code>.
@@ -1150,28 +1131,28 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// note:
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will
 /// handle this for you.
-/// If the purchase was successful there will be a <code>SKPaymentTransaction</code> and a <code>CustomerInfo</code>.
+/// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
 /// If the purchase was not successful, there will be an <code>NSError</code>.
 /// If the user cancelled, <code>userCancelled</code> will be <code>YES</code>.
 /// \param product The <code>SKProduct</code> the user intends to purchase
 ///
 /// \param completion A completion block that is called when the purchase completes.
 ///
-- (void)purchaseProduct:(SKProduct * _Nonnull)product withCompletion:(void (^ _Nonnull)(SKPaymentTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
+- (void)purchaseProduct:(SKProduct * _Nonnull)product withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
 /// Purchase the passed <code>Package</code>.
 /// Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
 /// From here <code>Purchases</code> will handle the purchase with <code>StoreKit</code> and call the <code>PurchaseCompletedBlock</code>.
 /// note:
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will
 /// handle this for you.
-/// If the purchase was successful there will be a <code>SKPaymentTransaction</code> and a <code>CustomerInfo</code>.
+/// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
 /// If the purchase was not successful, there will be an <code>Error</code>.
 /// If the user cancelled, <code>userCancelled</code> will be <code>true</code>.
 /// \param package The <code>Package</code> the user intends to purchase
 ///
 /// \param completion A completion block that is called when the purchase completes.
 ///
-- (void)purchasePackage:(RCPackage * _Nonnull)package withCompletion:(void (^ _Nonnull)(SKPaymentTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
+- (void)purchasePackage:(RCPackage * _Nonnull)package withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
 /// Use this function if you are not using the Offerings system to purchase an <code>SKProduct</code> with an
 /// applied <code>SKPaymentDiscount</code>.
 /// If you are using the Offerings system, use <code>Purchases/purchase(package:discount:completion:)</code> instead.
@@ -1181,7 +1162,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// note:
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will handle
 /// this for you.
-/// If the purchase was successful there will be a <code>SKPaymentTransaction</code> and a <code>CustomerInfo</code>.
+/// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
 /// If the purchase was not successful, there will be an <code>Error</code>.
 /// If the user cancelled, <code>userCancelled</code> will be <code>true</code>.
 /// \param product The <code>SKProduct</code> the user intends to purchase
@@ -1190,7 +1171,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 /// \param completion A completion block that is called when the purchase completes.
 ///
-- (void)purchaseProduct:(SKProduct * _Nonnull)product withDiscount:(SKPaymentDiscount * _Nonnull)discount completion:(void (^ _Nonnull)(SKPaymentTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
+- (void)purchaseProduct:(SKProduct * _Nonnull)product withDiscount:(SKPaymentDiscount * _Nonnull)discount completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
 /// Purchase the passed <code>Package</code>.
 /// Call this method when a user has decided to purchase a product with an applied discount. Only call this in
 /// direct response to user input. From here <code>Purchases</code> will handle the purchase with <code>StoreKit</code> and call the
@@ -1198,7 +1179,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// note:
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will handle
 /// this for you.
-/// If the purchase was successful there will be a <code>SKPaymentTransaction</code> and a <code>CustomerInfo</code>.
+/// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
 /// If the purchase was not successful, there will be an <code>Error</code>.
 /// If the user cancelled, <code>userCancelled</code> will be <code>true</code>.
 /// \param package The <code>Package</code> the user intends to purchase
@@ -1207,7 +1188,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 /// \param completion A completion block that is called when the purchase completes.
 ///
-- (void)purchasePackage:(RCPackage * _Nonnull)package withDiscount:(SKPaymentDiscount * _Nonnull)discount completion:(void (^ _Nonnull)(SKPaymentTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
+- (void)purchasePackage:(RCPackage * _Nonnull)package withDiscount:(SKPaymentDiscount * _Nonnull)discount completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
 /// This method will post all purchases associated with the current App Store account to RevenueCat and
 /// become associated with the current <code>appUserID</code>.
 /// If the receipt is being used by an existing user, the current <code>appUserID</code> will be aliased together with
@@ -1298,7 +1279,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesDelegate")
 /// <code>Purchases</code> will not proceed with promotional purchases.
 /// \param product <code>SKProduct</code> the product that was selected from the app store
 ///
-- (void)purchases:(RCPurchases * _Nonnull)purchases shouldPurchasePromoProduct:(SKProduct * _Nonnull)product defermentBlock:(void (^ _Nonnull)(void (^ _Nonnull)(SKPaymentTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))makeDeferredPurchase;
+- (void)purchases:(RCPurchases * _Nonnull)purchases shouldPurchasePromoProduct:(SKProduct * _Nonnull)product defermentBlock:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))makeDeferredPurchase;
 @end
 
 
@@ -1351,6 +1332,7 @@ SWIFT_CLASS("_TtC10RevenueCat15StoreKitWrapper")
 @end
 
 @class SKPaymentQueue;
+@class SKPaymentTransaction;
 @class SKPayment;
 
 @interface StoreKitWrapper (SWIFT_EXTENSION(RevenueCat)) <SKPaymentQueueDelegate>
@@ -1362,6 +1344,7 @@ SWIFT_CLASS("_TtC10RevenueCat15StoreKitWrapper")
 
 @class NSNumberFormatter;
 @class RCSubscriptionPeriod;
+@class RCStoreProductDiscount;
 
 /// Type that provides access to all of <code>StoreKit</code>‘s product type’s properties.
 SWIFT_CLASS_NAMED("StoreProduct")
@@ -1377,8 +1360,8 @@ SWIFT_CLASS_NAMED("StoreProduct")
 @property (nonatomic, readonly, copy) NSString * _Nullable subscriptionGroupIdentifier SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.14) SWIFT_AVAILABILITY(tvos,introduced=12.0) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(ios,introduced=12.0);
 @property (nonatomic, readonly, strong) NSNumberFormatter * _Nullable priceFormatter;
 @property (nonatomic, readonly, strong) RCSubscriptionPeriod * _Nullable subscriptionPeriod SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=11.2) SWIFT_AVAILABILITY(macos,introduced=10.13.2) SWIFT_AVAILABILITY(ios,introduced=11.2);
-@property (nonatomic, readonly, strong) RCPromotionalOffer * _Nullable introductoryPrice SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
-@property (nonatomic, readonly, copy) NSArray<RCPromotionalOffer *> * _Nonnull discounts SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
+@property (nonatomic, readonly, strong) RCStoreProductDiscount * _Nullable introductoryPrice SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
+@property (nonatomic, readonly, copy) NSArray<RCStoreProductDiscount *> * _Nonnull discounts SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -1399,21 +1382,70 @@ SWIFT_CLASS_NAMED("StoreProduct")
 @end
 
 
+@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
+/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
+@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
+@end
 
-SWIFT_CLASS_NAMED("SubscriptionPeriod")
-@interface RCSubscriptionPeriod : NSObject
+enum RCPaymentMode : NSInteger;
+
+SWIFT_CLASS_NAMED("StoreProductDiscount")
+@interface RCStoreProductDiscount : NSObject
+@property (nonatomic, readonly, copy) NSString * _Nullable offerIdentifier;
+@property (nonatomic, readonly) NSDecimal price;
+@property (nonatomic, readonly) enum RCPaymentMode paymentMode;
+@property (nonatomic, readonly, strong) RCSubscriptionPeriod * _Nonnull subscriptionPeriod;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-typedef SWIFT_ENUM(NSInteger, Unit, open) {
-  UnitUnknown = -1,
-  UnitDay = 0,
-  UnitWeek = 1,
-  UnitMonth = 2,
-  UnitYear = 3,
+typedef SWIFT_ENUM_NAMED(NSInteger, RCPaymentMode, "PaymentMode", open) {
+  RCPaymentModeNone = -1,
+  RCPaymentModePayAsYouGo = 0,
+  RCPaymentModePayUpFront = 1,
+  RCPaymentModeFreeTrial = 2,
+};
+
+
+
+/// Abstract class that provides access to all of StoreKit’s product type’s properties.
+SWIFT_CLASS_NAMED("StoreTransaction")
+@interface RCStoreTransaction : NSObject
+@property (nonatomic, readonly, copy) NSString * _Nonnull productIdentifier;
+@property (nonatomic, readonly, copy) NSDate * _Nonnull purchaseDate;
+@property (nonatomic, readonly, copy) NSString * _Nonnull transactionIdentifier;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
+
+@interface RCStoreTransaction (SWIFT_EXTENSION(RevenueCat))
+/// Returns the <code>SKPaymentTransaction</code> if this <code>StoreTransaction</code> represents a <code>SKPaymentTransaction</code>.
+@property (nonatomic, readonly, strong) SKPaymentTransaction * _Nullable sk1Transaction;
+@end
+
+enum RCSubscriptionPeriodUnit : NSInteger;
+
+SWIFT_CLASS_NAMED("SubscriptionPeriod")
+@interface RCSubscriptionPeriod : NSObject
+@property (nonatomic, readonly) NSInteger value;
+@property (nonatomic, readonly) enum RCSubscriptionPeriodUnit unit;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
+typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
+  RCSubscriptionPeriodUnitUnknown = -1,
+  RCSubscriptionPeriodUnitDay = 0,
+  RCSubscriptionPeriodUnitWeek = 1,
+  RCSubscriptionPeriodUnitMonth = 2,
+  RCSubscriptionPeriodUnitYear = 3,
 };
 
 
@@ -1432,14 +1464,9 @@ SWIFT_CLASS("_TtC10RevenueCat20TrackingManagerProxy")
 @end
 
 
-SWIFT_CLASS_NAMED("Transaction")
+SWIFT_CLASS_NAMED("Transaction") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'Transaction' has been renamed to 'RCStoreTransaction'") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'Transaction' has been renamed to 'RCStoreTransaction'") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'Transaction' has been renamed to 'RCStoreTransaction'") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'Transaction' has been renamed to 'RCStoreTransaction'")
 @interface RCTransaction : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nonnull revenueCatId;
-@property (nonatomic, readonly, copy) NSString * _Nonnull productId;
-@property (nonatomic, readonly, copy) NSDate * _Nonnull purchaseDate;
-- (nonnull instancetype)initWithTransactionId:(NSString * _Nonnull)transactionId productId:(NSString * _Nonnull)productId purchaseDate:(NSDate * _Nonnull)purchaseDate OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)init SWIFT_UNAVAILABLE;
-+ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
 
