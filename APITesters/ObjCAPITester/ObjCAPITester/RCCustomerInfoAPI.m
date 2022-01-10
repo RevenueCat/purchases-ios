@@ -23,7 +23,7 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSSet<NSString *> *ncp = pi.nonConsumablePurchases;
 #pragma clang diagnostic pop
-    NSArray<RCTransaction *> *nst = pi.nonSubscriptionTransactions;
+    NSArray<RCStoreTransaction *> *nst = pi.nonSubscriptionTransactions;
     NSString *oav = pi.originalApplicationVersion;
     NSDate *opd = pi.originalPurchaseDate;
     NSDate *rd = pi.requestDate;

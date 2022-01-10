@@ -93,7 +93,7 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchaseAsync(product: SKProduct) async throws ->
     // swiftlint:disable:next large_tuple
-    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
                 if let error = maybeError {
@@ -115,7 +115,7 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchaseAsync(package: Package) async throws ->
     // swiftlint:disable:next large_tuple
-    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
                 if let error = maybeError {
@@ -137,8 +137,7 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchaseAsync(product: SKProduct, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
-    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
-
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
                      discount: discount) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in
@@ -161,7 +160,7 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchaseAsync(package: Package, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
-    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package,
                      discount: discount) { maybeTransaction, maybeCustomerInfo, maybeError, userCancelled in

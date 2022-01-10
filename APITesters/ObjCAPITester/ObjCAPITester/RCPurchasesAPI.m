@@ -117,14 +117,14 @@ BOOL isAnonymous;
     [p getCustomerInfoWithCompletion:^(RCCustomerInfo *info, NSError *error) {}];
     [p getOfferingsWithCompletion:^(RCOfferings *info, NSError *error) {}];
     [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<SKProduct *> *products) { }];
-    [p purchaseProduct:skp withCompletion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
-    [p purchasePackage:pack withCompletion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchaseProduct:skp withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p purchasePackage:pack withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p restoreTransactionsWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
     [p paymentDiscountForProductDiscount:skpd product:skp completion:^(SKPaymentDiscount *d, NSError *e) { }];
-    [p purchaseProduct:skp withDiscount:skmd completion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p purchasePackage:pack withDiscount:skmd completion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchaseProduct:skp withDiscount:skmd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack withDiscount:skmd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
@@ -132,7 +132,7 @@ BOOL isAnonymous;
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p
 shouldPurchasePromoProduct:skp
-           defermentBlock:^(void (^ _Nonnull completion)(SKPaymentTransaction * _Nullable transaction,
+           defermentBlock:^(void (^ _Nonnull completion)(RCStoreTransaction * _Nullable transaction,
                                                          RCCustomerInfo * _Nullable info,
                                                          NSError * _Nullable error,
                                                          BOOL cancelled)) {}];

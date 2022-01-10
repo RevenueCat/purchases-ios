@@ -20,7 +20,7 @@ import StoreKit
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
-public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, CustomerInfo?, Error?, Bool) -> Void
+public typealias PurchaseCompletedBlock = (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void
 
 /**
  Deferred block for ``Purchases/shouldPurchasePromoProduct(_:defermentBlock:)``
@@ -843,7 +843,7 @@ public extension Purchases {
      * - Parameter product: The `SKProduct` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
      *
      * If the purchase was not successful, there will be an `NSError`.
      *
@@ -869,16 +869,12 @@ public extension Purchases {
      * - Parameter product: The `SKProduct` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
-     *
-     * If the purchase was not successful, there will be an `NSError`.
-     *
      * If the user cancelled, `userCancelled` will be `YES`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: SKProduct) async throws ->
     // swiftlint:disable:next large_tuple
-    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await purchaseAsync(product: product)
     }
 
@@ -893,7 +889,7 @@ public extension Purchases {
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
      *
      * If the purchase was not successful, there will be an `Error`.
      *
@@ -915,16 +911,12 @@ public extension Purchases {
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
-     *
-     * If the purchase was not successful, there will be an `Error`.
-     *
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package) async throws ->
     // swiftlint:disable:next large_tuple
-    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await purchaseAsync(package: package)
     }
 
@@ -945,7 +937,7 @@ public extension Purchases {
      * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -973,14 +965,12 @@ public extension Purchases {
      * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
-     * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: SKProduct, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
-    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await purchaseAsync(product: product, discount: discount)
     }
 
@@ -997,7 +987,7 @@ public extension Purchases {
      * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
+     * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -1030,14 +1020,12 @@ public extension Purchases {
      * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
-     * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package, discount: SKPaymentDiscount) async throws ->
     // swiftlint:disable:next large_tuple
-    (transaction: SKPaymentTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await purchaseAsync(package: package, discount: discount)
     }
 

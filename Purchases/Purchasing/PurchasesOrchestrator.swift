@@ -387,7 +387,7 @@ private extension PurchasesOrchestrator {
             let nsError = error as NSError
             let userCancelled = nsError.code == SKError.paymentCancelled.rawValue
             operationDispatcher.dispatchOnMainThread {
-                completion(transaction,
+                completion(StoreTransaction(sk1Transaction: transaction),
                            nil,
                            ErrorUtils.purchasesError(withSKError: error),
                            userCancelled)
@@ -412,7 +412,11 @@ private extension PurchasesOrchestrator {
         }
 
         operationDispatcher.dispatchOnMainThread {
-            completion(transaction, nil, ErrorUtils.paymentDeferredError(), userCancelled)
+            completion(
+                StoreTransaction(sk1Transaction: transaction),
+                nil,
+                ErrorUtils.paymentDeferredError(), userCancelled
+            )
         }
     }
 
@@ -430,8 +434,9 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 // MARK: Private funcs.
 private extension PurchasesOrchestrator {
 
-    func getAndRemovePurchaseCompletedCallback(forTransaction transaction: SKPaymentTransaction) ->
-        PurchaseCompletedBlock? {
+    func getAndRemovePurchaseCompletedCallback(
+        forTransaction transaction: SKPaymentTransaction
+    ) -> PurchaseCompletedBlock? {
         guard let productIdentifier = transaction.productIdentifier else {
             return nil
         }
@@ -502,21 +507,24 @@ private extension PurchasesOrchestrator {
             let maybeCompletion = self.getAndRemovePurchaseCompletedCallback(forTransaction: transaction)
             let nsError = maybeError as NSError?
             let finishable = (nsError?.userInfo[ErrorDetails.finishableKey as String] as? NSNumber)?.boolValue ?? false
+
+            let storeTransaction = StoreTransaction(sk1Transaction: transaction)
+
             if let customerInfo = maybeCustomerInfo {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
-                maybeCompletion?(transaction, customerInfo, nil, false)
+                maybeCompletion?(storeTransaction, customerInfo, nil, false)
 
                 if self.finishTransactions {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
             } else if finishable {
-                maybeCompletion?(transaction, nil, maybeError, false)
+                maybeCompletion?(storeTransaction, nil, maybeError, false)
                 if self.finishTransactions {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
             } else {
                 Logger.error(Strings.receipt.unknown_backend_error)
-                maybeCompletion?(transaction, nil, maybeError, false)
+                maybeCompletion?(storeTransaction, nil, maybeError, false)
             }
         }
     }
