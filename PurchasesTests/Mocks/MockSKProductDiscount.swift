@@ -7,7 +7,7 @@ import Foundation
 import StoreKit
 
 @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
-class MockDiscount: SKProductDiscount {
+class MockSKProductDiscount: SKProductDiscount {
     var mockPaymentMode: SKProductDiscount.PaymentMode?
     override var paymentMode: SKProductDiscount.PaymentMode {
         return mockPaymentMode ?? SKProductDiscount.PaymentMode.payAsYouGo

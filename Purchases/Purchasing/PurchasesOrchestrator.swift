@@ -135,10 +135,10 @@ class PurchasesOrchestrator {
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func paymentDiscount(forProductDiscount productDiscount: SKProductDiscount,
+    func paymentDiscount(forProductDiscount productDiscount: StoreProductDiscount,
                          product: SK1Product,
                          completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
-        guard let discountIdentifier = productDiscount.identifier else {
+        guard let discountIdentifier = productDiscount.offerIdentifier else {
             completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
             return
         }
