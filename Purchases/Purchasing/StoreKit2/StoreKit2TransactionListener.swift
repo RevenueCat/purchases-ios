@@ -29,11 +29,16 @@ class StoreKit2TransactionListener {
     }
 
     func listenForTransactions() {
+        self.taskHandle?.cancel()
         self.taskHandle = Task {
             for await result in StoreKit.Transaction.updates {
                 await handle(transactionResult: result)
             }
         }
+    }
+
+    deinit {
+        self.taskHandle?.cancel()
     }
 
     func handle(purchaseResult: StoreKit.Product.PurchaseResult) async -> Bool {
