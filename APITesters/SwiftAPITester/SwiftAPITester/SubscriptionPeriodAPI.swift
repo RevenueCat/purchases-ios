@@ -10,7 +10,7 @@ import RevenueCat
 var period: SubscriptionPeriod!
 
 func checkSubscriptionPeriodAPI() {
-    let period2 = SubscriptionPeriod(value: 0, unit: .day)
+    _ = SubscriptionPeriod(value: 0, unit: .day)
 
     let value: Int = period.value
     let unit: SubscriptionPeriod.Unit = period.unit
