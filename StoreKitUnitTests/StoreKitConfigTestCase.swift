@@ -45,6 +45,25 @@ class StoreKitConfigTestCase: XCTestCase {
         userDefaults.removePersistentDomain(forName: suiteName)
     }
 
+    // MARK: - Transactions observation
+
+    private static var transactionsObservation: Task<Void, Never>?
+
+    override class func setUp() {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            Self.transactionsObservation?.cancel()
+            Self.transactionsObservation = Task {
+                // Silence warning in tests:
+                // "Making a purchase without listening for transaction updates risks missing successful purchases.
+                for await _ in Transaction.updates {}
+            }
+        }
+    }
+
+    override class func tearDown() {
+        Self.transactionsObservation?.cancel()
+    }
+
 }
 
 private extension StoreKitConfigTestCase {
