@@ -202,7 +202,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-    func testSk1PriceFormatterReactsToStorefrontChanges() async throws {
+    func testSk1PriceFormatterUsesCurrentStorefront() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         testSession.locale = Locale(identifier: "es_ES")
@@ -222,6 +222,9 @@ class StoreProductTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "en_EN")
         await changeStorefront("USA")
 
+        // Note: this test passes only because the fetcher is recreated
+        // therefore clearing the cache. `ProductsFetcherSK1` does not
+        // detect Storefront changes to invalidate the cache like `ProductsFetcherSK2` does.
         sk1Fetcher = ProductsFetcherSK1()
 
         storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
