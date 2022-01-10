@@ -822,10 +822,8 @@ private extension HTTPClientTests {
                                                                                  options: []) as? [String: Any])
             return try XCTUnwrap(requestBodyDict["requestNumber"] as? Int)
         } catch {
-            XCTFail(error.localizedDescription)
+            fatalError("Couldn't extract the request number from the URLRequest")
         }
-
-        fatalError("Unreachable")
     }
 
 }
