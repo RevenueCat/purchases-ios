@@ -127,11 +127,11 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(iOS, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
-    @available(tvOS, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
-    @available(watchOS, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
-    @available(macOS, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
-    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
+    @available(iOS, introduced: 12.2, obsoleted: 12.2, renamed: "purchase(package:discount:completion:)")
+    @available(tvOS, introduced: 12.2, obsoleted: 12.2, renamed: "purchase(package:discount:completion:)")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(package:discount:completion:)")
+    @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, renamed: "purchase(package:discount:completion:)")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:discount:completion:)")
     func purchasePackage(_ package: Package,
                          discount: SKPaymentDiscount,
                          _ completion: @escaping PurchaseCompletedBlock) {
@@ -174,11 +174,11 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(iOS, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
-    @available(tvOS, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
-    @available(watchOS, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
-    @available(macOS, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
-    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
+    @available(iOS, introduced: 12.2, obsoleted: 12.2, renamed: "purchase(product:discount:completion:)")
+    @available(tvOS, introduced: 12.2, obsoleted: 12.2, renamed: "purchase(product:discount:completion:)")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(product:discount:completion:)")
+    @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, renamed: "purchase(product:discount:completion:)")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:discount:completion:)")
     func purchaseProduct(_ product: SKProduct,
                          discount: SKPaymentDiscount,
                          _ completion: @escaping PurchaseCompletedBlock) {
