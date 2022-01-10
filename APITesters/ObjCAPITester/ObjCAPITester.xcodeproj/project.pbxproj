@@ -19,6 +19,7 @@
 		2DD77915270E23870079CBD4 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
 		2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
 		5738F41C27866E6F0096D623 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A519264C26EBCEF6007D0BD1 /* main.m */; };
+		5738F428278672070096D623 /* RCStoreProductDiscountAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 5738F427278672070096D623 /* RCStoreProductDiscountAPI.m */; };
 		575885A42748274E00CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 575885A32748274E00CA2169 /* RevenueCat.framework */; };
 		575885A52748274E00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 575885A32748274E00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5758EE5227864A8500B3B703 /* RCStoreProductAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE5127864A8500B3B703 /* RCStoreProductAPI.m */; };
@@ -42,6 +43,8 @@
 
 /* Begin PBXFileReference section */
 		2DD778F5270E235B0079CBD4 /* ObjCAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjCAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5738F426278672070096D623 /* RCStoreProductDiscountAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCStoreProductDiscountAPI.h; sourceTree = "<group>"; };
+		5738F427278672070096D623 /* RCStoreProductDiscountAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStoreProductDiscountAPI.m; sourceTree = "<group>"; };
 		5758858F274826CE00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		57588593274826DF00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758859F2748274600CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -138,6 +141,8 @@
 				5758EE5127864A8500B3B703 /* RCStoreProductAPI.m */,
 				5758EE592786548D00B3B703 /* RCStoreTransactionAPI.h */,
 				5758EE5A2786548D00B3B703 /* RCStoreTransactionAPI.m */,
+				5738F426278672070096D623 /* RCStoreProductDiscountAPI.h */,
+				5738F427278672070096D623 /* RCStoreProductDiscountAPI.m */,
 			);
 			path = ObjCAPITester;
 			sourceTree = "<group>";
@@ -226,6 +231,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5738F428278672070096D623 /* RCStoreProductDiscountAPI.m in Sources */,
 				2DD77914270E23870079CBD4 /* RCOfferingAPI.m in Sources */,
 				A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */,
 				2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */,

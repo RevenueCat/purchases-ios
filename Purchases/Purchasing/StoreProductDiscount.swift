@@ -28,10 +28,10 @@ public class StoreProductDiscount: NSObject {
 
     }
 
-    public let offerIdentifier: String?
-    public let price: Decimal
-    public let paymentMode: PaymentMode
-    public let subscriptionPeriod: SubscriptionPeriod
+    @objc public let offerIdentifier: String?
+    @objc public let price: Decimal
+    @objc public let paymentMode: PaymentMode
+    @objc public let subscriptionPeriod: SubscriptionPeriod
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     convenience init(with productDiscount: SKProductDiscount) {

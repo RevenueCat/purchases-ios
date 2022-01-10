@@ -45,5 +45,8 @@ func main() -> Int {
 
     checkStoreProductAPI()
 
+    checkStoreProductDiscountAPI()
+    checkPaymentModeEnum()
+
     return 0
 }
