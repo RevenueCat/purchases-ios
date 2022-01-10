@@ -1,7 +1,5 @@
 # Contributing
 ___
-## 🛠 ObjC to Swift Migration
-Do you want to help with the ObjC to Swift migration? Awesome! We have a [project tracker](https://github.com/RevenueCat/purchases-ios/projects/3), some [milestones](https://github.com/RevenueCat/purchases-ios/milestones), lots of [issues tagged](https://github.com/RevenueCat/purchases-ios/labels/swift%20migration) for the migration. Here's how you can get going.
 
 ### You can do this!
 We've tagged a number of issues as [you can do this!](https://github.com/RevenueCat/purchases-ios/labels/you%20can%20do%20this%21). These will generally not require much (or any!) working knowledge of our SDK, they are tasks like migrating a single `enum` into Swift, or a uncomplicated `model` from objc to swift.
@@ -14,12 +12,11 @@ If you decide you want to help, that [you can do this!](https://github.com/Reven
 - Work on the issue! 
 - Use our [Swift Style Guide](SwiftStyleGuide.swift) to ensure that the style is consistent with the rest of the codebase.
 - Once you think you're done, build the `APITester` target. That target compiles a file that contains references to all public api for the `Purchases` framework. This is how we ensure our changes don't impact the public api.
-- If that builds, then follow [the final steps (Create a pull request to revenucat)](#7-create-a-pull-request-to-revenuecatmain-and-request-review)
-  - **Important:** make sure you select the `swift_migration` branch as the target for your PR's `base` instead of `main`.
+- If that builds, then follow [the final steps (Create a pull request to RevenueCat/main)](#7-create-a-pull-request-to-revenuecatmain-and-request-review)
 - Done!
 
 ___
-## Contributing to the main project (non-Swift migration)
+## Contributing to the main project
 
 
 #### 1. Create an issue to make sure its something that should be done.
@@ -71,7 +68,7 @@ Use our [Swift Style Guide](SwiftStyleGuide.swift) to ensure that the style is c
 You can run the tests by selecting the All Tests Scheme in Xcode and hitting `Cmd+U`.
 The tests are written in Swift, using XCTest and [Nimble](https://github.com/quick/nimble).
 
-#### 7. Create a pull request to revenuecat/main and request review.
+#### 7. Create a pull request to RevenueCat/main and request review.
 
 Explain in your pull request the work that was done and the reasoning.
 
