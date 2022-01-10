@@ -2113,14 +2113,14 @@ class PurchasesTests: XCTestCase {
             let keyIdentifier = "key_id"
             let nonce = UUID()
             let timestamp = 1234
-            
+
             let productDiscount = StoreProductDiscount(
                 offerIdentifier: discountIdentifier,
                 price: 2.99,
                 paymentMode: .none,
                 subscriptionPeriod: SubscriptionPeriod(value: 3, unit: .week)
             )
-            
+
             self.backend.postOfferForSigningPaymentDiscountResponse["signature"] = signature
             self.backend.postOfferForSigningPaymentDiscountResponse["keyIdentifier"] = keyIdentifier
             self.backend.postOfferForSigningPaymentDiscountResponse["nonce"] = nonce
@@ -2155,14 +2155,14 @@ class PurchasesTests: XCTestCase {
             let keyIdentifier = "key_id"
             let nonce = UUID()
             let timestamp = 1234
-            
+
             let productDiscount = StoreProductDiscount(
                 offerIdentifier: nil,
                 price: 2.99,
                 paymentMode: .none,
                 subscriptionPeriod: SubscriptionPeriod(value: 3, unit: .week)
             )
-            
+
             self.backend.postOfferForSigningPaymentDiscountResponse["signature"] = signature
             self.backend.postOfferForSigningPaymentDiscountResponse["keyIdentifier"] = keyIdentifier
             self.backend.postOfferForSigningPaymentDiscountResponse["nonce"] = nonce
@@ -2187,7 +2187,7 @@ class PurchasesTests: XCTestCase {
             product.mockSubscriptionGroupIdentifier = "productGroup"
 
             let discountIdentifier = "id"
-            
+
             let productDiscount = StoreProductDiscount(
                 offerIdentifier: discountIdentifier,
                 price: 2.99,
@@ -2222,7 +2222,7 @@ class PurchasesTests: XCTestCase {
             product.mockSubscriptionGroupIdentifier = "productGroup"
 
             let discountIdentifier = "id"
-            
+
             let productDiscount = StoreProductDiscount(
                 offerIdentifier: discountIdentifier,
                 price: 2.99,
@@ -2478,7 +2478,7 @@ class PurchasesTests: XCTestCase {
             var receivedError: NSError?
             var receivedPaymentDiscount: SKPaymentDiscount?
             let product = MockSK1Product(mockProductIdentifier: "Tacos_with_free_guac")
-            
+
             let discount = StoreProductDiscount(
                 offerIdentifier: "identifier",
                 price: 2.99,
