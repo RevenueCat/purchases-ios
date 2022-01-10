@@ -1,5 +1,5 @@
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -11,6 +11,7 @@ class AppleReceiptBuilderTests: XCTestCase {
     let bundleId = "com.revenuecat.test"
     let applicationVersion = "3.2.1"
     let originalApplicationVersion = "1.2.2"
+    // swiftlint:disable:next force_try
     let creationDate = try! Date.from(year: 2020, month: 3, day: 23, hour: 15, minute: 5, second: 3)
 
     override func setUp() {

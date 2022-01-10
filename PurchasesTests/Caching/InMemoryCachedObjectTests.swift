@@ -11,7 +11,7 @@ import XCTest
 
 class InMemoryCachedObjectTests: XCTestCase {
 
-    // mark: isCacheStaleWithDurationInSeconds:
+    // MARK: isCacheStaleWithDurationInSeconds:
 
     func testIsCacheStaleIsFalseBeforeDurationExpires() {
         let cacheDurationInSeconds = 5.0
@@ -41,7 +41,6 @@ class InMemoryCachedObjectTests: XCTestCase {
         expect(cachedObject.isCacheStale(durationInSeconds: cacheDurationInSeconds)) == true
     }
 
-
     func testIsCacheStaleIsTrueIfTheresNothingCached() {
         let cachedObject = InMemoryCachedObject<NSString>()
 
@@ -53,7 +52,7 @@ class InMemoryCachedObjectTests: XCTestCase {
         expect(cachedObject.isCacheStale(durationInSeconds: 5)) == true
     }
 
-    // mark: clearCacheTimestamp
+    // MARK: clearCacheTimestamp
 
     func testClearCacheTimestampClearsCorrectly() {
         let cachedObject = InMemoryCachedObject<NSString>()
@@ -66,7 +65,7 @@ class InMemoryCachedObjectTests: XCTestCase {
         expect(cachedObject.cachedInstance()).toNot(beNil())
     }
 
-    // mark: clearCache
+    // MARK: clearCache
 
     func testClearCacheClearsCorrectly() {
         let cachedObject = InMemoryCachedObject<NSString>()
@@ -81,7 +80,7 @@ class InMemoryCachedObjectTests: XCTestCase {
         expect(cachedObject.cachedInstance()).to(beNil())
     }
 
-    // mark: updateCacheTimestampWithDate
+    // MARK: updateCacheTimestampWithDate
 
     func testUpdateCacheTimestampWithDateUpdatesCorrectly() {
         let myString: NSString = "something"
@@ -98,7 +97,7 @@ class InMemoryCachedObjectTests: XCTestCase {
         expect(cachedObject.lastUpdatedAt) == secondDate
     }
 
-    // mark: cacheInstance:date
+    // MARK: cacheInstance:date
 
     func testCacheInstanceWithDateCachesInstanceCorrectly() {
         let myString: NSString = "something"

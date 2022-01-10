@@ -25,8 +25,8 @@ class MockPaymentQueue: SKPaymentQueue {
     }
 
     override func remove(_ observer: SKPaymentTransactionObserver) {
-        let i = observers.firstIndex { $0 === observer }
-        observers.remove(at: i!)
+        let index = observers.firstIndex { $0 === observer }
+        observers.remove(at: index!)
     }
 
     var finishedTransactions: [SKPaymentTransaction] = []
@@ -57,7 +57,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, removedTransaction transaction: SKPaymentTransaction) {
         removedTransactions.append(transaction)
     }
-    
+
     var promoPayment: SKPayment?
     var promoProduct: SK1Product?
     var shouldAddPromo = false
@@ -71,7 +71,10 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
 
     var productIdentifiersWithRevokedEntitlements: [String]?
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
+    func storeKitWrapper(
+        _ storeKitWrapper: StoreKitWrapper,
+        didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]
+    ) {
         productIdentifiersWithRevokedEntitlements = productIdentifiers
     }
 
@@ -98,24 +101,24 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
 
         expect(self.updatedTransactions).to(contain(transaction))
     }
-    
+
     func testCallsDelegateWhenPromoPurchaseIsAvailable() {
-        let product = SK1Product();
+        let product = SK1Product()
         let payment = SKPayment.init(product: product)
-        
+
         _ = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
-        expect(self.promoPayment).to(be(payment));
+        expect(self.promoPayment).to(be(payment))
         expect(self.promoProduct).to(be(product))
     }
-    
+
     func testPromoDelegateMethodPassesBackReturnValueFromOwnDelegate() {
-        let product = SK1Product();
+        let product = SK1Product()
         let payment = SKPayment.init(product: product)
-        
+
         shouldAddPromo = (arc4random() % 2 == 0) as Bool
-        
+
         let result = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
-        
+
         expect(result).to(equal(self.shouldAddPromo))
     }
 

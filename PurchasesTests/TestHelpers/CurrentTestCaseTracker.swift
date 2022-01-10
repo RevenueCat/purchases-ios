@@ -30,7 +30,8 @@ final class CurrentTestCaseTracker: NSObject, XCTestObservation {
 
     /// Extracts the name of the current running test.
     ///
-    /// Example: extracts `testCreateAliasCachesForSameUserIDs` from  `-[BackendTests testCreateAliasCachesForSameUserIDs]`
+    /// Example: extracts `testCreateAliasCachesForSameUserIDs`
+    /// from `-[BackendTests testCreateAliasCachesForSameUserIDs]`
     static var sanitizedTestName: String {
         guard let test = Self.shared.currentTestCase else {
             fatalError("No test currently running")
@@ -45,6 +46,7 @@ private extension XCTestCase {
 
     var sanitizedName: String {
         let className = String(describing: type(of: self))
+        // swiftlint:disable:next force_try
         let regex = try! NSRegularExpression(pattern: "-\\[\(className) (?<name>.*)\\]")
 
         let range = NSRange(location: 0, length: self.name.utf8.count)

@@ -9,12 +9,12 @@ class MockDeviceCache: DeviceCache {
 
     // MARK: appUserID
 
-    var stubbedAppUserID: String? = nil
-    var stubbedLegacyAppUserID: String? = nil
-    var userIDStoredInCache: String? = nil
+    var stubbedAppUserID: String?
+    var stubbedLegacyAppUserID: String?
+    var userIDStoredInCache: String?
     var stubbedAnonymous: Bool = false
-    var clearCachesCalledOldUserID: String? = nil
-    var clearCachesCalleNewUserID: String? = nil
+    var clearCachesCalledOldUserID: String?
+    var clearCachesCalleNewUserID: String?
     var invokedClearCachesForAppUserID: Bool = false
 
     override func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
@@ -29,7 +29,7 @@ class MockDeviceCache: DeviceCache {
     }
 
     override var cachedAppUserID: String? {
-        if (stubbedAppUserID != nil) {
+        if stubbedAppUserID != nil {
             return stubbedAppUserID
         } else {
             return userIDStoredInCache

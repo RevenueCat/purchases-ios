@@ -9,22 +9,16 @@ class MockTransaction: SKPaymentTransaction {
 
     var mockPayment: SKPayment?
     override var payment: SKPayment {
-        get {
-            return mockPayment!
-        }
+        mockPayment!
     }
 
     var mockState = SKPaymentTransactionState.purchasing
     override var transactionState: SKPaymentTransactionState {
-        get {
-            return mockState
-        }
+        mockState
     }
 
     var mockError: Error?
     override var error: Error? {
-        get {
-            return mockError
-        }
+        mockError
     }
 }

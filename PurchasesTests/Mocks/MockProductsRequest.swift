@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import StoreKit
 @testable import RevenueCat
+import StoreKit
 
 class MockProductResponse: SKProductsResponse {
     var mockProducts: [MockSK1Product]
@@ -43,7 +43,7 @@ class MockProductsRequest: SKProductsRequest {
     override func start() {
         startCalled = true
         DispatchQueue.main.asyncAfter(deadline: .now() + self.responseTime) {
-            if (self.fails) {
+            if self.fails {
                 self.delegate?.request!(self, didFailWithError: Error.unknown)
             } else {
                 let response = MockProductResponse(productIdentifiers: self.requestedIdentifiers)

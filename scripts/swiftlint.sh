@@ -14,6 +14,8 @@ if which swiftlint >/dev/null; then
   script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
   config_path="${script_path}/../.swiftlint.yml"
   source_path="${script_path}/../"
+  test_config_path="${script_path}/../PurchasesTests/.swiftlint.yml"
+  test_source_path="${script_path}/../PurchasesTests"
   swiftlint_path="$(which swiftlint)"
   echo "linter path:"
   echo $swiftlint_path
@@ -37,7 +39,7 @@ if which swiftlint >/dev/null; then
     options="$strict_option"
   fi
 
-  lint_command="${swiftlint_path} lint ${options} --config ${config_path} ${source_path}"
+  lint_command="${swiftlint_path} lint ${options} --config ${config_path} ${source_path} --config ${test_config_path} ${test_source_path}"
   echo "linter command: ${lint_command}"
   $lint_command
 else

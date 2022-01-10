@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import StoreKit
 @testable import RevenueCat
+import StoreKit
 
 public class MockPurchasesDelegate: NSObject, PurchasesDelegate {
 
@@ -19,7 +19,6 @@ public class MockPurchasesDelegate: NSObject, PurchasesDelegate {
 
     var promoProduct: SK1Product?
     var makeDeferredPurchase: DeferredPromotionalPurchaseBlock?
-
 
     public func purchases(_ purchases: Purchases,
                           shouldPurchasePromoProduct product: SK1Product,

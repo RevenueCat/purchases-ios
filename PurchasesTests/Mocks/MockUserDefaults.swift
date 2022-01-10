@@ -7,15 +7,15 @@ import Foundation
 
 class MockUserDefaults: UserDefaults {
 
-    var stringForKeyCalledValue: String? = nil
-    var setObjectForKeyCalledValue: String? = nil
+    var stringForKeyCalledValue: String?
+    var setObjectForKeyCalledValue: String?
     var setObjectForKeyCallCount: Int = 0
-    var removeObjectForKeyCalledValues: Array<String> = []
-    var dataForKeyCalledValue: String? = nil
-    var objectForKeyCalledValue: String? = nil
-    var dictionaryForKeyCalledValue: String? = nil
-    var setBoolForKeyCalledValue: String? = nil
-    var setValueForKeyCalledValue: String? = nil
+    var removeObjectForKeyCalledValues: [String] = []
+    var dataForKeyCalledValue: String?
+    var objectForKeyCalledValue: String?
+    var dictionaryForKeyCalledValue: String?
+    var setBoolForKeyCalledValue: String?
+    var setValueForKeyCalledValue: String?
 
     var mockValues: [String: Any] = [:]
 
@@ -52,11 +52,11 @@ class MockUserDefaults: UserDefaults {
 
     override func dictionary(forKey defaultName: String) -> [String: Any]? {
         dictionaryForKeyCalledValue = defaultName
-        return mockValues[defaultName] as? [String : Any]
+        return mockValues[defaultName] as? [String: Any]
     }
 
     override func dictionaryRepresentation() -> [String: Any] { mockValues }
-    
+
     override func removePersistentDomain(forName domainName: String) {
         mockValues = [:]
     }

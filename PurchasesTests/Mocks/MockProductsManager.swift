@@ -4,16 +4,18 @@
 //
 
 import Foundation
-import StoreKit
 @testable import RevenueCat
+import StoreKit
 
 class MockProductsManager: ProductsManager {
 
+    // swiftlint:disable identifier_name
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiers = false
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount = 0
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersParameters: (identifiers: Set<String>, Void)?
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersParametersList = [(identifiers: Set<String>, Void)]()
     var stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult: (Set<StoreProduct>, Void)?
+    // swiftlint:enable identifier_name
 
     override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
                                                      completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
@@ -25,14 +27,14 @@ class MockProductsManager: ProductsManager {
             completion(.success(result.0))
         } else {
             let products: [SK1Product] = identifiers.map { (identifier) -> MockSK1Product in
-                let p = MockSK1Product(mockProductIdentifier: identifier)
-                p.mockSubscriptionGroupIdentifier = "1234567"
+                let product = MockSK1Product(mockProductIdentifier: identifier)
+                product.mockSubscriptionGroupIdentifier = "1234567"
                 if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                     let mockDiscount = MockDiscount()
                     mockDiscount.mockIdentifier = "discount_id"
-                    p.mockDiscount = mockDiscount
+                    product.mockDiscount = mockDiscount
                 }
-                return p
+                return product
             }
             let result = Set(products).map { StoreProduct(sk1Product: $0) }
 
@@ -46,7 +48,9 @@ class MockProductsManager: ProductsManager {
     var invokedProductsFromOptimalStoreKitVersionParametersList = [(identifiers: Set<String>, Void)]()
 
     @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-    override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<StoreProduct> {
+    override func productsFromOptimalStoreKitVersion(
+        withIdentifiers identifiers: Set<String>
+    ) async -> Set<StoreProduct> {
         invokedProductsFromOptimalStoreKitVersion = true
         invokedProductsFromOptimalStoreKitVersionCount += 1
         invokedProductsFromOptimalStoreKitVersionParameters = (identifiers, ())
@@ -87,14 +91,14 @@ class MockProductsManager: ProductsManager {
             completion(.success(result))
         } else {
             let products: [SK1Product] = identifiers.map { (identifier) -> MockSK1Product in
-                let p = MockSK1Product(mockProductIdentifier: identifier)
-                p.mockSubscriptionGroupIdentifier = "1234567"
+                let product = MockSK1Product(mockProductIdentifier: identifier)
+                product.mockSubscriptionGroupIdentifier = "1234567"
                 if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                     let mockDiscount = MockDiscount()
                     mockDiscount.mockIdentifier = "discount_id"
-                    p.mockDiscount = mockDiscount
+                    product.mockDiscount = mockDiscount
                 }
-                return p
+                return product
             }
             completion(.success(Set(products)))
         }

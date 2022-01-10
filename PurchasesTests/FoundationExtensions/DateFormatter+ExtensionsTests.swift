@@ -1,10 +1,10 @@
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
 class DateFormatterExtensionTests: XCTestCase {
-    
+
     func testDateFromBytesReturnsCorrectValueIfPossible() throws {
         let timeZone = TimeZone(identifier: "UTC")
         let dateComponents = DateComponents(timeZone: timeZone,
@@ -79,7 +79,7 @@ class DateFormatterExtensionTests: XCTestCase {
         guard let stringAsBytes = "some string that isn't a date".data(using: .ascii) else { fatalError() }
         expect(ArraySlice(stringAsBytes).toDate()).to(beNil())
     }
-    
+
     func testDateFromBytesReturnsNilIfEmptyData() {
         expect(ArraySlice(Data()).toDate()).to(beNil())
     }
@@ -93,5 +93,5 @@ class DateFormatterExtensionTests: XCTestCase {
         expect(DateFormatter().date(from: nil)).to(beNil())
         expect(ISO8601DateFormatter().date(from: nil)).to(beNil())
     }
-    
+
 }

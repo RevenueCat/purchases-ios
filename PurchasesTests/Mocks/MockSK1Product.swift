@@ -2,9 +2,10 @@
 // Created by RevenueCat on 3/2/20.
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
-import StoreKit
 @testable import RevenueCat
+import StoreKit
 
+// swiftlint:disable line_length
 class MockSK1Product: SK1Product {
     var mockProductIdentifier: String
 
@@ -20,7 +21,7 @@ class MockSK1Product: SK1Product {
 
     var mockSubscriptionGroupIdentifier: String?
     override var subscriptionGroupIdentifier: String? {
-        return self.mockSubscriptionGroupIdentifier;
+        return self.mockSubscriptionGroupIdentifier
     }
 
     var mockPriceLocale: Locale?

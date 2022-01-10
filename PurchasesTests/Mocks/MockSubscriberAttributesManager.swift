@@ -5,6 +5,9 @@
 
 @testable import RevenueCat
 
+// swiftlint:disable identifier_name
+// swiftlint:disable large_tuple
+// swiftlint:disable line_length
 class MockSubscriberAttributesManager: SubscriberAttributesManager {
 
     var invokedSetAttributes = false
@@ -243,7 +246,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     var invokedMarkAttributesParametersList = [(syncedAttributes: [String: SubscriberAttribute]?, appUserID: String)]()
 
     override func markAttributesAsSynced(_ syncedAttributes: [String: SubscriberAttribute]?,
-                                 appUserID: String) {
+                                         appUserID: String) {
         invokedMarkAttributes = true
         invokedMarkAttributesCount += 1
         invokedMarkAttributesParameters = (syncedAttributes, appUserID)

@@ -11,10 +11,10 @@
 //
 //  Created by Juanpe Catalán on 3/8/21.
 
-import XCTest
 import Nimble
-import StoreKit
 @testable import RevenueCat
+import StoreKit
+import XCTest
 
 class SKPaymentTransactionExtensionsTests: XCTestCase {
 
@@ -22,21 +22,21 @@ class SKPaymentTransactionExtensionsTests: XCTestCase {
         let transaction = SKPaymentTransaction()
         expect(transaction.productIdentifier).to(beNil())
     }
-    
+
     func testNilProductIdentifierIfPaymentDoesNotHaveProductIdenfier() {
         let transaction = MockTransaction()
         transaction.mockPayment = SKPayment()
-        
+
         expect(transaction.productIdentifier).to(beNil())
     }
-    
+
     func testProductIdentifierFromAnyTransaction() {
         let expectedProductIdentifier = "com.product.id1"
         let product = MockSK1Product(mockProductIdentifier: expectedProductIdentifier)
         let payment = SKPayment(product: product)
         let transaction = MockTransaction()
         transaction.mockPayment = payment
-        
+
         expect(transaction.productIdentifier).to(equal(expectedProductIdentifier))
     }
 

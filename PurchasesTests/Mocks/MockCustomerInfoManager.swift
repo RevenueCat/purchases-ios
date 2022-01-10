@@ -6,6 +6,8 @@
 import Foundation
 @testable import RevenueCat
 
+// swiftlint:disable large_tuple
+// swiftlint:disable line_length
 class MockCustomerInfoManager: CustomerInfoManager {
     var invokedDelegateGetter = false
     var invokedDelegateGetterCount = 0
@@ -14,12 +16,12 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var invokedFetchAndCacheCustomerInfoCount = 0
     var invokedFetchAndCacheCustomerInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((CustomerInfo?, Error?) -> Void)?)?
     var invokedFetchAndCacheCustomerInfoParametersList = [(appUserID: String,
-        isAppBackgrounded: Bool,
-        completion: ((CustomerInfo?, Error?) -> Void)?)]()
+                                                           isAppBackgrounded: Bool,
+                                                           completion: ((CustomerInfo?, Error?) -> Void)?)]()
 
     override func fetchAndCacheCustomerInfo(appUserID: String,
-                                             isAppBackgrounded: Bool,
-                                             completion: ((CustomerInfo?, Error?) -> Void)?) {
+                                            isAppBackgrounded: Bool,
+                                            completion: ((CustomerInfo?, Error?) -> Void)?) {
         invokedFetchAndCacheCustomerInfo = true
         invokedFetchAndCacheCustomerInfoCount += 1
         invokedFetchAndCacheCustomerInfoParameters = (appUserID, isAppBackgrounded, completion)
@@ -30,12 +32,12 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var invokedFetchAndCacheCustomerInfoIfStaleCount = 0
     var invokedFetchAndCacheCustomerInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((CustomerInfo?, Error?) -> Void)?)?
     var invokedFetchAndCacheCustomerInfoIfStaleParametersList = [(appUserID: String,
-        isAppBackgrounded: Bool,
-        completion: ((CustomerInfo?, Error?) -> Void)?)]()
+                                                                  isAppBackgrounded: Bool,
+                                                                  completion: ((CustomerInfo?, Error?) -> Void)?)]()
 
     override func fetchAndCacheCustomerInfoIfStale(appUserID: String,
-                                                    isAppBackgrounded: Bool,
-                                                    completion: ((CustomerInfo?, Error?) -> Void)?) {
+                                                   isAppBackgrounded: Bool,
+                                                   completion: ((CustomerInfo?, Error?) -> Void)?) {
         invokedFetchAndCacheCustomerInfoIfStale = true
         invokedFetchAndCacheCustomerInfoIfStaleCount += 1
         invokedFetchAndCacheCustomerInfoIfStaleParameters = (appUserID, isAppBackgrounded, completion)
@@ -63,7 +65,7 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var stubbedError: Error?
 
     override func customerInfo(appUserID: String,
-                                completion: ((CustomerInfo?, Error?) -> Void)?) {
+                               completion: ((CustomerInfo?, Error?) -> Void)?) {
         invokedCustomerInfo = true
         invokedCustomerInfoCount += 1
         invokedCustomerInfoParameters = (appUserID, completion)

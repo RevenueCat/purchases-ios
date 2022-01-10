@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -53,8 +53,7 @@ extension NSDataExtensionsTests {
         }
         do {
             return try String(contentsOfFile: pathString, encoding: String.Encoding.utf8)
-        }
-        catch let error {
+        } catch let error {
             fatalError("couldn't read file named \(filename). Error: \(error.localizedDescription)")
         }
     }
