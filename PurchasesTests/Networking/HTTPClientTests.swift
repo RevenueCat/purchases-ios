@@ -825,7 +825,7 @@ private extension HTTPClientTests {
             XCTFail(error.localizedDescription)
         }
 
-        return -999
+        fatalError("Unreachable")
     }
 
 }
