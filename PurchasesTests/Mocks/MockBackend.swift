@@ -5,12 +5,15 @@
 
 @testable import RevenueCat
 
+// swiftlint:disable large_tuple
+// swiftlint:disable force_try
+// swiftlint:disable line_length
 class MockBackend: Backend {
 
     var invokedPostReceiptData = false
     var invokedPostReceiptDataCount = 0
-    var stubbedPostReceiptCustomerInfo: CustomerInfo? = nil
-    var stubbedPostReceiptPurchaserError: Error? = nil
+    var stubbedPostReceiptCustomerInfo: CustomerInfo?
+    var stubbedPostReceiptPurchaserError: Error?
     var invokedPostReceiptDataParameters: (data: Data?,
                                            appUserID: String?,
                                            isRestore: Bool,
@@ -71,8 +74,8 @@ class MockBackend: Backend {
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
         completion: BackendCustomerInfoResponseHandler?)]()
 
-    var stubbedGetSubscriberDataCustomerInfo: CustomerInfo? = nil
-    var stubbedGetSubscriberDataError: Error? = nil
+    var stubbedGetSubscriberDataCustomerInfo: CustomerInfo?
+    var stubbedGetSubscriberDataError: Error?
 
     override func getSubscriberData(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
         invokedGetSubscriberData = true
@@ -125,7 +128,7 @@ class MockBackend: Backend {
         appUserID: String?)]()
     var stubbedPostAttributionDataCompletionResult: (Error?, Void)?
 
-    override func post(attributionData: [String : Any],
+    override func post(attributionData: [String: Any],
                        network: AttributionNetwork,
                        appUserID: String,
                        completion: ((Error?) -> Void)?) {
@@ -189,7 +192,7 @@ class MockBackend: Backend {
     var invokedPostSubscriberAttributes = false
     var invokedPostSubscriberAttributesCount = 0
     var invokedPostSubscriberAttributesParameters: (subscriberAttributes: [String: SubscriberAttribute]?, appUserID: String?)?
-    var invokedPostSubscriberAttributesParametersList: [InvokedPostSubscriberAttributesParameters] = []
+    var invokedPostSubscriberAttributesParametersList: [InvokedPostSubscriberAttributesParams] = []
     var stubbedPostSubscriberAttributesCompletionResult: (Error?, Void)?
 
     override func post(subscriberAttributes: SubscriberAttributeDict,
@@ -199,7 +202,7 @@ class MockBackend: Backend {
         invokedPostSubscriberAttributesCount += 1
         invokedPostSubscriberAttributesParameters = (subscriberAttributes, appUserID)
         invokedPostSubscriberAttributesParametersList.append(
-            InvokedPostSubscriberAttributesParameters(subscriberAttributes: subscriberAttributes, appUserID: appUserID)
+            InvokedPostSubscriberAttributesParams(subscriberAttributes: subscriberAttributes, appUserID: appUserID)
         )
         if let result = stubbedPostSubscriberAttributesCompletionResult {
             completion?(result.0)
@@ -208,11 +211,10 @@ class MockBackend: Backend {
         }
     }
 
-    struct InvokedPostSubscriberAttributesParameters: Equatable {
+    struct InvokedPostSubscriberAttributesParams: Equatable {
         let subscriberAttributes: [String: SubscriberAttribute]?
         let appUserID: String?
     }
-
 
     var invokedLogIn = false
     var invokedLogInCount = 0

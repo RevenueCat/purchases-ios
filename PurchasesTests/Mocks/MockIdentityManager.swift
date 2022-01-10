@@ -16,6 +16,7 @@ class MockIdentityManager: IdentityManager {
     var mockAppUserID: String
 
     init(mockAppUserID: String) {
+        // swiftlint:disable:next force_try
         let mockSystemInfo = try! MockSystemInfo(platformFlavor: nil,
                                                  platformFlavorVersion: nil,
                                                  finishTransactions: false)
@@ -33,7 +34,7 @@ class MockIdentityManager: IdentityManager {
     }
 
     override var currentAppUserID: String {
-        if (mockIsAnonymous) {
+        if mockIsAnonymous {
             return "$RCAnonymousID:ff68f26e432648369a713849a9f93b58"
         } else {
             return mockAppUserID

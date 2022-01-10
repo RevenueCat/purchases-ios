@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import StoreKit
 @testable import RevenueCat
+import StoreKit
 
 class MockProductsRequestFactory: ProductsRequestFactory {
 

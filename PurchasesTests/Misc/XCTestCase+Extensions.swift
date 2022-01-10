@@ -20,11 +20,12 @@ extension XCTestCase {
     func expectFatalError(
         expectedMessage: String,
         testcase: @escaping () -> Void,
-        file: StaticString = #filePath, line: UInt = #line
+        file: StaticString = #filePath,
+        line: UInt = #line
     ) {
         let expectation = self.expectation(description: "expectingFatalError")
         var fatalErrorReceived = false
-        var assertionMessage: String? = nil
+        var assertionMessage: String?
 
         FatalErrorUtil.replaceFatalError { message, _, _ in
             fatalErrorReceived = true
@@ -45,12 +46,13 @@ extension XCTestCase {
 
     func expectNoFatalError(
         testcase: @escaping () -> Void,
-        file: StaticString = #filePath, line: UInt = #line
+        file: StaticString = #filePath,
+        line: UInt = #line
     ) {
         let expectation = self.expectation(description: "expectingNoFatalError")
         var fatalErrorReceived = false
 
-        FatalErrorUtil.replaceFatalError { message, _, _ in
+        FatalErrorUtil.replaceFatalError { _, _, _ in
             fatalErrorReceived = true
             self.unreachable()
         }

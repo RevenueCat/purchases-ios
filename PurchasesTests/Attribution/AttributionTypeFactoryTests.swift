@@ -4,9 +4,9 @@
 //
 
 import Foundation
-import XCTest
 import Nimble
 @testable import RevenueCat
+import XCTest
 
 class AttributionTypeFactoryTests: XCTestCase {
 

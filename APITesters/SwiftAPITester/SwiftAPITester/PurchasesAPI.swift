@@ -42,7 +42,7 @@ func checkPurchasesAPI() {
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
 
-    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) {
+    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
         _ = Task.init {
             await checkAsyncMethods(purchases: purch)
         }
@@ -190,15 +190,17 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: SKPaymentDiscount = try await purchases.paymentDiscount(forProductDiscount: storeProductDiscount,
                                                                        product: SKProduct())
         let _: [SKProduct] = await purchases.products([])
-        let _: (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
-        let _: (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
-                                                                                         discount: SKPaymentDiscount())
-        let _: (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct())
-        let _: (SKPaymentTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct(),
-                                                                                         discount: SKPaymentDiscount())
+        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
+        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
+                                                                                     discount: SKPaymentDiscount())
+        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct())
+        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct(),
+                                                                                     discount: SKPaymentDiscount())
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.restoreTransactions()
         let _: CustomerInfo = try await purchases.syncPurchases()
+
+        for try await _: CustomerInfo in purchases.customerInfoStream {}
 
         #if os(iOS)
         try await purchases.showManageSubscriptions()

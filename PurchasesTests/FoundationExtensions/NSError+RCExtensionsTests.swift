@@ -3,8 +3,8 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -18,7 +18,11 @@ class NSErrorRCExtensionsTests: XCTestCase {
 
     func testSuccessfullySyncedFalseIfNotShouldMarkSynced() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [Backend.RCSuccessfullySyncedKey as String: false])
+        let error = NSError(
+            domain: RCPurchasesErrorCodeDomain,
+            code: errorCode,
+            userInfo: [Backend.RCSuccessfullySyncedKey as String: false]
+        )
         expect(error.successfullySynced) == false
     }
 
@@ -30,13 +34,21 @@ class NSErrorRCExtensionsTests: XCTestCase {
 
     func testSuccessfullySyncedTrueIfShouldMarkSynced() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [Backend.RCSuccessfullySyncedKey as String: true])
+        let error = NSError(
+            domain: RCPurchasesErrorCodeDomain,
+            code: errorCode,
+            userInfo: [Backend.RCSuccessfullySyncedKey as String: true]
+        )
         expect(error.successfullySynced) == true
     }
 
     func testSubscriberAttributesErrorsNilIfNoAttributesErrors() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [Backend.RCSuccessfullySyncedKey as String: true])
+        let error = NSError(
+            domain: RCPurchasesErrorCodeDomain,
+            code: errorCode,
+            userInfo: [Backend.RCSuccessfullySyncedKey as String: true]
+        )
         expect(error.subscriberAttributesErrors).to(beNil())
     }
 
@@ -44,9 +56,11 @@ class NSErrorRCExtensionsTests: XCTestCase {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
         let attributeErrors = ["$phoneNumber": "phone number is in invalid format",
                                "$email": "email is too long"]
-        let error = NSError(domain: RCPurchasesErrorCodeDomain,
-                            code: errorCode,
-                            userInfo: [Backend.RCAttributeErrorsKey as String: attributeErrors])
+        let error = NSError(
+            domain: RCPurchasesErrorCodeDomain,
+            code: errorCode,
+            userInfo: [Backend.RCAttributeErrorsKey as String: attributeErrors]
+        )
         expect(error.subscriberAttributesErrors).toNot(beNil())
         expect(error.subscriberAttributesErrors) == attributeErrors
     }

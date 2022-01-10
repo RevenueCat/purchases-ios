@@ -1,5 +1,5 @@
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -47,7 +47,7 @@ class ReceiptParserTests: XCTestCase {
             containerFactory.objectIdentifierContainer(.signedData),
             containerFactory.constructedContainer(containers: [
                 containerFactory.simpleDataContainer(),
-                containerFactory.intContainer(int: 656),
+                containerFactory.intContainer(int: 656)
             ]),
             containerFactory.simpleDataContainer(),
             containerFactory.stringContainer(string: "some string"),
@@ -56,11 +56,11 @@ class ReceiptParserTests: XCTestCase {
                 containerFactory.intContainer(int: 656),
                 containerFactory.constructedContainer(containers: [
                     dataObjectIdentifierContainer,
-                    receiptContainer,
+                    receiptContainer
                 ]),
-                containerFactory.dateContainer(date: Date()),
+                containerFactory.dateContainer(date: Date())
             ]),
-            containerFactory.objectIdentifierContainer(.encryptedData),
+            containerFactory.objectIdentifierContainer(.encryptedData)
         ])
 
         mockASN1ContainerBuilder.stubbedBuildResult = complexContainer
@@ -98,7 +98,7 @@ class ReceiptParserTests: XCTestCase {
     func testParseFromReceiptThrowsIfReceiptPayloadIsntLocatedAfterDataObjectIdentifierContainer() {
         let container = containerFactory.constructedContainer(containers: [
             containerFactory.receiptContainerFromContainers(containers: []),
-            containerFactory.objectIdentifierContainer(.data),
+            containerFactory.objectIdentifierContainer(.data)
         ])
 
         mockASN1ContainerBuilder.stubbedBuildResult = container

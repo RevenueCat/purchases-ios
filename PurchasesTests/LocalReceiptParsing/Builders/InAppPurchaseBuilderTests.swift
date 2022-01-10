@@ -4,12 +4,13 @@
 //
 
 import Foundation
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
 class InAppPurchaseBuilderTests: XCTestCase {
+    // swiftlint:disable force_try
     let quantity = 2
     let productId = "com.revenuecat.sampleProduct"
     let transactionId = "089230953203"
@@ -23,6 +24,7 @@ class InAppPurchaseBuilderTests: XCTestCase {
     let isInIntroOfferPeriod = true
     let webOrderLineItemId = Int64(897501072)
     let promotionalOfferIdentifier = "com.revenuecat.productPromoOffer"
+    // swiftlint:enable force_try
 
     private let containerFactory = ContainerFactory()
     private var inAppPurchaseBuilder: InAppPurchaseBuilder!
@@ -36,15 +38,19 @@ class InAppPurchaseBuilderTests: XCTestCase {
         let sampleReceiptContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
         expect { try self.inAppPurchaseBuilder.build(fromContainer: sampleReceiptContainer) }.notTo(throwError())
     }
-    
+
     func testBuildThrowsIfUnexpectedNumberOfInternalContainers() {
         let typeContainer = containerFactory.intContainer(int: 1)
         let versionContainer = containerFactory.intContainer(int: 1)
-        let valueContainer = containerFactory.constructedContainer(containers: [containerFactory.stringContainer(string: "test")])
+        let valueContainer = containerFactory.constructedContainer(
+            containers: [containerFactory.stringContainer(string: "test")]
+        )
         let unexpectedContainer = containerFactory.intContainer(int: 2)
-        
-        let inAppPurchaseContainer = containerFactory.constructedContainer(containers: [typeContainer, versionContainer, valueContainer, unexpectedContainer])
-        
+
+        let inAppPurchaseContainer = containerFactory.constructedContainer(
+            containers: [typeContainer, versionContainer, valueContainer, unexpectedContainer]
+        )
+
         expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
     }
 
@@ -129,8 +135,9 @@ class InAppPurchaseBuilderTests: XCTestCase {
     }
 
     func testBuildGetsCorrectPromotionalOfferIdentifier() throws {
-        let inAppPurchaseContainer = containerFactory
-            .inAppPurchaseContainerFromContainers(containers: minimalAttributes() + [promotionalOfferIdentifierContainer()])
+        let inAppPurchaseContainer = containerFactory.inAppPurchaseContainerFromContainers(
+            containers: minimalAttributes() + [promotionalOfferIdentifierContainer()]
+        )
         let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
 
         expect(inAppPurchase.promotionalOfferIdentifier) == promotionalOfferIdentifier
@@ -261,67 +268,93 @@ private extension InAppPurchaseBuilderTests {
     }
 
     func quantityContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.quantity,
-                                                               quantity)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.quantity,
+            quantity
+        )
     }
 
     func productIdContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.productId,
-                                                               productId)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.productId,
+            productId
+        )
     }
 
     func transactionIdContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.transactionId,
-                                                               transactionId)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.transactionId,
+            transactionId
+        )
     }
 
     func originalTransactionIdContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.originalTransactionId,
-                                                               originalTransactionId)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.originalTransactionId,
+            originalTransactionId
+        )
     }
 
     func productTypeContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.productType,
-                                                               productType.rawValue)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.productType,
+            productType.rawValue
+        )
     }
 
     func purchaseDateContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.purchaseDate,
-                                                               purchaseDate)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.purchaseDate,
+            purchaseDate
+        )
     }
 
     func originalPurchaseDateContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.originalPurchaseDate,
-                                                               originalPurchaseDate)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.originalPurchaseDate,
+            originalPurchaseDate
+        )
     }
 
     func expiresDateContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.expiresDate,
-                                                               expiresDate)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.expiresDate,
+            expiresDate
+        )
     }
 
     func cancellationDateContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.cancellationDate,
-                                                               cancellationDate)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.cancellationDate,
+            cancellationDate
+        )
     }
 
     func isInTrialPeriodContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.isInTrialPeriod,
-                                                               isInTrialPeriod)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.isInTrialPeriod,
+            isInTrialPeriod
+        )
     }
 
     func isInIntroOfferPeriodContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.isInIntroOfferPeriod,
-                                                               isInIntroOfferPeriod)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.isInIntroOfferPeriod,
+            isInIntroOfferPeriod
+        )
     }
 
     func webOrderLineItemIdContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.webOrderLineItemId,
-                                                               webOrderLineItemId)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.webOrderLineItemId,
+            webOrderLineItemId
+        )
     }
 
     func promotionalOfferIdentifierContainer() -> ASN1Container {
-        return containerFactory.receiptAttributeContainer(attributeType: InAppPurchaseAttributeType.promotionalOfferIdentifier,
-                                                               promotionalOfferIdentifier)
+        return containerFactory.receiptAttributeContainer(
+            attributeType: InAppPurchaseAttributeType.promotionalOfferIdentifier,
+            promotionalOfferIdentifier
+        )
     }
 }

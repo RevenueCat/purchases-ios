@@ -20,6 +20,8 @@ class ProductsFetcherSK1: NSObject {
 
     private let productsRequestFactory: ProductsRequestFactory
 
+    // Note: the cached products don't get invalidated when the Storefront changes,
+    // so their localized data might be outdated.
     private var cachedProductsByIdentifier: [String: SK1Product] = [:]
     private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: ProductRequest] = [:]
@@ -90,7 +92,7 @@ class ProductsFetcherSK1: NSObject {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK1StoreProduct> {
         return try await withCheckedThrowingContinuation { continuation in
             products(withIdentifiers: identifiers) { result in

@@ -12,8 +12,12 @@ class MockNotificationCenter: NotificationCenter {
                                   object: Any?)
     var observers = [AddObserverTuple]()
 
-    override func addObserver(_ observer: Any, selector
-    aSelector: Selector, name aName: NSNotification.Name?, object anObject: Any?) {
+    override func addObserver(
+        _ observer: Any,
+        selector aSelector: Selector,
+        name aName: NSNotification.Name?,
+        object anObject: Any?
+    ) {
         observers.append((observer as AnyObject, aSelector, aName, anObject))
     }
 
@@ -25,7 +29,7 @@ class MockNotificationCenter: NotificationCenter {
 
     func fireNotifications() {
         for (observer, selector, name, object) in observers {
-            var notification: NSNotification? = nil
+            var notification: NSNotification?
             if let name = name {
                 notification = NSNotification(name: name, object: object)
             }

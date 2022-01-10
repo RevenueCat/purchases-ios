@@ -13,9 +13,9 @@
 @implementation RCTransactionAPI
 
 + (void)checkAPI {
-    RCTransaction *rct = [[RCTransaction alloc] initWithTransactionId:@"" productId:@"" purchaseDate:NSDate.now];
-    NSString *rci = rct.revenueCatId;
-    NSString *pid = rct.productId;
+    RCStoreTransaction *rct;
+    NSString *rci = rct.transactionIdentifier;
+    NSString *pid = rct.productIdentifier;
     NSDate *date = rct.purchaseDate;
     NSLog(rct, rci, pid, date);
 }

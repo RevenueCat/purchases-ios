@@ -14,8 +14,8 @@
 //
 
 import Foundation
-import XCTest
 import Nimble
+import XCTest
 
 @testable import RevenueCat
 
@@ -28,6 +28,7 @@ class AttributionPosterTests: XCTestCase {
     var backend: MockBackend!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
+    // swiftlint:disable:next force_try
     var systemInfo: MockSystemInfo! = try! MockSystemInfo(platformFlavor: "iOS",
                                                           platformFlavorVersion: "3.2.1",
                                                           finishTransactions: true)
@@ -36,7 +37,7 @@ class AttributionPosterTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        
+
         let userID = "userID"
         deviceCache = MockDeviceCache(systemInfo: MockSystemInfo(finishTransactions: false),
                                       userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
@@ -62,7 +63,7 @@ class AttributionPosterTests: XCTestCase {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
         }
-        
+
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
         MockAdClientProxy.requestAttributionDetailsCallCount = 0
@@ -164,7 +165,7 @@ class AttributionPosterTests: XCTestCase {
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfATTFrameworkNotIncludedOnNewOS() throws {
         guard #available(iOS 14, *) else { throw XCTSkip() }
-        
+
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = false
@@ -186,7 +187,7 @@ class AttributionPosterTests: XCTestCase {
 
     // `MockTrackingManagerProxy.mockAuthorizationStatus isn't available on tvOS
     #if os(iOS)
-    
+
     func testPostAppleSearchAdsAttributionIfNeededPostsIfATTFrameworkNotIncludedOnOldOS() throws {
         guard #available(iOS 14, *) else { throw XCTSkip() }
 
@@ -252,7 +253,6 @@ class AttributionPosterTests: XCTestCase {
 
         expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
     }
-
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorizedOnOldOS() throws {
         guard #available(iOS 14, *) else { throw XCTSkip() }

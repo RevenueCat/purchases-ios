@@ -20,15 +20,15 @@ class MockBundle: Bundle {
         case sandboxReceipt
         case nilURL
     }
-    
+
     var receiptURLResult: ReceiptURLResult = .receiptWithData
-    
+
     private static let mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
     private static let mockSandboxReceiptFileName = "base64encoded_sandboxReceipt"
-    
+
     override var appStoreReceiptURL: URL? {
         let testBundle = Bundle(for: type(of: self))
-        
+
         switch self.receiptURLResult {
         case .receiptWithData:
             return testBundle
@@ -42,5 +42,5 @@ class MockBundle: Bundle {
             return nil
         }
     }
-    
+
 }

@@ -24,8 +24,8 @@ class MockReceiptFetcher: ReceiptFetcher {
         receiptDataReceivedRefreshPolicy = refreshPolicy
         receiptDataCalled = true
         receiptDataTimesCalled += 1
-        if (shouldReturnReceipt) {
-            if (shouldReturnZeroBytesReceipt) {
+        if shouldReturnReceipt {
+            if shouldReturnZeroBytesReceipt {
                 completion(Data())
             } else {
                 completion(Data(1...3))

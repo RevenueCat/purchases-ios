@@ -18,7 +18,9 @@ class CatsViewController: UIViewController {
     @IBOutlet weak var catContentLabel: UILabel!
     @IBOutlet weak var expirationDateLabel: UILabel!
     @IBOutlet weak var purchaseDateLabel: UILabel!
-    
+
+    private var customerInfoObservation: Task<Void, Never>?
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -26,41 +28,41 @@ class CatsViewController: UIViewController {
         manageSubButton.addTarget(self, action: #selector(manageSubButtonTapped), for: .touchUpInside)
         beginRefundButton.addTarget(self, action: #selector(beginRefundButtonTapped), for: .touchUpInside)
         restorePurchasesButton.addTarget(self, action: #selector(restorePurchasesButtonTapped), for: .touchUpInside)
-        
-        Purchases.shared.getCustomerInfo{ (maybeCustomerInfo, error) in
-            self.configureCatContentFor(customerInfo: maybeCustomerInfo)
-        }
 
+        self.customerInfoObservation = Task {
+            for await customerInfo in Purchases.shared.customerInfoStream {
+                self.configureCatContentFor(customerInfo: customerInfo)
+            }
+        }
+    }
+
+    deinit {
+        self.customerInfoObservation?.cancel()
     }
     
-    func configureCatContentFor(customerInfo maybeCustomerInfo: CustomerInfo?) {
-        
-        // set the content based on the user subscription status
-        if let customerInfo = maybeCustomerInfo {
-            
-            if customerInfo.entitlements["pro_cat"]?.isActive == true {
-                
-                print("Hey there premium, you're a happy cat 😻")
-                self.catContentLabel.text = "😻"
-                self.goPremiumButton.isHidden = true
-                self.restorePurchasesButton.isHidden = true
-                
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateStyle = .medium
-                
-                if let purchaseDate = customerInfo.purchaseDate(forEntitlement: "pro_cat") {
-                    self.purchaseDateLabel.text = "Purchase Date: \(dateFormatter.string(from: purchaseDate))"
-                }
-                if let expirationDate = customerInfo.expirationDate(forEntitlement: "pro_cat") {
-                    self.expirationDateLabel.text = "Expiration Date: \(dateFormatter.string(from: expirationDate))"
-                }
+    func configureCatContentFor(customerInfo: CustomerInfo) {
+        if customerInfo.entitlements["pro_cat"]?.isActive == true {
 
-                
-            } else {
-                print("Happy cats are only for premium members 😿")
-                self.catContentLabel.text = "😿"
-                self.beginRefundButton.isHidden = true
+            print("Hey there premium, you're a happy cat 😻")
+            self.catContentLabel.text = "😻"
+            self.goPremiumButton.isHidden = true
+            self.restorePurchasesButton.isHidden = true
+
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+
+            if let purchaseDate = customerInfo.purchaseDate(forEntitlement: "pro_cat") {
+                self.purchaseDateLabel.text = "Purchase Date: \(dateFormatter.string(from: purchaseDate))"
             }
+            if let expirationDate = customerInfo.expirationDate(forEntitlement: "pro_cat") {
+                self.expirationDateLabel.text = "Expiration Date: \(dateFormatter.string(from: expirationDate))"
+            }
+
+
+        } else {
+            print("Happy cats are only for premium members 😿")
+            self.catContentLabel.text = "😿"
+            self.beginRefundButton.isHidden = true
         }
     }
     
@@ -112,7 +114,9 @@ class CatsViewController: UIViewController {
             if let e = error {
                 print("RESTORE ERROR: - \(e.localizedDescription)")
             }
-            self.configureCatContentFor(customerInfo: customerInfo)
+            if let customerInfo = customerInfo {
+                self.configureCatContentFor(customerInfo: customerInfo)
+            }
                 
         }
     }
