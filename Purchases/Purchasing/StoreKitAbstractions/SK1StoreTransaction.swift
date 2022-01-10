@@ -21,6 +21,7 @@ internal struct SK1StoreTransaction: StoreTransactionType {
         self.productIdentifier = sk1Transaction.productIdentifier ?? ""
         self.purchaseDate = sk1Transaction.purchaseDate
         self.transactionIdentifier = sk1Transaction.transactionID
+        self.quantity = sk1Transaction.quantity
     }
 
     let underlyingSK1Transaction: SK1Transaction
@@ -28,19 +29,14 @@ internal struct SK1StoreTransaction: StoreTransactionType {
     let productIdentifier: String
     let purchaseDate: Date
     let transactionIdentifier: String
+    let quantity: Int
 
 }
 
 extension SKPaymentTransaction {
 
-    /// Considering issue https://github.com/RevenueCat/purchases-ios/issues/279, sometimes `payment`
-    /// and `productIdentifier` can be `nil`, in this case, they must be treated as nullable.
-    /// Due of that an optional reference is created so that the compiler would allow us to check for nullability.
     var productIdentifier: String? {
-        guard let payment = self.payment as SKPayment? else {
-            Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
-            return nil
-        }
+        guard let payment = self.maybePayment else { return nil }
 
         guard let productIdentifier = payment.productIdentifier as String?,
               !productIdentifier.isEmpty else {
@@ -71,4 +67,19 @@ extension SKPaymentTransaction {
         return identifier
     }
 
+    fileprivate var quantity: Int {
+        return self.maybePayment?.quantity ?? 1
+    }
+
+    /// Considering issue https://github.com/RevenueCat/purchases-ios/issues/279, sometimes `payment`
+    /// and `productIdentifier` can be `nil`, in this case, they must be treated as nullable.
+    /// Due of that an optional reference is created so that the compiler would allow us to check for nullability.
+    private var maybePayment: SKPayment? {
+        guard let payment = self.payment as SKPayment? else {
+            Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
+            return nil
+        }
+
+        return payment
+    }
 }

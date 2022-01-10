@@ -38,6 +38,7 @@ private struct BackendParsedTransaction: StoreTransactionType {
     let productIdentifier: String
     let purchaseDate: Date
     let transactionIdentifier: String
+    let quantity: Int
 
     init?(with serverResponse: [String: Any], productID: String, dateFormatter: DateFormatterType) {
         guard let revenueCatId = serverResponse["id"] as? String,
@@ -51,6 +52,7 @@ private struct BackendParsedTransaction: StoreTransactionType {
         self.transactionIdentifier = revenueCatId
         self.purchaseDate = purchaseDate
         self.productIdentifier = productID
+        self.quantity = 1
     }
 
 }

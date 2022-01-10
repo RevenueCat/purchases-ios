@@ -9,7 +9,7 @@ class MockTransaction: SKPaymentTransaction {
 
     var mockPayment: SKPayment?
     override var payment: SKPayment {
-        mockPayment!
+        mockPayment ?? super.payment
     }
 
     var mockState = SKPaymentTransactionState.purchasing

@@ -89,14 +89,17 @@ class TransactionsFactoryTests: XCTestCase {
         expect(list).to(beEmpty())
     }
 
-    func testBuildsCorrectlyEvenIfSomeTransactionsCantBeBuilt() {
+    func testBuildsCorrectlyEvenIfSomeTransactionsCantBeBuilt() throws {
+        let identifier = "lifetime_access"
+        let transactionIdentifier = "d6c097ba74"
+        let date = "2018-07-11T18:36:20Z"
         let subscriptionsData = [
-            "lifetime_access": [
+            identifier: [
                 [
-                    "id": "d6c097ba74",
+                    "id": transactionIdentifier,
                     "is_sandbox": true,
                     "original_purchase_date": "2018-07-11T18:36:20Z",
-                    "purchase_date": "2018-07-11T18:36:20Z",
+                    "purchase_date": date,
                     "store": "app_store"
                 ]
             ],
@@ -112,7 +115,15 @@ class TransactionsFactoryTests: XCTestCase {
             dateFormatter: dateFormatter
         )
         expect(nonSubscriptionTransactions.count) == 1
-        expect(nonSubscriptionTransactions.first!.productIdentifier) == "lifetime_access"
+
+        let transaction = try XCTUnwrap(nonSubscriptionTransactions.first)
+
+        expect(transaction.productIdentifier) == identifier
+        expect(transaction.purchaseDate.timeIntervalSinceReferenceDate).to(beCloseTo(
+            dateFormatter.date(from: date)!.timeIntervalSinceReferenceDate
+        ))
+        expect(transaction.transactionIdentifier) == transactionIdentifier
+        expect(transaction.quantity) == 1
     }
 
 }

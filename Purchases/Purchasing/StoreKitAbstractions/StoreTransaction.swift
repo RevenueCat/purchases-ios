@@ -35,6 +35,7 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var productIdentifier: String { self.transaction.productIdentifier }
     @objc public var purchaseDate: Date { self.transaction.purchaseDate }
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
+    @objc public var quantity: Int { self.transaction.quantity }
 
     /// Creates an instance from any `StoreTransactionType`.
     /// If `transaction` is already a wrapped `StoreTransaction` then this returns it instead.
@@ -68,6 +69,9 @@ internal protocol StoreTransactionType {
 
     /// The unique identifier for the transaction.
     var transactionIdentifier: String { get }
+
+    /// The number of consumable products purchased.
+    var quantity: Int { get }
 }
 
 // MARK: - Wrapper constructors / getters
