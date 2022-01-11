@@ -821,7 +821,7 @@ class HTTPClientTests: XCTestCase {
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
-        MockDNSChecker.stubbedIsBlockedAPIError = false
+        MockDNSChecker.stubbedIsBlockedAPIErrorResult = false
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -843,7 +843,7 @@ class HTTPClientTests: XCTestCase {
     func testDNSCheckerIsCalledWhenPOSTRequestFailedWithUnknownError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
-        MockDNSChecker.stubbedIsBlockedAPIError = false
+        MockDNSChecker.stubbedIsBlockedAPIErrorResult = false
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -870,7 +870,7 @@ class HTTPClientTests: XCTestCase {
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
-        MockDNSChecker.stubbedIsBlockedAPIError = true
+        MockDNSChecker.stubbedIsBlockedAPIErrorResult = true
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -897,7 +897,7 @@ class HTTPClientTests: XCTestCase {
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
-        MockDNSChecker.stubbedIsBlockedAPIError = true
+        MockDNSChecker.stubbedIsBlockedAPIErrorResult = true
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -919,8 +919,8 @@ class HTTPClientTests: XCTestCase {
     func testErrorIsLoggedWhenGETRequestFailedWithDNSError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
-        MockDNSChecker.stubbedIsBlockedAPIError = true
-        MockDNSChecker.stubbedBlockedHostFromError = "https://0.0.0.0/subscribers"
+        MockDNSChecker.stubbedIsBlockedAPIErrorResult = true
+        MockDNSChecker.stubbedBlockedHostFromErrorResult = "https://0.0.0.0/subscribers"
 
         var logHandlerIsCalled = false
         let originalLogHandler = Logger.logHandler
@@ -950,7 +950,7 @@ class HTTPClientTests: XCTestCase {
     func testErrorIsntLoggedWhenGETRequestFailedWithUnknownError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
-        MockDNSChecker.stubbedIsBlockedAPIError = false
+        MockDNSChecker.stubbedIsBlockedAPIErrorResult = false
 
         var logHandlerIsCalled = false
         let originalLogHandler = Logger.logHandler

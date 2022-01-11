@@ -17,45 +17,45 @@ import Foundation
 enum MockDNSChecker: DNSCheckerType {
 
     static var invokedIsBlockedAPIError = false
-    static var stubbedIsBlockedAPIError = false
+    static var stubbedIsBlockedAPIErrorResult = false
     static func isBlockedAPIError(_ error: Error?) -> Bool {
         Self.invokedIsBlockedAPIError = true
-        return Self.stubbedIsBlockedAPIError
+        return Self.stubbedIsBlockedAPIErrorResult
     }
 
     static var invokedBlockedHostFromError = false
-    static var stubbedBlockedHostFromError: String?
+    static var stubbedBlockedHostFromErrorResult: String?
     static func blockedHostFromError(_ error: Error?) -> String? {
         Self.invokedBlockedHostFromError = true
-        return Self.stubbedBlockedHostFromError
+        return Self.stubbedBlockedHostFromErrorResult
     }
 
     static var invokedIsBlockedURL = false
-    static var stubbedIsBlockedURL = false
+    static var stubbedIsBlockedURLResult = false
     static func isBlockedURL(_ url: URL) -> Bool {
         Self.invokedIsBlockedURL = true
-        return Self.stubbedIsBlockedURL
+        return Self.stubbedIsBlockedURLResult
     }
 
     static var invokedResolvedHostFromURL = false
-    static var stubbedResolvedHostFromURL: String?
+    static var stubbedResolvedHostFromURLResult: String?
     static func resolvedHost(fromURL url: URL) -> String? {
         Self.invokedResolvedHostFromURL = true
-        return Self.stubbedResolvedHostFromURL
+        return Self.stubbedResolvedHostFromURLResult
     }
 
     static func resetData() {
         Self.invokedIsBlockedAPIError = false
-        Self.stubbedIsBlockedAPIError = false
+        Self.stubbedIsBlockedAPIErrorResult = false
 
         Self.invokedBlockedHostFromError = false
-        Self.stubbedBlockedHostFromError = nil
+        Self.stubbedBlockedHostFromErrorResult = nil
 
         Self.invokedIsBlockedURL = false
-        Self.stubbedIsBlockedURL = false
+        Self.stubbedIsBlockedURLResult = false
 
         Self.invokedResolvedHostFromURL = false
-        Self.stubbedResolvedHostFromURL = nil
+        Self.stubbedResolvedHostFromURLResult = nil
     }
 
 }
