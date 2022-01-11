@@ -205,6 +205,8 @@
 		37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3521731D8DC16873F55F3 /* AttributionFetcher.swift */; };
 		37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3507939634ED5A9280544 /* Strings.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
+		5738F46E278CAC520096D623 /* StoreTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F46D278CAC520096D623 /* StoreTransactionTests.swift */; };
+		5738F489278CC2500096D623 /* MockTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492726B9956C00D32E58 /* MockTransaction.swift */; };
 		5746508C27586B2E0053AB09 /* Result+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5746508B27586B2E0053AB09 /* Result+Extensions.swift */; };
 		5746508E275949F20053AB09 /* DispatchTimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5746508D275949F20053AB09 /* DispatchTimeInterval+Extensions.swift */; };
 		57536A2627851FFE00E2AE7F /* SK1StoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57536A2527851FFE00E2AE7F /* SK1StoreTransaction.swift */; };
@@ -560,6 +562,7 @@
 		570896B527595C8100296F1C /* UnitTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = UnitTests.xctestplan; path = TestPlans/UnitTests.xctestplan; sourceTree = "<group>"; };
 		570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftAPITester.xcodeproj; path = APITesters/SwiftAPITester/SwiftAPITester.xcodeproj; sourceTree = "<group>"; };
 		570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ObjCAPITester.xcodeproj; path = APITesters/ObjCAPITester/ObjCAPITester.xcodeproj; sourceTree = "<group>"; };
+		5738F46D278CAC520096D623 /* StoreTransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTransactionTests.swift; sourceTree = "<group>"; };
 		5746508B27586B2E0053AB09 /* Result+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+Extensions.swift"; sourceTree = "<group>"; };
 		5746508D275949F20053AB09 /* DispatchTimeInterval+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DispatchTimeInterval+Extensions.swift"; sourceTree = "<group>"; };
 		57536A2527851FFE00E2AE7F /* SK1StoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1StoreTransaction.swift; sourceTree = "<group>"; };
@@ -840,6 +843,7 @@
 				F55FFA622763F60700995146 /* TransactionsManagerSK1Tests.swift */,
 				F55FFA662763FAC300995146 /* TransactionsManagerSK2Tests.swift */,
 				5791A1C72767FC9400C972AA /* ManageSubscriptionsHelperTests.swift */,
+				5738F46D278CAC520096D623 /* StoreTransactionTests.swift */,
 			);
 			path = StoreKitUnitTests;
 			sourceTree = "<group>";
@@ -1775,6 +1779,7 @@
 				5791A1C82767FC9400C972AA /* ManageSubscriptionsHelperTests.swift in Sources */,
 				2D9C5EC826F280510057FC45 /* StoreProductTests.swift in Sources */,
 				3543914426F911F300E669DF /* MockCustomerInfoManager.swift in Sources */,
+				5738F46E278CAC520096D623 /* StoreTransactionTests.swift in Sources */,
 				3543914226F911F300E669DF /* MockSK1Product.swift in Sources */,
 				3543913826F90FE100E669DF /* MockIntroEligibilityCalculator.swift in Sources */,
 				359E3ABF26FBE8CD0094617C /* PartialMockProductsManager.swift in Sources */,
@@ -1792,6 +1797,7 @@
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
 				F55FFA632763F60700995146 /* TransactionsManagerSK1Tests.swift in Sources */,
 				2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */,
+				5738F489278CC2500096D623 /* MockTransaction.swift in Sources */,
 				2D90F8C826FD2225009B9142 /* MockAppleReceiptBuilder.swift in Sources */,
 				F55FFA672763FAC300995146 /* TransactionsManagerSK2Tests.swift in Sources */,
 				2D90F8C026FD20DF009B9142 /* MockAttributionDataMigrator.swift in Sources */,

@@ -65,7 +65,7 @@ extension SKPaymentTransaction {
         guard let identifier = self.transactionIdentifier else {
             Logger.appleWarning(Strings.purchase.sktransaction_missing_transaction_identifier)
 
-            return UUID().description
+            return UUID().uuidString
         }
 
         return identifier
