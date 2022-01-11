@@ -228,8 +228,7 @@ private extension HTTPClient {
         var maybeNetworkError = maybeNetworkError
         if DNSChecker.isBlockedAPIError(maybeNetworkError),
             let blockedError = DNSChecker.errorWithBlockedHostFromError(maybeNetworkError) {
-            let newHost = (blockedError as NSError).userInfo[DNSChecker.blockedHostNameReplacementErrorKey] as? String
-            Logger.error(NetworkStrings.blocked_network(newHost: newHost ?? "<unknown>"))
+            Logger.error(blockedError.description)
             maybeNetworkError = blockedError
         }
 

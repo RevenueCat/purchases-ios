@@ -43,26 +43,27 @@ class DNSCheckerTests: XCTestCase {
         expect(DNSChecker.isBlockedURL(try XCTUnwrap(URL(string: "https://api.revenuecat.com/offers")))) == false
     }
 
-    func testIsBlockedHostFromError() {
+    func testIsBlockedLocalHostFromError() {
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL2]
-        let nsErrorWithUserInfo = NSError(domain: "Testing",
-                                          code: -1,
+        let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
+                                          code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
-        let error = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo as Error)! as NSError
-        expect(error.userInfo[DNSChecker.blockedHostNameReplacementErrorKey] as? String) == "127.0.0.1"
-        expect(error.isAPIBlockedError) == true
+        let error = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo as Error)
+        let expectedError = DNSChecker.DNSError.blocked(failedURL: fakeSubscribersURL2, resolvedHost: "127.0.0.1")
+        expect(expectedError).to(equal(error))
     }
 
-    func testIsBlockedLocalHostIPAPIError() {
+    func testIsBlockedHostIPAPIError() {
         let userInfo: [String: Any] = [
-            NSURLErrorFailingURLErrorKey: fakeSubscribersURL1,
-            DNSChecker.blockedErrorKey: true
+            NSURLErrorFailingURLErrorKey: fakeSubscribersURL1
         ]
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == true
-        expect((nsErrorWithUserInfo as Error).isAPIBlockedError) == true
+        let maybeBlockedHostError = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo)
+        expect(maybeBlockedHostError) == DNSChecker.DNSError.blocked(failedURL: fakeSubscribersURL1, resolvedHost: "0.0.0.0")
+
     }
 
     func testWrongErrorCode() {
@@ -71,7 +72,6 @@ class DNSCheckerTests: XCTestCase {
                                           code: -1,
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
-        expect((nsErrorWithUserInfo as Error).isAPIBlockedError) == false
     }
 
     func testWrongErrorDomain() {
@@ -80,7 +80,8 @@ class DNSCheckerTests: XCTestCase {
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
-        expect((nsErrorWithUserInfo as Error).isAPIBlockedError) == false
+        let maybeBlockedError = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo)
+        expect(maybeBlockedError) == nil
     }
 
     func testWrongErrorDomainAndWrongErrorCode() {
@@ -88,7 +89,8 @@ class DNSCheckerTests: XCTestCase {
         let nsErrorWithUserInfo = NSError(domain: "FakeDomain",
                                           code: -1,
                                           userInfo: userInfo as [String: Any])
-        expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
+        let maybeBlockedError = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo)
+        expect(maybeBlockedError) == nil
     }
 
     func testIsOnlyValidForCorrectErrorDomainAnd() {
@@ -96,7 +98,8 @@ class DNSCheckerTests: XCTestCase {
         let nsErrorWithUserInfo = NSError(domain: "FakeDomain",
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
-        expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == false
+        let maybeBlockedError = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo)
+        expect(maybeBlockedError) == nil
     }
 
     func testIsBlockedZerosIPHostAPIError() {
