@@ -175,7 +175,7 @@ public extension StoreProduct {
 
     /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
     /// - Returns: `nil` if there is no `introductoryPrice`.
-    @objc var localizedIntroductoryStoreProductDicsountString: String? {
+    @objc var localizedIntroductoryStoreProductDiscountString: String? {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
               let formatter = self.priceFormatter,
               let intro = self.introductoryStoreProductDiscount

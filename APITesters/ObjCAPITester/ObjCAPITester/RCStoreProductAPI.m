@@ -26,7 +26,7 @@
     RCStoreProductDiscount *introductoryPrice = product.introductoryStoreProductDiscount;
     NSArray<RCStoreProductDiscount *> *discounts = product.discounts;
     NSDecimalNumber *pricePerMonth = product.pricePerMonth;
-    NSString *localizedIntroductoryPriceString = product.localizedIntroductoryStoreProductDicsountString;
+    NSString *localizedIntroductoryStoreProductDiscountString = product.localizedIntroductoryStoreProductDiscountString;
 
     SKProduct *sk1 = product.sk1Product;
 
@@ -44,7 +44,7 @@
           introductoryPrice,
           discounts,
           pricePerMonth,
-          localizedIntroductoryPriceString,
+          localizedIntroductoryStoreProductDiscountString,
           sk1
       );
 }

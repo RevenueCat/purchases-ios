@@ -82,7 +82,7 @@ private extension PackageType {
     /// The price of the `StoreProduct.introductoryPrice` formatted using ``priceFormatter``.
     /// - Returns: `nil` if there is no `introductoryPrice`.
     @objc public var localizedIntroductoryStoreProductDiscountString: String? {
-        return self.storeProduct.localizedIntroductoryStoreProductDicsountString
+        return self.storeProduct.localizedIntroductoryStoreProductDiscountString
     }
 
     init(identifier: String, packageType: PackageType, storeProduct: StoreProductType, offeringIdentifier: String) {
