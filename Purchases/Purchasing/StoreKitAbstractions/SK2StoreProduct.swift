@@ -74,7 +74,7 @@ internal struct SK2StoreProduct: StoreProductType {
         return SubscriptionPeriod.from(sk2SubscriptionPeriod: skSubscriptionPeriod)
     }
 
-    var introductoryPrice: StoreProductDiscount? {
+    var introductoryStoreProductDiscount: StoreProductDiscount? {
         self.underlyingSK2Product.subscription?.introductoryOffer
             .map(StoreProductDiscount.init)
     }

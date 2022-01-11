@@ -81,7 +81,7 @@ public typealias SK2Product = StoreKit.Product
     @objc public var subscriptionPeriod: SubscriptionPeriod? { self.product.subscriptionPeriod }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public var introductoryPrice: StoreProductDiscount? { self.product.introductoryPrice }
+    @objc public var introductoryStoreProductDiscount: StoreProductDiscount? { self.product.introductoryStoreProductDiscount }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var discounts: [StoreProductDiscount] { self.product.discounts }
@@ -149,7 +149,7 @@ internal protocol StoreProductType {
     /// you must first determine if the user is eligible to receive it.
     /// - Seealso: `Purchases.checkTrialOrIntroductoryPriceEligibility` to  determine eligibility.
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    var introductoryPrice: StoreProductDiscount? { get }
+    var introductoryStoreProductDiscount: StoreProductDiscount? { get }
 
     /// An array of subscription offers available for the auto-renewable subscription.
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
@@ -176,7 +176,7 @@ public extension StoreProduct {
     @objc var localizedIntroductoryPriceString: String? {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
               let formatter = self.priceFormatter,
-              let intro = self.introductoryPrice
+              let intro = self.introductoryStoreProductDiscount
         else {
             return nil
         }
