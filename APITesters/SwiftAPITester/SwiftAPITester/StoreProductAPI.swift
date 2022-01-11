@@ -22,7 +22,7 @@ func checkStoreProductAPI() {
     let discounts: [StoreProductDiscount] = product.discounts
 
     let pricePerMonth: NSDecimalNumber? = product.pricePerMonth
-    let localizedIntroductoryPriceString: String? = product.localizedIntroductoryPriceString
+    let localizedIntroductoryPriceString: String? = product.localizedIntroductoryStoreProductDicsountString
     let sk1Product: SK1Product? = product.sk1Product
     let sk2Product: SK2Product? = product.sk2Product
 

@@ -81,7 +81,9 @@ public typealias SK2Product = StoreKit.Product
     @objc public var subscriptionPeriod: SubscriptionPeriod? { self.product.subscriptionPeriod }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public var introductoryStoreProductDiscount: StoreProductDiscount? { self.product.introductoryStoreProductDiscount }
+    @objc public var introductoryStoreProductDiscount: StoreProductDiscount? {
+        self.product.introductoryStoreProductDiscount
+    }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var discounts: [StoreProductDiscount] { self.product.discounts }
@@ -173,7 +175,7 @@ public extension StoreProduct {
 
     /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
     /// - Returns: `nil` if there is no `introductoryPrice`.
-    @objc var localizedIntroductoryPriceString: String? {
+    @objc var localizedIntroductoryStoreProductDicsountString: String? {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
               let formatter = self.priceFormatter,
               let intro = self.introductoryStoreProductDiscount
