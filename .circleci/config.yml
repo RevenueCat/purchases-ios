@@ -359,7 +359,7 @@ workflows:
               # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
               ignore: /pull\/[0-9]+/
       - integration-tests-cocoapods: *release-tags-and-branches
-      - integration-tests-swift-package-manager: *release-tags-and-branches
+      - integration-tests-swift-package-manager
       - integration-tests-carthage: *release-tags-and-branches
       - integration-tests-xcode-direct-integration: *release-tags-and-branches
   deploy:
