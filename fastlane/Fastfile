@@ -109,6 +109,8 @@ platform :ios do
     commit_hash = last_git_commit[:commit_hash]
     puts commit_hash
 
+    is_prerelease = new_version_number.split("-").length > 1
+
     set_github_release(
       repository_name: "revenuecat/purchases-ios",
       api_token: ENV["GITHUB_TOKEN"],
@@ -117,7 +119,8 @@ platform :ios do
       description: changelog,
       commitish: commit_hash,
       upload_assets: ["RevenueCat.framework.zip", "RevenueCat.xcframework.zip"],
-      is_draft: false
+      is_draft: false,
+      is_prerelease: is_prerelease
   )
   end
 
