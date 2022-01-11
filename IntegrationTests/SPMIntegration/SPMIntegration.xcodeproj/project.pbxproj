@@ -33,6 +33,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2D1D5739278DC9B000359BB1 /* SPMIntegration.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SPMIntegration.entitlements; sourceTree = "<group>"; };
 		2D6C02042549F5600039CB92 /* SPMIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SPMIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SPMIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C02252549F5620039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -78,6 +79,7 @@
 		2D6C01FB2549F5600039CB92 = {
 			isa = PBXGroup;
 			children = (
+				2D1D5739278DC9B000359BB1 /* SPMIntegration.entitlements */,
 				2D6C02422549F5920039CB92 /* CommonFiles */,
 				2D6C02222549F5620039CB92 /* SPMIntegrationTests */,
 				2D6C02052549F5600039CB92 /* Products */,
@@ -420,6 +422,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = SPMIntegration.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -433,6 +436,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMIntegration";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegration-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -446,6 +450,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = SPMIntegration.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -459,6 +464,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMIntegration";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegration-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
