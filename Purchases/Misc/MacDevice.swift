@@ -12,6 +12,7 @@
 //  Created by Juanpe Catalán on 30/11/21.
 
 #if os(macOS) || targetEnvironment(macCatalyst)
+import Foundation
 
 #if canImport(IOKit)
 import IOKit
