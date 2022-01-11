@@ -14,5 +14,5 @@ struct Constants {
     static let proxyURL = "REVENUECAT_PROXY_URL"
 
     static let userDefaultsSuiteName = "BackendIntegrationTests"
-    static let storeKitConfigFileName = "Configuration"
+    static let storeKitConfigFileName = "RevenueCat_IntegrationPurchaseTesterConfiguration"
 }
