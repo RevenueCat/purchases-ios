@@ -26,7 +26,13 @@ class HTTPClientTests: XCTestCase {
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
         operationDispatcher = OperationDispatcher()
-        client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
+        DNSCheckerSpy.resetData()
+
+        client = HTTPClient(
+            systemInfo: systemInfo,
+            eTagManager: eTagManager,
+            dnsChecker: DNSCheckerSpy.self
+        )
     }
 
     override func tearDown() {
@@ -811,6 +817,101 @@ class HTTPClientTests: XCTestCase {
 
         expect(completionCalled).toEventually(equal(true), timeout: .seconds(1))
     }
+
+    func testDNSCheckedIsCalledWhenGETRequestFailedWithUnknownError() {
+        let path = "/a_random_path"
+        let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
+
+        stub(condition: isPath("/v1" + path)) { _ in
+            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            response.error = error
+            return response
+        }
+
+        self.client.performGETRequest(
+            serially: true,
+            path: path,
+            headers: [:],
+            completionHandler: nil
+        )
+
+        expect(DNSCheckerSpy.isBlockedAPIErrorCalled).toEventually(equal(true))
+        expect(DNSCheckerSpy.blockedHostFromErrorCalled).toEventually(equal(false))
+    }
+
+    func testDNSCheckedIsCalledWhenPOSTRequestFailedWithUnknownError() {
+        let path = "/a_random_path"
+        let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
+
+        stub(condition: isPath("/v1" + path)) { _ in
+            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            response.error = error
+            return response
+        }
+
+        self.client.performPOSTRequest(
+            serially: true,
+            path: path,
+            requestBody: [:],
+            headers: [:],
+            completionHandler: nil
+        )
+
+        expect(DNSCheckerSpy.isBlockedAPIErrorCalled).toEventually(equal(true))
+        expect(DNSCheckerSpy.blockedHostFromErrorCalled).toEventually(equal(false))
+    }
+
+    func testDNSCheckedIsCalledWhenPOSTRequestFailedWithDNSError() {
+        let path = "/a_random_path"
+        let fakeSubscribersURL = URL(string: "https://0.0.0.0/subscribers")!
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL]
+        let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
+                                          code: NSURLErrorCannotConnectToHost,
+                                          userInfo: userInfo as [String: Any])
+
+        stub(condition: isPath("/v1" + path)) { _ in
+            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            response.error = nsErrorWithUserInfo
+            return response
+        }
+
+        self.client.performPOSTRequest(
+            serially: true,
+            path: path,
+            requestBody: [:],
+            headers: [:],
+            completionHandler: nil
+        )
+
+        expect(DNSCheckerSpy.isBlockedAPIErrorCalled).toEventually(equal(true))
+        expect(DNSCheckerSpy.blockedHostFromErrorCalled).toEventually(equal(true))
+    }
+
+    func testDNSCheckedIsCalledWhenGETRequestFailedWithDNSError() {
+        let path = "/a_random_path"
+        let fakeSubscribersURL = URL(string: "https://0.0.0.0/subscribers")!
+        let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL]
+        let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
+                                          code: NSURLErrorCannotConnectToHost,
+                                          userInfo: userInfo as [String: Any])
+
+        stub(condition: isPath("/v1" + path)) { _ in
+            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            response.error = nsErrorWithUserInfo
+            return response
+        }
+
+        self.client.performGETRequest(
+            serially: true,
+            path: path,
+            headers: [:],
+            completionHandler: nil
+        )
+
+        expect(DNSCheckerSpy.isBlockedAPIErrorCalled).toEventually(equal(true))
+        expect(DNSCheckerSpy.blockedHostFromErrorCalled).toEventually(equal(true))
+    }
+
 }
 
 private extension HTTPClientTests {
