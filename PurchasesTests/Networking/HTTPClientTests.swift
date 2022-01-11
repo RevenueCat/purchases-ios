@@ -26,12 +26,12 @@ class HTTPClientTests: XCTestCase {
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
         operationDispatcher = OperationDispatcher()
-        DNSCheckerSpy.resetData()
+        MockDNSChecker.resetData()
 
         client = HTTPClient(
             systemInfo: systemInfo,
             eTagManager: eTagManager,
-            dnsChecker: DNSCheckerSpy.self
+            dnsChecker: MockDNSChecker.self
         )
     }
 
@@ -818,9 +818,10 @@ class HTTPClientTests: XCTestCase {
         expect(completionCalled).toEventually(equal(true), timeout: .seconds(1))
     }
 
-    func testDNSCheckedIsCalledWhenGETRequestFailedWithUnknownError() {
+    func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
+        MockDNSChecker.stubbedIsBlockedAPIError = false
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -835,13 +836,14 @@ class HTTPClientTests: XCTestCase {
             completionHandler: nil
         )
 
-        expect(DNSCheckerSpy.isBlockedAPIErrorCalled).toEventually(equal(true))
-        expect(DNSCheckerSpy.blockedHostFromErrorCalled).toEventually(equal(false))
+        expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
+        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(false))
     }
 
-    func testDNSCheckedIsCalledWhenPOSTRequestFailedWithUnknownError() {
+    func testDNSCheckerIsCalledWhenPOSTRequestFailedWithUnknownError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
+        MockDNSChecker.stubbedIsBlockedAPIError = false
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -857,8 +859,8 @@ class HTTPClientTests: XCTestCase {
             completionHandler: nil
         )
 
-        expect(DNSCheckerSpy.isBlockedAPIErrorCalled).toEventually(equal(true))
-        expect(DNSCheckerSpy.blockedHostFromErrorCalled).toEventually(equal(false))
+        expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
+        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(false))
     }
 
     func testDNSCheckedIsCalledWhenPOSTRequestFailedWithDNSError() {
@@ -868,6 +870,7 @@ class HTTPClientTests: XCTestCase {
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
+        MockDNSChecker.stubbedIsBlockedAPIError = true
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -883,8 +886,8 @@ class HTTPClientTests: XCTestCase {
             completionHandler: nil
         )
 
-        expect(DNSCheckerSpy.isBlockedAPIErrorCalled).toEventually(equal(true))
-        expect(DNSCheckerSpy.blockedHostFromErrorCalled).toEventually(equal(true))
+        expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
+        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(true))
     }
 
     func testDNSCheckedIsCalledWhenGETRequestFailedWithDNSError() {
@@ -894,6 +897,7 @@ class HTTPClientTests: XCTestCase {
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
+        MockDNSChecker.stubbedIsBlockedAPIError = true
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -908,8 +912,41 @@ class HTTPClientTests: XCTestCase {
             completionHandler: nil
         )
 
-        expect(DNSCheckerSpy.isBlockedAPIErrorCalled).toEventually(equal(true))
-        expect(DNSCheckerSpy.blockedHostFromErrorCalled).toEventually(equal(true))
+        expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
+        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(true))
+    }
+
+    func testErrorIsLoggedWhenGETRequestFailedWithDNSError() {
+        let path = "/a_random_path"
+        let host = "0.0.0.0"
+        let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
+        MockDNSChecker.stubbedIsBlockedAPIError = true
+        MockDNSChecker.stubbedBlockedHostFromError = host
+        let expectedLoggedMessage = "\(LogIntent.rcError.prefix) \(NetworkStrings.blocked_network(newHost: host))"
+
+        var loggedMessage: String?
+        let originalLogHandler = Logger.logHandler
+        Logger.logHandler = { _, message, _, _, _ in
+            loggedMessage = message
+        }
+
+        stub(condition: isPath("/v1" + path)) { _ in
+            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            response.error = error
+            return response
+        }
+
+        self.client.performGETRequest(
+            serially: true,
+            path: path,
+            headers: [:],
+            completionHandler: nil
+        )
+
+        expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
+        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(true))
+        expect(loggedMessage).toEventually(equal(expectedLoggedMessage))
+        Logger.logHandler = originalLogHandler
     }
 
 }
