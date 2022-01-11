@@ -83,7 +83,11 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         let products = try result.get()
         expect(products).to(haveCount(1))
-        let storeProduct = try XCTUnwrap(products.first)
+
+        let sk1Product = try XCTUnwrap(products.first)
+        let storeProduct = StoreProduct.from(product: sk1Product)
+
+        expect(storeProduct.sk1Product) === sk1Product.underlyingSK1Product
 
         expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
@@ -131,7 +135,11 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(storeProductSet).to(haveCount(1))
 
-        let storeProduct = try XCTUnwrap(storeProductSet.first)
+        let sk2Product = try XCTUnwrap(storeProductSet.first)
+        let storeProduct = StoreProduct.from(product: sk2Product)
+
+        // Can't use `===` because `SK2Product` is a `struct`
+        expect(storeProduct.sk2Product) == sk2Product.underlyingSK2Product
 
         expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
