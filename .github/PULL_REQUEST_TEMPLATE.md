@@ -1,9 +1,13 @@
-Thank you for contributing to Purchases. Before pressing the "Create Pull Request" button, please provide the following:
+<!-- Thank you for contributing to Purchases! Before pressing the "Create Pull Request" button, please provide the following: -->
 
-  - [ ] A description about what and why you are contributing, even if it's trivial.
+### Checklist
+- [ ] If applicable, unit tests
+- [ ] If applicable, create follow-up issues for `purchases-android` and hybrids
 
-  - [ ] The issue number(s) or PR number(s) in the description if you are contributing in response to those.
+### Motivation
+<!-- Why is this change required? What problem does it solve? -->
+<!-- Please link to issues following this format: Resolves #999999 -->
 
-  - [ ] If applicable, unit tests.
-  
-  - [ ] If applicable, create follow-up tickets for `purchases-android` and hybrids.
+### Description
+<!-- Describe your changes in detail -->
+<!-- Please describe in detail how you tested your changes -->
