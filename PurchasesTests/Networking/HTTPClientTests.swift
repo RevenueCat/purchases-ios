@@ -919,13 +919,15 @@ class HTTPClientTests: XCTestCase {
     func testErrorIsLoggedWhenGETRequestFailedWithDNSError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
+        let host = "https://0.0.0.0/subscribers"
         MockDNSChecker.stubbedIsBlockedAPIErrorResult = true
-        MockDNSChecker.stubbedBlockedHostFromErrorResult = "https://0.0.0.0/subscribers"
+        MockDNSChecker.stubbedBlockedHostFromErrorResult = host
+        let expectedMessage = "\(LogIntent.rcError.prefix) \(NetworkStrings.blocked_network(newHost: host))"
 
-        var logHandlerIsCalled = false
+        var loggedMessages = [String]()
         let originalLogHandler = Logger.logHandler
-        Logger.logHandler = { _, _, _, _, _ in
-            logHandlerIsCalled = true
+        Logger.logHandler = { _, message, _, _, _ in
+            loggedMessages.append(message)
         }
 
         stub(condition: isPath("/v1" + path)) { _ in
@@ -943,19 +945,20 @@ class HTTPClientTests: XCTestCase {
 
         expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
         expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(true))
-        expect(logHandlerIsCalled).toEventually(equal(true))
+        expect(loggedMessages).toEventually(contain(expectedMessage))
         Logger.logHandler = originalLogHandler
     }
 
     func testErrorIsntLoggedWhenGETRequestFailedWithUnknownError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
+        let unexpectedMessage = "\(LogIntent.rcError.prefix) \(NetworkStrings.blocked_network(newHost: "0.0.0.0"))"
         MockDNSChecker.stubbedIsBlockedAPIErrorResult = false
 
-        var logHandlerIsCalled = false
+        var loggedMessages = [String]()
         let originalLogHandler = Logger.logHandler
-        Logger.logHandler = { _, _, _, _, _ in
-            logHandlerIsCalled = true
+        Logger.logHandler = { _, message, _, _, _ in
+            loggedMessages.append(message)
         }
 
         stub(condition: isPath("/v1" + path)) { _ in
@@ -973,7 +976,7 @@ class HTTPClientTests: XCTestCase {
 
         expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
         expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(false))
-        expect(logHandlerIsCalled).toEventually(equal(false))
+        expect(loggedMessages).toNotEventually(contain(unexpectedMessage))
         Logger.logHandler = originalLogHandler
     }
 
