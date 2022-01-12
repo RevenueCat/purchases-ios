@@ -19,7 +19,6 @@ extension NSDate {
     func rc_millisecondsSince1970AsUInt64() -> UInt64 {
         return UInt64(self.timeIntervalSince1970 * 1000.0)
     }
-
 }
 
 extension Date {
@@ -28,4 +27,19 @@ extension Date {
         return UInt64(self.timeIntervalSince1970 * 1000.0)
     }
 
+    // swiftlint:disable:next function_parameter_count
+    static func from(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) throws -> Date {
+        let calendar = Calendar(identifier: .gregorian)
+        var dateComponents = DateComponents()
+        dateComponents.year = year
+        dateComponents.month = month
+        dateComponents.day = day
+        dateComponents.hour = hour
+        dateComponents.minute = minute
+        dateComponents.second = second
+        guard let date = calendar.date(from: dateComponents) else {
+            throw DateExtensionsError.invalidDateComponents(dateComponents)
+        }
+        return date
+    }
 }

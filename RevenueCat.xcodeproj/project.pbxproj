@@ -74,7 +74,7 @@
 		2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597020F24BF6A710010506E /* TransactionsFactory.swift */; };
 		2DD9F4BE274EADC20031AE2C /* Purchases+async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */; };
 		2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E8DCF998D9DB63850F8 /* ProductsRequestFactory.swift */; };
-		2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */; };
+		2DDF419724F6F331005BC22D /* DateExtensionsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3567189CF6A746EE3CCC2 /* DateExtensionsError.swift */; };
 		2DDF419D24F6F331005BC22D /* IntroEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */; };
 		2DDF419F24F6F331005BC22D /* ReceiptParsingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8F622224D30F9D00F993AA /* ReceiptParsingError.swift */; };
 		2DDF41A224F6F331005BC22D /* ProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C7060D7E486F5958BED /* ProductsManager.swift */; };
@@ -530,7 +530,7 @@
 		37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroEligibilityCalculatorTests.swift; sourceTree = "<group>"; };
 		37E354FE32DD3EA3FF3ECD0A /* AttributionPosterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttributionPosterTests.swift; sourceTree = "<group>"; };
 		37E355744D64075AA91342DE /* MockInAppPurchaseBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockInAppPurchaseBuilder.swift; sourceTree = "<group>"; };
-		37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
+		37E3567189CF6A746EE3CCC2 /* DateExtensionsError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateExtensionsError.swift; sourceTree = "<group>"; };
 		37E3567E972B9B04FE079ABA /* SubscriberAttributesManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManagerTests.swift; sourceTree = "<group>"; };
 		37E357C2D977BBB081216B5F /* OfferingsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsTests.swift; sourceTree = "<group>"; };
 		37E357D16038F07915D7825D /* MockUserDefaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockUserDefaults.swift; sourceTree = "<group>"; };
@@ -906,7 +906,7 @@
 			isa = PBXGroup;
 			children = (
 				57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */,
-				37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */,
+				37E3567189CF6A746EE3CCC2 /* DateExtensionsError.swift */,
 				0313FD40268A506400168386 /* DateProvider.swift */,
 				2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */,
 				B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */,
@@ -1646,7 +1646,7 @@
 			mainGroup = 352629F41F7C4B9100C04F2C;
 			packageReferences = (
 				2D803F6126F144830069D717 /* XCRemoteSwiftPackageReference "nimble" */,
-				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
+				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */,
 				57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
@@ -1840,7 +1840,7 @@
 				B302206C2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift in Sources */,
 				2D4E926526990AB1000E10B0 /* StoreKitWrapper.swift in Sources */,
 				2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */,
-				2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */,
+				2DDF419724F6F331005BC22D /* DateExtensionsError.swift in Sources */,
 				9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */,
 				57EAE52B274332830060EB74 /* Obsoletions.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
@@ -2710,7 +2710,7 @@
 				kind = branch;
 			};
 		};
-		2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */ = {
+		2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AliSoftware/OHHTTPStubs.git";
 			requirement = {
@@ -2746,22 +2746,22 @@
 		};
 		2D9C5ED026F2816F0057FC45 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
 			productName = OHHTTPStubs;
 		};
 		2D9C5ED226F2816F0057FC45 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
 			productName = OHHTTPStubsSwift;
 		};
 		2D9C5ED426F281750057FC45 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
 			productName = OHHTTPStubs;
 		};
 		2D9C5ED626F281750057FC45 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
 			productName = OHHTTPStubsSwift;
 		};
 		57E0473A277260DE0082FE91 /* SnapshotTesting */ = {
