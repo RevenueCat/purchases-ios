@@ -22,7 +22,8 @@ extension UIApplication {
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
     @available(tvOS, unavailable)
-    var currentWindowScene: UIWindowScene? {
+    // swiftlint:disable:next identifier_name
+    var rc_currentWindowScene: UIWindowScene? {
         let windowScene = self
             .connectedScenes
             .filter { $0.activationState == .foregroundActive }

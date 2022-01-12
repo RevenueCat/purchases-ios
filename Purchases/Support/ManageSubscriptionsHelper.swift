@@ -122,7 +122,7 @@ private extension ManageSubscriptionsHelper {
     @available(macOS, unavailable)
     func showSK2ManageSubscriptions() async -> Result<Void, Error> {
         guard let application = systemInfo.sharedUIApplication,
-              let windowScene = application.currentWindowScene else {
+              let windowScene = application.rc_currentWindowScene else {
                   let message = Strings.failed_to_get_window_scene
                   return .failure(ErrorUtils.storeProblemError(withMessage: message.description))
         }
