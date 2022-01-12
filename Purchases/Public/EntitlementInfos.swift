@@ -58,7 +58,7 @@ import Foundation
         self.init(entitlementsData: entitlementsData,
                   purchasesData: purchasesData,
                   requestDate: requestDate,
-                  dateFormatter: ISO8601DateFormatter.default)
+                  dateFormatter: ISO8601DateFormatter.rc_default)
     }
 
     init(entitlementsData: [String: Any]?,

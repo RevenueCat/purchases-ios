@@ -27,7 +27,7 @@ extension ISO8601DateFormatter: DateFormatterType {}
 
 extension DateFormatterType {
 
-    func date(from maybeDateString: String?) -> Date? {
+    func rc_date(from maybeDateString: String?) -> Date? {
         guard let dateString = maybeDateString else { return nil }
         return date(from: dateString)
     }
@@ -38,7 +38,7 @@ extension ISO8601DateFormatter {
 
     /// This behaves like a traditional `DateFormatter` with format
     /// `yyyy-MM-dd'T'HH:mm:ssZ"`, so milliseconds are optional.
-    static let `default`: DateFormatterType = {
+    static let rc_default: DateFormatterType = {
         final class Formatter: DateFormatterType {
             func date(from string: String) -> Date? {
                 return ISO8601DateFormatter.withMilliseconds.date(from: string)

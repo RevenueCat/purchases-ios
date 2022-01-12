@@ -170,7 +170,7 @@ import Foundation
 
     convenience init(data: [String: Any]) throws {
         try self.init(data: data,
-                      dateFormatter: ISO8601DateFormatter.default)
+                      dateFormatter: ISO8601DateFormatter.rc_default)
     }
 
     init(data: [String: Any], dateFormatter: DateFormatterType) throws {

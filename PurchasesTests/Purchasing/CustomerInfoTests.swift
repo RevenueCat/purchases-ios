@@ -756,7 +756,7 @@ extension CustomerInfo {
     convenience init?(testData: [String: Any]) {
         do {
             try self.init(data: testData,
-                          dateFormatter: ISO8601DateFormatter.default)
+                          dateFormatter: ISO8601DateFormatter.rc_default)
         } catch {
             let errorDescription = (error as? DescribableError)?.description ?? error.localizedDescription
             Logger.error("Caught error creating testData, this is probably expected, right? \(errorDescription).")

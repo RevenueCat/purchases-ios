@@ -48,7 +48,7 @@ class DateFormatterExtensionTests: XCTestCase {
                                             second: 40,
                                             nanosecond: 202_000_000)
 
-        let result = try XCTUnwrap(ISO8601DateFormatter.default.date(from: "2020-07-14T19:36:40.202Z"))
+        let result = try XCTUnwrap(ISO8601DateFormatter.rc_default.date(from: "2020-07-14T19:36:40.202Z"))
         let expected = try XCTUnwrap(Calendar.current.date(from: dateComponents))
 
         expect(result.timeIntervalSince1970).to(beCloseTo(expected.timeIntervalSince1970))
@@ -65,7 +65,7 @@ class DateFormatterExtensionTests: XCTestCase {
                                             second: 40,
                                             nanosecond: 0)
 
-        let result = try XCTUnwrap(ISO8601DateFormatter.default.date(from: "2020-07-14T19:36:40Z"))
+        let result = try XCTUnwrap(ISO8601DateFormatter.rc_default.date(from: "2020-07-14T19:36:40Z"))
         let expected = try XCTUnwrap(Calendar.current.date(from: dateComponents))
 
         expect(result.timeIntervalSince1970).to(beCloseTo(expected.timeIntervalSince1970))
@@ -90,8 +90,8 @@ class DateFormatterExtensionTests: XCTestCase {
     }
 
     func testDateFromStringReturnsNilIfStringIsNil() {
-        expect(DateFormatter().date(from: nil)).to(beNil())
-        expect(ISO8601DateFormatter().date(from: nil)).to(beNil())
+        expect(DateFormatter().rc_date(from: nil)).to(beNil())
+        expect(ISO8601DateFormatter().rc_date(from: nil)).to(beNil())
     }
 
 }
