@@ -19,7 +19,7 @@ extension PeriodType: Decodable {
         let container = try decoder.singleValueContainer()
         guard let periodTypeString = try? container.decode(String.self) else {
             throw decoder.rc_throwValueNotFoundError(expectedType: PeriodType.self,
-                                                  message: "Unable to extract a periodTypeString")
+                                                     message: "Unable to extract a periodTypeString")
         }
 
         switch periodTypeString {

@@ -371,7 +371,7 @@ private extension CustomerInfo {
             extraContext = "first_seen is: \(firstSeen)"
         }
         return CustomerInfoError.cantInstantiateJsonObject.rc_addingUnderlyingError(subscriberDataError,
-                                                                                 extraContext: extraContext)
+                                                                                    extraContext: extraContext)
     }
 
     func activeKeys(dates: [String: Date?]) -> Set<String> {

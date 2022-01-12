@@ -21,21 +21,19 @@ extension String {
     }
 
     /// Returns `nil` if `self` is an empty string.
-    // swiftlint:disable:next identifier_name
-    var rc_notEmpty: String? {
+    var rc_notEmpty: String? { // swiftlint:disable:this identifier_name
         return self.isEmpty
         ? nil
         : self
     }
 
     /// Returns `nil` if `self` is an empty string or it only contains whitespaces.
-    // swiftlint:disable:next identifier_name
-    var rc_notEmptyOrWhitespaces: String? {
+    var rc_notEmptyOrWhitespaces: String? { // swiftlint:disable:this identifier_name
         return self.rc_trimmingWhitespacesAndNewLines.isEmpty
         ? nil
         : self
     }
-    
+
     // swiftlint:disable:next identifier_name
     var rc_trimmingWhitespacesAndNewLines: String {
         return self.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -44,8 +42,7 @@ extension String {
 
 internal extension Optional where Wrapped == String {
     /// Returns `nil` if `self` is an empty string.
-    // swiftlint:disable:next identifier_name
-    var rc_notEmpty: String? {
+    var rc_notEmpty: String? { // swiftlint:disable:this identifier_name
         return self.flatMap { $0.rc_notEmpty }
     }
 }

@@ -596,7 +596,7 @@ private extension Backend {
         } catch {
             let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
             let subError = parsingError.rc_addingUnderlyingError(error,
-                                                              extraContext: customerJson.rc_stringRepresentation)
+                                                                 extraContext: customerJson.rc_stringRepresentation)
             throw subError
         }
     }

@@ -19,7 +19,7 @@ extension PurchaseOwnershipType: Decodable {
         let container = try decoder.singleValueContainer()
         guard let purchaseOwnershipTypeString = try? container.decode(String.self) else {
             throw decoder.rc_throwValueNotFoundError(expectedType: PurchaseOwnershipType.self,
-                                                  message: "Unable to extract an purchaseOwnershipTypeString")
+                                                     message: "Unable to extract an purchaseOwnershipTypeString")
         }
 
         switch purchaseOwnershipTypeString {
