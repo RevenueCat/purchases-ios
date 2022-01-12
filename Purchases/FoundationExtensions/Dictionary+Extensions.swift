@@ -16,13 +16,13 @@ import Foundation
 
 extension Dictionary {
 
-    var stringRepresentation: String {
+    var rc_stringRepresentation: String {
         compactMap { "\($0)=\($1)" }
         .sorted()
         .joined(separator: ",")
     }
 
-    func removingNSNullValues() -> Dictionary {
+    func rc_removingNSNullValues() -> Dictionary {
         filter { !($0.value is NSNull) }
     }
 
@@ -59,7 +59,7 @@ extension Dictionary {
     ///   closure that returns the desired value for the final dictionary. The default is `overwriteValue`.
     /// - Returns: A new dictionary with the combined keys and values of this
     ///   dictionary and `other`.
-    func merging(_ other: [Key: Value], strategy: MergeStrategy<Value> = .overwriteValue) -> [Key: Value] {
+    func rc_merging(_ other: [Key: Value], strategy: MergeStrategy<Value> = .overwriteValue) -> [Key: Value] {
         merging(other, uniquingKeysWith: strategy.combine)
     }
 
@@ -72,7 +72,7 @@ extension Dictionary {
     ///   - rhs: Another dictionary to merge.
     /// - Returns: An dictionary with keys and values from both.
     static func + (lhs: [Key: Value], rhs: [Key: Value]) -> [Key: Value] {
-        lhs.merging(rhs)
+        lhs.rc_merging(rhs)
     }
 
     /// Adds values from rhs to lhs dictionary
@@ -84,7 +84,7 @@ extension Dictionary {
     ///   - rhs: Another dictionary to merge.
     /// - Returns: An dictionary with keys and values from both.
     static func += (lhs: inout [Key: Value], rhs: [Key: Value]) {
-        lhs = lhs.merging(rhs)
+        lhs = lhs.rc_merging(rhs)
     }
 
 }
@@ -93,12 +93,12 @@ extension Sequence {
 
     /// Creates a `Dictionary` with the values in the receiver sequence, and the keys provided by `key`.
     /// - Precondition: The sequence must not have duplicate keys.
-    func dictionaryWithKeys<Key>(_ key: @escaping (Element) -> Key) -> [Key: Element] {
+    func rc_dictionaryWithKeys<Key>(_ key: @escaping (Element) -> Key) -> [Key: Element] {
         Dictionary(uniqueKeysWithValues: self.lazy.map { (key($0), $0) })
     }
 
     /// Creates a `Dictionary` with the values in the receiver sequence, and the keys provided by `key`.
-    func dictionaryAllowingDuplicateKeys<Key>(_ key: @escaping (Element) -> Key) -> [Key: Element] {
+    func rc_dictionaryAllowingDuplicateKeys<Key>(_ key: @escaping (Element) -> Key) -> [Key: Element] {
         return Dictionary(
             self.lazy.map { (key($0), $0) },
             uniquingKeysWith: { (_, last) in last }

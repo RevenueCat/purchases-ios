@@ -18,7 +18,7 @@ class AttributionDataMigrator {
 
     func convertToSubscriberAttributes(attributionData: [String: Any], network: Int) -> [String: String] {
         let network = AttributionNetwork(rawValue: network)
-        let attributionData = attributionData.removingNSNullValues()
+        let attributionData = attributionData.rc_removingNSNullValues()
         var convertedAttribution: [String: String] = [:]
         if let value = attributionData[AttributionKey.idfa.rawValue] as? String {
             convertedAttribution[ReservedSubscriberAttribute.idfa.key] = value
@@ -38,7 +38,7 @@ class AttributionDataMigrator {
             attributionData: attributionData
         )
 
-        return convertedAttribution.merging(networkSpecificSubscriberAttributes)
+        return convertedAttribution.rc_merging(networkSpecificSubscriberAttributes)
     }
 
 }

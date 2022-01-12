@@ -173,7 +173,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                     completion(.failure(error))
                 }
             } else {
-                let delayInSeconds = Int((self.requestTimeout.seconds / 10).rounded())
+                let delayInSeconds = Int((self.requestTimeout.rc_seconds / 10).rounded())
 
                 queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
                     self.startRequest(forIdentifiers: productRequest.identifiers,
@@ -195,7 +195,7 @@ private extension ProductsFetcherSK1 {
 
     func cacheProducts(_ products: [SK1Product]) {
         queue.async {
-            let productsByIdentifier = products.dictionaryAllowingDuplicateKeys {
+            let productsByIdentifier = products.rc_dictionaryAllowingDuplicateKeys {
                 $0.productIdentifier
             }
 
@@ -224,7 +224,7 @@ private extension ProductsFetcherSK1 {
             request.cancel()
 
             Logger.appleError(Strings.storeKit.skproductsrequest_timed_out(
-                after: Int(self.requestTimeout.seconds.rounded())
+                after: Int(self.requestTimeout.rc_seconds.rounded())
             ))
             guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
                 Logger.error("callback not found for failing request: \(request)")

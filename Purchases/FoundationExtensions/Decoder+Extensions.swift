@@ -15,7 +15,7 @@ import Foundation
 
 extension Decoder {
 
-    func throwValueNotFoundError(expectedType: Any.Type, message: String) -> CodableError {
+    func rc_throwValueNotFoundError(expectedType: Any.Type, message: String) -> CodableError {
         let context = DecodingError.Context(codingPath: codingPath,
                                             debugDescription: message,
                                             underlyingError: nil)

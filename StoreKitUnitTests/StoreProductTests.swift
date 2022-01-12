@@ -37,10 +37,10 @@ class StoreProductTests: StoreKitConfigTestCase {
             "lifetime"
         ])
         let sk1StoreProducts = try await self.sk1Fetcher.products(withIdentifiers: productIdentifiers)
-        let sk1StoreProductsByID = sk1StoreProducts.dictionaryWithKeys { $0.productIdentifier }
+        let sk1StoreProductsByID = sk1StoreProducts.rc_dictionaryWithKeys { $0.productIdentifier }
 
         let sk2StoreProducts = try await ProductsFetcherSK2().products(identifiers: productIdentifiers)
-        let sk2StoreProductsByID = sk2StoreProducts.dictionaryWithKeys { $0.productIdentifier }
+        let sk2StoreProductsByID = sk2StoreProducts.rc_dictionaryWithKeys { $0.productIdentifier }
 
         expect(sk1StoreProducts.count) == productIdentifiers.count
         expect(sk1StoreProducts.count) == sk2StoreProducts.count

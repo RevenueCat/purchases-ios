@@ -98,7 +98,7 @@ private extension HTTPClient {
                         retried: Bool = false,
                         completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
 
-        let requestHeaders = defaultHeaders.merging(authHeaders)
+        let requestHeaders = defaultHeaders.rc_merging(authHeaders)
 
         let maybeURLRequest = createRequest(httpMethod: httpMethod,
                                             path: path,
@@ -271,7 +271,7 @@ private extension HTTPClient {
         urlRequest.httpMethod = httpMethod
 
         let eTagHeader = eTagManager.eTagHeader(for: urlRequest, refreshETag: refreshETag)
-        let headersWithETag = headers.merging(eTagHeader)
+        let headersWithETag = headers.rc_merging(eTagHeader)
 
         urlRequest.allHTTPHeaderFields = headersWithETag
 

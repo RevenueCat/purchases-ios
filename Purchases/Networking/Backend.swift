@@ -218,7 +218,7 @@ class Backend {
             guard let offers = response["offers"] as? [[String: Any]] else {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdBadResponse
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
-                                                                 extraContext: response.stringRepresentation)
+                                                                 extraContext: response.rc_stringRepresentation)
                 Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
                 completion(nil, nil, nil, nil, error)
                 return
@@ -596,7 +596,7 @@ private extension Backend {
         } catch {
             let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
             let subError = parsingError.addingUnderlyingError(error,
-                                                              extraContext: customerJson.stringRepresentation)
+                                                              extraContext: customerJson.rc_stringRepresentation)
             throw subError
         }
     }
@@ -659,7 +659,7 @@ private extension Backend {
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
             if let maybeCustomerInfoError = maybeCustomerInfoError {
                 responseError = maybeCustomerInfoError
-                    .addingUnderlyingError(responseError, extraContext: maybeResponse?.stringRepresentation)
+                    .addingUnderlyingError(responseError, extraContext: maybeResponse?.rc_stringRepresentation)
             }
 
             completion(maybeCustomerInfo, responseError)

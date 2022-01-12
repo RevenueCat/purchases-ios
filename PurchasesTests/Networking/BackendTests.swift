@@ -1288,7 +1288,7 @@ class BackendTests: XCTestCase {
             "currency": currencyCode,
             "subscription_group_id": group
         ]
-        let bodyWithOffers = body.merging([
+        let bodyWithOffers = body.rc_merging([
             "offers": [
                 "offer_identifier": "offerid",
                 "price": 12,

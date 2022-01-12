@@ -18,7 +18,7 @@ extension DispatchTimeInterval {
 
     /// `DispatchTimeInterval` can only be used by specifying a unit of time.
     /// This allows us to easily convert any `DispatchTimeInterval` into seconds.
-    var seconds: Double {
+    var rc_seconds: Double {
         switch self {
         case let .seconds(seconds): return Double(seconds)
         case let .milliseconds(ms): return Double(ms) / 1000

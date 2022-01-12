@@ -70,7 +70,7 @@ private extension ProductsFetcherSK2 {
         let storeFrontIdentifier = await self.invalidateOutdatedProductsIfNeeded()
 
         self.cachedProductsStorefrontIdentifier = storeFrontIdentifier
-        self.cachedProductsByIdentifier += products.dictionaryWithKeys {
+        self.cachedProductsByIdentifier += products.rc_dictionaryWithKeys {
             $0.productIdentifier
         }
     }

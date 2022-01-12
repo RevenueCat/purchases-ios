@@ -428,7 +428,7 @@ private extension DeviceCache {
                 forKey: CacheKeyBases.legacySubscriberAttributes + appUserID) ?? [:]
             let existingAttributes = Self.subscriberAttributes(userDefaults,
                                                                appUserID: appUserID)
-            let allAttributesForUser = legacyAttributes.merging(existingAttributes)
+            let allAttributesForUser = legacyAttributes.rc_merging(existingAttributes)
             attributesInNewFormat[appUserID] = allAttributesForUser
 
             let legacyAttributesKey = CacheKeyBases.legacySubscriberAttributes + appUserID

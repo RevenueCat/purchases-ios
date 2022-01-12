@@ -24,7 +24,7 @@ class DictionaryExtensionsTests: XCTestCase {
             "type": 1
         ]
 
-        let obtainedValues = testValues.removingNSNullValues()
+        let obtainedValues = testValues.rc_removingNSNullValues()
 
         expect(obtainedValues.count) == expectedValues.count
         for (key, value) in obtainedValues {
@@ -35,7 +35,7 @@ class DictionaryExtensionsTests: XCTestCase {
     func testRemovingNSNullValuesReturnsEmptyIfOriginalIsEmpty() {
         let testValues: [String: Any] = [:]
 
-        let obtainedValues = testValues.removingNSNullValues()
+        let obtainedValues = testValues.rc_removingNSNullValues()
 
         expect(obtainedValues.count) == testValues.count
         for (key, value) in obtainedValues {
@@ -48,7 +48,7 @@ class DictionaryExtensionsTests: XCTestCase {
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "1", "b": "1", "c": "2"]
 
-        let obtainedDict = dict.merging(dict2, strategy: .keepOriginalValue)
+        let obtainedDict = dict.rc_merging(dict2, strategy: .keepOriginalValue)
 
         expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
         expect(obtainedDict).to(equal(expectedDict))
@@ -59,7 +59,7 @@ class DictionaryExtensionsTests: XCTestCase {
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "2", "b": "2", "c": "2"]
 
-        let obtainedDict = dict.merging(dict2, strategy: .overwriteValue)
+        let obtainedDict = dict.rc_merging(dict2, strategy: .overwriteValue)
 
         expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
         expect(obtainedDict).to(equal(expectedDict))
@@ -70,7 +70,7 @@ class DictionaryExtensionsTests: XCTestCase {
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "2", "b": "2", "c": "2"]
 
-        let obtainedDict = dict.merging(dict2)
+        let obtainedDict = dict.rc_merging(dict2)
 
         expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
         expect(obtainedDict).to(equal(expectedDict))
@@ -99,17 +99,17 @@ class DictionaryExtensionsTests: XCTestCase {
     }
 
     func testCreatingDictionaryWithNoValues() {
-        expect([String]().dictionaryWithKeys { $0 }) == [:]
+        expect([String]().rc_dictionaryWithKeys { $0 }) == [:]
     }
 
     func testCreatingDictionaryAllowingDuplicateKeysWithNoValues() {
-        expect([String]().dictionaryAllowingDuplicateKeys { $0 }) == [:]
+        expect([String]().rc_dictionaryAllowingDuplicateKeys { $0 }) == [:]
     }
 
     func testCreatingDictionaryWithOneItem() {
         let values = ["1"]
 
-        expect(values.dictionaryWithKeys { Int($0)! }) == [
+        expect(values.rc_dictionaryWithKeys { Int($0)! }) == [
             1: "1"
         ]
     }
@@ -117,7 +117,7 @@ class DictionaryExtensionsTests: XCTestCase {
     func testCreatingDictionaryWithMultipleValues() {
         let values = ["1", "2", "3"]
 
-        expect(values.dictionaryWithKeys { Int($0)! + 1 }) == [
+        expect(values.rc_dictionaryWithKeys { Int($0)! + 1 }) == [
             2: "1",
             3: "2",
             4: "3"
@@ -127,7 +127,7 @@ class DictionaryExtensionsTests: XCTestCase {
     func testCreatingDictionaryWithDuplicateKeys() {
         let values = ["1", "2", "3", "2"]
 
-        expect(values.dictionaryAllowingDuplicateKeys { Int($0)! }) == [
+        expect(values.rc_dictionaryAllowingDuplicateKeys { Int($0)! }) == [
             1: "1",
             2: "2",
             3: "3"

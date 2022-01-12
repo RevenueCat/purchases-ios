@@ -219,7 +219,7 @@ import Foundation
     static let currentSchemaVersion = "2"
 
     func jsonObject() -> [String: Any] {
-        return rawData.merging(
+        return rawData.rc_merging(
             ["schema_version": CustomerInfo.currentSchemaVersion],
             strategy: .keepOriginalValue
         )
@@ -319,7 +319,7 @@ import Foundation
                 })
 
             self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
-                .merging(subscriptionTransactionsByProductId, strategy: .keepOriginalValue)
+                .rc_merging(subscriptionTransactionsByProductId, strategy: .keepOriginalValue)
 
             self.allPurchases = latestNonSubscriptionTransactionsByProductId
                 .merging(subscriptionTransactionsByProductId) { (current, _) in current }
