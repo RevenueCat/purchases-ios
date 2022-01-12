@@ -55,7 +55,7 @@ internal struct SK1StoreProduct: StoreProductType {
     }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    var introductoryStoreProductDiscount: StoreProductDiscount? {
+    var introductoryDiscount: StoreProductDiscount? {
         return self.underlyingSK1Product.introductoryPrice
             .map(StoreProductDiscount.init)
     }

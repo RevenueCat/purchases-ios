@@ -18,12 +18,12 @@ func checkStoreProductAPI() {
     let subscriptionGroupIdentifier: String? = product.subscriptionGroupIdentifier
     let priceFormatter: NumberFormatter? = product.priceFormatter
     let subscriptionPeriod: SubscriptionPeriod? = product.subscriptionPeriod
-    let introductoryPrice: StoreProductDiscount? = product.introductoryStoreProductDiscount
+    let introductoryPrice: StoreProductDiscount? = product.introductoryDiscount
     let discounts: [StoreProductDiscount] = product.discounts
 
     let pricePerMonth: NSDecimalNumber? = product.pricePerMonth
-    let localizedIntroductoryStoreProductDiscountString: String? =
-        product.localizedIntroductoryStoreProductDiscountString
+    let localizedIntroductoryPriceString: String? =
+        product.localizedIntroductoryPriceString
     let sk1Product: SK1Product? = product.sk1Product
     let sk2Product: SK2Product? = product.sk2Product
 
@@ -41,7 +41,7 @@ func checkStoreProductAPI() {
         introductoryPrice!,
         discounts,
         pricePerMonth!,
-        localizedIntroductoryStoreProductDiscountString!,
+        localizedIntroductoryPriceString!,
         sk1Product!,
         sk2Product!
     )

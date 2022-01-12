@@ -102,7 +102,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.subscriptionPeriod?.unit) == .month
         expect(storeProduct.subscriptionPeriod?.value) == 1
 
-        let intro = try XCTUnwrap(storeProduct.introductoryStoreProductDiscount)
+        let intro = try XCTUnwrap(storeProduct.introductoryDiscount)
 
         expect(intro.price) == 0.0
         expect(intro.paymentMode) == .freeTrial
@@ -154,7 +154,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.subscriptionPeriod?.unit) == .month
         expect(storeProduct.subscriptionPeriod?.value) == 1
 
-        let intro = try XCTUnwrap(storeProduct.introductoryStoreProductDiscount)
+        let intro = try XCTUnwrap(storeProduct.introductoryDiscount)
 
         expect(intro.price) == 0.0
         expect(intro.paymentMode) == .freeTrial
@@ -294,10 +294,10 @@ class StoreProductTests: StoreKitConfigTestCase {
             expect(productA.subscriptionPeriod) == productB.subscriptionPeriod
         }
 
-        if productA.introductoryStoreProductDiscount == nil {
-            expect(productB.introductoryStoreProductDiscount).to(beNil())
+        if productA.introductoryDiscount == nil {
+            expect(productB.introductoryDiscount).to(beNil())
         } else {
-            expect(productA.introductoryStoreProductDiscount) == productB.introductoryStoreProductDiscount
+            expect(productA.introductoryDiscount) == productB.introductoryDiscount
         }
 
         if productA.subscriptionGroupIdentifier == nil {

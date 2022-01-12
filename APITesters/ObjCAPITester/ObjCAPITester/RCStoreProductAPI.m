@@ -23,10 +23,10 @@
     NSString *subscriptionGroupIdentifier = product.subscriptionGroupIdentifier;
     NSNumberFormatter *priceFormatter = product.priceFormatter;
     RCSubscriptionPeriod *subscriptionPeriod = product.subscriptionPeriod;
-    RCStoreProductDiscount *introductoryPrice = product.introductoryStoreProductDiscount;
+    RCStoreProductDiscount *introductoryPrice = product.introductoryDiscount;
     NSArray<RCStoreProductDiscount *> *discounts = product.discounts;
     NSDecimalNumber *pricePerMonth = product.pricePerMonth;
-    NSString *localizedIntroductoryStoreProductDiscountString = product.localizedIntroductoryStoreProductDiscountString;
+    NSString *localizedIntroductoryPriceString = product.localizedIntroductoryPriceString;
 
     SKProduct *sk1 = product.sk1Product;
 
@@ -44,7 +44,7 @@
           introductoryPrice,
           discounts,
           pricePerMonth,
-          localizedIntroductoryStoreProductDiscountString,
+          localizedIntroductoryPriceString,
           sk1
       );
 }

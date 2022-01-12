@@ -24,7 +24,7 @@
     NSString *i = p.identifier;
     RCPackageType t = p.packageType;
     NSString *lps = p.localizedPriceString;
-    NSString *lips = p.localizedIntroductoryStoreProductDiscountString;
+    NSString *lips = p.localizedIntroductoryPriceString;
 
     NSLog(p, storeProduct, i, t, lps, lips);
 }
