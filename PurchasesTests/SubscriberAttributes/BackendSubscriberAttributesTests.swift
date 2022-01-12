@@ -74,11 +74,11 @@ class BackendSubscriberAttributesTests: XCTestCase {
         let expectedBody: [String: [String: NSObject]] = [
             "attributes": [
                 subscriberAttribute1.key: [
-                    "updated_at_ms": (subscriberAttribute1.setTime as NSDate).millisecondsSince1970AsUInt64(),
+                    "updated_at_ms": (subscriberAttribute1.setTime as NSDate).rc_millisecondsSince1970AsUInt64(),
                     "value": subscriberAttribute1.value
                 ] as NSObject,
                 subscriberAttribute2.key: [
-                    "updated_at_ms": (subscriberAttribute2.setTime as NSDate).millisecondsSince1970AsUInt64(),
+                    "updated_at_ms": (subscriberAttribute2.setTime as NSDate).rc_millisecondsSince1970AsUInt64(),
                     "value": subscriberAttribute2.value
                 ] as NSObject
             ]
@@ -308,11 +308,11 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let expectedBody: [String: NSObject] = [
             subscriberAttribute1.key: [
-                "updated_at_ms": (subscriberAttribute1.setTime as NSDate).millisecondsSince1970AsUInt64(),
+                "updated_at_ms": (subscriberAttribute1.setTime as NSDate).rc_millisecondsSince1970AsUInt64(),
                 "value": subscriberAttribute1.value
             ] as NSObject,
             subscriberAttribute2.key: [
-                "updated_at_ms": (subscriberAttribute2.setTime as NSDate).millisecondsSince1970AsUInt64(),
+                "updated_at_ms": (subscriberAttribute2.setTime as NSDate).rc_millisecondsSince1970AsUInt64(),
                 "value": subscriberAttribute2.value
             ] as NSObject
         ]

@@ -51,7 +51,7 @@ class SubscriberAttributesManager {
     }
 
     func setPushToken(_ maybePushToken: Data?, appUserID: String) {
-        let maybePushTokenString = maybePushToken?.asString
+        let maybePushTokenString = maybePushToken?.rc_asString
         setPushTokenString(maybePushTokenString, appUserID: appUserID)
     }
 

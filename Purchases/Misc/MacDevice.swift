@@ -24,7 +24,7 @@ enum MacDevice {
     // be used to validate receipts.
     // https://developer.apple.com/documentation/appstorereceipts/validating_receipts_on_the_device
     static var identifierForVendor: UUID? {
-        networkInterfaceMacAddressData?.uuid
+        networkInterfaceMacAddressData?.rc_uuid
     }
 
     static var networkInterfaceMacAddressData: Data? {

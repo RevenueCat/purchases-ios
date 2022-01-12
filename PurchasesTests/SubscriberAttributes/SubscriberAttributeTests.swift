@@ -56,6 +56,6 @@ class SubscriberAttributeTests: XCTestCase {
 
         expect(receivedDictionary["value"] as? String) == value
         let updatedAtEpoch = try XCTUnwrap((receivedDictionary["updated_at_ms"] as? NSNumber)?.uint64Value)
-        expect(updatedAtEpoch) == (now as NSDate).millisecondsSince1970AsUInt64()
+        expect(updatedAtEpoch) == (now as NSDate).rc_millisecondsSince1970AsUInt64()
     }
 }

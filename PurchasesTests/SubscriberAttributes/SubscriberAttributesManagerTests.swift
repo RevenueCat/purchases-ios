@@ -297,7 +297,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let receivedAttribute = invokedParams.attribute
         expect(receivedAttribute.key) == "$apnsTokens"
 
-        let tokenString = (tokenData as NSData).asString()
+        let tokenString = (tokenData as NSData).rc_asString()
         expect(receivedAttribute.value) == tokenString
         expect(receivedAttribute.isSynced) == false
     }
@@ -320,7 +320,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
     func testSetPushTokenSkipsIfSameValue() {
         let tokenData = "ligai32g32ig".data(using: .utf8)!
-        let tokenString = (tokenData as NSData).asString()
+        let tokenString = (tokenData as NSData).rc_asString()
         self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$apnsTokens",
                                                                                     value: tokenString)
 
@@ -331,7 +331,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
     func testSetPushTokenOverwritesIfNewValue() {
         let tokenData = "ligai32g32ig".data(using: .utf8)!
-        let tokenString = (tokenData as NSData).asString()
+        let tokenString = (tokenData as NSData).rc_asString()
         let oldSyncTime = Date()
 
         self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$apnsTokens",

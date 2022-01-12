@@ -94,7 +94,7 @@ class Backend {
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
               completion: @escaping BackendCustomerInfoResponseHandler) {
-        let fetchToken = receiptData.asFetchToken
+        let fetchToken = receiptData.rc_asFetchToken
         var body: [String: Any] = [
             "fetch_token": fetchToken,
             "app_user_id": appUserID,
@@ -179,7 +179,7 @@ class Backend {
               receiptData: Data,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
-        let fetchToken = receiptData.asFetchToken
+        let fetchToken = receiptData.rc_asFetchToken
 
         let requestBody: [String: Any] = ["app_user_id": appUserID,
                                           "fetch_token": fetchToken,
@@ -415,7 +415,7 @@ class Backend {
             return
         }
 
-        let fetchToken = receiptData.asFetchToken
+        let fetchToken = receiptData.rc_asFetchToken
         let path = "/subscribers/\(appUserID)/intro_eligibility"
         let body: [String: Any] = ["product_identifiers": productIdentifiers,
                                    "fetch_token": fetchToken]
