@@ -55,6 +55,7 @@
         case RCSystemInfoError:
         case RCProductRequestTimedOut:
         case RCBeginRefundRequestError:
+        case RCAPIEndpointBlocked:
             NSLog(@"%ld", (long)errCode);
     }
 }

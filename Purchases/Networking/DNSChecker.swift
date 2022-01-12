@@ -15,6 +15,17 @@ import Foundation
 
 enum DNSChecker {
 
+    enum DNSError: Error, DescribableError, Equatable {
+        case blocked(failedURL: URL, resolvedHost: String?)
+
+        public var description: String {
+            switch self {
+            case .blocked(let failedURL, let resolvedHost):
+                return NetworkStrings.blocked_network(url: failedURL, newHost: resolvedHost).description
+            }
+        }
+    }
+
     static let invalidHosts = Set(["0.0.0.0", "127.0.0.1"])
 
     static func isBlockedAPIError(_ error: Error?) -> Bool {
@@ -35,12 +46,16 @@ enum DNSChecker {
         return isBlockedURL(failedURL)
     }
 
-    static func blockedHostFromError(_ error: Error?) -> String? {
-        guard let failedURL = (error as NSError?)?.userInfo[NSURLErrorFailingURLErrorKey] as? URL else {
+    static func errorWithBlockedHostFromError(_ error: Error?) -> DNSError? {
+        guard isBlockedAPIError(error),
+              let nsError = error as NSError?,
+              let failedURL = nsError.userInfo[NSURLErrorFailingURLErrorKey] as? URL else {
             return nil
         }
 
-        return resolvedHost(fromURL: failedURL)
+        let host = resolvedHost(fromURL: failedURL)
+        let blockedError = DNSError.blocked(failedURL: failedURL, resolvedHost: host)
+        return blockedError
     }
 
     static func isBlockedURL(_ url: URL) -> Bool {

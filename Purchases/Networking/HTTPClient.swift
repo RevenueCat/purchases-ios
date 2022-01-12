@@ -225,9 +225,11 @@ private extension HTTPClient {
             }
         }
 
+        var maybeNetworkError = maybeNetworkError
         if DNSChecker.isBlockedAPIError(maybeNetworkError),
-            let resolvedHost = DNSChecker.blockedHostFromError(maybeNetworkError) {
-            Logger.error(NetworkStrings.blocked_network(newHost: resolvedHost))
+            let blockedError = DNSChecker.errorWithBlockedHostFromError(maybeNetworkError) {
+            Logger.error(blockedError.description)
+            maybeNetworkError = blockedError
         }
 
         if let httpResponse = maybeHTTPResponse,
