@@ -16,7 +16,7 @@ import Foundation
 
 extension Dictionary {
 
-    // swiflint:disable:next identifier_name
+    // swiftlint:disable:next identifier_name
     var rc_stringRepresentation: String {
         compactMap { "\($0)=\($1)" }
         .sorted()

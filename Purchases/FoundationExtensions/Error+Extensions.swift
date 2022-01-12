@@ -40,6 +40,7 @@ extension Error {
 
 extension NSError {
 
+    // swiftlint:disable:next identifier_name
     var rc_successfullySynced: Bool {
         if code == ErrorCode.networkError.rawValue {
             return false
@@ -52,6 +53,7 @@ extension NSError {
         return false
     }
 
+    // swiftlint:disable:next identifier_name
     var rc_subscriberAttributesErrors: [String: String]? {
         return userInfo[Backend.RCAttributeErrorsKey as String] as? [String: String]
     }
