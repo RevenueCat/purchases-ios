@@ -13,7 +13,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
     func testSuccessfullySyncedFalseIfCodeIsNetworkError() {
         let errorCode = ErrorCode.networkError.rawValue
         let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
-        expect(error.successfullySynced) == false
+        expect(error.rc_successfullySynced) == false
     }
 
     func testSuccessfullySyncedFalseIfNotShouldMarkSynced() {
@@ -23,13 +23,13 @@ class NSErrorRCExtensionsTests: XCTestCase {
             code: errorCode,
             userInfo: [Backend.RCSuccessfullySyncedKey as String: false]
         )
-        expect(error.successfullySynced) == false
+        expect(error.rc_successfullySynced) == false
     }
 
     func testSuccessfullySyncedFalseIfShouldMarkSyncedNotPresent() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
-        expect(error.successfullySynced) == false
+        expect(error.rc_successfullySynced) == false
     }
 
     func testSuccessfullySyncedTrueIfShouldMarkSynced() {
@@ -39,7 +39,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
             code: errorCode,
             userInfo: [Backend.RCSuccessfullySyncedKey as String: true]
         )
-        expect(error.successfullySynced) == true
+        expect(error.rc_successfullySynced) == true
     }
 
     func testSubscriberAttributesErrorsNilIfNoAttributesErrors() {
@@ -49,7 +49,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
             code: errorCode,
             userInfo: [Backend.RCSuccessfullySyncedKey as String: true]
         )
-        expect(error.subscriberAttributesErrors).to(beNil())
+        expect(error.rc_subscriberAttributesErrors).to(beNil())
     }
 
     func testSubscriberAttributesErrorsReturnsAttributesErrorsInUserInfo() {
@@ -61,7 +61,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
             code: errorCode,
             userInfo: [Backend.RCAttributeErrorsKey as String: attributeErrors]
         )
-        expect(error.subscriberAttributesErrors).toNot(beNil())
-        expect(error.subscriberAttributesErrors) == attributeErrors
+        expect(error.rc_subscriberAttributesErrors).toNot(beNil())
+        expect(error.rc_subscriberAttributesErrors) == attributeErrors
     }
 }

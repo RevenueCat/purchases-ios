@@ -358,7 +358,7 @@ private extension CustomerInfo {
         Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberDictionary))
 
         guard let subscriberDataError = error as? SubscriberData.SubscriberDataError else {
-            return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(error)
+            return CustomerInfoError.cantInstantiateJsonObject.rc_addingUnderlyingError(error)
         }
 
         let extraContext: String?
@@ -370,7 +370,7 @@ private extension CustomerInfo {
             let firstSeen = subscriberDictionary["first_seen"] as? String ?? "missing"
             extraContext = "first_seen is: \(firstSeen)"
         }
-        return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(subscriberDataError,
+        return CustomerInfoError.cantInstantiateJsonObject.rc_addingUnderlyingError(subscriberDataError,
                                                                                  extraContext: extraContext)
     }
 

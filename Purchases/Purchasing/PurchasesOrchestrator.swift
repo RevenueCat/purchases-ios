@@ -531,10 +531,10 @@ private extension PurchasesOrchestrator {
 
     func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
         if let error = maybeError as NSError? {
-            if !error.successfullySynced {
+            if !error.rc_successfullySynced {
                 return
             }
-            Logger.error(Strings.attribution.subscriber_attributes_error(errors: error.subscriberAttributesErrors))
+            Logger.error(Strings.attribution.subscriber_attributes_error(errors: error.rc_subscriberAttributesErrors))
         }
 
         subscriberAttributesManager.markAttributesAsSynced(subscriberAttributes, appUserID: appUserID)

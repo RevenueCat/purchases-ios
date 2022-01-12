@@ -509,7 +509,7 @@ private extension Backend {
             let extraContext = "statusCode: \(statusCode)"
             let subErrorCode = UnexpectedBackendResponseSubErrorCode
                 .loginResponseDecoding
-                .addingUnderlyingError(customerInfoError)
+                .rc_addingUnderlyingError(customerInfoError)
             let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
                                                                      extraContext: extraContext)
             completion(nil, false, responseError)
@@ -595,7 +595,7 @@ private extension Backend {
             return try CustomerInfo(data: customerJson)
         } catch {
             let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
-            let subError = parsingError.addingUnderlyingError(error,
+            let subError = parsingError.rc_addingUnderlyingError(error,
                                                               extraContext: customerJson.rc_stringRepresentation)
             throw subError
         }
@@ -659,7 +659,7 @@ private extension Backend {
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
             if let maybeCustomerInfoError = maybeCustomerInfoError {
                 responseError = maybeCustomerInfoError
-                    .addingUnderlyingError(responseError, extraContext: maybeResponse?.rc_stringRepresentation)
+                    .rc_addingUnderlyingError(responseError, extraContext: maybeResponse?.rc_stringRepresentation)
             }
 
             completion(maybeCustomerInfo, responseError)

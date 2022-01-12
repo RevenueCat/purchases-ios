@@ -130,7 +130,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         let receivedNSError = receivedError! as NSError
 
         expect(receivedNSError.code) == ErrorCode.networkError.rawValue
-        expect(receivedNSError.successfullySynced) == false
+        expect(receivedNSError.rc_successfullySynced) == false
     }
 
     func testPostSubscriberAttributesCallsCompletionWithErrorInBackendErrorCase() throws {
@@ -157,7 +157,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.successfullySynced) == false
+        expect(receivedNSError.rc_successfullySynced) == false
         let successfulSyncedKey = try XCTUnwrap(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String])
         let successfulSyncedKeyBoolValue = try XCTUnwrap((successfulSyncedKey as? NSNumber)?.boolValue)
 
@@ -225,7 +225,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.successfullySynced) == true
+        expect(receivedNSError.rc_successfullySynced) == true
 
         let successfulSyncedKey = try XCTUnwrap(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String])
         let successfulSyncedKeyBoolValue = try XCTUnwrap((successfulSyncedKey as? NSNumber)?.boolValue)
@@ -268,7 +268,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.successfullySynced) == false
+        expect(receivedNSError.rc_successfullySynced) == false
 
         let successfulSyncedKey = try XCTUnwrap(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String])
         let successfulSyncedKeyBoolValue = try XCTUnwrap((successfulSyncedKey as? NSNumber)?.boolValue)
@@ -426,8 +426,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
             fail("missing receivedError")
             return
         }
-        expect(nonNilReceivedError.successfullySynced) == true
-        expect(nonNilReceivedError.subscriberAttributesErrors) == attributeErrors[Backend.RCAttributeErrorsKey]
+        expect(nonNilReceivedError.rc_successfullySynced) == true
+        expect(nonNilReceivedError.rc_subscriberAttributesErrors) == attributeErrors[Backend.RCAttributeErrorsKey]
 
         guard let underlyingError = (nonNilReceivedError as NSError).userInfo[NSUnderlyingErrorKey] as? NSError else {
             fail("Missing underlying error")
@@ -469,8 +469,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         expect(receivedError).toNot(beNil())
         guard let nonNilReceivedError = receivedError else { fatalError() }
-        expect(nonNilReceivedError.successfullySynced) == true
-        expect(nonNilReceivedError.subscriberAttributesErrors)
+        expect(nonNilReceivedError.rc_successfullySynced) == true
+        expect(nonNilReceivedError.rc_subscriberAttributesErrors)
         == attributeErrors[Backend.RCAttributeErrorsKey]
     }
 

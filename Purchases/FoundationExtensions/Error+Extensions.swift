@@ -21,7 +21,7 @@ extension Error {
      * debugging.
      * - Returns: a new error matching `self` but with the `extraContext` and `error` added.
      */
-    func addingUnderlyingError(_ maybeError: Error?, extraContext: String? = nil) -> Error {
+    func rc_addingUnderlyingError(_ maybeError: Error?, extraContext: String? = nil) -> Error {
         guard let underlyingNSError = maybeError as NSError? else {
             return self
         }
@@ -40,7 +40,7 @@ extension Error {
 
 extension NSError {
 
-    var successfullySynced: Bool {
+    var rc_successfullySynced: Bool {
         if code == ErrorCode.networkError.rawValue {
             return false
         }
@@ -52,7 +52,7 @@ extension NSError {
         return false
     }
 
-    var subscriberAttributesErrors: [String: String]? {
+    var rc_subscriberAttributesErrors: [String: String]? {
         return userInfo[Backend.RCAttributeErrorsKey as String] as? [String: String]
     }
 
