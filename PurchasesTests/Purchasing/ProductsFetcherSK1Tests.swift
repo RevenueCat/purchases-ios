@@ -98,7 +98,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
             receivedProducts = products
         }
         expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout + .seconds(1))
-        expect(receivedProducts?.error).toNot(beNil())
+        expect(receivedProducts?.rc_error).toNot(beNil())
     }
 
     func testCacheProductCachesCorrectly() {
@@ -144,7 +144,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
         expect(completionCallCount).toEventually(equal(1),
                                                  timeout: productsRequestResponseTime + .seconds(1))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
-        let error = try XCTUnwrap(maybeReceivedProducts?.error as? ErrorCode)
+        let error = try XCTUnwrap(maybeReceivedProducts?.rc_error as? ErrorCode)
         expect(error) == ErrorCode.productRequestTimedOut
         expect(request.cancelCalled) == true
     }

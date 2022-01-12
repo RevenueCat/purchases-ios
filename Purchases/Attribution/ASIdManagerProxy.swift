@@ -37,14 +37,14 @@ class ASIdManagerProxy {
         // It looks like during the app review process Apple does some string matching looking for
         // functions in the AdSupport.framework. We apply rot13 on these functions and classes names
         // so that Apple can't find them during the review, but we can still access them on runtime.
-        NSClassFromString(Self.mangledIdentifierClassName.rot13())
+        NSClassFromString(Self.mangledIdentifierClassName.rc_rot13())
     }
 
     var adsIdentifier: UUID? {
         guard let classType: AnyClass = Self.identifierClass else {
             return nil
         }
-        return classType.sharedManager().value(forKey: Self.mangledIdentifierPropertyName.rot13()) as? UUID
+        return classType.sharedManager().value(forKey: Self.mangledIdentifierPropertyName.rc_rot13()) as? UUID
     }
 
 }

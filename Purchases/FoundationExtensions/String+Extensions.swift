@@ -16,33 +16,37 @@ import Foundation
 
 extension String {
 
-    func rot13() -> String {
+    func rc_rot13() -> String {
         ROT13.string(self)
     }
 
     /// Returns `nil` if `self` is an empty string.
-    var notEmpty: String? {
+    // swiftlint:disable:next identifier_name
+    var rc_notEmpty: String? {
         return self.isEmpty
         ? nil
         : self
     }
 
     /// Returns `nil` if `self` is an empty string or it only contains whitespaces.
-    var notEmptyOrWhitespaces: String? {
-        return self.trimmingWhitespacesAndNewLines.isEmpty
+    // swiftlint:disable:next identifier_name
+    var rc_notEmptyOrWhitespaces: String? {
+        return self.rc_trimmingWhitespacesAndNewLines.isEmpty
         ? nil
         : self
     }
-
-    var trimmingWhitespacesAndNewLines: String {
+    
+    // swiftlint:disable:next identifier_name
+    var rc_trimmingWhitespacesAndNewLines: String {
         return self.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
 internal extension Optional where Wrapped == String {
     /// Returns `nil` if `self` is an empty string.
-    var notEmpty: String? {
-        return self.flatMap { $0.notEmpty }
+    // swiftlint:disable:next identifier_name
+    var rc_notEmpty: String? {
+        return self.flatMap { $0.rc_notEmpty }
     }
 }
 

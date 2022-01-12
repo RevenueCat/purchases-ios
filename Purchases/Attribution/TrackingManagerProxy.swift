@@ -48,11 +48,11 @@ class TrackingManagerProxy: NSObject {
         // functions in ATTrackingTransparency. We apply rot13 on these functions and classes names
         // so that Apple can't find them during the review, but we can still access them on runtime.
         // To be clear, we will NOT try to improperly access idfa.
-        NSClassFromString(mangledTrackingClassName.rot13())
+        NSClassFromString(mangledTrackingClassName.rc_rot13())
     }
 
     @objc var authorizationStatusPropertyName: String {
-        Self.mangledAuthStatusPropertyName.rot13()
+        Self.mangledAuthStatusPropertyName.rc_rot13()
     }
 
     @objc func trackingAuthorizationStatus() -> Int {

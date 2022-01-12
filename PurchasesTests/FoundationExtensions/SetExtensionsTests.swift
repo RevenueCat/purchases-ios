@@ -19,13 +19,13 @@ import XCTest
 class SetExtensionsTests: XCTestCase {
 
     func testCreatingDictionaryWithEmptySet() {
-        expect(Set<String>().dictionaryWithValues { $0 }) == [:]
+        expect(Set<String>().rc_dictionaryWithValues { $0 }) == [:]
     }
 
     func testCreatingDictionaryWithOneItem() {
         let keys: Set<String> = ["1"]
 
-        expect(keys.dictionaryWithValues { Int($0)! }) == [
+        expect(keys.rc_dictionaryWithValues { Int($0)! }) == [
             "1": 1
         ]
     }
@@ -33,7 +33,7 @@ class SetExtensionsTests: XCTestCase {
     func testCreatingDictionaryWithMultipleValues() {
         let keys: Set<String> = ["1", "2", "3"]
 
-        expect(keys.dictionaryWithValues { Int($0)! + 1 }) == [
+        expect(keys.rc_dictionaryWithValues { Int($0)! + 1 }) == [
             "1": 2,
             "2": 3,
             "3": 4

@@ -12,14 +12,17 @@
 //  Created by Nacho Soto on 12/1/21.
 
 extension Result {
-    var value: Success? {
+
+    // swiftlint:disable:next identifier_name
+    var rc_value: Success? {
         switch self {
         case let .success(value): return value
         case .failure: return nil
         }
     }
 
-    var error: Failure? {
+    // swiftlint:disable:next identifier_name
+    var rc_error: Failure? {
         switch self {
         case .success: return nil
         case let .failure(error): return error

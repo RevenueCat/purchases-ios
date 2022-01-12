@@ -41,7 +41,7 @@ class AfficheClientProxy {
     private static let mangledClassName = "NQPyvrag"
 
     static var afficheClientClass: AnyClass? {
-        NSClassFromString(Self.mangledClassName.rot13())
+        NSClassFromString(Self.mangledClassName.rc_rot13())
     }
 
     func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {

@@ -15,7 +15,7 @@ import Foundation
 
 extension Set {
     /// Creates a `Dictionary` with the keys in the receiver `Set`, and the values provided by `value`.
-    func dictionaryWithValues<Value>(_ value: @escaping (Element) -> Value) -> [Element: Value] {
+    func rc_dictionaryWithValues<Value>(_ value: @escaping (Element) -> Value) -> [Element: Value] {
         return Dictionary(uniqueKeysWithValues: self.lazy.map { ($0, value($0)) })
     }
 }

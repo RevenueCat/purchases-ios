@@ -24,14 +24,14 @@ extension SK1Product {
                                   functionName: String = #function,
                                   line: UInt = #line) -> String? {
         if let identifierFromProduct = self.productIdentifier as String?,
-           !identifierFromProduct.trimmingWhitespacesAndNewLines.isEmpty {
+           !identifierFromProduct.rc_trimmingWhitespacesAndNewLines.isEmpty {
             return identifierFromProduct
         }
         Logger.appleWarning(Strings.purchase.product_identifier_nil,
                             fileName: fileName, functionName: functionName, line: line)
 
         if let identifierFromPayment = payment.productIdentifier as String?,
-           !identifierFromPayment.trimmingWhitespacesAndNewLines.isEmpty {
+           !identifierFromPayment.rc_trimmingWhitespacesAndNewLines.isEmpty {
             return identifierFromPayment
         }
         Logger.appleWarning(Strings.purchase.payment_identifier_nil,

@@ -53,7 +53,7 @@ class IdentityManager {
             Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
         }
 
-        let appUserID = appUserID?.notEmptyOrWhitespaces
+        let appUserID = appUserID?.rc_notEmptyOrWhitespaces
             ?? deviceCache.cachedAppUserID
             ?? deviceCache.cachedLegacyAppUserID
             ?? Self.generateRandomID()
@@ -65,7 +65,7 @@ class IdentityManager {
     }
 
     func logIn(appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
-        let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
+        let newAppUserID = appUserID.rc_trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_empty_appuserid)
             completion(nil, false, ErrorUtils.missingAppUserIDError())

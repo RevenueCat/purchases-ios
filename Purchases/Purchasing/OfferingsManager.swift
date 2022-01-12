@@ -106,7 +106,7 @@ private extension OfferingsManager {
         }
 
         productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiers) { result in
-            let products = result.value ?? []
+            let products = result.rc_value ?? []
 
             guard products.isEmpty == false else {
                 let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
