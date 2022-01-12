@@ -12,7 +12,7 @@ class AppleReceiptBuilderTests: XCTestCase {
     let applicationVersion = "3.2.1"
     let originalApplicationVersion = "1.2.2"
     // swiftlint:disable:next force_try
-    let creationDate = try! Date.from(year: 2020, month: 3, day: 23, hour: 15, minute: 5, second: 3)
+    let creationDate = try! Date.rc_from(year: 2020, month: 3, day: 23, hour: 15, minute: 5, second: 3)
 
     override func setUp() {
         super.setUp()
@@ -62,7 +62,7 @@ class AppleReceiptBuilderTests: XCTestCase {
     }
 
     func testBuildGetsExpiresDate() throws {
-        let expirationDate = try Date.from(year: 2020, month: 7, day: 4, hour: 5, minute: 3, second: 2)
+        let expirationDate = try Date.rc_from(year: 2020, month: 7, day: 4, hour: 5, minute: 3, second: 2)
         let expirationDateContainer =
             containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.expirationDate,
                                                        expirationDate)
