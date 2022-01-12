@@ -73,10 +73,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         }
     }
 
-    fileprivate func setUpSystemInfo() throws {
+    fileprivate func setUpSystemInfo(finishTransactions: Bool = true) throws {
         systemInfo = try MockSystemInfo(platformFlavor: "xyz",
                                         platformFlavorVersion: "1.2.3",
-                                        finishTransactions: true)
+                                        finishTransactions: finishTransactions)
     }
 
     fileprivate func setUpOrchestrator() {
@@ -201,6 +201,32 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptData) == false
         let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
         expect(mockListener.invokedHandle) == false
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testStoreKit2TransactionListenerDelegate() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+
+        orchestrator.transactionsUpdated()
+
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beFalse())
+    }
+
+    func testStoreKit2TransactionListenerDelegateWithObesrverMode() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        try setUpSystemInfo(finishTransactions: false)
+        setUpOrchestrator()
+
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+
+        orchestrator.transactionsUpdated()
+
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beTrue())
     }
 
     func testShowManageSubscriptionsCallsCompletionWithErrorIfThereIsAFailure() {
