@@ -28,7 +28,7 @@ extension Date {
     }
 
     // swiftlint:disable:next function_parameter_count
-    static func from(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) throws -> Date {
+    static func rc_from(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) throws -> Date {
         let calendar = Calendar(identifier: .gregorian)
         var dateComponents = DateComponents()
         dateComponents.year = year

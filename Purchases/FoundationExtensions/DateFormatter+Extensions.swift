@@ -38,6 +38,7 @@ extension ISO8601DateFormatter {
 
     /// This behaves like a traditional `DateFormatter` with format
     /// `yyyy-MM-dd'T'HH:mm:ssZ"`, so milliseconds are optional.
+    // swiftlint:disable:next identifier_name
     static let rc_default: DateFormatterType = {
         final class Formatter: DateFormatterType {
             func date(from string: String) -> Date? {
