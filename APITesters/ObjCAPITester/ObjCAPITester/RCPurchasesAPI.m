@@ -78,7 +78,6 @@ BOOL isAnonymous;
     
     RCCustomerInfo *pi = nil;
     SKProduct *skp = [[SKProduct alloc] init];
-    SKProductDiscount *skpd = [[SKProductDiscount alloc] init];
     SKPaymentDiscount *skmd = [[SKPaymentDiscount alloc] init];
     
     RCPackage *pack;
@@ -127,7 +126,6 @@ BOOL isAnonymous;
     [p restoreTransactionsWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    [p paymentDiscountForProductDiscount:skpd product:skp completion:^(SKPaymentDiscount *d, NSError *e) { }];
     [p purchaseProduct:skp withDiscount:skmd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p purchasePackage:pack withDiscount:skmd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     

@@ -186,6 +186,44 @@ public extension Purchases {
     }
 
     /**
+     * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
+     *
+     * - Parameter discount: The `SKProductDiscount` to apply to the product.
+     * - Parameter product: The `SKProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS, introduced: 12.2, obsoleted: 12.2, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(tvOS, introduced: 12.2, obsoleted: 12.2, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    @objc(paymentDiscountForProductDiscount:product:completion:)
+    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
+                         product: SKProduct,
+                         completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
+        fatalError()
+    }
+
+    /**
+     * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
+     *
+     * - Parameter discount: The `SKProductDiscount` to apply to the product.
+     * - Parameter product: The `SKProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
+                         product: SKProduct) async throws -> SKPaymentDiscount {
+        fatalError()
+    }
+
+    /**
      * This function will alias two appUserIDs together.
      *
      * - Parameter alias: The new appUserID that should be linked to the currently identified appUserID

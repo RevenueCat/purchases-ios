@@ -118,7 +118,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getProducts([String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
-    let productDiscount: StoreProductDiscount! = nil
     let paymentDiscount: SKPaymentDiscount = SKPaymentDiscount()
     let pack: Package! = nil
 
@@ -129,8 +128,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
-
-    purchases.paymentDiscount(forProductDiscount: productDiscount, product: skp) { _, _ in }
 
     purchases.purchase(product: skp, discount: paymentDiscount) { _, _, _, _  in }
     purchases.purchase(package: pack, discount: paymentDiscount) { _, _, _, _  in }
@@ -191,9 +188,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroductoryPriceEligibility([])
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
-        let storeProductDiscount: StoreProductDiscount! = nil
-        let _: SKPaymentDiscount = try await purchases.paymentDiscount(forProductDiscount: storeProductDiscount,
-                                                                       product: SKProduct())
+
         let _: [SKProduct] = await purchases.products([])
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack,

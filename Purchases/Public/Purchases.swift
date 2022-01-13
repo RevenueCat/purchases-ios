@@ -1168,36 +1168,6 @@ public extension Purchases {
     }
 #endif
 
-    /**
-     * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
-     *
-     * - Parameter discount: The `SKProductDiscount` to apply to the product.
-     * - Parameter product: The `SKProduct` the user intends to purchase.
-     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
-     * If it was not successful, there will be an `Error`.
-     */
-    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
-    @objc(paymentDiscountForProductDiscount:product:completion:)
-    func paymentDiscount(forProductDiscount discount: StoreProductDiscount,
-                         product: SKProduct,
-                         completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
-        purchasesOrchestrator.paymentDiscount(forProductDiscount: discount, product: product, completion: completion)
-    }
-
-    /**
-     * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
-     *
-     * - Parameter discount: The `SKProductDiscount` to apply to the product.
-     * - Parameter product: The `SKProduct` the user intends to purchase.
-     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
-     * If it was not successful, there will be an `Error`.
-     */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func paymentDiscount(forProductDiscount discount: StoreProductDiscount,
-                         product: SKProduct) async throws -> SKPaymentDiscount {
-        return try await paymentDiscountAsync(forProductDiscount: discount, product: product)
-    }
-
 #if os(iOS) || os(macOS)
 
     /**
