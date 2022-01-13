@@ -1407,6 +1407,7 @@ public extension Purchases {
      *
      * - Returns: An instantiated `Purchases` object that has been set as a singleton.
      */
+    // todo: uncomment @objc name, remove private keyword, uncomment APITester calls
 //    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
     @discardableResult private static func configure(withAPIKey apiKey: String,
                                                      appUserID: String?,
