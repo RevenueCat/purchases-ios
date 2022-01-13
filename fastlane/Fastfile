@@ -48,11 +48,11 @@ platform :ios do
       scheme: "RevenueCat",
       testplan: "Coverage",
       prelaunch_simulator: true,
-      output_types: '',
       fail_build: false,
-      result_bundle: true
+      result_bundle: true,
+      number_of_retries: 5,
+      output_directory: "fastlane/test_output/xctest/ios"
     )
-    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/ios")
 
     scan(
       step_name: "scan - Apple TV",
@@ -62,9 +62,10 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: '',
       fail_build: false,
-      result_bundle: true
+      result_bundle: true,
+      number_of_retries: 5,
+      output_directory: "fastlane/test_output/xctest/tvos"
     )
-    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/tvos")
   end
 
   desc "Replace version number in project and supporting files"
