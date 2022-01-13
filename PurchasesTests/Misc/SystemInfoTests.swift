@@ -89,6 +89,23 @@ class SystemInfoTests: XCTestCase {
     func testIsNotSandboxIfNoReceiptURL() throws {
         expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
     }
+
+    func testUseStoreKit2IfAvailable() throws {
+        var useSK2 = false
+        var systemInfo = try SystemInfo(platformFlavor: nil,
+                                        platformFlavorVersion: nil,
+                                        finishTransactions: true,
+                                        useStoreKit2IfAvailable: useSK2)
+        expect(systemInfo.useStoreKit2IfAvailable) == useSK2
+
+        useSK2 = true
+
+        systemInfo = try SystemInfo(platformFlavor: nil,
+                                    platformFlavorVersion: nil,
+                                    finishTransactions: true,
+                                    useStoreKit2IfAvailable: useSK2)
+        expect(systemInfo.useStoreKit2IfAvailable) == useSK2
+    }
 }
 
 private extension SystemInfo {
