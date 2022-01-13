@@ -140,6 +140,32 @@ enum ErrorUtils {
     }
 
     /**
+     * Constructs an Error with the ``ErrorCode/productDiscountMissingIdentifierError`` code.
+     *
+     * - Note: This error code is used when attemping to post data about product discounts but the discount is
+     * missing an indentifier.
+     */
+    static func productDiscountMissingIdentifierError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return error(with: ErrorCode.productDiscountMissingIdentifierError,
+                     fileName: fileName, functionName: functionName, line: line)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/productDiscountMissingSubscriptionGroupIdentifierError`` code.
+     *
+     * - Note: This error code is used when attemping to post data about product discounts but the discount is
+     * missing a subscriptionGroupIndentifier.
+     */
+    static func productDiscountMissingSubscriptionGroupIdentifierError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return error(with: ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError,
+                     fileName: fileName, functionName: functionName, line: line)
+    }
+
+    /**
      * Constructs an Error with the ``ErrorCode/invalidAppUserIdError`` code.
      *
      * - Note: This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
@@ -449,7 +475,9 @@ private extension ErrorUtils {
                 .configurationError,
                 .unsupportedError,
                 .emptySubscriberAttributes,
+                .productDiscountMissingIdentifierError,
                 .missingAppUserIDForAliasCreationError,
+                .productDiscountMissingSubscriptionGroupIdentifierError,
                 .customerInfoError,
                 .systemInfoError,
                 .beginRefundRequestError:
