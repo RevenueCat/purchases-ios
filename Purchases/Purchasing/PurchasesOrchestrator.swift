@@ -21,7 +21,7 @@ import StoreKit
 
 }
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 class PurchasesOrchestrator {
 
     var finishTransactions: Bool { systemInfo.finishTransactions }
