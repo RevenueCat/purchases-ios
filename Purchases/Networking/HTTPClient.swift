@@ -21,13 +21,19 @@ class HTTPClient {
     private var currentSerialRequest: HTTPRequest?
     private var eTagManager: ETagManager
     private let recursiveLock = NSRecursiveLock()
+    private let dnsChecker: DNSCheckerType.Type
 
-    init(systemInfo: SystemInfo, eTagManager: ETagManager) {
+    init(
+        systemInfo: SystemInfo,
+        eTagManager: ETagManager,
+        dnsChecker: DNSCheckerType.Type = DNSChecker.self
+    ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         self.session = URLSession(configuration: config)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
+        self.dnsChecker = dnsChecker
     }
 
     func performGETRequest(serially: Bool = true,
@@ -226,8 +232,8 @@ private extension HTTPClient {
         }
 
         var maybeNetworkError = maybeNetworkError
-        if DNSChecker.isBlockedAPIError(maybeNetworkError),
-            let blockedError = DNSChecker.errorWithBlockedHostFromError(maybeNetworkError) {
+        if dnsChecker.isBlockedAPIError(maybeNetworkError),
+            let blockedError = dnsChecker.errorWithBlockedHostFromError(maybeNetworkError) {
             Logger.error(blockedError.description)
             maybeNetworkError = blockedError
         }

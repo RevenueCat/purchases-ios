@@ -34,7 +34,7 @@ enum ErrorUtils {
     ) -> Error {
 
         let errorCode: ErrorCode
-        if case DNSChecker.DNSError.blocked(_, _) = underlyingError {
+        if case DNSError.blocked(_, _) = underlyingError {
             errorCode = .apiEndpointBlockedError
         } else {
             errorCode = .networkError

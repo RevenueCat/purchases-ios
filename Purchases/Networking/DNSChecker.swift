@@ -13,18 +13,27 @@
 
 import Foundation
 
-enum DNSChecker {
+protocol DNSCheckerType {
 
-    enum DNSError: Error, DescribableError, Equatable {
-        case blocked(failedURL: URL, resolvedHost: String?)
+    static func isBlockedAPIError(_ error: Error?) -> Bool
+    static func errorWithBlockedHostFromError(_ error: Error?) -> DNSError?
+    static func isBlockedURL(_ url: URL) -> Bool
+    static func resolvedHost(fromURL url: URL) -> String?
 
-        public var description: String {
-            switch self {
-            case .blocked(let failedURL, let resolvedHost):
-                return NetworkStrings.blocked_network(url: failedURL, newHost: resolvedHost).description
-            }
+}
+
+enum DNSError: Error, DescribableError, Equatable {
+    case blocked(failedURL: URL, resolvedHost: String?)
+
+    public var description: String {
+        switch self {
+        case .blocked(let failedURL, let resolvedHost):
+            return NetworkStrings.blocked_network(url: failedURL, newHost: resolvedHost).description
         }
     }
+}
+
+enum DNSChecker: DNSCheckerType {
 
     static let invalidHosts = Set(["0.0.0.0", "127.0.0.1"])
 

@@ -49,7 +49,7 @@ class DNSCheckerTests: XCTestCase {
                                           code: NSURLErrorCannotConnectToHost,
                                           userInfo: userInfo as [String: Any])
         let error = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo as Error)
-        let expectedError = DNSChecker.DNSError.blocked(failedURL: fakeSubscribersURL2, resolvedHost: "127.0.0.1")
+        let expectedError = DNSError.blocked(failedURL: fakeSubscribersURL2, resolvedHost: "127.0.0.1")
         expect(expectedError).to(equal(error))
     }
 
@@ -62,8 +62,8 @@ class DNSCheckerTests: XCTestCase {
                                           userInfo: userInfo as [String: Any])
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == true
         let maybeBlockedHostError = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo)
-        expect(maybeBlockedHostError) == DNSChecker.DNSError.blocked(failedURL: fakeSubscribersURL1,
-                                                                     resolvedHost: "0.0.0.0")
+        expect(maybeBlockedHostError) == DNSError.blocked(failedURL: fakeSubscribersURL1,
+                                                          resolvedHost: "0.0.0.0")
 
     }
 
