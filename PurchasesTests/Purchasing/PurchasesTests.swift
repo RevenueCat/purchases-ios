@@ -1892,15 +1892,15 @@ class PurchasesTests: XCTestCase {
         expect(Purchases.shared.finishTransactions).toEventually(beTrue())
     }
 
-//    func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaultsAndUseSK2() {
-//        let purchases = Purchases.configure(withAPIKey: "",
-//                                            appUserID: "",
-//                                            observerMode: false,
-//                                            userDefaults: nil,
-//                                            useStoreKit2IfAvailable: true)
-//        expect(Purchases.shared).toEventually(equal(purchases))
-//        expect(Purchases.shared.finishTransactions).toEventually(beTrue())
-//    }
+    func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaultsAndUseSK2() {
+        let purchases = Purchases.configure(withAPIKey: "",
+                                            appUserID: "",
+                                            observerMode: false,
+                                            userDefaults: nil,
+                                            useStoreKit2IfAvailable: true)
+        expect(Purchases.shared).toEventually(equal(purchases))
+        expect(Purchases.shared.finishTransactions).toEventually(beTrue())
+    }
 
     func testWhenNoReceiptDataReceiptIsRefreshed() {
         setupPurchases()
