@@ -48,6 +48,9 @@ commands:
       - run:
           name: Install swiftlint
           command: brew install swiftlint
+      - run:
+          name: Install xcbeautify
+          command: brew install xcbeautify
 
   scan-and-archive:
     parameters:
