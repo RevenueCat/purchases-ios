@@ -81,9 +81,7 @@ public typealias SK2Product = StoreKit.Product
     @objc public var subscriptionPeriod: SubscriptionPeriod? { self.product.subscriptionPeriod }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public var introductoryDiscount: StoreProductDiscount? {
-        self.product.introductoryDiscount
-    }
+    @objc public var introductoryDiscount: StoreProductDiscount? { self.product.introductoryDiscount }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var discounts: [StoreProductDiscount] { self.product.discounts }
