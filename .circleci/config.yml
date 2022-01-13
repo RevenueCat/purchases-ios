@@ -116,7 +116,7 @@ jobs:
   runtest:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -135,7 +135,7 @@ jobs:
   buildTvWatchAndMacOS:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -145,13 +145,16 @@ jobs:
           command: brew install swiftlint
       - install-dependencies
       - run:
+          name: Clear Derived Data
+          command: bundle exec fastlane run clear_derived_data
+      - run:
           name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
   backend_integration_tests:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -173,7 +176,7 @@ jobs:
   release-checks: 
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -206,7 +209,7 @@ jobs:
   docs-deploy:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -231,7 +234,7 @@ jobs:
   make-release:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -245,7 +248,7 @@ jobs:
   prepare-next-version:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -259,7 +262,7 @@ jobs:
   integration-tests-cocoapods:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -281,7 +284,7 @@ jobs:
   integration-tests-swift-package-manager:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -294,7 +297,7 @@ jobs:
   integration-tests-carthage:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -318,7 +321,7 @@ jobs:
   integration-tests-xcode-direct-integration:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -330,7 +333,7 @@ jobs:
   lint:
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.0"
+      xcode: "13.2.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
