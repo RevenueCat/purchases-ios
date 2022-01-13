@@ -28,6 +28,11 @@ func checkPurchasesAPI() {
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
+//    Purchases.configure(withAPIKey: "",
+//                        appUserID: nil,
+//                        observerMode: true,
+//                        userDefaults: UserDefaults(),
+//                        useStoreKit2IfAvailable: true)
 
     let finishTransactions: Bool = purch.finishTransactions
     let delegate: PurchasesDelegate? = purch.delegate

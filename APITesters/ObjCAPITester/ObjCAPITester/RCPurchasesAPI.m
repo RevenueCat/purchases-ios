@@ -39,6 +39,11 @@ BOOL isAnonymous;
     [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:nil];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
+//    [RCPurchases configureWithAPIKey:@""
+//                           appUserID:nil
+//                        observerMode:false
+//                        userDefaults:[[NSUserDefaults alloc] init]
+//             useStoreKit2IfAvailable:true];
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
     canI = [RCPurchases canMakePayments];
