@@ -1,3 +1,9 @@
+## 3.13.2
+- Disable asserts in release builds when using Swift Package Manager
+    https://github.com/RevenueCat/purchases-ios/pull/1061
+- Fixed `.xcframework` not including dSYMs
+    https://github.com/RevenueCat/purchases-ios/pull/1117
+
 ## 3.13.1
 - RCDeviceCache: synchronize NSUserDefaults after writes
     https://github.com/RevenueCat/purchases-ios/pull/1003
