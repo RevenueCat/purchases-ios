@@ -23,11 +23,11 @@ enum MockDNSChecker: DNSCheckerType {
         return Self.stubbedIsBlockedAPIErrorResult
     }
 
-    static var invokedBlockedHostFromError = false
-    static var stubbedBlockedHostFromErrorResult: String?
-    static func blockedHostFromError(_ error: Error?) -> String? {
-        Self.invokedBlockedHostFromError = true
-        return Self.stubbedBlockedHostFromErrorResult
+    static var invokedErrorWithBlockedHostFromError = false
+    static var stubbedErrorWithBlockedHostFromErrorResult: DNSError?
+    static func errorWithBlockedHostFromError(_ error: Error?) -> DNSError? {
+        Self.invokedErrorWithBlockedHostFromError = true
+        return Self.stubbedErrorWithBlockedHostFromErrorResult
     }
 
     static var invokedIsBlockedURL = false
@@ -48,8 +48,8 @@ enum MockDNSChecker: DNSCheckerType {
         Self.invokedIsBlockedAPIError = false
         Self.stubbedIsBlockedAPIErrorResult = false
 
-        Self.invokedBlockedHostFromError = false
-        Self.stubbedBlockedHostFromErrorResult = nil
+        Self.invokedErrorWithBlockedHostFromError = false
+        Self.stubbedErrorWithBlockedHostFromErrorResult = nil
 
         Self.invokedIsBlockedURL = false
         Self.stubbedIsBlockedURLResult = false

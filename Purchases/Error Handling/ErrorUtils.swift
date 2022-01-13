@@ -32,7 +32,16 @@ enum ErrorUtils {
         withUnderlyingError underlyingError: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        return error(with: .networkError, underlyingError: underlyingError,
+
+        let errorCode: ErrorCode
+        if case DNSError.blocked(_, _) = underlyingError {
+            errorCode = .apiEndpointBlockedError
+        } else {
+            errorCode = .networkError
+        }
+
+        return error(with: errorCode,
+                     underlyingError: underlyingError,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -480,7 +489,8 @@ private extension ErrorUtils {
                 .productDiscountMissingSubscriptionGroupIdentifierError,
                 .customerInfoError,
                 .systemInfoError,
-                .beginRefundRequestError:
+                .beginRefundRequestError,
+                .apiEndpointBlockedError:
             Logger.error(code.description)
 
         case .purchaseCancelledError,

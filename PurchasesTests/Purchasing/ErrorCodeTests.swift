@@ -157,8 +157,13 @@ class ErrorCodeTests: XCTestCase {
                                               expectedRawValue: 32)
     }
 
+    func testAPIEndpointBlockedError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .apiEndpointBlockedError,
+                                              expectedRawValue: 33)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases.count).to(equal(33))
+        expect(ErrorCode.allCases.count).to(equal(34))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {

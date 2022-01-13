@@ -837,7 +837,7 @@ class HTTPClientTests: XCTestCase {
         )
 
         expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
-        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(false))
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError).toEventually(equal(false))
     }
 
     func testDNSCheckerIsCalledWhenPOSTRequestFailedWithUnknownError() {
@@ -860,7 +860,7 @@ class HTTPClientTests: XCTestCase {
         )
 
         expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
-        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(false))
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError).toEventually(equal(false))
     }
 
     func testDNSCheckedIsCalledWhenPOSTRequestFailedWithDNSError() {
@@ -887,7 +887,7 @@ class HTTPClientTests: XCTestCase {
         )
 
         expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
-        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(true))
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError).toEventually(equal(true))
     }
 
     func testDNSCheckedIsCalledWhenGETRequestFailedWithDNSError() {
@@ -913,22 +913,26 @@ class HTTPClientTests: XCTestCase {
         )
 
         expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
-        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(true))
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError).toEventually(equal(true))
     }
 
-    func testErrorIsLoggedWhenGETRequestFailedWithDNSError() {
+    func testErrorIsLoggedAndReturnsDNSErrorWhenGETRequestFailedWithDNSError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
-        let host = "https://0.0.0.0/subscribers"
+        let expectedDNSError = DNSError.blocked(
+            failedURL: URL(string: "https://0.0.0.0/subscribers")!,
+            resolvedHost: "0.0.0.0"
+        )
         MockDNSChecker.stubbedIsBlockedAPIErrorResult = true
-        MockDNSChecker.stubbedBlockedHostFromErrorResult = host
-        let expectedMessage = "\(LogIntent.rcError.prefix) \(NetworkStrings.blocked_network(newHost: host))"
+        MockDNSChecker.stubbedErrorWithBlockedHostFromErrorResult = expectedDNSError
+        let expectedMessage = "\(LogIntent.rcError.prefix) \(expectedDNSError.description)"
 
         var loggedMessages = [String]()
         let originalLogHandler = Logger.logHandler
         Logger.logHandler = { _, message, _, _, _ in
             loggedMessages.append(message)
         }
+        defer { Logger.logHandler = originalLogHandler }
 
         stub(condition: isPath("/v1" + path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
@@ -936,23 +940,27 @@ class HTTPClientTests: XCTestCase {
             return response
         }
 
+        var obtainedError: DNSError?
         self.client.performGETRequest(
             serially: true,
             path: path,
-            headers: [:],
-            completionHandler: nil
-        )
+            headers: [:]) { _, _, error in
+                obtainedError = error as? DNSError
+            }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
-        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(true))
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError).toEventually(equal(true))
+        expect(obtainedError).toEventually(equal(expectedDNSError))
         expect(loggedMessages).toEventually(contain(expectedMessage))
-        Logger.logHandler = originalLogHandler
     }
 
     func testErrorIsntLoggedWhenGETRequestFailedWithUnknownError() {
         let path = "/a_random_path"
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
-        let unexpectedMessage = "\(LogIntent.rcError.prefix) \(NetworkStrings.blocked_network(newHost: "0.0.0.0"))"
+        let unexpectedDNSError = DNSError.blocked(
+            failedURL: URL(string: "https://0.0.0.0/subscribers")!,
+            resolvedHost: "0.0.0.0"
+        )
         MockDNSChecker.stubbedIsBlockedAPIErrorResult = false
 
         var loggedMessages = [String]()
@@ -975,8 +983,8 @@ class HTTPClientTests: XCTestCase {
         )
 
         expect(MockDNSChecker.invokedIsBlockedAPIError).toEventually(equal(true))
-        expect(MockDNSChecker.invokedBlockedHostFromError).toEventually(equal(false))
-        expect(loggedMessages).toNotEventually(contain(unexpectedMessage))
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError).toEventually(equal(false))
+        expect(loggedMessages).toNotEventually(contain(unexpectedDNSError.description))
         Logger.logHandler = originalLogHandler
     }
 

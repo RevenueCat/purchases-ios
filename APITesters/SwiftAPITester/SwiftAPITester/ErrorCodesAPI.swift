@@ -49,7 +49,8 @@ func checkPurchasesErrorCodeEnums() {
          .customerInfoError,
          .systemInfoError,
          .beginRefundRequestError,
-         .productRequestTimedOut:
+         .productRequestTimedOut,
+         .apiEndpointBlockedError:
         print(errCode!)
     @unknown default:
         fatalError()

@@ -49,14 +49,11 @@ import Foundation
     @objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 27
     @objc(RCProductDiscountMissingSubscriptionGroupIdentifierError)
     case productDiscountMissingSubscriptionGroupIdentifierError = 28
-    @objc(RCCustomerInfoError)
-    case customerInfoError = 29
-    @objc(RCSystemInfoError)
-    case systemInfoError = 30
-    @objc(RCBeginRefundRequestError)
-    case beginRefundRequestError = 31
-    @objc(RCProductRequestTimedOut)
-    case productRequestTimedOut = 32
+    @objc(RCCustomerInfoError) case customerInfoError = 29
+    @objc(RCSystemInfoError) case systemInfoError = 30
+    @objc(RCBeginRefundRequestError)case beginRefundRequestError = 31
+    @objc(RCProductRequestTimedOut) case productRequestTimedOut = 32
+    @objc(RCAPIEndpointBlocked) case apiEndpointBlockedError = 33
 
 }
 
@@ -148,6 +145,8 @@ extension ErrorCode: DescribableError {
             return "Error when trying to begin refund request."
         case .productRequestTimedOut:
             return "SKProductsRequest took too long to complete."
+        case .apiEndpointBlockedError:
+            return "Requests to RevenueCat are being blocked. See: https://rev.cat/dnsBlocking for more info."
         @unknown default:
             return "Something went wrong."
         }
@@ -239,6 +238,8 @@ extension ErrorCode {
             return "BEGIN_REFUND_REQUEST_ERROR"
         case .productRequestTimedOut:
             return "PRODUCT_REQUEST_TIMED_OUT_ERROR"
+        case .apiEndpointBlockedError:
+            return "API_ENDPOINT_BLOCKED_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }
