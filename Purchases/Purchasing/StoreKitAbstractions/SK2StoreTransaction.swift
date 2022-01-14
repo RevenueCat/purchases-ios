@@ -22,6 +22,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
         self.productIdentifier = sk2Transaction.productID
         self.purchaseDate = sk2Transaction.purchaseDate
         self.transactionIdentifier = String(sk2Transaction.id)
+        self.quantity = sk2Transaction.purchasedQuantity
     }
 
     let underlyingSK2Transaction: SK2Transaction
@@ -29,5 +30,6 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let productIdentifier: String
     let purchaseDate: Date
     let transactionIdentifier: String
+    let quantity: Int
 
 }
