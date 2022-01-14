@@ -226,7 +226,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(userCancelled) == false
         expect(customerInfo).to(beNil())
         expect(error).toNot(beNil())
-        expect(error?.localizedDescription).to(equal(expectedError.localizedDescription))
+        expect(error).to(matchError(expectedError))
         let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
         expect(mockListener.invokedHandle) == true
     }
