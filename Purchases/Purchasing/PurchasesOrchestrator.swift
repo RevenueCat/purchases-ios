@@ -221,6 +221,26 @@ class PurchasesOrchestrator {
         }
     }
 
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
+    func purchase(sk1Product: SK1Product,
+                  storeProductDiscount: StoreProductDiscount,
+                  presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
+                  completion: @escaping PurchaseCompletedBlock) {
+        self.paymentDiscount(forProductDiscount: storeProductDiscount,
+                             product: sk1Product) { [unowned self] discount, error in
+            guard let discount = discount else {
+                completion(nil, nil, error, false)
+                return
+            }
+
+            let payment = self.storeKitWrapper.payment(withProduct: sk1Product, discount: discount)
+            self.purchase(sk1Product: sk1Product,
+                          payment: payment,
+                          presentedOfferingIdentifier: nil,
+                          completion: completion)
+        }
+    }
+
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
