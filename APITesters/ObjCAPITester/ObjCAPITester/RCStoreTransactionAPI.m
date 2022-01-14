@@ -18,6 +18,7 @@
     NSString *productIdentifier = transaction.productIdentifier;
     NSDate *purchaseDate = transaction.purchaseDate;
     NSString *transactionIdentifier = transaction.transactionIdentifier;
+    NSInteger *quantity = transaction.quantity;
 
     SKPaymentTransaction *sk1 = transaction.sk1Transaction;
 
@@ -25,6 +26,7 @@
           productIdentifier,
           purchaseDate,
           transactionIdentifier,
+          quantity,
           sk1
           );
 }
