@@ -207,7 +207,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     func testPurchaseSK2PackageReturnsMissingReceiptErrorIfSendReceiptFailed() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        testSession.failTransactionsEnabled = false
         receiptFetcher.shouldReturnReceipt = false
         let expectedError = ErrorUtils.missingReceiptFileError()
 
