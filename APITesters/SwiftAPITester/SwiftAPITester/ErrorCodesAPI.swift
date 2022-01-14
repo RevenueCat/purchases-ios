@@ -44,6 +44,8 @@ func checkPurchasesErrorCodeEnums() {
          .operationAlreadyInProgressForProductError,
          .emptySubscriberAttributes,
          .missingAppUserIDForAliasCreationError,
+         .productDiscountMissingIdentifierError,
+         .productDiscountMissingSubscriptionGroupIdentifierError,
          .customerInfoError,
          .systemInfoError,
          .beginRefundRequestError,
