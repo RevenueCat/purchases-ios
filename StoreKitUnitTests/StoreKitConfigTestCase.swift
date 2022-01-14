@@ -62,6 +62,7 @@ class StoreKitConfigTestCase: XCTestCase {
 
     override class func tearDown() {
         Self.transactionsObservation?.cancel()
+        Self.transactionsObservation = nil
     }
 
 }
