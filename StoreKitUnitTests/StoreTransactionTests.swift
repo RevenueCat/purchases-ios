@@ -19,8 +19,6 @@ import XCTest
 class StoreTransactionTests: StoreKitConfigTestCase {
 
     func testSK1DetailsWrapCorrectly() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
         let product = MockSK1Product(mockProductIdentifier: Self.productID)
         let payment = SKPayment(product: product)
 
