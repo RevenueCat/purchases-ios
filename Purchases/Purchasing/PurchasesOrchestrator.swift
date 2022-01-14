@@ -224,7 +224,7 @@ class PurchasesOrchestrator {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(sk1Product: SK1Product,
                   storeProductDiscount: StoreProductDiscount,
-                  presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
+                  package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
         self.paymentDiscount(forProductDiscount: storeProductDiscount,
                              product: sk1Product) { [unowned self] discount, error in
@@ -236,14 +236,14 @@ class PurchasesOrchestrator {
             let payment = self.storeKitWrapper.payment(withProduct: sk1Product, discount: discount)
             self.purchase(sk1Product: sk1Product,
                           payment: payment,
-                          presentedOfferingIdentifier: nil,
+                          package: package,
                           completion: completion)
         }
     }
 
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
-                  presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
+                  package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
         guard let productIdentifier = sk1Product.extractProductIdentifier(withPayment: payment) else {
@@ -260,7 +260,7 @@ class PurchasesOrchestrator {
         payment.applicationUsername = appUserID
         preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
 
-        if let presentedOfferingIdentifier = maybePresentedOfferingIdentifier {
+        if let presentedOfferingIdentifier = package?.offeringIdentifier {
             Logger.purchase(
                 Strings.purchase.purchasing_product_from_package(
                     productIdentifier: productIdentifier,
@@ -677,7 +677,7 @@ private extension PurchasesOrchestrator {
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
         purchase(sk1Product: sk1Product,
                  payment: payment,
-                 presentedOfferingIdentifier: package.offeringIdentifier,
+                 package: package,
                  completion: completion)
     }
 

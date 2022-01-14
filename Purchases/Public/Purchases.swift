@@ -852,7 +852,7 @@ public extension Purchases {
     @objc(purchaseProduct:withCompletion:)
     func purchase(product: SKProduct, completion: @escaping PurchaseCompletedBlock) {
         let payment: SKMutablePayment = storeKitWrapper.payment(withProduct: product)
-        purchase(product: product, payment: payment, presentedOfferingIdentifier: nil, completion: completion)
+        purchase(product: product, payment: payment, package: nil, completion: completion)
     }
 
     /**
@@ -946,7 +946,7 @@ public extension Purchases {
     func purchase(product: SKProduct, discount: StoreProductDiscount, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(sk1Product: product,
                                        storeProductDiscount: discount,
-                                       presentedOfferingIdentifier: nil,
+                                       package: nil,
                                        completion: completion)
     }
 
@@ -1004,7 +1004,7 @@ public extension Purchases {
 
         purchasesOrchestrator.purchase(sk1Product: sk1Product,
                                        storeProductDiscount: discount,
-                                       presentedOfferingIdentifier: package.offeringIdentifier,
+                                       package: package,
                                        completion: completion)
     }
 
@@ -1543,11 +1543,11 @@ private extension Purchases {
 
     func purchase(product: SKProduct,
                   payment: SKMutablePayment,
-                  presentedOfferingIdentifier: String?,
+                  package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(sk1Product: product,
                                        payment: payment,
-                                       presentedOfferingIdentifier: presentedOfferingIdentifier,
+                                       package: package,
                                        completion: completion)
     }
 
