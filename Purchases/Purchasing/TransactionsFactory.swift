@@ -52,6 +52,7 @@ private struct BackendParsedTransaction: StoreTransactionType {
         self.transactionIdentifier = revenueCatId
         self.purchaseDate = purchaseDate
         self.productIdentifier = productID
+        // Defaulting to `1` since multi-quantity purchases aren't currently supported.
         self.quantity = 1
     }
 

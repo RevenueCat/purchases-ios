@@ -71,6 +71,7 @@ internal protocol StoreTransactionType {
     var transactionIdentifier: String { get }
 
     /// The number of consumable products purchased.
+    /// - Note: multi-quantity purchases aren't currently supported.
     var quantity: Int { get }
 }
 
