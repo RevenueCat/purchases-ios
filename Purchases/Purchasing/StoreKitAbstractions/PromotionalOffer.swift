@@ -21,7 +21,7 @@ internal struct PromotionalOffer {
     var signature: String
     var timestamp: Int
 
-    @available(iOSApplicationExtension 12.2, *)
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     var sk1SKPaymentDiscount: SKPaymentDiscount {
         return SKPaymentDiscount(identifier: self.identifier,
                                  keyIdentifier: self.keyIdentifier,
