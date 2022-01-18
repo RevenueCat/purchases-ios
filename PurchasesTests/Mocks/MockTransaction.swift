@@ -31,5 +31,4 @@ class MockTransaction: SKPaymentTransaction {
     override var transactionIdentifier: String? {
         mockTransactionIdentifier
     }
-
 }

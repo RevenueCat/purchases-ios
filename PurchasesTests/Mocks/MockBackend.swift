@@ -166,6 +166,7 @@ class MockBackend: Backend {
         data: Data?,
         applicationUsername: String?,
         completion: OfferSigningResponseHandler?)]()
+    var stubbedPostOfferCompetionResult: (String?, String?, UUID?, Int?, Error?)?
 
     override func post(offerIdForSigning offerIdentifier: String,
                        productIdentifier: String,
@@ -187,6 +188,11 @@ class MockBackend: Backend {
                                                   receiptData,
                                                   appUserID,
                                                   completion))
+        if let result = stubbedPostOfferCompetionResult {
+            completion(result.0, result.1, result.2, result.3, result.4)
+        } else {
+            completion(nil, nil, nil, nil, nil)
+        }
     }
 
     var invokedPostSubscriberAttributes = false

@@ -39,7 +39,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         try super.setUpWithError()
         try setUpSystemInfo()
         productsManager = MockProductsManager(systemInfo: systemInfo)
-        storeKitWrapper = MockStoreKitWrapper()
+        
         operationDispatcher = MockOperationDispatcher()
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo)
         deviceCache = MockDeviceCache(systemInfo: systemInfo)
@@ -63,6 +63,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                     customerInfoManager: customerInfoManager,
                                                                     identityManager: identityManager)
+        setupStoreKitWrapper()
         setUpOrchestrator()
         setUpStoreKit2Listener()
     }
@@ -79,6 +80,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                         finishTransactions: finishTransactions)
     }
 
+    fileprivate func setupStoreKitWrapper() {
+        storeKitWrapper = MockStoreKitWrapper()
+        storeKitWrapper.mockAddPaymentTransactionState = .purchased
+        storeKitWrapper.mockCallUpdatedTransactionInstantly = true
+    }
+
     fileprivate func setUpOrchestrator() {
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                              storeKitWrapper: storeKitWrapper,
@@ -93,6 +100,81 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              deviceCache: deviceCache,
                                              manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
+        storeKitWrapper.delegate = orchestrator
+    }
+
+    func testPurchaseSK1PackageSendsReceiptToBackendIfSuccessful() async throws {
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+
+        let product = try await fetchSk1Product()
+        let storeProduct = try await fetchSk1StoreProduct()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let payment = storeKitWrapper.payment(withProduct: product)
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.purchase(sk1Product: product,
+                                  payment: payment,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+    }
+
+    func testPurchaseSK1PaymentDiscount() async throws {
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
+
+        let product = try await fetchSk1Product()
+
+        let storeProductDiscount = StoreProductDiscount(offerIdentifier: "offerid1",
+                                                        price: 11.1,
+                                                        paymentMode: .payAsYouGo,
+                                                        subscriptionPeriod: .init(value: 1, unit: .month))
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.paymentDiscount(forProductDiscount: storeProductDiscount,
+                                         product: product) { paymentDiscount, error in
+                continuation.resume(returning: (paymentDiscount, error))
+            }
+        }
+
+        expect(self.backend.invokedPostOfferCount) == 1
+    }
+
+    func testPurchaseSK1PackageWithDiscountSendsReceiptToBackendIfSuccessful() async throws {
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+
+        let product = try await fetchSk1Product()
+        let storeProduct = try await fetchSk1StoreProduct()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let storeProductDiscount = StoreProductDiscount(offerIdentifier: "offerid1",
+                                                        price: 11.1,
+                                                        paymentMode: .payAsYouGo,
+                                                        subscriptionPeriod: .init(value: 1, unit: .month))
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.purchase(sk1Product: product,
+                                  storeProductDiscount: storeProductDiscount,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -335,6 +417,18 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 }
 
 private extension PurchasesOrchestratorTests {
+
+    @MainActor
+    func fetchSk1Product() async throws -> SK1Product {
+        return MockSK1Product(
+            mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro",
+            mockSubscriptionGroupIdentifier: "group1")
+    }
+
+    @MainActor
+    func fetchSk1StoreProduct() async throws -> SK1StoreProduct {
+        return try await SK1StoreProduct(sk1Product: fetchSk1Product())
+    }
 
     @MainActor
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
