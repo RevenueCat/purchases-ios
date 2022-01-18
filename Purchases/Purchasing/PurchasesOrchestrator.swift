@@ -135,7 +135,7 @@ class PurchasesOrchestrator {
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscount,
+    func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                           product: SK1Product,
                           completion: @escaping (PromotionalOffer?, Error?) -> Void) {
         guard let discountIdentifier = productDiscount.offerIdentifier else {
@@ -225,7 +225,7 @@ class PurchasesOrchestrator {
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(sk1Product: SK1Product,
-                  storeProductDiscount: StoreProductDiscount,
+                  storeProductDiscount: StoreProductDiscountType,
                   package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
         self.promotionalOffer(forProductDiscount: storeProductDiscount,

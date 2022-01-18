@@ -133,10 +133,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await fetchSk1Product()
 
-        let storeProductDiscount = StoreProductDiscount(offerIdentifier: "offerid1",
-                                                        price: 11.1,
-                                                        paymentMode: .payAsYouGo,
-                                                        subscriptionPeriod: .init(value: 1, unit: .month))
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            price: 11.1,
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month))
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
@@ -160,10 +160,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let storeProductDiscount = StoreProductDiscount(offerIdentifier: "offerid1",
-                                                        price: 11.1,
-                                                        paymentMode: .payAsYouGo,
-                                                        subscriptionPeriod: .init(value: 1, unit: .month))
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            price: 11.1,
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month))
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
