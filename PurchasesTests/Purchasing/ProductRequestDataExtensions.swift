@@ -16,7 +16,7 @@ extension ProductRequestData {
                                       introDurationType: StoreProductDiscount.PaymentMode = .none,
                                       introPrice: Decimal? = nil,
                                       subscriptionGroup: String? = nil,
-                                      discounts: [StoreProductDiscount]? = nil) -> ProductRequestData {
+                                      discounts: [StoreProductDiscountType]? = nil) -> ProductRequestData {
         ProductRequestData(productIdentifier: productIdentifier,
                            paymentMode: paymentMode,
                            currencyCode: currencyCode,
@@ -26,6 +26,6 @@ extension ProductRequestData {
                            introDurationType: introDurationType,
                            introPrice: introPrice,
                            subscriptionGroup: subscriptionGroup,
-                           discounts: discounts)
+                           discounts: discounts.map { $0.map(StoreProductDiscount.from) })
     }
 }
