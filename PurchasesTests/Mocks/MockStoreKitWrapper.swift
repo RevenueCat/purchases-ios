@@ -10,9 +10,19 @@ class MockStoreKitWrapper: StoreKitWrapper {
     var payment: SKPayment?
     var addPaymentCallCount = 0
 
+    var mockAddPaymentTransactionState: SKPaymentTransactionState = .purchasing
+    var mockCallUpdatedTransactionInstantly = false
+
     override func add(_ newPayment: SKPayment) {
         payment = newPayment
         addPaymentCallCount += 1
+
+        if mockCallUpdatedTransactionInstantly {
+            let transaction = MockTransaction()
+            transaction.mockPayment = newPayment
+            transaction.mockState = mockAddPaymentTransactionState
+            delegate?.storeKitWrapper(self, updatedTransaction: transaction)
+        }
     }
 
     var finishCalled = false

@@ -118,7 +118,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getProducts([String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
-    let paymentDiscount: SKPaymentDiscount = SKPaymentDiscount()
+    let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
 
     purchases.purchase(product: skp) { _, _, _, _  in }
@@ -129,8 +129,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
 
-    purchases.purchase(product: skp, discount: paymentDiscount) { _, _, _, _  in }
-    purchases.purchase(package: pack, discount: paymentDiscount) { _, _, _, _  in }
+    purchases.purchase(product: skp, discount: discount) { _, _, _, _  in }
+    purchases.purchase(package: pack, discount: discount) { _, _, _, _  in }
     purchases.invalidateCustomerInfoCache()
 
 #if os(iOS)
@@ -190,12 +190,13 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: Offerings = try await purchases.offerings()
 
         let _: [SKProduct] = await purchases.products([])
+        let discount: StoreProductDiscount! = nil
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
-                                                                                     discount: SKPaymentDiscount())
+                                                                                     discount: discount)
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct())
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct(),
-                                                                                     discount: SKPaymentDiscount())
+                                                                                     discount: discount)
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.restoreTransactions()
         let _: CustomerInfo = try await purchases.syncPurchases()

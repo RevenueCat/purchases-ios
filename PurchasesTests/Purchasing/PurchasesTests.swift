@@ -2090,28 +2090,6 @@ class PurchasesTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
     }
 
-    func testAddsDiscountToWrapper() {
-        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
-            setupPurchases()
-            let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
-            let discount = SKPaymentDiscount(
-                identifier: "discount",
-                keyIdentifier: "TIKAMASALA1",
-                nonce: UUID(),
-                signature: "Base64 encoded signature",
-                timestamp: NSNumber(value: Int64(123413232131))
-            )
-
-            self.purchases?.purchase(product: product, discount: discount) { (_, _, _, _) in
-
-            }
-
-            expect(self.storeKitWrapper.payment).toNot(beNil())
-            expect(self.storeKitWrapper.payment?.productIdentifier).to(equal(product.productIdentifier))
-            expect(self.storeKitWrapper.payment?.paymentDiscount).to(equal(discount))
-        }
-    }
-
     func testAttributionDataIsPostponedIfThereIsNoInstance() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
