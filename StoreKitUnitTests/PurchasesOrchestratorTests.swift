@@ -126,21 +126,21 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataCount) == 1
     }
 
-    func testPurchaseSK1PaymentDiscount() async throws {
+    func testPurchaseSK1PromotionalOffer() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
         backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
 
         let product = try await fetchSk1Product()
 
-        let storeProductDiscount = StoreProductDiscount(offerIdentifier: "offerid1",
-                                                        price: 11.1,
-                                                        paymentMode: .payAsYouGo,
-                                                        subscriptionPeriod: .init(value: 1, unit: .month))
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            price: 11.1,
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month))
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.paymentDiscount(forProductDiscount: storeProductDiscount,
-                                         product: product) { paymentDiscount, error in
+            orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                          product: product) { paymentDiscount, error in
                 continuation.resume(returning: (paymentDiscount, error))
             }
         }
@@ -160,10 +160,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let storeProductDiscount = StoreProductDiscount(offerIdentifier: "offerid1",
-                                                        price: 11.1,
-                                                        paymentMode: .payAsYouGo,
-                                                        subscriptionPeriod: .init(value: 1, unit: .month))
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            price: 11.1,
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month))
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,

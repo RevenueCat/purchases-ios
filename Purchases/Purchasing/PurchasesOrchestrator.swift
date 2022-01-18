@@ -135,9 +135,9 @@ class PurchasesOrchestrator {
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func paymentDiscount(forProductDiscount productDiscount: StoreProductDiscount,
-                         product: SK1Product,
-                         completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
+    func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
+                          product: SK1Product,
+                          completion: @escaping (PromotionalOffer?, Error?) -> Void) {
         guard let discountIdentifier = productDiscount.offerIdentifier else {
             completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
             return
@@ -182,12 +182,12 @@ class PurchasesOrchestrator {
                           return
                       }
 
-                let paymentDiscount = SKPaymentDiscount(identifier: discountIdentifier,
+                let promotionalOffer = PromotionalOffer(identifier: discountIdentifier,
                                                         keyIdentifier: keyIdentifier,
                                                         nonce: nonce,
                                                         signature: signature,
-                                                        timestamp: timestamp as NSNumber)
-                completion(paymentDiscount, nil)
+                                                        timestamp: timestamp)
+                completion(promotionalOffer, nil)
             }
         }
     }
@@ -225,16 +225,17 @@ class PurchasesOrchestrator {
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(sk1Product: SK1Product,
-                  storeProductDiscount: StoreProductDiscount,
+                  storeProductDiscount: StoreProductDiscountType,
                   package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
-        self.paymentDiscount(forProductDiscount: storeProductDiscount,
-                             product: sk1Product) { [unowned self] discount, error in
-            guard let discount = discount else {
+        self.promotionalOffer(forProductDiscount: storeProductDiscount,
+                              product: sk1Product) { [unowned self] promotionalOffer, error in
+            guard let promotionalOffer = promotionalOffer else {
                 completion(nil, nil, error, false)
                 return
             }
 
+            let discount = promotionalOffer.sk1PromotionalOffer
             let payment = self.storeKitWrapper.payment(withProduct: sk1Product, discount: discount)
             self.purchase(sk1Product: sk1Product,
                           payment: payment,

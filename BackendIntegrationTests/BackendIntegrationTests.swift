@@ -302,7 +302,7 @@ private extension BackendIntegrationTests {
 
             let offering = offerings?.current
             expect(offering).toNot(beNil())
-
+            
             let monthlyPackage = offering?.monthly
             expect(monthlyPackage).toNot(beNil())
 
