@@ -184,6 +184,11 @@ guard 1 == 1,
 // use _ = Task<Void, Never> for task initialization, so that if a part of the
 // Task throws, the compiler forces us to handle the exception
 // More info here: https://rev.cat/catching-exceptions-from-tasks
-_ = Task<Void, Never> {
-    try await myMethodThatThrows()
+_ = Task<Void, Never> { // Note: this implicitly captures `self`, so have to think about retain cycles.
+    try await self.myMethodThatThrows()
+}
+// Alternatively, if possible, store a reference to the task to call `cancel()`
+// on `deinit`.
+self.taskHandle = Task { [weak self] in
+    try await self?.myMethod()
 }

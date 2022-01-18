@@ -1225,10 +1225,10 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        let discount = StoreProductDiscount(offerIdentifier: "offerid",
-                                            price: 12,
-                                            paymentMode: .payAsYouGo,
-                                            subscriptionPeriod: .init(value: 10, unit: .month))
+        let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
+                                                price: 12,
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: .init(value: 10, unit: .month))
         let productData: ProductRequestData = .createMockProductData(discounts: [discount])
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -1256,10 +1256,10 @@ class BackendTests: XCTestCase {
         let currencyCode = "BFD"
         let paymentMode: StoreProductDiscount.PaymentMode = .none
         var completionCalled = false
-        let discount = StoreProductDiscount(offerIdentifier: "offerid",
-                                            price: 12.1,
-                                            paymentMode: .payAsYouGo,
-                                            subscriptionPeriod: .init(value: 1, unit: .year))
+        let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
+                                                price: 12.1,
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: .init(value: 1, unit: .year))
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
                                                                      paymentMode: paymentMode,
                                                                      currencyCode: currencyCode,

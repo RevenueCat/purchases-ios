@@ -201,8 +201,10 @@ class PurchasesOrchestrator {
                 let result = await purchase(sk2Product: product)
                 DispatchQueue.main.async {
                     switch result {
-                    case .failure(let error):
+                    case .failure(let error) where error is StoreKitError:
                         completion(nil, nil, ErrorUtils.purchasesError(withStoreKitError: error), false)
+                    case .failure(let error):
+                        completion(nil, nil, error, false)
                     case .success(let (customerInfo, userCancelled)):
                         // todo: change API and send transaction
                         if userCancelled {

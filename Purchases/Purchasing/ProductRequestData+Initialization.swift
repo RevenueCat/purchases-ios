@@ -68,7 +68,7 @@ private extension ProductRequestData {
 
     static func extractDiscounts(for product: SK1Product) -> [StoreProductDiscount]? {
         if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
-            return product.discounts.map(StoreProductDiscount.init(with:))
+            return product.discounts.map(StoreProductDiscount.init(sk1Discount:))
         } else {
             return nil
         }

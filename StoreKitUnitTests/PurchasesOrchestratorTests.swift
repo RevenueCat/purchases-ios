@@ -285,6 +285,34 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageReturnsMissingReceiptErrorIfSendReceiptFailed() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        receiptFetcher.shouldReturnReceipt = false
+        let expectedError = ErrorUtils.missingReceiptFileError()
+
+        let storeProduct = try await fetchSk2StoreProduct()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction).to(beNil())
+        expect(userCancelled) == false
+        expect(customerInfo).to(beNil())
+        expect(error).toNot(beNil())
+        expect(error).to(matchError(expectedError))
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
+        expect(mockListener.invokedHandle) == true
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testStoreKit2TransactionListenerDelegate() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
@@ -296,7 +324,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beFalse())
     }
 
-    func testStoreKit2TransactionListenerDelegateWithObesrverMode() async throws {
+    func testStoreKit2TransactionListenerDelegateWithObserverMode() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         try setUpSystemInfo(finishTransactions: false)

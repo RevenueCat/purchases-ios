@@ -21,7 +21,7 @@ protocol StoreKit2TransactionListenerDelegate: AnyObject {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2TransactionListener {
 
-    private var taskHandle: Task<Void, Error>?
+    private(set) var taskHandle: Task<Void, Never>?
     weak var delegate: StoreKit2TransactionListenerDelegate?
 
     init(delegate: StoreKit2TransactionListenerDelegate?) {
@@ -29,11 +29,19 @@ class StoreKit2TransactionListener {
     }
 
     func listenForTransactions() {
-        self.taskHandle = Task {
+        self.taskHandle?.cancel()
+        self.taskHandle = Task { [weak self] in
             for await result in StoreKit.Transaction.updates {
-                await handle(transactionResult: result)
+                guard let self = self else { break }
+
+                await self.handle(transactionResult: result)
             }
         }
+    }
+
+    deinit {
+        self.taskHandle?.cancel()
+        self.taskHandle = nil
     }
 
     func handle(purchaseResult: StoreKit.Product.PurchaseResult) async -> Bool {
