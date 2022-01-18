@@ -126,7 +126,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataCount) == 1
     }
 
-    func testPurchaseSK1PaymentDiscount() async throws {
+    func testPurchaseSK1PromotionalOffer() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
         backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
@@ -139,8 +139,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                         subscriptionPeriod: .init(value: 1, unit: .month))
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.paymentDiscount(forProductDiscount: storeProductDiscount,
-                                         product: product) { paymentDiscount, error in
+            orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                          product: product) { paymentDiscount, error in
                 continuation.resume(returning: (paymentDiscount, error))
             }
         }

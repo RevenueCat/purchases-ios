@@ -986,7 +986,7 @@ public extension Purchases {
      * this for you.
      *
      * - Parameter package: The ``Package`` the user intends to purchase
-     * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
+     * - Parameter discount: The `StoreProductDiscount` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
