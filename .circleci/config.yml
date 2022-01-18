@@ -71,6 +71,29 @@ commands:
           working_directory: << parameters.directory >>
           command: |
               bundle exec fastlane archive
+
+  scan-and-archive-all-platforms:
+    parameters:
+      directory:
+        type: string
+    steps:
+      - run:
+          name: Replace API key
+          command: bundle exec fastlane replace_api_key_integration_tests
+      - run:
+          name: Run tests
+          working_directory: << parameters.directory >>
+          command: bundle exec fastlane scan
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+      - run:
+          name: Archive all platforms
+          working_directory: << parameters.directory >>
+          command: |
+              bundle exec fastlane archive_all_platforms
   
   install-dependencies-scan-and-archive:
     parameters:
@@ -285,7 +308,9 @@ jobs:
       - checkout
       - trust-github-key
       - update-spm-integration-commit
-      - install-dependencies-scan-and-archive:
+      - install-dependencies:
+          directory: IntegrationTests/SPMIntegration/
+      - scan-and-archive-all-platforms:
           directory: IntegrationTests/SPMIntegration/
 
   integration-tests-carthage:

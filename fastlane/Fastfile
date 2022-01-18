@@ -171,6 +171,20 @@ platform :ios do
     gym(export_method: "app-store")
   end
 
+  desc "archive all platforms"
+  lane :archive_all_platforms do
+    platforms = {
+      'ios' => 'generic/platform=ios',
+       'tvos' => 'generic/platform=tvos', 
+       'catalyst' => 'generic/platform=macOS,variant=Mac Catalyst'
+    }
+    
+    platforms.each do |platform, destination|
+      match(type: "appstore", platform: platform)
+      gym(export_method: "app-store", destination: destination)
+    end
+  end
+
   desc "build Swift API tester"
   lane :build_swift_api_tester do
     xcodebuild(
