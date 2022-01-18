@@ -235,7 +235,7 @@ class PurchasesOrchestrator {
                 return
             }
 
-            let discount = promotionalOffer.sk1SKPaymentDiscount
+            let discount = promotionalOffer.sk1PromotionalOffer
             let payment = self.storeKitWrapper.payment(withProduct: sk1Product, discount: discount)
             self.purchase(sk1Product: sk1Product,
                           payment: payment,
