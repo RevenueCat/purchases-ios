@@ -10,7 +10,7 @@
 //  PromotionalOffer.swift
 //
 //  Created by Josh Holtz on 1/18/22.
-g
+
 import Foundation
 import StoreKit
 
