@@ -39,7 +39,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         try super.setUpWithError()
         try setUpSystemInfo()
         productsManager = MockProductsManager(systemInfo: systemInfo)
-        
         operationDispatcher = MockOperationDispatcher()
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo)
         deviceCache = MockDeviceCache(systemInfo: systemInfo)
