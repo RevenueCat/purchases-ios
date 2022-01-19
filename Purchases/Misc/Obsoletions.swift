@@ -301,3 +301,15 @@ public extension Purchases {
 @available(watchOS, obsoleted: 1, renamed: "StoreTransaction")
 @available(macOS, obsoleted: 1, renamed: "StoreTransaction")
 @objc(RCTransaction) public class Transaction: NSObject { }
+
+public extension Package {
+    /**
+     `SKProduct` assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
+     */
+    @available(iOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @available(tvOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @available(watchOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @available(macOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @available(macCatalyst, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @objc var product: SKProduct { fatalError() }
+}

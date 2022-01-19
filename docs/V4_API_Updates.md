@@ -74,6 +74,10 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 			<td>RCStoreTransaction</td>
 		</tr>
 		<tr>
+			<td>RCPackage.product</td>
+			<td>RCPackage.storeProduct</td>
+		</tr>
+		<tr>
 			<td>(RCPurchasesErrorCode).RCOperationAlreadyInProgressError</td>
 			<td>RCOperationAlreadyInProgressForProductError</td>
 		</tr>
