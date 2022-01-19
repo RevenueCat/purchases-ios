@@ -363,7 +363,7 @@ Purchases.configure(
 		</tr>
 		<tr>
 			<td>restoreTransactions(_ completion:)</td>
-			<td>restoreTransactions(completion:)</td>
+			<td>restorePurchases(completion:)</td>
 		</tr>
 		<tr>
 			<td>syncPurchases(_ completion:)</td>
