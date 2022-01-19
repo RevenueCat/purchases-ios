@@ -16,7 +16,7 @@ import Foundation
 import StoreKit
 
 /// TypeAlias to StoreKit 1's Discount type, called `SKProductDiscount`
-@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
 public typealias SK1ProductDiscount = SKProductDiscount
 
 /// TypeAlias to StoreKit 2's Discount type, called `StoreKit.Product.SubscriptionOffer`
@@ -98,7 +98,7 @@ internal protocol StoreProductDiscountType {
 
 extension StoreProductDiscount {
 
-    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     internal convenience init(sk1Discount: SK1ProductDiscount) {
         self.init(SK1StoreProductDiscount(sk1Discount: sk1Discount))
     }

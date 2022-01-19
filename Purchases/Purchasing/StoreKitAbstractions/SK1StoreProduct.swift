@@ -54,7 +54,7 @@ internal struct SK1StoreProduct: StoreProductType {
         return SubscriptionPeriod.from(sk1SubscriptionPeriod: skSubscriptionPeriod)
     }
 
-    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     var introductoryDiscount: StoreProductDiscount? {
         return self.underlyingSK1Product.introductoryPrice
             .map(StoreProductDiscount.init)

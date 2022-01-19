@@ -13,13 +13,17 @@
 
 import StoreKit
 
-@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
+@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
 internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 
     init(sk1Discount: SK1ProductDiscount) {
         self.underlyingSK1Discount = sk1Discount
 
-        self.offerIdentifier = sk1Discount.identifier
+        if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
+            self.offerIdentifier = sk1Discount.identifier
+        } else {
+            self.offerIdentifier = nil
+        }
         self.price = sk1Discount.price as Decimal
         self.paymentMode = .init(skProductDiscountPaymentMode: sk1Discount.paymentMode)
         self.subscriptionPeriod = .from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod)
