@@ -113,8 +113,8 @@ private func checkStaticMethods() {
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
-    purchases.getCustomerInfo { _, _ in }
-    purchases.getOfferings { _, _ in }
+    purchases.getCustomerInfo { (_: CustomerInfo?, _: Error?) in }
+    purchases.getOfferings { (_: Offerings?, _: Error?) in }
     purchases.getProducts([String]()) { (_: [StoreProduct]) in }
 
     let skp: SKProduct = SKProduct()
@@ -122,16 +122,16 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
 
-    purchases.purchase(product: stp) { _, _, _, _  in }
-    purchases.purchase(package: pack) { _, _, _, _  in }
-    purchases.syncPurchases { _, _ in }
+    purchases.purchase(product: stp) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
-    let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
-    purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
-    purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
+    purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { (_: [String: IntroEligibility]) in }
 
-    purchases.purchase(product: stp, discount: discount) { _, _, _, _  in }
-    purchases.purchase(package: pack, discount: discount) { _, _, _, _  in }
+    purchases.purchase(product: stp,
+                       discount: discount) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(package: pack,
+                       discount: discount) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.invalidateCustomerInfoCache()
 
 #if os(iOS)
@@ -142,17 +142,13 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let customerInfo: CustomerInfo? = nil
     purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)
 
-    let defermentBlock: DeferredPromotionalPurchaseBlock = { _ in }
+    let defermentBlock = { (_: (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void) in }
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
-    purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp) { _ in }
 }
 
 private func checkIdentity(purchases: Purchases) {
-    purchases.logOut { _, _ in }
-
-    let loginComplete: (CustomerInfo?, Bool, Error?) -> Void = { _, _, _ in }
-    purchases.logIn("", completion: loginComplete)
-    purchases.logIn("") { _, _, _ in }
+    purchases.logOut { (_: CustomerInfo?, _: Error?) in }
+    purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
 }
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {
