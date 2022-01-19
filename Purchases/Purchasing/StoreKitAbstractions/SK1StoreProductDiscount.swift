@@ -38,7 +38,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 
 }
 
-extension StoreProductDiscount.PaymentMode {
+private extension StoreProductDiscount.PaymentMode {
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     init(skProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) {

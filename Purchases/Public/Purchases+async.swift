@@ -82,7 +82,7 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func productsAsync(_ productIdentifiers: [String]) async -> [SKProduct] {
+    func productsAsync(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await withCheckedContinuation { continuation in
             getProducts(productIdentifiers) { result in
                 continuation.resume(returning: result)

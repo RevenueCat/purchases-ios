@@ -115,7 +115,7 @@ private func checkStaticMethods() {
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getCustomerInfo { _, _ in }
     purchases.getOfferings { _, _ in }
-    purchases.getProducts([String]()) { _ in }
+    purchases.getProducts([String]()) { (_: [StoreProduct]) in }
 
     let skp: SKProduct = SKProduct()
     let stp: StoreProduct! = nil
@@ -191,7 +191,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
 
-        let _: [SKProduct] = await purchases.products([])
+        let _: [StoreProduct] = await purchases.products([])
         let discount: StoreProductDiscount! = nil
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack,

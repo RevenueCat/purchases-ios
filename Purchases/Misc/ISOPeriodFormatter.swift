@@ -18,13 +18,13 @@ import StoreKit
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
 enum ISOPeriodFormatter {
 
-    static func string(fromProductSubscriptionPeriod period: SKProductSubscriptionPeriod) -> String {
+    static func string(fromProductSubscriptionPeriod period: SubscriptionPeriod) -> String {
         let unitString = Self.period(fromUnit: period.unit)
-        let stringResult = "P\(period.numberOfUnits)\(unitString)"
+        let stringResult = "P\(period.value)\(unitString)"
         return stringResult
     }
 
-    private static func period(fromUnit unit: SK1Product.PeriodUnit) -> String {
+    private static func period(fromUnit unit: SubscriptionPeriod.Unit) -> String {
         switch unit {
         case .day:
             return "D"
@@ -34,6 +34,7 @@ enum ISOPeriodFormatter {
             return "M"
         case .year:
             return "Y"
+        case .unknown: fallthrough
         @unknown default:
             fatalError("New SKProduct.PeriodUnit \(unit) unaccounted for")
         }

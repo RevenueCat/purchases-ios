@@ -105,7 +105,7 @@ private extension OfferingsManager {
             return
         }
 
-        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiers) { result in
+        productsManager.products(withIdentifiers: productIdentifiers) { result in
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
