@@ -19,6 +19,27 @@ import StoreKit
 public extension Purchases {
 
     /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and become
+     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
+     * ``appUserID`` will be aliased together with the `appUserID` of the existing user.
+     *  Going forward, either `appUserID` will be able to reference the same user.
+     *
+     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
+     * by your app passing the same `appUserId` used to purchase originally.
+     *
+     * - Note: This may force your users to enter the App Store password so should only be performed on request of
+     * the user. Typically with a button in settings or near your purchase UI. Use
+     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     */
+    @available(iOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
+    @available(macOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
+    @objc func restoreTransactions(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+        fatalError()
+    }
+
+    /**
      * Get latest available purchaser info.
      *
      * - Parameter completion: A completion block called when customer info is available and not stale.

@@ -95,7 +95,7 @@ class PurchasesOrchestrator {
         }
     }
 
-    func restoreTransactions(completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
+    func restorePurchases(completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
         syncPurchases(receiptRefreshPolicy: .always, isRestore: true, maybeCompletion: maybeCompletion)
     }
 
