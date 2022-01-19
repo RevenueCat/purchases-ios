@@ -211,3 +211,28 @@ extension StoreProduct {
     }
 
 }
+
+// MARK: - Renames
+
+// @available annotations to help users migrating from `SKProduct` to `StoreProduct`
+public extension StoreProduct {
+
+    /// The object containing introductory price information for the product.
+    @available(iOS, introduced: 11.2, obsoleted: 11.2,
+               renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
+    @available(tvOS, introduced: 11.2, obsoleted: 11.2,
+               renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2,
+               renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
+    @available(macOS, introduced: 10.13.2, obsoleted: 10.13.2,
+               renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
+    @objc var introductoryPrice: SKProductDiscount? { fatalError() }
+
+    /// The locale used to format the price of the product.
+    @available(iOS, unavailable, message: "Use localizedPriceString instead")
+    @available(tvOS, unavailable, message: "Use localizedPriceString instead")
+    @available(watchOS, unavailable, message: "Use localizedPriceString instead")
+    @available(macOS, unavailable, message: "Use localizedPriceString instead")
+    @objc var priceLocale: Locale { fatalError() }
+
+}
