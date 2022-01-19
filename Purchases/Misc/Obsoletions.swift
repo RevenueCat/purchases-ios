@@ -284,11 +284,11 @@ public extension Purchases {
 public extension Package {
     /**
      `SKProduct` assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
-    */
+     */
     @available(iOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
     @available(tvOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
     @available(watchOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
     @available(macOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
     @available(macCatalyst, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
-        var product: SKProduct { fatalError() }
+    var product: SKProduct { fatalError() }
 }
