@@ -146,6 +146,10 @@ Purchases.configure(
 			<td>invalidateCustomerInfoCache</td>
 		</tr>
 		<tr>
+			<td>Purchases -restoreTransactionsWithCompletion:</td>
+			<td>Purchases -restorePurchasesWithCompletion:</td>
+		</tr>
+		<tr>
 			<td>Purchases -offeringsWithCompletion:</td>
 			<td>Purchases -getOfferingsWithCompletion:</td>
 		</tr>
