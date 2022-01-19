@@ -35,7 +35,8 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
     @available(watchOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
     @available(macOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
-    @objc func restoreTransactions(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+    @objc(restoreTransactionsWithCompletionBlock:)
+    func restoreTransactions(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         fatalError()
     }
 
@@ -63,7 +64,8 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @available(watchOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @available(macOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
-    @objc func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
+    @objc(purchaserInfoWithCompletionBlock:)
+    func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         fatalError()
     }
 
@@ -90,7 +92,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
     @available(watchOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
     @available(macOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
-    @objc(productsWithIdentifiers:completion:)
+    @objc(productsWithIdentifiers:completionBlock:)
     func products(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         fatalError()
     }
@@ -110,7 +112,8 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "getOfferings(completion:)")
     @available(watchOS, obsoleted: 1, renamed: "getOfferings(completion:)")
     @available(macOS, obsoleted: 1, renamed: "getOfferings(completion:)")
-    @objc func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
+    @objc(offeringsWithCompletionBlock:)
+    func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
         fatalError()
     }
 
@@ -131,6 +134,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "purchase(package:completion:)")
     @available(watchOS, obsoleted: 1, renamed: "purchase(package:completion:)")
     @available(macOS, obsoleted: 1, renamed: "purchase(package:completion:)")
+    @objc(purchasePackage:withCompletionBlock:)
     func purchasePackage(_ package: Package, _ completion: @escaping PurchaseCompletedBlock) {
         fatalError()
     }
@@ -153,6 +157,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(package:discount:completion:)")
     @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, renamed: "purchase(package:discount:completion:)")
     @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:discount:completion:)")
+    @objc(purchasePackage:withDiscount:completionBlock:)
     func purchasePackage(_ package: Package,
                          discount: SKPaymentDiscount,
                          _ completion: @escaping PurchaseCompletedBlock) {
@@ -177,6 +182,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "purchase(product:_:)")
     @available(watchOS, obsoleted: 1, renamed: "purchase(product:_:)")
     @available(macOS, obsoleted: 1, renamed: "purchase(product:_:)")
+    @objc(purchaseProduct:withCompletionBlock:)
     func purchaseProduct(_ product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
         fatalError()
     }
@@ -200,6 +206,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(product:discount:completion:)")
     @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, renamed: "purchase(product:discount:completion:)")
     @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:discount:completion:)")
+    @objc(purchaseProduct:withDiscount:completionBlock:)
     func purchaseProduct(_ product: SKProduct,
                          discount: SKPaymentDiscount,
                          _ completion: @escaping PurchaseCompletedBlock) {
@@ -255,7 +262,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "logIn")
     @available(watchOS, obsoleted: 1, renamed: "logIn")
     @available(macOS, obsoleted: 1, renamed: "logIn")
-    @objc(createAlias:completion:)
+    @objc(createAlias:completionBlock:)
     func createAlias(_ alias: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
        fatalError()
     }
@@ -272,6 +279,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "logIn")
     @available(watchOS, obsoleted: 1, renamed: "logIn")
     @available(macOS, obsoleted: 1, renamed: "logIn")
+    @objc(identify:completionBlock:)
     func identify(_ appUserID: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
         fatalError()
     }
@@ -284,7 +292,8 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "logOut")
     @available(watchOS, obsoleted: 1, renamed: "logOut")
     @available(macOS, obsoleted: 1, renamed: "logOut")
-    @objc func reset(completion: ((CustomerInfo?, Error?) -> Void)?) {
+    @objc(resetWithCompletionBlock:)
+    func reset(completion: ((CustomerInfo?, Error?) -> Void)?) {
         fatalError()
     }
 
