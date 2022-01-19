@@ -200,7 +200,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                      discount: discount)
         let _: CustomerInfo = try await purchases.customerInfo()
-        let _: CustomerInfo = try await purchases.restoreTransactions()
+        let _: CustomerInfo = try await purchases.restorePurchases()
         let _: CustomerInfo = try await purchases.syncPurchases()
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}

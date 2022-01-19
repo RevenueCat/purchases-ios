@@ -124,7 +124,7 @@ BOOL isAnonymous;
     [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<SKProduct *> *products) { }];
     [p purchaseProduct:stp withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     [p purchasePackage:pack withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p restoreTransactionsWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
+    [p restorePurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
     [p purchaseProduct:stp withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];

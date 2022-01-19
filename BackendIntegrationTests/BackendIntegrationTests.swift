@@ -123,7 +123,7 @@ class BackendIntegrationTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
-        Purchases.shared.restoreTransactions()
+        Purchases.shared.restorePurchases()
 
         waitUntilEntitlementsGoThrough()
     }
@@ -153,7 +153,7 @@ class BackendIntegrationTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
-        Purchases.shared.restoreTransactions()
+        Purchases.shared.restorePurchases()
 
         waitUntilEntitlementsGoThrough()
     }

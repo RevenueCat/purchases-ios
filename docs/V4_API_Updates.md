@@ -154,6 +154,10 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 			<td>invalidateCustomerInfoCache</td>
 		</tr>
 		<tr>
+			<td>Purchases -restoreTransactionsWithCompletion:</td>
+			<td>Purchases -restorePurchasesWithCompletion:</td>
+		</tr>
+		<tr>
 			<td>Purchases -offeringsWithCompletion:</td>
 			<td>Purchases -getOfferingsWithCompletion:</td>
 		</tr>
@@ -371,7 +375,7 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 		</tr>
 		<tr>
 			<td>restoreTransactions(_ completion:)</td>
-			<td>restoreTransactions(completion:)</td>
+			<td>restorePurchases(completion:)</td>
 		</tr>
 		<tr>
 			<td>syncPurchases(_ completion:)</td>

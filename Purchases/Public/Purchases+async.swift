@@ -197,9 +197,9 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func restoreTransactionsAsync() async throws -> CustomerInfo {
+    func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            restoreTransactions { maybeCustomerInfo, maybeError in
+            restorePurchases { maybeCustomerInfo, maybeError in
                 if let error = maybeError {
                     continuation.resume(throwing: error)
                     return

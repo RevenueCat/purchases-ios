@@ -17,7 +17,7 @@ import Foundation
 enum RestoreStrings {
 
     // swiftlint:disable identifier_name
-    case restoretransactions_called_with_allow_sharing_appstore_account_false_warning
+    case restorepurchases_called_with_allow_sharing_appstore_account_false_warning
     // swiftlint:enable identifier_name
 
 }
@@ -26,8 +26,8 @@ extension RestoreStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .restoretransactions_called_with_allow_sharing_appstore_account_false_warning:
-            return "allowSharingAppStoreAccount is set to false and restoreTransactions has been called. " +
+        case .restorepurchases_called_with_allow_sharing_appstore_account_false_warning:
+            return "allowSharingAppStoreAccount is set to false and restorePurchases has been called. " +
             "Are you sure you want to do this?"
         }
     }

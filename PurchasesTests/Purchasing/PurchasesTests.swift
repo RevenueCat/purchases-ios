@@ -1163,7 +1163,7 @@ class PurchasesTests: XCTestCase {
 
     func testRestoringPurchasesPostsTheReceipt() {
         setupPurchases()
-        purchases!.restoreTransactions()
+        purchases!.restorePurchases()
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
@@ -1187,7 +1187,7 @@ class PurchasesTests: XCTestCase {
         mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
 
         setupPurchases()
-        purchases!.restoreTransactions()
+        purchases!.restorePurchases()
 
         expect(self.backend.postReceiptDataCalled) == false
     }
@@ -1196,7 +1196,7 @@ class PurchasesTests: XCTestCase {
         mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
 
         setupPurchases()
-        purchases!.restoreTransactions()
+        purchases!.restorePurchases()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1221,7 +1221,7 @@ class PurchasesTests: XCTestCase {
         mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
 
         setupPurchases()
-        purchases!.restoreTransactions()
+        purchases!.restorePurchases()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1230,7 +1230,7 @@ class PurchasesTests: XCTestCase {
         mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
 
         setupPurchases()
-        purchases!.restoreTransactions()
+        purchases!.restorePurchases()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1238,20 +1238,20 @@ class PurchasesTests: XCTestCase {
     func testRestoringPurchasesAlwaysRefreshesAndPostsTheReceipt() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = true
-        purchases!.restoreTransactions()
+        purchases!.restorePurchases()
 
         expect(self.receiptFetcher.receiptDataTimesCalled).to(equal(1))
     }
 
     func testRestoringPurchasesSetsIsRestore() {
         setupPurchases()
-        purchases!.restoreTransactions()
+        purchases!.restorePurchases()
         expect(self.backend.postedIsRestore!).to(beTrue())
     }
 
     func testRestoringPurchasesSetsIsRestoreForAnon() {
         setupAnonPurchases()
-        purchases!.restoreTransactions()
+        purchases!.restorePurchases()
 
         expect(self.backend.postedIsRestore!).to(beTrue())
     }
@@ -1264,7 +1264,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedCustomerInfo: CustomerInfo?
 
-        purchases!.restoreTransactions { (info, _) in
+        purchases!.restorePurchases { (info, _) in
             receivedCustomerInfo = info
         }
 
@@ -1283,7 +1283,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedError: Error?
 
-        purchases!.restoreTransactions { (_, newError) in
+        purchases!.restorePurchases { (_, newError) in
             receivedError = newError
         }
 
@@ -1566,7 +1566,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedCustomerInfo: CustomerInfo?
 
-        purchases?.restoreTransactions { (info, _) in
+        purchases?.restorePurchases { (info, _) in
             receivedCustomerInfo = info
         }
 
@@ -1932,18 +1932,18 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = false
         var receivedError: NSError?
-        self.purchases?.restoreTransactions { (_, error) in
+        self.purchases?.restorePurchases { (_, error) in
             receivedError = error as NSError?
         }
 
         expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
     }
 
-    func testRestoreTransactionsCallsCompletionOnMainThreadWhenMissingReceipts() {
+    func testRestorePurchasesCallsCompletionOnMainThreadWhenMissingReceipts() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = false
         var receivedError: NSError?
-        self.purchases?.restoreTransactions { (_, error) in
+        self.purchases?.restorePurchases { (_, error) in
             receivedError = error as NSError?
         }
 

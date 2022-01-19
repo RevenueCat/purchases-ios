@@ -1034,7 +1034,7 @@ public extension Purchases {
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
+     * won't be able to restore them. Use `restorePurchases(completion:)` to cover those cases.
      */
     @objc func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
         purchasesOrchestrator.syncPurchases(completion: completion)
@@ -1052,7 +1052,7 @@ public extension Purchases {
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
+     * won't be able to restore them. Use `restorePurchases(completion:)` to cover those cases.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchases() async throws -> CustomerInfo {
@@ -1072,8 +1072,8 @@ public extension Purchases {
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
-    @objc func restoreTransactions(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
-        purchasesOrchestrator.restoreTransactions(completion: completion)
+    @objc func restorePurchases(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+        purchasesOrchestrator.restorePurchases(completion: completion)
     }
 
     /**
@@ -1090,8 +1090,8 @@ public extension Purchases {
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func restoreTransactions() async throws -> CustomerInfo {
-        return try await restoreTransactionsAsync()
+    func restorePurchases() async throws -> CustomerInfo {
+        return try await restorePurchasesAsync()
     }
 
     /**
@@ -1259,7 +1259,7 @@ public extension Purchases {
      *
      * - Note: Use this initializer if your app does not have an account system.
      * `Purchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
-     * This also affects the behavior of ``Purchases/restoreTransactions(completion:)``.
+     * This also affects the behavior of ``Purchases/restorePurchases(completion:)``.
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
