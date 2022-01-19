@@ -568,7 +568,7 @@ private extension PurchasesOrchestrator {
                        isRestore: Bool,
                        maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
         if !self.allowSharingAppStoreAccount {
-            Logger.warn(Strings.restore.restoretransactions_called_with_allow_sharing_appstore_account_false_warning)
+            Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
         }
 
         let currentAppUserID = appUserID
