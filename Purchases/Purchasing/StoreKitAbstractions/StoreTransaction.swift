@@ -53,7 +53,6 @@ public typealias SK2Transaction = StoreKit.Transaction
         hasher.combine(self.transactionIdentifier)
 
         return hasher.finalize()
-
     }
 
 }

@@ -45,6 +45,14 @@ Purchases.configure(
 )
 ```
 
+### New Types
+
+To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to encapsulate data from `StoreKit 1` and `StoreKit 2`:
+
+- `StoreProduct` / `RCStoreProduct`: wraps a `StoreKit.SKProduct` or `StoreKit.Product`
+- `StoreTransaction` / `RCStoreTransaction`: wraps a `StoreKit.SKPaymentTransaction` or `StoreKit.Transaction`
+- `StoreProductDiscount` / `RCStoreProductDiscount`: wraps a `StoreKit.SKProductDiscount` or `StoreKit.Product.SubscriptionOffer`
+
 ### ObjC type changes
 
 `@import Purchases` is now `@import RevenueCat`
