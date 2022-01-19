@@ -603,7 +603,7 @@ class PurchasesTests: XCTestCase {
 
     func testIsAbleToFetchProducts() {
         setupPurchases()
-        var products: [SK1Product]?
+        var products: [StoreProduct]?
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
         purchases!.getProducts(productIdentifiers) { (newProducts) in
             products = newProducts
@@ -802,7 +802,7 @@ class PurchasesTests: XCTestCase {
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
         purchases!.getProducts(productIdentifiers) { (newProducts) in
             let product = newProducts[0]
-            self.purchases?.purchase(product: StoreProduct(sk1Product: newProducts[0])) { (_, _, _, _) in
+            self.purchases?.purchase(product: newProducts[0]) { (_, _, _, _) in
 
             }
 
@@ -825,7 +825,7 @@ class PurchasesTests: XCTestCase {
 
             if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                 expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.payAsYouGo))
-                expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price as Decimal?))
+                expect(self.backend.postedIntroPrice).to(equal(product.introductoryDiscount?.price))
             } else {
                 expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.none))
                 expect(self.backend.postedIntroPrice).to(beNil())
@@ -844,7 +844,7 @@ class PurchasesTests: XCTestCase {
                 expect(postedDiscount.paymentMode.rawValue).to(equal(expectedPaymentMode))
             }
 
-            expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
+            expect(self.backend.postedCurrencyCode) == product.priceFormatter!.currencyCode
 
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
@@ -859,8 +859,8 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         storeKitWrapper.payment = SKPayment(product: sk1Product)
         transaction.mockPayment = self.storeKitWrapper.payment!
-
         transaction.mockState = SKPaymentTransactionState.purchasing
+
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptCustomerInfo = CustomerInfo(testData: emptyCustomerInfoData)
@@ -2368,7 +2368,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testProductIsRemovedButPresentInTheQueuedTransaction() {
-        self.mockProductsManager.stubbedProductsCompletionResult = Set<SK1Product>()
+        self.mockProductsManager.stubbedProductsCompletionResult = Set()
         setupPurchases()
         let product = MockSK1Product(mockProductIdentifier: "product")
 

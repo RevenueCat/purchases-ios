@@ -784,11 +784,11 @@ public extension Purchases {
     }
 
     /**
-     * Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
+     * Fetches the `StorePRoducts` for your IAPs for given `productIdentifiers`.
      * Use this method if you aren't using `getOfferings(completion:)`.
      * You should use getOfferings though.
      *
-     * - Note: `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by
+     * - Note: `completion` may be called without `StoreProduct`s that you are expecting. This is usually caused by
      * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
      * Also ensure that you have an active developer program subscription and you have signed the latest paid
      * application agreements.
@@ -802,16 +802,16 @@ public extension Purchases {
      * If the fetch fails for any reason it will return an empty array.
      */
     @objc(getProductsWithIdentifiers:completion:)
-    func getProducts(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
+    func getProducts(_ productIdentifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
 
     /**
-     * Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
+     * Fetches the `StoreProduct` for your IAPs for given `productIdentifiers`.
      * Use this method if you aren't using `getOfferings(completion:)`.
      * You should use getOfferings though.
      *
-     * - Note: `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by
+     * - Note: The result might not contain the `StoreProduct`s that you are expecting. This is usually caused by
      * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
      * Also ensure that you have an active developer program subscription and you have signed the latest paid
      * application agreements.
@@ -821,11 +821,9 @@ public extension Purchases {
      * https://appstoreconnect.apple.com/
      * This should be either hard coded in your application, from a file, or from a custom endpoint if you want
      * to be able to deploy new IAPs without an app update.
-     * - Parameter completion: An @escaping callback that is called with the loaded products.
-     * If the fetch fails for any reason it will return an empty array.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func products(_ productIdentifiers: [String]) async -> [SKProduct] {
+    func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await productsAsync(productIdentifiers)
     }
 

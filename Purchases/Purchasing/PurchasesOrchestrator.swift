@@ -105,7 +105,7 @@ class PurchasesOrchestrator {
                       maybeCompletion: maybeCompletion)
     }
 
-    func products(withIdentifiers identifiers: [String], completion: @escaping ([SK1Product]) -> Void) {
+    func products(withIdentifiers identifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -127,7 +127,7 @@ class PurchasesOrchestrator {
             return
         }
 
-        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiersSet) { products in
+        productsManager.products(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(Array(products.value ?? []))
             }
@@ -519,7 +519,7 @@ private extension PurchasesOrchestrator {
 
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
-                     products: Set<SK1Product>) {
+                     products: Set<StoreProduct>) {
         var maybeProductData: ProductRequestData?
         var maybePresentedOfferingID: String?
         if let product = products.first {

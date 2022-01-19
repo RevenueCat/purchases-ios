@@ -78,8 +78,8 @@ class IntroEligibilityCalculator {
 @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 private extension IntroEligibilityCalculator {
 
-    func checkEligibility(candidateProducts: Set<SK1Product>,
-                          purchasedProductsWithIntroOffers: Set<SK1Product>) -> [String: IntroEligibilityStatus] {
+    func checkEligibility(candidateProducts: Set<StoreProduct>,
+                          purchasedProductsWithIntroOffers: Set<StoreProduct>) -> [String: IntroEligibilityStatus] {
         var result: [String: IntroEligibilityStatus] = [:]
 
         for candidate in candidateProducts {
@@ -94,7 +94,7 @@ private extension IntroEligibilityCalculator {
                     return foundByGroupId
                 }
 
-            let hasIntroductoryPrice = candidate.introductoryPrice != nil
+            let hasIntroductoryPrice = candidate.introductoryDiscount != nil
             result[candidate.productIdentifier] = !hasIntroductoryPrice || usedIntroForProductIdentifier
                 ? IntroEligibilityStatus.ineligible
                 : IntroEligibilityStatus.eligible

@@ -159,7 +159,7 @@ private extension TrialOrIntroPriceEligibilityChecker {
     func productsWithIntroOffers(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock) {
         self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
             let eligibility: [(String, IntroEligibility)] = Array(products.value ?? [])
-                .filter { $0.introductoryPrice != nil }
+                .filter { $0.introductoryDiscount != nil }
                 .map { ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible)) }
 
             let productIdsToIntroEligibleStatus = Dictionary(uniqueKeysWithValues: eligibility)
