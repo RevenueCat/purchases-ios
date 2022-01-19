@@ -285,12 +285,10 @@ public extension Package {
     /**
      `SKProduct` assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
     */
-    @available(iOS, introduced: 11.0, obsoleted: 11.0, renamed: "storeProduct", message: "Use storeProduct instead")
-    @available(tvOS, introduced: 11.0, obsoleted: 11.0, renamed: "storeProduct", message: "Use storeProduct instead")
-    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "storeProduct", message: "Use storeProduct instead")
-    @available(macOS, introduced: 10.13.4, obsoleted: 10.13.4,
-               renamed: "storeProduct", message: "Use storeProduct instead")
-    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "storeProduct",
-               message: "Use storeProduct instead")
+    @available(iOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
+    @available(tvOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
+    @available(watchOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
+    @available(macOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
+    @available(macCatalyst, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
         var product: SKProduct { fatalError() }
 }
