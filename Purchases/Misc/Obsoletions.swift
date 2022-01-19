@@ -285,10 +285,10 @@ public extension Package {
     /**
      `SKProduct` assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
     */
-    @available(iOS, introduced: 12.2, obsoleted: 12.2, renamed: "storeProduct", message: "Use storeProduct instead")
-    @available(tvOS, introduced: 12.2, obsoleted: 12.2, renamed: "storeProduct", message: "Use storeProduct instead")
+    @available(iOS, introduced: 11.0, obsoleted: 11.0, renamed: "storeProduct", message: "Use storeProduct instead")
+    @available(tvOS, introduced: 11.0, obsoleted: 11.0, renamed: "storeProduct", message: "Use storeProduct instead")
     @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "storeProduct", message: "Use storeProduct instead")
-    @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4,
+    @available(macOS, introduced: 10.13.4, obsoleted: 10.13.4,
                renamed: "storeProduct", message: "Use storeProduct instead")
     @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "storeProduct",
                message: "Use storeProduct instead")
