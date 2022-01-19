@@ -65,7 +65,7 @@ class PaywallViewController: UITableViewController {
             if let intro = package.storeProduct.introductoryDiscount {
                 let packageTermsLabelText = intro.price == 0
                 ? "\(intro.subscriptionPeriod.periodTitle()) free trial"
-                : "\(package.localizedIntroductoryPriceString ?? "unknown") for \(intro.subscriptionPeriod.periodTitle())"
+                : "\(package.localizedIntroductoryPriceString!) for \(intro.subscriptionPeriod.periodTitle())"
 
                 cell.packageTermsLabel.text = packageTermsLabelText
             } else {
