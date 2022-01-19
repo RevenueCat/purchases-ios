@@ -21,8 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
                             observerMode: false,
-                            userDefaults: nil,
-                            useStoreKit2IfAvailable: true)
+                            userDefaults: nil)
 
         Purchases.logLevel = .debug
         // set attributes to store additional, structured information for a user in RevenueCat.
