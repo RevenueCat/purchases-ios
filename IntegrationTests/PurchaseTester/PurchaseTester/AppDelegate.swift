@@ -18,10 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        Purchases.configure(withAPIKey: Constants.apiKey,
-                            appUserID: nil,
-                            observerMode: false,
-                            userDefaults: nil)
+        Purchases.configure(withAPIKey: Constants.apiKey)
 
         Purchases.logLevel = .debug
         // set attributes to store additional, structured information for a user in RevenueCat.
