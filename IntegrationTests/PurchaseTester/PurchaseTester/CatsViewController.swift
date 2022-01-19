@@ -110,7 +110,7 @@ class CatsViewController: UIViewController {
     }
     
     @objc func restorePurchasesButtonTapped() {
-        Purchases.shared.restoreTransactions { (customerInfo, error) in
+        Purchases.shared.restorePurchases { (customerInfo, error) in
             if let e = error {
                 print("RESTORE ERROR: - \(e.localizedDescription)")
             }
