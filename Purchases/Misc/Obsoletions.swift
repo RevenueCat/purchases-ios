@@ -290,5 +290,5 @@ public extension Package {
     @available(watchOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
     @available(macOS, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
     @available(macCatalyst, obsoleted: 1, renamed: "storeProduct", message: "Use storeProduct instead")
-    var product: SKProduct { fatalError() }
+    @objc var product: SKProduct { fatalError() }
 }
