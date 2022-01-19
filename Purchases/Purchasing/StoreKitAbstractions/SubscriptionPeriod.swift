@@ -76,7 +76,7 @@ public extension SubscriptionPeriod {
     @available(tvOS, obsoleted: 1, renamed: "value")
     @available(watchOS, obsoleted: 1, renamed: "value")
     @available(macOS, obsoleted: 1, renamed: "value")
-    @objc var numberOfUnits: UInt { fatalError() }
+    @objc var numberOfUnits: Int { fatalError() }
 
 }
 
