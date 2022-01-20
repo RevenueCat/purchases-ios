@@ -13,7 +13,6 @@
 //
 
 import Foundation
-import StoreKit
 
 @objc(RCPackageType) public enum PackageType: Int {
 
