@@ -156,7 +156,7 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 #### PurchasesDelegate
 | v3 | v4 |
 | ------------ | ------------------------------------- | 
-| purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) | purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) |
+| purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) | ``PurchasesDelegate/purchases(_:receivedUpdated:)`` |
 
 ### Swift Error handling
 
