@@ -13,7 +13,7 @@
 
 import Foundation
 
-/// A ``UserDefaults`` wrapper to synchronize access and writes.
+/// A `UserDefaults` wrapper to synchronize access and writes.
 ///
 /// - Seealso: ``Atomic``.
 internal class SynchronizedUserDefaults {
