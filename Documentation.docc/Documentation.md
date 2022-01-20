@@ -43,7 +43,6 @@ Or browse our iOS sample apps:
 - ``Purchases``
 
 ### Configuring the SDK
-
 - ``Purchases/configure(withAPIKey:)``
 - ``Purchases/configure(withAPIKey:appUserID:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:)``
@@ -61,6 +60,7 @@ Or browse our iOS sample apps:
 
 ### Making Purchases
 - ``StoreTransaction``
+
 - ``Purchases/purchase(package:)``
 - ``Purchases/purchase(package:completion:)``
 - ``Purchases/purchase(product:)``
@@ -69,6 +69,7 @@ Or browse our iOS sample apps:
 ### Making Purchases with Promotional Offers
 - ``IntroEligibility``
 - ``StoreProductDiscount``
+
 - ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:)``
 - ``Purchases/purchase(package:discount:completion:)``
 - ``Purchases/purchase(product:discount:completion:)``
@@ -78,6 +79,7 @@ Or browse our iOS sample apps:
 - ``EntitlementInfo``
 - ``EntitlementInfos``
 - ``PurchasesDelegate``
+
 - ``Purchases/getCustomerInfo(completion:)``
 
 ### Identifying Users
@@ -93,7 +95,6 @@ Or browse our iOS sample apps:
 - ``Purchases/showManageSubscriptions()``
 
 ### Subscriber Attributes
-
 - ``Purchases/setAttributes(_:)``
 - ``Purchases/setAd(_:)``
 - ``Purchases/setEmail(_:)``
