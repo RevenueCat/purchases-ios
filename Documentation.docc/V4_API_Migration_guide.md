@@ -99,140 +99,39 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 
 `import Purchases` is now `import RevenueCat`
 
-<table>
-	<thead>
-		<tr>
-			<th>Old type name</th>
-			<th>New type name</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td>Purchases.Offering</td>
-			<td>Offering</td>
-		</tr>
-		<tr>
-			<td>Purchases.ErrorDomain</td>
-			<td>See error handling below</td>
-		</tr>
-		<tr>
-			<td>Purchases.ErrorCode.Code</td>
-			<td>See error handling below</td>
-		</tr>
-		<tr>
-			<td>Purchases.Package</td>
-			<td>Package</td>
-		</tr>
-		<tr>
-			<td>Purchases.PurchaserInfo</td>
-			<td><strong>CustomerInfo</strong></td>
-		</tr>
-		<tr>
-			<td>Purchases.EntitlementInfos</td>
-			<td>EntitlementInfos</td>
-		</tr>
-		<tr>
-			<td>Purchases.Transaction</td>
-			<td>StoreTransaction</td>
-		</tr>
-		<tr>
-			<td>Purchases.EntitlementInfo</td>
-			<td>EntitlementInfo</td>
-		</tr>
-		<tr>
-			<td>Purchases.PeriodType</td>
-			<td>PeriodType</td>
-		</tr>
-		<tr>
-			<td>Purchases.Store</td>
-			<td>Store</td>
-		</tr>
-		<tr>
-			<td>RCPurchaseOwnershipType</td>
-			<td>PurchaseOwnershipType</td>
-		</tr>
-		<tr>
-			<td>RCAttributionNetwork</td>
-			<td>AttributionNetwork</td>
-		</tr>
-		<tr>
-			<td>RCIntroEligibility</td>
-			<td>IntroEligibility</td>
-		</tr>
-		<tr>
-			<td>RCIntroEligibilityStatus</td>
-			<td>IntroEligibilityStatus</td>
-		</tr>
-		<tr>
-			<td>Purchases.LogLevel</td>
-			<td>LogLevel</td>
-		</tr>
-		<tr>
-			<td>Purchases.Offerings</td>
-			<td>Offerings</td>
-		</tr>
-		<tr>
-			<td>Purchases.PackageType</td>
-			<td>PackageType</td>
-		</tr>
-		<tr>
-			<td>Package.product</td>
-			<td>Package.storeProduct</td>
-		</tr>
-		<tr>
-			<td>Package.product.price: NSDecimalNumber</td>
-			<td>Package.storeProduct.price: Decimal</td>
-		</tr>
-		<tr>
-			<td>Package.localizedIntroductoryPriceString: String</td>
-			<td>Package.localizedIntroductoryPriceString: String?</td>
-		</tr>
-		<tr>
-			<td>RCDeferredPromotionalPurchaseBlock</td>
-			<td>DeferredPromotionalPurchaseBlock</td>
-		</tr>
-		<tr>
-			<td>Purchases.PurchaseCompletedBlock</td>
-			<td>PurchaseCompletedBlock</td>
-		</tr>
-		<tr>
-			<td>Purchases.ReceivePurchaserInfoBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>Purchases.ReceiveOfferingsBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>Purchases.ReceiveProductsBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>Purchases.PaymentDiscountBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-				<tr>
-			<td>Purchases.RevenueCatBackendErrorCode</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>Purchases.ErrorCode.operationAlreadyInProgressError</td>
-			<td>RevenueCat.ErrorCode.operationAlreadyInProgressForProductError</td>
-		</tr>
-		<tr>
-			<td>Purchases.ErrorUtils</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>ReadableErrorCodeKey</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCFinishableKey</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-	</tbody>
-</table>
+| Old type name | New type name |
+| ------------ | ------------------------------------- | 
+| Purchases.Offering | Offering |
+| Purchases.ErrorDomain | See error handling below |
+| Purchases.ErrorCode.Code | See error handling below |
+| Purchases.Package | Package |
+| Purchases.PurchaserInfo | <strong>CustomerInfo</strong> |
+| Purchases.EntitlementInfos | EntitlementInfos |
+| Purchases.Transaction | StoreTransaction |
+| Purchases.EntitlementInfo | EntitlementInfo |
+| Purchases.PeriodType | PeriodType |
+| Purchases.Store | Store |
+| RCPurchaseOwnershipType | PurchaseOwnershipType |
+| RCAttributionNetwork | AttributionNetwork |
+| RCIntroEligibility | IntroEligibility |
+| RCIntroEligibilityStatus | IntroEligibilityStatus |
+| Purchases.LogLevel | LogLevel |
+| Purchases.Offerings | Offerings |
+| Purchases.PackageType | PackageType |
+| Package.product | Package.storeProduct |
+| Package.product.price: NSDecimalNumber | Package.storeProduct.price: Decimal |
+| Package.localizedIntroductoryPriceString: String | Package.localizedIntroductoryPriceString: String? |
+| RCDeferredPromotionalPurchaseBlock | DeferredPromotionalPurchaseBlock |
+| Purchases.PurchaseCompletedBlock | PurchaseCompletedBlock |
+| Purchases.ReceivePurchaserInfoBlock | <i>REMOVED</i> |
+| Purchases.ReceiveOfferingsBlock | <i>REMOVED</i> |
+| Purchases.ReceiveProductsBlock | <i>REMOVED</i> |
+| Purchases.PaymentDiscountBlock | <i>REMOVED</i> |
+| Purchases.RevenueCatBackendErrorCode | <i>REMOVED</i> |
+| Purchases.ErrorCode.operationAlreadyInProgressError | RevenueCat.ErrorCode.operationAlreadyInProgressForProductError |
+| Purchases.ErrorUtils | <i>REMOVED</i> |
+| ReadableErrorCodeKey | <i>REMOVED</i> |
+| RCFinishableKey | <i>REMOVED</i> |
 
 ### Swift API changes
 
