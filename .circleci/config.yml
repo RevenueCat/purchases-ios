@@ -145,9 +145,6 @@ jobs:
           command: brew install swiftlint
       - install-dependencies
       - run:
-          name: Clear Derived Data
-          command: bundle exec fastlane run clear_derived_data
-      - run:
           name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
