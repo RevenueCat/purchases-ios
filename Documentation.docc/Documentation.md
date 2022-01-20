@@ -73,9 +73,44 @@ Or browse our iOS sample apps:
 - ``Purchases/purchase(package:discount:completion:)``
 - ``Purchases/purchase(product:discount:completion:)``
 
-### Managing Subscriptions
+### Subscription Status
 - ``CustomerInfo``
 - ``EntitlementInfo``
 - ``EntitlementInfos``
 - ``PurchasesDelegate``
 - ``Purchases/getCustomerInfo(completion:)``
+
+### Identifying Users
+- ``Purchases/logIn(_:completion:)``
+- ``Purchases/logOut(completion:)``
+
+### Managing Subscriptions
+- ``Purchases/syncPurchases()``
+- ``Purchases/restorePurchases()``
+- ``Purchases/beginRefundRequestForActiveEntitlement()``
+- ``Purchases/beginRefundRequest(forEntitlement:)``
+- ``Purchases/beginRefundRequest(forProduct:)``
+- ``Purchases/showManageSubscriptions()``
+
+### Subscriber Attributes
+
+- ``Purchases/setAttributes(_:)``
+- ``Purchases/setAd(_:)``
+- ``Purchases/setEmail(_:)``
+- ``Purchases/setDisplayName(_:)``
+- ``Purchases/setKeyword(_:)``
+- ``Purchases/setCampaign(_:)``
+- ``Purchases/setCreative(_:)``
+- ``Purchases/setAdGroup(_:)``
+- ``Purchases/setPushToken(_:)``
+- ``Purchases/setMediaSource(_:)``
+- ``Purchases/setPhoneNumber(_:)``
+- ``Purchases/setAttributes(_:)``
+
+### Integrations
+- ``Purchases/setAdjustID(_:)``
+- ``Purchases/setAppsflyerID(_:)``
+- ``Purchases/setAirshipChannelID(_:)``
+- ``Purchases/setMparticleID(_:)``
+- ``Purchases/setOnesignalID(_:)``
+- ``Purchases/setFBAnonymousID(_:)(_:)``
