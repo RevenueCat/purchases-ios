@@ -1154,6 +1154,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
+    @available(macCatalyst, unavailable)
     @objc func presentCodeRedemptionSheet() {
         storeKitWrapper.presentCodeRedemptionSheet()
     }

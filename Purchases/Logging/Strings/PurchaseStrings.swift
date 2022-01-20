@@ -26,6 +26,7 @@ enum PurchaseStrings {
     case paymentqueue_revoked_entitlements_for_product_identifiers(productIdentifiers: [String])
     case paymentqueue_updatedtransaction(transaction: SKPaymentTransaction)
     case presenting_code_redemption_sheet
+    case unable_to_present_redemption_sheet
     case purchases_synced
     case purchasing_product_from_package(productIdentifier: String, offeringIdentifier: String)
     case purchasing_product(productIdentifier: String)
@@ -105,6 +106,10 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .presenting_code_redemption_sheet:
             return "Presenting code redemption sheet."
+
+        case .unable_to_present_redemption_sheet:
+            return "SKPaymentQueue.presentCodeRedemptionSheet is not available in the current platform, " +
+            "this is an Apple bug."
 
         case .purchases_synced:
             return "Purchases synced."
