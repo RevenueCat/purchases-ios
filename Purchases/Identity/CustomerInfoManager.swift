@@ -177,7 +177,8 @@ class CustomerInfoManager {
 
     /// Observers keyed by a monotonically increasing identifier.
     /// This allows cancelling observations by deleting them from this dictionary.
-    /// These observers are used both for ``customerInfoStream`` and `PurchasesDelegate.purchases(_:receivedUpdated:)`.
+    /// These observers are used both for ``Purchases/customerInfoStream`` and
+    /// `PurchasesDelegate/purchases(_:receivedUpdated:)``.
     private var customerInfoObserversByIdentifier: [Int: (CustomerInfo) -> Void] = [:]
 
     /// Allows monitoring changes to the active `CustomerInfo`.

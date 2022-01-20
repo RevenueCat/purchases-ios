@@ -772,7 +772,7 @@ public extension Purchases {
         return try await customerInfoAsync()
     }
 
-    /// Returns an ``AsyncStream`` of ``CustomerInfo`` changes.
+    /// Returns an `AsyncStream` of ``CustomerInfo`` changes.
     ///
     /// - Seealso `PurchasesDelegate.purchases(_ purchases: Purchases, didReceiveUpdated:)`
     /// - Seealso `Purchases.customerInfo()`
@@ -1293,7 +1293,7 @@ public extension Purchases {
      * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
      * sync status across a shared container, such as between a host app and an extension. The instance of the
      * Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases.shared``
+     * You should access the singleton instance using ``Purchases/shared``
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
@@ -1317,7 +1317,7 @@ public extension Purchases {
      * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
      * sync status across a shared container, such as between a host app and an extension. The instance of the
      * Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases.shared``
+     * You should access the singleton instance using ``Purchases/shared``
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
