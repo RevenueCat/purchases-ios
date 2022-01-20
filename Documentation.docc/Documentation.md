@@ -36,3 +36,46 @@ For more detailed information, you can view our complete documentation at [docs.
 Or browse our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
+
+## Topics
+
+### Purchases
+- ``Purchases``
+
+### Configuring the SDK
+
+- ``Purchases/configure(withAPIKey:)``
+- ``Purchases/configure(withAPIKey:appUserID:)``
+- ``Purchases/configure(withAPIKey:appUserID:observerMode:)``
+- ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:)``
+
+### Displaying Products
+- ``Offerings``
+- ``Offering``
+- ``Package``
+- ``StoreProduct``
+- ``SubscriptionPeriod``
+
+- ``Purchases/getOfferings(completion:)``
+- ``Purchases/getProducts(_:completion:)``
+
+### Making Purchases
+- ``StoreTransaction``
+- ``Purchases/purchase(package:)``
+- ``Purchases/purchase(package:completion:)``
+- ``Purchases/purchase(product:)``
+- ``Purchases/purchase(product:completion:)``
+
+### Making Purchases with Promotional Offers
+- ``IntroEligibility``
+- ``StoreProductDiscount``
+- ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:)``
+- ``Purchases/purchase(package:discount:completion:)``
+- ``Purchases/purchase(product:discount:completion:)``
+
+### Managing Subscriptions
+- ``CustomerInfo``
+- ``EntitlementInfo``
+- ``EntitlementInfos``
+- ``PurchasesDelegate``
+- ``Purchases/getCustomerInfo(completion:)``
