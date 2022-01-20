@@ -37,6 +37,9 @@ Or browse our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
 
+## Migrating from Purchases v3
+- <doc:V4_API_Migration_guide>
+
 ## Topics
 
 ### Purchases

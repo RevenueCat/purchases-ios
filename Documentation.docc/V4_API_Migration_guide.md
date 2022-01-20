@@ -1,4 +1,4 @@
-## RevenueCat V4 API updates
+# RevenueCat V4 API Migration Guide
 There were various updates to our API when we migrated the ObjC pieces to Swift. Most were unavoidable, 
 but a number of updates make our Swift API more idomatic. We'll be updating this list as we continue to release betas.
 
@@ -57,136 +57,43 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 
 `@import Purchases` is now `@import RevenueCat`
 
-<table>
-	<thead>
-		<tr>
-			<th>Old API</th>
-			<th>New API</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td>RCPurchaserInfo</td>
-			<td>RCCustomerInfo</td>
-		</tr>
-		<tr>
-			<td>RCTransaction</td>
-			<td>RCStoreTransaction</td>
-		</tr>
-		<tr>
-			<td>RCPackage.product</td>
-			<td>RCPackage.storeProduct</td>
-		</tr>
-		<tr>
-			<td>(RCPurchasesErrorCode).RCOperationAlreadyInProgressError</td>
-			<td>RCOperationAlreadyInProgressForProductError</td>
-		</tr>
-		<tr>
-			<td>RCPurchasesErrorDomain</td>
-			<td>RCPurchasesErrorCodeDomain</td>
-		</tr>
-		<tr>
-			<td>RCBackendError</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCErrorUtils</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCBackendErrorDomain</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCFinishableKey</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCReceivePurchaserInfoBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCReceiveIntroEligibilityBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCReceiveOfferingsBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCReceiveProductsBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCPurchaseCompletedBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCDeferredPromotionalPurchaseBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-		<tr>
-			<td>RCPaymentDiscountBlock</td>
-			<td><i>REMOVED</i></td>
-		</tr>
-				<tr>
-			<td colspan="2" style="text-align:center;" ><strong>PurchasesDelegate<strong></td>
-		</tr>
-		<tr>
-			<td>purchases:didReceiveUpdatedPurchaserInfo:</td>
-			<td>purchases:didReceiveUpdatedCustomerInfo:</td>
-		</tr>
-	</tbody>
-</table>
+| Old API | New API |
+| ------------ | ------------------------------------- | 
+| RCPurchaserInfo | RCCustomerInfo |
+| RCTransaction | RCStoreTransaction |
+| RCPackage.product | RCPackage.storeProduct |
+| (RCPurchasesErrorCode).RCOperationAlreadyInProgressError | RCOperationAlreadyInProgressForProductError |
+| RCPurchasesErrorDomain | RCPurchasesErrorCodeDomain |
+| RCBackendError | <i>REMOVED</i> |
+| RCErrorUtils | <i>REMOVED</i> |
+| RCBackendErrorDomain | <i>REMOVED</i> |
+| RCFinishableKey | <i>REMOVED</i> |
+| RCReceivePurchaserInfoBlock | <i>REMOVED</i> |
+| RCReceiveIntroEligibilityBlock | <i>REMOVED</i> |
+| RCReceiveOfferingsBlock | <i>REMOVED</i> |
+| RCReceiveProductsBlock | <i>REMOVED</i> |
+| RCPurchaseCompletedBlock | <i>REMOVED</i> |
+| RCDeferredPromotionalPurchaseBlock | <i>REMOVED</i> |
+| RCPaymentDiscountBlock | <i>REMOVED</i> |
+
+#### PurchasesDelegate
+| v3 | v4 |
+| ------------ | ------------------------------------- | 
+| purchases:didReceiveUpdatedPurchaserInfo: | purchases:didReceiveUpdatedCustomerInfo: |
 
 ### ObjC API changes
 
-<table>
-	<thead>
-		<tr>
-			<th>Old API</th>
-			<th>New API</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td>purchaserInfoWithCompletion:</td>
-			<td>getCustomerInfoWithCompletion:</td>
-		</tr>
-		<tr>
-			<td>invalidatePurchaserInfoCache</td>
-			<td>invalidateCustomerInfoCache</td>
-		</tr>
-		<tr>
-			<td>Purchases -restoreTransactionsWithCompletion:</td>
-			<td>Purchases -restorePurchasesWithCompletion:</td>
-		</tr>
-		<tr>
-			<td>Purchases -offeringsWithCompletion:</td>
-			<td>Purchases -getOfferingsWithCompletion:</td>
-		</tr>
-		<tr>
-			<td>Purchases -productsWithIdentifiers:completion:</td>
-			<td>Purchases -getProductsWithIdentifiers:completion:</td>
-		</tr>
-		<tr>
-			<td>Purchases -paymentDiscountForProductDiscount:product:completion:</td>
-			<td>Can be accessed from `RCStoreProduct.introductoryPrice` and `RCStoreProduct.introductoryPrice`</td>
-		</tr>
-		<tr>
-			<td>Purchases -createAlias:</td>
-			<td>Purchases -logIn:</td>
-		</tr>
-		<tr>
-			<td>Purchases -identify:</td>
-			<td>Purchases -logIn:</td>
-		</tr>
-		<tr>
-			<td>Purchases -reset:</td>
-			<td>Purchases -logOut:</td>
-		</tr>
-	</tbody>
-</table>
+| Old API | New API |
+| ------------ | ------------------------------------- | 
+| purchaserInfoWithCompletion: | getCustomerInfoWithCompletion: |
+| invalidatePurchaserInfoCache | invalidateCustomerInfoCache |
+| Purchases -restoreTransactionsWithCompletion: | Purchases -restorePurchasesWithCompletion: |
+| Purchases -offeringsWithCompletion: | Purchases -getOfferingsWithCompletion: |
+| Purchases -productsWithIdentifiers:completion: | Purchases -getProductsWithIdentifiers:completion: |
+| Purchases -paymentDiscountForProductDiscount:product:completion: | Can be accessed from `RCStoreProduct.introductoryPrice` and `RCStoreProduct.introductoryPrice` |
+| Purchases -createAlias: | Purchases -logIn: |
+| Purchases -identify: | Purchases -logIn: |
+| Purchases -reset: | Purchases -logOut: |
 
 ### Swift type changes
 
