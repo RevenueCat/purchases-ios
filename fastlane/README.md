@@ -175,10 +175,10 @@ Export XCFramework
 
 Run BackendIntegrationTests
 
-### ios remove_xcresults
+### ios zip_xcresults
 
 ```sh
-[bundle exec] fastlane ios remove_xcresults
+[bundle exec] fastlane ios zip_xcresults
 ```
 
 

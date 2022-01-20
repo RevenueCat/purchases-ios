@@ -49,7 +49,7 @@ platform :ios do
       testplan: "Coverage",
       prelaunch_simulator: true,
       fail_build: false,
-      result_bundle: true,
+      result_bundle: false,
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/ios"
     )
@@ -62,11 +62,11 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: '',
       fail_build: false,
-      result_bundle: true,
+      result_bundle: false,
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/tvos"
     )
-    remove_xcresults if is_ci
+    zip_xcresults if is_ci
   end
 
   desc "Replace version number in project and supporting files"
@@ -387,16 +387,18 @@ platform :ios do
       derived_data_path: "scan_derived_data",
       output_types: '',
       fail_build: false,
-      result_bundle: true,
+      result_bundle: false,
       output_directory: "fastlane/test_output/xctest/ios"
     )
-    remove_xcresults if is_ci
+    zip_xcresults if is_ci
   end
 
-  lane :remove_xcresults do
-    UI.message "Cleaning xcresults..."
+  lane :zip_xcresults do
+    UI.message "Zipping xcresults..."
     Dir["test_output/**/*.xcresult"].each do |path|
-      UI.message "Removing #{path}"
+      path = File.absolute_path(path)
+      UI.message "Zipping and removing #{path}"
+      zip(path: path, output_path: "#{path}.zip")
       FileUtils.remove_dir(path)
     end
   end
