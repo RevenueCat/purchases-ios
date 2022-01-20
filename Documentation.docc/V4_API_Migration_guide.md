@@ -57,7 +57,7 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 
 `@import Purchases` is now `@import RevenueCat`
 
-| Old API | New API |
+| v3 | v4 |
 | ------------ | ------------------------------------- | 
 | RCPurchaserInfo | RCCustomerInfo |
 | RCTransaction | RCStoreTransaction |
@@ -83,7 +83,7 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 
 ### ObjC API changes
 
-| Old API | New API |
+| v3 | v4 |
 | ------------ | ------------------------------------- | 
 | purchaserInfoWithCompletion: | getCustomerInfoWithCompletion: |
 | invalidatePurchaserInfoCache | invalidateCustomerInfoCache |
@@ -99,7 +99,7 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 
 `import Purchases` is now `import RevenueCat`
 
-| Old type name | New type name |
+| v3 | v4 |
 | ------------ | ------------------------------------- | 
 | Purchases.Offering | Offering |
 | Purchases.ErrorDomain | See error handling below |
@@ -135,83 +135,28 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 
 ### Swift API changes
 
-<table>
-	<thead>
-		<tr>
-			<th>Old API</th>
-			<th>New API</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td>invalidatePurchaserInfoCache</td>
-			<td>invalidateCustomerInfoCache</td>
-		</tr>
-		<tr>
-			<td>logIn(_ appUserId:, _ completion:)</td>
-			<td>logIn(appUserId:completion:)</td>
-		</tr>
-		<tr>
-			<td>createAlias(_ alias:, _ completion:)</td>
-			<td>logIn(_ appUserID:, completion:)</td>
-		</tr>
-		<tr>
-			<td>identify(_ appUserID:, _ completion:)</td>
-			<td>logIn(_ appUserID:, completion:)</td>
-		</tr>
-		<tr>
-			<td>reset(completion:)</td>
-			<td>logOut(completion:)</td>
-		</tr>
-		<tr>
-			<td>purchaserInfo(_ completion:)</td>
-			<td>getCustomerInfo(completion:)</td>
-		</tr>
-		<tr>
-			<td>offerings(_ completion:)</td>
-			<td>getOfferings(completion:)</td>
-		</tr>
-		<tr>
-			<td>products(_ productIdentifiers:, _ completion:)</td>
-			<td>getProducts(identifiers: completion:)</td>
-		</tr>
-		<tr>
-			<td>purchaseProduct(_ product:, _ completion:)</td>
-			<td>purchase(product:, completion:)</td>
-		</tr>
-		<tr>
-			<td>purchasePackage(_ package:, _ completion:)</td>
-			<td>purchase(package:, completion:)</td>
-		</tr>
-		<tr>
-			<td>restoreTransactions(_ completion:)</td>
-			<td>restorePurchases(completion:)</td>
-		</tr>
-		<tr>
-			<td>syncPurchases(_ completion:)</td>
-			<td>syncPurchases(completion:)</td>
-		</tr>
-		<tr>
-			<td>paymentDiscount(for:product:completion:)</td>
-			<td>Can be accessed from `StoreProduct.introductoryPrice` and `StoreProduct.introductoryPrice`</td>
-		</tr>
-		<tr>
-			<td>purchaseProduct(_:discount:_)</td>
-			<td>purchase(product:discount:completion:)</td>
-		</tr>
-		<tr>
-			<td>purchasePackage(_:discount:_)</td>
-			<td>purchase(package:discount:completion:)</td>
-		</tr>
-		<tr>
-			<td colspan="2" style="text-align:center;" ><strong>PurchasesDelegate<strong></td>
-		</tr>
-		<tr>
-			<td>purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo)</td>
-			<td>purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo)</td>
-		</tr>
-	</tbody>
-</table>
+| v3 | v4 |
+| ------------ | ------------------------------------- | 
+| invalidatePurchaserInfoCache | invalidateCustomerInfoCache |
+| logIn(_ appUserId:, _ completion:) | logIn(appUserId:completion:) |
+| createAlias(_ alias:, _ completion:) | logIn(_ appUserID:, completion:) |
+| identify(_ appUserID:, _ completion:) | logIn(_ appUserID:, completion:) |
+| reset(completion:) | logOut(completion:) |
+| purchaserInfo(_ completion:) | getCustomerInfo(completion:) |
+| offerings(_ completion:) | getOfferings(completion:) |
+| products(_ productIdentifiers:, _ completion:) | getProducts(identifiers: completion:) |
+| purchaseProduct(_ product:, _ completion:) | purchase(product:, completion:) |
+| purchasePackage(_ package:, _ completion:) | purchase(package:, completion:) |
+| restoreTransactions(_ completion:) | restorePurchases(completion:) |
+| syncPurchases(_ completion:) | syncPurchases(completion:) |
+| paymentDiscount(for:product:completion:) | Can be accessed from `StoreProduct.introductoryPrice` and `StoreProduct.introductoryPrice` |
+| purchaseProduct(_:discount:_) | purchase(product:discount:completion:) |
+| purchasePackage(_:discount:_) | purchase(package:discount:completion:) |
+
+#### PurchasesDelegate
+| v3 | v4 |
+| ------------ | ------------------------------------- | 
+| purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) | purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) |
 
 ### Swift Error handling
 
