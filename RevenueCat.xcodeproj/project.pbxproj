@@ -867,6 +867,7 @@
 		2DC5621724EC63420031F69B /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
+				2DC5621824EC63430031F69B /* RevenueCat.h */,
 				35E840C1270FB45600899AE2 /* Support */,
 				F5BE44412698580200254A30 /* Attribution */,
 				B3B5FBBD269E080A00104A0C /* Caching */,
@@ -878,7 +879,6 @@
 				2D11F5DE250FF63E005A70E8 /* Logging */,
 				2DDA3E4524DB0B4500EDFE5B /* Misc */,
 				35D832CB262A5B3400E60AC5 /* Networking */,
-				B3DDB55726854850008CCF23 /* Public */,
 				354235D524C11138008C84EE /* Purchasing */,
 				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
 				2DC5621924EC63430031F69B /* Info.plist */,
@@ -930,6 +930,8 @@
 				F530E4FE275646EF001AF6BD /* MacDevice.swift */,
 				57EAE52A274332830060EB74 /* Obsoletions.swift */,
 				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
+				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
+				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
 				57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */,
 				B3AA6237268B926F00894871 /* SystemInfo.swift */,
 			);
@@ -1139,16 +1141,25 @@
 		354235D524C11138008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
+				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
+				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
+				B35042C326CDB79A00905B95 /* Purchases.swift */,
+				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 				2D1015DC275A57DB0086173F /* StoreKitAbstractions */,
 				2D1DB44A26EA61AB00DDE736 /* StoreKit1 */,
 				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
+				B3DF6A4F269524080030D57C /* IntroEligibility.swift */,
 				2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */,
+				B3083A122699334C007B5503 /* Offering.swift */,
+				B3B5FBBB269D121B00104A0C /* Offerings.swift */,
 				35549322269E298B005F9AE9 /* OfferingsFactory.swift */,
 				F575858C26C088FE00C12B97 /* OfferingsManager.swift */,
+				B3D3C4712685784800CB3C21 /* Package.swift */,
 				B372EC55268FEF020099171E /* ProductRequestData.swift */,
 				F5BE424126965F9F00254A30 /* ProductRequestData+Initialization.swift */,
 				37E35C7060D7E486F5958BED /* ProductsManager.swift */,
 				37E35E8DCF998D9DB63850F8 /* ProductsRequestFactory.swift */,
+				B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */,
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
 				80E80EF026970DC3008F245A /* ReceiptFetcher.swift */,
 				F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */,
@@ -1346,6 +1357,7 @@
 			children = (
 				B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */,
 				B3022071272B3DDC008F1A0D /* DescribableError.swift */,
+				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
 				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
 				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
 				2D971CC02744364C0093F35F /* SKError+Extensions.swift */,
@@ -1371,18 +1383,11 @@
 		B3A36AAC26BC76230059EDEA /* Identity */ = {
 			isa = PBXGroup;
 			children = (
+				A56F9AB026990E9200AFC48F /* CustomerInfo.swift */,
 				B3852F9F26C1ED1F005384F8 /* IdentityManager.swift */,
 				B3A36AAD26BC76340059EDEA /* CustomerInfoManager.swift */,
 			);
 			path = Identity;
-			sourceTree = "<group>";
-		};
-		B3B5FBB7269CED6D00104A0C /* Errors */ = {
-			isa = PBXGroup;
-			children = (
-				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
-			);
-			path = Errors;
 			sourceTree = "<group>";
 		};
 		B3B5FBBD269E080A00104A0C /* Caching */ = {
@@ -1392,28 +1397,6 @@
 				B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */,
 			);
 			path = Caching;
-			sourceTree = "<group>";
-		};
-		B3DDB55726854850008CCF23 /* Public */ = {
-			isa = PBXGroup;
-			children = (
-				B3B5FBB7269CED6D00104A0C /* Errors */,
-				B39E8119268E849900D31189 /* AttributionNetwork.swift */,
-				A56F9AB026990E9200AFC48F /* CustomerInfo.swift */,
-				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
-				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
-				B3DF6A4F269524080030D57C /* IntroEligibility.swift */,
-				B3083A122699334C007B5503 /* Offering.swift */,
-				B3B5FBBB269D121B00104A0C /* Offerings.swift */,
-				B3D3C4712685784800CB3C21 /* Package.swift */,
-				B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */,
-				B35042C326CDB79A00905B95 /* Purchases.swift */,
-				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
-				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
-				2DC5621824EC63430031F69B /* RevenueCat.h */,
-				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
-			);
-			path = Public;
 			sourceTree = "<group>";
 		};
 		F5714EA626D7A82E00635477 /* CodableExtensions */ = {
@@ -1439,6 +1422,7 @@
 		F5BE44412698580200254A30 /* Attribution */ = {
 			isa = PBXGroup;
 			children = (
+				B39E8119268E849900D31189 /* AttributionNetwork.swift */,
 				F5BE4478269E4A4C00254A30 /* AfficheClientProxy.swift */,
 				F5BE447C269E4ADB00254A30 /* ASIdManagerProxy.swift */,
 				37E35CD16BB73BB091E64D9A /* AttributionData.swift */,
