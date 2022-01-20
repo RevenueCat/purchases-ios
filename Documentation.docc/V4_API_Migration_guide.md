@@ -101,34 +101,34 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 
 | v3 | v4 |
 | ------------ | ------------------------------------- | 
-| Purchases.Offering | Offering |
+| Purchases.Offering | ``Offering`` |
 | Purchases.ErrorDomain | See error handling below |
 | Purchases.ErrorCode.Code | See error handling below |
-| Purchases.Package | Package |
-| Purchases.PurchaserInfo | <strong>CustomerInfo</strong> |
-| Purchases.EntitlementInfos | EntitlementInfos |
-| Purchases.Transaction | StoreTransaction |
-| Purchases.EntitlementInfo | EntitlementInfo |
-| Purchases.PeriodType | PeriodType |
-| Purchases.Store | Store |
-| RCPurchaseOwnershipType | PurchaseOwnershipType |
-| RCAttributionNetwork | AttributionNetwork |
-| RCIntroEligibility | IntroEligibility |
-| RCIntroEligibilityStatus | IntroEligibilityStatus |
-| Purchases.LogLevel | LogLevel |
-| Purchases.Offerings | Offerings |
-| Purchases.PackageType | PackageType |
-| Package.product | Package.storeProduct |
-| Package.product.price: NSDecimalNumber | Package.storeProduct.price: Decimal |
-| Package.localizedIntroductoryPriceString: String | Package.localizedIntroductoryPriceString: String? |
-| RCDeferredPromotionalPurchaseBlock | DeferredPromotionalPurchaseBlock |
-| Purchases.PurchaseCompletedBlock | PurchaseCompletedBlock |
+| Purchases.Package | ``Package`` |
+| Purchases.PurchaserInfo | <strong>``CustomerInfo``</strong> |
+| Purchases.EntitlementInfos | ``EntitlementInfos`` |
+| Purchases.Transaction | ``StoreTransaction`` |
+| Purchases.EntitlementInfo | ``EntitlementInfo`` |
+| Purchases.PeriodType | ``PeriodType`` |
+| Purchases.Store | ``Store`` |
+| RCPurchaseOwnershipType | ``PurchaseOwnershipType`` |
+| RCAttributionNetwork | ``AttributionNetwork`` |
+| RCIntroEligibility | ``IntroEligibility`` |
+| RCIntroEligibilityStatus | ``IntroEligibilityStatus`` |
+| Purchases.LogLevel | ``LogLevel`` |
+| Purchases.Offerings | ``Offerings`` |
+| Purchases.PackageType | ``PackageType`` |
+| Package.product | ``Package/storeProduct`` |
+| Package.product.price: NSDecimalNumber | ``StoreProduct/price``: Decimal |
+| Package.localizedIntroductoryPriceString: String | ``Package/localizedIntroductoryPriceString``: String? |
+| RCDeferredPromotionalPurchaseBlock | ``DeferredPromotionalPurchaseBlock`` |
+| Purchases.PurchaseCompletedBlock | ``PurchaseCompletedBlock`` |
 | Purchases.ReceivePurchaserInfoBlock | <i>REMOVED</i> |
 | Purchases.ReceiveOfferingsBlock | <i>REMOVED</i> |
 | Purchases.ReceiveProductsBlock | <i>REMOVED</i> |
 | Purchases.PaymentDiscountBlock | <i>REMOVED</i> |
 | Purchases.RevenueCatBackendErrorCode | <i>REMOVED</i> |
-| Purchases.ErrorCode.operationAlreadyInProgressError | RevenueCat.ErrorCode.operationAlreadyInProgressForProductError |
+| Purchases.ErrorCode.operationAlreadyInProgressError | ``RevenueCat/ErrorCode/operationAlreadyInProgressForProductError`` |
 | Purchases.ErrorUtils | <i>REMOVED</i> |
 | ReadableErrorCodeKey | <i>REMOVED</i> |
 | RCFinishableKey | <i>REMOVED</i> |
@@ -137,21 +137,21 @@ To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to 
 
 | v3 | v4 |
 | ------------ | ------------------------------------- | 
-| invalidatePurchaserInfoCache | invalidateCustomerInfoCache |
-| logIn(_ appUserId:, _ completion:) | logIn(appUserId:completion:) |
-| createAlias(_ alias:, _ completion:) | logIn(_ appUserID:, completion:) |
-| identify(_ appUserID:, _ completion:) | logIn(_ appUserID:, completion:) |
-| reset(completion:) | logOut(completion:) |
-| purchaserInfo(_ completion:) | getCustomerInfo(completion:) |
-| offerings(_ completion:) | getOfferings(completion:) |
-| products(_ productIdentifiers:, _ completion:) | getProducts(identifiers: completion:) |
-| purchaseProduct(_ product:, _ completion:) | purchase(product:, completion:) |
-| purchasePackage(_ package:, _ completion:) | purchase(package:, completion:) |
-| restoreTransactions(_ completion:) | restorePurchases(completion:) |
-| syncPurchases(_ completion:) | syncPurchases(completion:) |
-| paymentDiscount(for:product:completion:) | Can be accessed from `StoreProduct.introductoryPrice` and `StoreProduct.introductoryPrice` |
-| purchaseProduct(_:discount:_) | purchase(product:discount:completion:) |
-| purchasePackage(_:discount:_) | purchase(package:discount:completion:) |
+| invalidatePurchaserInfoCache | ``Purchases/invalidateCustomerInfoCache()`` |
+| logIn(_ appUserId:, _ completion:) | ``Purchases/logIn(_:completion:)`` |
+| createAlias(_ alias:, _ completion:) | ``Purchases/logIn(_:completion:)`` |
+| identify(_ appUserID:, _ completion:) | ``Purchases/logIn(_:completion:)`` |
+| reset(completion:) | ``Purchases/logOut(completion:)`` |
+| purchaserInfo(_ completion:) | ``Purchases/getCustomerInfo(completion:)`` |
+| offerings(_ completion:) | ``Purchases/getOfferings(completion:)`` |
+| products(_ productIdentifiers:, _ completion:) | ``Purchases/getProducts(_:completion:)`` |
+| purchaseProduct(_ product:, _ completion:) | ``Purchases/purchase(product:completion:)`` |
+| purchasePackage(_ package:, _ completion:) | ``Purchases/purchase(package:completion:)`` |
+| restoreTransactions(_ completion:) | ``Purchases/restorePurchases(completion:)`` |
+| syncPurchases(_ completion:) | ``Purchases/syncPurchases(completion:)`` |
+| paymentDiscount(for:product:completion:) | Can be accessed from ``StoreProduct/introductoryPrice`` |
+| purchaseProduct(_:discount:_) | ``Purchases/purchase(product:discount:completion:)`` |
+| purchasePackage(_:discount:_) | ``Purchases/purchase(package:discount:completion:)`` |
 
 #### PurchasesDelegate
 | v3 | v4 |
