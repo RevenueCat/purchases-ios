@@ -39,7 +39,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         try super.setUpWithError()
         try setUpSystemInfo()
         productsManager = MockProductsManager(systemInfo: systemInfo)
-        storeKitWrapper = MockStoreKitWrapper()
         operationDispatcher = MockOperationDispatcher()
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo)
         deviceCache = MockDeviceCache(systemInfo: systemInfo)
@@ -63,6 +62,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                     customerInfoManager: customerInfoManager,
                                                                     identityManager: identityManager)
+        setupStoreKitWrapper()
         setUpOrchestrator()
         setUpStoreKit2Listener()
     }
@@ -73,10 +73,16 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         }
     }
 
-    fileprivate func setUpSystemInfo() throws {
+    fileprivate func setUpSystemInfo(finishTransactions: Bool = true) throws {
         systemInfo = try MockSystemInfo(platformFlavor: "xyz",
                                         platformFlavorVersion: "1.2.3",
-                                        finishTransactions: true)
+                                        finishTransactions: finishTransactions)
+    }
+
+    fileprivate func setupStoreKitWrapper() {
+        storeKitWrapper = MockStoreKitWrapper()
+        storeKitWrapper.mockAddPaymentTransactionState = .purchased
+        storeKitWrapper.mockCallUpdatedTransactionInstantly = true
     }
 
     fileprivate func setUpOrchestrator() {
@@ -93,6 +99,81 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              deviceCache: deviceCache,
                                              manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
+        storeKitWrapper.delegate = orchestrator
+    }
+
+    func testPurchaseSK1PackageSendsReceiptToBackendIfSuccessful() async throws {
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+
+        let product = try await fetchSk1Product()
+        let storeProduct = try await fetchSk1StoreProduct()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let payment = storeKitWrapper.payment(withProduct: product)
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.purchase(sk1Product: product,
+                                  payment: payment,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+    }
+
+    func testPurchaseSK1PromotionalOffer() async throws {
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
+
+        let product = try await fetchSk1Product()
+
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            price: 11.1,
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month))
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                          product: product) { paymentDiscount, error in
+                continuation.resume(returning: (paymentDiscount, error))
+            }
+        }
+
+        expect(self.backend.invokedPostOfferCount) == 1
+    }
+
+    func testPurchaseSK1PackageWithDiscountSendsReceiptToBackendIfSuccessful() async throws {
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+
+        let product = try await fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            price: 11.1,
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month))
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.purchase(sk1Product: product,
+                                  storeProductDiscount: storeProductDiscount,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -102,14 +183,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
-        let storeProduct = try await fetchSk2StoreProduct()
+        let storeProduct = StoreProduct.from(product: try await fetchSk2StoreProduct())
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
-            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(product: storeProduct,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -136,14 +218,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
-        let storeProduct = try await fetchSk2StoreProduct()
+        let storeProduct = StoreProduct.from(product: try await fetchSk2StoreProduct())
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(product: storeProduct,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -159,14 +242,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
-        let storeProduct = try await fetchSk2StoreProduct()
+        let storeProduct = StoreProduct.from(product: try await fetchSk2StoreProduct())
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(product: storeProduct,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -182,14 +266,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
-        let storeProduct = try await fetchSk2StoreProduct()
+        let storeProduct = StoreProduct.from(product: try await fetchSk2StoreProduct())
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
-            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(product: storeProduct,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -201,6 +286,61 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptData) == false
         let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
         expect(mockListener.invokedHandle) == false
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageReturnsMissingReceiptErrorIfSendReceiptFailed() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        receiptFetcher.shouldReturnReceipt = false
+        let expectedError = ErrorUtils.missingReceiptFileError()
+
+        let storeProduct = StoreProduct.from(product: try await fetchSk2StoreProduct())
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(product: storeProduct,
+                                  package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction).to(beNil())
+        expect(userCancelled) == false
+        expect(customerInfo).to(beNil())
+        expect(error).toNot(beNil())
+        expect(error).to(matchError(expectedError))
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
+        expect(mockListener.invokedHandle) == true
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testStoreKit2TransactionListenerDelegate() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+
+        orchestrator.transactionsUpdated()
+
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beFalse())
+    }
+
+    func testStoreKit2TransactionListenerDelegateWithObserverMode() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        try setUpSystemInfo(finishTransactions: false)
+        setUpOrchestrator()
+
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+
+        orchestrator.transactionsUpdated()
+
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beTrue())
     }
 
     func testShowManageSubscriptionsCallsCompletionWithErrorIfThereIsAFailure() {
@@ -309,6 +449,18 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 }
 
 private extension PurchasesOrchestratorTests {
+
+    @MainActor
+    func fetchSk1Product() async throws -> SK1Product {
+        return MockSK1Product(
+            mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro",
+            mockSubscriptionGroupIdentifier: "group1")
+    }
+
+    @MainActor
+    func fetchSk1StoreProduct() async throws -> SK1StoreProduct {
+        return try await SK1StoreProduct(sk1Product: fetchSk1Product())
+    }
 
     @MainActor
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

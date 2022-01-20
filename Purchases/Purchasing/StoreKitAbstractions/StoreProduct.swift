@@ -80,8 +80,8 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var subscriptionPeriod: SubscriptionPeriod? { self.product.subscriptionPeriod }
 
-    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public var introductoryPrice: StoreProductDiscount? { self.product.introductoryPrice }
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc public var introductoryDiscount: StoreProductDiscount? { self.product.introductoryDiscount }
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var discounts: [StoreProductDiscount] { self.product.discounts }
@@ -148,8 +148,8 @@ internal protocol StoreProductType {
     /// Before displaying UI that offers the introductory price,
     /// you must first determine if the user is eligible to receive it.
     /// - Seealso: `Purchases.checkTrialOrIntroductoryPriceEligibility` to  determine eligibility.
-    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    var introductoryPrice: StoreProductDiscount? { get }
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    var introductoryDiscount: StoreProductDiscount? { get }
 
     /// An array of subscription offers available for the auto-renewable subscription.
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
@@ -176,7 +176,7 @@ public extension StoreProduct {
     @objc var localizedIntroductoryPriceString: String? {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
               let formatter = self.priceFormatter,
-              let intro = self.introductoryPrice
+              let intro = self.introductoryDiscount
         else {
             return nil
         }
@@ -209,5 +209,30 @@ extension StoreProduct {
     public var sk2Product: SK2Product? {
         return (self.product as? SK2StoreProduct)?.underlyingSK2Product
     }
+
+}
+
+// MARK: - Renames
+
+// @available annotations to help users migrating from `SKProduct` to `StoreProduct`
+public extension StoreProduct {
+
+    /// The object containing introductory price information for the product.
+    @available(iOS, introduced: 11.2, obsoleted: 11.2,
+               renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
+    @available(tvOS, introduced: 11.2, obsoleted: 11.2,
+               renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2,
+               renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
+    @available(macOS, introduced: 10.13.2, obsoleted: 10.13.2,
+               renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
+    @objc var introductoryPrice: SKProductDiscount? { fatalError() }
+
+    /// The locale used to format the price of the product.
+    @available(iOS, unavailable, message: "Use localizedPriceString instead")
+    @available(tvOS, unavailable, message: "Use localizedPriceString instead")
+    @available(watchOS, unavailable, message: "Use localizedPriceString instead")
+    @available(macOS, unavailable, message: "Use localizedPriceString instead")
+    @objc var priceLocale: Locale { fatalError() }
 
 }

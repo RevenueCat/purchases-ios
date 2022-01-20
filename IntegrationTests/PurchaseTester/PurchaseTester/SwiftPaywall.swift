@@ -17,7 +17,7 @@ enum PayWallEdgeStyle : String {
 }
 
 @objc protocol SwiftPaywallDelegate {
-    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, customerInfo: CustomerInfo)
+    func purchaseCompleted(paywall: SwiftPaywall, transaction: StoreTransaction, customerInfo: CustomerInfo)
     @objc optional func purchaseFailed(paywall: SwiftPaywall, customerInfo: CustomerInfo?, error: Error, userCancelled: Bool)
     @objc optional func purchaseRestored(paywall: SwiftPaywall, customerInfo: CustomerInfo?, error: Error?)
 }
@@ -188,7 +188,7 @@ class SwiftPaywall: UIViewController {
     
     @objc private func restorePurchases() {
         setState(loading: true)
-        Purchases.shared.restoreTransactions { (info, error) in
+        Purchases.shared.restorePurchases { (info, error) in
             
             self.setState(loading: false)
             
@@ -545,7 +545,7 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
 
         if #available(iOS 12.2, *) {
             if let product = offering?.availablePackages[indexPath.row].storeProduct,
-               let introPrice = product.introductoryPrice, introPrice.price == 0 {
+               let introPrice = product.introductoryDiscount, introPrice.price == 0 {
 
                 var trialLength = ""
                 var cancelDate : Date?

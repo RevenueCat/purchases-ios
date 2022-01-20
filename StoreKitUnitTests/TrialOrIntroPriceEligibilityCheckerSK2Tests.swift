@@ -33,7 +33,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                                             finishTransactions: true)
 
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
-        let mockProductsManager = PartialMockProductsManager(systemInfo: mockSystemInfo)
+        let mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
@@ -48,9 +48,6 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                                             productsManager: mockProductsManager)
     }
 
-    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
-    // Although the method isn't supposed to be called because of our @available marks,
-    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2CheckEligibilityAsync() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -73,9 +70,6 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         }
     }
 
-    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
-    // Although the method isn't supposed to be called because of our @available marks,
-    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityNoAsync() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()

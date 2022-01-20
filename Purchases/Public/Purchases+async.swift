@@ -82,7 +82,7 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func productsAsync(_ productIdentifiers: [String]) async -> [SKProduct] {
+    func productsAsync(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await withCheckedContinuation { continuation in
             getProducts(productIdentifiers) { result in
                 continuation.resume(returning: result)
@@ -91,7 +91,7 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchaseAsync(product: SKProduct) async throws ->
+    func purchaseAsync(product: StoreProduct) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
@@ -135,7 +135,7 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchaseAsync(product: SKProduct, discount: SKPaymentDiscount) async throws ->
+    func purchaseAsync(product: StoreProduct, discount: StoreProductDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
@@ -158,7 +158,7 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchaseAsync(package: Package, discount: SKPaymentDiscount) async throws ->
+    func purchaseAsync(package: Package, discount: StoreProductDiscount) async throws ->
     // swiftlint:disable:next large_tuple
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
@@ -197,9 +197,9 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func restoreTransactionsAsync() async throws -> CustomerInfo {
+    func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            restoreTransactions { maybeCustomerInfo, maybeError in
+            restorePurchases { maybeCustomerInfo, maybeError in
                 if let error = maybeError {
                     continuation.resume(throwing: error)
                     return
@@ -218,23 +218,6 @@ extension Purchases {
         return await withCheckedContinuation { continuation in
             checkTrialOrIntroductoryPriceEligibility(productIdentifiers) { result in
                 continuation.resume(returning: result)
-            }
-        }
-    }
-
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func paymentDiscountAsync(forProductDiscount discount: StoreProductDiscount,
-                              product: SKProduct) async throws -> SKPaymentDiscount {
-        return try await withCheckedThrowingContinuation { continuation in
-            paymentDiscount(forProductDiscount: discount, product: product) { maybeDiscount, maybeError in
-                if let error = maybeError {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let discount = maybeDiscount else {
-                    fatalError("Expected non-nil 'discount' for nil error")
-                }
-                continuation.resume(returning: discount)
             }
         }
     }

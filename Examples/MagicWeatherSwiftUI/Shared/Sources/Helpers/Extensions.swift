@@ -19,7 +19,7 @@ extension Package: Identifiable {
 
 extension Package {
     func terms(for package: Package) -> String {
-        if let intro = package.storeProduct.introductoryPrice {
+        if let intro = package.storeProduct.introductoryDiscount {
             if intro.price == 0 {
                 return "\(intro.subscriptionPeriod.periodTitle) free trial"
             } else {

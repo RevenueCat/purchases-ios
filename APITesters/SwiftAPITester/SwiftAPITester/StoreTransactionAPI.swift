@@ -14,6 +14,7 @@ func checkStoreTransactionAPI() {
     let productIdentifier: String = transaction.productIdentifier
     let purchaseDate: Date = transaction.purchaseDate
     let transactionIdentifier: String = transaction.transactionIdentifier
+    let quantity: Int = transaction.quantity
 
     let sk1: SKPaymentTransaction? = transaction.sk1Transaction
     let sk2: StoreKit.Transaction? = transaction.sk2Transaction
@@ -22,6 +23,7 @@ func checkStoreTransactionAPI() {
         productIdentifier,
         purchaseDate,
         transactionIdentifier,
+        quantity,
         sk1!,
         sk2!
     )

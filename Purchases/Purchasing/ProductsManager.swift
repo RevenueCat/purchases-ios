@@ -34,33 +34,23 @@ class ProductsManager: NSObject {
         self.systemInfo = systemInfo
     }
 
-    func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
-                                            completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
-
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           self.systemInfo.useStoreKit2IfAvailable {
-            _ = Task<Void, Never> {
-                do {
-                    let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
-                        .map(StoreProduct.from(product:))
-                    completion(.success(Set(products)))
-                } catch {
-                    completion(.failure(error))
-                }
+    func products(withIdentifiers identifiers: Set<String>,
+                  completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *), self.systemInfo.useStoreKit2IfAvailable {
+            self.sk2Products(withIdentifiers: identifiers) { result in
+                completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         } else {
-            productsFetcherSK1.products(withIdentifiers: identifiers) { result in
-                completion(result.map { Set($0.map(StoreProduct.from(product:))) })
+            self.sk1Products(withIdentifiers: identifiers) { result in
+                completion(result.map { Set($0.map(StoreProduct.init(sk1Product:))) })
             }
         }
     }
 
     @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
-    func productsFromOptimalStoreKitVersion(
-        withIdentifiers identifiers: Set<String>
-    ) async throws -> Set<StoreProduct> {
+    func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
         return try await withCheckedThrowingContinuation { continuation in
-            productsFromOptimalStoreKitVersion(withIdentifiers: identifiers) { result in
+            self.products(withIdentifiers: identifiers) { result in
                 continuation.resume(with: result)
             }
         }
@@ -73,13 +63,26 @@ class ProductsManager: NSObject {
         return Set(products)
     }
 
-    func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Result<Set<SK1Product>, Error>) -> Void) {
+    func cacheProduct(_ product: SK1Product) {
+        productsFetcherSK1.cacheProduct(product)
+    }
+
+    private func sk1Products(withIdentifiers identifiers: Set<String>,
+                             completion: @escaping (Result<Set<SK1Product>, Error>) -> Void) {
         return productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
     }
 
-    func cacheProduct(_ product: SK1Product) {
-        productsFetcherSK1.cacheProduct(product)
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func sk2Products(withIdentifiers identifiers: Set<String>,
+                             completion: @escaping (Result<Set<SK2StoreProduct>, Error>) -> Void) {
+        _ = Task<Void, Never> {
+            do {
+                let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
+                completion(.success(Set(products)))
+            } catch {
+                completion(.failure(error))
+            }
+        }
     }
 
 }

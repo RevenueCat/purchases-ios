@@ -14,7 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         /* Enable debug logs before calling `configure`. */
-        Purchases.debugLogsEnabled = true
+        Purchases.logLevel = .debug
 
         /*
          Initialize the RevenueCat Purchases SDK.

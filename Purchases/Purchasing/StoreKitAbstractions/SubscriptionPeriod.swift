@@ -66,6 +66,20 @@ public class SubscriptionPeriod: NSObject {
 
 }
 
+// MARK: - Renames
+
+// @available annotations to help users migrating from `SKProductSubscriptionPeriod` to `SubscriptionPeriod`
+public extension SubscriptionPeriod {
+
+    /// The number of units per subscription period
+    @available(iOS, unavailable, renamed: "value")
+    @available(tvOS, unavailable, renamed: "value")
+    @available(watchOS, unavailable, renamed: "value")
+    @available(macOS, unavailable, renamed: "value")
+    @objc var numberOfUnits: Int { fatalError() }
+
+}
+
 extension SubscriptionPeriod {
     func pricePerMonth(withTotalPrice price: Decimal) -> Decimal {
         let periodsPerMonth: Decimal = {

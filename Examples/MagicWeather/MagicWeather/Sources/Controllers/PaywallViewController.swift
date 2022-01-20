@@ -59,15 +59,15 @@ class PaywallViewController: UITableViewController {
         
         /// - Configure the PackageCell to display the appropriate name, pricing, and terms
         if let package = self.offering?.availablePackages[indexPath.row] {
-            cell.packageTitleLabel.text = package.product.localizedTitle
+            cell.packageTitleLabel.text = package.storeProduct.localizedTitle
             cell.packagePriceLabel.text = package.localizedPriceString
             
-            if let intro = package.product.introductoryPrice {
-                if intro.price == 0 {
-                    cell.packageTermsLabel.text = "\(intro.subscriptionPeriod.periodTitle()) free trial"
-                } else {
-                    cell.packageTermsLabel.text = "\(package.localizedIntroductoryPriceString) for \(intro.subscriptionPeriod.periodTitle())"
-                }
+            if let intro = package.storeProduct.introductoryDiscount {
+                let packageTermsLabelText = intro.price == 0
+                ? "\(intro.subscriptionPeriod.periodTitle()) free trial"
+                : "\(package.localizedIntroductoryPriceString!) for \(intro.subscriptionPeriod.periodTitle())"
+
+                cell.packageTermsLabel.text = packageTermsLabelText
             } else {
                 cell.packageTermsLabel.text = "Unlocks Premium"
             }
@@ -97,7 +97,7 @@ class PaywallViewController: UITableViewController {
 
 /* Some methods to make displaying subscription terms easier */
 
-extension SKProductSubscriptionPeriod {
+extension SubscriptionPeriod {
     var durationTitle: String {
         switch self.unit {
         case .day: return "day"
@@ -109,8 +109,8 @@ extension SKProductSubscriptionPeriod {
     }
     
     func periodTitle() -> String {
-        let periodString = "\(self.numberOfUnits) \(self.durationTitle)"
-        let pluralized = self.numberOfUnits > 1 ?  periodString + "s" : periodString
+        let periodString = "\(self.value) \(self.durationTitle)"
+        let pluralized = self.value > 1 ?  periodString + "s" : periodString
         return pluralized
     }
 }

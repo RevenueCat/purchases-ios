@@ -128,7 +128,7 @@ extension OfferingsManagerTests {
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
         // given
         mockBackend.stubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
-        mockProductsManager.stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult = (Set(), ())
+        mockProductsManager.stubbedProductsCompletionResult = Set()
 
         // when
         var obtainedOfferings: Offerings?

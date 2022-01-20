@@ -95,7 +95,7 @@ class PurchasesOrchestrator {
         }
     }
 
-    func restoreTransactions(completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
+    func restorePurchases(completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
         syncPurchases(receiptRefreshPolicy: .always, isRestore: true, maybeCompletion: maybeCompletion)
     }
 
@@ -105,7 +105,7 @@ class PurchasesOrchestrator {
                       maybeCompletion: maybeCompletion)
     }
 
-    func products(withIdentifiers identifiers: [String], completion: @escaping ([SK1Product]) -> Void) {
+    func products(withIdentifiers identifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -127,7 +127,7 @@ class PurchasesOrchestrator {
             return
         }
 
-        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiersSet) { products in
+        productsManager.products(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(Array(products.value ?? []))
             }
@@ -135,9 +135,9 @@ class PurchasesOrchestrator {
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func paymentDiscount(forProductDiscount productDiscount: StoreProductDiscount,
-                         product: SK1Product,
-                         completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
+    func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
+                          product: SK1Product,
+                          completion: @escaping (PromotionalOffer?, Error?) -> Void) {
         guard let discountIdentifier = productDiscount.offerIdentifier else {
             completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
             return
@@ -182,48 +182,79 @@ class PurchasesOrchestrator {
                           return
                       }
 
-                let paymentDiscount = SKPaymentDiscount(identifier: discountIdentifier,
+                let promotionalOffer = PromotionalOffer(identifier: discountIdentifier,
                                                         keyIdentifier: keyIdentifier,
                                                         nonce: nonce,
                                                         signature: signature,
-                                                        timestamp: timestamp as NSNumber)
-                completion(paymentDiscount, nil)
+                                                        timestamp: timestamp)
+                completion(promotionalOffer, nil)
             }
         }
     }
 
-    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
-        // todo: clean up, move to new class along with the private funcs below, remove
-        // swiftlint disable for length warning
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           let product = package.storeProduct.sk2Product {
-            _ = Task<Void, Never> {
-                let result = await purchase(sk2Product: product)
-                DispatchQueue.main.async {
-                    switch result {
-                    case .failure(let error):
-                        completion(nil, nil, ErrorUtils.purchasesError(withStoreKitError: error), false)
-                    case .success(let (customerInfo, userCancelled)):
-                        // todo: change API and send transaction
-                        if userCancelled {
-                            completion(nil, nil, ErrorUtils.purchaseCancelledError(), userCancelled)
-                        } else {
-                            completion(nil, customerInfo, nil, userCancelled)
-                        }
-                    }
-                }
-            }
+    func purchase(product: StoreProduct,
+                  package: Package?,
+                  completion: @escaping PurchaseCompletedBlock) {
+        if let sk1Product = product.sk1Product {
+            let payment = storeKitWrapper.payment(withProduct: sk1Product)
+
+            purchase(sk1Product: sk1Product,
+                     payment: payment,
+                     package: package,
+                     completion: completion)
+        } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+                  let sk2Product = product.sk2Product {
+            purchase(sk2Product: sk2Product,
+                     completion: completion)
         } else {
-            guard let product = package.storeProduct.sk1Product else {
-                fatalError("could not identify StoreKit version to use! StoreProduct: \(package.storeProduct)")
+            fatalError("Unrecognized product: \(product)")
+        }
+    }
+
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
+    func purchase(product: StoreProduct,
+                  package: Package?,
+                  discount: StoreProductDiscountType,
+                  completion: @escaping PurchaseCompletedBlock) {
+        if let sk1Product = product.sk1Product {
+            purchase(sk1Product: sk1Product,
+                     storeProductDiscount: discount,
+                     package: package,
+                     completion: completion)
+        } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+                  let sk2Product = product.sk2Product {
+            // todo: add support for SK2 discounts
+            purchase(sk2Product: sk2Product,
+                     completion: completion)
+        } else {
+            fatalError("Unrecognized product: \(product)")
+        }
+    }
+
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
+    func purchase(sk1Product: SK1Product,
+                  storeProductDiscount: StoreProductDiscountType,
+                  package: Package?,
+                  completion: @escaping PurchaseCompletedBlock) {
+        self.promotionalOffer(forProductDiscount: storeProductDiscount,
+                              product: sk1Product) { [unowned self] promotionalOffer, error in
+            guard let promotionalOffer = promotionalOffer else {
+                completion(nil, nil, error, false)
+                return
             }
-            purchase(sk1Product: product, package: package, completion: completion)
+
+            let discount = promotionalOffer.sk1PromotionalOffer
+            let payment = self.storeKitWrapper.payment(withProduct: sk1Product, discount: discount)
+            self.purchase(sk1Product: sk1Product,
+                          payment: payment,
+                          package: package,
+                          completion: completion)
         }
     }
 
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
-                  presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
+                  package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
         guard let productIdentifier = sk1Product.extractProductIdentifier(withPayment: payment) else {
@@ -240,7 +271,7 @@ class PurchasesOrchestrator {
         payment.applicationUsername = appUserID
         preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
 
-        if let presentedOfferingIdentifier = maybePresentedOfferingIdentifier {
+        if let presentedOfferingIdentifier = package?.offeringIdentifier {
             Logger.purchase(
                 Strings.purchase.purchasing_product_from_package(
                     productIdentifier: productIdentifier,
@@ -268,6 +299,28 @@ class PurchasesOrchestrator {
         }
         purchaseCompleteCallbacksByProductID[productIdentifier] = completion
         storeKitWrapper.add(payment)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func purchase(sk2Product product: SK2Product, completion: @escaping PurchaseCompletedBlock) {
+        _ = Task<Void, Never> {
+            let result = await purchase(sk2Product: product)
+            DispatchQueue.main.async {
+                switch result {
+                case .failure(let error) where error is StoreKitError:
+                    completion(nil, nil, ErrorUtils.purchasesError(withStoreKitError: error), false)
+                case .failure(let error):
+                    completion(nil, nil, error, false)
+                case .success(let (customerInfo, userCancelled)):
+                    // todo: change API and send transaction
+                    if userCancelled {
+                        completion(nil, nil, ErrorUtils.purchaseCancelledError(), userCancelled)
+                    } else {
+                        completion(nil, customerInfo, nil, userCancelled)
+                    }
+                }
+            }
+        }
     }
 
 #if os(iOS) || os(macOS)
@@ -425,8 +478,9 @@ private extension PurchasesOrchestrator {
 extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
     func transactionsUpdated() {
-        // todo: should isRestore here be set to observer mode?
-        syncPurchases(receiptRefreshPolicy: .always, isRestore: false, maybeCompletion: nil)
+        // Need to restore if using observer mode (which is inverse of finishTransactions)
+        let isRestore = !systemInfo.finishTransactions
+        syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore, maybeCompletion: nil)
     }
 
 }
@@ -465,7 +519,7 @@ private extension PurchasesOrchestrator {
 
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
-                     products: Set<SK1Product>) {
+                     products: Set<StoreProduct>) {
         var maybeProductData: ProductRequestData?
         var maybePresentedOfferingID: String?
         if let product = products.first {
@@ -544,7 +598,7 @@ private extension PurchasesOrchestrator {
                        isRestore: Bool,
                        maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
         if !self.allowSharingAppStoreAccount {
-            Logger.warn(Strings.restore.restoretransactions_called_with_allow_sharing_appstore_account_false_warning)
+            Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
         }
 
         let currentAppUserID = appUserID
@@ -656,7 +710,7 @@ private extension PurchasesOrchestrator {
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
         purchase(sk1Product: sk1Product,
                  payment: payment,
-                 presentedOfferingIdentifier: package.offeringIdentifier,
+                 package: package,
                  completion: completion)
     }
 

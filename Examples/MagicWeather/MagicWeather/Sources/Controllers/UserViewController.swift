@@ -112,7 +112,7 @@ extension UserViewController {
     /// - Restore purchases method
     @IBAction
     func restorePurchases() {
-        Purchases.shared.restoreTransactions { (purchaserInfo, error) in
+        Purchases.shared.restorePurchases { (purchaserInfo, error) in
             if let error = error {
                 self.present(UIAlertController.errorAlert(message: error.localizedDescription), animated: true, completion: nil)
             }

@@ -20,16 +20,16 @@ class ISOPeriodFormatterTests: XCTestCase {
             throw XCTSkip()
         }
 
-        var period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .day)
+        var period = SubscriptionPeriod(value: 1, unit: .day)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P1D"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 10, unit: .day)
+        period = SubscriptionPeriod(value: 10, unit: .day)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P10D"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .day)
+        period = SubscriptionPeriod(value: 3, unit: .day)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P3D"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .day)
+        period = SubscriptionPeriod(value: 8, unit: .day)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P8D"
     }
 
@@ -38,16 +38,16 @@ class ISOPeriodFormatterTests: XCTestCase {
             throw XCTSkip()
         }
 
-        var period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .month)
+        var period = SubscriptionPeriod(value: 1, unit: .month)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P1M"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 10, unit: .month)
+        period = SubscriptionPeriod(value: 10, unit: .month)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P10M"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .month)
+        period = SubscriptionPeriod(value: 3, unit: .month)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P3M"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .month)
+        period = SubscriptionPeriod(value: 8, unit: .month)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P8M"
     }
 
@@ -56,16 +56,16 @@ class ISOPeriodFormatterTests: XCTestCase {
             throw XCTSkip()
         }
 
-        var period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .week)
+        var period = SubscriptionPeriod(value: 1, unit: .week)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P1W"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 10, unit: .week)
+        period = SubscriptionPeriod(value: 10, unit: .week)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P10W"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .week)
+        period = SubscriptionPeriod(value: 3, unit: .week)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P3W"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .week)
+        period = SubscriptionPeriod(value: 8, unit: .week)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P8W"
     }
 
@@ -74,16 +74,16 @@ class ISOPeriodFormatterTests: XCTestCase {
             throw XCTSkip()
         }
 
-        var period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .year)
+        var period = SubscriptionPeriod(value: 1, unit: .year)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P1Y"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 10, unit: .year)
+        period = SubscriptionPeriod(value: 10, unit: .year)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P10Y"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .year)
+        period = SubscriptionPeriod(value: 3, unit: .year)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P3Y"
 
-        period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .year)
+        period = SubscriptionPeriod(value: 8, unit: .year)
         expect(ISOPeriodFormatter.string(fromProductSubscriptionPeriod: period)) == "P8Y"
     }
 }

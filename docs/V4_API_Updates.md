@@ -45,6 +45,14 @@ Purchases.configure(
 )
 ```
 
+### New Types
+
+To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to encapsulate data from `StoreKit 1` and `StoreKit 2`:
+
+- `StoreProduct` / `RCStoreProduct`: wraps a `StoreKit.SKProduct` or `StoreKit.Product`
+- `StoreTransaction` / `RCStoreTransaction`: wraps a `StoreKit.SKPaymentTransaction` or `StoreKit.Transaction`
+- `StoreProductDiscount` / `RCStoreProductDiscount`: wraps a `StoreKit.SKProductDiscount` or `StoreKit.Product.SubscriptionOffer`
+
 ### ObjC type changes
 
 `@import Purchases` is now `@import RevenueCat`
@@ -64,6 +72,10 @@ Purchases.configure(
 		<tr>
 			<td>RCTransaction</td>
 			<td>RCStoreTransaction</td>
+		</tr>
+		<tr>
+			<td>RCPackage.product</td>
+			<td>RCPackage.storeProduct</td>
 		</tr>
 		<tr>
 			<td>(RCPurchasesErrorCode).RCOperationAlreadyInProgressError</td>
@@ -146,12 +158,20 @@ Purchases.configure(
 			<td>invalidateCustomerInfoCache</td>
 		</tr>
 		<tr>
+			<td>Purchases -restoreTransactionsWithCompletion:</td>
+			<td>Purchases -restorePurchasesWithCompletion:</td>
+		</tr>
+		<tr>
 			<td>Purchases -offeringsWithCompletion:</td>
 			<td>Purchases -getOfferingsWithCompletion:</td>
 		</tr>
 		<tr>
 			<td>Purchases -productsWithIdentifiers:completion:</td>
 			<td>Purchases -getProductsWithIdentifiers:completion:</td>
+		</tr>
+		<tr>
+			<td>Purchases -paymentDiscountForProductDiscount:product:completion:</td>
+			<td>Can be accessed from `RCStoreProduct.introductoryPrice` and `RCStoreProduct.introductoryPrice`</td>
 		</tr>
 		<tr>
 			<td>Purchases -createAlias:</td>
@@ -359,7 +379,7 @@ Purchases.configure(
 		</tr>
 		<tr>
 			<td>restoreTransactions(_ completion:)</td>
-			<td>restoreTransactions(completion:)</td>
+			<td>restorePurchases(completion:)</td>
 		</tr>
 		<tr>
 			<td>syncPurchases(_ completion:)</td>
@@ -367,7 +387,7 @@ Purchases.configure(
 		</tr>
 		<tr>
 			<td>paymentDiscount(for:product:completion:)</td>
-			<td>paymentDiscount(forProductDiscount:product:completion:)</td>
+			<td>Can be accessed from `StoreProduct.introductoryPrice` and `StoreProduct.introductoryPrice`</td>
 		</tr>
 		<tr>
 			<td>purchaseProduct(_:discount:_)</td>

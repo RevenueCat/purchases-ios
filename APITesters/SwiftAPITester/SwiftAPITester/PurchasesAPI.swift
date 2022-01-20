@@ -28,6 +28,11 @@ func checkPurchasesAPI() {
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
+//    Purchases.configure(withAPIKey: "",
+//                        appUserID: nil,
+//                        observerMode: true,
+//                        userDefaults: UserDefaults(),
+//                        useStoreKit2IfAvailable: true)
 
     let finishTransactions: Bool = purch.finishTransactions
     let delegate: PurchasesDelegate? = purch.delegate
@@ -108,27 +113,25 @@ private func checkStaticMethods() {
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
-    purchases.getCustomerInfo { _, _ in }
-    purchases.getOfferings { _, _ in }
-    purchases.getProducts([String]()) { _ in }
+    purchases.getCustomerInfo { (_: CustomerInfo?, _: Error?) in }
+    purchases.getOfferings { (_: Offerings?, _: Error?) in }
+    purchases.getProducts([String]()) { (_: [StoreProduct]) in }
 
     let skp: SKProduct = SKProduct()
-    let productDiscount: StoreProductDiscount! = nil
-    let paymentDiscount: SKPaymentDiscount = SKPaymentDiscount()
+    let stp: StoreProduct! = nil
+    let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
 
-    purchases.purchase(product: skp) { _, _, _, _  in }
-    purchases.purchase(package: pack) { _, _, _, _  in }
-    purchases.syncPurchases { _, _ in }
+    purchases.purchase(product: stp) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
-    let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
-    purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
-    purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
+    purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { (_: [String: IntroEligibility]) in }
 
-    purchases.paymentDiscount(forProductDiscount: productDiscount, product: skp) { _, _ in }
-
-    purchases.purchase(product: skp, discount: paymentDiscount) { _, _, _, _  in }
-    purchases.purchase(package: pack, discount: paymentDiscount) { _, _, _, _  in }
+    purchases.purchase(product: stp,
+                       discount: discount) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(package: pack,
+                       discount: discount) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.invalidateCustomerInfoCache()
 
 #if os(iOS)
@@ -139,17 +142,13 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let customerInfo: CustomerInfo? = nil
     purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)
 
-    let defermentBlock: DeferredPromotionalPurchaseBlock = { _ in }
+    let defermentBlock = { (_: (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void) in }
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
-    purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp) { _ in }
 }
 
 private func checkIdentity(purchases: Purchases) {
-    purchases.logOut { _, _ in }
-
-    let loginComplete: (CustomerInfo?, Bool, Error?) -> Void = { _, _, _ in }
-    purchases.logIn("", completion: loginComplete)
-    purchases.logIn("") { _, _, _ in }
+    purchases.logOut { (_: CustomerInfo?, _: Error?) in }
+    purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
 }
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {
@@ -180,24 +179,24 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
 
 private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
+    let stp: StoreProduct! = nil
 
     do {
         let _: (CustomerInfo, Bool) = try await purchases.logIn("")
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroductoryPriceEligibility([])
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
-        let storeProductDiscount: StoreProductDiscount! = nil
-        let _: SKPaymentDiscount = try await purchases.paymentDiscount(forProductDiscount: storeProductDiscount,
-                                                                       product: SKProduct())
-        let _: [SKProduct] = await purchases.products([])
+
+        let _: [StoreProduct] = await purchases.products([])
+        let discount: StoreProductDiscount! = nil
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
-                                                                                     discount: SKPaymentDiscount())
-        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct())
-        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: SKProduct(),
-                                                                                     discount: SKPaymentDiscount())
+                                                                                     discount: discount)
+        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
+        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
+                                                                                     discount: discount)
         let _: CustomerInfo = try await purchases.customerInfo()
-        let _: CustomerInfo = try await purchases.restoreTransactions()
+        let _: CustomerInfo = try await purchases.restorePurchases()
         let _: CustomerInfo = try await purchases.syncPurchases()
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}

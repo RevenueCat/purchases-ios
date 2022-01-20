@@ -15,7 +15,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
     }
 
     private func extract() -> ProductRequestData {
-        return ProductRequestData(with: self.product)
+        return ProductRequestData(with: StoreProduct(sk1Product: self.product))
     }
 
     func testExtractInfoFromProductExtractsProductIdentifier() {

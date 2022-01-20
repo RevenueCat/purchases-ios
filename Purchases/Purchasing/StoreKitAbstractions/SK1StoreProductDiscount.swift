@@ -1,0 +1,57 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  SK1StoreProductDiscount.swift
+//
+//  Created by Nacho Soto on 1/17/22.
+
+import StoreKit
+
+@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+internal struct SK1StoreProductDiscount: StoreProductDiscountType {
+
+    init(sk1Discount: SK1ProductDiscount) {
+        self.underlyingSK1Discount = sk1Discount
+
+        if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
+            self.offerIdentifier = sk1Discount.identifier
+        } else {
+            self.offerIdentifier = nil
+        }
+        self.price = sk1Discount.price as Decimal
+        self.paymentMode = .init(skProductDiscountPaymentMode: sk1Discount.paymentMode)
+        self.subscriptionPeriod = .from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod)
+    }
+
+    let underlyingSK1Discount: SK1ProductDiscount
+
+    let offerIdentifier: String?
+    let price: Decimal
+    let paymentMode: StoreProductDiscount.PaymentMode
+    let subscriptionPeriod: SubscriptionPeriod
+
+}
+
+private extension StoreProductDiscount.PaymentMode {
+
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    init(skProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) {
+        switch paymentMode {
+        case .payUpFront:
+            self = .payUpFront
+        case .payAsYouGo:
+            self = .payAsYouGo
+        case .freeTrial:
+            self = .freeTrial
+        @unknown default:
+            self = .none
+        }
+    }
+
+}

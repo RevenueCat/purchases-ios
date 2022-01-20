@@ -19,6 +19,28 @@ import StoreKit
 public extension Purchases {
 
     /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and become
+     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
+     * ``appUserID`` will be aliased together with the `appUserID` of the existing user.
+     *  Going forward, either `appUserID` will be able to reference the same user.
+     *
+     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
+     * by your app passing the same `appUserId` used to purchase originally.
+     *
+     * - Note: This may force your users to enter the App Store password so should only be performed on request of
+     * the user. Typically with a button in settings or near your purchase UI. Use
+     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     */
+    @available(iOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
+    @available(macOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
+    @objc(restoreTransactionsWithCompletionBlock:)
+    func restoreTransactions(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+        fatalError()
+    }
+
+    /**
      * Get latest available purchaser info.
      *
      * - Parameter completion: A completion block called when customer info is available and not stale.
@@ -42,7 +64,8 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @available(watchOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @available(macOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
-    @objc func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
+    @objc(purchaserInfoWithCompletionBlock:)
+    func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         fatalError()
     }
 
@@ -69,7 +92,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
     @available(watchOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
     @available(macOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
-    @objc(productsWithIdentifiers:completion:)
+    @objc(productsWithIdentifiers:completionBlock:)
     func products(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         fatalError()
     }
@@ -89,7 +112,8 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "getOfferings(completion:)")
     @available(watchOS, obsoleted: 1, renamed: "getOfferings(completion:)")
     @available(macOS, obsoleted: 1, renamed: "getOfferings(completion:)")
-    @objc func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
+    @objc(offeringsWithCompletionBlock:)
+    func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
         fatalError()
     }
 
@@ -110,6 +134,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "purchase(package:completion:)")
     @available(watchOS, obsoleted: 1, renamed: "purchase(package:completion:)")
     @available(macOS, obsoleted: 1, renamed: "purchase(package:completion:)")
+    @objc(purchasePackage:withCompletionBlock:)
     func purchasePackage(_ package: Package, _ completion: @escaping PurchaseCompletedBlock) {
         fatalError()
     }
@@ -132,6 +157,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(package:discount:completion:)")
     @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, renamed: "purchase(package:discount:completion:)")
     @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:discount:completion:)")
+    @objc(purchasePackage:withDiscount:completionBlock:)
     func purchasePackage(_ package: Package,
                          discount: SKPaymentDiscount,
                          _ completion: @escaping PurchaseCompletedBlock) {
@@ -156,6 +182,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "purchase(product:_:)")
     @available(watchOS, obsoleted: 1, renamed: "purchase(product:_:)")
     @available(macOS, obsoleted: 1, renamed: "purchase(product:_:)")
+    @objc(purchaseProduct:withCompletionBlock:)
     func purchaseProduct(_ product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
         fatalError()
     }
@@ -179,9 +206,48 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(product:discount:completion:)")
     @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, renamed: "purchase(product:discount:completion:)")
     @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:discount:completion:)")
+    @objc(purchaseProduct:withDiscount:completionBlock:)
     func purchaseProduct(_ product: SKProduct,
                          discount: SKPaymentDiscount,
                          _ completion: @escaping PurchaseCompletedBlock) {
+        fatalError()
+    }
+
+    /**
+     * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
+     *
+     * - Parameter discount: The `SKProductDiscount` to apply to the product.
+     * - Parameter product: The `SKProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS, introduced: 12.2, obsoleted: 12.2, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(tvOS, introduced: 12.2, obsoleted: 12.2, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    @objc(paymentDiscountForProductDiscount:product:completion:)
+    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
+                         product: SKProduct,
+                         completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
+        fatalError()
+    }
+
+    /**
+     * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
+     *
+     * - Parameter discount: The `SKProductDiscount` to apply to the product.
+     * - Parameter product: The `SKProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
+                         product: SKProduct) async throws -> SKPaymentDiscount {
         fatalError()
     }
 
@@ -196,7 +262,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "logIn")
     @available(watchOS, obsoleted: 1, renamed: "logIn")
     @available(macOS, obsoleted: 1, renamed: "logIn")
-    @objc(createAlias:completion:)
+    @objc(createAlias:completionBlock:)
     func createAlias(_ alias: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
        fatalError()
     }
@@ -213,6 +279,7 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "logIn")
     @available(watchOS, obsoleted: 1, renamed: "logIn")
     @available(macOS, obsoleted: 1, renamed: "logIn")
+    @objc(identify:completionBlock:)
     func identify(_ appUserID: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
         fatalError()
     }
@@ -225,7 +292,8 @@ public extension Purchases {
     @available(tvOS, obsoleted: 1, renamed: "logOut")
     @available(watchOS, obsoleted: 1, renamed: "logOut")
     @available(macOS, obsoleted: 1, renamed: "logOut")
-    @objc func reset(completion: ((CustomerInfo?, Error?) -> Void)?) {
+    @objc(resetWithCompletionBlock:)
+    func reset(completion: ((CustomerInfo?, Error?) -> Void)?) {
         fatalError()
     }
 
@@ -242,3 +310,15 @@ public extension Purchases {
 @available(watchOS, obsoleted: 1, renamed: "StoreTransaction")
 @available(macOS, obsoleted: 1, renamed: "StoreTransaction")
 @objc(RCTransaction) public class Transaction: NSObject { }
+
+public extension Package {
+    /**
+     `SKProduct` assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
+     */
+    @available(iOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @available(tvOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @available(watchOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @available(macOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @available(macCatalyst, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
+    @objc var product: SKProduct { fatalError() }
+}

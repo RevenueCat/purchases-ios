@@ -39,6 +39,11 @@ BOOL isAnonymous;
     [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:nil];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
+//    [RCPurchases configureWithAPIKey:@""
+//                           appUserID:nil
+//                        observerMode:false
+//                        userDefaults:[[NSUserDefaults alloc] init]
+//             useStoreKit2IfAvailable:true];
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
     canI = [RCPurchases canMakePayments];
@@ -73,8 +78,8 @@ BOOL isAnonymous;
     
     RCCustomerInfo *pi = nil;
     SKProduct *skp = [[SKProduct alloc] init];
-    SKProductDiscount *skpd = [[SKProductDiscount alloc] init];
-    SKPaymentDiscount *skmd = [[SKPaymentDiscount alloc] init];
+    RCStoreProduct *stp = nil;
+    RCStoreProductDiscount *stpd = nil;
     
     RCPackage *pack;
 
@@ -116,15 +121,14 @@ BOOL isAnonymous;
     
     [p getCustomerInfoWithCompletion:^(RCCustomerInfo *info, NSError *error) {}];
     [p getOfferingsWithCompletion:^(RCOfferings *info, NSError *error) {}];
-    [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<SKProduct *> *products) { }];
-    [p purchaseProduct:skp withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<RCStoreProduct *> *products) { }];
+    [p purchaseProduct:stp withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     [p purchasePackage:pack withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p restoreTransactionsWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
+    [p restorePurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    [p paymentDiscountForProductDiscount:skpd product:skp completion:^(SKPaymentDiscount *d, NSError *e) { }];
-    [p purchaseProduct:skp withDiscount:skmd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p purchasePackage:pack withDiscount:skmd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchaseProduct:stp withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
