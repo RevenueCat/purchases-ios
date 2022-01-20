@@ -103,6 +103,14 @@ Run the carthage archive steps to prepare for carthage distribution
 
 archive
 
+### ios archive_all_platforms
+
+```sh
+[bundle exec] fastlane ios archive_all_platforms
+```
+
+archive all platforms
+
 ### ios build_swift_api_tester
 
 ```sh
