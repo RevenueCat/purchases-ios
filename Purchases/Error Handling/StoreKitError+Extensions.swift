@@ -34,7 +34,7 @@ extension StoreKitError {
         case .unknown:
             /// See also https://github.com/RevenueCat/purchases-ios/issues/392
             /// `StoreKitError` doesn't conform to `CustomNSError` as of `iOS 15.2`
-            /// so we can't extract any additional information like we do on ``SKError.toPurchasesErrorCode``
+            /// so we can't extract any additional information like we do on `SKError.toPurchasesErrorCode`
             return ErrorUtils.storeProblemError(error: self)
 
         @unknown default:

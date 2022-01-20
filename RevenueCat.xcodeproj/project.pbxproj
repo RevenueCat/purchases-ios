@@ -930,6 +930,7 @@
 				F530E4FE275646EF001AF6BD /* MacDevice.swift */,
 				57EAE52A274332830060EB74 /* Obsoletions.swift */,
 				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
+				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
 				57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */,
 				B3AA6237268B926F00894871 /* SystemInfo.swift */,
 			);
@@ -1411,7 +1412,6 @@
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
 				2DC5621824EC63430031F69B /* RevenueCat.h */,
-				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
 			);
 			path = Public;
 			sourceTree = "<group>";

@@ -74,12 +74,12 @@ private extension PackageType {
     @objc public let storeProduct: StoreProduct
     @objc public let offeringIdentifier: String
 
-    /// The price of this product using ``StoreProduct.priceFormatter``.
+    /// The price of this product using ``StoreProduct/priceFormatter``.
     @objc public var localizedPriceString: String {
         return storeProduct.localizedPriceString
     }
 
-    /// The price of the ``StoreProduct.introductoryDiscount`` formatted using ``StoreProduct.priceFormatter``.
+    /// The price of the ``StoreProduct/introductoryDiscount`` formatted using ``StoreProduct/priceFormatter``.
     /// - Returns: `nil` if there is no `introductoryDiscount`.
     @objc public var localizedIntroductoryPriceString: String? {
         return self.storeProduct.localizedIntroductoryPriceString
