@@ -167,6 +167,14 @@ Export XCFramework
 
 Run BackendIntegrationTests
 
+### ios remove_xcresults
+
+```sh
+[bundle exec] fastlane ios remove_xcresults
+```
+
+
+
 ### ios update_swift_package_commit
 
 ```sh

@@ -66,6 +66,7 @@ platform :ios do
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/tvos"
     )
+    remove_xcresults if is_ci
   end
 
   desc "Replace version number in project and supporting files"
@@ -372,9 +373,18 @@ platform :ios do
       derived_data_path: "scan_derived_data",
       output_types: '',
       fail_build: false,
-      result_bundle: true
+      result_bundle: true,
+      output_directory: "fastlane/test_output/xctest/ios"
     )
-    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/ios")
+    remove_xcresults if is_ci
+  end
+
+  lane :remove_xcresults do
+    UI.message "Cleaning xcresults..."
+    Dir["test_output/**/*.xcresult"].each do |path|
+      UI.message "Removing #{path}"
+      FileUtils.remove_dir(path)
+    end
   end
 
   desc "Update swift package commit"
