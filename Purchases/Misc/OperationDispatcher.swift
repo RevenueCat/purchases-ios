@@ -18,7 +18,6 @@ class OperationDispatcher {
 
     private let mainQueue = DispatchQueue.main
     private let workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
-    private let httpQueue = DispatchQueue(label: "HTTPClientQueue")
     private let maxJitterInSeconds: Double = 5
 
     func dispatchOnMainThread(_ block: @escaping () -> Void) {
