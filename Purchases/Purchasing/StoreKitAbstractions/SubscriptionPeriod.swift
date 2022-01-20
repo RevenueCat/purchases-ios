@@ -72,10 +72,10 @@ public class SubscriptionPeriod: NSObject {
 public extension SubscriptionPeriod {
 
     /// The number of units per subscription period
-    @available(iOS, obsoleted: 1, renamed: "value")
-    @available(tvOS, obsoleted: 1, renamed: "value")
-    @available(watchOS, obsoleted: 1, renamed: "value")
-    @available(macOS, obsoleted: 1, renamed: "value")
+    @available(iOS, unavailable, renamed: "value")
+    @available(tvOS, unavailable, renamed: "value")
+    @available(watchOS, unavailable, renamed: "value")
+    @available(macOS, unavailable, renamed: "value")
     @objc var numberOfUnits: Int { fatalError() }
 
 }
