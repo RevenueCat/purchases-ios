@@ -49,7 +49,7 @@ platform :ios do
       testplan: "Coverage",
       prelaunch_simulator: true,
       fail_build: false,
-      result_bundle: false,
+      result_bundle: true,
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/ios"
     )
@@ -62,7 +62,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: '',
       fail_build: false,
-      result_bundle: false,
+      result_bundle: true,
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/tvos"
     )
@@ -387,7 +387,7 @@ platform :ios do
       derived_data_path: "scan_derived_data",
       output_types: '',
       fail_build: false,
-      result_bundle: false,
+      result_bundle: true,
       output_directory: "fastlane/test_output/xctest/ios"
     )
     zip_xcresults if is_ci
