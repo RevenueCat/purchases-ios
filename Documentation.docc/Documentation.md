@@ -113,4 +113,4 @@ Or browse our iOS sample apps:
 - ``Purchases/setAirshipChannelID(_:)``
 - ``Purchases/setMparticleID(_:)``
 - ``Purchases/setOnesignalID(_:)``
-- ``Purchases/setFBAnonymousID(_:)(_:)``
+- ``Purchases/setFBAnonymousID(_:)``
