@@ -783,7 +783,7 @@ public extension Purchases {
     }
 
     /**
-     * Fetches the `StorePRoducts` for your IAPs for given `productIdentifiers`.
+     * Fetches the `StoreProducts` for your IAPs for given `productIdentifiers`.
      * Use this method if you aren't using `getOfferings(completion:)`.
      * You should use getOfferings though.
      *
