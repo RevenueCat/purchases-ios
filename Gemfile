@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 # Temporarily pointing to a pre-release of fastlane to test out xcbeautify and integration of trainer
 # gem 'fastlane'
-gem 'fastlane', '2.201.0.rc1'
+gem 'fastlane', '2.201.0.rc3'
 
 gem 'cocoapods'
 gem 'jazzy'
