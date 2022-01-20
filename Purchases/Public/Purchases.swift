@@ -247,8 +247,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let eTagManager = ETagManager()
         let backend = Backend(apiKey: apiKey,
                               systemInfo: systemInfo,
-                              eTagManager: eTagManager,
-                              operationDispatcher: operationDispatcher)
+                              eTagManager: eTagManager)
         let storeKitWrapper = StoreKitWrapper()
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard

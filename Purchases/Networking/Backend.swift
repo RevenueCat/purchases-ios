@@ -42,8 +42,7 @@ class Backend {
 
     convenience init(apiKey: String,
                      systemInfo: SystemInfo,
-                     eTagManager: ETagManager,
-                     operationDispatcher: OperationDispatcher) {
+                     eTagManager: ETagManager) {
         let httpClient = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         self.init(httpClient: httpClient, apiKey: apiKey)
     }

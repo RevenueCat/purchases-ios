@@ -38,8 +38,4 @@ class OperationDispatcher {
         }
     }
 
-    func dispatchOnHTTPSerialQueue(_ block: @escaping () -> Void) {
-        httpQueue.async(execute: block)
-    }
-
 }
