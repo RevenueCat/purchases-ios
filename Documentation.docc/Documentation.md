@@ -55,7 +55,9 @@ Or browse our iOS sample apps:
 - ``StoreProduct``
 - ``SubscriptionPeriod``
 
+- ``Purchases/offerings()``
 - ``Purchases/getOfferings(completion:)``
+- ``Purchases/products(_:)``
 - ``Purchases/getProducts(_:completion:)``
 
 ### Making Purchases
@@ -71,7 +73,10 @@ Or browse our iOS sample apps:
 - ``StoreProductDiscount``
 
 - ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:)``
+- ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:completion:)``
+- ``Purchases/purchase(package:discount:)``
 - ``Purchases/purchase(package:discount:completion:)``
+- ``Purchases/purchase(product:discount:)``
 - ``Purchases/purchase(product:discount:completion:)``
 
 ### Subscription Status
@@ -81,18 +86,24 @@ Or browse our iOS sample apps:
 - ``PurchasesDelegate``
 
 - ``Purchases/getCustomerInfo(completion:)``
+- ``Purchases/customerInfo()``
 
 ### Identifying Users
+- ``Purchases/logIn(_:)``
 - ``Purchases/logIn(_:completion:)``
+- ``Purchases/logOut()``
 - ``Purchases/logOut(completion:)``
 
 ### Managing Subscriptions
 - ``Purchases/syncPurchases()``
+- ``Purchases/syncPurchases(completion:)``
 - ``Purchases/restorePurchases()``
+- ``Purchases/restorePurchases(completion:)``
 - ``Purchases/beginRefundRequestForActiveEntitlement()``
 - ``Purchases/beginRefundRequest(forEntitlement:)``
 - ``Purchases/beginRefundRequest(forProduct:)``
 - ``Purchases/showManageSubscriptions()``
+- ``Purchases/showManageSubscriptions(completion:)``
 
 ### Subscriber Attributes
 - ``Purchases/setAttributes(_:)``
