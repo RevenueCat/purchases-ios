@@ -1401,10 +1401,10 @@ extension Purchases: PurchasesOrchestratorDelegate {
      * If the purchase should never be made, you don't need to ever call the defermentBlock and `Purchases`
      * will not proceed with promotional purchases.
      *
-     * - Parameter product: `SKProduct` the product that was selected from the app store.
+     * - Parameter product: `StoreProduct` the product that was selected from the app store.
      */
     @objc
-    public func shouldPurchasePromoProduct(_ product: SKProduct,
+    public func shouldPurchasePromoProduct(_ product: StoreProduct,
                                            defermentBlock: @escaping DeferredPromotionalPurchaseBlock) {
         guard let delegate = delegate else {
             return
