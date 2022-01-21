@@ -112,7 +112,7 @@ platform :ios do
     commit_hash = last_git_commit[:commit_hash]
     puts commit_hash
 
-    is_prerelease = new_version_number.include?("-")
+    is_prerelease = release_version.include?("-")
 
     set_github_release(
       repository_name: "revenuecat/purchases-ios",
