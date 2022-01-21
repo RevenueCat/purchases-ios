@@ -71,10 +71,10 @@ class BackendTests: XCTestCase {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 
-            if let body = requestBody {
-                assertSnapshot(matching: body, as: .json,
-                               file: file, testName: CurrentTestCaseTracker.sanitizedTestName)
-            }
+            //            if let body = requestBody {
+            //                assertSnapshot(matching: body, as: .json,
+            //                               file: file, testName: CurrentTestCaseTracker.sanitizedTestName)
+            //            }
 
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
                                      serially: performSerially,
@@ -190,7 +190,7 @@ class BackendTests: XCTestCase {
                                               "is_restore": isRestore,
                                               "observer_mode": observerMode],
                                        headers: ["Authorization": "Bearer " + apiKey])
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
 
@@ -222,6 +222,7 @@ class BackendTests: XCTestCase {
                       subscriberAttributes: nil,
                       completion: { (_, _) in
             completionCalled += 1
+            self.simulateNetworkDelay(withTimeInterval: 0.2)
         })
 
         backend?.post(receiptData: receiptData,
@@ -235,8 +236,9 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
         expect(completionCalled).toEventually(equal(2))
+
     }
 
     func testDoesntCacheForDifferentRestore() {
@@ -270,7 +272,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
 
@@ -305,7 +307,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
 
@@ -341,7 +343,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
 
@@ -376,7 +378,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
 
@@ -387,7 +389,7 @@ class BackendTests: XCTestCase {
         backend?.getSubscriberData(appUserID: userID) { _, _ in }
         backend?.getSubscriberData(appUserID: userID) { _, _ in }
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
     }
 
     func testDoesntCacheSubscriberGetsForSameSubscriber() {
@@ -400,7 +402,7 @@ class BackendTests: XCTestCase {
 
         backend?.getSubscriberData(appUserID: userID2) { _, _ in }
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
     }
 
     func testPostsReceiptDataWithProductRequestDataCorrectly() {
@@ -452,7 +454,7 @@ class BackendTests: XCTestCase {
                                        body: body,
                                        headers: ["Authorization": "Bearer " + apiKey])
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
 
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
@@ -486,7 +488,7 @@ class BackendTests: XCTestCase {
             completionCalled = true
         })
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
         expect(completionCalled).toEventually(beTrue())
 
         let call = self.httpClient.calls[0]
@@ -626,7 +628,7 @@ class BackendTests: XCTestCase {
 
         backend?.getSubscriberData(appUserID: userID) { _, _ in }
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
 
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
@@ -703,10 +705,10 @@ class BackendTests: XCTestCase {
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
-        backend?.fetchIntroEligibility(appUserID: userID,
-                                       receiptData: Data(),
-                                       productIdentifiers: [],
-                                       completion: { (_, error) in
+        backend?.getIntroEligibility(appUserID: userID,
+                                     receiptData: Data(),
+                                     productIdentifiers: [],
+                                     completion: { _, error in
             expect(error).to(beNil())
         })
         expect(self.httpClient.calls.count).to(equal(0))
@@ -723,15 +725,16 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
-        backend?.fetchIntroEligibility(appUserID: userID,
-                                       receiptData: Data(1...3),
-                                       productIdentifiers: products,
-                                       completion: {(productEligibility, error) in
+        backend?.getIntroEligibility(appUserID: userID,
+                                     receiptData: Data(1...3),
+                                     productIdentifiers: products,
+                                     completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
+
         })
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
         if httpClient.calls.count > 0 {
             let call = httpClient.calls[0]
 
@@ -761,14 +764,15 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.fetchIntroEligibility(appUserID: userID,
-                                       receiptData: Data.init(1...2),
-                                       productIdentifiers: products,
-                                       completion: {(productEligibility, error) in
+        backend?.getIntroEligibility(appUserID: userID,
+                                     receiptData: Data.init(1...2),
+                                     productIdentifiers: products,
+                                     completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
         })
 
+        expect(eligibility).toEventuallyNot(beNil())
         expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
         expect(eligibility!["productb"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
         expect(eligibility!["productc"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
@@ -783,14 +787,15 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
         let products = ["producta"]
         var eventualError: NSError?
-        backend?.fetchIntroEligibility(appUserID: "",
-                                       receiptData: Data.init(1...2),
-                                       productIdentifiers: products,
-                                       completion: {(productEligibility, error) in
+        backend?.getIntroEligibility(appUserID: "",
+                                     receiptData: Data.init(1...2),
+                                     productIdentifiers: products,
+                                     completion: {(productEligibility, error) in
             eventualError = error as NSError?
             eligibility = productEligibility
         })
 
+        expect(eligibility).toEventuallyNot(beNil())
         expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
         expect(eventualError).toEventuallyNot(beNil())
         expect(eventualError?.domain).to(equal(RCPurchasesErrorCodeDomain))
@@ -800,10 +805,10 @@ class BackendTests: XCTestCase {
         var wasRequestSent = errorComingFromBackend != nil
         expect(wasRequestSent) == false
 
-        backend?.fetchIntroEligibility(appUserID: "   ",
-                                       receiptData: Data.init(1...2),
-                                       productIdentifiers: products,
-                                       completion: {(productEligibility, error) in
+        backend?.getIntroEligibility(appUserID: "   ",
+                                     receiptData: Data.init(1...2),
+                                     productIdentifiers: products,
+                                     completion: {(productEligibility, error) in
             eventualError = error as NSError?
             eligibility = productEligibility
         })
@@ -837,14 +842,15 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.fetchIntroEligibility(appUserID: userID,
-                                       receiptData: Data.init(1...2),
-                                       productIdentifiers: products,
-                                       completion: {(productEligbility, error) in
+        backend?.getIntroEligibility(appUserID: userID,
+                                     receiptData: Data.init(1...2),
+                                     productIdentifiers: products,
+                                     completion: {(productEligbility, error) in
             expect(error).to(beNil())
             eligibility = productEligbility
         })
 
+        expect(eligibility).toEventuallyNot(beNil())
         expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
         expect(eligibility!["productb"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
         expect(eligibility!["productc"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
@@ -861,7 +867,7 @@ class BackendTests: XCTestCase {
             offeringsData = responseFromBackend
         })
 
-        expect(self.httpClient.calls.count).toNot(equal(0))
+        expect(self.httpClient.calls.count).toEventuallyNot(equal(0))
         expect(offeringsData).toEventuallyNot(beNil())
     }
 
@@ -872,7 +878,7 @@ class BackendTests: XCTestCase {
 
         backend?.getOfferings(appUserID: userID) { _, _ in }
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
         expect(self.httpClient.calls[0].serially).to(beTrue())
     }
 
@@ -880,10 +886,14 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String: Any], error: nil)
         let path = "/subscribers/" + userID + "/offerings"
         httpClient.mock(requestPath: path, response: response)
-        backend?.getOfferings(appUserID: userID, completion: { (_, _) in })
-        backend?.getOfferings(appUserID: userID, completion: { (_, _) in })
+        backend?.getOfferings(appUserID: userID) { (_, _) in
+            self.simulateNetworkDelay(withTimeInterval: 0.3)
+        }
+        backend?.getOfferings(appUserID: userID) { (_, _) in
+            self.simulateNetworkDelay(withTimeInterval: 0.1)
+        }
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
     }
 
     func testGetEntitlementsDoesntCacheForMultipleUserID() {
@@ -895,7 +905,7 @@ class BackendTests: XCTestCase {
         backend?.getOfferings(appUserID: userID, completion: { (_, _) in })
         backend?.getOfferings(appUserID: userID2, completion: { (_, _) in })
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
     }
 
     func testGetOfferingsOneOffering() {
@@ -952,7 +962,7 @@ class BackendTests: XCTestCase {
                       appUserID: userID,
                       completion: nil)
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
         if self.httpClient.calls.count == 0 {
             return
         }
@@ -975,7 +985,7 @@ class BackendTests: XCTestCase {
             completionCalled = true
         })
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
 
         let call = self.httpClient.calls[0]
 
@@ -995,30 +1005,35 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
 
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: {_ in })
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: {_ in })
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in }
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in }
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
     }
 
     func testCreateAliasDoesntCacheForDifferentNewUserID() {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
 
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: {_ in })
-        backend?.createAlias(appUserID: userID, newAppUserID: "another_new_alias", completion: {_ in })
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in
+            self.simulateNetworkDelay()
+        }
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        backend?.createAlias(appUserID: userID, newAppUserID: "another_new_alias") { _ in }
+
+        expect(self.httpClient.calls.count).toEventually(equal(2))
     }
 
     func testCreateAliasCachesWhenCallbackNil() {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
 
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: nil)
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in
+            self.simulateNetworkDelay()
+        }
         backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: { _ in })
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
     }
 
     func testCreateAliasCallsAllCompletionBlocksInCache() {
@@ -1029,16 +1044,17 @@ class BackendTests: XCTestCase {
         var completion2Called = false
 
         backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: nil)
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: { (_) in
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in
+            self.simulateNetworkDelay(withTimeInterval: 0.2)
             completion1Called = true
-        })
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: { (_) in
+        }
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in
             completion2Called = true
-        })
+        }
 
-        expect(self.httpClient.calls.count).to(equal(1))
-        expect(completion1Called).toEventually(beTrue())
         expect(completion2Called).toEventually(beTrue())
+        expect(completion1Called).toEventually(beTrue())
+        expect(self.httpClient.calls.count).toEventually(equal(1))
     }
 
     func testCreateAliasDoesntCacheForDifferentCurrentUserID() {
@@ -1049,12 +1065,14 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
 
         httpClient.mock(requestPath: "/subscribers/" + currentAppUserID1 + "/alias", response: response)
-        backend?.createAlias(appUserID: currentAppUserID1, newAppUserID: newAppUserID, completion: {_ in })
+        backend?.createAlias(appUserID: currentAppUserID1, newAppUserID: newAppUserID) { _ in
+            self.simulateNetworkDelay()
+        }
 
         httpClient.mock(requestPath: "/subscribers/" + currentAppUserID2 + "/alias", response: response)
-        backend?.createAlias(appUserID: currentAppUserID2, newAppUserID: newAppUserID, completion: {_ in })
+        backend?.createAlias(appUserID: currentAppUserID2, newAppUserID: newAppUserID) { _ in }
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
     }
 
     func testNetworkErrorIsForwardedForCustomerInfoCalls() {
@@ -1127,9 +1145,10 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.fetchIntroEligibility(appUserID: userID,
-                                       receiptData: Data(),
-                                       productIdentifiers: products, completion: {(productEligibility, error) in
+        backend?.getIntroEligibility(appUserID: userID,
+                                     receiptData: Data(),
+                                     productIdentifiers: products,
+                                     completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
         })
@@ -1241,7 +1260,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
 
@@ -1311,7 +1330,7 @@ class BackendTests: XCTestCase {
                                        headers: ["Authorization": "Bearer " + apiKey])
         }
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
 
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
@@ -1378,7 +1397,7 @@ class BackendTests: XCTestCase {
                                        body: body,
                                        headers: ["Authorization": "Bearer " + apiKey])
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
 
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
@@ -1600,7 +1619,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
 
@@ -1824,7 +1843,7 @@ class BackendTests: XCTestCase {
         backend?.logIn(currentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { _, _, _  in }
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
     }
 
     func testLoginDoesntCacheForDifferentNewUserID() {
@@ -1839,7 +1858,7 @@ class BackendTests: XCTestCase {
         backend?.logIn(currentAppUserID: currentAppUserID,
                        newAppUserID: secondNewAppUserID) { _, _, _  in }
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
     }
 
     func testLoginDoesntCacheForDifferentCurrentUserID() {
@@ -1854,7 +1873,7 @@ class BackendTests: XCTestCase {
         backend?.logIn(currentAppUserID: currentAppUserID2,
                        newAppUserID: newAppUserID) { _, _, _  in }
 
-        expect(self.httpClient.calls.count).to(equal(2))
+        expect(self.httpClient.calls.count).toEventually(equal(2))
     }
 
     func testLoginCallsAllCompletionBlocksInCache() {
@@ -1868,6 +1887,7 @@ class BackendTests: XCTestCase {
 
         backend?.logIn(currentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { _, _, _  in
+            self.simulateNetworkDelay(withTimeInterval: 0.200)
             completion1Called = true
         }
         backend?.logIn(currentAppUserID: currentAppUserID,
@@ -1875,7 +1895,7 @@ class BackendTests: XCTestCase {
             completion2Called = true
         }
 
-        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls.count).toEventually(equal(1))
         expect(completion1Called).toEventually(beTrue())
         expect(completion2Called).toEventually(beTrue())
     }

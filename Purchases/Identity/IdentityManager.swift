@@ -108,7 +108,7 @@ class IdentityManager {
     private func resetUserIDCache() {
         deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: Self.generateRandomID())
         deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
-        backend.clearCaches()
+        backend.clearHTTPClientCaches()
     }
 
     static func generateRandomID() -> String {

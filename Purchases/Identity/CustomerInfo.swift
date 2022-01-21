@@ -216,6 +216,21 @@ import Foundation
         self.allPurchases = subscriberData.allPurchases
     }
 
+    static func from(json maybeJSON: [String: Any]?) throws -> CustomerInfo {
+        guard let customerJSON = maybeJSON else {
+            throw UnexpectedBackendResponseSubErrorCode.customerInfoResponseMalformed
+        }
+
+        do {
+            return try CustomerInfo(data: customerJSON)
+        } catch {
+            let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
+            let subError = parsingError.addingUnderlyingError(error,
+                                                              extraContext: customerJSON.stringRepresentation)
+            throw subError
+        }
+    }
+
     static let currentSchemaVersion = "2"
 
     func jsonObject() -> [String: Any] {
