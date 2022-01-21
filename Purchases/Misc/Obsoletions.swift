@@ -15,6 +15,9 @@ import StoreKit
 
 // All these methods are `obsoleted`, which means they can't be called by users of the SDK,
 // and therefore the `fatalError`s are unreachable.
+// See also: docs/Deprecations.md
+
+// swiftlint:disable file_length
 
 public extension Purchases {
 
@@ -37,6 +40,28 @@ public extension Purchases {
     @available(macOS, obsoleted: 1, renamed: "restorePurchases(completion:)")
     @objc(restoreTransactionsWithCompletionBlock:)
     func restoreTransactions(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+        fatalError()
+    }
+
+    /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and become
+     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
+     * ``appUserID`` will be aliased together with the `appUserID` of the existing user.
+     *  Going forward, either `appUserID` will be able to reference the same user.
+     *
+     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
+     * by your app passing the same `appUserId` used to purchase originally.
+     *
+     * - Note: This may force your users to enter the App Store password so should only be performed on request of
+     * the user. Typically with a button in settings or near your purchase UI. Use
+     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     */
+    @available(iOS, introduced: 13.0, obsoleted: 13.0, renamed: "restorePurchases()")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0, renamed: "restorePurchases()")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "restorePurchases()")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15, renamed: "restorePurchases()")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "restorePurchases()")
+    func restoreTransactions() async throws -> CustomerInfo {
         fatalError()
     }
 
@@ -66,6 +91,18 @@ public extension Purchases {
     @available(macOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @objc(purchaserInfoWithCompletionBlock:)
     func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
+        fatalError()
+    }
+
+    /**
+     * Get latest available purchaser info.
+     */
+    @available(iOS, introduced: 13.0, obsoleted: 13.0, renamed: "customerInfo()")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0, renamed: "customerInfo()")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "customerInfo()")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15, renamed: "customerInfo()")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "customerInfo()")
+    func purchaserInfo() async throws -> CustomerInfo {
         fatalError()
     }
 
@@ -146,6 +183,25 @@ public extension Purchases {
      * - Note: You do not need to finish the transaction yourself in the completion callback,
      * Purchases will handle this for you.
      * - Parameter package: The `Package` the user intends to purchase
+     */
+    @available(iOS, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:)")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:)")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(package:)")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15, renamed: "purchase(package:)")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:)")
+    func purchasePackage(_ package: Package) async throws ->
+    // swiftlint:disable:next large_tuple
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+        fatalError()
+    }
+
+    /**
+     * Purchase the passed `Package`.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+     * - Note: You do not need to finish the transaction yourself in the completion callback,
+     * Purchases will handle this for you.
+     * - Parameter package: The `Package` the user intends to purchase
      *
      * - Parameter completion: A completion block that is called when the purchase completes.
      * If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`.
@@ -161,6 +217,26 @@ public extension Purchases {
     func purchasePackage(_ package: Package,
                          discount: SKPaymentDiscount,
                          _ completion: @escaping PurchaseCompletedBlock) {
+        fatalError()
+    }
+
+    /**
+     * Purchase the passed `Package`.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+     * - Note: You do not need to finish the transaction yourself in the completion callback,
+     * Purchases will handle this for you.
+     * - Parameter package: The `Package` the user intends to purchase
+     */
+    @available(iOS, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:discount:)")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:discount:)")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(package:discount:)")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15, renamed: "purchase(package:discount:)")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(package:discount:)")
+    func purchasePackage(_ package: Package,
+                         discount: SKPaymentDiscount) async throws ->
+    // swiftlint:disable:next large_tuple
+    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         fatalError()
     }
 
@@ -196,6 +272,25 @@ public extension Purchases {
      * - Note: You do not need to finish the transaction yourself in the completion callback,
      * Purchases will handle this for you.
      * - Parameter product: The `SKProduct` the user intends to purchase
+     */
+    @available(iOS, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:)")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:)")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(product:)")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15, renamed: "purchase(product:)")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:)")
+    func purchaseProduct(_ product: SKProduct) async throws {
+        fatalError()
+    }
+
+    /**
+     * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
+     * If you are using the Offerings system, use `-[RCPurchases purchasePackage:withCompletionBlock]` instead.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback,
+     * Purchases will handle this for you.
+     * - Parameter product: The `SKProduct` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      * If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`.
      * If the purchase was not successful, there will be an `NSError`.
@@ -214,6 +309,25 @@ public extension Purchases {
     }
 
     /**
+     * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
+     * If you are using the Offerings system, use `-[RCPurchases purchasePackage:withCompletionBlock]` instead.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback,
+     * Purchases will handle this for you.
+     * - Parameter product: The `SKProduct` the user intends to purchase
+     */
+    @available(iOS, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:discount:)")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:discount:)")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(product:discount:)")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15, renamed: "purchase(product:discount:)")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:discount:)")
+    func purchaseProduct(_ product: SKProduct, discount: SKPaymentDiscount) async throws {
+        fatalError()
+    }
+
+    /**
      * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
      *
      * - Parameter discount: The `SKProductDiscount` to apply to the product.
@@ -227,7 +341,7 @@ public extension Purchases {
     @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, message: "Obtain StoreProductDiscount from StoreProduct")
     @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
     @objc(paymentDiscountForProductDiscount:product:completion:)
-    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
+    func paymentDiscount(for discount: SKProductDiscount,
                          product: SKProduct,
                          completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
         fatalError()
@@ -238,15 +352,13 @@ public extension Purchases {
      *
      * - Parameter discount: The `SKProductDiscount` to apply to the product.
      * - Parameter product: The `SKProduct` the user intends to purchase.
-     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
-     * If it was not successful, there will be an `Error`.
      */
     @available(iOS, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
     @available(tvOS, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
     @available(watchOS, introduced: 6.2, obsoleted: 6.2, message: "Obtain StoreProductDiscount from StoreProduct")
     @available(macOS, introduced: 10.15, obsoleted: 10.15, message: "Obtain StoreProductDiscount from StoreProduct")
     @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
-    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
+    func paymentDiscount(for discount: SKProductDiscount,
                          product: SKProduct) async throws -> SKPaymentDiscount {
         fatalError()
     }
