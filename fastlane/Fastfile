@@ -48,11 +48,12 @@ platform :ios do
       scheme: "RevenueCat",
       testplan: "Coverage",
       prelaunch_simulator: true,
-      output_types: '',
+      output_types: 'junit',
       fail_build: false,
-      result_bundle: true
+      result_bundle: true,
+      number_of_retries: 5,
+      output_directory: "fastlane/test_output/xctest/ios"
     )
-    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/ios")
 
     scan(
       step_name: "scan - Apple TV",
@@ -60,11 +61,13 @@ platform :ios do
       scheme: "RevenueCat",
       testplan: "RevenueCat",
       prelaunch_simulator: true,
-      output_types: '',
+      output_types: 'junit',
       fail_build: false,
-      result_bundle: true
+      result_bundle: true,
+      number_of_retries: 5,
+      output_directory: "fastlane/test_output/xctest/tvos"
     )
-    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/tvos")
+    zip_xcresults if is_ci
   end
 
   desc "Replace version number in project and supporting files"
@@ -385,9 +388,20 @@ platform :ios do
       derived_data_path: "scan_derived_data",
       output_types: '',
       fail_build: false,
-      result_bundle: true
+      result_bundle: true,
+      output_directory: "fastlane/test_output/xctest/ios"
     )
-    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/ios")
+    zip_xcresults if is_ci
+  end
+
+  lane :zip_xcresults do
+    UI.message "Zipping xcresults..."
+    Dir["test_output/**/*.xcresult"].each do |path|
+      path = File.absolute_path(path)
+      UI.message "Zipping and removing #{path}"
+      zip(path: path, output_path: "#{path}.zip")
+      FileUtils.remove_dir(path)
+    end
   end
 
   desc "Update swift package commit"
