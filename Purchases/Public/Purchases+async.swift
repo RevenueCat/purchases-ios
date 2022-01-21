@@ -12,7 +12,6 @@
 //  Created by Andrés Boedo on 24/11/21.
 
 import Foundation
-import StoreKit
 
 /// This extension holds the biolerplate logic to convert methods with completion blocks into async / await syntax.
 extension Purchases {

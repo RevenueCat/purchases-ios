@@ -78,7 +78,7 @@ BOOL isAnonymous;
     
     RCCustomerInfo *pi = nil;
     SKProduct *skp = [[SKProduct alloc] init];
-    RCStoreProduct *stp = nil;
+    RCStoreProduct *storeProduct = nil;
     RCStoreProductDiscount *stpd = nil;
     
     RCPackage *pack;
@@ -122,12 +122,12 @@ BOOL isAnonymous;
     [p getCustomerInfoWithCompletion:^(RCCustomerInfo *info, NSError *error) {}];
     [p getOfferingsWithCompletion:^(RCOfferings *info, NSError *error) {}];
     [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<RCStoreProduct *> *products) { }];
-    [p purchaseProduct:stp withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p purchaseProduct:storeProduct withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     [p purchasePackage:pack withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p restorePurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    [p purchaseProduct:stp withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchaseProduct:storeProduct withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p purchasePackage:pack withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
@@ -135,7 +135,7 @@ BOOL isAnonymous;
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p
-shouldPurchasePromoProduct:skp
+shouldPurchasePromoProduct:storeProduct
            defermentBlock:^(void (^ _Nonnull completion)(RCStoreTransaction * _Nullable transaction,
                                                          RCCustomerInfo * _Nullable info,
                                                          NSError * _Nullable error,

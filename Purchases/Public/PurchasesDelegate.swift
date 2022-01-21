@@ -13,7 +13,6 @@
 //
 
 import Foundation
-import StoreKit
 
 /**
  * Delegate for ``Purchases`` responsible for handling updating your app's state in response to updated customer info
@@ -53,10 +52,10 @@ import StoreKit
      * If the purchase should never be made, you don't need to ever call the defermentBlock and
      * ``Purchases`` will not proceed with promotional purchases.
 
-     * - Parameter product: `SKProduct` the product that was selected from the app store
+     * - Parameter product: `StoreProduct` the product that was selected from the app store
      */
     @objc optional func purchases(_ purchases: Purchases,
-                                  shouldPurchasePromoProduct product: SKProduct,
+                                  shouldPurchasePromoProduct product: StoreProduct,
                                   defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock)
 
 }

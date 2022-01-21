@@ -1444,14 +1444,14 @@ class PurchasesTests: XCTestCase {
 
     func testCallsShouldAddPromoPaymentDelegateMethod() {
         setupPurchases()
-        let product = MockSK1Product(mockProductIdentifier: "mock_product")
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "mock_product"))
         let payment = SKPayment()
 
         _ = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper,
                                                       shouldAddStorePayment: payment,
-                                                      for: product)
+                                                      for: product.sk1Product!)
 
-        expect(self.purchasesDelegate.promoProduct).to(be(product))
+        expect(self.purchasesDelegate.promoProduct) == product
     }
 
     func testShouldAddPromoPaymentDelegateMethodReturnsFalse() {

@@ -117,18 +117,17 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getOfferings { (_: Offerings?, _: Error?) in }
     purchases.getProducts([String]()) { (_: [StoreProduct]) in }
 
-    let skp: SKProduct = SKProduct()
-    let stp: StoreProduct! = nil
+    let storeProduct: StoreProduct! = nil
     let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
 
-    purchases.purchase(product: stp) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { (_: [String: IntroEligibility]) in }
 
-    purchases.purchase(product: stp,
+    purchases.purchase(product: storeProduct,
                        discount: discount) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack,
                        discount: discount) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
@@ -143,7 +142,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)
 
     let defermentBlock = { (_: (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void) in }
-    purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
+    purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: storeProduct, defermentBlock: defermentBlock)
 }
 
 private func checkIdentity(purchases: Purchases) {
