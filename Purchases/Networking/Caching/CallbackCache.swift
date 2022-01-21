@@ -42,14 +42,14 @@ class CallbackCache<T> where T: Cachable {
         }
     }
 
-    func performOnAllItemsAndRemoveFromCache(withKey key: String, _ block: (T) -> Void) {
+    func performOnAllItemsAndRemoveFromCache(withCacheable cacheable: Cachable, _ block: (T) -> Void) {
         callbackQueue.sync {
-            guard let items = cachedCallbacksByKey[key] else {
+            guard let items = cachedCallbacksByKey[cacheable.key] else {
                 return
             }
 
             items.forEach { block($0) }
-            cachedCallbacksByKey.removeValue(forKey: key)
+            cachedCallbacksByKey.removeValue(forKey: cacheable.key)
         }
     }
 

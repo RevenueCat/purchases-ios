@@ -13,20 +13,17 @@
 
 import Foundation
 
-class GetOfferingsOperation: NetworkOperation {
+class GetOfferingsOperation: CacheableNetworkOperation {
 
     private let offeringsCallbackCache: CallbackCache<OfferingsCallback>
     private let configuration: AppUserConfiguration
-    private let completion: OfferingsResponseHandler
 
     init(configuration: UserSpecificConfiguration,
-         completion: @escaping OfferingsResponseHandler,
          offeringsCallbackCache: CallbackCache<OfferingsCallback>) {
         self.configuration = configuration
-        self.completion = completion
         self.offeringsCallbackCache = offeringsCallbackCache
 
-        super.init(configuration: configuration)
+        super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID)
     }
 
     override func main() {
@@ -34,26 +31,23 @@ class GetOfferingsOperation: NetworkOperation {
             return
         }
 
-        self.getOfferings(appUserID: self.configuration.appUserID, completion: self.completion)
+        self.getOfferings()
     }
 
-    func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
-        guard let appUserID = try? appUserID.escapedOrError() else {
-            completion(nil, ErrorUtils.missingAppUserIDError())
+    func getOfferings() {
+        guard let appUserID = try? configuration.appUserID.escapedOrError() else {
+            self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+                callback.callback(nil, ErrorUtils.missingAppUserIDError())
+            }
             return
         }
 
         let path = "/subscribers/\(appUserID)/offerings"
-        let offeringsCallback = OfferingsCallback(key: path, callback: completion)
-        if self.offeringsCallbackCache.add(callback: offeringsCallback) == .addedToExistingInFlightList {
-            return
-        }
-
         httpClient.performGETRequest(serially: true,
                                      path: path,
                                      headers: authHeaders) { statusCode, maybeResponse, maybeError in
             if maybeError == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
-                self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withKey: path) { callbackObject in
+                self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                     callbackObject.callback(maybeResponse, nil)
                 }
                 return
@@ -75,7 +69,7 @@ class GetOfferingsOperation: NetworkOperation {
             let responseString = maybeResponse?.debugDescription
             Logger.error(Strings.backendError.unknown_get_offerings_error(statusCode: statusCode,
                                                                           maybeResponseString: responseString))
-            self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withKey: path) { callbackObject in
+            self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 callbackObject.callback(nil, errorForCallbacks)
             }
         }

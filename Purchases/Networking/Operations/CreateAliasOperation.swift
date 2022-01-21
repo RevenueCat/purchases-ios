@@ -43,7 +43,7 @@ class CreateAliasOperation: CacheableNetworkOperation {
 
     func createAlias() {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
-            self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withKey: key) { callback in
+            self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.callback?(ErrorUtils.missingAppUserIDError())
             }
             return
@@ -55,7 +55,7 @@ class CreateAliasOperation: CacheableNetworkOperation {
                                       path: path,
                                       requestBody: ["new_app_user_id": newAppUserID],
                                       headers: authHeaders) { statusCode, response, error in
-            self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withKey: self.key) { aliasCallback in
+            self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { aliasCallback in
 
                 guard let completion = aliasCallback.callback else {
                     return

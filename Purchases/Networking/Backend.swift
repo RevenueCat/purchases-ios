@@ -144,9 +144,12 @@ class Backend {
                                                                 appUserID: currentAppUserID)
         let loginOperation = LogInOperation(configuration: config,
                                             newAppUserID: newAppUserID,
-                                            completion: completion,
                                             loginCallbackCache: self.logInCallbacksCache)
-        self.operationQueue.addOperation(loginOperation)
+
+        let loginCallback = LogInCallback(key: loginOperation.key, callback: completion)
+        let cacheStatus = self.logInCallbacksCache.add(callback: loginCallback)
+
+        self.operationQueue.addCacheableOperation(loginOperation, cacheStatus: cacheStatus)
     }
 
     func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
@@ -154,9 +157,12 @@ class Backend {
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
         let getOfferingsOperation = GetOfferingsOperation(configuration: config,
-                                                          completion: completion,
                                                           offeringsCallbackCache: self.offeringsCallbacksCache)
-        self.operationQueue.addOperation(getOfferingsOperation)
+
+        let offeringsCallback = OfferingsCallback(key: getOfferingsOperation.key, callback: completion)
+        let cacheStatus = self.offeringsCallbacksCache.add(callback: offeringsCallback)
+
+        self.operationQueue.addCacheableOperation(getOfferingsOperation, cacheStatus: cacheStatus)
     }
 
     func getIntroEligibility(appUserID: String,

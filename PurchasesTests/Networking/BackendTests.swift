@@ -219,11 +219,9 @@ class BackendTests: XCTestCase {
                       productData: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
-                      subscriberAttributes: nil,
-                      completion: { (_, _) in
+                      subscriberAttributes: nil) { (_, _) in
             completionCalled += 1
-            self.simulateNetworkDelay(withTimeInterval: 0.2)
-        })
+        }
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -886,12 +884,8 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String: Any], error: nil)
         let path = "/subscribers/" + userID + "/offerings"
         httpClient.mock(requestPath: path, response: response)
-        backend?.getOfferings(appUserID: userID) { (_, _) in
-            self.simulateNetworkDelay(withTimeInterval: 0.3)
-        }
-        backend?.getOfferings(appUserID: userID) { (_, _) in
-            self.simulateNetworkDelay(withTimeInterval: 0.1)
-        }
+        backend?.getOfferings(appUserID: userID) { (_, _) in }
+        backend?.getOfferings(appUserID: userID) { (_, _) in }
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
     }
@@ -1015,9 +1009,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
 
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in
-            self.simulateNetworkDelay()
-        }
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in }
 
         backend?.createAlias(appUserID: userID, newAppUserID: "another_new_alias") { _ in }
 
@@ -1028,9 +1020,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
 
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in
-            self.simulateNetworkDelay()
-        }
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in }
         backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: { _ in })
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
@@ -1045,7 +1035,6 @@ class BackendTests: XCTestCase {
 
         backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: nil)
         backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in
-            self.simulateNetworkDelay(withTimeInterval: 0.2)
             completion1Called = true
         }
         backend?.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in
@@ -1065,9 +1054,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
 
         httpClient.mock(requestPath: "/subscribers/" + currentAppUserID1 + "/alias", response: response)
-        backend?.createAlias(appUserID: currentAppUserID1, newAppUserID: newAppUserID) { _ in
-            self.simulateNetworkDelay()
-        }
+        backend?.createAlias(appUserID: currentAppUserID1, newAppUserID: newAppUserID) { _ in }
 
         httpClient.mock(requestPath: "/subscribers/" + currentAppUserID2 + "/alias", response: response)
         backend?.createAlias(appUserID: currentAppUserID2, newAppUserID: newAppUserID) { _ in }
@@ -1887,7 +1874,6 @@ class BackendTests: XCTestCase {
 
         backend?.logIn(currentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { _, _, _  in
-            self.simulateNetworkDelay(withTimeInterval: 0.200)
             completion1Called = true
         }
         backend?.logIn(currentAppUserID: currentAppUserID,

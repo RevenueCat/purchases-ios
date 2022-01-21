@@ -13,23 +13,20 @@
 
 import Foundation
 
-class LogInOperation: NetworkOperation {
+class LogInOperation: CacheableNetworkOperation {
 
     private let loginCallbackCache: CallbackCache<LogInCallback>
     private let configuration: UserSpecificConfiguration
     private let newAppUserID: String
-    private let completion: LogInResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          newAppUserID: String,
-         completion: @escaping LogInResponseHandler,
          loginCallbackCache: CallbackCache<LogInCallback>) {
         self.configuration = configuration
         self.newAppUserID = newAppUserID
-        self.completion = completion
         self.loginCallbackCache = loginCallbackCache
 
-        super.init(configuration: configuration)
+        super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID + newAppUserID)
     }
 
     override func main() {
@@ -37,27 +34,23 @@ class LogInOperation: NetworkOperation {
             return
         }
 
-        self.logIn(currentAppUserID: self.configuration.appUserID,
-                   newAppUserID: self.newAppUserID,
-                   completion: self.completion)
+        self.logIn()
     }
 
-    func logIn(currentAppUserID: String,
-               newAppUserID: String,
-               completion: @escaping LogInResponseHandler) {
-        let cacheKey = currentAppUserID + newAppUserID
-
-        let loginCallback = LogInCallback(key: cacheKey, callback: completion)
-        if loginCallbackCache.add(callback: loginCallback) == .addedToExistingInFlightList {
+    func logIn() {
+        guard let newAppUserID = try? self.newAppUserID.trimmedOrError() else {
+            self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+                callback.callback(nil, false, ErrorUtils.missingAppUserIDError())
+            }
             return
         }
 
-        let requestBody = ["app_user_id": currentAppUserID, "new_app_user_id": newAppUserID]
+        let requestBody = ["app_user_id": self.configuration.appUserID, "new_app_user_id": newAppUserID]
         self.httpClient.performPOSTRequest(serially: true,
                                            path: "/subscribers/identify",
                                            requestBody: requestBody,
                                            headers: self.authHeaders) { statusCode, response, error in
-            self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withKey: cacheKey) { callbackObject in
+            self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(maybeResponse: response,
                                  statusCode: statusCode,
                                  maybeError: error,

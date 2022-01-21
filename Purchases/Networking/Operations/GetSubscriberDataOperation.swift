@@ -32,7 +32,7 @@ class GetSubscriberDataOperation: CacheableNetworkOperation {
     func getSubscriberData() {
 
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
-            self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withKey: key) { callback in
+            self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, ErrorUtils.missingAppUserIDError())
             }
             return
@@ -43,7 +43,7 @@ class GetSubscriberDataOperation: CacheableNetworkOperation {
         httpClient.performGETRequest(serially: true,
                                      path: path,
                                      headers: authHeaders) { statusCode, response, error in
-            self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withKey: self.key) { callback in
+            self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         statusCode: statusCode,
                                                         maybeError: error,

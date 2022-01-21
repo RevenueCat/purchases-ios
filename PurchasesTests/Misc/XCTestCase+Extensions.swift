@@ -17,10 +17,6 @@ import XCTest
 
 extension XCTestCase {
 
-    func simulateNetworkDelay(withTimeInterval timeInterval: TimeInterval = 0.75) {
-        Thread.sleep(forTimeInterval: timeInterval)
-    }
-
     func expectFatalError(
         expectedMessage: String,
         testcase: @escaping () -> Void,

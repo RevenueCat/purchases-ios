@@ -13,7 +13,7 @@
 
 import Foundation
 
-class PostReceiptDataOperation: NetworkOperation {
+class PostReceiptDataOperation: CacheableNetworkOperation {
 
     struct PostData {
 
@@ -28,14 +28,12 @@ class PostReceiptDataOperation: NetworkOperation {
 
     private let postData: PostData
     private let configuration: AppUserConfiguration
-    private let completion: BackendCustomerInfoResponseHandler
     private let subscriberAttributesMarshaller: SubscriberAttributesMarshaller
     private let customerInfoResponseHandler: CustomerInfoResponseHandler
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
 
     init(configuration: UserSpecificConfiguration,
          postData: PostData,
-         completion: @escaping BackendCustomerInfoResponseHandler,
          subscriberAttributesMarshaller: SubscriberAttributesMarshaller = SubscriberAttributesMarshaller(),
          customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
          customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>) {
@@ -44,9 +42,16 @@ class PostReceiptDataOperation: NetworkOperation {
         self.customerInfoCallbackCache = customerInfoCallbackCache
         self.postData = postData
         self.configuration = configuration
-        self.completion = completion
 
-        super.init(configuration: configuration)
+        let cacheKey =
+        """
+        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.asFetchToken)
+        -\(postData.productData?.cacheKey ?? "")
+        -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
+        -\(postData.subscriberAttributesByKey?.debugDescription ?? "")"
+        """
+
+        super.init(configuration: configuration, individualizedCacheKeyPart: cacheKey)
     }
 
     override func main() {
@@ -54,37 +59,25 @@ class PostReceiptDataOperation: NetworkOperation {
             return
         }
 
-        self.post(postData: self.postData, appUserID: self.configuration.appUserID, completion: self.completion)
+        self.post()
     }
 
-    func post(postData: PostData,
-              appUserID: String,
-              completion: @escaping BackendCustomerInfoResponseHandler) {
-        let fetchToken = postData.receiptData.asFetchToken
+    func post() {
+        let fetchToken = self.postData.receiptData.asFetchToken
         var body: [String: Any] = [
             "fetch_token": fetchToken,
-            "app_user_id": appUserID,
+            "app_user_id": self.configuration.appUserID,
             "is_restore": postData.isRestore,
             "observer_mode": postData.observerMode
         ]
-
-        let cacheKey =
-        """
-        \(appUserID)-\(postData.isRestore)-\(fetchToken)-\(postData.productData?.cacheKey ?? "")
-        -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
-        -\(postData.subscriberAttributesByKey?.debugDescription ?? "")"
-        """
-
-        let callbackObject = CustomerInfoCallback(cacheKey: cacheKey, completion: completion)
-        if customerInfoCallbackCache.add(callback: callbackObject) == .addedToExistingInFlightList {
-            return
-        }
 
         if let productData = postData.productData {
             do {
                 body += try productData.asDictionary()
             } catch {
-                completion(nil, error)
+                self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+                    callback.completion(nil, error)
+                }
                 return
             }
         }
@@ -103,7 +96,7 @@ class PostReceiptDataOperation: NetworkOperation {
                                       path: "/receipts",
                                       requestBody: body,
                                       headers: authHeaders) { statusCode, response, error in
-            self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withKey: cacheKey) { callbackObject in
+            self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         statusCode: statusCode,
                                                         maybeError: error,

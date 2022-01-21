@@ -288,6 +288,7 @@
 		B34605CE279A6E380031CA74 /* PostSubscriberAttributesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */; };
 		B34605CF279A6E380031CA74 /* GetOfferingsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */; };
 		B34605D1279A6E600031CA74 /* SubscribersAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605D0279A6E600031CA74 /* SubscribersAPI.swift */; };
+		B34605EB279A766C0031CA74 /* OperationQueue+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */; };
 		B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DF6A4F269524080030D57C /* IntroEligibility.swift */; };
 		B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34D2AA526976FC700D88C3A /* ErrorCode.swift */; };
 		B35042C426CDB79A00905B95 /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C326CDB79A00905B95 /* Purchases.swift */; };
@@ -667,6 +668,7 @@
 		B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostSubscriberAttributesOperation.swift; sourceTree = "<group>"; };
 		B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetOfferingsOperation.swift; sourceTree = "<group>"; };
 		B34605D0279A6E600031CA74 /* SubscribersAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscribersAPI.swift; sourceTree = "<group>"; };
+		B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OperationQueue+Extensions.swift"; sourceTree = "<group>"; };
 		B34D2AA526976FC700D88C3A /* ErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCode.swift; sourceTree = "<group>"; };
 		B35042C326CDB79A00905B95 /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
 		B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegate.swift; sourceTree = "<group>"; };
@@ -798,13 +800,14 @@
 				37E353FD94A8FD5CD8796530 /* DateFormatter+Extensions.swift */,
 				B302206927271BCB008F1A0D /* Decoder+Extensions.swift */,
 				35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */,
-				57A17726276A721D0052D3A8 /* Set+Extensions.swift */,
+				5746508D275949F20053AB09 /* DispatchTimeInterval+Extensions.swift */,
 				B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */,
 				F5714EA426D6C24D00635477 /* JSONDecoder+Extensions.swift */,
+				5746508B27586B2E0053AB09 /* Result+Extensions.swift */,
+				57A17726276A721D0052D3A8 /* Set+Extensions.swift */,
 				B35F9E0826B4BEED00095C3F /* String+Extensions.swift */,
 				2D9C7BB226D838FC006838BE /* UIApplication+RCExtensions.swift */,
-				5746508B27586B2E0053AB09 /* Result+Extensions.swift */,
-				5746508D275949F20053AB09 /* DispatchTimeInterval+Extensions.swift */,
+				B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */,
 			);
 			path = FoundationExtensions;
 			sourceTree = "<group>";
@@ -1433,17 +1436,17 @@
 		B34605AA279A6E380031CA74 /* Operations */ = {
 			isa = PBXGroup;
 			children = (
-				B34605AB279A6E380031CA74 /* NetworkOperation.swift */,
-				B34605AC279A6E380031CA74 /* CreateAliasOperation.swift */,
-				B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */,
 				B34605AE279A6E380031CA74 /* Handling */,
+				B34605AC279A6E380031CA74 /* CreateAliasOperation.swift */,
 				B34605B4279A6E380031CA74 /* GetIntroEligibilityOperation.swift */,
-				B34605B5279A6E380031CA74 /* GetSubscriberDataOperation.swift */,
-				B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */,
-				B34605B7279A6E380031CA74 /* LogInOperation.swift */,
-				B34605B8279A6E380031CA74 /* PostAttributionDataOperation.swift */,
-				B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */,
 				B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */,
+				B34605B5279A6E380031CA74 /* GetSubscriberDataOperation.swift */,
+				B34605B7279A6E380031CA74 /* LogInOperation.swift */,
+				B34605AB279A6E380031CA74 /* NetworkOperation.swift */,
+				B34605B8279A6E380031CA74 /* PostAttributionDataOperation.swift */,
+				B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */,
+				B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */,
+				B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */,
 			);
 			path = Operations;
 			sourceTree = "<group>";
@@ -1975,6 +1978,7 @@
 				2DDF419F24F6F331005BC22D /* ReceiptParsingError.swift in Sources */,
 				2DDF419D24F6F331005BC22D /* IntroEligibilityCalculator.swift in Sources */,
 				57536A2627851FFE00E2AE7F /* SK1StoreTransaction.swift in Sources */,
+				B34605EB279A766C0031CA74 /* OperationQueue+Extensions.swift in Sources */,
 				B3F3E8DA277158FE0047A5B9 /* DNSChecker.swift in Sources */,
 				A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */,
 				2D1015DA275959840086173F /* StoreTransaction.swift in Sources */,

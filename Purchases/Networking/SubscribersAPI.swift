@@ -43,7 +43,7 @@ class SubscribersAPI {
 
         let aliasCallback = AliasCallback(key: operation.key, callback: completion)
         let cacheStatus = self.aliasCallbackCache.add(callback: aliasCallback)
-        startCacheableOperation(operation, cacheStatus: cacheStatus)
+        operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
 
     func getSubscriberData(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
@@ -56,7 +56,7 @@ class SubscribersAPI {
 
         let callback = CustomerInfoCallback(cacheKey: operation.key, completion: completion)
         let cacheStatus = self.customerInfoCallbackCache.add(callback: callback)
-        startCacheableOperation(operation, cacheStatus: cacheStatus)
+        operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
 
     func post(subscriberAttributes: SubscriberAttributeDict,
@@ -91,22 +91,12 @@ class SubscribersAPI {
                                                          subscriberAttributesByKey: subscriberAttributesByKey)
         let postReceiptOperation = PostReceiptDataOperation(configuration: config,
                                                             postData: postData,
-                                                            completion: completion,
                                                             customerInfoCallbackCache: self.customerInfoCallbackCache)
-        operationQueue.addOperation(postReceiptOperation)
-    }
 
-}
+        let callbackObject = CustomerInfoCallback(cacheKey: postReceiptOperation.key, completion: completion)
+        let cacheStatus = customerInfoCallbackCache.add(callback: callbackObject)
 
-private extension SubscribersAPI {
-
-    func startCacheableOperation(_ operation: CacheableNetworkOperation, cacheStatus: CallbackCacheStatus) {
-        switch cacheStatus {
-        case .firstCallbackAddedToList:
-            operationQueue.addOperation(operation)
-        case .addedToExistingInFlightList:
-            return
-        }
+        operationQueue.addCacheableOperation(postReceiptOperation, cacheStatus: cacheStatus)
     }
 
 }
