@@ -12,6 +12,9 @@ We're in the process of migrating the entire framework over to Swift 🎉. The n
 ### **IMPORTANT:** SPM integration note for users of our stable release:
 Swift Package Manager (SPM) integration is currently not working as expected. If you wish to use the currently supported and stable `Purchases` framework (version 3.13.1), you'll need to specify `< 4.0.0` or for your dependencies in Xcode. By default, Xcode will specify `exactly 4.0.0` and that won't work because we haven't released that version yet, only `4.0.0-beta.x`.
 
+## Migrating from Purchases v3
+- See our [Migration guide](Documentation.docc/V4_API_Migration_guide.md)
+
 ## RevenueCat.framework Beta
 
 *Purchases* and *RevenueCat* are clients for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system.
