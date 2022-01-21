@@ -16,7 +16,7 @@ import Foundation
 
 /**
  This class contains all the offerings configured in RevenueCat dashboard.
- For more info see https://docs.revenuecat.com/docs/entitlements
+ For more info see [RevenueCat Entitlements](https://docs.revenuecat.com/docs/entitlements)
  */
 @objc(RCOfferings) public class Offerings: NSObject {
 
