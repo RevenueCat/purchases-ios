@@ -35,6 +35,8 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 ### Automatic Migration
 When building your project using v4, Xcode should automatically provide one-click fixes methods and types that have been renamed. For the most part, the migration should be doable by just building and applying Xcode's automatic fix-its when they pop up.
 
+If you see any issues or new APIs that fix-its didn't cover, we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
+
 ### New Types
 
 To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to encapsulate data from `StoreKit 1` and `StoreKit 2`:
