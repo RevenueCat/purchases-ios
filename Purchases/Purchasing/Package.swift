@@ -91,6 +91,27 @@ private extension PackageType {
         self.offeringIdentifier = offeringIdentifier
     }
 
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? Package else { return false }
+
+        return (
+            self.identifier == other.identifier &&
+            self.packageType == other.packageType &&
+            self.storeProduct == other.storeProduct &&
+            self.offeringIdentifier == other.offeringIdentifier
+        )
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(self.identifier)
+        hasher.combine(self.packageType)
+        hasher.combine(self.storeProduct)
+        hasher.combine(self.offeringIdentifier)
+
+        return hasher.finalize()
+    }
+
 }
 
 @objc public extension Package {
