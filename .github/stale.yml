@@ -19,6 +19,9 @@ exemptLabels:
   - do-not-lock
   - swift migration
   - test backfill
+  - pinned
+  - you can do this!
+  - triaged
 
 # Set to true to ignore issues in a project (defaults to false)
 #exemptProjects: false
