@@ -77,7 +77,6 @@ BOOL isAnonymous;
     isAnonymous = [p isAnonymous];
     
     RCCustomerInfo *pi = nil;
-    SKProduct *skp = [[SKProduct alloc] init];
     RCStoreProduct *storeProduct = nil;
     RCStoreProductDiscount *stpd = nil;
     
