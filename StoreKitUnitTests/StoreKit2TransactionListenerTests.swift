@@ -37,4 +37,6 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
         expect(handle?.isCancelled) == true
     }
 
+    // todo: test transaction results
+
 }

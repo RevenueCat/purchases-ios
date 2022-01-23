@@ -686,7 +686,7 @@ private extension PurchasesOrchestrator {
             ]
 
             let result = try await sk2Product.purchase(options: options)
-            let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
+            let userCancelled = try await storeKit2Listener.handle(purchaseResult: result)
 
             return await withCheckedContinuation { continuation in
                 syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybeCustomerInfo, maybeError in
