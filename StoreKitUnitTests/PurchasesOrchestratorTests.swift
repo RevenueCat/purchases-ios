@@ -140,7 +140,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
-                                          product: product) { paymentDiscount, error in
+                                          product: StoreProduct(sk1Product: product)) { paymentDiscount, error in
                 continuation.resume(returning: (paymentDiscount, error))
             }
         }

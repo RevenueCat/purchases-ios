@@ -33,6 +33,17 @@ extension PromotionalOffer {
                                  signature: self.signature,
                                  timestamp: self.timestamp as NSNumber)
     }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    var sk2PurchaseOption: Product.PurchaseOption {
+        return .promotionalOffer(
+            offerID: self.identifier,
+            keyID: self.keyIdentifier,
+            nonce: self.nonce,
+            signature: self.signature.data(using: .utf8)!, // todo: is this correct?
+            timestamp: self.timestamp
+        )
+    }
 }
 
 /**
