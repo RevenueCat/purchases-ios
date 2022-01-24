@@ -84,33 +84,3 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
     }
 
 }
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension StoreKit2TransactionListenerTests {
-
-    @MainActor
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func createTransactionWithPurchase() async throws -> Transaction {
-        let product = try await fetchSk2Product()
-        _ = try await product.purchase()
-
-        let latestTransaction = await product.latestTransaction
-        let transaction = try XCTUnwrap(latestTransaction)
-
-        switch transaction {
-        case let .verified(transaction):
-            return transaction
-        default:
-            XCTFail("Invalid transaction: \(transaction)")
-            fatalError("Unreachable")
-        }
-    }
-
-    @MainActor
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func fetchSk2Product() async throws -> SK2Product {
-        let products: [Any] = try await StoreKit.Product.products(for: ["com.revenuecat.monthly_4.99.1_week_intro"])
-        return try XCTUnwrap(products.first as? SK2Product)
-    }
-
-}

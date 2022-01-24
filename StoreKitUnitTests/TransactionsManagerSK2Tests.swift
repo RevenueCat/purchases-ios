@@ -41,30 +41,11 @@ class TransactionsManagerSK2Tests: StoreKitConfigTestCase {
     func testSK2CheckCustomerHasTransactionsWithOnePurchaseAsync() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        try await simulateAnyPurchase()
+        try await self.simulateAnyPurchase()
 
         let receivedHasTransactionsValue = await transactionsManager.sk2CheckCustomerHasTransactions()
 
         expect(receivedHasTransactionsValue) == true
-    }
-
-}
-
-private extension TransactionsManagerSK2Tests {
-
-    @MainActor
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func simulateAnyPurchase() async throws {
-        let product = try await fetchSk2Product()
-        _ = try await product.purchase()
-    }
-
-    @MainActor
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func fetchSk2Product() async throws -> SK2Product {
-        let products: [Any] = try await StoreKit.Product.products(for: ["com.revenuecat.monthly_4.99.1_week_intro"])
-        let firstProduct = try XCTUnwrap(products.first)
-        return try XCTUnwrap(firstProduct as? SK2Product)
     }
 
 }
