@@ -13,7 +13,7 @@
 
 import Foundation
 
-struct OfferingsCallback: Cachable {
+struct OfferingsCallback: CacheKeyProviding {
 
     let key: String
     let callback: ([String: Any]?, Error?) -> Void

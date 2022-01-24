@@ -13,7 +13,7 @@
 
 import Foundation
 
-struct AliasCallback: Cachable {
+struct AliasCallback: CacheKeyProviding {
 
     let key: String
     let callback: ((Error?) -> Void)?

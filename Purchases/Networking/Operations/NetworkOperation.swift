@@ -13,9 +13,9 @@
 
 import Foundation
 
-class CacheableNetworkOperation: NetworkOperation, Cachable {
+class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
 
-    var key: String { "\(Self.description()) \(individualizedCacheKeyPart)" }
+    var key: String { "\(type(of: self)) \(individualizedCacheKeyPart)" }
 
     let individualizedCacheKeyPart: String
 

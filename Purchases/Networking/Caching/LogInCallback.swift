@@ -13,7 +13,7 @@
 
 import Foundation
 
-struct LogInCallback: Cachable {
+struct LogInCallback: CacheKeyProviding {
 
     let key: String
     let callback: (CustomerInfo?, Bool, Error?) -> Void

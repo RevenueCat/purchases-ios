@@ -13,7 +13,7 @@
 
 import Foundation
 
-struct CustomerInfoCallback: Cachable, CustomerInfoCompletion {
+struct CustomerInfoCallback: CacheKeyProviding, CustomerInfoCompletion {
 
     let key: String
     let completion: (CustomerInfo?, Error?) -> Void

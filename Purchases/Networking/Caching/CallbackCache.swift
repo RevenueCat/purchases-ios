@@ -20,7 +20,7 @@ import Foundation
  `performOnAllItemsAndRemoveFromCache`. This way the results from the initial API call will be surfaced to the waiting
  completion blocks from the duplicate API calls that were not sent, and then removed from the cache.
  */
-class CallbackCache<T> where T: Cachable {
+class CallbackCache<T> where T: CacheKeyProviding {
 
     private var cachedCallbacksByKey: [String: [T]] = [:]
     private let callbackQueue: DispatchQueue
@@ -42,7 +42,7 @@ class CallbackCache<T> where T: Cachable {
         }
     }
 
-    func performOnAllItemsAndRemoveFromCache(withCacheable cacheable: Cachable, _ block: (T) -> Void) {
+    func performOnAllItemsAndRemoveFromCache(withCacheable cacheable: CacheKeyProviding, _ block: (T) -> Void) {
         callbackQueue.sync {
             guard let items = cachedCallbacksByKey[cacheable.key] else {
                 return
@@ -55,7 +55,7 @@ class CallbackCache<T> where T: Cachable {
 
 }
 
-protocol Cachable {
+protocol CacheKeyProviding {
 
     var key: String { get }
 
