@@ -34,7 +34,11 @@ class StoreKit2TransactionListener {
             for await result in StoreKit.Transaction.updates {
                 guard let self = self else { break }
 
-                _ = await self.handle(transactionResult: result)
+                do {
+                    _ = try await self.handle(transactionResult: result)
+                } catch {
+                    Logger.error(error.localizedDescription)
+                }
             }
         }
     }
@@ -49,7 +53,7 @@ class StoreKit2TransactionListener {
     func handle(purchaseResult: StoreKit.Product.PurchaseResult) async throws -> Bool {
         switch purchaseResult {
         case .success(let verificationResult):
-            if await handle(transactionResult: verificationResult) {
+            if try await handle(transactionResult: verificationResult) {
                 return false
             } else {
                 throw ErrorCode.purchaseInvalidError
@@ -72,15 +76,16 @@ class StoreKit2TransactionListener {
 private extension StoreKit2TransactionListener {
 
     /// - Returns: whether the transaction was verified
-    func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async -> Bool {
+    func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async throws -> Bool {
         switch transactionResult {
         case let .unverified(unverifiedTransaction, verificationError):
-            Logger.error(Strings.purchase.transaction_unverified(
-                productID: unverifiedTransaction.productID,
-                errorMessage: verificationError.localizedDescription
-            ))
-
-            return false
+            throw ErrorUtils.storeProblemError(
+                withMessage: Strings.purchase.transaction_unverified(
+                    productID: unverifiedTransaction.productID,
+                    errorMessage: verificationError.localizedDescription
+                ).description,
+                error: verificationError
+            )
 
         case .verified(let verifiedTransaction):
             await finish(transaction: verifiedTransaction)
