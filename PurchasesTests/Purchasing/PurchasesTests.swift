@@ -1874,24 +1874,24 @@ class PurchasesTests: XCTestCase {
 
     func testSharedInstanceIsSetWhenConfiguring() {
         let purchases = Purchases.configure(withAPIKey: "")
-        expect(Purchases.shared).toEventually(equal(purchases))
+        expect(Purchases.shared) === purchases
     }
 
     func testSharedInstanceIsSetWhenConfiguringWithAppUserID() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "")
-        expect(Purchases.shared).toEventually(equal(purchases))
+        expect(Purchases.shared) === purchases
     }
 
     func testSharedInstanceIsSetWhenConfiguringWithObserverMode() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true)
-        expect(Purchases.shared).toEventually(equal(purchases))
-        expect(Purchases.shared.finishTransactions).toEventually(beFalse())
+        expect(Purchases.shared) === purchases
+        expect(Purchases.shared.finishTransactions) == false
     }
 
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false, userDefaults: nil)
-        expect(Purchases.shared).toEventually(equal(purchases))
-        expect(Purchases.shared.finishTransactions).toEventually(beTrue())
+        expect(Purchases.shared) === purchases
+        expect(Purchases.shared.finishTransactions) == true
     }
 
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaultsAndUseSK2() {
@@ -1900,8 +1900,8 @@ class PurchasesTests: XCTestCase {
                                             observerMode: false,
                                             userDefaults: nil,
                                             useStoreKit2IfAvailable: true)
-        expect(Purchases.shared).toEventually(equal(purchases))
-        expect(Purchases.shared.finishTransactions).toEventually(beTrue())
+        expect(Purchases.shared) === purchases
+        expect(Purchases.shared.finishTransactions) == true
     }
 
     func testWhenNoReceiptDataReceiptIsRefreshed() {
