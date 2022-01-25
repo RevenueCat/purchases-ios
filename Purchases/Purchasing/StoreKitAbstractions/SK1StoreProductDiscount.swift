@@ -16,7 +16,10 @@ import StoreKit
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
 internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 
-    init(sk1Discount: SK1ProductDiscount) {
+    init?(sk1Discount: SK1ProductDiscount) {
+        guard let paymentMode = StoreProductDiscount.PaymentMode(skProductDiscountPaymentMode: sk1Discount.paymentMode)
+        else { return nil }
+
         self.underlyingSK1Discount = sk1Discount
 
         if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
@@ -25,7 +28,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
             self.offerIdentifier = nil
         }
         self.price = sk1Discount.price as Decimal
-        self.paymentMode = .init(skProductDiscountPaymentMode: sk1Discount.paymentMode)
+        self.paymentMode = paymentMode
         self.subscriptionPeriod = .from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod)
     }
 
@@ -41,7 +44,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 private extension StoreProductDiscount.PaymentMode {
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    init(skProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) {
+    init?(skProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) {
         switch paymentMode {
         case .payUpFront:
             self = .payUpFront
@@ -50,7 +53,8 @@ private extension StoreProductDiscount.PaymentMode {
         case .freeTrial:
             self = .freeTrial
         @unknown default:
-            self = .none
+            Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(String.init(describing: paymentMode)))
+            return nil
         }
     }
 

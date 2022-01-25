@@ -28,10 +28,9 @@
 }
 
 + (void)checkPaymentModeEnum {
-    RCPaymentMode paymentMode = RCPaymentModeNone;
+    RCPaymentMode paymentMode = RCPaymentModePayAsYouGo;
 
     switch (paymentMode) {
-        case RCPaymentModeNone:
         case RCPaymentModePayAsYouGo:
         case RCPaymentModePayUpFront:
         case RCPaymentModeFreeTrial:

@@ -26,6 +26,8 @@ enum StoreKitStrings {
 
     case skproductsrequest_received_response
 
+    case skunknown_payment_mode(String)
+
 }
 
 extension StoreKitStrings: CustomStringConvertible {
@@ -50,6 +52,9 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .skproductsrequest_received_response:
             return "SKProductsRequest request received response"
+
+        case let .skunknown_payment_mode(name):
+            return "Unrecognized PaymentMode: \(name)"
 
         }
     }

@@ -76,7 +76,7 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var introductoryDiscount: StoreProductDiscount? {
         self.underlyingSK2Product.subscription?.introductoryOffer
-            .map(StoreProductDiscount.init)
+            .flatMap(StoreProductDiscount.init)
     }
 
     var discounts: [StoreProductDiscount] {

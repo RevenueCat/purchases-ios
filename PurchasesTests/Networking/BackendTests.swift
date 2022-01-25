@@ -414,7 +414,7 @@ class BackendTests: XCTestCase {
 
         let currencyCode = "BFD"
 
-        let paymentMode: StoreProductDiscount.PaymentMode = .none
+        let paymentMode: StoreProductDiscount.PaymentMode? = nil
 
         var completionCalled = false
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
@@ -1260,7 +1260,7 @@ class BackendTests: XCTestCase {
         let price: Decimal = 15.99
         let group = "sub_group"
         let currencyCode = "BFD"
-        let paymentMode: StoreProductDiscount.PaymentMode = .none
+        let paymentMode: StoreProductDiscount.PaymentMode? = nil
         var completionCalled = false
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
                                                 price: 12.1,

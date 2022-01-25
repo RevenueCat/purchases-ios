@@ -827,7 +827,7 @@ class PurchasesTests: XCTestCase {
                 expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.payAsYouGo))
                 expect(self.backend.postedIntroPrice).to(equal(product.introductoryDiscount?.price))
             } else {
-                expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.none))
+                expect(self.backend.postedPaymentMode).to(beNil())
                 expect(self.backend.postedIntroPrice).to(beNil())
             }
 

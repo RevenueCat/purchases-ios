@@ -12,7 +12,7 @@ class ProductRequestDataTests: XCTestCase {
     }
 
     func testAsDictionaryConvertsPaymentModeCorrectly() throws {
-        var paymentMode: StoreProductDiscount.PaymentMode = .none
+        var paymentMode: StoreProductDiscount.PaymentMode?
         var productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
         expect(try productData.asDictionary()["payment_mode"]).to(beNil())
 
@@ -20,19 +20,19 @@ class ProductRequestDataTests: XCTestCase {
         productData = .createMockProductData(paymentMode: paymentMode)
 
         var receivedPaymentMode = (try productData.asDictionary()["payment_mode"] as? NSNumber)?.intValue
-        expect(receivedPaymentMode) == paymentMode.rawValue
+        expect(receivedPaymentMode) == paymentMode?.rawValue
 
         paymentMode = .freeTrial
         productData = .createMockProductData(paymentMode: paymentMode)
 
         receivedPaymentMode = (try productData.asDictionary()["payment_mode"] as? NSNumber)?.intValue
-        expect(receivedPaymentMode) == paymentMode.rawValue
+        expect(receivedPaymentMode) == paymentMode?.rawValue
 
         paymentMode = .payUpFront
         productData = .createMockProductData(paymentMode: paymentMode)
 
         receivedPaymentMode = (try productData.asDictionary()["payment_mode"] as? NSNumber)?.intValue
-        expect(receivedPaymentMode) == paymentMode.rawValue
+        expect(receivedPaymentMode) == paymentMode?.rawValue
     }
 
     func testAsDictionaryConvertsCurrencyCodeCorrectly() throws {
@@ -69,10 +69,10 @@ class ProductRequestDataTests: XCTestCase {
         expect(try productData.asDictionary()["trial_duration"]).to(beNil())
     }
 
-    func testAsDictionaryDoesntAddIntroDurationIfDurationTypeNone() throws {
+    func testAsDictionaryDoesntAddIntroDurationIfDurationTypeUnknown() throws {
         let introDuration = "P3M"
         let productData: ProductRequestData = .createMockProductData(introDuration: introDuration,
-                                                                     introDurationType: .none)
+                                                                     introDurationType: nil)
         expect(try productData.asDictionary()["trial_duration"]).to(beNil())
         expect(try productData.asDictionary()["intro_duration"]).to(beNil())
     }

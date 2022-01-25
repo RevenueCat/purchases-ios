@@ -21,20 +21,20 @@ import StoreKit
 struct ProductRequestData {
 
     let productIdentifier: String
-    let paymentMode: StoreProductDiscount.PaymentMode
+    let paymentMode: StoreProductDiscount.PaymentMode?
     let currencyCode: String?
     let price: Decimal
     let normalDuration: String?
     let introDuration: String?
-    let introDurationType: StoreProductDiscount.PaymentMode
+    let introDurationType: StoreProductDiscount.PaymentMode?
     let introPrice: Decimal?
     let subscriptionGroup: String?
     let discounts: [StoreProductDiscount]?
 
     var cacheKey: String {
         var key = """
-        \(productIdentifier)-\(price)-\(currencyCode ?? "")-\(paymentMode.rawValue)-\(introPrice ?? 0)-\
-        \(subscriptionGroup ?? "")-\(normalDuration ?? "")-\(introDuration ?? "")-\(introDurationType.rawValue)
+        \(productIdentifier)-\(price)-\(currencyCode ?? "")-\(paymentMode?.rawValue ?? -1)-\(introPrice ?? 0)-\
+        \(subscriptionGroup ?? "")-\(normalDuration ?? "")-\(introDuration ?? "")-\(introDurationType?.rawValue ?? -1)
         """
 
         guard let discounts = discounts else {
@@ -73,9 +73,7 @@ extension ProductRequestData: Encodable {
 
         try container.encode(self.productIdentifier, forKey: .productIdentifier)
 
-        if self.paymentMode != .none {
-            try container.encode(self.paymentMode, forKey: .paymentMode)
-        }
+        try container.encodeIfPresent(self.paymentMode, forKey: .paymentMode)
         try container.encode(self.currencyCode, forKey: .currencyCode)
         try container.encode((self.price as NSDecimalNumber).description, forKey: .price)
         try container.encodeIfPresent(self.subscriptionGroup, forKey: .subscriptionGroup)

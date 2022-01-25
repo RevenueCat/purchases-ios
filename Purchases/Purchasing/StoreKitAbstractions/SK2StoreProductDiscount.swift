@@ -16,12 +16,15 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2StoreProductDiscount: StoreProductDiscountType {
 
-    init(sk2Discount: SK2ProductDiscount) {
+    init?(sk2Discount: SK2ProductDiscount) {
+        guard let paymentMode = StoreProductDiscount.PaymentMode(subscriptionOfferPaymentMode: sk2Discount.paymentMode)
+        else { return nil }
+
         self.underlyingSK2Discount = sk2Discount
 
         self.offerIdentifier = sk2Discount.id
         self.price = sk2Discount.price
-        self.paymentMode = .init(subscriptionOfferPaymentMode: sk2Discount.paymentMode)
+        self.paymentMode = paymentMode
         self.subscriptionPeriod = .from(sk2SubscriptionPeriod: sk2Discount.period)
     }
 
@@ -37,7 +40,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
 private extension StoreProductDiscount.PaymentMode {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    init(subscriptionOfferPaymentMode paymentMode: Product.SubscriptionOffer.PaymentMode) {
+    init?(subscriptionOfferPaymentMode paymentMode: Product.SubscriptionOffer.PaymentMode) {
         switch paymentMode {
         case .payUpFront:
             self = .payUpFront
@@ -46,7 +49,8 @@ private extension StoreProductDiscount.PaymentMode {
         case .freeTrial:
             self = .freeTrial
         default:
-            self = .none
+            Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(String.init(describing: paymentMode)))
+            return nil
         }
     }
 

@@ -49,12 +49,12 @@ extension ProductRequestData {
 
 private extension ProductRequestData {
 
-    static func extractIntroDurationType(for product: StoreProduct) -> StoreProductDiscount.PaymentMode {
+    static func extractIntroDurationType(for product: StoreProduct) -> StoreProductDiscount.PaymentMode? {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let discount = product.introductoryDiscount {
             return discount.paymentMode
         } else {
-            return .none
+            return nil
         }
     }
 
@@ -74,11 +74,11 @@ private extension ProductRequestData {
         }
     }
 
-    static func extractPaymentMode(for product: StoreProduct) -> StoreProductDiscount.PaymentMode {
+    static func extractPaymentMode(for product: StoreProduct) -> StoreProductDiscount.PaymentMode? {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *), let discount = product.introductoryDiscount {
            return discount.paymentMode
         } else {
-            return .none
+            return nil
         }
     }
 

@@ -28,7 +28,6 @@ var mode: StoreProductDiscount.PaymentMode!
 func checkPaymentModeEnum() {
     switch mode! {
     case
-            .none,
             .payAsYouGo,
             .payUpFront,
             .freeTrial:

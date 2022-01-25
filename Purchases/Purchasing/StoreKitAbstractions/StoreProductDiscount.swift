@@ -29,7 +29,6 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc(RCPaymentMode)
     public enum PaymentMode: Int {
 
-        case none = -1
         case payAsYouGo = 0
         case payUpFront = 1
         case freeTrial = 2
@@ -99,13 +98,17 @@ internal protocol StoreProductDiscountType {
 extension StoreProductDiscount {
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    internal convenience init(sk1Discount: SK1ProductDiscount) {
-        self.init(SK1StoreProductDiscount(sk1Discount: sk1Discount))
+    internal convenience init?(sk1Discount: SK1ProductDiscount) {
+        guard let discount = SK1StoreProductDiscount(sk1Discount: sk1Discount) else { return nil }
+
+        self.init(discount)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    internal convenience init(sk2Discount: SK2ProductDiscount) {
-        self.init(SK2StoreProductDiscount(sk2Discount: sk2Discount))
+    internal convenience init?(sk2Discount: SK2ProductDiscount) {
+        guard let discount = SK2StoreProductDiscount(sk2Discount: sk2Discount) else { return nil }
+
+        self.init(discount)
     }
 
     /// Returns the `SK1ProductDiscount` if this `StoreProductDiscount` represents a `SKProductDiscount`.
