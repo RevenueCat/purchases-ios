@@ -18,7 +18,7 @@
      */
     @objc public let autoSyncPurchases: Bool
 
-    @objc public init(autoSyncPurchases: Bool) {
+    @objc public init(autoSyncPurchases: Bool = true) {
         self.autoSyncPurchases = autoSyncPurchases
     }
 

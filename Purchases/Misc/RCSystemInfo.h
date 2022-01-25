@@ -12,6 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
                  platformFlavorVersion:(nullable NSString *)platformFlavorVersion
+                    finishTransactions:(BOOL)finishTransactions;
+
+- (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
+                 platformFlavorVersion:(nullable NSString *)platformFlavorVersion
                     finishTransactions:(BOOL)finishTransactions
                      dangerousSettings:(nullable RCDangerousSettings *)dangerousSettings NS_DESIGNATED_INITIALIZER;
 

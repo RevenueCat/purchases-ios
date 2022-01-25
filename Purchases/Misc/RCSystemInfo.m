@@ -27,6 +27,15 @@ static BOOL _forceUniversalAppStore = NO;
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
                  platformFlavorVersion:(nullable NSString *)platformFlavorVersion
+                    finishTransactions:(BOOL)finishTransactions {
+    return [self initWithPlatformFlavor:platformFlavor
+                  platformFlavorVersion:platformFlavorVersion
+                     finishTransactions:finishTransactions
+                      dangerousSettings:[[RCDangerousSettings alloc]initWithAutoSyncPurchases:YES]];
+}
+
+- (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
+                 platformFlavorVersion:(nullable NSString *)platformFlavorVersion
                     finishTransactions:(BOOL)finishTransactions
                      dangerousSettings:(nullable RCDangerousSettings *)dangerousSettings {
     if (self = [super init]) {
