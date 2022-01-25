@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, copy, nullable) NSString *platformFlavor;
 @property(nonatomic, copy, nullable) NSString *platformFlavorVersion;
-@property(nonatomic, readwrite) BOOL autoSyncPurchases;
+@property(nonatomic, readwrite) RCDangerousSettings *dangerousSettings;
 
 @end
 
@@ -52,7 +52,7 @@ static BOOL _forceUniversalAppStore = NO;
         if (!dangerousSettings) {
             dangerousSettings = [RCDangerousSettings.alloc initWithAutoSyncPurchases:YES];
         }
-        self.autoSyncPurchases = dangerousSettings.autoSyncPurchases;
+        self.dangerousSettings = dangerousSettings;
     }
     return self;
 }

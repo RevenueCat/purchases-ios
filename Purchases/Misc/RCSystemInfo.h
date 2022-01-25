@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, readonly) NSString *platformFlavor;
 @property(nonatomic, copy, readonly) NSString *platformFlavorVersion;
 @property(class, nonatomic, assign) BOOL forceUniversalAppStore;
-@property(nonatomic, readonly) BOOL autoSyncPurchases;
+@property(nonatomic, readonly) RCDangerousSettings *dangerousSettings;
 
 - (void)isApplicationBackgroundedWithCompletion:(void(^)(BOOL))completion; // calls completion on the main thread
 - (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;

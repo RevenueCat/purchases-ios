@@ -379,7 +379,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             }
         }];
 
-        if (self.systemInfo.autoSyncPurchases) {
+        if (self.systemInfo.dangerousSettings.autoSyncPurchases) {
             self.storeKitWrapper.delegate = self;
         }
 
