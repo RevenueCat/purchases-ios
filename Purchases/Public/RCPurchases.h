@@ -168,7 +168,9 @@ NS_SWIFT_NAME(Purchases)
  @param observerMode Set this to TRUE if you have your own IAP implementation and want to use only RevenueCat's backend. Default is FALSE.
 
  @param userDefaults Custom userDefaults to use
- 
+
+ @param dangerousSettings Only use a Dangerous Setting if suggested by RevenueCat support team.
+
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
