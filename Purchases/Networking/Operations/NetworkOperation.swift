@@ -15,7 +15,7 @@ import Foundation
 
 class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
 
-    var key: String { "\(type(of: self)) \(individualizedCacheKeyPart)" }
+    var cacheKey: String { "\(type(of: self)) \(individualizedCacheKeyPart)" }
 
     let individualizedCacheKeyPart: String
 

@@ -33,7 +33,7 @@ class SubscribersAPI {
         self.customerInfoCallbackCache = customerInfoCallbackCache
     }
 
-    func createAlias(appUserID: String, newAppUserID: String, completion: PostRequestResponseHandler?) {
+    func createAlias(appUserID: String, newAppUserID: String, completion: SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
@@ -41,7 +41,7 @@ class SubscribersAPI {
                                              newAppUserID: newAppUserID,
                                              aliasCallbackCache: self.aliasCallbackCache)
 
-        let aliasCallback = AliasCallback(key: operation.key, callback: completion)
+        let aliasCallback = AliasCallback(cacheKey: operation.cacheKey, completion: completion)
         let cacheStatus = self.aliasCallbackCache.add(callback: aliasCallback)
         operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
@@ -51,17 +51,17 @@ class SubscribersAPI {
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
 
-        let operation = GetSubscriberDataOperation(configuration: config,
-                                                   customerInfoCallbackCache: self.customerInfoCallbackCache)
+        let operation = GetCustomerInfoOperation(configuration: config,
+                                                 customerInfoCallbackCache: self.customerInfoCallbackCache)
 
-        let callback = CustomerInfoCallback(cacheKey: operation.key, completion: completion)
+        let callback = CustomerInfoCallback(cacheKey: operation.cacheKey, completion: completion)
         let cacheStatus = self.customerInfoCallbackCache.add(callback: callback)
         operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
-              completion: PostRequestResponseHandler?) {
+              completion: SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
@@ -93,7 +93,7 @@ class SubscribersAPI {
                                                             postData: postData,
                                                             customerInfoCallbackCache: self.customerInfoCallbackCache)
 
-        let callbackObject = CustomerInfoCallback(cacheKey: postReceiptOperation.key, completion: completion)
+        let callbackObject = CustomerInfoCallback(cacheKey: postReceiptOperation.cacheKey, completion: completion)
         let cacheStatus = customerInfoCallbackCache.add(callback: callbackObject)
 
         operationQueue.addCacheableOperation(postReceiptOperation, cacheStatus: cacheStatus)

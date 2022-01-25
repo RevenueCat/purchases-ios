@@ -7,18 +7,18 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostAttributionDataResponseHandler.swift
+//  SimpleDataResponseHandler.swift
 //
 //  Created by Joshua Liebowitz on 11/30/21.
 
 import Foundation
 
-class PostAttributionDataResponseHandler {
+class SimpleDataResponseHandler {
 
     func handle(maybeResponse: [String: Any]?,
                 statusCode: Int,
                 maybeError: Error?,
-                completion: PostRequestResponseHandler) {
+                completion: SimpleResponseHandler) {
         if let error = maybeError {
             completion(ErrorUtils.networkError(withUnderlyingError: error))
             return

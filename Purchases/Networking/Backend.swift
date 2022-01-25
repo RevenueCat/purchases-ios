@@ -18,7 +18,7 @@ typealias BackendCustomerInfoResponseHandler = (CustomerInfo?, Error?) -> Void
 typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
 typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
 typealias OfferSigningResponseHandler = (String?, String?, UUID?, Int?, Error?) -> Void
-typealias PostRequestResponseHandler = (Error?) -> Void
+typealias SimpleResponseHandler = (Error?) -> Void
 typealias LogInResponseHandler = (CustomerInfo?, Bool, Error?) -> Void
 
 class Backend {
@@ -64,7 +64,7 @@ class Backend {
                                              customerInfoCallbackCache: customerInfoCallbackCache)
     }
 
-    func createAlias(appUserID: String, newAppUserID: String, completion: PostRequestResponseHandler?) {
+    func createAlias(appUserID: String, newAppUserID: String, completion: SimpleResponseHandler?) {
         self.subscribersAPI.createAlias(appUserID: appUserID, newAppUserID: newAppUserID, completion: completion)
     }
 
@@ -97,7 +97,7 @@ class Backend {
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
-              completion: PostRequestResponseHandler?) {
+              completion: SimpleResponseHandler?) {
         self.subscribersAPI.post(subscriberAttributes: subscriberAttributes,
                                  appUserID: appUserID,
                                  completion: completion)
@@ -113,11 +113,13 @@ class Backend {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
+
+        let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
+                                                                                 productIdentifier: productIdentifier,
+                                                                                 subscriptionGroup: subscriptionGroup,
+                                                                                 receiptData: receiptData)
         let postOfferForSigningOperation = PostOfferForSigningOperation(configuration: config,
-                                                                        offerIdForSigning: offerIdentifier,
-                                                                        productIdentifier: productIdentifier,
-                                                                        subscriptionGroup: subscriptionGroup,
-                                                                        receiptData: receiptData,
+                                                                        postOfferForSigningData: postOfferData,
                                                                         completion: completion)
         self.operationQueue.addOperation(postOfferForSigningOperation)
     }
@@ -125,7 +127,7 @@ class Backend {
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
-              completion: PostRequestResponseHandler?) {
+              completion: SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
@@ -146,7 +148,7 @@ class Backend {
                                             newAppUserID: newAppUserID,
                                             loginCallbackCache: self.logInCallbacksCache)
 
-        let loginCallback = LogInCallback(key: loginOperation.key, callback: completion)
+        let loginCallback = LogInCallback(cacheKey: loginOperation.cacheKey, completion: completion)
         let cacheStatus = self.logInCallbacksCache.add(callback: loginCallback)
 
         self.operationQueue.addCacheableOperation(loginOperation, cacheStatus: cacheStatus)
@@ -159,7 +161,7 @@ class Backend {
         let getOfferingsOperation = GetOfferingsOperation(configuration: config,
                                                           offeringsCallbackCache: self.offeringsCallbacksCache)
 
-        let offeringsCallback = OfferingsCallback(key: getOfferingsOperation.key, callback: completion)
+        let offeringsCallback = OfferingsCallback(cacheKey: getOfferingsOperation.cacheKey, completion: completion)
         let cacheStatus = self.offeringsCallbacksCache.add(callback: offeringsCallback)
 
         self.operationQueue.addCacheableOperation(getOfferingsOperation, cacheStatus: cacheStatus)

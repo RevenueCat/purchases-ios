@@ -15,10 +15,11 @@ import Foundation
 
 /**
  Generic callback cache whose primary usage is to help ensure API calls in flight are not duplicated.
- Users of this class will have determined that an API call is running and they will store a completion block from
- the next API call that will no longer run. Once the first API call has finished, the user is required to call
- `performOnAllItemsAndRemoveFromCache`. This way the results from the initial API call will be surfaced to the waiting
- completion blocks from the duplicate API calls that were not sent, and then removed from the cache.
+ Users of this class will store a completion block for any Cacheable API call that is running. If the same request is
+ made while a request is in-flight, the completion block will be added to the list and the API call will not be
+ performed. Once the first API call has finished, the user is required to call `performOnAllItemsAndRemoveFromCache`.
+ This way the results from the initial API call will be surfaced to the waiting completion blocks from the duplicate
+ API calls that were not sent. After being called these blocks are removed from the cache.
  */
 class CallbackCache<T> where T: CacheKeyProviding {
 
@@ -31,25 +32,25 @@ class CallbackCache<T> where T: CacheKeyProviding {
 
     func add(callback: T) -> CallbackCacheStatus {
         callbackQueue.sync {
-            var values = cachedCallbacksByKey[callback.key] ?? []
+            var values = cachedCallbacksByKey[callback.cacheKey] ?? []
             let cacheStatus: CallbackCacheStatus = !values.isEmpty ?
                 .addedToExistingInFlightList :
                 .firstCallbackAddedToList
 
             values.append(callback)
-            cachedCallbacksByKey[callback.key] = values
+            cachedCallbacksByKey[callback.cacheKey] = values
             return cacheStatus
         }
     }
 
     func performOnAllItemsAndRemoveFromCache(withCacheable cacheable: CacheKeyProviding, _ block: (T) -> Void) {
         callbackQueue.sync {
-            guard let items = cachedCallbacksByKey[cacheable.key] else {
+            guard let items = cachedCallbacksByKey[cacheable.cacheKey] else {
                 return
             }
 
             items.forEach { block($0) }
-            cachedCallbacksByKey.removeValue(forKey: cacheable.key)
+            cachedCallbacksByKey.removeValue(forKey: cacheable.cacheKey)
         }
     }
 
@@ -57,6 +58,6 @@ class CallbackCache<T> where T: CacheKeyProviding {
 
 protocol CacheKeyProviding {
 
-    var key: String { get }
+    var cacheKey: String { get }
 
 }

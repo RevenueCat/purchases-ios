@@ -37,7 +37,7 @@ class GetOfferingsOperation: CacheableNetworkOperation {
     func getOfferings() {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.callback(nil, ErrorUtils.missingAppUserIDError())
+                callback.completion(nil, ErrorUtils.missingAppUserIDError())
             }
             return
         }
@@ -48,7 +48,7 @@ class GetOfferingsOperation: CacheableNetworkOperation {
                                      headers: authHeaders) { statusCode, maybeResponse, maybeError in
             if maybeError == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
                 self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                    callbackObject.callback(maybeResponse, nil)
+                    callbackObject.completion(maybeResponse, nil)
                 }
                 return
             }
@@ -70,7 +70,7 @@ class GetOfferingsOperation: CacheableNetworkOperation {
             Logger.error(Strings.backendError.unknown_get_offerings_error(statusCode: statusCode,
                                                                           maybeResponseString: responseString))
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.callback(nil, errorForCallbacks)
+                callbackObject.completion(nil, errorForCallbacks)
             }
         }
     }

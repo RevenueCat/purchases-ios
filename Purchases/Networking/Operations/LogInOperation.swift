@@ -40,7 +40,7 @@ class LogInOperation: CacheableNetworkOperation {
     func logIn() {
         guard let newAppUserID = try? self.newAppUserID.trimmedOrError() else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.callback(nil, false, ErrorUtils.missingAppUserIDError())
+                callback.completion(nil, false, ErrorUtils.missingAppUserIDError())
             }
             return
         }
@@ -54,7 +54,7 @@ class LogInOperation: CacheableNetworkOperation {
                 self.handleLogin(maybeResponse: response,
                                  statusCode: statusCode,
                                  maybeError: error,
-                                 completion: callbackObject.callback)
+                                 completion: callbackObject.completion)
             }
         }
     }

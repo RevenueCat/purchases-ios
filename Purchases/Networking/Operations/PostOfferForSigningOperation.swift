@@ -15,24 +15,24 @@ import Foundation
 
 class PostOfferForSigningOperation: NetworkOperation {
 
+    struct PostOfferForSigningData {
+
+        let offerIdentifier: String
+        let productIdentifier: String
+        let subscriptionGroup: String
+        let receiptData: Data
+
+    }
+
     private let configuration: UserSpecificConfiguration
-    private let offerIdentifier: String
-    private let productIdentifier: String
-    private let subscriptionGroup: String
-    private let receiptData: Data
+    private let postOfferData: PostOfferForSigningData
     private let completion: OfferSigningResponseHandler
 
     init(configuration: UserSpecificConfiguration,
-         offerIdForSigning offerIdentifier: String,
-         productIdentifier: String,
-         subscriptionGroup: String,
-         receiptData: Data,
+         postOfferForSigningData: PostOfferForSigningData,
          completion: @escaping OfferSigningResponseHandler) {
         self.configuration = configuration
-        self.offerIdentifier = offerIdentifier
-        self.productIdentifier = productIdentifier
-        self.subscriptionGroup = subscriptionGroup
-        self.receiptData = receiptData
+        self.postOfferData = postOfferForSigningData
         self.completion = completion
 
         super.init(configuration: configuration)
@@ -43,29 +43,18 @@ class PostOfferForSigningOperation: NetworkOperation {
             return
         }
 
-        self.post(offerIdForSigning: self.offerIdentifier,
-                  productIdentifier: self.productIdentifier,
-                  subscriptionGroup: self.subscriptionGroup,
-                  receiptData: self.receiptData,
-                  appUserID: self.configuration.appUserID,
-                  completion: self.completion)
+        self.post(configuration: self.configuration, postOfferData: self.postOfferData, handler: self.completion)
     }
 
-    // swiftlint:disable:next function_parameter_count function_body_length
-    func post(offerIdForSigning offerIdentifier: String,
-              productIdentifier: String,
-              subscriptionGroup: String,
-              receiptData: Data,
-              appUserID: String,
-              completion: @escaping OfferSigningResponseHandler) {
-        let fetchToken = receiptData.asFetchToken
-
-        let requestBody: [String: Any] = ["app_user_id": appUserID,
-                                          "fetch_token": fetchToken,
+    func post(configuration: UserSpecificConfiguration,
+              postOfferData: PostOfferForSigningData,
+              handler: @escaping OfferSigningResponseHandler) {
+        let requestBody: [String: Any] = ["app_user_id": configuration.appUserID,
+                                          "fetch_token": postOfferData.receiptData.asFetchToken,
                                           "generate_offers": [
-                                            ["offer_id": offerIdentifier,
-                                             "product_id": productIdentifier,
-                                             "subscription_group": subscriptionGroup
+                                            ["offer_id": postOfferData.offerIdentifier,
+                                             "product_id": postOfferData.productIdentifier,
+                                             "subscription_group": postOfferData.subscriptionGroup
                                             ]
                                           ]]
 
@@ -74,7 +63,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                                            requestBody: requestBody,
                                            headers: authHeaders) { statusCode, maybeResponse, maybeError in
             if let error = maybeError {
-                completion(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
+                handler(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
                 return
             }
 
@@ -82,7 +71,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let backendCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
                 let backendMessage = maybeResponse?["message"] as? String
                 let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
-                completion(nil, nil, nil, nil, error)
+                handler(nil, nil, nil, nil, error)
                 return
             }
 
@@ -90,7 +79,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferEmptyResponse
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.offerings_empty_response)
-                completion(nil, nil, nil, nil, error)
+                handler(nil, nil, nil, nil, error)
                 return
             }
 
@@ -99,7 +88,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
                                                                  extraContext: response.stringRepresentation)
                 Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
-                completion(nil, nil, nil, nil, error)
+                handler(nil, nil, nil, nil, error)
                 return
             }
 
@@ -107,34 +96,38 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.no_offerings_response_json(response: response))
-                completion(nil, nil, nil, nil, error)
+                handler(nil, nil, nil, nil, error)
                 return
             }
 
             let offer = offers[0]
-            if let signatureError = offer["signature_error"] as? [String: Any] {
-                let backendCode = BackendErrorCode(maybeCode: signatureError["code"])
-                let backendMessage = signatureError["message"] as? String
-                let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
-                completion(nil, nil, nil, nil, error)
-                return
+            self.handleOffer(offer, handler: handler)
+        }
+    }
 
-            } else if let signatureData = offer["signature_data"] as? [String: Any] {
-                let signature = signatureData["signature"] as? String
-                let keyIdentifier = offer["key_id"] as? String
-                let nonceString = signatureData["nonce"] as? String
-                let maybeNonce = nonceString.flatMap { UUID(uuidString: $0) }
-                let timestamp = signatureData["timestamp"] as? Int
+    func handleOffer(_ offer: [String: Any], handler: OfferSigningResponseHandler) {
+        if let signatureError = offer["signature_error"] as? [String: Any] {
+            let backendCode = BackendErrorCode(maybeCode: signatureError["code"])
+            let backendMessage = signatureError["message"] as? String
+            let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
+            handler(nil, nil, nil, nil, error)
+            return
 
-                completion(signature, keyIdentifier, maybeNonce, timestamp, nil)
-                return
-            } else {
-                Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
-                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdSignature
-                let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
-                completion(nil, nil, nil, nil, signatureError)
-                return
-            }
+        } else if let signatureData = offer["signature_data"] as? [String: Any] {
+            let signature = signatureData["signature"] as? String
+            let keyIdentifier = offer["key_id"] as? String
+            let nonceString = signatureData["nonce"] as? String
+            let maybeNonce = nonceString.flatMap { UUID(uuidString: $0) }
+            let timestamp = signatureData["timestamp"] as? Int
+
+            handler(signature, keyIdentifier, maybeNonce, timestamp, nil)
+            return
+        } else {
+            Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
+            let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdSignature
+            let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
+            handler(nil, nil, nil, nil, signatureError)
+            return
         }
     }
 

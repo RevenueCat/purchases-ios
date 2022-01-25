@@ -33,7 +33,7 @@ extension String {
             .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 
         guard trimmedAndEscaped.count > 0 else {
-            Logger.warn("Attempting to escape an empty string")
+            Logger.error("Attempting to escape an empty string")
             throw Error.escapingEmptyString
         }
 

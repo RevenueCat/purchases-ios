@@ -19,11 +19,11 @@ class PostSubscriberAttributesOperation: NetworkOperation {
     private let subscriberAttributeHandler: SubscriberAttributeHandler
     private let configuration: UserSpecificConfiguration
     private let subscriberAttributes: SubscriberAttributeDict
-    private let completion: PostRequestResponseHandler?
+    private let completion: SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          subscriberAttributes: SubscriberAttributeDict,
-         completion: PostRequestResponseHandler?,
+         completion: SimpleResponseHandler?,
          subscriberAttributesMarshaller: SubscriberAttributesMarshaller = SubscriberAttributesMarshaller(),
          subscriberAttributeHandler: SubscriberAttributeHandler = SubscriberAttributeHandler()) {
         self.configuration = configuration
@@ -47,7 +47,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
-              completion: PostRequestResponseHandler?) {
+              completion: SimpleResponseHandler?) {
         guard subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
             completion?(ErrorCode.emptySubscriberAttributes)
@@ -67,10 +67,14 @@ class PostSubscriberAttributesOperation: NetworkOperation {
                                       path: path,
                                       requestBody: ["attributes": attributesInBackendFormat],
                                       headers: authHeaders) { statusCode, response, error in
+            guard let completion = completion else {
+                return
+            }
+
             self.subscriberAttributeHandler.handleSubscriberAttributesResult(statusCode: statusCode,
                                                                              maybeResponse: response,
                                                                              maybeError: error,
-                                                                             maybeCompletion: completion)
+                                                                             completion: completion)
         }
     }
 

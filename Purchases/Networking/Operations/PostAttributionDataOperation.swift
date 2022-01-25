@@ -16,17 +16,16 @@ import Foundation
 class PostAttributionDataOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
-    private let postAttributionDataResponseHandler: PostAttributionDataResponseHandler
+    private let postAttributionDataResponseHandler: SimpleDataResponseHandler
     private let attributionData: [String: Any]
     private let network: AttributionNetwork
-    private let maybeCompletion: PostRequestResponseHandler?
+    private let maybeCompletion: SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          attributionData: [String: Any],
          network: AttributionNetwork,
-         maybeCompletion: PostRequestResponseHandler?,
-         // swiftlint:disable:next line_length
-         postAttributionDataResponseHandler: PostAttributionDataResponseHandler = PostAttributionDataResponseHandler()) {
+         maybeCompletion: SimpleResponseHandler?,
+         postAttributionDataResponseHandler: SimpleDataResponseHandler = SimpleDataResponseHandler()) {
         self.postAttributionDataResponseHandler = postAttributionDataResponseHandler
         self.attributionData = attributionData
         self.network = network
@@ -50,7 +49,7 @@ class PostAttributionDataOperation: NetworkOperation {
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
-              maybeCompletion: PostRequestResponseHandler?) {
+              maybeCompletion: SimpleResponseHandler?) {
         guard let appUserID = try? appUserID.escapedOrError() else {
             maybeCompletion?(ErrorUtils.missingAppUserIDError())
             return

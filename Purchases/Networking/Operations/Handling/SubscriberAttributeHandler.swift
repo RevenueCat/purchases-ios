@@ -24,11 +24,7 @@ class SubscriberAttributeHandler {
     func handleSubscriberAttributesResult(statusCode: Int,
                                           maybeResponse: [String: Any]?,
                                           maybeError: Error?,
-                                          maybeCompletion: PostRequestResponseHandler?) {
-        guard let completion = maybeCompletion else {
-            return
-        }
-
+                                          completion: SimpleResponseHandler) {
         if let error = maybeError {
             completion(ErrorUtils.networkError(withUnderlyingError: error))
             return

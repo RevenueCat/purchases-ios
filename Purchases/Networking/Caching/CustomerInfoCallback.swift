@@ -13,20 +13,9 @@
 
 import Foundation
 
-struct CustomerInfoCallback: CacheKeyProviding, CustomerInfoCompletion {
+struct CustomerInfoCallback: CacheKeyProviding {
 
-    let key: String
+    let cacheKey: String
     let completion: (CustomerInfo?, Error?) -> Void
-
-    init(cacheKey: String, completion: @escaping (CustomerInfo?, Error?) -> Void) {
-        self.key = cacheKey
-        self.completion = completion
-    }
-
-}
-
-protocol CustomerInfoCompletion {
-
-    var completion: (CustomerInfo?, Error?) -> Void { get }
 
 }

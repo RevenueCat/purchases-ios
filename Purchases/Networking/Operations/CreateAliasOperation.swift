@@ -16,15 +16,15 @@ import Foundation
 class CreateAliasOperation: CacheableNetworkOperation {
 
     private let aliasCallbackCache: CallbackCache<AliasCallback>
-    private let createAliasResponseHandler: PostAttributionDataResponseHandler
+    private let createAliasResponseHandler: SimpleDataResponseHandler
 
     private let newAppUserID: String
     private let configuration: UserSpecificConfiguration
 
     init(configuration: UserSpecificConfiguration,
          newAppUserID: String,
-         createAliasResponseHandler: PostAttributionDataResponseHandler = PostAttributionDataResponseHandler(),
-         aliasCallbackCache: CallbackCache<AliasCallback>) {
+         aliasCallbackCache: CallbackCache<AliasCallback>,
+         createAliasResponseHandler: SimpleDataResponseHandler = SimpleDataResponseHandler()) {
         self.createAliasResponseHandler = createAliasResponseHandler
         self.aliasCallbackCache = aliasCallbackCache
         self.newAppUserID = newAppUserID
@@ -44,7 +44,7 @@ class CreateAliasOperation: CacheableNetworkOperation {
     func createAlias() {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.callback?(ErrorUtils.missingAppUserIDError())
+                callback.completion?(ErrorUtils.missingAppUserIDError())
             }
             return
         }
@@ -57,7 +57,7 @@ class CreateAliasOperation: CacheableNetworkOperation {
                                       headers: authHeaders) { statusCode, response, error in
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { aliasCallback in
 
-                guard let completion = aliasCallback.callback else {
+                guard let completion = aliasCallback.completion else {
                     return
                 }
 

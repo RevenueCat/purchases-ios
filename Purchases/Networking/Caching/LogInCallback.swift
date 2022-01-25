@@ -15,7 +15,7 @@ import Foundation
 
 struct LogInCallback: CacheKeyProviding {
 
-    let key: String
-    let callback: (CustomerInfo?, Bool, Error?) -> Void
+    let cacheKey: String
+    let completion: (CustomerInfo?, Bool, Error?) -> Void
 
 }

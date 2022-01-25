@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  GetSubscriberDataOperation.swift
+//  GetCustomerInfoOperation.swift
 //
 //  Created by Joshua Liebowitz on 11/18/21.
 
 import Foundation
 
-class GetSubscriberDataOperation: CacheableNetworkOperation {
+class GetCustomerInfoOperation: CacheableNetworkOperation {
 
     private let customerInfoResponseHandler: CustomerInfoResponseHandler
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
@@ -29,7 +29,7 @@ class GetSubscriberDataOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID)
     }
 
-    func getSubscriberData() {
+    func getCustomerInfo() {
 
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
@@ -57,7 +57,7 @@ class GetSubscriberDataOperation: CacheableNetworkOperation {
             return
         }
 
-        self.getSubscriberData()
+        self.getCustomerInfo()
     }
 
 }
