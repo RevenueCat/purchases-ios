@@ -41,14 +41,14 @@ extension String {
     }
 
     func trimmedOrError() throws -> String {
-        let escaped = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        guard escaped.count > 0 else {
+        guard trimmed.count > 0 else {
             Logger.warn("Attempting to trim an empty string")
-            throw Error.escapingEmptyString
+            throw Error.trimmingEmptyString
         }
 
-        return escaped
+        return trimmed
     }
 
     /// Returns `nil` if `self` is an empty string.
