@@ -10,7 +10,7 @@
  Only use a Dangerous Setting if suggested by RevenueCat support team.
  */
 @objc(RCDangerousSetting) enum DangerousSetting: Int {
-    
+
     /**
      Disable or enable subscribing to the StoreKit queue. If this is disabled, RevenueCat will not sync any purchase
      automatically, and you will have to call syncPurchases whenever a new purchase is completed in order to send

@@ -10,7 +10,7 @@
  Only use a Dangerous Setting if suggested by RevenueCat support team.
  */
 @objc(RCDangerousSettingOption) enum DangerousSettingOption: Int {
-    
+
     /**
      Disable
      */
