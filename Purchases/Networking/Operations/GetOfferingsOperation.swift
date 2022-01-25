@@ -34,7 +34,7 @@ class GetOfferingsOperation: CacheableNetworkOperation {
         self.getOfferings()
     }
 
-    func getOfferings() {
+    private func getOfferings() {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, ErrorUtils.missingAppUserIDError())

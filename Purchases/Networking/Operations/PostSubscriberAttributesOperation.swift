@@ -40,21 +40,17 @@ class PostSubscriberAttributesOperation: NetworkOperation {
             return
         }
 
-        post(subscriberAttributes: self.subscriberAttributes,
-             appUserID: self.configuration.appUserID,
-             completion: self.completion)
+        post()
     }
 
-    func post(subscriberAttributes: SubscriberAttributeDict,
-              appUserID: String,
-              completion: SimpleResponseHandler?) {
-        guard subscriberAttributes.count > 0 else {
+    private func post() {
+        guard self.subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
             completion?(ErrorCode.emptySubscriberAttributes)
             return
         }
 
-        guard let appUserID = try? appUserID.escapedOrError() else {
+        guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
             completion?(ErrorUtils.missingAppUserIDError())
             return
         }
@@ -62,12 +58,12 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         let path = "/subscribers/\(appUserID)/attributes"
 
         let attributesInBackendFormat = self.subscriberAttributesMarshaller
-            .subscriberAttributesToDict(subscriberAttributes: subscriberAttributes)
+            .subscriberAttributesToDict(subscriberAttributes: self.subscriberAttributes)
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: ["attributes": attributesInBackendFormat],
-                                      headers: authHeaders) { statusCode, response, error in
-            guard let completion = completion else {
+                                      headers: self.authHeaders) { statusCode, response, error in
+            guard let completion = self.completion else {
                 return
             }
 

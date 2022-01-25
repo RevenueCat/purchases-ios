@@ -43,18 +43,16 @@ class PostOfferForSigningOperation: NetworkOperation {
             return
         }
 
-        self.post(configuration: self.configuration, postOfferData: self.postOfferData, handler: self.completion)
+        self.post()
     }
 
-    func post(configuration: UserSpecificConfiguration,
-              postOfferData: PostOfferForSigningData,
-              handler: @escaping OfferSigningResponseHandler) {
-        let requestBody: [String: Any] = ["app_user_id": configuration.appUserID,
-                                          "fetch_token": postOfferData.receiptData.asFetchToken,
+    private func post() {
+        let requestBody: [String: Any] = ["app_user_id": self.configuration.appUserID,
+                                          "fetch_token": self.postOfferData.receiptData.asFetchToken,
                                           "generate_offers": [
-                                            ["offer_id": postOfferData.offerIdentifier,
-                                             "product_id": postOfferData.productIdentifier,
-                                             "subscription_group": postOfferData.subscriptionGroup
+                                            ["offer_id": self.postOfferData.offerIdentifier,
+                                             "product_id": self.postOfferData.productIdentifier,
+                                             "subscription_group": self.postOfferData.subscriptionGroup
                                             ]
                                           ]]
 
@@ -63,7 +61,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                                            requestBody: requestBody,
                                            headers: authHeaders) { statusCode, maybeResponse, maybeError in
             if let error = maybeError {
-                handler(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
+                self.completion(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
                 return
             }
 
@@ -71,7 +69,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let backendCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
                 let backendMessage = maybeResponse?["message"] as? String
                 let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
-                handler(nil, nil, nil, nil, error)
+                self.completion(nil, nil, nil, nil, error)
                 return
             }
 
@@ -79,7 +77,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferEmptyResponse
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.offerings_empty_response)
-                handler(nil, nil, nil, nil, error)
+                self.completion(nil, nil, nil, nil, error)
                 return
             }
 
@@ -88,7 +86,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
                                                                  extraContext: response.stringRepresentation)
                 Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
-                handler(nil, nil, nil, nil, error)
+                self.completion(nil, nil, nil, nil, error)
                 return
             }
 
@@ -96,21 +94,21 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.no_offerings_response_json(response: response))
-                handler(nil, nil, nil, nil, error)
+                self.completion(nil, nil, nil, nil, error)
                 return
             }
 
             let offer = offers[0]
-            self.handleOffer(offer, handler: handler)
+            self.handleOffer(offer, completion: self.completion)
         }
     }
 
-    func handleOffer(_ offer: [String: Any], handler: OfferSigningResponseHandler) {
+    func handleOffer(_ offer: [String: Any], completion: OfferSigningResponseHandler) {
         if let signatureError = offer["signature_error"] as? [String: Any] {
             let backendCode = BackendErrorCode(maybeCode: signatureError["code"])
             let backendMessage = signatureError["message"] as? String
             let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
-            handler(nil, nil, nil, nil, error)
+            completion(nil, nil, nil, nil, error)
             return
 
         } else if let signatureData = offer["signature_data"] as? [String: Any] {
@@ -120,13 +118,13 @@ class PostOfferForSigningOperation: NetworkOperation {
             let maybeNonce = nonceString.flatMap { UUID(uuidString: $0) }
             let timestamp = signatureData["timestamp"] as? Int
 
-            handler(signature, keyIdentifier, maybeNonce, timestamp, nil)
+            completion(signature, keyIdentifier, maybeNonce, timestamp, nil)
             return
         } else {
             Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
             let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdSignature
             let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
-            handler(nil, nil, nil, nil, signatureError)
+            completion(nil, nil, nil, nil, signatureError)
             return
         }
     }

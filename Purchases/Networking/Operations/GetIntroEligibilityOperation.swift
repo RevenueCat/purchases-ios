@@ -37,29 +37,23 @@ class GetIntroEligibilityOperation: NetworkOperation {
             return
         }
 
-        self.getIntroEligibility(appUserID: self.configuration.appUserID,
-                                 receiptData: self.receiptData,
-                                 productIdentifiers: self.productIdentifiers,
-                                 completion: self.completion)
+        self.getIntroEligibility()
     }
 
-    func getIntroEligibility(appUserID: String,
-                             receiptData: Data,
-                             productIdentifiers: [String],
-                             completion: @escaping IntroEligibilityResponseHandler) {
-        guard productIdentifiers.count > 0 else {
-            completion([:], nil)
+    private func getIntroEligibility() {
+        guard self.productIdentifiers.count > 0 else {
+            self.completion([:], nil)
             return
         }
 
-        if receiptData.count == 0 {
+        if self.receiptData.count == 0 {
             if self.httpClient.systemInfo.isSandbox {
                 Logger.appleWarning(Strings.receipt.no_sandbox_receipt_intro_eligibility)
             }
 
             var eligibilities: [String: IntroEligibility] = [:]
 
-            for productID in productIdentifiers {
+            for productID in self.productIdentifiers {
                 eligibilities[productID] = IntroEligibility(eligibilityStatus: .unknown)
             }
 
@@ -71,19 +65,19 @@ class GetIntroEligibilityOperation: NetworkOperation {
         // eligibility status.
         let unknownEligibilityClosure: () -> [String: IntroEligibility] = {
             let unknownEligibilities = [IntroEligibility](repeating: IntroEligibility(eligibilityStatus: .unknown),
-                                                          count: productIdentifiers.count)
-            let productIdentifiersToEligibility = zip(productIdentifiers, unknownEligibilities)
+                                                          count: self.productIdentifiers.count)
+            let productIdentifiersToEligibility = zip(self.productIdentifiers, unknownEligibilities)
             return Dictionary(uniqueKeysWithValues: productIdentifiersToEligibility)
         }
 
-        guard let appUserID = try? appUserID.escapedOrError() else {
-            completion(unknownEligibilityClosure(), ErrorUtils.missingAppUserIDError())
+        guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
+            self.completion(unknownEligibilityClosure(), ErrorUtils.missingAppUserIDError())
             return
         }
 
-        let fetchToken = receiptData.asFetchToken
+        let fetchToken = self.receiptData.asFetchToken
         let path = "/subscribers/\(appUserID)/intro_eligibility"
-        let body: [String: Any] = ["product_identifiers": productIdentifiers,
+        let body: [String: Any] = ["product_identifiers": self.productIdentifiers,
                                    "fetch_token": fetchToken]
 
         httpClient.performPOSTRequest(serially: true,
@@ -93,9 +87,9 @@ class GetIntroEligibilityOperation: NetworkOperation {
             let eligibilityResponse = IntroEligibilityResponse(maybeResponse: maybeResponse,
                                                                statusCode: statusCode,
                                                                error: error,
-                                                               productIdentifiers: productIdentifiers,
+                                                               productIdentifiers: self.productIdentifiers,
                                                                unknownEligibilityClosure: unknownEligibilityClosure,
-                                                               completion: completion)
+                                                               completion: self.completion)
             self.handleIntroEligibility(response: eligibilityResponse)
         }
     }

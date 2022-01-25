@@ -62,16 +62,16 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
         self.post()
     }
 
-    func post() {
+    private func post() {
         let fetchToken = self.postData.receiptData.asFetchToken
         var body: [String: Any] = [
             "fetch_token": fetchToken,
             "app_user_id": self.configuration.appUserID,
-            "is_restore": postData.isRestore,
-            "observer_mode": postData.observerMode
+            "is_restore": self.postData.isRestore,
+            "observer_mode": self.postData.observerMode
         ]
 
-        if let productData = postData.productData {
+        if let productData = self.postData.productData {
             do {
                 body += try productData.asDictionary()
             } catch {
@@ -82,20 +82,20 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
             }
         }
 
-        if let subscriberAttributesByKey = postData.subscriberAttributesByKey {
+        if let subscriberAttributesByKey = self.postData.subscriberAttributesByKey {
             let attributesInBackendFormat = self.subscriberAttributesMarshaller
                 .subscriberAttributesToDict(subscriberAttributes: subscriberAttributesByKey)
             body["attributes"] = attributesInBackendFormat
         }
 
-        if let offeringIdentifier = postData.presentedOfferingIdentifier {
+        if let offeringIdentifier = self.postData.presentedOfferingIdentifier {
             body["presented_offering_identifier"] = offeringIdentifier
         }
 
         httpClient.performPOSTRequest(serially: true,
                                       path: "/receipts",
                                       requestBody: body,
-                                      headers: authHeaders) { statusCode, response, error in
+                                      headers: self.authHeaders) { statusCode, response, error in
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         statusCode: statusCode,

@@ -40,28 +40,22 @@ class PostAttributionDataOperation: NetworkOperation {
             return
         }
 
-        self.post(attributionData: self.attributionData,
-                  network: self.network,
-                  appUserID: self.configuration.appUserID,
-                  maybeCompletion: self.maybeCompletion)
+        self.post()
     }
 
-    func post(attributionData: [String: Any],
-              network: AttributionNetwork,
-              appUserID: String,
-              maybeCompletion: SimpleResponseHandler?) {
-        guard let appUserID = try? appUserID.escapedOrError() else {
-            maybeCompletion?(ErrorUtils.missingAppUserIDError())
+    private func post() {
+        guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
+            self.maybeCompletion?(ErrorUtils.missingAppUserIDError())
             return
         }
 
         let path = "/subscribers/\(appUserID)/attribution"
-        let body: [String: Any] = ["network": network.rawValue, "data": attributionData]
+        let body: [String: Any] = ["network": self.network.rawValue, "data": self.attributionData]
         self.httpClient.performPOSTRequest(serially: true,
                                            path: path,
                                            requestBody: body,
                                            headers: self.authHeaders) { statusCode, response, error in
-            guard let completion = maybeCompletion else {
+            guard let completion = self.maybeCompletion else {
                 return
             }
 

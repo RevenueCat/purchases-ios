@@ -37,7 +37,7 @@ class LogInOperation: CacheableNetworkOperation {
         self.logIn()
     }
 
-    func logIn() {
+    private func logIn() {
         guard let newAppUserID = try? self.newAppUserID.trimmedOrError() else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, false, ErrorUtils.missingAppUserIDError())
