@@ -378,7 +378,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 [self.purchaserInfoManager sendCachedPurchaserInfoIfAvailableForAppUserID:self.appUserID];
             }
         }];
-        self.storeKitWrapper.delegate = self;
+
+        if (self.systemInfo.autoSyncPurchases) {
+            self.storeKitWrapper.delegate = self;
+        }
 
         [self subscribeToAppStateNotifications];
 
