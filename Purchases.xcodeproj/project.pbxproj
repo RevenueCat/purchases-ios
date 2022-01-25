@@ -116,8 +116,7 @@
 		3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3585D6A122E680E30079E2C5 /* RCPackage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3585D6A422E680E30079E2C5 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3585D6A222E680E30079E2C5 /* RCPackage.m */; };
 		3589D15624C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		3596E60627A0386F00E88F62 /* DangerousSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3596E60527A0386F00E88F62 /* DangerousSetting.swift */; };
-		3596E60827A0387F00E88F62 /* DangerousSettingOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3596E60727A0387F00E88F62 /* DangerousSettingOption.swift */; };
+		3596E60627A0386F00E88F62 /* DangerousSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3596E60527A0386F00E88F62 /* DangerousSettings.swift */; };
 		35A8A3E72683F06B0019D303 /* AttributionDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A8A3E62683F06B0019D303 /* AttributionDataMigratorTests.swift */; };
 		35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */; };
 		35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -420,8 +419,7 @@
 		3585D6A122E680E30079E2C5 /* RCPackage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackage.h; sourceTree = "<group>"; };
 		3585D6A222E680E30079E2C5 /* RCPackage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackage.m; sourceTree = "<group>"; };
 		3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCAttributionTypeFactory+Protected.h"; sourceTree = "<group>"; };
-		3596E60527A0386F00E88F62 /* DangerousSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSetting.swift; sourceTree = "<group>"; };
-		3596E60727A0387F00E88F62 /* DangerousSettingOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettingOption.swift; sourceTree = "<group>"; };
+		3596E60527A0386F00E88F62 /* DangerousSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettings.swift; sourceTree = "<group>"; };
 		3597020F24BF6A710010506E /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
 		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
 		35A8A3E62683F06B0019D303 /* AttributionDataMigratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionDataMigratorTests.swift; sourceTree = "<group>"; };
@@ -771,8 +769,7 @@
 				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
 				37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */,
 				35F82BAA26A84E130051DF03 /* DictionaryExtensions.swift */,
-				3596E60527A0386F00E88F62 /* DangerousSetting.swift */,
-				3596E60727A0387F00E88F62 /* DangerousSettingOption.swift */,
+				3596E60527A0386F00E88F62 /* DangerousSettings.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -1719,14 +1716,13 @@
 				2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */,
 				2DDF41B524F6F387005BC22D /* AppleReceiptBuilder.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* ReceiptParser.swift in Sources */,
-				3596E60627A0386F00E88F62 /* DangerousSetting.swift in Sources */,
+				3596E60627A0386F00E88F62 /* DangerousSettings.swift in Sources */,
 				2DDF41BA24F6F392005BC22D /* ISO3601DateFormatter.swift in Sources */,
 				35D832F4262E606500E60AC5 /* HTTPResponse.swift in Sources */,
 				2DDF41AE24F6F37C005BC22D /* InAppPurchase.swift in Sources */,
 				2DC19195255F36D10039389A /* Logger.swift in Sources */,
 				2DDF419F24F6F331005BC22D /* ReceiptParsingError.swift in Sources */,
 				2DDF419D24F6F331005BC22D /* IntroEligibilityCalculator.swift in Sources */,
-				3596E60827A0387F00E88F62 /* DangerousSettingOption.swift in Sources */,
 				9A65E0802591977900DE00B0 /* ReceiptStrings.swift in Sources */,
 				2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */,
 				2DDF41B424F6F387005BC22D /* ASN1ContainerBuilder.swift in Sources */,

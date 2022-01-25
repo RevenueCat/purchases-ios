@@ -200,14 +200,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                         userDefaults:userDefaults
                       platformFlavor:nil
                platformFlavorVersion:nil
-                   dangerousSettings:@{}];
+                   dangerousSettings:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode
                        userDefaults:(nullable NSUserDefaults *)userDefaults
-                  dangerousSettings:(NSDictionary<RCDangerousSetting *, RCDangerousOption *>*)dangerousSettings {
+                  dangerousSettings:(nullable RCDangerousSettings *)dangerousSettings {
     return [self configureWithAPIKey:APIKey
                            appUserID:appUserID
                         observerMode:observerMode
@@ -223,7 +223,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                        userDefaults:(nullable NSUserDefaults *)userDefaults
                      platformFlavor:(NSString *)platformFlavor
               platformFlavorVersion:(NSString *)platformFlavorVersion
-                  dangerousSettings:(NSDictionary<RCDangerousSetting *, RCDangerousOption *>*)dangerousSettings {
+                  dangerousSettings:(nullable RCDangerousSettings *)dangerousSettings {
     RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey
                                                 appUserID:appUserID
                                              userDefaults:userDefaults
@@ -242,7 +242,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                    observerMode:false
                  platformFlavor:nil
           platformFlavorVersion:nil
-              dangerousSettings:@{}];
+              dangerousSettings:nil];
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
@@ -251,7 +251,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   observerMode:(BOOL)observerMode
                 platformFlavor:(nullable NSString *)platformFlavor
          platformFlavorVersion:(nullable NSString *)platformFlavorVersion
-             dangerousSettings:(NSDictionary<RCDangerousSetting *, RCDangerousOption *>*)dangerousSettings {
+             dangerousSettings:(nullable RCDangerousSettings *)dangerousSettings {
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
                                                       platformFlavorVersion:platformFlavorVersion

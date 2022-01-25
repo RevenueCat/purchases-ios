@@ -11,7 +11,7 @@
 #import "RCAttributionNetwork.h"
 #import "RCLogLevel.h"
 
-@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCOfferings, RCOffering, RCPackage, RCDangerousSetting, RCDangerousOption;
+@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCOfferings, RCOffering, RCPackage, RCDangerousSettings;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -175,7 +175,7 @@ NS_SWIFT_NAME(Purchases)
                           appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode
                        userDefaults:(nullable NSUserDefaults *)userDefaults
-                  dangerousSettings:(NSDictionary<RCDangerousSetting *, RCDangerousOption *>*)dangerousSettings;
+                  dangerousSettings:(nullable RCDangerousSettings *)dangerousSettings;
 
 /**
  Indicates whether the user is allowed to make payments.
