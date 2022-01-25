@@ -58,7 +58,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         let path = "/subscribers/\(appUserID)/attributes"
 
         let attributesInBackendFormat = self.subscriberAttributesMarshaller
-            .subscriberAttributesToDict(subscriberAttributes: self.subscriberAttributes)
+            .map(subscriberAttributes: self.subscriberAttributes)
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: ["attributes": attributesInBackendFormat],

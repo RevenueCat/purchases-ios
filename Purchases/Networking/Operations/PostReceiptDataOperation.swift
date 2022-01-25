@@ -84,7 +84,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
 
         if let subscriberAttributesByKey = self.postData.subscriberAttributesByKey {
             let attributesInBackendFormat = self.subscriberAttributesMarshaller
-                .subscriberAttributesToDict(subscriberAttributes: subscriberAttributesByKey)
+                .map(subscriberAttributes: subscriberAttributesByKey)
             body["attributes"] = attributesInBackendFormat
         }
 
