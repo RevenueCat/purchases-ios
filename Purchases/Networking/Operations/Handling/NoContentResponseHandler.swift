@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SimpleDataResponseHandler.swift
+//  NoContentResponseHandler.swift
 //
 //  Created by Joshua Liebowitz on 11/30/21.
 
 import Foundation
 
-class SimpleDataResponseHandler {
+class NoContentResponseHandler {
 
     func handle(maybeResponse: [String: Any]?,
                 statusCode: Int,

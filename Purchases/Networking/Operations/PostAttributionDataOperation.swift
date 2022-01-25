@@ -16,7 +16,7 @@ import Foundation
 class PostAttributionDataOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
-    private let postAttributionDataResponseHandler: SimpleDataResponseHandler
+    private let postAttributionDataResponseHandler: NoContentResponseHandler
     private let attributionData: [String: Any]
     private let network: AttributionNetwork
     private let maybeCompletion: SimpleResponseHandler?
@@ -25,7 +25,7 @@ class PostAttributionDataOperation: NetworkOperation {
          attributionData: [String: Any],
          network: AttributionNetwork,
          maybeCompletion: SimpleResponseHandler?,
-         postAttributionDataResponseHandler: SimpleDataResponseHandler = SimpleDataResponseHandler()) {
+         postAttributionDataResponseHandler: NoContentResponseHandler = NoContentResponseHandler()) {
         self.postAttributionDataResponseHandler = postAttributionDataResponseHandler
         self.attributionData = attributionData
         self.network = network

@@ -16,7 +16,7 @@ import Foundation
 class CreateAliasOperation: CacheableNetworkOperation {
 
     private let aliasCallbackCache: CallbackCache<AliasCallback>
-    private let createAliasResponseHandler: SimpleDataResponseHandler
+    private let createAliasResponseHandler: NoContentResponseHandler
 
     private let newAppUserID: String
     private let configuration: UserSpecificConfiguration
@@ -24,7 +24,7 @@ class CreateAliasOperation: CacheableNetworkOperation {
     init(configuration: UserSpecificConfiguration,
          newAppUserID: String,
          aliasCallbackCache: CallbackCache<AliasCallback>,
-         createAliasResponseHandler: SimpleDataResponseHandler = SimpleDataResponseHandler()) {
+         createAliasResponseHandler: NoContentResponseHandler = NoContentResponseHandler()) {
         self.createAliasResponseHandler = createAliasResponseHandler
         self.aliasCallbackCache = aliasCallbackCache
         self.newAppUserID = newAppUserID

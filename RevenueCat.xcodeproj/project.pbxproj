@@ -279,7 +279,7 @@
 		B34605C5279A6E380031CA74 /* CustomerInfoResponseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B0279A6E380031CA74 /* CustomerInfoResponseHandler.swift */; };
 		B34605C6279A6E380031CA74 /* UserInfoAttributeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B1279A6E380031CA74 /* UserInfoAttributeParser.swift */; };
 		B34605C7279A6E380031CA74 /* SubscriberAttributesMarshaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B2279A6E380031CA74 /* SubscriberAttributesMarshaller.swift */; };
-		B34605C8279A6E380031CA74 /* SimpleDataResponseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B3279A6E380031CA74 /* SimpleDataResponseHandler.swift */; };
+		B34605C8279A6E380031CA74 /* NoContentResponseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B3279A6E380031CA74 /* NoContentResponseHandler.swift */; };
 		B34605C9279A6E380031CA74 /* GetIntroEligibilityOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B4279A6E380031CA74 /* GetIntroEligibilityOperation.swift */; };
 		B34605CA279A6E380031CA74 /* GetCustomerInfoOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B5279A6E380031CA74 /* GetCustomerInfoOperation.swift */; };
 		B34605CB279A6E380031CA74 /* PostReceiptDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */; };
@@ -659,7 +659,7 @@
 		B34605B0279A6E380031CA74 /* CustomerInfoResponseHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoResponseHandler.swift; sourceTree = "<group>"; };
 		B34605B1279A6E380031CA74 /* UserInfoAttributeParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserInfoAttributeParser.swift; sourceTree = "<group>"; };
 		B34605B2279A6E380031CA74 /* SubscriberAttributesMarshaller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesMarshaller.swift; sourceTree = "<group>"; };
-		B34605B3279A6E380031CA74 /* SimpleDataResponseHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleDataResponseHandler.swift; sourceTree = "<group>"; };
+		B34605B3279A6E380031CA74 /* NoContentResponseHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoContentResponseHandler.swift; sourceTree = "<group>"; };
 		B34605B4279A6E380031CA74 /* GetIntroEligibilityOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetIntroEligibilityOperation.swift; sourceTree = "<group>"; };
 		B34605B5279A6E380031CA74 /* GetCustomerInfoOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetCustomerInfoOperation.swift; sourceTree = "<group>"; };
 		B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostReceiptDataOperation.swift; sourceTree = "<group>"; };
@@ -1438,9 +1438,9 @@
 			children = (
 				B34605AE279A6E380031CA74 /* Handling */,
 				B34605AC279A6E380031CA74 /* CreateAliasOperation.swift */,
+				B34605B5279A6E380031CA74 /* GetCustomerInfoOperation.swift */,
 				B34605B4279A6E380031CA74 /* GetIntroEligibilityOperation.swift */,
 				B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */,
-				B34605B5279A6E380031CA74 /* GetCustomerInfoOperation.swift */,
 				B34605B7279A6E380031CA74 /* LogInOperation.swift */,
 				B34605AB279A6E380031CA74 /* NetworkOperation.swift */,
 				B34605B8279A6E380031CA74 /* PostAttributionDataOperation.swift */,
@@ -1455,7 +1455,7 @@
 			isa = PBXGroup;
 			children = (
 				B34605B0279A6E380031CA74 /* CustomerInfoResponseHandler.swift */,
-				B34605B3279A6E380031CA74 /* SimpleDataResponseHandler.swift */,
+				B34605B3279A6E380031CA74 /* NoContentResponseHandler.swift */,
 				B34605AF279A6E380031CA74 /* SubscriberAttributeHandler.swift */,
 				B34605B2279A6E380031CA74 /* SubscriberAttributesMarshaller.swift */,
 				B34605B1279A6E380031CA74 /* UserInfoAttributeParser.swift */,
@@ -1965,7 +1965,7 @@
 				A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */,
 				B34605C0279A6E380031CA74 /* CustomerInfoCallback.swift in Sources */,
 				F5BE4479269E4A4C00254A30 /* AfficheClientProxy.swift in Sources */,
-				B34605C8279A6E380031CA74 /* SimpleDataResponseHandler.swift in Sources */,
+				B34605C8279A6E380031CA74 /* NoContentResponseHandler.swift in Sources */,
 				B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* ReceiptParser.swift in Sources */,
 				35D832F4262E606500E60AC5 /* HTTPResponse.swift in Sources */,
