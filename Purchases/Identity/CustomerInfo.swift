@@ -218,7 +218,7 @@ import Foundation
 
     static func from(json maybeJSON: [String: Any]?) throws -> CustomerInfo {
         guard let customerJSON = maybeJSON else {
-            throw UnexpectedBackendResponseSubErrorCode.customerInfoResponseMalformed
+            throw UnexpectedBackendResponseSubErrorCode.customerInfoNil
         }
 
         do {

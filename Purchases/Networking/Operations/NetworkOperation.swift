@@ -19,6 +19,11 @@ class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
 
     let individualizedCacheKeyPart: String
 
+    /**
+     - Parameter individualizedCacheKeyPart: The part of the cacheKey that makes it unique from other operations of the
+     same type. Example: If you posted receipts two times in a row you'd have 2 operations. The cache key would be
+     PostOperation + individualizedCacheKeyPart where individualizedCacheKeyPart is whatever you determine to be unique.
+     */
     init(configuration: NetworkConfiguration, individualizedCacheKeyPart: String) {
         self.individualizedCacheKeyPart = individualizedCacheKeyPart
 

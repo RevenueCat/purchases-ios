@@ -36,8 +36,8 @@ enum UnexpectedBackendResponseSubErrorCode: Int, Error {
     // getOffer call failed with an invalid response.
     case getOfferUnexpectedResponse
 
-    // A call that is supposed to retrieve a CustomerInfo failed because the response object was malformed.
-    case customerInfoResponseMalformed
+    // A call that is supposed to retrieve a CustomerInfo failed because the CustomerInfo in the response was nil.
+    case customerInfoNil
 
     // A call that is supposed to retrieve a CustomerInfo failed because the json object couldn't be parsed.
     case customerInfoResponseParsing
@@ -62,8 +62,8 @@ extension UnexpectedBackendResponseSubErrorCode: DescribableError {
             return "Signature error encountered in response returned from posting offer for signing."
         case .getOfferUnexpectedResponse:
             return "Unknown error encountered while getting offerings."
-        case .customerInfoResponseMalformed:
-            return "Unable to instantiate a CustomerInfoResponse, backend response is malformed."
+        case .customerInfoNil:
+            return "Unable to instantiate a CustomerInfoResponse, CustomerInfo in response was nil."
         case .customerInfoResponseParsing:
             return "Unable to instantiate a CustomerInfoResponse due to malformed json."
         }
