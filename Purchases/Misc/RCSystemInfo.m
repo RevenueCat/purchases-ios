@@ -26,7 +26,8 @@ static BOOL _forceUniversalAppStore = NO;
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
                  platformFlavorVersion:(nullable NSString *)platformFlavorVersion
-                    finishTransactions:(BOOL)finishTransactions {
+                    finishTransactions:(BOOL)finishTransactions
+                     dangerousSettings:(nonnull NSDictionary<RCDangerousSetting *,RCDangerousOption *> *)dangerousSettings{
     if (self = [super init]) {
         NSAssert((platformFlavor && platformFlavorVersion) || (!platformFlavor && !platformFlavorVersion),
             @"RCSystemInfo initialized with non-matching platform flavor and platform flavor versions!");

@@ -199,7 +199,22 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                         observerMode:observerMode
                         userDefaults:userDefaults
                       platformFlavor:nil
-               platformFlavorVersion:nil];
+               platformFlavorVersion:nil
+                   dangerousSettings:@{}];
+}
+
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+                          appUserID:(nullable NSString *)appUserID
+                       observerMode:(BOOL)observerMode
+                       userDefaults:(nullable NSUserDefaults *)userDefaults
+                  dangerousSettings:(NSDictionary<RCDangerousSetting *, RCDangerousOption *>*)dangerousSettings {
+    return [self configureWithAPIKey:APIKey
+                           appUserID:appUserID
+                        observerMode:observerMode
+                        userDefaults:userDefaults
+                      platformFlavor:nil
+               platformFlavorVersion:nil
+                   dangerousSettings:dangerousSettings];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
@@ -207,13 +222,15 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                        observerMode:(BOOL)observerMode
                        userDefaults:(nullable NSUserDefaults *)userDefaults
                      platformFlavor:(NSString *)platformFlavor
-              platformFlavorVersion:(NSString *)platformFlavorVersion {
+              platformFlavorVersion:(NSString *)platformFlavorVersion
+                  dangerousSettings:(NSDictionary<RCDangerousSetting *, RCDangerousOption *>*)dangerousSettings {
     RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey
                                                 appUserID:appUserID
                                              userDefaults:userDefaults
                                              observerMode:observerMode
                                            platformFlavor:platformFlavor
-                                    platformFlavorVersion:platformFlavorVersion];
+                                    platformFlavorVersion:platformFlavorVersion
+                                        dangerousSettings:dangerousSettings];
     [self setDefaultInstance:purchases];
     return purchases;
 }
@@ -224,7 +241,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                    userDefaults:nil
                    observerMode:false
                  platformFlavor:nil
-          platformFlavorVersion:nil];
+          platformFlavorVersion:nil
+              dangerousSettings:@{}];
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
@@ -232,11 +250,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   userDefaults:(nullable NSUserDefaults *)userDefaults
                   observerMode:(BOOL)observerMode
                 platformFlavor:(nullable NSString *)platformFlavor
-         platformFlavorVersion:(nullable NSString *)platformFlavorVersion {
+         platformFlavorVersion:(nullable NSString *)platformFlavorVersion
+             dangerousSettings:(NSDictionary<RCDangerousSetting *, RCDangerousOption *>*)dangerousSettings {
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
                                                       platformFlavorVersion:platformFlavorVersion
-                                                         finishTransactions:!observerMode];
+                                                         finishTransactions:!observerMode
+                                                          dangerousSettings:dangerousSettings];
 
     RCETagManager *eTagManager = [[RCETagManager alloc] init];
 

@@ -7,12 +7,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
+@class RCDangerousSetting, RCDangerousOption;
 @interface RCSystemInfo : NSObject
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
                  platformFlavorVersion:(nullable NSString *)platformFlavorVersion
-                    finishTransactions:(BOOL)finishTransactions NS_DESIGNATED_INITIALIZER;
+                    finishTransactions:(BOOL)finishTransactions
+                     dangerousSettings:(NSDictionary<RCDangerousSetting *, RCDangerousOption *>*)dangerousSettings NS_DESIGNATED_INITIALIZER;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @property(nonatomic, assign) BOOL finishTransactions;
