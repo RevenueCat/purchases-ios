@@ -85,9 +85,9 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.checkEligibility(productIdentifiers: products) { eligibilities in
+        trialOrIntroPriceEligibilityChecker!.checkEligibility(productIdentifiers: products) { receivedEligibilities in
             completionCalled = true
-            eligibilities = eligibilities
+            eligibilities = receivedEligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())

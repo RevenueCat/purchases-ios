@@ -187,8 +187,8 @@ extension OfferingsManagerTests {
         // then
         expect(completionCalled).toEventually(beTrue())
         expect(obtainedOfferings).to(beNil())
-        let obtainedError = try XCTUnwrap(obtainedError)
-        expect((obtainedError as NSError).code) == ErrorCode.unexpectedBackendResponseError.rawValue
+        let unwrappedError = try XCTUnwrap(obtainedError)
+        expect((unwrappedError as NSError).code) == ErrorCode.unexpectedBackendResponseError.rawValue
     }
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() throws {
@@ -206,9 +206,9 @@ extension OfferingsManagerTests {
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        let receivedError = try XCTUnwrap(receivedError)
-        expect(receivedError.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
+        let unwrappedError = try XCTUnwrap(receivedError)
+        expect(unwrappedError.domain).to(equal(RCPurchasesErrorCodeDomain))
+        expect(unwrappedError.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
     func testFailBackendDeviceCacheClearsOfferingsCache() {

@@ -65,9 +65,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
         var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (receivedEligibilities) in
             completionCalled = true
-            eligibilities = eligibilities
+            eligibilities = receivedEligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -87,9 +87,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
         var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
             completionCalled = true
-            eligibilities = eligibilities
+            eligibilities = receivedEligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -111,9 +111,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
         var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
             completionCalled = true
-            eligibilities = eligibilities
+            eligibilities = receivedEligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -136,9 +136,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
         var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
             completionCalled = true
-            eligibilities = eligibilities
+            eligibilities = receivedEligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())

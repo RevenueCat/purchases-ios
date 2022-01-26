@@ -159,7 +159,6 @@ private extension String {
 
 }
 
-// swiftlint:disable identifier_name
 // Use one line per let in a guard with multiple lets.
 let taco = restaurant.order("taco")
 let coffee = restaurant.order("coffee")

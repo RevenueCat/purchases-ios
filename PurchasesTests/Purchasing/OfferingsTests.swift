@@ -250,7 +250,7 @@ private extension OfferingsTests {
         let products = [
             productIdentifier: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
         ]
-        let offerings = offeringsFactory.createOfferings(from: products, data: [
+        let maybeOfferings = offeringsFactory.createOfferings(from: products, data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -264,7 +264,7 @@ private extension OfferingsTests {
             "current_offering_id": "offering_a"
         ])
 
-        let offerings = try XCTUnwrap(offerings)
+        let offerings = try XCTUnwrap(maybeOfferings)
         expect(offerings.current).toNot(beNil())
         if packageType == PackageType.lifetime {
             expect(offerings.current?.lifetime).toNot(beNil())

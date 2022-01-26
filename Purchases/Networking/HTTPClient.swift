@@ -209,7 +209,7 @@ private extension HTTPClient {
                     } catch let jsonError {
                         Logger.error(Strings.network.parsing_json_error(error: jsonError))
 
-                        let dataAsString = String(data: data ?? Data(), encoding: .utf8) ?? ""
+                        let dataAsString = String(data: data, encoding: .utf8) ?? ""
                         Logger.error(Strings.network.json_data_received(dataString: dataAsString))
 
                         jSONError = jsonError

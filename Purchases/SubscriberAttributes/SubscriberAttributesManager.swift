@@ -95,6 +95,7 @@ class SubscriberAttributesManager {
         setReservedAttribute(.adGroup, value: adGroup, appUserID: appUserID)
     }
 
+    // swiftlint:disable:next identifier_name
     func setAd(_ ad: String?, appUserID: String) {
         setReservedAttribute(.ad, value: ad, appUserID: appUserID)
     }
