@@ -57,8 +57,8 @@ class BackendIntegrationTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
         expect(receivedError).to(beNil())
-        let receivedOfferings = try XCTUnwrap(receivedOfferings)
-        expect(receivedOfferings.all).toNot(beEmpty())
+        let unwrappedOfferings = try XCTUnwrap(receivedOfferings)
+        expect(unwrappedOfferings.all).toNot(beEmpty())
     }
 
     func testCanMakePurchase() throws {
@@ -248,18 +248,18 @@ class BackendIntegrationTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        let productID = try XCTUnwrap(productID)
+        let unwrappedProductID = try XCTUnwrap(productID)
         
-        Purchases.shared.checkTrialOrIntroDiscountEligibility([productID]) { receivedEligibility in
+        Purchases.shared.checkTrialOrIntroductoryPriceEligibility([unwrappedProductID]) { eligibility in
             completionCalled = true
-            receivedEligibility = receivedEligibility
+            receivedEligibility = eligibility
         }
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        var receivedEligibility = try XCTUnwrap(receivedEligibility)
-        expect(receivedEligibility[productID]?.status) == .eligible
+        var unwrappedEligibility = try XCTUnwrap(receivedEligibility)
+        expect(unwrappedEligibility[unwrappedProductID]?.status) == .eligible
         
         purchaseMonthlyOffering { [self] customerInfo, error in
             expect(customerInfo?.entitlements.all.count) == 1
@@ -281,15 +281,15 @@ class BackendIntegrationTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        Purchases.shared.checkTrialOrIntroDiscountEligibility([productID]) { receivedEligibility in
+        Purchases.shared.checkTrialOrIntroductoryPriceEligibility([unwrappedProductID]) { eligibility in
             completionCalled = true
-            receivedEligibility = receivedEligibility
+            receivedEligibility = eligibility
         }
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         
-        receivedEligibility = try XCTUnwrap(receivedEligibility)
-        expect(receivedEligibility[productID]?.status) == .ineligible
+        unwrappedEligibility = try XCTUnwrap(receivedEligibility)
+        expect(unwrappedEligibility[unwrappedProductID]?.status) == .ineligible
     }
     
 }
