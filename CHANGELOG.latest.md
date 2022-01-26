@@ -1,4 +1,3 @@
-- Disable asserts in release builds when using Swift Package Manager
-    https://github.com/RevenueCat/purchases-ios/pull/1061
-- Fixed `.xcframework` not including dSYMs
-    https://github.com/RevenueCat/purchases-ios/pull/1117
+- Added a setting to disable automatic syncinc of purchases. This setting will prevent RevenueCat from listening to 
+the StoreKit queue so you should only use if suggested by RevenueCat support team.
+    https://github.com/RevenueCat/purchases-ios/pull/1219
