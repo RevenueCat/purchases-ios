@@ -1095,12 +1095,17 @@ public extension Purchases {
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
      * You should use this method to determine whether or not you show the user the normal product price or
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+     * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
+     *
+     * - Note: If you're looking to use Promotional Offers use instead,
+     * use ``Purchases/checkPromotionalOfferEligibility``.
      *
      * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
      * definitively compute the eligibilty, most likely because of missing group information, it will return
      * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
      * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
      * version of iOS so that the subscription group can be collected by the SDK.
+     *
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
@@ -1116,6 +1121,10 @@ public extension Purchases {
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
      * You should use this method to determine whether or not you show the user the normal product price or
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+     * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
+     *
+     * - Note: If you're looking to use Promotional Offers use instead,
+     * use ``Purchases/checkPromotionalOfferEligibility``.
      *
      * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
      * definitively compute the eligibilty, most likely because of missing group information, it will return
@@ -1161,7 +1170,10 @@ public extension Purchases {
 #endif
 
     /**
-     * Use this function to retrieve a `Bool` if eligible for a given `StoreProductDiscount` for a given `StoreProduct`.
+     * Use this method to find eligibility for this user for
+     * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
+     * - Note: If you're looking to use free trials or Introductory Offers instead,
+     * use ``Purchases/checkTrialOrIntroductoryPriceEligibility``.
      *
      * - Parameter discount: The `StoreProductDiscount` to apply to the product.
      * - Parameter product: The `StoreProduct` the user intends to purchase.
@@ -1185,7 +1197,10 @@ public extension Purchases {
     }
 
     /**
-     * Use this function to retrieve a `Bool` if eligible for a given `StoreProductDiscount` for a given `StoreProduct`.
+     * Use this method to find eligibility for this user for
+     * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
+     * - Note: If you're looking to use free trials or Introductory Offers instead,
+     * use ``Purchases/checkTrialOrIntroductoryPriceEligibility``.
      *
      * - Parameter discount: The `StoreProductDiscount` to apply to the product.
      * - Parameter product: The `StoreProduct` the user intends to purchase.
