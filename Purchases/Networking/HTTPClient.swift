@@ -107,10 +107,10 @@ private extension HTTPClient {
         let requestHeaders = defaultHeaders.merging(authHeaders)
 
         let uRLRequest = createRequest(httpMethod: httpMethod,
-                                            path: path,
-                                            requestBody: requestBody,
-                                            headers: requestHeaders,
-                                            refreshETag: retried)
+                                       path: path,
+                                       requestBody: requestBody,
+                                       headers: requestHeaders,
+                                       refreshETag: retried)
 
         guard let urlRequest = uRLRequest else {
             if let requestBody = requestBody {
@@ -217,10 +217,10 @@ private extension HTTPClient {
                 }
 
                 hTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
-                                                                                  jsonObject: jsonObject,
-                                                                                  error: jSONError,
-                                                                                  request: request.urlRequest,
-                                                                                  retried: retried)
+                                                                             jsonObject: jsonObject,
+                                                                             error: jSONError,
+                                                                             request: request.urlRequest,
+                                                                             retried: retried)
                 if hTTPResponse == nil {
                     Logger.debug(Strings.network.retrying_request(httpMethod: request.httpMethod,
                                                                   path: request.path))
@@ -233,13 +233,13 @@ private extension HTTPClient {
 
         var networkError = networkError
         if dnsChecker.isBlockedAPIError(networkError),
-            let blockedError = dnsChecker.errorWithBlockedHostFromError(networkError) {
+           let blockedError = dnsChecker.errorWithBlockedHostFromError(networkError) {
             Logger.error(blockedError.description)
             networkError = blockedError
         }
 
         if let httpResponse = hTTPResponse,
-            let completionHandler = completionHandler {
+           let completionHandler = completionHandler {
             let error = jSONError ?? networkError
             completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }

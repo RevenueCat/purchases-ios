@@ -524,12 +524,12 @@ private extension PurchasesOrchestrator {
         var productData: ProductRequestData?
         var presentedOfferingID: String?
         if let product = products.first {
-            let productData = ProductRequestData(with: product)
-            productData = productData
+            let receivedProductData = ProductRequestData(with: product)
+            productData = receivedProductData
 
-            let productID = productData.productIdentifier
-            let presentedOfferingID = presentedOfferingIDsByProductID[productID]
-            presentedOfferingID = presentedOfferingID
+            let productID = receivedProductData.productIdentifier
+            let foundPresentedOfferingID = presentedOfferingIDsByProductID[productID]
+            presentedOfferingID = foundPresentedOfferingID
 
             presentedOfferingIDsByProductID.removeValue(forKey: productID)
         }

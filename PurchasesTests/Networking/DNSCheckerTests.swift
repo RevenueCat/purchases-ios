@@ -63,7 +63,7 @@ class DNSCheckerTests: XCTestCase {
         expect(DNSChecker.isBlockedAPIError(nsErrorWithUserInfo as Error)) == true
         let blockedHostError = DNSChecker.errorWithBlockedHostFromError(nsErrorWithUserInfo)
         expect(blockedHostError) == DNSError.blocked(failedURL: fakeSubscribersURL1,
-                                                          resolvedHost: "0.0.0.0")
+                                                     resolvedHost: "0.0.0.0")
 
     }
 
