@@ -71,10 +71,10 @@ class BackendTests: XCTestCase {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 
-            //            if let body = requestBody {
-            //                assertSnapshot(matching: body, as: .json,
-            //                               file: file, testName: CurrentTestCaseTracker.sanitizedTestName)
-            //            }
+            if let body = requestBody {
+                assertSnapshot(matching: body, as: .json,
+                               file: file, testName: CurrentTestCaseTracker.sanitizedTestName)
+            }
 
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
                                      serially: performSerially,
