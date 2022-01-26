@@ -47,14 +47,9 @@ struct MyStruct {
     // public properties, then internal, then private.
     /// mercury is used for ...
     public let mercury = false
-    // don't use `maybe` for public properties, since it might be confusing to developers
-    // unfamiliar with our naming convention
-    /// venus is used for ...
-    public var saturn: String?
 
-    // use `maybe` prefix for optionals
-    /// venus is used for ...
-    internal var venus: String?
+    /// saturn is used for ...
+    public var saturn: String?
 
     /// eath is used for ...
     public static var Earth = "earth"
@@ -166,10 +161,10 @@ private extension String {
 
 // swiftlint:disable identifier_name
 // Use one line per let in a guard with multiple lets.
-let maybe🌮 = restaurant.order("🥗")
-let maybe🥤 = restaurant.order("☕️")
-guard let veggieTaco = maybe🌮,
-      let coffee = maybe🥤 else {
+let taco = restaurant.order("taco")
+let coffee = restaurant.order("coffee")
+guard let taco = taco,
+      let coffee = coffee else {
     return
 }
 
