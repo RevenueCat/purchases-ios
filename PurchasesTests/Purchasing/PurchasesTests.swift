@@ -933,7 +933,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        let backendErrorCode = BackendErrorCode(maybeCode: ErrorCode.invalidCredentialsError.rawValue)
+        let backendErrorCode = BackendErrorCode(code: ErrorCode.invalidCredentialsError.rawValue)
         self.backend.postReceiptError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
                                                                 backendMessage: "Invalid credentials",
                                                                 finishable: false)

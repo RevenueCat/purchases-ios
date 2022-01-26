@@ -43,12 +43,12 @@ enum BackendErrorCode: Int, Error {
     case invalidSubscriberAttributesBody = 7264
 
     /**
-     * - Parameter maybeCode: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
+     * - Parameter code: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
      */
-    init(maybeCode: Any?) {
-        let maybeCodeInt = BackendErrorCode.maybeInt(maybeCodeObject: maybeCode)
+    init(code: Any?) {
+        let codeInt = BackendErrorCode.maybeInt(codeObject: code)
 
-        guard let codeInt = maybeCodeInt else {
+        guard let codeInt = codeInt else {
             self = .unknownBackendError
             return
         }
@@ -56,13 +56,13 @@ enum BackendErrorCode: Int, Error {
         self = BackendErrorCode(rawValue: codeInt) ?? .unknownBackendError
     }
 
-    static func maybeInt(maybeCodeObject: Any?) -> Int? {
+    static func maybeInt(codeObject: Any?) -> Int? {
         // The code can be a String or Int
-        if let codeString = maybeCodeObject as? String {
+        if let codeString = codeObject as? String {
             return Int(codeString) ?? nil
         }
 
-        return maybeCodeObject as? Int
+        return codeObject as? Int
     }
 
 }

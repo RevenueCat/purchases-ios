@@ -385,12 +385,12 @@ enum ErrorUtils {
 extension ErrorUtils {
 
     static func backendError(withBackendCode backendCode: BackendErrorCode,
-                             backendMessage maybeBackendMessage: String?,
+                             backendMessage backendMessage: String?,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
                              fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         let errorCode = backendCode.toPurchasesErrorCode()
-        let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: maybeBackendMessage)
+        let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
         return error(with: errorCode,
                      message: errorCode.description,

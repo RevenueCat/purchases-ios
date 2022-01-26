@@ -33,14 +33,14 @@ class ManageSubscriptionsHelper {
     @available(tvOS, unavailable)
     func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
         let currentAppUserID = identityManager.currentAppUserID
-        customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
+        customerInfoManager.customerInfo(appUserID: currentAppUserID) { customerInfo, maybeError in
             if let error = maybeError {
                 let message = Strings.failed_to_get_management_url_error_unknown(error: error)
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message.description, error: error)))
                 return
             }
 
-            guard let customerInfo = maybeCustomerInfo else {
+            guard let customerInfo = customerInfo else {
                 let message = Strings.failed_to_get_management_url_nil_customer_info
                 completion(.failure(ErrorUtils.customerInfoError(withMessage: message.description)))
                 return

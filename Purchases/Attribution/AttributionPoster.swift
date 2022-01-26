@@ -112,8 +112,8 @@ class AttributionPoster {
             return
         }
 
-        attributionFetcher.afficheClientAttributionDetails { maybeAttributionDetails, maybeError in
-            guard let attributionDetails = maybeAttributionDetails,
+        attributionFetcher.afficheClientAttributionDetails { attributionDetails, maybeError in
+            guard let attributionDetails = attributionDetails,
                   maybeError == nil else {
                 return
             }

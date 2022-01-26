@@ -102,7 +102,7 @@ private extension HTTPClient {
                         requestBody maybeRequestBody: [String: Any]?,
                         authHeaders: [String: String],
                         retried: Bool = false,
-                        completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+                        completionHandler completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
 
         let requestHeaders = defaultHeaders.merging(authHeaders)
 
@@ -119,7 +119,7 @@ private extension HTTPClient {
                 Logger.error("Could not create request to \(path) without body")
             }
 
-            maybeCompletionHandler?(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            completionHandler?(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
             return
         }
 
@@ -129,7 +129,7 @@ private extension HTTPClient {
                                   authHeaders: authHeaders,
                                   retried: retried,
                                   urlRequest: urlRequest,
-                                  completionHandler: maybeCompletionHandler)
+                                  completionHandler: completionHandler)
 
         if serially && !retried {
             recursiveLock.lock()
@@ -155,7 +155,7 @@ private extension HTTPClient {
                                 request: request,
                                 data: data,
                                 error: error,
-                                completion: maybeCompletionHandler,
+                                completion: completionHandler,
                                 beginNextRequestWhenFinished: serially,
                                 retried: retried)
         }
@@ -167,14 +167,14 @@ private extension HTTPClient {
                         request: HTTPRequest,
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
-                        completion maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                        completion completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
         threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
                                    request: request,
                                    data: maybeData,
                                    error: maybeNetworkError,
-                                   completionHandler: maybeCompletionHandler,
+                                   completionHandler: completionHandler,
                                    beginNextRequestWhenFinished: beginNextRequestWhenFinished,
                                    retried: retried)
     }
@@ -184,7 +184,7 @@ private extension HTTPClient {
                                     request: HTTPRequest,
                                     data maybeData: Data?,
                                     error maybeNetworkError: Error?,
-                                    completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                                    completionHandler completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
                                     retried: Bool) {
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
@@ -239,7 +239,7 @@ private extension HTTPClient {
         }
 
         if let httpResponse = maybeHTTPResponse,
-            let completionHandler = maybeCompletionHandler {
+            let completionHandler = completionHandler {
             let error = maybeJSONError ?? maybeNetworkError
             completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }

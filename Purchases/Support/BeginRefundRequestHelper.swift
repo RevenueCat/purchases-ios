@@ -91,7 +91,7 @@ private extension BeginRefundRequestHelper {
     func getEntitlement(maybeEntitlementID: String?) async throws -> EntitlementInfo {
         let currentAppUserID = identityManager.currentAppUserID
         return try await withCheckedThrowingContinuation { continuation in
-            customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
+            customerInfoManager.customerInfo(appUserID: currentAppUserID) { customerInfo, maybeError in
                 if let error = maybeError {
                     let message = Strings.purchase.begin_refund_customer_info_error(
                         entitlementID: maybeEntitlementID).description
@@ -101,7 +101,7 @@ private extension BeginRefundRequestHelper {
                     return
                 }
 
-                guard let customerInfo = maybeCustomerInfo else {
+                guard let customerInfo = customerInfo else {
                     let message = Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
                         entitlementID: maybeEntitlementID).description
                     continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))

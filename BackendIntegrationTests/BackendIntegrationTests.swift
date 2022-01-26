@@ -12,11 +12,11 @@ import Nimble
 import StoreKitTest
 
 class TestPurchaseDelegate: NSObject, PurchasesDelegate {
-    var maybeCustomerInfo: CustomerInfo?
+    var customerInfo: CustomerInfo?
     var customerInfoUpdateCount = 0
 
     func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
-        self.maybeCustomerInfo = customerInfo
+        self.customerInfo = customerInfo
         customerInfoUpdateCount += 1
     }
 
@@ -66,7 +66,7 @@ class BackendIntegrationTests: XCTestCase {
         purchaseMonthlyOffering()
 
         waitUntilEntitlementsGoThrough()
-        let entitlements = purchasesDelegate.maybeCustomerInfo?.entitlements
+        let entitlements = purchasesDelegate.customerInfo?.entitlements
         expect(entitlements?["premium"]?.isActive) == true
     }
 
@@ -76,7 +76,7 @@ class BackendIntegrationTests: XCTestCase {
         var completionCalled = false
         purchaseMonthlyOffering { [self] customerInfo, error in
             expect(customerInfo?.entitlements.all.count) == 1
-            let entitlements = self.purchasesDelegate.maybeCustomerInfo?.entitlements
+            let entitlements = self.purchasesDelegate.customerInfo?.entitlements
             expect(entitlements?["premium"]?.isActive) == true
 
             let anonUserID = Purchases.shared.appUserID
@@ -199,9 +199,9 @@ class BackendIntegrationTests: XCTestCase {
             expect(error).to(beNil())
         }
 
-        expect(self.purchasesDelegate.maybeCustomerInfo?.originalAppUserId)
+        expect(self.purchasesDelegate.customerInfo?.originalAppUserId)
             .toEventually(equal(userID2), timeout: .seconds(10))
-        assertNoPurchases(purchasesDelegate.maybeCustomerInfo)
+        assertNoPurchases(purchasesDelegate.customerInfo)
     }
 
     func testLogOutRemovesEntitlements() {
@@ -263,7 +263,7 @@ class BackendIntegrationTests: XCTestCase {
         
         purchaseMonthlyOffering { [self] customerInfo, error in
             expect(customerInfo?.entitlements.all.count) == 1
-            let entitlements = self.purchasesDelegate.maybeCustomerInfo?.entitlements
+            let entitlements = self.purchasesDelegate.customerInfo?.entitlements
             expect(entitlements?["premium"]?.isActive) == true
             
             let anonUserID = Purchases.shared.appUserID
@@ -331,7 +331,7 @@ private extension BackendIntegrationTests {
     }
 
     func waitUntilEntitlementsGoThrough() {
-        expect(self.purchasesDelegate.maybeCustomerInfo?.entitlements.all.count)
+        expect(self.purchasesDelegate.customerInfo?.entitlements.all.count)
             .toEventually(equal(1), timeout: .seconds(10))
     }
 
