@@ -147,7 +147,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
 
         sk2Helper.transactionVerified = false
-        sk2Helper.maybeMockSK2Error = expectedError
+        sk2Helper.mockSK2Error = expectedError
 
         do {
             _ = try await helper.beginRefundRequest(forProduct: mockProductID)
@@ -166,7 +166,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        sk2Helper.maybeMockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
+        sk2Helper.mockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
         sk2Helper.transactionVerified = true
 
         let receivedStatus = try await helper.beginRefundRequest(forProduct: mockProductID)
@@ -182,7 +182,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        sk2Helper.maybeMockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
+        sk2Helper.mockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
 
         let receivedStatus = try await helper.beginRefundRequest(forProduct: mockProductID)
 
@@ -196,7 +196,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
-        sk2Helper.maybeMockSK2Error = expectedError
+        sk2Helper.mockSK2Error = expectedError
 
         do {
             _ = try await helper.beginRefundRequest(forProduct: mockProductID)

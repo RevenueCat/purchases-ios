@@ -161,20 +161,20 @@ class PurchasesOrchestrator {
                 subscriptionGroup: subscriptionGroupIdentifier,
                 receiptData: receiptData,
                 appUserID: self.appUserID
-            ) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, error in
+            ) { maybeSignature, keyIdentifier, nonce, maybeTimestamp, error in
                 if let error = error {
                     completion(nil, error)
                     return
                 }
-                guard let keyIdentifier = maybeKeyIdentifier,
-                      let nonce = maybeNonce,
+                guard let keyIdentifier = keyIdentifier,
+                      let nonce = nonce,
                       let signature = maybeSignature,
                       let timestamp = maybeTimestamp else {
                           completion(
                             nil,
                             ErrorUtils.unexpectedBackendResponseError(extraUserInfo: [
-                                "keyIdentifier": String(describing: maybeKeyIdentifier),
-                                "nonce": String(describing: maybeNonce),
+                                "keyIdentifier": String(describing: keyIdentifier),
+                                "nonce": String(describing: nonce),
                                 "signature": String(describing: maybeSignature),
                                 "timestamp": String(describing: maybeTimestamp)
                             ])

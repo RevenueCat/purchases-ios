@@ -51,12 +51,12 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offeringsAsync() async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
-            getOfferings { maybeOfferings, error in
+            getOfferings { offerings, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
-                guard let offerings = maybeOfferings else {
+                guard let offerings = offerings else {
                     fatalError("Expected non-nil result 'result' for nil error")
                 }
                 continuation.resume(returning: offerings)

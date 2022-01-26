@@ -52,16 +52,16 @@ extension OfferingsManagerTests {
         mockBackend.stubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
 
         // when
-        var maybeObtainedOfferings: Offerings?
+        var obtainedOfferings: Offerings?
         var completionCalled = false
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, _ in
-            maybeObtainedOfferings = offerings
+            obtainedOfferings = offerings
             completionCalled = true
         }
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        let obtainedOfferings = try XCTUnwrap(maybeObtainedOfferings)
+        let obtainedOfferings = try XCTUnwrap(obtainedOfferings)
         expect(obtainedOfferings["base"]).to(beNil())
     }
 
@@ -70,16 +70,16 @@ extension OfferingsManagerTests {
         mockBackend.stubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
 
         // when
-        var maybeObtainedOfferings: Offerings?
+        var obtainedOfferings: Offerings?
         var completionCalled = false
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, _ in
-            maybeObtainedOfferings = offerings
+            obtainedOfferings = offerings
             completionCalled = true
         }
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        let obtainedOfferings = try XCTUnwrap(maybeObtainedOfferings)
+        let obtainedOfferings = try XCTUnwrap(obtainedOfferings)
         expect(obtainedOfferings["base"]).toNot(beNil())
         expect(obtainedOfferings["base"]!.monthly).toNot(beNil())
         expect(obtainedOfferings["base"]!.monthly?.storeProduct).toNot(beNil())
@@ -112,8 +112,8 @@ extension OfferingsManagerTests {
         var obtainedOfferings: Offerings?
         var completionCalled = false
         var obtainedError: Error?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, error in
-            obtainedOfferings = maybeOfferings
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, error in
+            obtainedOfferings = offerings
             completionCalled = true
             obtainedError = error
         }
@@ -134,8 +134,8 @@ extension OfferingsManagerTests {
         var obtainedOfferings: Offerings?
         var completionCalled = false
         var obtainedError: Error?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, error in
-            obtainedOfferings = maybeOfferings
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, error in
+            obtainedOfferings = offerings
             completionCalled = true
             obtainedError = error
         }
@@ -156,8 +156,8 @@ extension OfferingsManagerTests {
         var obtainedOfferings: Offerings?
         var completionCalled = false
         var obtainedError: Error?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, error in
-            obtainedOfferings = maybeOfferings
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, error in
+            obtainedOfferings = offerings
             completionCalled = true
             obtainedError = error
         }
@@ -175,19 +175,19 @@ extension OfferingsManagerTests {
         mockOfferingsFactory.emptyOfferings = true
 
         // when
-        var maybeObtainedOfferings: Offerings?
+        var obtainedOfferings: Offerings?
         var completionCalled = false
-        var maybeObtainedError: Error?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, error in
-            maybeObtainedOfferings = maybeOfferings
+        var obtainedError: Error?
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, error in
+            obtainedOfferings = offerings
             completionCalled = true
-            maybeObtainedError = error
+            obtainedError = error
         }
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        expect(maybeObtainedOfferings).to(beNil())
-        let obtainedError = try XCTUnwrap(maybeObtainedError)
+        expect(obtainedOfferings).to(beNil())
+        let obtainedError = try XCTUnwrap(obtainedError)
         expect((obtainedError as NSError).code) == ErrorCode.unexpectedBackendResponseError.rawValue
     }
 

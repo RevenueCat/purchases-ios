@@ -71,20 +71,20 @@ class SubscriberAttributesManager {
         setAttributionID(fBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
     }
 
-    func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {
-        setAttributionID(maybeMparticleID, forNetworkID: .mpParticleID, appUserID: appUserID)
+    func setMparticleID(_ mparticleID: String?, appUserID: String) {
+        setAttributionID(mparticleID, forNetworkID: .mpParticleID, appUserID: appUserID)
     }
 
-    func setOnesignalID(_ maybeOnesignalID: String?, appUserID: String) {
-        setAttributionID(maybeOnesignalID, forNetworkID: .oneSignalID, appUserID: appUserID)
+    func setOnesignalID(_ onesignalID: String?, appUserID: String) {
+        setAttributionID(onesignalID, forNetworkID: .oneSignalID, appUserID: appUserID)
     }
 
     func setAirshipChannelID(_ airshipChannelID: String?, appUserID: String) {
         setAttributionID(airshipChannelID, forNetworkID: .airshipChannelID, appUserID: appUserID)
     }
 
-    func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
-        setReservedAttribute(.mediaSource, value: maybeMediaSource, appUserID: appUserID)
+    func setMediaSource(_ mediaSource: String?, appUserID: String) {
+        setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
     }
 
     func setCampaign(_ campaign: String?, appUserID: String) {
@@ -99,8 +99,8 @@ class SubscriberAttributesManager {
         setReservedAttribute(.ad, value: ad, appUserID: appUserID)
     }
 
-    func setKeyword(_ maybeKeyword: String?, appUserID: String) {
-        setReservedAttribute(.keyword, value: maybeKeyword, appUserID: appUserID)
+    func setKeyword(_ keyword: String?, appUserID: String) {
+        setReservedAttribute(.keyword, value: keyword, appUserID: appUserID)
     }
 
     func setCreative(_ creative: String?, appUserID: String) {

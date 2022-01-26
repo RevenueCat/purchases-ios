@@ -234,7 +234,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         let errorCode = 400 + arc4random() % 50
         var correctResponse = false
-        var maybeMessage: String?
+        var message: String?
 
         stub(condition: isPath("/v1" + path)) { _ in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
@@ -250,11 +250,11 @@ class HTTPClientTests: XCTestCase {
                                       headers: [:]) { (status, data, error) in
             correctResponse = (status == errorCode) && (data != nil) && (error == nil)
             if data != nil {
-                maybeMessage = data?["message"] as? String
+                message = data?["message"] as? String
             }
         }
 
-        expect(maybeMessage).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
+        expect(message).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
         expect(correctResponse).toEventually(beTrue(), timeout: .seconds(1))
     }
 
@@ -262,7 +262,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         let errorCode = 500 + arc4random() % 50
         var correctResponse = false
-        var maybeMessage: String?
+        var message: String?
 
         stub(condition: isPath("/v1" + path)) { _ in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
@@ -278,11 +278,11 @@ class HTTPClientTests: XCTestCase {
                                       headers: [:]) { (status, data, error) in
             correctResponse = (status == errorCode) && (data != nil) && (error == nil)
             if data != nil {
-                maybeMessage = data?["message"] as? String
+                message = data?["message"] as? String
             }
         }
 
-        expect(maybeMessage).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
+        expect(message).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
         expect(correctResponse).toEventually(beTrue(), timeout: .seconds(1))
     }
 
@@ -313,7 +313,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
 
         var successIsTrue = false
-        var maybeMessage: String?
+        var message: String?
 
         stub(condition: isPath("/v1" + path)) { _ in
             let json = "{\"message\": \"something is great up in the cloud\"}"
@@ -325,11 +325,11 @@ class HTTPClientTests: XCTestCase {
                                       headers: [:]) { (status, data, error) in
             successIsTrue = (status == 200) && (error == nil)
             if data != nil {
-                maybeMessage = data?["message"] as? String
+                message = data?["message"] as? String
             }
         }
 
-        expect(maybeMessage).toEventually(equal("something is great up in the cloud"), timeout: .seconds(1))
+        expect(message).toEventually(equal("something is great up in the cloud"), timeout: .seconds(1))
         expect(successIsTrue).toEventually(beTrue(), timeout: .seconds(1))
     }
 

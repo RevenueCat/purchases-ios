@@ -166,14 +166,14 @@ private extension HTTPClient {
     func handleResponse(urlResponse maybeURLResponse: URLResponse?,
                         request: HTTPRequest,
                         data data: Data?,
-                        error maybeNetworkError: Error?,
+                        error networkError: Error?,
                         completion completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
         threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
                                    request: request,
                                    data: data,
-                                   error: maybeNetworkError,
+                                   error: networkError,
                                    completionHandler: completionHandler,
                                    beginNextRequestWhenFinished: beginNextRequestWhenFinished,
                                    retried: retried)
@@ -183,7 +183,7 @@ private extension HTTPClient {
     func threadUnsafeHandleResponse(urlResponse maybeURLResponse: URLResponse?,
                                     request: HTTPRequest,
                                     data data: Data?,
-                                    error maybeNetworkError: Error?,
+                                    error networkError: Error?,
                                     completionHandler completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
                                     retried: Bool) {
@@ -193,7 +193,7 @@ private extension HTTPClient {
         var hTTPResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         var jSONError: Error?
 
-        if maybeNetworkError == nil {
+        if networkError == nil {
             if let httpURLResponse = maybeURLResponse as? HTTPURLResponse {
                 statusCode = httpURLResponse.statusCode
                 Logger.debug(Strings.network.api_request_completed(httpMethod: request.httpMethod,
@@ -231,16 +231,16 @@ private extension HTTPClient {
             }
         }
 
-        var maybeNetworkError = maybeNetworkError
-        if dnsChecker.isBlockedAPIError(maybeNetworkError),
-            let blockedError = dnsChecker.errorWithBlockedHostFromError(maybeNetworkError) {
+        var networkError = networkError
+        if dnsChecker.isBlockedAPIError(networkError),
+            let blockedError = dnsChecker.errorWithBlockedHostFromError(networkError) {
             Logger.error(blockedError.description)
-            maybeNetworkError = blockedError
+            networkError = blockedError
         }
 
         if let httpResponse = hTTPResponse,
             let completionHandler = completionHandler {
-            let error = jSONError ?? maybeNetworkError
+            let error = jSONError ?? networkError
             completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }
 
