@@ -21,8 +21,8 @@ extension Error {
      * debugging.
      * - Returns: a new error matching `self` but with the `extraContext` and `error` added.
      */
-    func addingUnderlyingError(_ maybeError: Error?, extraContext: String? = nil) -> Error {
-        guard let underlyingNSError = maybeError as NSError? else {
+    func addingUnderlyingError(_ error: Error?, extraContext: String? = nil) -> Error {
+        guard let underlyingNSError = error as NSError? else {
             return self
         }
 

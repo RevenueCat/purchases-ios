@@ -348,9 +348,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockManageSubsHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
         var receivedError: Error?
         var completionCalled = false
-        orchestrator.showManageSubscription { maybeError in
+        orchestrator.showManageSubscription { error in
             completionCalled = true
-            receivedError = maybeError
+            receivedError = error
         }
 
         expect(completionCalled).toEventually(beTrue())

@@ -166,7 +166,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               offeringsManager: mockOfferingsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               trialOrIntroPriceEligibilityChecker: trialOrIntroductoryPriceEligibilityChecker)
-        purchasesOrchestrator.maybeDelegate = purchases
+        purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }

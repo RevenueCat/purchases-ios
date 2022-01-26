@@ -71,13 +71,13 @@ class OfferingsManager {
     func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ((Offerings?, Error?) -> Void)?) {
         deviceCache.setOfferingsCacheTimestampToNow()
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
-            self.backend.getOfferings(appUserID: appUserID) { maybeData, maybeError in
-                if let data = maybeData {
+            self.backend.getOfferings(appUserID: appUserID) { data, error in
+                if let data = data {
                     self.handleOfferingsBackendResult(with: data, completion: completion)
                     return
                 }
 
-                let error = maybeError ?? ErrorUtils.unexpectedBackendResponseError()
+                let error = error ?? ErrorUtils.unexpectedBackendResponseError()
                 self.handleOfferingsUpdateError(error, completion: completion)
             }
         }

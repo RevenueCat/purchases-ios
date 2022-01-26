@@ -74,21 +74,21 @@ class IdentityManager {
 
         guard newAppUserID != currentAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
-            customerInfoManager.customerInfo(appUserID: currentAppUserID) { customerInfo, maybeError in
-                completion(customerInfo, false, maybeError)
+            customerInfoManager.customerInfo(appUserID: currentAppUserID) { customerInfo, error in
+                completion(customerInfo, false, error)
             }
             return
         }
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { customerInfo, created, maybeError in
-            if maybeError == nil,
+                      newAppUserID: newAppUserID) { customerInfo, created, error in
+            if error == nil,
                let customerInfo = customerInfo {
                 self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
             }
 
-            completion(customerInfo, created, maybeError)
+            completion(customerInfo, created, error)
         }
     }
 

@@ -34,7 +34,7 @@ enum CustomerInfoStrings {
 
     case missing_json_object_instantiation_error(maybeJsonData: [String: Any]?)
     case cant_instantiate_from_json_object(maybeJsonObject: [String: Any]?)
-    case cant_parse_request_date_from_json(maybeDate: Any?)
+    case cant_parse_request_date_from_json(date: Any?)
     case cant_parse_request_date_from_string(string: String)
 
 }
@@ -83,8 +83,8 @@ extension CustomerInfoStrings: CustomStringConvertible {
                 message += ":\n\(jsonObject.debugDescription)"
             }
             return message
-        case .cant_parse_request_date_from_json(let maybeDate):
-            return "Unable to parse 'request_date' from CustomerInfo json: \(String(describing: maybeDate))"
+        case .cant_parse_request_date_from_json(let date):
+            return "Unable to parse 'request_date' from CustomerInfo json: \(String(describing: date))"
         case .cant_parse_request_date_from_string(let string):
             return "Unable to parse 'request_date' from CustomerInfo date string: \(string)"
         }

@@ -83,8 +83,8 @@ private extension ReceiptFetcher {
 
     func refreshReceipt(_ completion: @escaping (Data) -> Void) {
         requestFetcher.fetchReceiptData {
-            let maybeData = self.receiptData()
-            guard let receiptData = maybeData,
+            let data = self.receiptData()
+            guard let receiptData = data,
                   !receiptData.isEmpty else {
                       Logger.appleWarning(Strings.receipt.unable_to_load_receipt)
                       completion(Data())

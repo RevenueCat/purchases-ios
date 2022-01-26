@@ -27,8 +27,8 @@ extension ISO8601DateFormatter: DateFormatterType {}
 
 extension DateFormatterType {
 
-    func date(from maybeDateString: String?) -> Date? {
-        guard let dateString = maybeDateString else { return nil }
+    func date(from dateString: String?) -> Date? {
+        guard let dateString = dateString else { return nil }
         return date(from: dateString)
     }
 

@@ -19,8 +19,8 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
-            logIn(appUserID) { customerInfo, created, maybeError in
-                if let error = maybeError {
+            logIn(appUserID) { customerInfo, created, error in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -35,8 +35,8 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOutAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            logOut { customerInfo, maybeError in
-                if let error = maybeError {
+            logOut { customerInfo, error in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -51,8 +51,8 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offeringsAsync() async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
-            getOfferings { maybeOfferings, maybeError in
-                if let error = maybeError {
+            getOfferings { maybeOfferings, error in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -67,8 +67,8 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfoAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            getCustomerInfo { customerInfo, maybeError in
-                if let error = maybeError {
+            getCustomerInfo { customerInfo, error in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -94,8 +94,8 @@ extension Purchases {
     // swiftlint:disable:next large_tuple
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
-            purchase(product: product) { maybeTransaction, customerInfo, maybeError, userCancelled in
-                if let error = maybeError {
+            purchase(product: product) { maybeTransaction, customerInfo, error, userCancelled in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -116,8 +116,8 @@ extension Purchases {
     // swiftlint:disable:next large_tuple
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
-            purchase(package: package) { maybeTransaction, customerInfo, maybeError, userCancelled in
-                if let error = maybeError {
+            purchase(package: package) { maybeTransaction, customerInfo, error, userCancelled in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -139,8 +139,8 @@ extension Purchases {
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
-                     discount: discount) { maybeTransaction, customerInfo, maybeError, userCancelled in
-                if let error = maybeError {
+                     discount: discount) { maybeTransaction, customerInfo, error, userCancelled in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -162,8 +162,8 @@ extension Purchases {
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package,
-                     discount: discount) { maybeTransaction, customerInfo, maybeError, userCancelled in
-                if let error = maybeError {
+                     discount: discount) { maybeTransaction, customerInfo, error, userCancelled in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -182,8 +182,8 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            syncPurchases { customerInfo, maybeError in
-                if let error = maybeError {
+            syncPurchases { customerInfo, error in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
@@ -198,8 +198,8 @@ extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            restorePurchases { customerInfo, maybeError in
-                if let error = maybeError {
+            restorePurchases { customerInfo, error in
+                if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }

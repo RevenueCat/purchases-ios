@@ -112,9 +112,9 @@ class AttributionPoster {
             return
         }
 
-        attributionFetcher.afficheClientAttributionDetails { attributionDetails, maybeError in
+        attributionFetcher.afficheClientAttributionDetails { attributionDetails, error in
             guard let attributionDetails = attributionDetails,
-                  maybeError == nil else {
+                  error == nil else {
                 return
             }
 
@@ -164,8 +164,8 @@ class AttributionPoster {
                                network: AttributionNetwork,
                                appUserID: String,
                                newDictToCache: [String: String]) {
-        backend.post(attributionData: newData, network: network, appUserID: appUserID) { maybeError in
-            guard maybeError == nil else {
+        backend.post(attributionData: newData, network: network, appUserID: appUserID) { error in
+            guard error == nil else {
                 return
             }
 

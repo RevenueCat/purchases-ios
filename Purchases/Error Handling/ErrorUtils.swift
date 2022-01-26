@@ -114,11 +114,11 @@ enum ErrorUtils {
      */
     static func unexpectedBackendResponse(
         withSubError maybeSubError: Error?,
-        extraContext maybeExtraContext: String? = nil,
+        extraContext extraContext: String? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         return backendResponseError(withSubError: maybeSubError,
-                                    extraContext: maybeExtraContext,
+                                    extraContext: extraContext,
                                     fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -437,7 +437,7 @@ private extension ErrorUtils {
 
     static func backendResponseError(
         withSubError maybeSubError: Error?,
-        extraContext maybeExtraContext: String?,
+        extraContext extraContext: String?,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         var userInfo: [NSError.UserInfoKey: Any] = [:]
@@ -446,7 +446,7 @@ private extension ErrorUtils {
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = errorDescription
         userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeSubError
         userInfo[ErrorDetails.readableErrorCodeKey] = ErrorCode.unexpectedBackendResponseError.codeName
-        userInfo[ErrorDetails.extraContextKey] = maybeExtraContext
+        userInfo[ErrorDetails.extraContextKey] = extraContext
         userInfo[ErrorDetails.fileKey] = "\(fileName):\(line)"
         userInfo[ErrorDetails.functionKey] = functionName
 

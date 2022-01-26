@@ -64,14 +64,14 @@ class TrialOrIntroPriceEligibilityChecker {
 
     func sk1CheckEligibility(_ productIdentifiers: [String],
                              completion: @escaping ReceiveIntroEligibilityBlock) {
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
+        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { data in
             if #available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *),
-               let data = maybeData {
+               let data = data {
                 self.sk1CheckEligibility(with: data,
                                          productIdentifiers: productIdentifiers,
                                          completion: completion)
             } else {
-                self.getIntroEligibility(with: maybeData ?? Data(),
+                self.getIntroEligibility(with: data ?? Data(),
                                          productIdentifiers: productIdentifiers,
                                          completion: completion)
             }
@@ -114,8 +114,8 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
                              completion: @escaping ReceiveIntroEligibilityBlock) {
         introEligibilityCalculator
             .checkEligibility(with: receiptData,
-                              productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
-                if let error = maybeError {
+                              productIdentifiers: Set(productIdentifiers)) { receivedEligibility, error in
+                if let error = error {
                     Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
                     self.getIntroEligibility(with: receiptData,
                                              productIdentifiers: productIdentifiers,
@@ -178,11 +178,11 @@ private extension TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                         receiptData: receiptData,
-                                         productIdentifiers: idsToFetchFromBackend) { backendResult, maybeError in
+        self.backend.fetchIntroEligibility(appUserID: self.appUserID,
+                                           receiptData: receiptData,
+                                           productIdentifiers: idsToFetchFromBackend) { backendResult, error in
             var result = backendResult
-            if let error = maybeError {
+            if let error = error {
                 Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
                 let resultWithUnknowns = productIdentifiers.reduce(into: [:]) { resultDict, productId in
                     resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)

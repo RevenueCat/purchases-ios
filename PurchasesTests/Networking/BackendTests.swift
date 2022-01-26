@@ -1648,9 +1648,9 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { customerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
+            receivedError = error
             receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
@@ -1682,9 +1682,9 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { customerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
+            receivedError = error
             receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
@@ -1715,9 +1715,9 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { customerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
+            receivedError = error
             receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
@@ -1750,9 +1750,9 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { customerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
+            receivedError = error
             receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
@@ -1778,9 +1778,9 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { customerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
+            receivedError = error
             receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
@@ -1805,9 +1805,9 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { customerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
+            receivedError = error
             receivedCustomerInfo = customerInfo
             receivedCreated = created
         }

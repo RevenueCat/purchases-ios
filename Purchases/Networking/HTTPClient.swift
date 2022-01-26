@@ -165,14 +165,14 @@ private extension HTTPClient {
     // swiftlint:disable:next function_parameter_count
     func handleResponse(urlResponse maybeURLResponse: URLResponse?,
                         request: HTTPRequest,
-                        data maybeData: Data?,
+                        data data: Data?,
                         error maybeNetworkError: Error?,
                         completion completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
         threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
                                    request: request,
-                                   data: maybeData,
+                                   data: data,
                                    error: maybeNetworkError,
                                    completionHandler: completionHandler,
                                    beginNextRequestWhenFinished: beginNextRequestWhenFinished,
@@ -182,7 +182,7 @@ private extension HTTPClient {
     // swiftlint:disable:next function_body_length function_parameter_count
     func threadUnsafeHandleResponse(urlResponse maybeURLResponse: URLResponse?,
                                     request: HTTPRequest,
-                                    data maybeData: Data?,
+                                    data data: Data?,
                                     error maybeNetworkError: Error?,
                                     completionHandler completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
@@ -200,16 +200,16 @@ private extension HTTPClient {
                                                                    path: request.path,
                                                                    httpCode: statusCode))
 
-                if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
+                if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || data == nil {
                     jsonObject = [:]
-                } else if let data = maybeData {
+                } else if let data = data {
                     do {
                         jsonObject = try JSONSerialization.jsonObject(with: data,
                                                                       options: .mutableContainers) as? [String: Any]
                     } catch let jsonError {
                         Logger.error(Strings.network.parsing_json_error(error: jsonError))
 
-                        let dataAsString = String(data: maybeData ?? Data(), encoding: .utf8) ?? ""
+                        let dataAsString = String(data: data ?? Data(), encoding: .utf8) ?? ""
                         Logger.error(Strings.network.json_data_received(dataString: dataAsString))
 
                         maybeJSONError = jsonError

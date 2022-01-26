@@ -112,10 +112,10 @@ extension OfferingsManagerTests {
         var obtainedOfferings: Offerings?
         var completionCalled = false
         var obtainedError: Error?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, maybeError in
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, error in
             obtainedOfferings = maybeOfferings
             completionCalled = true
-            obtainedError = maybeError
+            obtainedError = error
         }
 
         // then
@@ -134,10 +134,10 @@ extension OfferingsManagerTests {
         var obtainedOfferings: Offerings?
         var completionCalled = false
         var obtainedError: Error?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, maybeError in
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, error in
             obtainedOfferings = maybeOfferings
             completionCalled = true
-            obtainedError = maybeError
+            obtainedError = error
         }
 
         // then
@@ -156,10 +156,10 @@ extension OfferingsManagerTests {
         var obtainedOfferings: Offerings?
         var completionCalled = false
         var obtainedError: Error?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, maybeError in
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, error in
             obtainedOfferings = maybeOfferings
             completionCalled = true
-            obtainedError = maybeError
+            obtainedError = error
         }
 
         // then
@@ -178,10 +178,10 @@ extension OfferingsManagerTests {
         var maybeObtainedOfferings: Offerings?
         var completionCalled = false
         var maybeObtainedError: Error?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, maybeError in
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, error in
             maybeObtainedOfferings = maybeOfferings
             completionCalled = true
-            maybeObtainedError = maybeError
+            maybeObtainedError = error
         }
 
         // then

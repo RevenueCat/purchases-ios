@@ -188,7 +188,7 @@ import Foundation
         }
 
         guard let requestDateString = data["request_date"] as? String else {
-            Logger.error(Strings.customerInfo.cant_parse_request_date_from_json(maybeDate: data["request_date"]))
+            Logger.error(Strings.customerInfo.cant_parse_request_date_from_json(date: data["request_date"]))
             throw CustomerInfoError.requestDateFromJson
         }
 

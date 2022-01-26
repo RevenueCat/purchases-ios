@@ -64,14 +64,14 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroductoryPriceEligibilityResult = (stubbedEligibility, nil)
 
         var completionCalled = false
-        var maybeEligibilities: [String: IntroEligibility]?
+        var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
             completionCalled = true
-            maybeEligibilities = eligibilities
+            eligibilities = eligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
-        let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
+        let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities.count) == 1
     }
 
@@ -86,14 +86,14 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
         var completionCalled = false
-        var maybeEligibilities: [String: IntroEligibility]?
+        var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
             completionCalled = true
-            maybeEligibilities = eligibilities
+            eligibilities = eligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
-        let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
+        let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities.count) == 1
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.eligible
 
@@ -110,14 +110,14 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
         var completionCalled = false
-        var maybeEligibilities: [String: IntroEligibility]?
+        var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
             completionCalled = true
-            maybeEligibilities = eligibilities
+            eligibilities = eligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
-        let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
+        let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities.count) == 1
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.eligible
 
@@ -135,14 +135,14 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
         mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
         var completionCalled = false
-        var maybeEligibilities: [String: IntroEligibility]?
+        var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
             completionCalled = true
-            maybeEligibilities = eligibilities
+            eligibilities = eligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
-        let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
+        let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities.count) == 1
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.unknown
     }

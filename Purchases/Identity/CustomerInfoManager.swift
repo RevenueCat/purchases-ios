@@ -37,8 +37,8 @@ class CustomerInfoManager {
                                    completion completion: ((CustomerInfo?, Error?) -> Void)?) {
         deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
-            self.backend.getSubscriberData(appUserID: appUserID) { customerInfo, maybeError in
-                if let error = maybeError {
+            self.backend.getSubscriberData(appUserID: appUserID) { customerInfo, error in
+                if let error = error {
                     self.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
                     Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error: error))
                 } else if let info = customerInfo {
@@ -48,7 +48,7 @@ class CustomerInfoManager {
 
                 if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
-                        completion(customerInfo, maybeError)
+                        completion(customerInfo, error)
                     }
                 }
 

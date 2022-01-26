@@ -38,16 +38,16 @@ class SubscriberAttributesManager {
         }
     }
 
-    func setEmail(_ maybeEmail: String?, appUserID: String) {
-        setReservedAttribute(.email, value: maybeEmail, appUserID: appUserID)
+    func setEmail(_ email: String?, appUserID: String) {
+        setReservedAttribute(.email, value: email, appUserID: appUserID)
     }
 
     func setPhoneNumber(_ maybePhoneNumber: String?, appUserID: String) {
         setReservedAttribute(.phoneNumber, value: maybePhoneNumber, appUserID: appUserID)
     }
 
-    func setDisplayName(_ maybeDisplayName: String?, appUserID: String) {
-        setReservedAttribute(.displayName, value: maybeDisplayName, appUserID: appUserID)
+    func setDisplayName(_ displayName: String?, appUserID: String) {
+        setReservedAttribute(.displayName, value: displayName, appUserID: appUserID)
     }
 
     func setPushToken(_ maybePushToken: Data?, appUserID: String) {

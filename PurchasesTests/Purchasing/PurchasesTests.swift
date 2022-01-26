@@ -355,7 +355,7 @@ class PurchasesTests: XCTestCase {
                               purchasesOrchestrator: purchasesOrchestrator,
                               trialOrIntroPriceEligibilityChecker: trialOrIntroPriceEligibilityChecker)
 
-        purchasesOrchestrator.maybeDelegate = purchases
+        purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }

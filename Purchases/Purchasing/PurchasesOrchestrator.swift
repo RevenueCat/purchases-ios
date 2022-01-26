@@ -34,7 +34,7 @@ class PurchasesOrchestrator {
         }
     }
 
-    @objc weak var maybeDelegate: PurchasesOrchestratorDelegate?
+    @objc weak var delegate: PurchasesOrchestratorDelegate?
 
     private var allowSharingAppStoreAccount: Bool?
     private var presentedOfferingIDsByProductID: [String: String] = [:]
@@ -161,8 +161,8 @@ class PurchasesOrchestrator {
                 subscriptionGroup: subscriptionGroupIdentifier,
                 receiptData: receiptData,
                 appUserID: self.appUserID
-            ) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
-                if let error = maybeError {
+            ) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, error in
+                if let error = error {
                     completion(nil, error)
                     return
                 }
@@ -396,7 +396,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
                          shouldAddStorePayment payment: SKPayment,
                          for product: SK1Product) -> Bool {
         productsManager.cacheProduct(product)
-        guard let delegate = maybeDelegate else { return false }
+        guard let delegate = delegate else { return false }
 
         let storeProduct = StoreProduct(sk1Product: product)
         lock.lock()
@@ -430,7 +430,7 @@ private extension PurchasesOrchestrator {
                 self.handleReceiptPost(withTransaction: transaction,
                                        customerInfo: nil,
                                        maybeSubscriberAttributes: nil,
-                                       maybeError: ErrorUtils.missingReceiptFileError())
+                                       error: ErrorUtils.missingReceiptFileError())
             }
         }
     }
@@ -507,7 +507,7 @@ private extension PurchasesOrchestrator {
             self.handleReceiptPost(withTransaction: transaction,
                                    customerInfo: nil,
                                    maybeSubscriberAttributes: nil,
-                                   maybeError: ErrorUtils.unknownError())
+                                   error: ErrorUtils.unknownError())
             return
         }
 
@@ -541,26 +541,26 @@ private extension PurchasesOrchestrator {
                      productData: maybeProductData,
                      presentedOfferingIdentifier: maybePresentedOfferingID,
                      observerMode: !finishTransactions,
-                     subscriberAttributes: unsyncedAttributes) { customerInfo, maybeError in
+                     subscriberAttributes: unsyncedAttributes) { customerInfo, error in
             self.handleReceiptPost(withTransaction: transaction,
                                    customerInfo: customerInfo,
                                    maybeSubscriberAttributes: unsyncedAttributes,
-                                   maybeError: maybeError)
+                                   error: error)
         }
     }
 
     func handleReceiptPost(withTransaction transaction: SKPaymentTransaction,
                            customerInfo: CustomerInfo?,
                            maybeSubscriberAttributes: SubscriberAttributeDict?,
-                           maybeError: Error?) {
+                           error: Error?) {
         operationDispatcher.dispatchOnMainThread {
             let appUserID = self.appUserID
             self.markSyncedIfNeeded(subscriberAttributes: maybeSubscriberAttributes,
                                     appUserID: appUserID,
-                                    maybeError: maybeError)
+                                    error: error)
 
             let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: transaction)
-            let nsError = maybeError as NSError?
+            let nsError = error as NSError?
             let finishable = (nsError?.userInfo[ErrorDetails.finishableKey as String] as? NSNumber)?.boolValue ?? false
 
             let storeTransaction = StoreTransaction(sk1Transaction: transaction)
@@ -573,19 +573,19 @@ private extension PurchasesOrchestrator {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
             } else if finishable {
-                completion?(storeTransaction, nil, maybeError, false)
+                completion?(storeTransaction, nil, error, false)
                 if self.finishTransactions {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
             } else {
                 Logger.error(Strings.receipt.unknown_backend_error)
-                completion?(storeTransaction, nil, maybeError, false)
+                completion?(storeTransaction, nil, error, false)
             }
         }
     }
 
-    func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
-        if let error = maybeError as NSError? {
+    func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, error: Error?) {
+        if let error = error as NSError? {
             if !error.successfullySynced {
                 return
             }
@@ -642,9 +642,9 @@ private extension PurchasesOrchestrator {
                                   productData: nil,
                                   presentedOfferingIdentifier: nil,
                                   observerMode: !self.finishTransactions,
-                                  subscriberAttributes: unsyncedAttributes) { customerInfo, maybeError in
+                                  subscriberAttributes: unsyncedAttributes) { customerInfo, error in
                     self.handleReceiptPost(withCustomerInfo: customerInfo,
-                                           error: maybeError,
+                                           error: error,
                                            subscriberAttributes: unsyncedAttributes,
                                            completion: completion)
                 }
@@ -653,7 +653,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handleReceiptPost(withCustomerInfo customerInfo: CustomerInfo?,
-                           error maybeError: Error?,
+                           error error: Error?,
                            subscriberAttributes: SubscriberAttributeDict,
                            completion completion: ((CustomerInfo?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnMainThread {
@@ -663,11 +663,11 @@ private extension PurchasesOrchestrator {
 
             self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
                                     appUserID: self.appUserID,
-                                    maybeError: maybeError)
+                                    error: error)
 
             if let completion = completion {
                 self.operationDispatcher.dispatchOnMainThread {
-                    completion(customerInfo, maybeError)
+                    completion(customerInfo, error)
                 }
             }
         }
@@ -689,8 +689,8 @@ private extension PurchasesOrchestrator {
             let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
 
             return await withCheckedContinuation { continuation in
-                syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { customerInfo, maybeError in
-                    if let error = maybeError {
+                syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { customerInfo, error in
+                    if let error = error {
                         continuation.resume(returning: .failure(error))
                         return
                     }
