@@ -148,8 +148,8 @@ class PurchasesOrchestrator {
             return
         }
 
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
-            guard let receiptData = maybeReceiptData,
+        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData in
+            guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
                       completion(nil, ErrorUtils.missingReceiptFileError())
                       return
@@ -161,21 +161,21 @@ class PurchasesOrchestrator {
                 subscriptionGroup: subscriptionGroupIdentifier,
                 receiptData: receiptData,
                 appUserID: self.appUserID
-            ) { maybeSignature, keyIdentifier, nonce, maybeTimestamp, error in
+            ) { signature, keyIdentifier, nonce, maybeTimestamp, error in
                 if let error = error {
                     completion(nil, error)
                     return
                 }
                 guard let keyIdentifier = keyIdentifier,
                       let nonce = nonce,
-                      let signature = maybeSignature,
+                      let signature = signature,
                       let timestamp = maybeTimestamp else {
                           completion(
                             nil,
                             ErrorUtils.unexpectedBackendResponseError(extraUserInfo: [
                                 "keyIdentifier": String(describing: keyIdentifier),
                                 "nonce": String(describing: nonce),
-                                "signature": String(describing: maybeSignature),
+                                "signature": String(describing: signature),
                                 "timestamp": String(describing: maybeTimestamp)
                             ])
                           )
@@ -422,14 +422,14 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: SKPaymentTransaction) {
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
-            if let receiptData = maybeReceiptData,
+        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData in
+            if let receiptData = receiptData,
                !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction, receiptData: receiptData)
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
                                        customerInfo: nil,
-                                       maybeSubscriberAttributes: nil,
+                                       subscriberAttributes: nil,
                                        error: ErrorUtils.missingReceiptFileError())
             }
         }
@@ -506,7 +506,7 @@ private extension PurchasesOrchestrator {
         guard let productIdentifier = transaction.productIdentifier else {
             self.handleReceiptPost(withTransaction: transaction,
                                    customerInfo: nil,
-                                   maybeSubscriberAttributes: nil,
+                                   subscriberAttributes: nil,
                                    error: ErrorUtils.unknownError())
             return
         }
@@ -521,15 +521,15 @@ private extension PurchasesOrchestrator {
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
                      products: Set<StoreProduct>) {
-        var maybeProductData: ProductRequestData?
-        var maybePresentedOfferingID: String?
+        var productData: ProductRequestData?
+        var presentedOfferingID: String?
         if let product = products.first {
             let productData = ProductRequestData(with: product)
-            maybeProductData = productData
+            productData = productData
 
             let productID = productData.productIdentifier
             let presentedOfferingID = presentedOfferingIDsByProductID[productID]
-            maybePresentedOfferingID = presentedOfferingID
+            presentedOfferingID = presentedOfferingID
 
             presentedOfferingIDsByProductID.removeValue(forKey: productID)
         }
@@ -538,24 +538,24 @@ private extension PurchasesOrchestrator {
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: allowSharingAppStoreAccount,
-                     productData: maybeProductData,
-                     presentedOfferingIdentifier: maybePresentedOfferingID,
+                     productData: productData,
+                     presentedOfferingIdentifier: presentedOfferingID,
                      observerMode: !finishTransactions,
                      subscriberAttributes: unsyncedAttributes) { customerInfo, error in
             self.handleReceiptPost(withTransaction: transaction,
                                    customerInfo: customerInfo,
-                                   maybeSubscriberAttributes: unsyncedAttributes,
+                                   subscriberAttributes: unsyncedAttributes,
                                    error: error)
         }
     }
 
     func handleReceiptPost(withTransaction transaction: SKPaymentTransaction,
                            customerInfo: CustomerInfo?,
-                           maybeSubscriberAttributes: SubscriberAttributeDict?,
+                           subscriberAttributes: SubscriberAttributeDict?,
                            error: Error?) {
         operationDispatcher.dispatchOnMainThread {
             let appUserID = self.appUserID
-            self.markSyncedIfNeeded(subscriberAttributes: maybeSubscriberAttributes,
+            self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
                                     appUserID: appUserID,
                                     error: error)
 
@@ -608,8 +608,8 @@ private extension PurchasesOrchestrator {
         // swiftlint:disable line_length
         // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
         // swiftlint:enable line_length
-        receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
-            guard let receiptData = maybeReceiptData,
+        receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData in
+            guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
                       if self.systemInfo.isSandbox {
                           Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)

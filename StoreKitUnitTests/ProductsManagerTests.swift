@@ -24,15 +24,15 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
+        var receivedProducts: Result<Set<StoreProduct>, Error>?
 
         manager.products(withIdentifiers: Set([identifier])) { products in
             completionCalled = true
-            maybeReceivedProducts = products
+            receivedProducts = products
         }
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
+        let receivedProducts = try XCTUnwrap(receivedProducts?.get())
         expect(receivedProducts.count) == 1
 
         let product = try XCTUnwrap(receivedProducts.first).product
@@ -50,15 +50,15 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
+        var receivedProducts: Result<Set<StoreProduct>, Error>?
 
         manager.products(withIdentifiers: Set([identifier])) { products in
             completionCalled = true
-            maybeReceivedProducts = products
+            receivedProducts = products
         }
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
+        let receivedProducts = try XCTUnwrap(receivedProducts?.get())
         expect(receivedProducts.count) == 1
 
         let product = try XCTUnwrap(receivedProducts.first).product

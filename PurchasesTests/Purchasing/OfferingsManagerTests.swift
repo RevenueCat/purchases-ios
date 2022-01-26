@@ -197,16 +197,16 @@ extension OfferingsManagerTests {
         mockOfferingsFactory.nilOfferings = true
 
         // when
-        var maybeReceivedError: NSError?
+        var receivedError: NSError?
         var completionCalled = false
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { _, error in
-            maybeReceivedError = error as NSError?
+            receivedError = error as NSError?
             completionCalled = true
         }
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        let receivedError = try XCTUnwrap(maybeReceivedError)
+        let receivedError = try XCTUnwrap(receivedError)
         expect(receivedError.domain).to(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
     }

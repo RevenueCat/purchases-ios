@@ -192,8 +192,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
         expect(receivedNSError.userInfo[Backend.RCAttributeErrorsKey]).toNot(beNil())
 
-        let maybeReceivedAttributeErrors = receivedNSError.userInfo[Backend.RCAttributeErrorsKey]
-        guard let receivedAttributeErrors = maybeReceivedAttributeErrors as? [String: String] else {
+        let receivedAttributeErrors = receivedNSError.userInfo[Backend.RCAttributeErrorsKey]
+        guard let receivedAttributeErrors = receivedAttributeErrors as? [String: String] else {
             fail("received attribute errors are not of type [String: String]")
             return
         }
@@ -326,7 +326,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        var maybeReceivedError: Error?
+        var receivedError: Error?
         var customerInfo: CustomerInfo?
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
@@ -336,14 +336,14 @@ class BackendSubscriberAttributesTests: XCTestCase {
                      observerMode: false,
                      subscriberAttributes: subscriberAttributesByKey,
                      completion: { (customerInfo, error) in
-            maybeReceivedError = error
+            receivedError = error
             customerInfo = customerInfo
         })
 
         expect(maybeCustomerInfo).toEventually(beNil())
         expect(maybeReceivedError).toEventuallyNot(beNil())
 
-        guard let nsError = maybeReceivedError as NSError? else {
+        guard let nsError = receivedError as NSError? else {
             fail("receivedError is nil")
             return
         }

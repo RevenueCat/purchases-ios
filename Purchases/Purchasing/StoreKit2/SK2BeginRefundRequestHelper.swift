@@ -33,8 +33,8 @@ class SK2BeginRefundRequestHelper {
      * result for consumption by `BeginRefundRequestHelper`.
      */
     func verifyTransaction(productID: String) async throws -> UInt64 {
-        let maybeResult = await StoreKit.Transaction.latest(for: productID)
-        guard let nonNilResult = maybeResult else {
+        let result = await StoreKit.Transaction.latest(for: productID)
+        guard let nonNilResult = result else {
             let errorMessage = Strings.purchase.product_unpurchased_or_missing.description
             Logger.error(errorMessage)
             throw ErrorUtils.beginRefundRequestError(withMessage: errorMessage)
@@ -78,9 +78,9 @@ class SK2BeginRefundRequestHelper {
 @available(tvOS, unavailable)
 private extension SK2BeginRefundRequestHelper {
 
-    func getErrorMessage(from maybeSK2Error: Error?) -> String {
-        let details = maybeSK2Error?.localizedDescription ?? "No extra info"
-        if let skError = maybeSK2Error as? StoreKit.Transaction.RefundRequestError {
+    func getErrorMessage(from sK2Error: Error?) -> String {
+        let details = sK2Error?.localizedDescription ?? "No extra info"
+        if let skError = sK2Error as? StoreKit.Transaction.RefundRequestError {
             switch skError {
             case .duplicateRequest:
                 return Strings.purchase.duplicate_refund_request(details: details).description

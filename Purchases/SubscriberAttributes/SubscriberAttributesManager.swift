@@ -42,21 +42,21 @@ class SubscriberAttributesManager {
         setReservedAttribute(.email, value: email, appUserID: appUserID)
     }
 
-    func setPhoneNumber(_ maybePhoneNumber: String?, appUserID: String) {
-        setReservedAttribute(.phoneNumber, value: maybePhoneNumber, appUserID: appUserID)
+    func setPhoneNumber(_ phoneNumber: String?, appUserID: String) {
+        setReservedAttribute(.phoneNumber, value: phoneNumber, appUserID: appUserID)
     }
 
     func setDisplayName(_ displayName: String?, appUserID: String) {
         setReservedAttribute(.displayName, value: displayName, appUserID: appUserID)
     }
 
-    func setPushToken(_ maybePushToken: Data?, appUserID: String) {
-        let maybePushTokenString = maybePushToken?.asString
-        setPushTokenString(maybePushTokenString, appUserID: appUserID)
+    func setPushToken(_ pushToken: Data?, appUserID: String) {
+        let pushTokenString = pushToken?.asString
+        setPushTokenString(pushTokenString, appUserID: appUserID)
     }
 
-    func setPushTokenString(_ maybePushTokenString: String?, appUserID: String) {
-        setReservedAttribute(.pushToken, value: maybePushTokenString, appUserID: appUserID)
+    func setPushTokenString(_ pushTokenString: String?, appUserID: String) {
+        setReservedAttribute(.pushToken, value: pushTokenString, appUserID: appUserID)
     }
 
     func setAdjustID(_ adjustID: String?, appUserID: String) {

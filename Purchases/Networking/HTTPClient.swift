@@ -99,7 +99,7 @@ private extension HTTPClient {
     func performRequest(_ httpMethod: String,
                         serially: Bool = true,
                         path: String,
-                        requestBody maybeRequestBody: [String: Any]?,
+                        requestBody requestBody: [String: Any]?,
                         authHeaders: [String: String],
                         retried: Bool = false,
                         completionHandler completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
@@ -108,12 +108,12 @@ private extension HTTPClient {
 
         let maybeURLRequest = createRequest(httpMethod: httpMethod,
                                             path: path,
-                                            requestBody: maybeRequestBody,
+                                            requestBody: requestBody,
                                             headers: requestHeaders,
                                             refreshETag: retried)
 
         guard let urlRequest = maybeURLRequest else {
-            if let requestBody = maybeRequestBody {
+            if let requestBody = requestBody {
                 Logger.error("Could not create request to \(path) with body \(requestBody)")
             } else {
                 Logger.error("Could not create request to \(path) without body")
@@ -125,7 +125,7 @@ private extension HTTPClient {
 
         let request = HTTPRequest(httpMethod: httpMethod,
                                   path: path,
-                                  requestBody: maybeRequestBody,
+                                  requestBody: requestBody,
                                   authHeaders: authHeaders,
                                   retried: retried,
                                   urlRequest: urlRequest,
@@ -267,7 +267,7 @@ private extension HTTPClient {
 
     func createRequest(httpMethod: String,
                        path: String,
-                       requestBody maybeRequestBody: [String: Any]?,
+                       requestBody requestBody: [String: Any]?,
                        headers: [String: String],
                        refreshETag: Bool) -> URLRequest? {
         let relativeURLString = "/v1\(path)"
@@ -284,7 +284,7 @@ private extension HTTPClient {
         urlRequest.allHTTPHeaderFields = headersWithETag
 
         if httpMethod == "POST",
-           let requestBody = maybeRequestBody {
+           let requestBody = requestBody {
             if JSONSerialization.isValidJSONObject(requestBody) {
                 do {
                     urlRequest.httpBody = try JSONSerialization.data(withJSONObject: requestBody)

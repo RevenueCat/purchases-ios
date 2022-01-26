@@ -48,16 +48,16 @@ class BackendIntegrationTests: XCTestCase {
         configurePurchases()
         var completionCalled = false
         var receivedError: Error? = nil
-        var maybeReceivedOfferings: Offerings? = nil
+        var receivedOfferings: Offerings? = nil
         Purchases.shared.getOfferings { offerings, error in
             completionCalled = true
             receivedError = error
-            maybeReceivedOfferings = offerings
+            receivedOfferings = offerings
         }
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
         expect(receivedError).to(beNil())
-        let receivedOfferings = try XCTUnwrap(maybeReceivedOfferings)
+        let receivedOfferings = try XCTUnwrap(receivedOfferings)
         expect(receivedOfferings.all).toNot(beEmpty())
     }
 
@@ -236,29 +236,29 @@ class BackendIntegrationTests: XCTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         configurePurchases()
         
-        var maybeProductID: String?
+        var productID: String?
         var completionCalled = false
-        var maybeReceivedEligibility: [String: IntroEligibility]?
+        var receivedEligibility: [String: IntroEligibility]?
         
         Purchases.shared.getOfferings { offerings, error in
-            maybeProductID = offerings?.current?.monthly?.storeProduct.productIdentifier
+            productID = offerings?.current?.monthly?.storeProduct.productIdentifier
             completionCalled = true
         }
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        let productID = try XCTUnwrap(maybeProductID)
+        let productID = try XCTUnwrap(productID)
         
         Purchases.shared.checkTrialOrIntroDiscountEligibility([productID]) { receivedEligibility in
             completionCalled = true
-            maybeReceivedEligibility = receivedEligibility
+            receivedEligibility = receivedEligibility
         }
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        var receivedEligibility = try XCTUnwrap(maybeReceivedEligibility)
+        var receivedEligibility = try XCTUnwrap(receivedEligibility)
         expect(receivedEligibility[productID]?.status) == .eligible
         
         purchaseMonthlyOffering { [self] customerInfo, error in
@@ -283,12 +283,12 @@ class BackendIntegrationTests: XCTestCase {
         
         Purchases.shared.checkTrialOrIntroDiscountEligibility([productID]) { receivedEligibility in
             completionCalled = true
-            maybeReceivedEligibility = receivedEligibility
+            receivedEligibility = receivedEligibility
         }
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         
-        receivedEligibility = try XCTUnwrap(maybeReceivedEligibility)
+        receivedEligibility = try XCTUnwrap(receivedEligibility)
         expect(receivedEligibility[productID]?.status) == .ineligible
     }
     

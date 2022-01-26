@@ -294,8 +294,8 @@ import Foundation
 
         init(subscriberData: [String: Any],
              dateFormatter: DateFormatterType) throws {
-            let maybeSubscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
-            self.subscriptionTransactionsByProductId = maybeSubscriptions
+            let subscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
+            self.subscriptionTransactionsByProductId = subscriptions
 
             // Metadata
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String

@@ -463,8 +463,8 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         self.deviceCache.cleanupSubscriberAttributes()
 
         let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
-        let maybeReceivedAttributes = mockUserDefaults.mockValues[subscriberAttributesNewKey]
-        let receivedAttributes = try XCTUnwrap(maybeReceivedAttributes as? [String: [String: NSObject]])
+        let receivedAttributes = mockUserDefaults.mockValues[subscriberAttributesNewKey]
+        let receivedAttributes = try XCTUnwrap(receivedAttributes as? [String: [String: NSObject]])
 
         expect(receivedAttributes[userID1]).to(beNil())
         expect(receivedAttributes[userID2]).toNot(beNil())
@@ -505,8 +505,8 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         self.deviceCache.cleanupSubscriberAttributes()
 
         let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
-        let maybeReceivedAttributes = mockUserDefaults.mockValues[subscriberAttributesNewKey]
-        let receivedAttributes = try XCTUnwrap(maybeReceivedAttributes as? [String: [String: NSObject]])
+        let receivedAttributes = mockUserDefaults.mockValues[subscriberAttributesNewKey]
+        let receivedAttributes = try XCTUnwrap(receivedAttributes as? [String: [String: NSObject]])
 
         expect(receivedAttributes[userID1]).to(beNil())
         expect(receivedAttributes[currentUserID]).toNot(beNil())
