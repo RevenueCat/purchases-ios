@@ -1160,6 +1160,43 @@ public extension Purchases {
     }
 #endif
 
+    /**
+     * Use this function to retrieve a `Bool` if eligible for a given `StoreProductDiscount` for a given `StoreProduct`.
+     *
+     * - Parameter discount: The `StoreProductDiscount` to apply to the product.
+     * - Parameter product: The `StoreProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `Bool` is returned.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
+    @objc(checkEligiblilityForPromotionalOffer:product:completion:)
+    func checkEligiblilityForPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
+                                              product: StoreProduct,
+                                              completion: @escaping (Bool, Error?) -> Void) {
+        if let sk1Product = product.sk1Product {
+            purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
+                                                   product: sk1Product) { promotionalOffer, error in
+                completion(promotionalOffer != nil, error)
+            }
+        } else {
+            fatalError("StoreKit2 not supported yet")
+        }
+    }
+
+    /**
+     * Use this function to retrieve a `Bool` if eligible for a given `StoreProductDiscount` for a given `StoreProduct`.
+     *
+     * - Parameter discount: The `StoreProductDiscount` to apply to the product.
+     * - Parameter product: The `StoreProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `Bool` is returned.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func checkEligiblilityForPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
+                                              product: StoreProduct) async throws -> Bool {
+        return try await checkEligiblilityForPromotionalOfferAsync(forProductDiscount: discount, product: product)
+    }
+
 #if os(iOS) || os(macOS)
 
     /**
