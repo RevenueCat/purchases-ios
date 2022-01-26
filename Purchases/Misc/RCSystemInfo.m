@@ -31,7 +31,7 @@ static BOOL _forceUniversalAppStore = NO;
     return [self initWithPlatformFlavor:platformFlavor
                   platformFlavorVersion:platformFlavorVersion
                      finishTransactions:finishTransactions
-                      dangerousSettings:[[RCDangerousSettings alloc]initWithAutoSyncPurchases:YES]];
+                      dangerousSettings:nil];
 }
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
@@ -50,7 +50,7 @@ static BOOL _forceUniversalAppStore = NO;
         self.platformFlavorVersion = platformFlavorVersion;
         self.finishTransactions = finishTransactions;
         if (!dangerousSettings) {
-            dangerousSettings = [RCDangerousSettings.alloc initWithAutoSyncPurchases:YES];
+            dangerousSettings = [[RCDangerousSettings alloc] init];
         }
         self.dangerousSettings = dangerousSettings;
     }

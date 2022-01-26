@@ -21,6 +21,10 @@
      */
     @objc public let autoSyncPurchases: Bool
 
+    @objc override public init() {
+        self.autoSyncPurchases = true
+    }
+
     @objc public init(autoSyncPurchases: Bool = true) {
         self.autoSyncPurchases = autoSyncPurchases
     }
