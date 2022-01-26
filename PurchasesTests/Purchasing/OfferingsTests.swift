@@ -127,7 +127,7 @@ class OfferingsTests: XCTestCase {
             "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
             "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
         ]
-        let offerings = offeringsFactory.createOfferings(from: products, data: [
+        let maybeOfferings = offeringsFactory.createOfferings(from: products, data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -149,7 +149,7 @@ class OfferingsTests: XCTestCase {
             "current_offering_id": "offering_a"
         ])
 
-        let offerings = try XCTUnwrap(offerings)
+        let offerings = try XCTUnwrap(maybeOfferings)
         expect(offerings["offering_a"]).toNot(beNil())
         expect(offerings["offering_b"]).toNot(beNil())
         expect(offerings.current).to(be(offerings["offering_a"]))
@@ -223,8 +223,8 @@ class OfferingsTests: XCTestCase {
         ]
         let offerings = offeringsFactory.createOfferings(from: storeProductsByID, data: data)
 
-        let offerings = try XCTUnwrap(offerings)
-        expect(offerings.current).to(beNil())
+        let unwrappedOfferings = try XCTUnwrap(offerings)
+        expect(unwrappedOfferings.current).to(beNil())
     }
 
     func testBadOfferingsDataReturnsNil() {

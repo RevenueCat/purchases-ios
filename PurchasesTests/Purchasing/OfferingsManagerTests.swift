@@ -61,8 +61,8 @@ extension OfferingsManagerTests {
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        let obtainedOfferings = try XCTUnwrap(obtainedOfferings)
-        expect(obtainedOfferings["base"]).to(beNil())
+        let unwrappedOfferings = try XCTUnwrap(obtainedOfferings)
+        expect(unwrappedOfferings["base"]).to(beNil())
     }
 
     func testOfferingsForAppUserIDReturnsOfferingsIfSuccessBackendRequest() throws {
@@ -79,10 +79,10 @@ extension OfferingsManagerTests {
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        let obtainedOfferings = try XCTUnwrap(obtainedOfferings)
-        expect(obtainedOfferings["base"]).toNot(beNil())
-        expect(obtainedOfferings["base"]!.monthly).toNot(beNil())
-        expect(obtainedOfferings["base"]!.monthly?.storeProduct).toNot(beNil())
+        let unwrappedOfferings = try XCTUnwrap(obtainedOfferings)
+        expect(unwrappedOfferings["base"]).toNot(beNil())
+        expect(unwrappedOfferings["base"]!.monthly).toNot(beNil())
+        expect(unwrappedOfferings["base"]!.monthly?.storeProduct).toNot(beNil())
     }
 
     func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {

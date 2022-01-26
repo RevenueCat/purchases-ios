@@ -327,7 +327,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         ]
 
         var receivedError: Error?
-        var customerInfo: CustomerInfo?
+        var receivedCustomerInfo: CustomerInfo?
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: false,
@@ -337,7 +337,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                      subscriberAttributes: subscriberAttributesByKey,
                      completion: { (customerInfo, error) in
             receivedError = error
-            customerInfo = customerInfo
+            receivedCustomerInfo = customerInfo
         })
 
         expect(maybeCustomerInfo).toEventually(beNil())

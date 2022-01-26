@@ -464,11 +464,11 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let receivedAttributes = mockUserDefaults.mockValues[subscriberAttributesNewKey]
-        let receivedAttributes = try XCTUnwrap(receivedAttributes as? [String: [String: NSObject]])
+        let unwrappedAttributes = try XCTUnwrap(receivedAttributes as? [String: [String: NSObject]])
 
-        expect(receivedAttributes[userID1]).to(beNil())
-        expect(receivedAttributes[userID2]).toNot(beNil())
-        expect(receivedAttributes[userID2]?[unsyncedAttribute.key] as? [String: NSObject]) ==
+        expect(unwrappedAttributes[userID1]).to(beNil())
+        expect(unwrappedAttributes[userID2]).toNot(beNil())
+        expect(unwrappedAttributes[userID2]?[unsyncedAttribute.key] as? [String: NSObject]) ==
         unsyncedAttribute.asDictionary()
     }
 
@@ -506,13 +506,13 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let receivedAttributes = mockUserDefaults.mockValues[subscriberAttributesNewKey]
-        let receivedAttributes = try XCTUnwrap(receivedAttributes as? [String: [String: NSObject]])
+        let unwrappedAttributes = try XCTUnwrap(receivedAttributes as? [String: [String: NSObject]])
 
-        expect(receivedAttributes[userID1]).to(beNil())
-        expect(receivedAttributes[currentUserID]).toNot(beNil())
-        expect(receivedAttributes[currentUserID]?[unsyncedAttribute.key] as? [String: NSObject]) ==
+        expect(unwrappedAttributes[userID1]).to(beNil())
+        expect(unwrappedAttributes[currentUserID]).toNot(beNil())
+        expect(unwrappedAttributes[currentUserID]?[unsyncedAttribute.key] as? [String: NSObject]) ==
         unsyncedAttribute.asDictionary()
-        expect(receivedAttributes[currentUserID]?[syncedAttribute.key] as? [String: NSObject]) ==
+        expect(unwrappedAttributes[currentUserID]?[syncedAttribute.key] as? [String: NSObject]) ==
         syncedAttribute.asDictionary()
     }
 

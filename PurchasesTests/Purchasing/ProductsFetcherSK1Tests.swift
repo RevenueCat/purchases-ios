@@ -35,9 +35,9 @@ class ProductsFetcherSK1Tests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
-        let receivedProducts = try XCTUnwrap(receivedProducts?.get())
-        expect(receivedProducts.count) == productIdentifiers.count
-        let receivedProductsSet = Set(receivedProducts.map { $0.productIdentifier })
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts.count) == productIdentifiers.count
+        let receivedProductsSet = Set(unwrappedProducts.map { $0.productIdentifier })
         expect(receivedProductsSet) == productIdentifiers
     }
 
@@ -170,8 +170,8 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
         expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
-        let receivedProducts = try XCTUnwrap(receivedProducts?.get())
-        expect(receivedProducts).toNot(beEmpty())
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts).toNot(beEmpty())
         expect(request.cancelCalled) == false
     }
 
