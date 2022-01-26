@@ -78,9 +78,9 @@ class SK2BeginRefundRequestHelper {
 @available(tvOS, unavailable)
 private extension SK2BeginRefundRequestHelper {
 
-    func getErrorMessage(from sK2Error: Error?) -> String {
-        let details = sK2Error?.localizedDescription ?? "No extra info"
-        if let skError = sK2Error as? StoreKit.Transaction.RefundRequestError {
+    func getErrorMessage(from sk2Error: Error?) -> String {
+        let details = sk2Error?.localizedDescription ?? "No extra info"
+        if let skError = sk2Error as? StoreKit.Transaction.RefundRequestError {
             switch skError {
             case .duplicateRequest:
                 return Strings.purchase.duplicate_refund_request(details: details).description
