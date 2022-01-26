@@ -218,13 +218,13 @@ extension StoreProduct {
 public extension StoreProduct {
 
     /// The object containing introductory price information for the product.
-    @available(iOS, introduced: 11.2, obsoleted: 11.2,
+    @available(iOS, introduced: 11.2, unavailable,
                renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
-    @available(tvOS, introduced: 11.2, obsoleted: 11.2,
+    @available(tvOS, introduced: 11.2, unavailable,
                renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
-    @available(watchOS, introduced: 6.2, obsoleted: 6.2,
+    @available(watchOS, introduced: 6.2, unavailable,
                renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
-    @available(macOS, introduced: 10.13.2, obsoleted: 10.13.2,
+    @available(macOS, introduced: 10.13.2, unavailable,
                renamed: "introductoryDiscount", message: "Use StoreProductDiscount instead")
     @objc var introductoryPrice: SKProductDiscount? { fatalError() }
 

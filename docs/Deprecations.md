@@ -65,13 +65,13 @@ func purchaseProduct(_ product: SKProduct, discount: SKPaymentDiscount)
 However, that would result in warnings (for some reason only if the method also has an `@objc` annotation), and invalid code generation:
 > Feature cannot be obsoleted in iOS version 1 before it was introduced in version 12.2; attribute ignored
 
-The correct way is to `obsolete` it in the same version that it was introduced:
+The correct way is to have the `introduced` version and also mark it as `unavailable`:
 ```swift
-@available(iOS, introduced: 12.2, obsoleted: 12.2, renamed: "purchase(product:discount:)")
-@available(tvOS, introduced: 12.2, obsoleted: 12.2, renamed: "purchase(product:discount:)")
-@available(watchOS, introduced: 6.2, obsoleted: 6.2, renamed: "purchase(product:discount:)")
-@available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, renamed: "purchase(product:discount:)")
-@available(macCatalyst, introduced: 13.0, obsoleted: 13.0, renamed: "purchase(product:discount:)")
+@available(iOS, introduced: 12.2, unavailable, renamed: "purchase(product:discount:)")
+@available(tvOS, introduced: 12.2, unavailable, renamed: "purchase(product:discount:)")
+@available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(product:discount:)")
+@available(macOS, introduced: 10.14.4, unavailable, renamed: "purchase(product:discount:)")
+@available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(product:discount:)")
 func purchaseProduct(_ product: SKProduct, discount: SKPaymentDiscount)
 ```
 
