@@ -1173,13 +1173,14 @@ public extension Purchases {
     func checkPromotionalOfferEligibility(forProductDiscount discount: StoreProductDiscount,
                                           product: StoreProduct,
                                           completion: @escaping (Bool, Error?) -> Void) {
-        if let sk1Product = product.sk1Product {
-            purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
-                                                   product: sk1Product) { promotionalOffer, error in
-                completion(promotionalOffer != nil, error)
-            }
-        } else {
+        guard let sk1Product = product.sk1Product else {
+            // todo: add support for SK2 discounts
             fatalError("StoreKit2 not supported yet")
+        }
+
+        purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
+                                               product: sk1Product) { promotionalOffer, error in
+            completion(promotionalOffer != nil, error)
         }
     }
 
