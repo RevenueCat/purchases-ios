@@ -191,7 +191,7 @@ private extension HTTPClient {
         var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?
         var httpResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
-        var jsonError: Error?
+        var receivedJSONError: Error?
 
         if networkError == nil {
             if let httpURLResponse = urlResponse as? HTTPURLResponse {
@@ -212,13 +212,13 @@ private extension HTTPClient {
                         let dataAsString = String(data: data, encoding: .utf8) ?? ""
                         Logger.error(Strings.network.json_data_received(dataString: dataAsString))
 
-                        jsonError = jsonError
+                        receivedJSONError = jsonError
                     }
                 }
 
                 httpResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                              jsonObject: jsonObject,
-                                                                             error: jsonError,
+                                                                             error: receivedJSONError,
                                                                              request: request.urlRequest,
                                                                              retried: retried)
                 if httpResponse == nil {
@@ -240,7 +240,7 @@ private extension HTTPClient {
 
         if let httpResponse = httpResponse,
            let completionHandler = completionHandler {
-            let error = jsonError ?? networkError
+            let error = receivedJSONError ?? networkError
             completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }
 
