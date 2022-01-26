@@ -548,7 +548,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var error: NSError?
-        var maybeUnderlyingError: NSError?
+        var underlyingError: NSError?
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
@@ -558,15 +558,15 @@ class BackendTests: XCTestCase {
                       subscriberAttributes: nil,
                       completion: { (_, newError) in
             error = newError as NSError?
-            maybeUnderlyingError = error?.userInfo[NSUnderlyingErrorKey] as? NSError
+            underlyingError = error?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
         expect(error).toEventuallyNot(beNil())
         expect(error?.code).toEventually(equal(ErrorCode.invalidCredentialsError.rawValue))
         expect(error?.userInfo["finishable"]).to(be(false))
 
-        expect(maybeUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
+        expect(underlyingError).toEventuallyNot(beNil())
+        expect(underlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
     }
 
     func testForwards400ErrorsCorrectly() {

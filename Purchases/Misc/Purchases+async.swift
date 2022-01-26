@@ -94,7 +94,7 @@ extension Purchases {
     // swiftlint:disable:next large_tuple
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
-            purchase(product: product) { maybeTransaction, customerInfo, error, userCancelled in
+            purchase(product: product) { transaction, customerInfo, error, userCancelled in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -102,7 +102,7 @@ extension Purchases {
                 guard let customerInfo = customerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
                 }
-                guard let transaction = maybeTransaction else {
+                guard let transaction = transaction else {
                     fatalError("Expected non-nil result 'transaction' for nil error")
                 }
 
@@ -116,7 +116,7 @@ extension Purchases {
     // swiftlint:disable:next large_tuple
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
-            purchase(package: package) { maybeTransaction, customerInfo, error, userCancelled in
+            purchase(package: package) { transaction, customerInfo, error, userCancelled in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -124,7 +124,7 @@ extension Purchases {
                 guard let customerInfo = customerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
                 }
-                guard let transaction = maybeTransaction else {
+                guard let transaction = transaction else {
                     fatalError("Expected non-nil result 'transaction' for nil error")
                 }
 
@@ -139,7 +139,7 @@ extension Purchases {
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
-                     discount: discount) { maybeTransaction, customerInfo, error, userCancelled in
+                     discount: discount) { transaction, customerInfo, error, userCancelled in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -147,7 +147,7 @@ extension Purchases {
                 guard let customerInfo = customerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
                 }
-                guard let transaction = maybeTransaction else {
+                guard let transaction = transaction else {
                     fatalError("Expected non-nil result 'transaction' for nil error")
                 }
 
@@ -162,7 +162,7 @@ extension Purchases {
     (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package,
-                     discount: discount) { maybeTransaction, customerInfo, error, userCancelled in
+                     discount: discount) { transaction, customerInfo, error, userCancelled in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -170,7 +170,7 @@ extension Purchases {
                 guard let customerInfo = customerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
                 }
-                guard let transaction = maybeTransaction else {
+                guard let transaction = transaction else {
                     fatalError("Expected non-nil result 'transaction' for nil error")
                 }
 

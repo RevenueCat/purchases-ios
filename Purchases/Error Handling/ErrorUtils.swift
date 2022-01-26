@@ -418,8 +418,8 @@ private extension ErrorUtils {
                       line: UInt = #line) -> Error {
         var userInfo = extraUserInfo ?? [:]
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = message ?? code.description
-        if let maybeUnderlyingError = underlyingError {
-            userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeUnderlyingError
+        if let underlyingError = underlyingError {
+            userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = underlyingError
         }
         userInfo[ErrorDetails.readableErrorCodeKey] = code.codeName
         userInfo[ErrorDetails.fileKey] = "\(fileName):\(line)"

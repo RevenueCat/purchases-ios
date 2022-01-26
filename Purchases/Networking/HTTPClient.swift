@@ -106,13 +106,13 @@ private extension HTTPClient {
 
         let requestHeaders = defaultHeaders.merging(authHeaders)
 
-        let maybeURLRequest = createRequest(httpMethod: httpMethod,
+        let uRLRequest = createRequest(httpMethod: httpMethod,
                                             path: path,
                                             requestBody: requestBody,
                                             headers: requestHeaders,
                                             refreshETag: retried)
 
-        guard let urlRequest = maybeURLRequest else {
+        guard let urlRequest = uRLRequest else {
             if let requestBody = requestBody {
                 Logger.error("Could not create request to \(path) with body \(requestBody)")
             } else {
@@ -163,14 +163,14 @@ private extension HTTPClient {
     }
 
     // swiftlint:disable:next function_parameter_count
-    func handleResponse(urlResponse maybeURLResponse: URLResponse?,
+    func handleResponse(urlResponse uRLResponse: URLResponse?,
                         request: HTTPRequest,
                         data data: Data?,
                         error networkError: Error?,
                         completion completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
-        threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
+        threadUnsafeHandleResponse(urlResponse: uRLResponse,
                                    request: request,
                                    data: data,
                                    error: networkError,
@@ -180,7 +180,7 @@ private extension HTTPClient {
     }
 
     // swiftlint:disable:next function_body_length function_parameter_count
-    func threadUnsafeHandleResponse(urlResponse maybeURLResponse: URLResponse?,
+    func threadUnsafeHandleResponse(urlResponse uRLResponse: URLResponse?,
                                     request: HTTPRequest,
                                     data data: Data?,
                                     error networkError: Error?,
@@ -194,7 +194,7 @@ private extension HTTPClient {
         var jSONError: Error?
 
         if networkError == nil {
-            if let httpURLResponse = maybeURLResponse as? HTTPURLResponse {
+            if let httpURLResponse = uRLResponse as? HTTPURLResponse {
                 statusCode = httpURLResponse.statusCode
                 Logger.debug(Strings.network.api_request_completed(httpMethod: request.httpMethod,
                                                                    path: request.path,
