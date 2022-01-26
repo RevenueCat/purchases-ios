@@ -67,8 +67,8 @@ class SubscriberAttributesManager {
         setAttributionID(appsflyerID, forNetworkID: .appsFlyerID, appUserID: appUserID)
     }
 
-    func setFBAnonymousID(_ maybeFBAnonymousID: String?, appUserID: String) {
-        setAttributionID(maybeFBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
+    func setFBAnonymousID(_ fBAnonymousID: String?, appUserID: String) {
+        setAttributionID(fBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
     }
 
     func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {

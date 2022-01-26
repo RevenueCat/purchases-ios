@@ -88,10 +88,10 @@ class CustomerInfoManager {
     }
 
     func customerInfo(appUserID: String, completion completion: ((CustomerInfo?, Error?) -> Void)?) {
-        let maybeInfoFromCache = cachedCustomerInfo(appUserID: appUserID)
+        let infoFromCache = cachedCustomerInfo(appUserID: appUserID)
         var completionCalled = false
 
-        if let infoFromCache = maybeInfoFromCache {
+        if let infoFromCache = infoFromCache {
             Logger.debug(Strings.customerInfo.vending_cache)
             if let completion = completion {
                 completionCalled = true
@@ -117,8 +117,8 @@ class CustomerInfoManager {
         }
 
         do {
-            let maybeInfoDict = try JSONSerialization.jsonObject(with: customerInfoData) as? [String: Any]
-            guard let customerInfoDict = maybeInfoDict else {
+            let infoDict = try JSONSerialization.jsonObject(with: customerInfoData) as? [String: Any]
+            guard let customerInfoDict = infoDict else {
                 return nil
             }
 

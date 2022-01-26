@@ -48,8 +48,8 @@ class AttributionPoster {
             Logger.warn(Strings.attribution.networkuserid_required_for_appsflyer)
         }
 
-        let maybeIdentifierForAdvertisers = attributionFetcher.identifierForAdvertisers
-        if maybeIdentifierForAdvertisers == nil {
+        let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
+        if identifierForAdvertisers == nil {
             Logger.warn(Strings.attribution.missing_advertiser_identifiers)
         }
 
@@ -59,7 +59,7 @@ class AttributionPoster {
             deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[networkKey]
 
-        let newValueForNetwork = "\(maybeIdentifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
+        let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
         guard latestSentToNetwork != newValueForNetwork else {
             Logger.debug(Strings.attribution.skip_same_attributes)
             return
@@ -69,7 +69,7 @@ class AttributionPoster {
         newDictToCache[networkKey] = newValueForNetwork
         var newData = data
 
-        if let identifierForAdvertisers = maybeIdentifierForAdvertisers {
+        if let identifierForAdvertisers = identifierForAdvertisers {
             newData["rc_idfa"] = identifierForAdvertisers
         } else {
             newData.removeValue(forKey: "rc_idfa")
@@ -119,9 +119,9 @@ class AttributionPoster {
             }
 
             let attributionDetailsValues = Array(attributionDetails.values)
-            let maybeFirstAttributionDict = attributionDetailsValues.first as? [String: NSObject]
+            let firstAttributionDict = attributionDetailsValues.first as? [String: NSObject]
 
-            guard let hasIad = maybeFirstAttributionDict?["iad-attribution"] as? NSNumber,
+            guard let hasIad = firstAttributionDict?["iad-attribution"] as? NSNumber,
                   hasIad.boolValue == true else {
                 return
             }

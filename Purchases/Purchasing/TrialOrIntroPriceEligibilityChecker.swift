@@ -88,11 +88,11 @@ class TrialOrIntroPriceEligibilityChecker {
         let products = try await productsManager.sk2StoreProducts(withIdentifiers: identifiers)
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
-            let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer
+            let isEligible = await sk2Product.subscription?.isEligibleForIntroOffer
 
             let eligibilityStatus: IntroEligibilityStatus
 
-            if let isEligible = maybeIsEligible {
+            if let isEligible = isEligible {
                 eligibilityStatus = isEligible ? .eligible : .ineligible
             } else {
                 eligibilityStatus = .unknown

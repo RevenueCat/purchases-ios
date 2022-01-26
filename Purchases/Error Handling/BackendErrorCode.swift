@@ -46,7 +46,7 @@ enum BackendErrorCode: Int, Error {
      * - Parameter code: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
      */
     init(code: Any?) {
-        let codeInt = BackendErrorCode.maybeInt(codeObject: code)
+        let codeInt = BackendErrorCode.int(codeObject: code)
 
         guard let codeInt = codeInt else {
             self = .unknownBackendError
@@ -56,7 +56,7 @@ enum BackendErrorCode: Int, Error {
         self = BackendErrorCode(rawValue: codeInt) ?? .unknownBackendError
     }
 
-    static func maybeInt(codeObject: Any?) -> Int? {
+    static func int(codeObject: Any?) -> Int? {
         // The code can be a String or Int
         if let codeString = codeObject as? String {
             return Int(codeString) ?? nil

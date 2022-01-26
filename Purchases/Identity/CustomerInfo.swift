@@ -175,7 +175,7 @@ import Foundation
 
     init(data: [String: Any], dateFormatter: DateFormatterType) throws {
         guard let subscriberObject = data["subscriber"] as? [String: Any] else {
-            Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
+            Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(jsonData: data))
             throw CustomerInfoError.missingJsonObject
         }
 
@@ -370,7 +370,7 @@ enum CustomerInfoError: Int, DescribableError {
 private extension CustomerInfo {
 
     static func createSubscriberDataError(_ error: Error, subscriberDictionary: [String: Any]) -> Error {
-        Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberDictionary))
+        Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(jsonObject: subscriberDictionary))
 
         guard let subscriberDataError = error as? SubscriberData.SubscriberDataError else {
             return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(error)

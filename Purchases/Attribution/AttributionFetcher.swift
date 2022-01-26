@@ -51,8 +51,8 @@ class AttributionFetcher {
         // https://developer.apple.com/documentation/adsupport/asidentifiermanager/1614151-advertisingidentifier
 #if os(iOS) || os(tvOS) || os(macOS)
         if #available(macOS 10.14, *) {
-            let maybeIdentifierManagerProxy = attributionFactory.asIdProxy()
-            guard let identifierManagerProxy = maybeIdentifierManagerProxy else {
+            let identifierManagerProxy = attributionFactory.asIdProxy()
+            guard let identifierManagerProxy = identifierManagerProxy else {
                 Logger.warn(Strings.configure.adsupport_not_imported)
                 return nil
             }

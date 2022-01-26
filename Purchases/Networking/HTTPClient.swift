@@ -190,8 +190,8 @@ private extension HTTPClient {
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
         var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?
-        var maybeHTTPResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
-        var maybeJSONError: Error?
+        var hTTPResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
+        var jSONError: Error?
 
         if maybeNetworkError == nil {
             if let httpURLResponse = maybeURLResponse as? HTTPURLResponse {
@@ -212,16 +212,16 @@ private extension HTTPClient {
                         let dataAsString = String(data: data ?? Data(), encoding: .utf8) ?? ""
                         Logger.error(Strings.network.json_data_received(dataString: dataAsString))
 
-                        maybeJSONError = jsonError
+                        jSONError = jsonError
                     }
                 }
 
-                maybeHTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
+                hTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                                   jsonObject: jsonObject,
-                                                                                  error: maybeJSONError,
+                                                                                  error: jSONError,
                                                                                   request: request.urlRequest,
                                                                                   retried: retried)
-                if maybeHTTPResponse == nil {
+                if hTTPResponse == nil {
                     Logger.debug(Strings.network.retrying_request(httpMethod: request.httpMethod,
                                                                   path: request.path))
                     let retriedRequest = HTTPRequest(byCopyingRequest: request, retried: true)
@@ -238,9 +238,9 @@ private extension HTTPClient {
             maybeNetworkError = blockedError
         }
 
-        if let httpResponse = maybeHTTPResponse,
+        if let httpResponse = hTTPResponse,
             let completionHandler = completionHandler {
-            let error = maybeJSONError ?? maybeNetworkError
+            let error = jSONError ?? maybeNetworkError
             completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }
 

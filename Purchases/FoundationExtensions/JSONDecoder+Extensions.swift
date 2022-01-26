@@ -55,9 +55,9 @@ extension JSONDecoder {
         self.dataDecodingStrategy = dataDecodingStrategy
 
         if JSONSerialization.isValidJSONObject(dictionary) {
-            let maybeJsonData = try JSONSerialization.data(withJSONObject: dictionary)
+            let jsonData = try JSONSerialization.data(withJSONObject: dictionary)
             do {
-                return try decode(type, from: maybeJsonData)
+                return try decode(type, from: jsonData)
             } catch {
                 ErrorUtils.logDecodingError(error)
                 return nil

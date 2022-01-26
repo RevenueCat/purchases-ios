@@ -32,8 +32,8 @@ enum CustomerInfoStrings {
     case error_getting_data_from_customerinfo_json(error: Error)
     case invalid_json
 
-    case missing_json_object_instantiation_error(maybeJsonData: [String: Any]?)
-    case cant_instantiate_from_json_object(maybeJsonObject: [String: Any]?)
+    case missing_json_object_instantiation_error(jsonData: [String: Any]?)
+    case cant_instantiate_from_json_object(jsonObject: [String: Any]?)
     case cant_parse_request_date_from_json(date: Any?)
     case cant_parse_request_date_from_string(string: String)
 
@@ -71,15 +71,15 @@ extension CustomerInfoStrings: CustomStringConvertible {
             return "Couldn't get data from customerInfo.jsonObject\n\(error.localizedDescription)"
         case .invalid_json:
             return "Invalid JSON returned from customerInfo.jsonObject"
-        case .missing_json_object_instantiation_error(let maybeJsonData):
+        case .missing_json_object_instantiation_error(let jsonData):
             var message = "Unable to find subscriber object in data"
-            if let jsonData = maybeJsonData {
+            if let jsonData = jsonData {
                 message += ":\n\(jsonData.debugDescription)"
             }
             return message
-        case .cant_instantiate_from_json_object(let maybeJsonObject):
+        case .cant_instantiate_from_json_object(let jsonObject):
             var message = "Unable to instantiate SubscriberData from json object"
-            if let jsonObject = maybeJsonObject {
+            if let jsonObject = jsonObject {
                 message += ":\n\(jsonObject.debugDescription)"
             }
             return message
