@@ -34,7 +34,7 @@ class CustomerInfoManager {
 
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
-                                   completion completion: ((CustomerInfo?, Error?) -> Void)?) {
+                                   completion: ((CustomerInfo?, Error?) -> Void)?) {
         deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
             self.backend.getSubscriberData(appUserID: appUserID) { customerInfo, error in
@@ -87,7 +87,7 @@ class CustomerInfoManager {
         sendUpdateIfChanged(customerInfo: info)
     }
 
-    func customerInfo(appUserID: String, completion completion: ((CustomerInfo?, Error?) -> Void)?) {
+    func customerInfo(appUserID: String, completion: ((CustomerInfo?, Error?) -> Void)?) {
         let infoFromCache = cachedCustomerInfo(appUserID: appUserID)
         var completionCalled = false
 

@@ -27,16 +27,16 @@ class PurchasesOrchestrator {
     var finishTransactions: Bool { systemInfo.finishTransactions }
     var allowSharingAppStoreAccount: Bool {
         get {
-            return allowSharingAppStoreAccount ?? identityManager.currentUserIsAnonymous
+            return _allowSharingAppStoreAccount ?? identityManager.currentUserIsAnonymous
         }
         set {
-            allowSharingAppStoreAccount = newValue
+            _allowSharingAppStoreAccount = newValue
         }
     }
 
     @objc weak var delegate: PurchasesOrchestratorDelegate?
 
-    private var allowSharingAppStoreAccount: Bool?
+    private var _allowSharingAppStoreAccount: Bool?
     private var presentedOfferingIDsByProductID: [String: String] = [:]
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
 
@@ -95,11 +95,11 @@ class PurchasesOrchestrator {
         }
     }
 
-    func restorePurchases(completion completion: ((CustomerInfo?, Error?) -> Void)?) {
+    func restorePurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
         syncPurchases(receiptRefreshPolicy: .always, isRestore: true, completion: completion)
     }
 
-    func syncPurchases(completion completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+    func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         syncPurchases(receiptRefreshPolicy: .never,
                       isRestore: allowSharingAppStoreAccount,
                       completion: completion)
@@ -653,9 +653,9 @@ private extension PurchasesOrchestrator {
     }
 
     func handleReceiptPost(withCustomerInfo customerInfo: CustomerInfo?,
-                           error error: Error?,
+                           error: Error?,
                            subscriberAttributes: SubscriberAttributeDict,
-                           completion completion: ((CustomerInfo?, Error?) -> Void)?) {
+                           completion: ((CustomerInfo?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnMainThread {
             if let customerInfo = customerInfo {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)

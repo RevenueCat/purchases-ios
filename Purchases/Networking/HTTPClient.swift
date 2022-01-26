@@ -99,10 +99,10 @@ private extension HTTPClient {
     func performRequest(_ httpMethod: String,
                         serially: Bool = true,
                         path: String,
-                        requestBody requestBody: [String: Any]?,
+                        requestBody: [String: Any]?,
                         authHeaders: [String: String],
                         retried: Bool = false,
-                        completionHandler completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+                        completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
 
         let requestHeaders = defaultHeaders.merging(authHeaders)
 
@@ -165,7 +165,7 @@ private extension HTTPClient {
     // swiftlint:disable:next function_parameter_count
     func handleResponse(urlResponse uRLResponse: URLResponse?,
                         request: HTTPRequest,
-                        data data: Data?,
+                        data: Data?,
                         error networkError: Error?,
                         completion completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
@@ -182,9 +182,9 @@ private extension HTTPClient {
     // swiftlint:disable:next function_body_length function_parameter_count
     func threadUnsafeHandleResponse(urlResponse uRLResponse: URLResponse?,
                                     request: HTTPRequest,
-                                    data data: Data?,
+                                    data: Data?,
                                     error networkError: Error?,
-                                    completionHandler completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
                                     retried: Bool) {
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
@@ -267,7 +267,7 @@ private extension HTTPClient {
 
     func createRequest(httpMethod: String,
                        path: String,
-                       requestBody requestBody: [String: Any]?,
+                       requestBody: [String: Any]?,
                        headers: [String: String],
                        refreshETag: Bool) -> URLRequest? {
         let relativeURLString = "/v1\(path)"
