@@ -190,8 +190,8 @@ private extension HTTPClient {
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
         var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?
-        var hTTPResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
-        var jSONError: Error?
+        var httpResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
+        var jsonError: Error?
 
         if networkError == nil {
             if let httpURLResponse = urlResponse as? HTTPURLResponse {
@@ -212,16 +212,16 @@ private extension HTTPClient {
                         let dataAsString = String(data: data, encoding: .utf8) ?? ""
                         Logger.error(Strings.network.json_data_received(dataString: dataAsString))
 
-                        jSONError = jsonError
+                        jsonError = jsonError
                     }
                 }
 
-                hTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
+                httpResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                              jsonObject: jsonObject,
-                                                                             error: jSONError,
+                                                                             error: jsonError,
                                                                              request: request.urlRequest,
                                                                              retried: retried)
-                if hTTPResponse == nil {
+                if httpResponse == nil {
                     Logger.debug(Strings.network.retrying_request(httpMethod: request.httpMethod,
                                                                   path: request.path))
                     let retriedRequest = HTTPRequest(byCopyingRequest: request, retried: true)
@@ -238,9 +238,9 @@ private extension HTTPClient {
             networkError = blockedError
         }
 
-        if let httpResponse = hTTPResponse,
+        if let httpResponse = httpResponse,
            let completionHandler = completionHandler {
-            let error = jSONError ?? networkError
+            let error = jsonError ?? networkError
             completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }
 
