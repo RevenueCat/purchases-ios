@@ -388,15 +388,15 @@ public extension Purchases {
      * - Parameter product: The `SKProduct` the user intends to purchase.
      */
     @available(iOS, introduced: 13.0, obsoleted: 13.0,
-               message: "Obtain StoreProductDiscount from StoreProduct or use checkPromotionalOfferEligibility")
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
     @available(tvOS, introduced: 13.0, obsoleted: 13.0,
-               message: "Obtain StoreProductDiscount from StoreProduct or use checkPromotionalOfferEligibility")
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
     @available(watchOS, introduced: 6.2, obsoleted: 6.2,
-               message: "Obtain StoreProductDiscount from StoreProduct or use checkPromotionalOfferEligibility")
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
     @available(macOS, introduced: 10.15, obsoleted: 10.15,
-               message: "Obtain StoreProductDiscount from StoreProduct or use checkPromotionalOfferEligibility")
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
     @available(macCatalyst, introduced: 13.0, obsoleted: 13.0,
-               message: "Obtain StoreProductDiscount from StoreProduct or use checkPromotionalOfferEligibility")
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
     func paymentDiscount(for discount: SKProductDiscount,
                          product: SKProduct) async throws -> SKPaymentDiscount {
         fatalError()
