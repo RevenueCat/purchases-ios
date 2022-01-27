@@ -1175,9 +1175,9 @@ public extension Purchases {
      * - Note: If you're looking to use free trials or Introductory Offers instead,
      * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``.
      *
-     * - Parameter discount: The `StoreProductDiscount` to apply to the product.
-     * - Parameter product: The `StoreProduct` the user intends to purchase.
-     * - Parameter completion: A completion block that is called when the `PromotionalOfferEligibility` is returned.
+     * - Parameter discount: The ``StoreProductDiscount`` to apply to the product.
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the ``PromotionalOfferEligibility`` is returned.
      * If it was not successful, there will be an `Error`.
      */
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
@@ -1202,9 +1202,9 @@ public extension Purchases {
      * - Note: If you're looking to use free trials or Introductory Offers instead,
      * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``.
      *
-     * - Parameter discount: The `StoreProductDiscount` to apply to the product.
-     * - Parameter product: The `StoreProduct` the user intends to purchase.
-     * - Parameter completion: A completion block that is called when the `PromotionalOfferEligibility` is returned.
+     * - Parameter discount: The ``StoreProductDiscount`` to apply to the product.
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the ``PromotionalOfferEligibility`` is returned.
      * If it was not successful, there will be an `Error`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

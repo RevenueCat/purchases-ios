@@ -45,11 +45,6 @@ extension PromotionalOffer {
 @objc(RCPromotionalOfferEligibility) public enum PromotionalOfferEligibility: Int {
 
     /**
-     RevenueCat doesn't have enough information to determine eligibility.
-     */
-    case unknown = 0
-
-    /**
      The user is not eligible for promotional offer for this product.
      */
     case ineligible
