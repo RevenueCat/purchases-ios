@@ -1098,7 +1098,7 @@ public extension Purchases {
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
      * - Note: If you're looking to use Promotional Offers use instead,
-     * use ``Purchases/checkPromotionalOfferEligibility(forProductDiscount:product:completion:)``.
+     * use ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``.
      *
      * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
      * definitively compute the eligibilty, most likely because of missing group information, it will return
@@ -1110,9 +1110,9 @@ public extension Purchases {
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
      */
-    @objc(checkTrialOrIntroductoryPriceEligibility:completion:)
-    func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
-                                                  completion: @escaping ([String: IntroEligibility]) -> Void) {
+    @objc(checkTrialOrIntroDiscountEligibility:completion:)
+    func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
+                                              completion: @escaping ([String: IntroEligibility]) -> Void) {
             trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
                                                                  completion: completion)
     }
@@ -1124,7 +1124,7 @@ public extension Purchases {
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
      * - Note: If you're looking to use Promotional Offers use instead,
-     * use ``Purchases/checkPromotionalOfferEligibility(forProductDiscount:product:completion:)``.
+     * use ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``.
      *
      * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
      * definitively compute the eligibilty, most likely because of missing group information, it will return
@@ -1136,8 +1136,8 @@ public extension Purchases {
      * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-    func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
-        return await checkTrialOrIntroductoryPriceEligibilityAsync(productIdentifiers)
+    func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+        return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
     }
 
     /**
@@ -1173,7 +1173,7 @@ public extension Purchases {
      * Use this method to find eligibility for this user for
      * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
      * - Note: If you're looking to use free trials or Introductory Offers instead,
-     * use ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:completion:)``.
+     * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``.
      *
      * - Parameter discount: The `StoreProductDiscount` to apply to the product.
      * - Parameter product: The `StoreProduct` the user intends to purchase.
@@ -1181,10 +1181,10 @@ public extension Purchases {
      * If it was not successful, there will be an `Error`.
      */
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
-    @objc(checkPromotionalOfferEligibility:product:completion:)
-    func checkPromotionalOfferEligibility(forProductDiscount discount: StoreProductDiscount,
-                                          product: StoreProduct,
-                                          completion: @escaping (PromotionalOfferEligibility, Error?) -> Void) {
+    @objc(checkPromotionalDiscountEligibilityForProductDiscount:withProduct:withCompletion:)
+    func checkPromotionalDiscountEligibility(forProductDiscount discount: StoreProductDiscount,
+                                             product: StoreProduct,
+                                             completion: @escaping (PromotionalOfferEligibility, Error?) -> Void) {
         guard let sk1Product = product.sk1Product else {
             // todo: add support for SK2 discounts
             fatalError("StoreKit2 not supported yet")
@@ -1200,7 +1200,7 @@ public extension Purchases {
      * Use this method to find eligibility for this user for
      * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
      * - Note: If you're looking to use free trials or Introductory Offers instead,
-     * use ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:completion:)``.
+     * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``.
      *
      * - Parameter discount: The `StoreProductDiscount` to apply to the product.
      * - Parameter product: The `StoreProduct` the user intends to purchase.
@@ -1208,9 +1208,9 @@ public extension Purchases {
      * If it was not successful, there will be an `Error`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func checkPromotionalOfferEligibility(forProductDiscount discount: StoreProductDiscount,
-                                          product: StoreProduct) async throws -> PromotionalOfferEligibility {
-        return try await checkPromotionalOfferEligibilityAsync(forProductDiscount: discount, product: product)
+    func checkPromotionalDiscountEligibility(forProductDiscount discount: StoreProductDiscount,
+                                             product: StoreProduct) async throws -> PromotionalOfferEligibility {
+        return try await checkPromotionalDiscountEligibilityAsync(forProductDiscount: discount, product: product)
     }
 
 #if os(iOS) || os(macOS)
