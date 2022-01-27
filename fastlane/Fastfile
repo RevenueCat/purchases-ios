@@ -269,8 +269,6 @@ platform :ios do
         
         file_path = Dir["#{dir}/**/#{archive_name}"].first
         FileUtils.copy_entry(file_path, "LatestTagDocs/#{archive_name}")
-        
-        # cp -R `find ~/ElegantAPIBuild -type d -name 'ElegantAPI.doccarchive'` Docs/ElegantAPI.doccarchive
       }
     end
   end
