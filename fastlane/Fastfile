@@ -267,8 +267,8 @@ platform :ios do
         
         sh('xcodebuild', 'docbuild', '-scheme', 'RevenueCat', '-derivedDataPath', dir, '-destination', 'platform=iOS Simulator,name=iPhone 12')
         
-        file_path = Dir.glob("#{dir}/**/#{archive_name}")
-        FileUtils.copy_entry(archive_name, "LatestTagDocs/#{archive_name}")
+        file_path = Dir["#{dir}/**/#{archive_name}"].first
+        FileUtils.copy_entry(file_path, "LatestTagDocs/#{archive_name}")
         
         # cp -R `find ~/ElegantAPIBuild -type d -name 'ElegantAPI.doccarchive'` Docs/ElegantAPI.doccarchive
       }
