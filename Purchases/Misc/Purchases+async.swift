@@ -223,7 +223,7 @@ extension Purchases {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
      func checkPromotionalOfferEligibilityAsync(forProductDiscount discount: StoreProductDiscount,
-                                                product: StoreProduct) async throws -> Bool {
+                                                product: StoreProduct) async throws -> PromotionalOfferEligibility {
          return try await withCheckedThrowingContinuation { continuation in
              checkPromotionalOfferEligibility(forProductDiscount: discount, product: product) { isEligible, error in
                  if let error = error {

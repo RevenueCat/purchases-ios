@@ -34,3 +34,31 @@ extension PromotionalOffer {
                                  timestamp: self.timestamp as NSNumber)
     }
 }
+
+/**
+ * Enum of different possible states for intro price eligibility status.
+ * * ``PromotionalOfferEligibility/unknown`` RevenueCat doesn't have enough information to determine eligibility.
+ * * ``PromotionalOfferEligibility/ineligible`` The user is not eligible for a free trial or intro pricing for this
+ * product.
+ * * ``PromotionalOfferEligibility/eligible`` The user is eligible for a free trial or intro pricing for this product.
+ */
+@objc(RCPromotionalOfferEligibility) public enum PromotionalOfferEligibility: Int {
+
+    /**
+     RevenueCat doesn't have enough information to determine eligibility.
+     */
+    case unknown = 0
+
+    /**
+     The user is not eligible for promotional offer for this product.
+     */
+    case ineligible
+
+    /**
+     The user is eligible for a promotional offer for this product.
+     */
+    case eligible
+
+}
+
+extension PromotionalOfferEligibility: CaseIterable {}
