@@ -125,7 +125,12 @@ BOOL isAnonymous;
     [p purchasePackage:pack withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p restorePurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
-    [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
+    
+    [p checkTrialOrIntroDiscountEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
+    [p checkPromotionalDiscountEligibilityForProductDiscount:stpd
+                                                 withProduct:storeProduct
+                                              withCompletion:^(RCPromotionalOfferEligibility status, NSError *error) { }];
+    
     [p purchaseProduct:storeProduct withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p purchasePackage:pack withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     

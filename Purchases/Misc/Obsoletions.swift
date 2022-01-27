@@ -328,6 +328,35 @@ public extension Purchases {
     }
 
     /**
+     * Computes whether or not a user is eligible for the introductory pricing period of a given product.
+     * You should use this method to determine whether or not you show the user the normal product price or
+     * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+     * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
+     *
+     * - Note: If you're looking to use Promotional Offers use instead,
+     * use ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``.
+     *
+     * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
+     * definitively compute the eligibilty, most likely because of missing group information, it will return
+     * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
+     * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
+     * version of iOS so that the subscription group can be collected by the SDK.
+     *
+     * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
+     * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
+     */
+    @available(iOS, obsoleted: 1, renamed: "checkTrialOrIntroDiscountEligibility(_:completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "checkTrialOrIntroDiscountEligibility(_:completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "checkTrialOrIntroDiscountEligibility(_:completion:)")
+    @available(macOS, obsoleted: 1, renamed: "checkTrialOrIntroDiscountEligibility(_:completion:)")
+    @available(macCatalyst, obsoleted: 1, renamed: "checkTrialOrIntroDiscountEligibility(_:completion:)")
+    @objc(checkTrialOrIntroductoryPriceEligibility:completion:)
+    func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
+                                                  completion: @escaping ([String: IntroEligibility]) -> Void) {
+        fatalError()
+    }
+
+    /**
      * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
      *
      * - Parameter discount: The `SKProductDiscount` to apply to the product.
@@ -335,11 +364,16 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
      * If it was not successful, there will be an `Error`.
      */
-    @available(iOS, introduced: 12.2, obsoleted: 12.2, message: "Obtain StoreProductDiscount from StoreProduct")
-    @available(tvOS, introduced: 12.2, obsoleted: 12.2, message: "Obtain StoreProductDiscount from StoreProduct")
-    @available(watchOS, introduced: 6.2, obsoleted: 6.2, message: "Obtain StoreProductDiscount from StoreProduct")
-    @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4, message: "Obtain StoreProductDiscount from StoreProduct")
-    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(iOS, introduced: 12.2, obsoleted: 12.2,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+    @available(tvOS, introduced: 12.2, obsoleted: 12.2,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+    @available(macOS, introduced: 10.14.4, obsoleted: 10.14.4,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
     @objc(paymentDiscountForProductDiscount:product:completion:)
     func paymentDiscount(for discount: SKProductDiscount,
                          product: SKProduct,
@@ -353,11 +387,16 @@ public extension Purchases {
      * - Parameter discount: The `SKProductDiscount` to apply to the product.
      * - Parameter product: The `SKProduct` the user intends to purchase.
      */
-    @available(iOS, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
-    @available(tvOS, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
-    @available(watchOS, introduced: 6.2, obsoleted: 6.2, message: "Obtain StoreProductDiscount from StoreProduct")
-    @available(macOS, introduced: 10.15, obsoleted: 10.15, message: "Obtain StoreProductDiscount from StoreProduct")
-    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0, message: "Obtain StoreProductDiscount from StoreProduct")
+    @available(iOS, introduced: 13.0, obsoleted: 13.0,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+    @available(tvOS, introduced: 13.0, obsoleted: 13.0,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+    @available(watchOS, introduced: 6.2, obsoleted: 6.2,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+    @available(macOS, introduced: 10.15, obsoleted: 10.15,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+    @available(macCatalyst, introduced: 13.0, obsoleted: 13.0,
+               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
     func paymentDiscount(for discount: SKProductDiscount,
                          product: SKProduct) async throws -> SKPaymentDiscount {
         fatalError()
