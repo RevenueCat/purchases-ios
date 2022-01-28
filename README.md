@@ -7,15 +7,12 @@
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-orange.svg)](https://docs.revenuecat.com/docs/ios#section-install-via-swift-package-manager)
 
 ## Purchases.framework (currently supported)
-We're in the process of migrating the entire framework over to Swift 🎉. The new framework is called `RevenueCat.framework`. While this migration is happening, you can (and should) still use the currently supported production version you know and love. If you'd like to help us by testing our beta, please feel free!
-
-### **IMPORTANT:** SPM integration note for users of our stable release:
-Swift Package Manager (SPM) integration is currently not working as expected. If you wish to use the currently supported and stable `Purchases` framework (version 3.13.1), you'll need to specify `< 4.0.0` or for your dependencies in Xcode. By default, Xcode will specify `exactly 4.0.0` and that won't work because we haven't released that version yet, only `4.0.0-beta.x`.
+We're in the process of releasing a new version of the framework, entirely re-written in Swift 🎉. The new framework is called `RevenueCat.framework`. It's currently in Release Candidate status. If you don't want to stick that close to the bleeding edge, you should use `Purchases.framework`, which is available in purchases-ios v3.
 
 ## Migrating from Purchases v3
 - See our [Migration guide](Documentation.docc/V4_API_Migration_guide.md)
 
-## RevenueCat.framework Beta
+## RevenueCat.framework Release Candidate
 
 *Purchases* and *RevenueCat* are clients for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system.
 
@@ -23,25 +20,13 @@ Swift Package Manager (SPM) integration is currently not working as expected. If
 
 **RevenueCat** is our next big release (what we've been calling Purchases V4). It is a rename of `Purchases` to `RevenueCat`, and now, 100% `Swift` (while maintaining `Objective-C` compatibility). It contains all the same functionality (and almost exactly the same API) as `Purchases`. It's not a brand-new framework, but rather, a migration of the ObjC bits over to Swift with improved nullability, various bug fixes, and some new features. You can see what's changed in the [API updates doc](https://rev.cat/uet).
 
-It also includes `StoreKit2` support! You can enable it when setting up the framework:
-```swift
-Purchases.configure(
-	withAPIKey: "your_api_key",
-	appUserID: nil,
-	observerMode: false,
-	userDefaults: nil,
-	useStoreKit2IfAvailable: true
-)
-```
-The framework is nearly production-ready, but we're going to keep it in beta while we continue to work on the `StoreKit2` bits and iron out any remaining bugs folks find.
+### ⚠️ Release Candidate build warning
+Are you here because you saw a build warning about being on the RC?
 
-### ⚠️ Beta build warning
-Are you here because you saw a build warning about being on the Beta?
-
-If you're cool being in the beta, there's nothing more for you to do 🎉
+If you're cool being in the RC, there's nothing more for you to do 🎉
 If you think you've made a mistake:
 
-### Getting out of the beta 😿
+### Getting out of the RC 😿
 #### Swift package manager
 
 - First, you'll need to remove the ReveneCat package from your project.
@@ -59,7 +44,7 @@ If you think you've made a mistake:
 
 - You'll want to check out one of the `3.x`[Purchases.framework tags](https://github.com/RevenueCat/purchases-ios/tags).
 
-#### After you get out of the beta
+#### After you get out of the RC
 
 Once you revert to version 3 of the framework you'll need to do a reverse migration. While not explicitly outlined in our [API updates doc](https://rev.cat/uet).
 You can see the differences between v3 and V4. The changes are mostly naming updates, so don't worry about having to refactor things beyond that.
