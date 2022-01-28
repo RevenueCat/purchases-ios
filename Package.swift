@@ -36,7 +36,10 @@ func resolveTargets() -> [Target] {
                     "TestPlans",
                     "UnitTestsHostApp"
                     ],
-                sources: ["Purchases"]
+                sources: [
+                    "Purchases",
+                    "Documentation.docc"
+                ]
         )
     ]
 
