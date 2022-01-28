@@ -17,7 +17,6 @@ class CreateAliasOperation: CacheableNetworkOperation {
 
     private let aliasCallbackCache: CallbackCache<AliasCallback>
     private let createAliasResponseHandler: NoContentResponseHandler
-
     private let newAppUserID: String
     private let configuration: UserSpecificConfiguration
 
@@ -33,15 +32,15 @@ class CreateAliasOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID + newAppUserID)
     }
 
-    override func main() {
-        if self.isCancelled {
-            return
-        }
-
+    override func begin() {
         createAlias()
     }
 
-    private func createAlias() {
+}
+
+private extension CreateAliasOperation {
+
+    func createAlias() {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion?(ErrorUtils.missingAppUserIDError())

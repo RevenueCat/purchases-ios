@@ -54,11 +54,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: cacheKey)
     }
 
-    override func main() {
-        if self.isCancelled {
-            return
-        }
-
+    override func begin() {
         self.post()
     }
 

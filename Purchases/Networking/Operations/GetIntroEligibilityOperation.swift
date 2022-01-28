@@ -32,15 +32,15 @@ class GetIntroEligibilityOperation: NetworkOperation {
         super.init(configuration: configuration)
     }
 
-    override func main() {
-        if self.isCancelled {
-            return
-        }
-
+    override func begin() {
         self.getIntroEligibility()
     }
 
-    private func getIntroEligibility() {
+}
+
+private extension GetIntroEligibilityOperation {
+
+    func getIntroEligibility() {
         guard self.productIdentifiers.count > 0 else {
             self.completion([:], nil)
             return
@@ -93,10 +93,6 @@ class GetIntroEligibilityOperation: NetworkOperation {
             self.handleIntroEligibility(response: eligibilityResponse)
         }
     }
-
-}
-
-private extension GetIntroEligibilityOperation {
 
     func handleIntroEligibility(response: IntroEligibilityResponse) {
         var eligibilitiesByProductIdentifier = response.maybeResponse

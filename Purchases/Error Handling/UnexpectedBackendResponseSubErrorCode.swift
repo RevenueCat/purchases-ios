@@ -15,31 +15,31 @@ import Foundation
 
 enum UnexpectedBackendResponseSubErrorCode: Int, Error {
 
-    // Login call returned with no response.
+    /// Login call returned with no response.
     case loginMissingResponse = 0
 
-    // Login call failed due to a problem with the response.
+    /// Login call failed due to a problem with the response.
     case loginResponseDecoding
 
-    // Received an empty response after posting an offer.
+    /// Received an empty response after posting an offer.
     case postOfferEmptyResponse
 
-    // Received a bad response after posting an offer- "offers" couldn't be read from response.
+    /// Received a bad response after posting an offer- "offers" couldn't be read from response.
     case postOfferIdBadResponse
 
-    // Received a bad response after posting an offer- "offers" was totally missing.
+    /// Received a bad response after posting an offer- "offers" was totally missing.
     case postOfferIdMissingOffersInResponse
 
-    // Received a bad response after posting an offer- there was an issue with the signature.
+    /// Received a bad response after posting an offer- there was an issue with the signature.
     case postOfferIdSignature
 
-    // getOffer call failed with an invalid response.
+    /// getOffer call failed with an invalid response.
     case getOfferUnexpectedResponse
 
-    // A call that is supposed to retrieve a CustomerInfo failed because the CustomerInfo in the response was nil.
+    /// A call that is supposed to retrieve a CustomerInfo failed because the CustomerInfo in the response was nil.
     case customerInfoNil
 
-    // A call that is supposed to retrieve a CustomerInfo failed because the json object couldn't be parsed.
+    /// A call that is supposed to retrieve a CustomerInfo failed because the json object couldn't be parsed.
     case customerInfoResponseParsing
 
 }

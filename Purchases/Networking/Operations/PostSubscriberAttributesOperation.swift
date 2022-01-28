@@ -35,11 +35,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         super.init(configuration: configuration)
     }
 
-    override func main() {
-        if self.isCancelled {
-            return
-        }
-
+    override func begin() {
         post()
     }
 

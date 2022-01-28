@@ -29,7 +29,15 @@ class GetCustomerInfoOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID)
     }
 
-    private func getCustomerInfo() {
+    override func begin() {
+        self.getCustomerInfo()
+    }
+
+}
+
+private extension GetCustomerInfoOperation {
+
+    func getCustomerInfo() {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, ErrorUtils.missingAppUserIDError())
@@ -49,14 +57,6 @@ class GetCustomerInfoOperation: CacheableNetworkOperation {
                                                         completion: callback.completion)
             }
         }
-    }
-
-    override func main() {
-        if self.isCancelled {
-            return
-        }
-
-        self.getCustomerInfo()
     }
 
 }

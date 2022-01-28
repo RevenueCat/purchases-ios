@@ -45,6 +45,14 @@ class NetworkOperation: Operation {
     }
 
     override func main() {
+        if isCancelled == true {
+            return
+        }
+
+        begin()
+    }
+
+    func begin() {
         fatalError("Subclasses must override this method")
     }
 

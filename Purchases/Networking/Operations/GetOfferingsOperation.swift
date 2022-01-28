@@ -26,15 +26,15 @@ class GetOfferingsOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID)
     }
 
-    override func main() {
-        if self.isCancelled {
-            return
-        }
-
+    override func begin() {
         self.getOfferings()
     }
 
-    private func getOfferings() {
+}
+
+private extension GetOfferingsOperation {
+
+    func getOfferings() {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, ErrorUtils.missingAppUserIDError())

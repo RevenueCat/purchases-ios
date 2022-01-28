@@ -29,15 +29,15 @@ class LogInOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID + newAppUserID)
     }
 
-    override func main() {
-        if self.isCancelled {
-            return
-        }
-
+    override func begin() {
         self.logIn()
     }
 
-    private func logIn() {
+}
+
+private extension LogInOperation {
+
+    func logIn() {
         guard let newAppUserID = try? self.newAppUserID.trimmedOrError() else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, false, ErrorUtils.missingAppUserIDError())
@@ -58,10 +58,6 @@ class LogInOperation: CacheableNetworkOperation {
             }
         }
     }
-
-}
-
-private extension LogInOperation {
 
     func handleLogin(maybeResponse: [String: Any]?,
                      statusCode: Int,
