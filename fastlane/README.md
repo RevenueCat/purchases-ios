@@ -151,6 +151,22 @@ Release to CocoaPods, create Carthage archive, export XCFramework, and create Gi
 
 Bump version, edit changelog, and create pull request
 
+### ios compile_docs
+
+```sh
+[bundle exec] fastlane ios compile_docs
+```
+
+Compiles Docc archive
+
+### ios deploy_docs
+
+```sh
+[bundle exec] fastlane ios deploy_docs
+```
+
+Deploys Docc archive
+
 ### ios prepare_next_version
 
 ```sh
@@ -190,14 +206,6 @@ Run BackendIntegrationTests
 ```
 
 Update swift package commit
-
-### ios generate_docs
-
-```sh
-[bundle exec] fastlane ios generate_docs
-```
-
-Generate Jazzy Docs
 
 ----
 

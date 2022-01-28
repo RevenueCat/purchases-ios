@@ -73,6 +73,7 @@ Or browse our iOS sample apps:
 
 ### Making Purchases with Promotional Offers
 - ``IntroEligibility``
+- ``PromotionalOfferEligibility``
 - ``StoreProductDiscount``
 
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``
