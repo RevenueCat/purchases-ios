@@ -340,8 +340,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
             receivedCustomerInfo = customerInfo
         })
 
-        expect(maybeCustomerInfo).toEventually(beNil())
-        expect(maybeReceivedError).toEventuallyNot(beNil())
+        expect(receivedCustomerInfo).toEventually(beNil())
+        expect(receivedError).toEventuallyNot(beNil())
 
         guard let nsError = receivedError as NSError? else {
             fail("receivedError is nil")

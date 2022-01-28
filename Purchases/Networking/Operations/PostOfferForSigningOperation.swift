@@ -55,21 +55,21 @@ class PostOfferForSigningOperation: NetworkOperation {
         self.httpClient.performPOSTRequest(serially: true,
                                            path: "/offers",
                                            requestBody: requestBody,
-                                           headers: authHeaders) { statusCode, maybeResponse, maybeError in
-            if let error = maybeError {
+                                           headers: authHeaders) { statusCode, response, error in
+            if let error = error {
                 self.completion(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
                 return
             }
 
             guard statusCode < HTTPStatusCodes.redirect.rawValue else {
-                let backendCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
-                let backendMessage = maybeResponse?["message"] as? String
+                let backendCode = BackendErrorCode(code: response?["code"])
+                let backendMessage = response?["message"] as? String
                 let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
                 self.completion(nil, nil, nil, nil, error)
                 return
             }
 
-            guard let response = maybeResponse else {
+            guard let response = response else {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferEmptyResponse
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.offerings_empty_response)
@@ -101,7 +101,7 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     func handleOffer(_ offer: [String: Any], completion: OfferSigningResponseHandler) {
         if let signatureError = offer["signature_error"] as? [String: Any] {
-            let backendCode = BackendErrorCode(maybeCode: signatureError["code"])
+            let backendCode = BackendErrorCode(code: signatureError["code"])
             let backendMessage = signatureError["message"] as? String
             let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
             completion(nil, nil, nil, nil, error)
@@ -111,13 +111,13 @@ class PostOfferForSigningOperation: NetworkOperation {
             let signature = signatureData["signature"] as? String
             let keyIdentifier = offer["key_id"] as? String
             let nonceString = signatureData["nonce"] as? String
-            let maybeNonce = nonceString.flatMap { UUID(uuidString: $0) }
+            let nonce = nonceString.flatMap { UUID(uuidString: $0) }
             let timestamp = signatureData["timestamp"] as? Int
 
-            completion(signature, keyIdentifier, maybeNonce, timestamp, nil)
+            completion(signature, keyIdentifier, nonce, timestamp, nil)
             return
         } else {
-            Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
+            Logger.error(Strings.backendError.signature_error(signatureDataString: offer["signature_data"]))
             let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdSignature
             let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             completion(nil, nil, nil, nil, signatureError)

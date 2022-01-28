@@ -64,8 +64,8 @@ class PostSubscriberAttributesOperation: NetworkOperation {
             }
 
             self.subscriberAttributeHandler.handleSubscriberAttributesResult(statusCode: statusCode,
-                                                                             maybeResponse: response,
-                                                                             maybeError: error,
+                                                                             response: response,
+                                                                             error: error,
                                                                              completion: completion)
         }
     }

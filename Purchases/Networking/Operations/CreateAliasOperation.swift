@@ -60,9 +60,9 @@ private extension CreateAliasOperation {
                     return
                 }
 
-                self.createAliasResponseHandler.handle(maybeResponse: response,
+                self.createAliasResponseHandler.handle(response: response,
                                                        statusCode: statusCode,
-                                                       maybeError: error,
+                                                       error: error,
                                                        completion: completion)
             }
         }

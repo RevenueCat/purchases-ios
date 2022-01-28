@@ -51,24 +51,24 @@ private extension LogInOperation {
                                            requestBody: requestBody,
                                            headers: self.authHeaders) { statusCode, response, error in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                self.handleLogin(maybeResponse: response,
+                self.handleLogin(response: response,
                                  statusCode: statusCode,
-                                 maybeError: error,
+                                 error: error,
                                  completion: callbackObject.completion)
             }
         }
     }
 
-    func handleLogin(maybeResponse: [String: Any]?,
+    func handleLogin(response: [String: Any]?,
                      statusCode: Int,
-                     maybeError: Error?,
+                     error: Error?,
                      completion: LogInResponseHandler) {
-        if let error = maybeError {
+        if let error = error {
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: error))
             return
         }
 
-        guard let response = maybeResponse else {
+        guard let response = response else {
             let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginMissingResponse
             let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             completion(nil, false, responseError)
@@ -76,7 +76,7 @@ private extension LogInOperation {
         }
 
         if statusCode > HTTPStatusCodes.redirect.rawValue {
-            let backendCode = BackendErrorCode(maybeCode: response["code"])
+            let backendCode = BackendErrorCode(code: response["code"])
             let backendMessage = response["message"] as? String
             let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
@@ -84,12 +84,12 @@ private extension LogInOperation {
         }
 
         do {
-            let customerInfo = try CustomerInfo.from(json: maybeResponse)
+            let customerInfo = try CustomerInfo.from(json: response)
             let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
             Logger.user(Strings.identity.login_success)
             completion(customerInfo, created, nil)
         } catch let customerInfoError {
-            Logger.error(Strings.backendError.customer_info_instantiation_error(maybeResponse: response))
+            Logger.error(Strings.backendError.customer_info_instantiation_error(response: response))
             let extraContext = "statusCode: \(statusCode)"
             let subErrorCode = UnexpectedBackendResponseSubErrorCode
                 .loginResponseDecoding

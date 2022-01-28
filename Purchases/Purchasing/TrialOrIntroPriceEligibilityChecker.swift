@@ -178,9 +178,9 @@ private extension TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        self.backend.fetchIntroEligibility(appUserID: self.appUserID,
-                                           receiptData: receiptData,
-                                           productIdentifiers: idsToFetchFromBackend) { backendResult, error in
+        self.backend.getIntroEligibility(appUserID: self.appUserID,
+                                         receiptData: receiptData,
+                                         productIdentifiers: idsToFetchFromBackend) { backendResult, error in
             var result = backendResult
             if let error = error {
                 Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))

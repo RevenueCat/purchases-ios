@@ -134,7 +134,7 @@ class Backend {
         let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
                                                                         attributionData: attributionData,
                                                                         network: network,
-                                                                        maybeCompletion: completion)
+                                                                        completion: completion)
         self.operationQueue.addOperation(postAttributionDataOperation)
     }
 

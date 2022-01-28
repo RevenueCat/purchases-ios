@@ -216,8 +216,8 @@ import Foundation
         self.allPurchases = subscriberData.allPurchases
     }
 
-    static func from(json maybeJSON: [String: Any]?) throws -> CustomerInfo {
-        guard let customerJSON = maybeJSON else {
+    static func from(json: [String: Any]?) throws -> CustomerInfo {
+        guard let customerJSON = json else {
             throw UnexpectedBackendResponseSubErrorCode.customerInfoNil
         }
 
