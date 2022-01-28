@@ -23,6 +23,8 @@ public typealias SK1ProductDiscount = SKProductDiscount
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2ProductDiscount = StoreKit.Product.SubscriptionOffer
 
+/// Type that wraps `StoreKit.Product.SubscriptionOffer` and `SKProductDiscount`
+/// and provides access to their properties.
 @objc(RCStoreProductDiscount)
 public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
