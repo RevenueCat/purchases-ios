@@ -71,7 +71,7 @@ Or browse our iOS sample apps:
 - ``Purchases/purchase(product:)``
 - ``Purchases/purchase(product:completion:)``
 
-### Making Purchases with Promotional Offers
+### Making Purchases with Subscription Offers
 - ``IntroEligibility``
 - ``PromotionalOfferEligibility``
 - ``StoreProductDiscount``
@@ -93,6 +93,7 @@ Or browse our iOS sample apps:
 
 - ``Purchases/getCustomerInfo(completion:)``
 - ``Purchases/customerInfo()``
+- ``Purchases/customerInfoStream``
 
 ### Identifying Users
 - ``Purchases/logIn(_:)``
@@ -124,6 +125,7 @@ Or browse our iOS sample apps:
 - ``Purchases/setMediaSource(_:)``
 - ``Purchases/setPhoneNumber(_:)``
 - ``Purchases/setAttributes(_:)``
+- ``Purchases/collectDeviceIdentifiers()``
 
 ### Integrations
 - ``Purchases/setAdjustID(_:)``
