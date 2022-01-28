@@ -595,15 +595,10 @@ SWIFT_CLASS_NAMED("Package")
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryDiscount</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
-@end
-
-@class SKProduct;
-
-@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
-/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
-@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
 @end
 
 
@@ -620,6 +615,13 @@ SWIFT_CLASS_NAMED("Package")
 /// returns:
 /// a <code>PackageType</code> for the given string.
 + (enum RCPackageType)packageTypeFrom:(NSString * _Nonnull)string SWIFT_WARN_UNUSED_RESULT;
+@end
+
+@class SKProduct;
+
+@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
+/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
+@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
 @end
 
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPackageType, "PackageType", open) {
@@ -678,6 +680,23 @@ SWIFT_CLASS("_TtC10RevenueCat15ProductsManager")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
+/// Enum of different possible states for intro price eligibility status.
+/// <ul>
+///   <li>
+///     <code>PromotionalOfferEligibility/ineligible</code> The user is not eligible for a free trial or intro pricing for this
+///     product.
+///   </li>
+///   <li>
+///     <code>PromotionalOfferEligibility/eligible</code> The user is eligible for a free trial or intro pricing for this product.
+///   </li>
+/// </ul>
+typedef SWIFT_ENUM_NAMED(NSInteger, RCPromotionalOfferEligibility, "PromotionalOfferEligibility", open) {
+/// The user is not eligible for promotional offer for this product.
+  RCPromotionalOfferEligibilityIneligible = 0,
+/// The user is eligible for a promotional offer for this product.
+  RCPromotionalOfferEligibilityEligible = 1,
+};
 
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchaseOwnershipType, "PurchaseOwnershipType", open) {
 /// The purchase was made directly by this user.
@@ -950,6 +969,90 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 - (void)getOfferingsWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
 @end
 
+
+@class NSData;
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+/// Subscriber attributes are useful for storing additional, structured information on a user.
+/// Since attributes are writable using a public key they should not be used for
+/// managing secure or sensitive information such as subscription status, coins, etc.
+/// Key names starting with “$” are reserved names used by RevenueCat. For a full list of key
+/// restrictions refer <a href="https://docs.revenuecat.com/docs/subscriber-attributes">to our guide</a>
+/// \param attributes Map of attributes by key. Set the value as an empty string to delete an attribute.
+///
+- (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
+/// Subscriber attribute associated with the email address for the user
+/// \param email Empty String or nil will delete the subscriber attribute.
+///
+- (void)setEmail:(NSString * _Nullable)email;
+/// Subscriber attribute associated with the phone number for the user
+/// \param phoneNumber Empty String or nil will delete the subscriber attribute.
+///
+- (void)setPhoneNumber:(NSString * _Nullable)phoneNumber;
+/// Subscriber attribute associated with the display name for the user
+/// \param displayName Empty String or nil will delete the subscriber attribute.
+///
+- (void)setDisplayName:(NSString * _Nullable)displayName;
+/// Subscriber attribute associated with the push token for the user
+/// \param pushToken nil will delete the subscriber attribute.
+///
+- (void)setPushToken:(NSData * _Nullable)pushToken;
+/// Subscriber attribute associated with the Adjust Id for the user
+/// Required for the RevenueCat Adjust integration
+/// \param adjustID nil will delete the subscriber attribute
+///
+- (void)setAdjustID:(NSString * _Nullable)adjustID;
+/// Subscriber attribute associated with the Appsflyer Id for the user
+/// Required for the RevenueCat Appsflyer integration
+/// \param appsflyerID nil will delete the subscriber attribute
+///
+- (void)setAppsflyerID:(NSString * _Nullable)appsflyerID;
+/// Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
+/// Recommended for the RevenueCat Facebook integration
+/// \param fbAnonymousID nil will delete the subscriber attribute
+///
+- (void)setFBAnonymousID:(NSString * _Nullable)fbAnonymousID;
+/// Subscriber attribute associated with the mParticle Id for the user
+/// Recommended for the RevenueCat mParticle integration
+/// \param mparticleID nil will delete the subscriber attribute
+///
+- (void)setMparticleID:(NSString * _Nullable)mparticleID;
+/// Subscriber attribute associated with the OneSignal Player ID for the user
+/// Required for the RevenueCat OneSignal integration
+/// \param onesignalID nil will delete the subscriber attribute
+///
+- (void)setOnesignalID:(NSString * _Nullable)onesignalID;
+/// Subscriber attribute associated with the Airship Channel ID for the user
+/// Required for the RevenueCat Airship integration
+/// \param airshipChannelID nil will delete the subscriber attribute
+///
+- (void)setAirshipChannelID:(NSString * _Nullable)airshipChannelID;
+/// Subscriber attribute associated with the install media source for the user
+/// \param mediaSource nil will delete the subscriber attribute.
+///
+- (void)setMediaSource:(NSString * _Nullable)mediaSource;
+/// Subscriber attribute associated with the install campaign for the user
+/// \param campaign nil will delete the subscriber attribute.
+///
+- (void)setCampaign:(NSString * _Nullable)campaign;
+/// Subscriber attribute associated with the install ad group for the user
+/// \param adGroup nil will delete the subscriber attribute.
+///
+- (void)setAdGroup:(NSString * _Nullable)adGroup;
+/// Subscriber attribute associated with the install ad for the user
+/// \param installAd nil will delete the subscriber attribute.
+///
+- (void)setAd:(NSString * _Nullable)installAd;
+/// Subscriber attribute associated with the install keyword for the user
+/// \param keyword nil will delete the subscriber attribute.
+///
+- (void)setKeyword:(NSString * _Nullable)keyword;
+/// Subscriber attribute associated with the install ad creative for the user.
+/// \param creative nil will delete the subscriber attribute.
+///
+- (void)setCreative:(NSString * _Nullable)creative;
+@end
+
 @class SKPaymentDiscount;
 @class SKProductDiscount;
 
@@ -1060,6 +1163,24 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// If the user cancelled, <code>userCancelled</code> will be <code>YES</code>.
 ///
 - (void)purchaseProduct:(SKProduct * _Nonnull)product withDiscount:(SKPaymentDiscount * _Nonnull)discount completionBlock:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion SWIFT_AVAILABILITY(maccatalyst,introduced=13.0,obsoleted=13.0,message="'purchaseProduct' has been renamed to 'purchaseProduct:withDiscount:completion:'") SWIFT_AVAILABILITY(macos,introduced=10.14.4,obsoleted=10.14.4,message="'purchaseProduct' has been renamed to 'purchaseProduct:withDiscount:completion:'") SWIFT_AVAILABILITY(watchos,introduced=6.2,obsoleted=6.2,message="'purchaseProduct' has been renamed to 'purchaseProduct:withDiscount:completion:'") SWIFT_AVAILABILITY(tvos,introduced=12.2,obsoleted=12.2,message="'purchaseProduct' has been renamed to 'purchaseProduct:withDiscount:completion:'") SWIFT_AVAILABILITY(ios,introduced=12.2,obsoleted=12.2,message="'purchaseProduct' has been renamed to 'purchaseProduct:withDiscount:completion:'");
+/// Computes whether or not a user is eligible for the introductory pricing period of a given product.
+/// You should use this method to determine whether or not you show the user the normal product price or
+/// the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+/// <a href="https://docs.revenuecat.com/docs/ios-subscription-offers">iOS Introductory  Offers</a>.
+/// note:
+/// If you’re looking to use Promotional Offers use instead,
+/// use <code>Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)</code>.
+/// note:
+/// Subscription groups are automatically collected for determining eligibility. If RevenueCat can’t
+/// definitively compute the eligibilty, most likely because of missing group information, it will return
+/// <code>IntroEligibilityStatus/unknown</code>. The best course of action on unknown status is to display the non-intro
+/// pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
+/// version of iOS so that the subscription group can be collected by the SDK.
+/// \param productIdentifiers Array of product identifiers for which you want to compute eligibility
+///
+/// \param completion A block that receives a dictionary of product_id -> <code>IntroEligibility</code>.
+///
+- (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> * _Nonnull)productIdentifiers completion:(void (^ _Nonnull)(NSDictionary<NSString *, RCIntroEligibility *> * _Nonnull))completion SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'checkTrialOrIntroductoryPriceEligibility' has been renamed to 'checkTrialOrIntroDiscountEligibility:completion:'") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'checkTrialOrIntroductoryPriceEligibility' has been renamed to 'checkTrialOrIntroDiscountEligibility:completion:'") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'checkTrialOrIntroductoryPriceEligibility' has been renamed to 'checkTrialOrIntroDiscountEligibility:completion:'") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'checkTrialOrIntroductoryPriceEligibility' has been renamed to 'checkTrialOrIntroDiscountEligibility:completion:'") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'checkTrialOrIntroductoryPriceEligibility' has been renamed to 'checkTrialOrIntroDiscountEligibility:completion:'");
 /// Use this function to retrieve the <code>SKPaymentDiscount</code> for a given <code>SKProduct</code>.
 /// \param discount The <code>SKProductDiscount</code> to apply to the product.
 ///
@@ -1068,7 +1189,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// \param completion A completion block that is called when the <code>SKPaymentDiscount</code> is returned.
 /// If it was not successful, there will be an <code>Error</code>.
 ///
-- (void)paymentDiscountForProductDiscount:(SKProductDiscount * _Nonnull)discount product:(SKProduct * _Nonnull)product completion:(void (^ _Nonnull)(SKPaymentDiscount * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(maccatalyst,introduced=13.0,obsoleted=13.0,message="Obtain StoreProductDiscount from StoreProduct") SWIFT_AVAILABILITY(macos,introduced=10.14.4,obsoleted=10.14.4,message="Obtain StoreProductDiscount from StoreProduct") SWIFT_AVAILABILITY(watchos,introduced=6.2,obsoleted=6.2,message="Obtain StoreProductDiscount from StoreProduct") SWIFT_AVAILABILITY(tvos,introduced=12.2,obsoleted=12.2,message="Obtain StoreProductDiscount from StoreProduct") SWIFT_AVAILABILITY(ios,introduced=12.2,obsoleted=12.2,message="Obtain StoreProductDiscount from StoreProduct");
+- (void)paymentDiscountForProductDiscount:(SKProductDiscount * _Nonnull)discount product:(SKProduct * _Nonnull)product completion:(void (^ _Nonnull)(SKPaymentDiscount * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(maccatalyst,introduced=13.0,obsoleted=13.0,message="Check eligibility for a discount using checkPromotionalOfferEligibility:") SWIFT_AVAILABILITY(macos,introduced=10.14.4,obsoleted=10.14.4,message="Check eligibility for a discount using checkPromotionalOfferEligibility:") SWIFT_AVAILABILITY(watchos,introduced=6.2,obsoleted=6.2,message="Check eligibility for a discount using checkPromotionalOfferEligibility:") SWIFT_AVAILABILITY(tvos,introduced=12.2,obsoleted=12.2,message="Check eligibility for a discount using checkPromotionalOfferEligibility:") SWIFT_AVAILABILITY(ios,introduced=12.2,obsoleted=12.2,message="Check eligibility for a discount using checkPromotionalOfferEligibility:");
 /// This function will alias two appUserIDs together.
 /// \param alias The new appUserID that should be linked to the currently identified appUserID
 ///
@@ -1089,90 +1210,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 - (void)resetWithCompletionBlock:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,obsoleted=1,message="'reset' has been renamed to 'logOutWithCompletion:'") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'reset' has been renamed to 'logOutWithCompletion:'") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'reset' has been renamed to 'logOutWithCompletion:'") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'reset' has been renamed to 'logOutWithCompletion:'");
 @end
 
-
-@class NSData;
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-/// Subscriber attributes are useful for storing additional, structured information on a user.
-/// Since attributes are writable using a public key they should not be used for
-/// managing secure or sensitive information such as subscription status, coins, etc.
-/// Key names starting with “$” are reserved names used by RevenueCat. For a full list of key
-/// restrictions refer <a href="https://docs.revenuecat.com/docs/subscriber-attributes">to our guide</a>
-/// \param attributes Map of attributes by key. Set the value as an empty string to delete an attribute.
-///
-- (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
-/// Subscriber attribute associated with the email address for the user
-/// \param email Empty String or nil will delete the subscriber attribute.
-///
-- (void)setEmail:(NSString * _Nullable)email;
-/// Subscriber attribute associated with the phone number for the user
-/// \param phoneNumber Empty String or nil will delete the subscriber attribute.
-///
-- (void)setPhoneNumber:(NSString * _Nullable)phoneNumber;
-/// Subscriber attribute associated with the display name for the user
-/// \param displayName Empty String or nil will delete the subscriber attribute.
-///
-- (void)setDisplayName:(NSString * _Nullable)displayName;
-/// Subscriber attribute associated with the push token for the user
-/// \param pushToken nil will delete the subscriber attribute.
-///
-- (void)setPushToken:(NSData * _Nullable)pushToken;
-/// Subscriber attribute associated with the Adjust Id for the user
-/// Required for the RevenueCat Adjust integration
-/// \param adjustID nil will delete the subscriber attribute
-///
-- (void)setAdjustID:(NSString * _Nullable)adjustID;
-/// Subscriber attribute associated with the Appsflyer Id for the user
-/// Required for the RevenueCat Appsflyer integration
-/// \param appsflyerID nil will delete the subscriber attribute
-///
-- (void)setAppsflyerID:(NSString * _Nullable)appsflyerID;
-/// Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
-/// Recommended for the RevenueCat Facebook integration
-/// \param fbAnonymousID nil will delete the subscriber attribute
-///
-- (void)setFBAnonymousID:(NSString * _Nullable)fbAnonymousID;
-/// Subscriber attribute associated with the mParticle Id for the user
-/// Recommended for the RevenueCat mParticle integration
-/// \param mparticleID nil will delete the subscriber attribute
-///
-- (void)setMparticleID:(NSString * _Nullable)mparticleID;
-/// Subscriber attribute associated with the OneSignal Player ID for the user
-/// Required for the RevenueCat OneSignal integration
-/// \param onesignalID nil will delete the subscriber attribute
-///
-- (void)setOnesignalID:(NSString * _Nullable)onesignalID;
-/// Subscriber attribute associated with the Airship Channel ID for the user
-/// Required for the RevenueCat Airship integration
-/// \param airshipChannelID nil will delete the subscriber attribute
-///
-- (void)setAirshipChannelID:(NSString * _Nullable)airshipChannelID;
-/// Subscriber attribute associated with the install media source for the user
-/// \param mediaSource nil will delete the subscriber attribute.
-///
-- (void)setMediaSource:(NSString * _Nullable)mediaSource;
-/// Subscriber attribute associated with the install campaign for the user
-/// \param campaign nil will delete the subscriber attribute.
-///
-- (void)setCampaign:(NSString * _Nullable)campaign;
-/// Subscriber attribute associated with the install ad group for the user
-/// \param adGroup nil will delete the subscriber attribute.
-///
-- (void)setAdGroup:(NSString * _Nullable)adGroup;
-/// Subscriber attribute associated with the install ad for the user
-/// \param installAd nil will delete the subscriber attribute.
-///
-- (void)setAd:(NSString * _Nullable)installAd;
-/// Subscriber attribute associated with the install keyword for the user
-/// \param keyword nil will delete the subscriber attribute.
-///
-- (void)setKeyword:(NSString * _Nullable)keyword;
-/// Subscriber attribute associated with the install ad creative for the user.
-/// \param creative nil will delete the subscriber attribute.
-///
-- (void)setCreative:(NSString * _Nullable)creative;
-@end
-
 @class RCStoreProductDiscount;
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -1181,7 +1218,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// Called immediately if <code>CustomerInfo</code> is cached. Customer info can be nil if an error occurred.
 ///
 - (void)getCustomerInfoWithCompletion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
-/// Fetches the <code>StorePRoducts</code> for your IAPs for given <code>productIdentifiers</code>.
+/// Fetches the <code>StoreProducts</code> for your IAPs for given <code>productIdentifiers</code>.
 /// Use this method if you aren’t using <code>getOfferings(completion:)</code>.
 /// You should use getOfferings though.
 /// note:
@@ -1290,6 +1327,10 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// Computes whether or not a user is eligible for the introductory pricing period of a given product.
 /// You should use this method to determine whether or not you show the user the normal product price or
 /// the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+/// <a href="https://docs.revenuecat.com/docs/ios-subscription-offers">iOS Introductory  Offers</a>.
+/// note:
+/// If you’re looking to use Promotional Offers use instead,
+/// use <code>Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)</code>.
 /// note:
 /// Subscription groups are automatically collected for determining eligibility. If RevenueCat can’t
 /// definitively compute the eligibilty, most likely because of missing group information, it will return
@@ -1300,16 +1341,28 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 /// \param completion A block that receives a dictionary of product_id -> <code>IntroEligibility</code>.
 ///
-- (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> * _Nonnull)productIdentifiers completion:(void (^ _Nonnull)(NSDictionary<NSString *, RCIntroEligibility *> * _Nonnull))completion;
+- (void)checkTrialOrIntroDiscountEligibility:(NSArray<NSString *> * _Nonnull)productIdentifiers completion:(void (^ _Nonnull)(NSDictionary<NSString *, RCIntroEligibility *> * _Nonnull))completion;
 /// Invalidates the cache for customer information.
 /// Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
 /// Refer to
 /// <a href="https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information">Get User Information</a>
-/// for more information on
-/// using the cache properly.
+/// for more information on using the cache properly.
 /// This is useful for cases where customer information might have been updated outside of the app, like if a
 /// promotional subscription is granted through the RevenueCat dashboard.
 - (void)invalidateCustomerInfoCache;
+/// Use this method to find eligibility for this user for
+/// <a href="https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers">iOS Promotional Offers</a>.
+/// note:
+/// If you’re looking to use free trials or Introductory Offers instead,
+/// use <code>Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)</code>.
+/// \param discount The <code>StoreProductDiscount</code> to apply to the product.
+///
+/// \param product The <code>StoreProduct</code> the user intends to purchase.
+///
+/// \param completion A completion block that is called when the <code>PromotionalOfferEligibility</code> is returned.
+/// If it was not successful, there will be an <code>Error</code>.
+///
+- (void)checkPromotionalDiscountEligibilityForProductDiscount:(RCStoreProductDiscount * _Nonnull)discount withProduct:(RCStoreProduct * _Nonnull)product withCompletion:(void (^ _Nonnull)(enum RCPromotionalOfferEligibility, NSError * _Nullable))completion SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
 /// Use this function to open the manage subscriptions page.
 /// If the manage subscriptions page can’t be opened, the managementURL in the customerInfo will be opened.
 /// If managementURL is not available, the App Store’s subscription management section will be opened.
