@@ -159,6 +159,14 @@ Bump version, edit changelog, and create pull request
 
 Compiles Docc archive
 
+### ios deploy_docs
+
+```sh
+[bundle exec] fastlane ios deploy_docs
+```
+
+Deploys Docc archive
+
 ### ios prepare_next_version
 
 ```sh
