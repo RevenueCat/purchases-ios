@@ -69,6 +69,7 @@ These types replace native StoreKit types in all public API methods that used th
 | RCPurchaseCompletedBlock | <i>REMOVED</i> |
 | RCDeferredPromotionalPurchaseBlock | <i>REMOVED</i> |
 | RCPaymentDiscountBlock | <i>REMOVED</i> |
+| RCPaymentModeNone | <i>REMOVED</i> |
 
 #### PurchasesDelegate
 | v3 | v4 |
@@ -109,6 +110,8 @@ These types replace native StoreKit types in all public API methods that used th
 | RCAttributionNetwork | ``AttributionNetwork`` |
 | RCIntroEligibility | ``IntroEligibility`` |
 | RCIntroEligibilityStatus | ``IntroEligibilityStatus`` |
+| RCPaymentMode | ``StoreProductDiscount.PaymentMode`` |
+| RCPaymentModeNone | <i>REMOVED</i> |
 | Purchases.LogLevel | ``LogLevel`` |
 | Purchases.Offerings | ``Offerings`` |
 | Purchases.PackageType | ``PackageType`` |
