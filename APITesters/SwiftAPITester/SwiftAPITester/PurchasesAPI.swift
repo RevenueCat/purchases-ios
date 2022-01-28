@@ -126,8 +126,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
-    purchases.checkPromotionalDiscountEligibility(forProductDiscount: discount,
-                                                  product: storeProduct) { (_, _) in
+    purchases.checkPromotionalDiscountEligibility(
+        forProductDiscount: discount,
+        product: storeProduct
+    ) { (_: PromotionalOfferEligibility, _: Error?) in
 
     }
 
