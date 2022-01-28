@@ -236,20 +236,8 @@ jobs:
       - checkout
       - install-dependencies
       - run:
-          name: Install SourceKitten
-          command: brew install sourcekitten
-      - run:
           name: Build docs
-          command: bundle exec fastlane generate_docs
-      - run:
-          name: Install awscli
-          command: sudo python3 -m pip install awscli
-      - run:
-          name: Deploy to S3
-          command: aws s3 sync generated_docs s3://purchases-docs/ios --delete
-      - run:
-          name: Invalidate CloudFront caches
-          command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
+          command: bundle exec fastlane deploy_docs
   
   make-release:
     resource_class: macos.x86.medium.gen2

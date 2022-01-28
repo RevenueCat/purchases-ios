@@ -456,11 +456,6 @@ platform :ios do
     }
   end
 
-  desc "Generate Jazzy Docs"
-  lane :generate_docs do
-    jazzy    
-  end
-
 end
 
 def push_pods
