@@ -147,7 +147,7 @@ internal protocol StoreProductType {
     ///
     /// Before displaying UI that offers the introductory price,
     /// you must first determine if the user is eligible to receive it.
-    /// - Seealso: `Purchases.checkTrialOrIntroductoryPriceEligibility` to  determine eligibility.
+    /// - Seealso: `Purchases.checkTrialOrIntroDiscountEligibility` to  determine eligibility.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     var introductoryDiscount: StoreProductDiscount? { get }
 

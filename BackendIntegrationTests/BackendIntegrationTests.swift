@@ -250,7 +250,7 @@ class BackendIntegrationTests: XCTestCase {
         
         let unwrappedProductID = try XCTUnwrap(productID)
         
-        Purchases.shared.checkTrialOrIntroductoryPriceEligibility([unwrappedProductID]) { eligibility in
+        Purchases.shared.checkTrialOrIntroDiscountEligibility([unwrappedProductID]) { eligibility in
             completionCalled = true
             receivedEligibility = eligibility
         }
@@ -281,7 +281,7 @@ class BackendIntegrationTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        Purchases.shared.checkTrialOrIntroductoryPriceEligibility([unwrappedProductID]) { eligibility in
+        Purchases.shared.checkTrialOrIntroDiscountEligibility([unwrappedProductID]) { eligibility in
             completionCalled = true
             receivedEligibility = eligibility
         }

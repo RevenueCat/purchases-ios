@@ -61,7 +61,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
     func testSK1EligibilityIsCalculatedFromReceiptData() throws {
         let stubbedEligibility = ["product_id": IntroEligibilityStatus.eligible]
-        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroductoryPriceEligibilityResult = (stubbedEligibility, nil)
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = (stubbedEligibility, nil)
 
         var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
@@ -80,7 +80,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
-        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroductoryPriceEligibilityResult = ([:], stubbedError)
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
 
         let productId = "product_id"
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
@@ -104,7 +104,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
-        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroductoryPriceEligibilityResult = ([:], stubbedError)
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
 
         let productId = "product_id"
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
@@ -131,7 +131,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
-        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroductoryPriceEligibilityResult = ([:], stubbedError)
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
 
         mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
         var completionCalled = false
