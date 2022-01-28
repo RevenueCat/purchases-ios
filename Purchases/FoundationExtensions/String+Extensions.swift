@@ -16,8 +16,39 @@ import Foundation
 
 extension String {
 
+    enum Error: Swift.Error {
+
+        case escapingEmptyString
+        case trimmingEmptyString
+
+    }
+
     func rot13() -> String {
         ROT13.string(self)
+    }
+
+    func escapedOrError() throws -> String {
+        let trimmedAndEscaped = self
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+
+        guard trimmedAndEscaped.count > 0 else {
+            Logger.error("Attempting to escape an empty string")
+            throw Error.escapingEmptyString
+        }
+
+        return trimmedAndEscaped
+    }
+
+    func trimmedOrError() throws -> String {
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard trimmed.count > 0 else {
+            Logger.warn("Attempting to trim an empty string")
+            throw Error.trimmingEmptyString
+        }
+
+        return trimmed
     }
 
     /// Returns `nil` if `self` is an empty string.
@@ -37,19 +68,21 @@ extension String {
     var trimmingWhitespacesAndNewLines: String {
         return self.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
 }
 
 internal extension Optional where Wrapped == String {
+
     /// Returns `nil` if `self` is an empty string.
     var notEmpty: String? {
         return self.flatMap { $0.notEmpty }
     }
+
 }
 
 private enum ROT13 {
 
     private static var key = [Character: Character]()
-
     private static let uppercase = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
     private static let lowercase = Array("abcdefghijklmnopqrstuvwxyz")
 
