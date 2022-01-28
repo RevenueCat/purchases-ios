@@ -14,6 +14,9 @@
 
 import Foundation
 
+/**
+ An offering is a collection of Packages (`RCPackage`) available for the user to purchase. For more info see https://docs.revenuecat.com/docs/entitlements
+ */
 @objc(RCOffering) public class Offering: NSObject {
 
     /**
