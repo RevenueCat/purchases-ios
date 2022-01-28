@@ -41,9 +41,9 @@ If you see any issues or new APIs that fix-its didn't cover, we'd appreciate [bu
 
 To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to encapsulate data from `StoreKit 1` and `StoreKit 2`:
 
-- `StoreProduct` / `RCStoreProduct`: wraps a `StoreKit.SKProduct` or `StoreKit.Product`
-- `StoreTransaction` / `RCStoreTransaction`: wraps a `StoreKit.SKPaymentTransaction` or `StoreKit.Transaction`
-- `StoreProductDiscount` / `RCStoreProductDiscount`: wraps a `StoreKit.SKProductDiscount` or `StoreKit.Product.SubscriptionOffer`
+- ``StoreProduct`` / `RCStoreProduct`: wraps a `StoreKit.SKProduct` or `StoreKit.Product`
+- ``StoreTransaction`` / `RCStoreTransaction`: wraps a `StoreKit.SKPaymentTransaction` or `StoreKit.Transaction`
+- ``StoreProductDiscount`` / `RCStoreProductDiscount`: wraps a `StoreKit.SKProductDiscount` or `StoreKit.Product.SubscriptionOffer`
 
 These types replace native StoreKit types in all public API methods that used them.
 
@@ -84,7 +84,7 @@ These types replace native StoreKit types in all public API methods that used th
 | Purchases -restoreTransactionsWithCompletion: | Purchases -restorePurchasesWithCompletion: |
 | Purchases -offeringsWithCompletion: | Purchases -getOfferingsWithCompletion: |
 | Purchases -productsWithIdentifiers:completion: | Purchases -getProductsWithIdentifiers:completion: |
-| Purchases -paymentDiscountForProductDiscount:product:completion: | Can be accessed from `RCStoreProduct.introductoryPrice` and `RCStoreProduct.introductoryPrice` |
+| Purchases -paymentDiscountForProductDiscount:product:completion: | REMOVED - Check eligibility for a discount using `checkPromotionalOfferEligibility:`, then pass the discount directly to `purchasePackage:withDiscount:completion:` or `purchaseProduct:withDiscount:completion:` |
 | Purchases -createAlias: | Purchases -logIn: |
 | Purchases -identify: | Purchases -logIn: |
 | Purchases -reset: | Purchases -logOut: |
@@ -143,7 +143,7 @@ These types replace native StoreKit types in all public API methods that used th
 | purchasePackage(_ package:, _ completion:) | ``Purchases/purchase(package:completion:)`` |
 | restoreTransactions(_ completion:) | ``Purchases/restorePurchases(completion:)`` |
 | syncPurchases(_ completion:) | ``Purchases/syncPurchases(completion:)`` |
-| paymentDiscount(for:product:completion:) | REMOVED - access discount from ``StoreProduct/introductoryPrice`` |
+| paymentDiscount(for:product:completion:) | REMOVED - Check eligibility for a discount using ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:)``, then pass the discount directly to ``Purchases/purchase(package:discount:)`` or ``Purchases/purchase(product:discount:)`` |
 | purchaseProduct(_:discount:_) | ``Purchases/purchase(product:discount:completion:)`` |
 | purchasePackage(_:discount:_) | ``Purchases/purchase(package:discount:completion:)`` |
 
