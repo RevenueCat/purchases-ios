@@ -7,7 +7,7 @@
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-orange.svg)](https://docs.revenuecat.com/docs/ios#section-install-via-swift-package-manager)
 
 ## Purchases.framework (currently supported)
-We're in the process of migrating the entire framework over to Swift 🎉. The new framework is called `RevenueCat.framework`. While this migration is happening, you can (and should) still use the currently supported production version you know and love. If you'd like to help us by testing our RX, please feel free!
+We're in the process of releasing a new version of the framework, entirely re-written in Swift 🎉. The new framework is called `RevenueCat.framework`. It's currently in Release Candidate status. If you don't want to stick that close to the bleeding edge, you should use `Purchases.framework`, which is available in purchases-ios v3.
 
 ## Migrating from Purchases v3
 - See our [Migration guide](Documentation.docc/V4_API_Migration_guide.md)
@@ -19,17 +19,6 @@ We're in the process of migrating the entire framework over to Swift 🎉. The n
 **Purchases** is the currently supported, production-ready, open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing in-app subscriptions in `Swift` or `Objective-C` easy - receipt validation and status tracking included! 
 
 **RevenueCat** is our next big release (what we've been calling Purchases V4). It is a rename of `Purchases` to `RevenueCat`, and now, 100% `Swift` (while maintaining `Objective-C` compatibility). It contains all the same functionality (and almost exactly the same API) as `Purchases`. It's not a brand-new framework, but rather, a migration of the ObjC bits over to Swift with improved nullability, various bug fixes, and some new features. You can see what's changed in the [API updates doc](https://rev.cat/uet).
-
-It also includes `StoreKit2` support! You can enable it when setting up the framework:
-```swift
-Purchases.configure(
-	withAPIKey: "your_api_key",
-	appUserID: nil,
-	observerMode: false,
-	userDefaults: nil,
-	useStoreKit2IfAvailable: true
-)
-```
 
 ### ⚠️ Release Candidate build warning
 Are you here because you saw a build warning about being on the RC?
