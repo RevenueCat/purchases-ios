@@ -207,14 +207,6 @@ Run BackendIntegrationTests
 
 Update swift package commit
 
-### ios generate_docs
-
-```sh
-[bundle exec] fastlane ios generate_docs
-```
-
-Generate Jazzy Docs
-
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
