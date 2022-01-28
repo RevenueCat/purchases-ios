@@ -16,7 +16,8 @@
 import Foundation
 
 /**
- A container for the most recent customer info returned from `Purchases`. These objects are non-mutable and do not update automatically.
+ A container for the most recent customer info returned from `Purchases`.
+ These objects are non-mutable and do not update automatically.
  */
 @objc(RCCustomerInfo) public class CustomerInfo: NSObject {
 

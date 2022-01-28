@@ -121,7 +121,8 @@ private extension PackageType {
 }
 
 /**
- Contains information about the product available for the user to purchase. For more info see https://docs.revenuecat.com/docs/entitlements
+ Contains information about the product available for the user to purchase.
+ For more info, see [our docs on Packages](https://docs.revenuecat.com/docs/entitlements)
 */
 @objc public extension Package {
 
