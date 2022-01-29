@@ -484,6 +484,15 @@ public extension StoreProductDiscount.PaymentMode {
     static var none: StoreProductDiscount.PaymentMode { fatalError() }
 }
 
+// Note: `RCPaymentMode` is still available to Objective-C through `StoreProductDiscount.PaymentMode`.
+/// todo: add
+@available(iOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+@available(tvOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+@available(watchOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+@available(macOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+@available(macCatalyst, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+public enum RCPaymentMode {}
+
 /// `NSErrorDomain` for errors occurring within the scope of the Purchases SDK.
 @available(iOS, obsoleted: 1, message: "Use ErrorCode instead")
 @available(tvOS, obsoleted: 1, message: "Use ErrorCode instead")
