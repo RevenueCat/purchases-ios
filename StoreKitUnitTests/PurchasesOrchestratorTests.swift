@@ -336,12 +336,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                             paymentMode: .payAsYouGo,
                                                             subscriptionPeriod: .init(value: 1, unit: .month))
 
-        _ = await withCheckedContinuation { continuation in
-            orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
-                                          product: StoreProduct(sk2Product: product)) { paymentDiscount, error in
-                continuation.resume(returning: (paymentDiscount, error))
-            }
-        }
+        _ = try await orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                                    product: StoreProduct(sk2Product: product))
 
         expect(self.backend.invokedPostOfferCount) == 1
         expect(self.backend.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier

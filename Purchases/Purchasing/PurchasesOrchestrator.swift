@@ -343,6 +343,25 @@ class PurchasesOrchestrator {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func promotionalOffer(
+        forProductDiscount discount: StoreProductDiscountType,
+        product: StoreProductType
+    ) async throws -> PromotionalOffer {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.promotionalOffer(forProductDiscount: discount,
+                                  product: product) { offer, error in
+                if let offer = offer {
+                    continuation.resume(with: .success(offer))
+                } else if let error = error {
+                    continuation.resume(with: .failure(error))
+                } else {
+                    fatalError("Unexpectedly got no result or error")
+                }
+            }
+        }
+    }
+
 #if os(iOS) || os(macOS)
 
     @available(watchOS, unavailable)
@@ -746,22 +765,4 @@ private extension PurchasesOrchestrator {
                  completion: completion)
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func promotionalOffer(
-        forProductDiscount discount: StoreProductDiscountType,
-        product: StoreProductType
-    ) async throws -> PromotionalOffer {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.promotionalOffer(forProductDiscount: discount,
-                                  product: product) { offer, error in
-                if let offer = offer {
-                    continuation.resume(with: .success(offer))
-                } else if let error = error {
-                    continuation.resume(with: .failure(error))
-                } else {
-                    fatalError("Unexpectedly got no result or error")
-                }
-            }
-        }
-    }
 }
