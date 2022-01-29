@@ -17,6 +17,14 @@ import Foundation
 import StoreKit
 
 // MARK: Block definitions
+
+/**
+ Result for ``Purchases/purchase(product:)``
+ */
+public typealias PurchaseResultData = (transaction: StoreTransaction?,
+                                       customerInfo: CustomerInfo?,
+                                       userCancelled: Bool)
+
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
@@ -955,9 +963,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(product: StoreProduct) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchase(product: StoreProduct) async throws -> PurchaseResultData {
         return try await purchaseAsync(product: product)
     }
 
@@ -997,9 +1003,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(package: Package) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchase(package: Package) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package)
     }
 
@@ -1052,9 +1056,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(product: StoreProduct, discount: StoreProductDiscount) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchase(product: StoreProduct, discount: StoreProductDiscount) async throws -> PurchaseResultData {
         return try await purchaseAsync(product: product, discount: discount)
     }
 
@@ -1100,9 +1102,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(package: Package, discount: StoreProductDiscount) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchase(package: Package, discount: StoreProductDiscount) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package, discount: discount)
     }
 

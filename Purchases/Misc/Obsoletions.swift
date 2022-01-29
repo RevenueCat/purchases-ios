@@ -189,9 +189,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:)")
     @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:)")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:)")
-    func purchasePackage(_ package: Package) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchasePackage(_ package: Package) async throws -> PurchaseResultData {
         fatalError()
     }
 
@@ -234,9 +232,7 @@ public extension Purchases {
     @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:discount:)")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:discount:)")
     func purchasePackage(_ package: Package,
-                         discount: SKPaymentDiscount) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+                         discount: SKPaymentDiscount) async throws -> PurchaseResultData {
         fatalError()
     }
 
