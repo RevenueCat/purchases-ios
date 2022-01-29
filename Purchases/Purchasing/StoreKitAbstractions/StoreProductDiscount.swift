@@ -26,12 +26,16 @@ public typealias SK2ProductDiscount = StoreKit.Product.SubscriptionOffer
 @objc(RCStoreProductDiscount)
 public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
+    /// The payment mode for a `StoreProductDiscount`
+    /// Indicates how the product discount price is charged.
     @objc(RCPaymentMode)
     public enum PaymentMode: Int {
 
-        case none = -1
+        /// Price is charged one or more times
         case payAsYouGo = 0
+        /// Price is charged once in advance
         case payUpFront = 1
+        /// No initial charge
         case freeTrial = 2
 
     }
@@ -99,13 +103,17 @@ internal protocol StoreProductDiscountType {
 extension StoreProductDiscount {
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    internal convenience init(sk1Discount: SK1ProductDiscount) {
-        self.init(SK1StoreProductDiscount(sk1Discount: sk1Discount))
+    internal convenience init?(sk1Discount: SK1ProductDiscount) {
+        guard let discount = SK1StoreProductDiscount(sk1Discount: sk1Discount) else { return nil }
+
+        self.init(discount)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    internal convenience init(sk2Discount: SK2ProductDiscount) {
-        self.init(SK2StoreProductDiscount(sk2Discount: sk2Discount))
+    internal convenience init?(sk2Discount: SK2ProductDiscount) {
+        guard let discount = SK2StoreProductDiscount(sk2Discount: sk2Discount) else { return nil }
+
+        self.init(discount)
     }
 
     /// Returns the `SK1ProductDiscount` if this `StoreProductDiscount` represents a `SKProductDiscount`.

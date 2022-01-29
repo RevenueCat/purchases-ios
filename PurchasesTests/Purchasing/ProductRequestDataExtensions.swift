@@ -8,12 +8,12 @@ import Foundation
 
 extension ProductRequestData {
     static func createMockProductData(productIdentifier: String = "product_id",
-                                      paymentMode: StoreProductDiscount.PaymentMode = .none,
+                                      paymentMode: StoreProductDiscount.PaymentMode? = nil,
                                       currencyCode: String = "UYU",
                                       price: Decimal = 15.99,
                                       normalDuration: String? = nil,
                                       introDuration: String? = nil,
-                                      introDurationType: StoreProductDiscount.PaymentMode = .none,
+                                      introDurationType: StoreProductDiscount.PaymentMode? = nil,
                                       introPrice: Decimal? = nil,
                                       subscriptionGroup: String? = nil,
                                       discounts: [StoreProductDiscountType]? = nil) -> ProductRequestData {

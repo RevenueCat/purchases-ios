@@ -474,6 +474,25 @@ public extension Package {
     @objc var product: SKProduct { fatalError() }
 }
 
+public extension StoreProductDiscount.PaymentMode {
+    /// No payment mode specified
+    @available(iOS, obsoleted: 1, message: "This option no longer exists. PaymentMode would be nil instead.")
+    @available(tvOS, obsoleted: 1, message: "This option no longer exists. PaymentMode would be nil instead.")
+    @available(watchOS, obsoleted: 1, message: "This option no longer exists. PaymentMode would be nil instead.")
+    @available(macOS, obsoleted: 1, message: "This option no longer exists. PaymentMode would be nil instead.")
+    @available(macCatalyst, obsoleted: 1, message: "This option no longer exists. PaymentMode would be nil instead.")
+    static var none: StoreProductDiscount.PaymentMode { fatalError() }
+}
+
+// Note: `RCPaymentMode` is still available to Objective-C through `StoreProductDiscount.PaymentMode`.
+/// The payment mode for a `StoreProductDiscount`
+@available(iOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+@available(tvOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+@available(watchOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+@available(macOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+@available(macCatalyst, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
+public enum RCPaymentMode {}
+
 /// `NSErrorDomain` for errors occurring within the scope of the Purchases SDK.
 @available(iOS, obsoleted: 1, message: "Use ErrorCode instead")
 @available(tvOS, obsoleted: 1, message: "Use ErrorCode instead")
