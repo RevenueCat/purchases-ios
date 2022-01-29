@@ -40,7 +40,7 @@ extension PromotionalOffer {
             offerID: self.identifier,
             keyID: self.keyIdentifier,
             nonce: self.nonce,
-            signature: self.signature.data(using: .utf8)!, // todo: is this correct?
+            signature: self.signature.data(using: .utf8)!,
             timestamp: self.timestamp
         )
     }
