@@ -19,7 +19,8 @@ import StoreKit
 // MARK: Block definitions
 
 /**
- Result for ``Purchases/purchase(product:)``
+ Result for ``Purchases/purchase(product:)``.
+ Counterpart of `PurchaseCompletedBlock` for `async` APIs.
  */
 public typealias PurchaseResultData = (transaction: StoreTransaction?,
                                        customerInfo: CustomerInfo?,
