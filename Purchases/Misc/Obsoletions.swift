@@ -485,7 +485,7 @@ public extension StoreProductDiscount.PaymentMode {
 }
 
 // Note: `RCPaymentMode` is still available to Objective-C through `StoreProductDiscount.PaymentMode`.
-/// todo: add
+/// The payment mode for a `StoreProductDiscount`
 @available(iOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
 @available(tvOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
 @available(watchOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")

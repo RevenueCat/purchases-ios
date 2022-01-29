@@ -26,11 +26,16 @@ public typealias SK2ProductDiscount = StoreKit.Product.SubscriptionOffer
 @objc(RCStoreProductDiscount)
 public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
+    /// The payment mode for a `StoreProductDiscount`
+    /// Indicates how the product discount price is charged.
     @objc(RCPaymentMode)
     public enum PaymentMode: Int {
 
+        /// Price is charged one or more times
         case payAsYouGo = 0
+        /// Price is charged once in advance
         case payUpFront = 1
+        /// No initial charge
         case freeTrial = 2
 
     }
