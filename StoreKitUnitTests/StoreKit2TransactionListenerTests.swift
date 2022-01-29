@@ -46,14 +46,14 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
 
     // MARK: -
 
-    func testCancelled() async throws {
+    func testIsCancelledIsTrueWhenPurchaseIsCancelled() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let isCancelled = try await self.listener.handle(purchaseResult: .userCancelled)
         expect(isCancelled) == true
     }
 
-    func testTransactionIsPending() async throws {
+    func testPendingTransactionsReturnPaymentPendingError() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         // Note: can't use `expect().to(throwError)` or `XCTAssertThrowsError`
@@ -66,7 +66,7 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
         }
     }
 
-    func testUnverifiedTransaction() async throws {
+    func testUnverifiedTransactionsReturnStoreProblemError() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transaction = try await self.createTransactionWithPurchase()
