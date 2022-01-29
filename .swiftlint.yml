@@ -21,3 +21,5 @@ identifier_name:
     warning: 60 
     error: 80
 
+missing_docs:
+  excludes_inherited_types: false

@@ -22,7 +22,6 @@ public typealias SK1Product = SKProduct
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Product = StoreKit.Product
 
-// Note: this class inherits its docs from `StoreProductType`
 // It's an @objc wrapper of a `StoreProductType`. Swift-only code can use the protocol directly.
 /// Type that provides access to all of `StoreKit`'s product type's properties.
 @objc(RCStoreProduct) public final class StoreProduct: NSObject, StoreProductType {
@@ -59,6 +58,9 @@ public typealias SK2Product = StoreKit.Product
         return hasher.finalize()
     }
 
+    // Note: this class inherits its docs from `StoreProductType`
+    // swiftlint:disable missing_docs
+
     @objc public var localizedDescription: String { self.product.localizedDescription }
 
     @objc public var localizedTitle: String { self.product.localizedTitle }
@@ -86,6 +88,7 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var discounts: [StoreProductDiscount] { self.product.discounts }
 
+    // switflint:enable missing_docs
 }
 
 /// Type that provides access to all of `StoreKit`'s product type's properties.

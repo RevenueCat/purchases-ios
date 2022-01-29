@@ -32,10 +32,15 @@ public typealias SK2Transaction = StoreKit.Transaction
         super.init()
     }
 
+    // Note: docs are inherited through `StoreTransactionType`
+    // swiftlint:disable missing_docs
+
     @objc public var productIdentifier: String { self.transaction.productIdentifier }
     @objc public var purchaseDate: Date { self.transaction.purchaseDate }
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
     @objc public var quantity: Int { self.transaction.quantity }
+
+    // swiftlint:enable missing_docs
 
     /// Creates an instance from any `StoreTransactionType`.
     /// If `transaction` is already a wrapped `StoreTransaction` then this returns it instead.
