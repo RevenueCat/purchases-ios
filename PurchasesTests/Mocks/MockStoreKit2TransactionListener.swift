@@ -30,6 +30,8 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
     var invokedDelegateGetterCount = 0
     weak var stubbedDelegate: StoreKit2TransactionListenerDelegate!
 
+    var mockTransaction: SK2Transaction?
+
     override var delegate: StoreKit2TransactionListenerDelegate? {
         get {
             invokedDelegateGetter = true
@@ -60,11 +62,13 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
     var invokedHandleParameters: (purchaseResult: Any, Void)?
     var invokedHandleParametersList = [(purchaseResult: Any, Void)]()
 
-    override func handle(purchaseResult: StoreKit.Product.PurchaseResult) async throws -> Bool {
+    override func handle(
+        purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> (userCancelled: Bool, transaction: SK2Transaction?) {
         invokedHandle = true
         invokedHandleCount += 1
         invokedHandleParameters = (purchaseResult, ())
         invokedHandleParametersList.append((purchaseResult, ()))
-        return false
+        return (false, mockTransaction)
     }
 }

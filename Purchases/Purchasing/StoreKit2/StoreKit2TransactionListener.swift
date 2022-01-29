@@ -50,15 +50,18 @@ class StoreKit2TransactionListener {
 
     /// - Returns: whether the user cancelled
     /// - Throws: Error if purchase was not completed successfully
-    func handle(purchaseResult: StoreKit.Product.PurchaseResult) async throws -> Bool {
+    func handle(
+        purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> (userCancelled: Bool, transaction: SK2Transaction?) {
         switch purchaseResult {
         case .success(let verificationResult):
-            try await handle(transactionResult: verificationResult)
-            return false
+            let transaction = try await handle(transactionResult: verificationResult)
+
+            return (false, transaction)
         case .pending:
             throw ErrorUtils.paymentDeferredError()
         case .userCancelled:
-            return true
+            return (true, nil)
         @unknown default:
             throw ErrorUtils.storeProblemError(
                 withMessage: Strings.purchase.unknown_purchase_result(result: String(describing: purchaseResult))
@@ -73,7 +76,7 @@ class StoreKit2TransactionListener {
 private extension StoreKit2TransactionListener {
 
     /// - Throws: ``ErrorCode`` if the transaction fails to verify.
-    func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async throws {
+    func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async throws -> SK2Transaction {
         switch transactionResult {
         case let .unverified(unverifiedTransaction, verificationError):
             throw ErrorUtils.storeProblemError(
@@ -86,6 +89,8 @@ private extension StoreKit2TransactionListener {
 
         case .verified(let verifiedTransaction):
             await finish(transaction: verifiedTransaction)
+
+            return verifiedTransaction
         }
     }
 
