@@ -439,7 +439,7 @@ private extension PurchasesOrchestrator {
         if let error = transaction.error,
            let completion = getAndRemovePurchaseCompletedCallback(forTransaction: transaction) {
             let nsError = error as NSError
-            let userCancelled = nsError.code == SKError.paymentCancelled.rawValue
+            let userCancelled = nsError.domain == SKErrorDomain && nsError.code == SKError.paymentCancelled.rawValue
             operationDispatcher.dispatchOnMainThread {
                 completion(StoreTransaction(sk1Transaction: transaction),
                            nil,
