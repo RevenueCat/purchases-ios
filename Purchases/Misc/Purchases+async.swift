@@ -100,9 +100,6 @@ extension Purchases {
                 guard let customerInfo = customerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
                 }
-                guard let transaction = transaction else {
-                    fatalError("Expected non-nil result 'transaction' for nil error")
-                }
 
                 continuation.resume(returning: (transaction, customerInfo, userCancelled))
             }
@@ -119,9 +116,6 @@ extension Purchases {
                 }
                 guard let customerInfo = customerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                guard let transaction = transaction else {
-                    fatalError("Expected non-nil result 'transaction' for nil error")
                 }
 
                 continuation.resume(returning: (transaction, customerInfo, userCancelled))
@@ -141,9 +135,6 @@ extension Purchases {
                 guard let customerInfo = customerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
                 }
-                guard let transaction = transaction else {
-                    fatalError("Expected non-nil result 'transaction' for nil error")
-                }
 
                 continuation.resume(returning: (transaction, customerInfo, userCancelled))
             }
@@ -161,9 +152,6 @@ extension Purchases {
                 }
                 guard let customerInfo = customerInfo else {
                     fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                guard let transaction = transaction else {
-                    fatalError("Expected non-nil result 'transaction' for nil error")
                 }
 
                 continuation.resume(returning: (transaction, customerInfo, userCancelled))
