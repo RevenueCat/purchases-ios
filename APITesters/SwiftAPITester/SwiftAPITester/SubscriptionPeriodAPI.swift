@@ -19,11 +19,10 @@ func checkSubscriptionPeriodAPI() {
 }
 
 func checkSubscriptionPeriodUnit() {
-    let unit: SubscriptionPeriod.Unit = .unknown
+    let unit: SubscriptionPeriod.Unit = .day
 
     switch unit {
     case
-            .unknown,
             .day,
             .week,
             .month,
