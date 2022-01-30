@@ -23,14 +23,27 @@ extension PurchaseOwnershipType: Decodable {
                                                   message: "Unable to extract an purchaseOwnershipTypeString")
         }
 
-        switch purchaseOwnershipTypeString {
-        case "PURCHASED":
-            self = .purchased
-        case "FAMILY_SHARED":
-            self = .familyShared
-        default:
+        if let type = Self.mapping[purchaseOwnershipTypeString] {
+            self = type
+        } else {
             Logger.error(Strings.codable.unexpectedValueError(type: PurchaseOwnershipType.self))
             self = .unknown
+        }
+    }
+
+    private static let mapping: [String: Self] = Self.allCases
+        .filter { $0.name != nil }
+        .dictionaryWithKeys { $0.name! }
+
+}
+
+private extension PurchaseOwnershipType {
+
+    var name: String? {
+        switch self {
+        case .purchased: return "PURCHASED"
+        case .familyShared: return "FAMILY_SHARED"
+        case .unknown: return nil
         }
     }
 
