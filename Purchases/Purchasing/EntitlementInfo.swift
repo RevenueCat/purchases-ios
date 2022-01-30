@@ -54,6 +54,8 @@ import Foundation
     @objc(RCTrial) case trial = 2
 }
 
+extension PeriodType: CaseIterable {}
+
 /**
  The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
  */
