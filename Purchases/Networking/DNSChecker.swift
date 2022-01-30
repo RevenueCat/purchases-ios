@@ -25,7 +25,7 @@ protocol DNSCheckerType {
 enum DNSError: Error, DescribableError, Equatable {
     case blocked(failedURL: URL, resolvedHost: String?)
 
-    public var description: String {
+    var description: String {
         switch self {
         case .blocked(let failedURL, let resolvedHost):
             return NetworkStrings.blocked_network(url: failedURL, newHost: resolvedHost).description

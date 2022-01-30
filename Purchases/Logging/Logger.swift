@@ -14,10 +14,14 @@
 
 import Foundation
 
+/// Enumeration of the different verbosity levels
+/// - Seealso: ``Purchases/logLevel``
 @objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible {
 
+    // swiftlint:disable:next missing_docs
     case debug, info, warn, error
 
+    // swiftlint:disable:next missing_docs
     public var description: String {
         switch self {
         case .debug: return "DEBUG"

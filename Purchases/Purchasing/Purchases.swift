@@ -194,6 +194,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     /// Current version of the Purchases framework.
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
+    /// Whether transactions should be finished automatically.
+    /// `true` by default.
     @objc public var finishTransactions: Bool {
         get { systemInfo.finishTransactions }
         set { systemInfo.finishTransactions = newValue }

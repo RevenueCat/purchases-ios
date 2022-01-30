@@ -15,6 +15,7 @@ import Foundation
 
 extension PeriodType: Decodable {
 
+    // swiftlint:disable:next missing_docs
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         guard let periodTypeString = try? container.decode(String.self) else {

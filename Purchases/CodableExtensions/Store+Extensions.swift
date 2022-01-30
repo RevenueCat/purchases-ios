@@ -15,6 +15,7 @@ import Foundation
 
 extension Store: Decodable {
 
+    // swiftlint:disable:next missing_docs
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         guard let storeString = try? container.decode(String.self) else {
