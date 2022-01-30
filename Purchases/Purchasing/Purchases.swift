@@ -774,8 +774,9 @@ public extension Purchases {
 
     /// Returns an `AsyncStream` of ``CustomerInfo`` changes.
     ///
-    /// - Seealso `PurchasesDelegate.purchases(_ purchases: Purchases, didReceiveUpdated:)`
-    /// - Seealso `Purchases.customerInfo()`
+    /// - Seealso ``PurchasesDelegate/purchases(_:didReceiveUpdated:)``
+    /// - Seealso ``Purchases/customerInfo()``
+    /// - Seealso ``Purchases/customerInfoPublisher``
     /// - Note: this method is not thread-safe.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
@@ -1440,6 +1441,28 @@ public extension Purchases {
         return purchases
     }
 }
+
+// MARK: - Combine
+
+#if canImport(Combine)
+
+import Combine
+
+public extension Purchases {
+
+    /// Returns an `AnyPublisher` of ``CustomerInfo`` changes.
+    ///
+    /// - Seealso ``PurchasesDelegate/purchases(_:didReceiveUpdated:)``
+    /// - Seealso ``Purchases/customerInfo()``
+    /// - Seealso ``Purchases/customerInfoStream``
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    var customerInfoPublisher: AnyPublisher<CustomerInfo, Never> {
+        return self.customerInfoManager.customerInfoPublisher.eraseToAnyPublisher()
+    }
+
+}
+
+#endif
 
 // MARK: Delegate implementation
 

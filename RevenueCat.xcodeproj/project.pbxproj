@@ -222,6 +222,8 @@
 		57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */; };
 		57AC4C182770F55C00DDE30F /* SK2StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57AC4C172770F55C00DDE30F /* SK2StoreProduct.swift */; };
 		57AC4C1C2770F56200DDE30F /* SK1StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57AC4C1B2770F56200DDE30F /* SK1StoreProduct.swift */; };
+		57B9576C27A747DD00065C9C /* Combine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57B9576B27A747DD00065C9C /* Combine.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		57B9576E27A74C2300065C9C /* CustomerInfoManager+Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B9576D27A74C2300065C9C /* CustomerInfoManager+Combine.swift */; };
 		57BD50AA27692B7500211D6D /* StoreKitError+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */; };
 		57C381B72791E593009E3940 /* StoreKit2TransactionListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381B62791E593009E3940 /* StoreKit2TransactionListenerTests.swift */; };
 		57C381DA2796153D009E3940 /* SK1StoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381D92796153D009E3940 /* SK1StoreProductDiscount.swift */; };
@@ -610,6 +612,8 @@
 		57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetExtensionsTests.swift; sourceTree = "<group>"; };
 		57AC4C172770F55C00DDE30F /* SK2StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2StoreProduct.swift; sourceTree = "<group>"; };
 		57AC4C1B2770F56200DDE30F /* SK1StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1StoreProduct.swift; sourceTree = "<group>"; };
+		57B9576B27A747DD00065C9C /* Combine.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Combine.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Combine.framework; sourceTree = DEVELOPER_DIR; };
+		57B9576D27A74C2300065C9C /* CustomerInfoManager+Combine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerInfoManager+Combine.swift"; sourceTree = "<group>"; };
 		57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreKitError+Extensions.swift"; sourceTree = "<group>"; };
 		57C381B62791E593009E3940 /* StoreKit2TransactionListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionListenerTests.swift; sourceTree = "<group>"; };
 		57C381D92796153D009E3940 /* SK1StoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1StoreProductDiscount.swift; sourceTree = "<group>"; };
@@ -746,6 +750,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57B9576C27A747DD00065C9C /* Combine.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1176,6 +1181,7 @@
 		3530C18722653E8F00D6DF52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				57B9576B27A747DD00065C9C /* Combine.framework */,
 				B36824BD268FBC5B00957E4C /* XCTest.framework */,
 				2DE20B9126409ECF004C597D /* StoreKit.framework */,
 				2DE20B7526408806004C597D /* StoreKitTest.framework */,
@@ -1482,6 +1488,7 @@
 				A56F9AB026990E9200AFC48F /* CustomerInfo.swift */,
 				B3852F9F26C1ED1F005384F8 /* IdentityManager.swift */,
 				B3A36AAD26BC76340059EDEA /* CustomerInfoManager.swift */,
+				57B9576D27A74C2300065C9C /* CustomerInfoManager+Combine.swift */,
 			);
 			path = Identity;
 			sourceTree = "<group>";
@@ -2000,6 +2007,7 @@
 				2DDF41AC24F6F37C005BC22D /* ASN1Container.swift in Sources */,
 				9A65E07B2591977500DE00B0 /* NetworkStrings.swift in Sources */,
 				F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */,
+				57B9576E27A74C2300065C9C /* CustomerInfoManager+Combine.swift in Sources */,
 				F5714EAC26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift in Sources */,
 				B34605C4279A6E380031CA74 /* SubscriberAttributeHandler.swift in Sources */,
 				F5BE424026962ACF00254A30 /* ReceiptRefreshPolicy.swift in Sources */,
