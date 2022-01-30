@@ -56,3 +56,13 @@ extension PromotionalOffer {
 }
 
 extension PromotionalOfferEligibility: CaseIterable {}
+
+public extension PromotionalOfferEligibility {
+    /// - Returns: `true` if the offer is eligible.
+    var isEligible: Bool {
+        switch self {
+        case .eligible: return true
+        case .ineligible: return false
+        }
+    }
+}

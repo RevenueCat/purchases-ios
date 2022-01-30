@@ -155,6 +155,10 @@ internal protocol StoreProductType {
     var introductoryDiscount: StoreProductDiscount? { get }
 
     /// An array of subscription offers available for the auto-renewable subscription.
+    /// - Note: the currenet user may or may not be eligible for some of these.
+    /// - Seealso: ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:)``
+    /// - Seealso: ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)`
+    /// - Seealso: ``StoreProduct/eligibleDiscounts(withPurchases:)``
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     var discounts: [StoreProductDiscount] { get }
 
@@ -182,6 +186,52 @@ public extension StoreProduct {
         return formatter.string(from: intro.price as NSDecimalNumber)
     }
 
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+public extension StoreProduct {
+    /// Asynchronously determines the subset of ``discounts`` that's eligible for the current user.
+    /// - Parameter purchases: the instance of `Purchases` to use when determining eligibility.
+    /// - Seealso: ``discounts``
+    /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
+    /// that discount will fail silently and be considered not eligible.
+    func eligibleDiscounts(withPurchases purchases: Purchases) async -> [StoreProductDiscount] {
+        let discounts = self.discounts
+        let product = self
+
+        return await withTaskGroup(of: Optional<StoreProductDiscount>.self) { group in
+            for discount in discounts {
+                group.addTask {
+                    do {
+                        let eligibility = try await purchases.checkPromotionalDiscountEligibility(
+                            forProductDiscount: discount,
+                            product: product
+                        )
+
+                        return eligibility.isEligible ? discount : nil
+                    } catch {
+                        Logger.error(
+                            Strings.purchase.check_eligibility_failed(
+                                productIdentifier: product.productIdentifier,
+                                error: error
+                            )
+                        )
+                        return nil
+                    }
+                }
+            }
+
+            var result: [StoreProductDiscount] = []
+
+            for await discount in group {
+                if let discount = discount {
+                    result.append(discount)
+                }
+            }
+
+            return result
+        }
+    }
 }
 
 // MARK: - Wrapper constructors / getters
