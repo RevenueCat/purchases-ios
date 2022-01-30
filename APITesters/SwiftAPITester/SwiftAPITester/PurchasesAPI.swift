@@ -199,12 +199,12 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: [StoreProduct] = await purchases.products([])
         let discount: StoreProductDiscount! = nil
-        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
-        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
-                                                                                     discount: discount)
-        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
-        let _: (StoreTransaction, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
-                                                                                     discount: discount)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
+                                                                                      discount: discount)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
+                                                                                      discount: discount)
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.restorePurchases()
         let _: CustomerInfo = try await purchases.syncPurchases()

@@ -335,7 +335,7 @@ class PurchasesOrchestrator {
             throw error
         case .success(let (customerInfo, userCancelled)):
             if userCancelled {
-                return (nil, nil, userCancelled)
+                return (nil, customerInfo, userCancelled)
             } else {
                 // todo: change API and send transaction
                 return (nil, customerInfo, userCancelled)

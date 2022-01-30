@@ -23,7 +23,7 @@ import StoreKit
  Counterpart of `PurchaseCompletedBlock` for `async` APIs.
  */
 public typealias PurchaseResultData = (transaction: StoreTransaction?,
-                                       customerInfo: CustomerInfo?,
+                                       customerInfo: CustomerInfo,
                                        userCancelled: Bool)
 
 /**
