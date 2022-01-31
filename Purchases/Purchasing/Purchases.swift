@@ -1413,7 +1413,7 @@ public extension Purchases {
      * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
      * sync status across a shared container, such as between a host app and an extension. The instance of the
      * Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases.shared``
+     * You should access the singleton instance using ``Purchases/shared``
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
@@ -1426,7 +1426,10 @@ public extension Purchases {
      *
      * - Parameter userDefaults: Custom `UserDefaults` to use
      *
-     * - Parameter useStoreKit2IfAvailable: opt in to using StoreKit 2 on devices that support it.
+     * - Parameter useStoreKit2IfAvailable: EXPERIMENTAL. opt in to using StoreKit 2 on devices that support it.
+     * Purchases will be made using StoreKit 2 under the hood automatically.
+     * - Important: Support for purchases using StoreKit 2 is currently in an experimental phase.
+     * We recommend setting this value to `false` (default) for production apps.
      *
      * - Returns: An instantiated `Purchases` object that has been set as a singleton.
      */
