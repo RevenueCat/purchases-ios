@@ -127,29 +127,30 @@ class OfferingsTests: XCTestCase {
             "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
             "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
         ]
-        let maybeOfferings = offeringsFactory.createOfferings(from: products, data: [
-            "offerings": [
-                [
-                    "identifier": "offering_a",
-                    "description": "This is the base offering",
-                    "packages": [
-                        ["identifier": "$rc_six_month",
-                         "platform_product_identifier": "com.myproduct.annual"]
+        let offerings = try XCTUnwrap(
+            offeringsFactory.createOfferings(from: products, data: [
+                "offerings": [
+                    [
+                        "identifier": "offering_a",
+                        "description": "This is the base offering",
+                        "packages": [
+                            ["identifier": "$rc_six_month",
+                             "platform_product_identifier": "com.myproduct.annual"]
+                        ]
+                    ],
+                    [
+                        "identifier": "offering_b",
+                        "description": "This is the base offering b",
+                        "packages": [
+                            ["identifier": "$rc_monthly",
+                             "platform_product_identifier": "com.myproduct.monthly"]
+                        ]
                     ]
                 ],
-                [
-                    "identifier": "offering_b",
-                    "description": "This is the base offering b",
-                    "packages": [
-                        ["identifier": "$rc_monthly",
-                         "platform_product_identifier": "com.myproduct.monthly"]
-                    ]
-                ]
-            ],
-            "current_offering_id": "offering_a"
-        ])
+                "current_offering_id": "offering_a"
+            ])
+        )
 
-        let offerings = try XCTUnwrap(maybeOfferings)
         expect(offerings["offering_a"]).toNot(beNil())
         expect(offerings["offering_b"]).toNot(beNil())
         expect(offerings.current).to(be(offerings["offering_a"]))
@@ -250,21 +251,22 @@ private extension OfferingsTests {
         let products = [
             productIdentifier: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
         ]
-        let maybeOfferings = offeringsFactory.createOfferings(from: products, data: [
-            "offerings": [
-                [
-                    "identifier": "offering_a",
-                    "description": "This is the base offering",
-                    "packages": [
-                        ["identifier": identifier,
-                         "platform_product_identifier": "com.myproduct"]
+        let offerings = try XCTUnwrap(
+            offeringsFactory.createOfferings(from: products, data: [
+                "offerings": [
+                    [
+                        "identifier": "offering_a",
+                        "description": "This is the base offering",
+                        "packages": [
+                            ["identifier": identifier,
+                             "platform_product_identifier": "com.myproduct"]
+                        ]
                     ]
-                ]
-            ],
-            "current_offering_id": "offering_a"
-        ])
+                ],
+                "current_offering_id": "offering_a"
+            ])
+        )
 
-        let offerings = try XCTUnwrap(maybeOfferings)
         expect(offerings.current).toNot(beNil())
         if packageType == PackageType.lifetime {
             expect(offerings.current?.lifetime).toNot(beNil())
