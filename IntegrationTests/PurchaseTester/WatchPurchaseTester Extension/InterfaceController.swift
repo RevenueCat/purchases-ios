@@ -88,14 +88,14 @@ private extension InterfaceController {
     }
     
     func configure() {
-        Purchases.shared.getCustomerInfo { [weak self] (maybeCustomerInfo, error) in
+        Purchases.shared.getCustomerInfo { [weak self] (customerInfo, error) in
             guard let self = self else { return }
             if let error = error {
                 print(error.localizedDescription)
                 return
             }
             
-            guard let customerInfo = maybeCustomerInfo else { fatalError("didn't get purchaser info but error was nil") }
+            guard let customerInfo = customerInfo else { fatalError("didn't get purchaser info but error was nil") }
             // Route the view depending if we have a pro cat user or not
             
             let hasPro = customerInfo.entitlements["pro_cat"]?.isActive == true

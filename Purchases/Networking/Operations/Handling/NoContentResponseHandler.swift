@@ -15,18 +15,18 @@ import Foundation
 
 class NoContentResponseHandler {
 
-    func handle(maybeResponse: [String: Any]?,
+    func handle(response: [String: Any]?,
                 statusCode: Int,
-                maybeError: Error?,
+                error: Error?,
                 completion: SimpleResponseHandler) {
-        if let error = maybeError {
+        if let error = error {
             completion(ErrorUtils.networkError(withUnderlyingError: error))
             return
         }
 
         guard statusCode <= HTTPStatusCodes.redirect.rawValue else {
-            let backendErrorCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
-            let message = maybeResponse?["message"] as? String
+            let backendErrorCode = BackendErrorCode(code: response?["code"])
+            let message = response?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode, backendMessage: message)
             completion(responseError)
             return

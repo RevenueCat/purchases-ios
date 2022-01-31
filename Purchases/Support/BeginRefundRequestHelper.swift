@@ -62,7 +62,7 @@ class BeginRefundRequestHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
-        let entitlement = try await getEntitlement(maybeEntitlementID: entitlementID)
+        let entitlement = try await getEntitlement(entitlementID: entitlementID)
         return try await self.beginRefundRequest(forProduct: entitlement.productIdentifier)
     }
 
@@ -71,7 +71,7 @@ class BeginRefundRequestHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
-        let activeEntitlement = try await getEntitlement(maybeEntitlementID: nil)
+        let activeEntitlement = try await getEntitlement(entitlementID: nil)
         return try await self.beginRefundRequest(forProduct: activeEntitlement.productIdentifier)
     }
 #endif
@@ -88,28 +88,28 @@ private extension BeginRefundRequestHelper {
      * Gets entitlement with the given `entitlementID` from customerInfo, or the active entitlement
      * if no ID passed in.
      */
-    func getEntitlement(maybeEntitlementID: String?) async throws -> EntitlementInfo {
+    func getEntitlement(entitlementID: String?) async throws -> EntitlementInfo {
         let currentAppUserID = identityManager.currentAppUserID
         return try await withCheckedThrowingContinuation { continuation in
-            customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
-                if let error = maybeError {
+            customerInfoManager.customerInfo(appUserID: currentAppUserID) { customerInfo, error in
+                if let error = error {
                     let message = Strings.purchase.begin_refund_customer_info_error(
-                        entitlementID: maybeEntitlementID).description
+                        entitlementID: entitlementID).description
                     continuation.resume(
                         throwing: ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
                     Logger.error(message)
                     return
                 }
 
-                guard let customerInfo = maybeCustomerInfo else {
+                guard let customerInfo = customerInfo else {
                     let message = Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
-                        entitlementID: maybeEntitlementID).description
+                        entitlementID: entitlementID).description
                     continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
                     Logger.error(message)
                     return
                 }
 
-                if let entitlementID = maybeEntitlementID {
+                if let entitlementID = entitlementID {
                     guard let entitlement = customerInfo.entitlements[entitlementID] else {
                         let message = Strings.purchase.begin_refund_no_entitlement_found(
                             entitlementID: entitlementID).description

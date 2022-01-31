@@ -99,37 +99,37 @@ private extension HTTPClient {
     func performRequest(_ httpMethod: String,
                         serially: Bool = true,
                         path: String,
-                        requestBody maybeRequestBody: [String: Any]?,
+                        requestBody: [String: Any]?,
                         authHeaders: [String: String],
                         retried: Bool = false,
-                        completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+                        completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
 
         let requestHeaders = defaultHeaders.merging(authHeaders)
 
-        let maybeURLRequest = createRequest(httpMethod: httpMethod,
-                                            path: path,
-                                            requestBody: maybeRequestBody,
-                                            headers: requestHeaders,
-                                            refreshETag: retried)
+        let urlRequest = createRequest(httpMethod: httpMethod,
+                                       path: path,
+                                       requestBody: requestBody,
+                                       headers: requestHeaders,
+                                       refreshETag: retried)
 
-        guard let urlRequest = maybeURLRequest else {
-            if let requestBody = maybeRequestBody {
+        guard let urlRequest = urlRequest else {
+            if let requestBody = requestBody {
                 Logger.error("Could not create request to \(path) with body \(requestBody)")
             } else {
                 Logger.error("Could not create request to \(path) without body")
             }
 
-            maybeCompletionHandler?(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            completionHandler?(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
             return
         }
 
         let request = HTTPRequest(httpMethod: httpMethod,
                                   path: path,
-                                  requestBody: maybeRequestBody,
+                                  requestBody: requestBody,
                                   authHeaders: authHeaders,
                                   retried: retried,
                                   urlRequest: urlRequest,
-                                  completionHandler: maybeCompletionHandler)
+                                  completionHandler: completionHandler)
 
         if serially && !retried {
             recursiveLock.lock()
@@ -155,7 +155,7 @@ private extension HTTPClient {
                                 request: request,
                                 data: data,
                                 error: error,
-                                completion: maybeCompletionHandler,
+                                completion: completionHandler,
                                 beginNextRequestWhenFinished: serially,
                                 retried: retried)
         }
@@ -163,65 +163,65 @@ private extension HTTPClient {
     }
 
     // swiftlint:disable:next function_parameter_count
-    func handleResponse(urlResponse maybeURLResponse: URLResponse?,
+    func handleResponse(urlResponse: URLResponse?,
                         request: HTTPRequest,
-                        data maybeData: Data?,
-                        error maybeNetworkError: Error?,
-                        completion maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                        data: Data?,
+                        error networkError: Error?,
+                        completion completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
-        threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
+        threadUnsafeHandleResponse(urlResponse: urlResponse,
                                    request: request,
-                                   data: maybeData,
-                                   error: maybeNetworkError,
-                                   completionHandler: maybeCompletionHandler,
+                                   data: data,
+                                   error: networkError,
+                                   completionHandler: completionHandler,
                                    beginNextRequestWhenFinished: beginNextRequestWhenFinished,
                                    retried: retried)
     }
 
     // swiftlint:disable:next function_body_length function_parameter_count
-    func threadUnsafeHandleResponse(urlResponse maybeURLResponse: URLResponse?,
+    func threadUnsafeHandleResponse(urlResponse: URLResponse?,
                                     request: HTTPRequest,
-                                    data maybeData: Data?,
-                                    error maybeNetworkError: Error?,
-                                    completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                                    data: Data?,
+                                    error networkError: Error?,
+                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
                                     retried: Bool) {
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
         var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?
-        var maybeHTTPResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
-        var maybeJSONError: Error?
+        var httpResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
+        var receivedJSONError: Error?
 
-        if maybeNetworkError == nil {
-            if let httpURLResponse = maybeURLResponse as? HTTPURLResponse {
+        if networkError == nil {
+            if let httpURLResponse = urlResponse as? HTTPURLResponse {
                 statusCode = httpURLResponse.statusCode
                 Logger.debug(Strings.network.api_request_completed(httpMethod: request.httpMethod,
                                                                    path: request.path,
                                                                    httpCode: statusCode))
 
-                if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
+                if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || data == nil {
                     jsonObject = [:]
-                } else if let data = maybeData {
+                } else if let data = data {
                     do {
                         jsonObject = try JSONSerialization.jsonObject(with: data,
                                                                       options: .mutableContainers) as? [String: Any]
                     } catch let jsonError {
                         Logger.error(Strings.network.parsing_json_error(error: jsonError))
 
-                        let dataAsString = String(data: maybeData ?? Data(), encoding: .utf8) ?? ""
+                        let dataAsString = String(data: data, encoding: .utf8) ?? ""
                         Logger.error(Strings.network.json_data_received(dataString: dataAsString))
 
-                        maybeJSONError = jsonError
+                        receivedJSONError = jsonError
                     }
                 }
 
-                maybeHTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
-                                                                                  jsonObject: jsonObject,
-                                                                                  error: maybeJSONError,
-                                                                                  request: request.urlRequest,
-                                                                                  retried: retried)
-                if maybeHTTPResponse == nil {
+                httpResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
+                                                                             jsonObject: jsonObject,
+                                                                             error: receivedJSONError,
+                                                                             request: request.urlRequest,
+                                                                             retried: retried)
+                if httpResponse == nil {
                     Logger.debug(Strings.network.retrying_request(httpMethod: request.httpMethod,
                                                                   path: request.path))
                     let retriedRequest = HTTPRequest(byCopyingRequest: request, retried: true)
@@ -231,16 +231,16 @@ private extension HTTPClient {
             }
         }
 
-        var maybeNetworkError = maybeNetworkError
-        if dnsChecker.isBlockedAPIError(maybeNetworkError),
-            let blockedError = dnsChecker.errorWithBlockedHostFromError(maybeNetworkError) {
+        var networkError = networkError
+        if dnsChecker.isBlockedAPIError(networkError),
+           let blockedError = dnsChecker.errorWithBlockedHostFromError(networkError) {
             Logger.error(blockedError.description)
-            maybeNetworkError = blockedError
+            networkError = blockedError
         }
 
-        if let httpResponse = maybeHTTPResponse,
-            let completionHandler = maybeCompletionHandler {
-            let error = maybeJSONError ?? maybeNetworkError
+        if let httpResponse = httpResponse,
+           let completionHandler = completionHandler {
+            let error = receivedJSONError ?? networkError
             completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }
 
@@ -267,7 +267,7 @@ private extension HTTPClient {
 
     func createRequest(httpMethod: String,
                        path: String,
-                       requestBody maybeRequestBody: [String: Any]?,
+                       requestBody: [String: Any]?,
                        headers: [String: String],
                        refreshETag: Bool) -> URLRequest? {
         let relativeURLString = "/v1\(path)"
@@ -284,7 +284,7 @@ private extension HTTPClient {
         urlRequest.allHTTPHeaderFields = headersWithETag
 
         if httpMethod == "POST",
-           let requestBody = maybeRequestBody {
+           let requestBody = requestBody {
             if JSONSerialization.isValidJSONObject(requestBody) {
                 do {
                     urlRequest.httpBody = try JSONSerialization.data(withJSONObject: requestBody)

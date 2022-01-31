@@ -381,7 +381,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
         super.init()
 
-        self.purchasesOrchestrator.maybeDelegate = self
+        self.purchasesOrchestrator.delegate = self
 
         systemInfo.isApplicationBackgrounded { isBackgrounded in
             if isBackgrounded {
@@ -651,12 +651,12 @@ public extension Purchases {
      */
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
-        identityManager.logIn(appUserID: appUserID) { customerInfo, created, maybeError in
+        identityManager.logIn(appUserID: appUserID) { customerInfo, created, error in
             self.operationDispatcher.dispatchOnMainThread {
-                completion(customerInfo, created, maybeError)
+                completion(customerInfo, created, error)
             }
 
-            guard maybeError == nil else {
+            guard error == nil else {
                 return
             }
 
@@ -690,11 +690,11 @@ public extension Purchases {
      * See [Identifying Users](https://docs.revenuecat.com/docs/user-ids)
      */
     @objc func logOut(completion: ((CustomerInfo?, Error?) -> Void)?) {
-        identityManager.logOut { maybeError in
-            guard maybeError == nil else {
+        identityManager.logOut { error in
+            guard error == nil else {
                 if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
-                        completion(nil, maybeError)
+                        completion(nil, error)
                     }
                 }
                 return

@@ -196,9 +196,9 @@ class OfferingsTests: XCTestCase {
             "offerings": [],
             "current_offering_id": nil
         ]
-        let maybeOfferings = offeringsFactory.createOfferings(from: [:], data: data as [String: Any])
+        let offerings = offeringsFactory.createOfferings(from: [:], data: data as [String: Any])
 
-        expect(maybeOfferings).to(beNil())
+        expect(offerings).to(beNil())
     }
 
     func testCurrentOfferingWithBrokenProductReturnsNilForCurrentOfferingButContainsOtherOfferings() throws {
@@ -221,10 +221,10 @@ class OfferingsTests: XCTestCase {
             ],
             "current_offering_id": "offering_with_broken_product"
         ]
-        let maybeOfferings = offeringsFactory.createOfferings(from: storeProductsByID, data: data)
+        let offerings = offeringsFactory.createOfferings(from: storeProductsByID, data: data)
 
-        let offerings = try XCTUnwrap(maybeOfferings)
-        expect(offerings.current).to(beNil())
+        let unwrappedOfferings = try XCTUnwrap(offerings)
+        expect(unwrappedOfferings.current).to(beNil())
     }
 
     func testBadOfferingsDataReturnsNil() {

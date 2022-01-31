@@ -45,20 +45,20 @@ private extension GetOfferingsOperation {
         let path = "/subscribers/\(appUserID)/offerings"
         httpClient.performGETRequest(serially: true,
                                      path: path,
-                                     headers: authHeaders) { statusCode, maybeResponse, maybeError in
-            if maybeError == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
+                                     headers: authHeaders) { statusCode, response, error in
+            if error == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
                 self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                    callbackObject.completion(maybeResponse, nil)
+                    callbackObject.completion(response, nil)
                 }
                 return
             }
 
             let errorForCallbacks: Error
-            if let error = maybeError {
+            if let error = error {
                 errorForCallbacks = ErrorUtils.networkError(withUnderlyingError: error)
             } else if statusCode >= HTTPStatusCodes.redirect.rawValue {
-                let backendCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
-                let backendMessage = maybeResponse?["message"] as? String
+                let backendCode = BackendErrorCode(code: response?["code"])
+                let backendMessage = response?["message"] as? String
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
                                                             backendMessage: backendMessage)
             } else {
@@ -66,9 +66,9 @@ private extension GetOfferingsOperation {
                 errorForCallbacks = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             }
 
-            let responseString = maybeResponse?.debugDescription
+            let responseString = response?.debugDescription
             Logger.error(Strings.backendError.unknown_get_offerings_error(statusCode: statusCode,
-                                                                          maybeResponseString: responseString))
+                                                                          responseString: responseString))
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 callbackObject.completion(nil, errorForCallbacks)
             }

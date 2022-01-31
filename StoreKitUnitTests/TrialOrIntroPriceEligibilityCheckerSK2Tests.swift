@@ -61,8 +61,8 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
                         "lifetime": IntroEligibilityStatus.unknown]
 
-        let maybeEligibilities = try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products)
-        let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
+        let eligibilities = try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products)
+        let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities.count) == expected.count
 
         for (product, receivedEligibility) in receivedEligibilities {
@@ -84,15 +84,15 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "lifetime": IntroEligibilityStatus.unknown]
 
         var completionCalled = false
-        var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.checkEligibility(productIdentifiers: products) { eligibilities in
+        var eligibilities: [String: IntroEligibility]?
+        trialOrIntroPriceEligibilityChecker!.checkEligibility(productIdentifiers: products) { receivedEligibilities in
             completionCalled = true
-            maybeEligibilities = eligibilities
+            eligibilities = receivedEligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
 
-        let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
+        let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities.count) == expected.count
 
         for (product, receivedEligibility) in receivedEligibilities {

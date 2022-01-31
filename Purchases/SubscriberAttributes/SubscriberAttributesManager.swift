@@ -38,73 +38,74 @@ class SubscriberAttributesManager {
         }
     }
 
-    func setEmail(_ maybeEmail: String?, appUserID: String) {
-        setReservedAttribute(.email, value: maybeEmail, appUserID: appUserID)
+    func setEmail(_ email: String?, appUserID: String) {
+        setReservedAttribute(.email, value: email, appUserID: appUserID)
     }
 
-    func setPhoneNumber(_ maybePhoneNumber: String?, appUserID: String) {
-        setReservedAttribute(.phoneNumber, value: maybePhoneNumber, appUserID: appUserID)
+    func setPhoneNumber(_ phoneNumber: String?, appUserID: String) {
+        setReservedAttribute(.phoneNumber, value: phoneNumber, appUserID: appUserID)
     }
 
-    func setDisplayName(_ maybeDisplayName: String?, appUserID: String) {
-        setReservedAttribute(.displayName, value: maybeDisplayName, appUserID: appUserID)
+    func setDisplayName(_ displayName: String?, appUserID: String) {
+        setReservedAttribute(.displayName, value: displayName, appUserID: appUserID)
     }
 
-    func setPushToken(_ maybePushToken: Data?, appUserID: String) {
-        let maybePushTokenString = maybePushToken?.asString
-        setPushTokenString(maybePushTokenString, appUserID: appUserID)
+    func setPushToken(_ pushToken: Data?, appUserID: String) {
+        let pushTokenString = pushToken?.asString
+        setPushTokenString(pushTokenString, appUserID: appUserID)
     }
 
-    func setPushTokenString(_ maybePushTokenString: String?, appUserID: String) {
-        setReservedAttribute(.pushToken, value: maybePushTokenString, appUserID: appUserID)
+    func setPushTokenString(_ pushTokenString: String?, appUserID: String) {
+        setReservedAttribute(.pushToken, value: pushTokenString, appUserID: appUserID)
     }
 
-    func setAdjustID(_ maybeAdjustID: String?, appUserID: String) {
-        setAttributionID(maybeAdjustID, forNetworkID: .adjustID, appUserID: appUserID)
+    func setAdjustID(_ adjustID: String?, appUserID: String) {
+        setAttributionID(adjustID, forNetworkID: .adjustID, appUserID: appUserID)
     }
 
-    func setAppsflyerID(_ maybeAppsflyerID: String?, appUserID: String) {
-        setAttributionID(maybeAppsflyerID, forNetworkID: .appsFlyerID, appUserID: appUserID)
+    func setAppsflyerID(_ appsflyerID: String?, appUserID: String) {
+        setAttributionID(appsflyerID, forNetworkID: .appsFlyerID, appUserID: appUserID)
     }
 
-    func setFBAnonymousID(_ maybeFBAnonymousID: String?, appUserID: String) {
-        setAttributionID(maybeFBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
+    func setFBAnonymousID(_ fBAnonymousID: String?, appUserID: String) {
+        setAttributionID(fBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
     }
 
-    func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {
-        setAttributionID(maybeMparticleID, forNetworkID: .mpParticleID, appUserID: appUserID)
+    func setMparticleID(_ mparticleID: String?, appUserID: String) {
+        setAttributionID(mparticleID, forNetworkID: .mpParticleID, appUserID: appUserID)
     }
 
-    func setOnesignalID(_ maybeOnesignalID: String?, appUserID: String) {
-        setAttributionID(maybeOnesignalID, forNetworkID: .oneSignalID, appUserID: appUserID)
+    func setOnesignalID(_ onesignalID: String?, appUserID: String) {
+        setAttributionID(onesignalID, forNetworkID: .oneSignalID, appUserID: appUserID)
     }
 
-    func setAirshipChannelID(_ maybeAirshipChannelID: String?, appUserID: String) {
-        setAttributionID(maybeAirshipChannelID, forNetworkID: .airshipChannelID, appUserID: appUserID)
+    func setAirshipChannelID(_ airshipChannelID: String?, appUserID: String) {
+        setAttributionID(airshipChannelID, forNetworkID: .airshipChannelID, appUserID: appUserID)
     }
 
-    func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
-        setReservedAttribute(.mediaSource, value: maybeMediaSource, appUserID: appUserID)
+    func setMediaSource(_ mediaSource: String?, appUserID: String) {
+        setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
     }
 
-    func setCampaign(_ maybeCampaign: String?, appUserID: String) {
-        setReservedAttribute(.campaign, value: maybeCampaign, appUserID: appUserID)
+    func setCampaign(_ campaign: String?, appUserID: String) {
+        setReservedAttribute(.campaign, value: campaign, appUserID: appUserID)
     }
 
-    func setAdGroup(_ maybeAdGroup: String?, appUserID: String) {
-        setReservedAttribute(.adGroup, value: maybeAdGroup, appUserID: appUserID)
+    func setAdGroup(_ adGroup: String?, appUserID: String) {
+        setReservedAttribute(.adGroup, value: adGroup, appUserID: appUserID)
     }
 
-    func setAd(_ maybeAd: String?, appUserID: String) {
-        setReservedAttribute(.ad, value: maybeAd, appUserID: appUserID)
+    // swiftlint:disable:next identifier_name
+    func setAd(_ ad: String?, appUserID: String) {
+        setReservedAttribute(.ad, value: ad, appUserID: appUserID)
     }
 
-    func setKeyword(_ maybeKeyword: String?, appUserID: String) {
-        setReservedAttribute(.keyword, value: maybeKeyword, appUserID: appUserID)
+    func setKeyword(_ keyword: String?, appUserID: String) {
+        setReservedAttribute(.keyword, value: keyword, appUserID: appUserID)
     }
 
-    func setCreative(_ maybeCreative: String?, appUserID: String) {
-        setReservedAttribute(.creative, value: maybeCreative, appUserID: appUserID)
+    func setCreative(_ creative: String?, appUserID: String) {
+        setReservedAttribute(.creative, value: creative, appUserID: appUserID)
     }
 
     func collectDeviceIdentifiers(forAppUserID appUserID: String) {
@@ -155,8 +156,8 @@ class SubscriberAttributesManager {
         return deviceCache.unsyncedAttributesForAllUsers()
     }
 
-    func markAttributesAsSynced(_ maybeAttributesToSync: SubscriberAttributeDict?, appUserID: String) {
-        guard let attributesToSync = maybeAttributesToSync,
+    func markAttributesAsSynced(_ attributesToSync: SubscriberAttributeDict?, appUserID: String) {
+        guard let attributesToSync = attributesToSync,
               !attributesToSync.isEmpty else {
             return
         }
@@ -226,8 +227,8 @@ private extension SubscriberAttributesManager {
     }
 
     func currentValueForAttribute(key: String, appUserID: String) -> String? {
-        let maybeAttribute = deviceCache.subscriberAttribute(attributeKey: key, appUserID: appUserID)
-        return maybeAttribute?.value
+        let attribute = deviceCache.subscriberAttribute(attributeKey: key, appUserID: appUserID)
+        return attribute?.value
     }
 
     func setAttributionID(_ attributionID: String?,

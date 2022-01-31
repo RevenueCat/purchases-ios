@@ -348,9 +348,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockManageSubsHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
         var receivedError: Error?
         var completionCalled = false
-        orchestrator.showManageSubscription { maybeError in
+        orchestrator.showManageSubscription { error in
             completionCalled = true
-            receivedError = maybeError
+            receivedError = error
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -364,7 +364,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(macOS, unavailable)
     func testBeginRefundForProductCompletesWithoutErrorAndPassesThroughStatusIfSuccessful() async throws {
         let expectedStatus = RefundRequestStatus.userCancelled
-        mockBeginRefundRequestHelper.maybeMockRefundRequestStatus = expectedStatus
+        mockBeginRefundRequestHelper.mockRefundRequestStatus = expectedStatus
 
         let refundStatus = try await orchestrator.beginRefundRequest(forProduct: "1234")
         expect(refundStatus) == expectedStatus
@@ -376,7 +376,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(macOS, unavailable)
     func testBeginRefundForProductCompletesWithErrorIfThereIsAFailure() async {
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
-        mockBeginRefundRequestHelper.maybeMockError = expectedError
+        mockBeginRefundRequestHelper.mockError = expectedError
 
         do {
             _ = try await orchestrator.beginRefundRequest(forProduct: "1235")
@@ -392,7 +392,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(macOS, unavailable)
     func testBeginRefundForEntitlementCompletesWithoutErrorAndPassesThroughStatusIfSuccessful() async throws {
         let expectedStatus = RefundRequestStatus.userCancelled
-        mockBeginRefundRequestHelper.maybeMockRefundRequestStatus = expectedStatus
+        mockBeginRefundRequestHelper.mockRefundRequestStatus = expectedStatus
 
         let receivedStatus = try await orchestrator.beginRefundRequest(forEntitlement: "1234")
         expect(receivedStatus) == expectedStatus
@@ -404,7 +404,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(macOS, unavailable)
     func testBeginRefundForEntitlementCompletesWithErrorIfThereIsAFailure() async {
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
-        mockBeginRefundRequestHelper.maybeMockError = expectedError
+        mockBeginRefundRequestHelper.mockError = expectedError
 
         do {
             _ = try await orchestrator.beginRefundRequest(forEntitlement: "1234")
@@ -422,7 +422,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(macOS, unavailable)
     func testBeginRefundForActiveEntitlementCompletesWithoutErrorAndPassesThroughStatusIfSuccessful() async throws {
         let expectedStatus = RefundRequestStatus.userCancelled
-        mockBeginRefundRequestHelper.maybeMockRefundRequestStatus = expectedStatus
+        mockBeginRefundRequestHelper.mockRefundRequestStatus = expectedStatus
 
         let receivedStatus = try await orchestrator.beginRefundRequestForActiveEntitlement()
         expect(receivedStatus) == expectedStatus
@@ -434,7 +434,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(macOS, unavailable)
     func testBeginRefundForActiveEntitlementCompletesWithErrorIfThereIsAFailure() async {
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
-        mockBeginRefundRequestHelper.maybeMockError = expectedError
+        mockBeginRefundRequestHelper.mockError = expectedError
 
         do {
             _ = try await orchestrator.beginRefundRequestForActiveEntitlement()

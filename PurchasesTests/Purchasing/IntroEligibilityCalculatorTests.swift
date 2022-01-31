@@ -19,7 +19,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
                                                 receiptParser: mockReceiptParser)
     }
 
-    func testCheckTrialOrIntroductoryPriceEligibilityReturnsEmptyIfNoProductIds() {
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEmptyIfNoProductIds() {
         var receivedError: Error?
         var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
@@ -36,7 +36,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         expect(receivedEligibility).to(beEmpty())
     }
 
-    func testCheckTrialOrIntroductoryPriceEligibilityReturnsErrorIfReceiptParserThrows() {
+    func testCheckTrialOrIntroDiscountEligibilityReturnsErrorIfReceiptParserThrows() {
         var receivedError: Error?
         var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
@@ -57,7 +57,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         expect(receivedEligibility).to(beEmpty())
     }
 
-    func testCheckTrialOrIntroductoryPriceEligibilityMakesOnlyOneProductsRequest() {
+    func testCheckTrialOrIntroDiscountEligibilityMakesOnlyOneProductsRequest() {
         var completionCalled = false
 
         let receipt = mockReceipt()
@@ -81,7 +81,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         expect(self.mockProductsManager.invokedProductsParameters) == candidateIdentifiers.union(receiptIdentifiers)
     }
 
-    func testCheckTrialOrIntroductoryPriceEligibilityGetsCorrectResult() {
+    func testCheckTrialOrIntroDiscountEligibilityGetsCorrectResult() {
         var receivedError: Error?
         var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
@@ -121,7 +121,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         ]
     }
 
-    func testCheckTrialOrIntroductoryPriceEligibilityForProductWithoutIntroTrialReturnsIneligible() {
+    func testCheckTrialOrIntroDiscountEligibilityForProductWithoutIntroTrialReturnsIneligible() {
         var receivedError: Error?
         var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
@@ -149,7 +149,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         ]
     }
 
-    func testCheckTrialOrIntroductoryPriceEligibilityForConsumableReturnsUnknown() {
+    func testCheckTrialOrIntroDiscountEligibilityForConsumableReturnsUnknown() {
         var receivedError: Error?
         var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false

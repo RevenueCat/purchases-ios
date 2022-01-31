@@ -175,7 +175,7 @@ import Foundation
 
     init(data: [String: Any], dateFormatter: DateFormatterType) throws {
         guard let subscriberObject = data["subscriber"] as? [String: Any] else {
-            Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
+            Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(jsonData: data))
             throw CustomerInfoError.missingJsonObject
         }
 
@@ -188,7 +188,7 @@ import Foundation
         }
 
         guard let requestDateString = data["request_date"] as? String else {
-            Logger.error(Strings.customerInfo.cant_parse_request_date_from_json(maybeDate: data["request_date"]))
+            Logger.error(Strings.customerInfo.cant_parse_request_date_from_json(date: data["request_date"]))
             throw CustomerInfoError.requestDateFromJson
         }
 
@@ -216,8 +216,8 @@ import Foundation
         self.allPurchases = subscriberData.allPurchases
     }
 
-    static func from(json maybeJSON: [String: Any]?) throws -> CustomerInfo {
-        guard let customerJSON = maybeJSON else {
+    static func from(json: [String: Any]?) throws -> CustomerInfo {
+        guard let customerJSON = json else {
             throw UnexpectedBackendResponseSubErrorCode.customerInfoNil
         }
 
@@ -294,8 +294,8 @@ import Foundation
 
         init(subscriberData: [String: Any],
              dateFormatter: DateFormatterType) throws {
-            let maybeSubscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
-            self.subscriptionTransactionsByProductId = maybeSubscriptions
+            let subscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
+            self.subscriptionTransactionsByProductId = subscriptions
 
             // Metadata
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String
@@ -370,7 +370,7 @@ enum CustomerInfoError: Int, DescribableError {
 private extension CustomerInfo {
 
     static func createSubscriberDataError(_ error: Error, subscriberDictionary: [String: Any]) -> Error {
-        Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberDictionary))
+        Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(jsonObject: subscriberDictionary))
 
         guard let subscriberDataError = error as? SubscriberData.SubscriberDataError else {
             return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(error)

@@ -19,18 +19,18 @@ class PostAttributionDataOperation: NetworkOperation {
     private let postAttributionDataResponseHandler: NoContentResponseHandler
     private let attributionData: [String: Any]
     private let network: AttributionNetwork
-    private let maybeCompletion: SimpleResponseHandler?
+    private let completion: SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          attributionData: [String: Any],
          network: AttributionNetwork,
-         maybeCompletion: SimpleResponseHandler?,
+         completion: SimpleResponseHandler?,
          postAttributionDataResponseHandler: NoContentResponseHandler = NoContentResponseHandler()) {
         self.postAttributionDataResponseHandler = postAttributionDataResponseHandler
         self.attributionData = attributionData
         self.network = network
         self.configuration = configuration
-        self.maybeCompletion = maybeCompletion
+        self.completion = completion
 
         super.init(configuration: configuration)
     }
@@ -41,7 +41,7 @@ class PostAttributionDataOperation: NetworkOperation {
 
     private func post() {
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
-            self.maybeCompletion?(ErrorUtils.missingAppUserIDError())
+            self.completion?(ErrorUtils.missingAppUserIDError())
             return
         }
 
@@ -51,13 +51,13 @@ class PostAttributionDataOperation: NetworkOperation {
                                            path: path,
                                            requestBody: body,
                                            headers: self.authHeaders) { statusCode, response, error in
-            guard let completion = self.maybeCompletion else {
+            guard let completion = self.completion else {
                 return
             }
 
-            self.postAttributionDataResponseHandler.handle(maybeResponse: response,
+            self.postAttributionDataResponseHandler.handle(response: response,
                                                            statusCode: statusCode,
-                                                           maybeError: error,
+                                                           error: error,
                                                            completion: completion)
         }
     }

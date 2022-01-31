@@ -83,8 +83,8 @@ private extension GetIntroEligibilityOperation {
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: body,
-                                      headers: authHeaders) { statusCode, maybeResponse, error in
-            let eligibilityResponse = IntroEligibilityResponse(maybeResponse: maybeResponse,
+                                      headers: authHeaders) { statusCode, response, error in
+            let eligibilityResponse = IntroEligibilityResponse(response: response,
                                                                statusCode: statusCode,
                                                                error: error,
                                                                productIdentifiers: self.productIdentifiers,
@@ -95,7 +95,7 @@ private extension GetIntroEligibilityOperation {
     }
 
     func handleIntroEligibility(response: IntroEligibilityResponse) {
-        var eligibilitiesByProductIdentifier = response.maybeResponse
+        var eligibilitiesByProductIdentifier = response.response
         if response.statusCode >= HTTPStatusCodes.redirect.rawValue || response.error != nil {
             eligibilitiesByProductIdentifier = [:]
         }

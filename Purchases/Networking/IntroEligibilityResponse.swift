@@ -16,7 +16,7 @@ import Foundation
 // All parameters that are required to process the reponse from a GetIntroEligibility API call.
 struct IntroEligibilityResponse {
 
-    let maybeResponse: [String: Any]?
+    let response: [String: Any]?
     let statusCode: Int
     let error: Error?
     let productIdentifiers: [String]

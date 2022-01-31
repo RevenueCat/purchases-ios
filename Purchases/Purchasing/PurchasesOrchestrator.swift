@@ -27,16 +27,16 @@ class PurchasesOrchestrator {
     var finishTransactions: Bool { systemInfo.finishTransactions }
     var allowSharingAppStoreAccount: Bool {
         get {
-            return maybeAllowSharingAppStoreAccount ?? identityManager.currentUserIsAnonymous
+            return _allowSharingAppStoreAccount ?? identityManager.currentUserIsAnonymous
         }
         set {
-            maybeAllowSharingAppStoreAccount = newValue
+            _allowSharingAppStoreAccount = newValue
         }
     }
 
-    @objc weak var maybeDelegate: PurchasesOrchestratorDelegate?
+    @objc weak var delegate: PurchasesOrchestratorDelegate?
 
-    private var maybeAllowSharingAppStoreAccount: Bool?
+    private var _allowSharingAppStoreAccount: Bool?
     private var presentedOfferingIDsByProductID: [String: String] = [:]
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
 
@@ -95,14 +95,14 @@ class PurchasesOrchestrator {
         }
     }
 
-    func restorePurchases(completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
-        syncPurchases(receiptRefreshPolicy: .always, isRestore: true, maybeCompletion: maybeCompletion)
+    func restorePurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
+        syncPurchases(receiptRefreshPolicy: .always, isRestore: true, completion: completion)
     }
 
-    func syncPurchases(completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+    func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         syncPurchases(receiptRefreshPolicy: .never,
                       isRestore: allowSharingAppStoreAccount,
-                      maybeCompletion: maybeCompletion)
+                      completion: completion)
     }
 
     func products(withIdentifiers identifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
@@ -148,8 +148,8 @@ class PurchasesOrchestrator {
             return
         }
 
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
-            guard let receiptData = maybeReceiptData,
+        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData in
+            guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
                       completion(nil, ErrorUtils.missingReceiptFileError())
                       return
@@ -161,22 +161,22 @@ class PurchasesOrchestrator {
                 subscriptionGroup: subscriptionGroupIdentifier,
                 receiptData: receiptData,
                 appUserID: self.appUserID
-            ) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
-                if let error = maybeError {
+            ) { signature, keyIdentifier, nonce, timestamp, error in
+                if let error = error {
                     completion(nil, error)
                     return
                 }
-                guard let keyIdentifier = maybeKeyIdentifier,
-                      let nonce = maybeNonce,
-                      let signature = maybeSignature,
-                      let timestamp = maybeTimestamp else {
+                guard let keyIdentifier = keyIdentifier,
+                      let nonce = nonce,
+                      let signature = signature,
+                      let timestamp = timestamp else {
                           completion(
                             nil,
                             ErrorUtils.unexpectedBackendResponseError(extraUserInfo: [
-                                "keyIdentifier": String(describing: maybeKeyIdentifier),
-                                "nonce": String(describing: maybeNonce),
-                                "signature": String(describing: maybeSignature),
-                                "timestamp": String(describing: maybeTimestamp)
+                                "keyIdentifier": String(describing: keyIdentifier),
+                                "nonce": String(describing: nonce),
+                                "signature": String(describing: signature),
+                                "timestamp": String(describing: timestamp)
                             ])
                           )
                           return
@@ -396,7 +396,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
                          shouldAddStorePayment payment: SKPayment,
                          for product: SK1Product) -> Bool {
         productsManager.cacheProduct(product)
-        guard let delegate = maybeDelegate else { return false }
+        guard let delegate = delegate else { return false }
 
         let storeProduct = StoreProduct(sk1Product: product)
         lock.lock()
@@ -422,15 +422,15 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: SKPaymentTransaction) {
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
-            if let receiptData = maybeReceiptData,
+        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData in
+            if let receiptData = receiptData,
                !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction, receiptData: receiptData)
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
-                                       maybeCustomerInfo: nil,
-                                       maybeSubscriberAttributes: nil,
-                                       maybeError: ErrorUtils.missingReceiptFileError())
+                                       customerInfo: nil,
+                                       subscriberAttributes: nil,
+                                       error: ErrorUtils.missingReceiptFileError())
             }
         }
     }
@@ -481,7 +481,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
     func transactionsUpdated() {
         // Need to restore if using observer mode (which is inverse of finishTransactions)
         let isRestore = !systemInfo.finishTransactions
-        syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore, maybeCompletion: nil)
+        syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore, completion: nil)
     }
 
 }
@@ -497,17 +497,17 @@ private extension PurchasesOrchestrator {
         }
 
         lock.lock()
-        let maybeCompletion = purchaseCompleteCallbacksByProductID.removeValue(forKey: productIdentifier)
+        let completion = purchaseCompleteCallbacksByProductID.removeValue(forKey: productIdentifier)
         lock.unlock()
-        return maybeCompletion
+        return completion
     }
 
     func fetchProductsAndPostReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data) {
         guard let productIdentifier = transaction.productIdentifier else {
             self.handleReceiptPost(withTransaction: transaction,
-                                   maybeCustomerInfo: nil,
-                                   maybeSubscriberAttributes: nil,
-                                   maybeError: ErrorUtils.unknownError())
+                                   customerInfo: nil,
+                                   subscriberAttributes: nil,
+                                   error: ErrorUtils.unknownError())
             return
         }
 
@@ -521,15 +521,15 @@ private extension PurchasesOrchestrator {
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
                      products: Set<StoreProduct>) {
-        var maybeProductData: ProductRequestData?
-        var maybePresentedOfferingID: String?
+        var productData: ProductRequestData?
+        var presentedOfferingID: String?
         if let product = products.first {
-            let productData = ProductRequestData(with: product)
-            maybeProductData = productData
+            let receivedProductData = ProductRequestData(with: product)
+            productData = receivedProductData
 
-            let productID = productData.productIdentifier
-            let presentedOfferingID = presentedOfferingIDsByProductID[productID]
-            maybePresentedOfferingID = presentedOfferingID
+            let productID = receivedProductData.productIdentifier
+            let foundPresentedOfferingID = presentedOfferingIDsByProductID[productID]
+            presentedOfferingID = foundPresentedOfferingID
 
             presentedOfferingIDsByProductID.removeValue(forKey: productID)
         }
@@ -538,54 +538,54 @@ private extension PurchasesOrchestrator {
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: allowSharingAppStoreAccount,
-                     productData: maybeProductData,
-                     presentedOfferingIdentifier: maybePresentedOfferingID,
+                     productData: productData,
+                     presentedOfferingIdentifier: presentedOfferingID,
                      observerMode: !finishTransactions,
-                     subscriberAttributes: unsyncedAttributes) { maybeCustomerInfo, maybeError in
+                     subscriberAttributes: unsyncedAttributes) { customerInfo, error in
             self.handleReceiptPost(withTransaction: transaction,
-                                   maybeCustomerInfo: maybeCustomerInfo,
-                                   maybeSubscriberAttributes: unsyncedAttributes,
-                                   maybeError: maybeError)
+                                   customerInfo: customerInfo,
+                                   subscriberAttributes: unsyncedAttributes,
+                                   error: error)
         }
     }
 
     func handleReceiptPost(withTransaction transaction: SKPaymentTransaction,
-                           maybeCustomerInfo: CustomerInfo?,
-                           maybeSubscriberAttributes: SubscriberAttributeDict?,
-                           maybeError: Error?) {
+                           customerInfo: CustomerInfo?,
+                           subscriberAttributes: SubscriberAttributeDict?,
+                           error: Error?) {
         operationDispatcher.dispatchOnMainThread {
             let appUserID = self.appUserID
-            self.markSyncedIfNeeded(subscriberAttributes: maybeSubscriberAttributes,
+            self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
                                     appUserID: appUserID,
-                                    maybeError: maybeError)
+                                    error: error)
 
-            let maybeCompletion = self.getAndRemovePurchaseCompletedCallback(forTransaction: transaction)
-            let nsError = maybeError as NSError?
+            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: transaction)
+            let nsError = error as NSError?
             let finishable = (nsError?.userInfo[ErrorDetails.finishableKey as String] as? NSNumber)?.boolValue ?? false
 
             let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
-            if let customerInfo = maybeCustomerInfo {
+            if let customerInfo = customerInfo {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
-                maybeCompletion?(storeTransaction, customerInfo, nil, false)
+                completion?(storeTransaction, customerInfo, nil, false)
 
                 if self.finishTransactions {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
             } else if finishable {
-                maybeCompletion?(storeTransaction, nil, maybeError, false)
+                completion?(storeTransaction, nil, error, false)
                 if self.finishTransactions {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
             } else {
                 Logger.error(Strings.receipt.unknown_backend_error)
-                maybeCompletion?(storeTransaction, nil, maybeError, false)
+                completion?(storeTransaction, nil, error, false)
             }
         }
     }
 
-    func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
-        if let error = maybeError as NSError? {
+    func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, error: Error?) {
+        if let error = error as NSError? {
             if !error.successfullySynced {
                 return
             }
@@ -597,7 +597,7 @@ private extension PurchasesOrchestrator {
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
-                       maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
+                       completion: ((CustomerInfo?, Error?) -> Void)?) {
         if !self.allowSharingAppStoreAccount {
             Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
         }
@@ -608,14 +608,14 @@ private extension PurchasesOrchestrator {
         // swiftlint:disable line_length
         // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
         // swiftlint:enable line_length
-        receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
-            guard let receiptData = maybeReceiptData,
+        receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData in
+            guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
                       if self.systemInfo.isSandbox {
                           Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)
                       }
 
-                      if let completion = maybeCompletion {
+                      if let completion = completion {
                           self.operationDispatcher.dispatchOnMainThread {
                               completion(nil, ErrorUtils.missingReceiptFileError())
                           }
@@ -624,13 +624,13 @@ private extension PurchasesOrchestrator {
                   }
 
             self.transactionsManager.customerHasTransactions(receiptData: receiptData) { hasTransactions in
-                let maybeCachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
-                let hasOriginalPurchaseDate = maybeCachedCustomerInfo?.originalPurchaseDate != nil
+                let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
+                let hasOriginalPurchaseDate = cachedCustomerInfo?.originalPurchaseDate != nil
 
                 if !hasTransactions && hasOriginalPurchaseDate {
-                    if let completion = maybeCompletion {
+                    if let completion = completion {
                         self.operationDispatcher.dispatchOnMainThread {
-                            completion(maybeCachedCustomerInfo, nil)
+                            completion(cachedCustomerInfo, nil)
                         }
                     }
                     return
@@ -642,32 +642,32 @@ private extension PurchasesOrchestrator {
                                   productData: nil,
                                   presentedOfferingIdentifier: nil,
                                   observerMode: !self.finishTransactions,
-                                  subscriberAttributes: unsyncedAttributes) { maybeCustomerInfo, maybeError in
-                    self.handleReceiptPost(withCustomerInfo: maybeCustomerInfo,
-                                           error: maybeError,
+                                  subscriberAttributes: unsyncedAttributes) { customerInfo, error in
+                    self.handleReceiptPost(withCustomerInfo: customerInfo,
+                                           error: error,
                                            subscriberAttributes: unsyncedAttributes,
-                                           completion: maybeCompletion)
+                                           completion: completion)
                 }
             }
         }
     }
 
-    func handleReceiptPost(withCustomerInfo maybeCustomerInfo: CustomerInfo?,
-                           error maybeError: Error?,
+    func handleReceiptPost(withCustomerInfo customerInfo: CustomerInfo?,
+                           error: Error?,
                            subscriberAttributes: SubscriberAttributeDict,
-                           completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
+                           completion: ((CustomerInfo?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnMainThread {
-            if let customerInfo = maybeCustomerInfo {
+            if let customerInfo = customerInfo {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
             }
 
             self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
                                     appUserID: self.appUserID,
-                                    maybeError: maybeError)
+                                    error: error)
 
-            if let completion = maybeCompletion {
+            if let completion = completion {
                 self.operationDispatcher.dispatchOnMainThread {
-                    completion(maybeCustomerInfo, maybeError)
+                    completion(customerInfo, error)
                 }
             }
         }
@@ -689,12 +689,12 @@ private extension PurchasesOrchestrator {
             let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
 
             return await withCheckedContinuation { continuation in
-                syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybeCustomerInfo, maybeError in
-                    if let error = maybeError {
+                syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { customerInfo, error in
+                    if let error = error {
                         continuation.resume(returning: .failure(error))
                         return
                     }
-                    guard let customerInfo = maybeCustomerInfo else {
+                    guard let customerInfo = customerInfo else {
                         continuation.resume(returning: .failure(ErrorUtils.unexpectedBackendResponseError()))
                         return
                     }

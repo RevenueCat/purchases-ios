@@ -21,14 +21,14 @@ import StoreKit
 @available(tvOS, unavailable)
 class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
 
-    var maybeMockSK2Error: Error?
+    var mockSK2Error: Error?
 
     // We can't directly store instances of StoreKit.Transaction.RefundRequestStatus, since that causes
     // linking issues in iOS < 15, even with @available checks correctly in place.
     // So instead, we store the underlying product as Any and wrap it with casting.
     // https://openradar.appspot.com/radar?id=4970535809187840
     private var untypedSK2Status: Any?
-    var maybeMockSK2Status: StoreKit.Transaction.RefundRequestStatus? {
+    var mockSK2Status: StoreKit.Transaction.RefundRequestStatus? {
         get {
             // swiftlint:disable:next force_cast
             return untypedSK2Status as! StoreKit.Transaction.RefundRequestStatus?
@@ -45,10 +45,10 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
     override func initiateSK2RefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
         Result<StoreKit.Transaction.RefundRequestStatus, Error> {
         refundRequestCalled = true
-        if let error = maybeMockSK2Error {
+        if let error = mockSK2Error {
             return .failure(error)
         } else {
-            return .success(maybeMockSK2Status ?? StoreKit.Transaction.RefundRequestStatus.success)
+            return .success(mockSK2Status ?? StoreKit.Transaction.RefundRequestStatus.success)
         }
     }
 

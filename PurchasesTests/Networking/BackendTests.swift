@@ -548,7 +548,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var error: NSError?
-        var maybeUnderlyingError: NSError?
+        var underlyingError: NSError?
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: false,
@@ -558,15 +558,15 @@ class BackendTests: XCTestCase {
                       subscriberAttributes: nil,
                       completion: { (_, newError) in
             error = newError as NSError?
-            maybeUnderlyingError = error?.userInfo[NSUnderlyingErrorKey] as? NSError
+            underlyingError = error?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
         expect(error).toEventuallyNot(beNil())
         expect(error?.code).toEventually(equal(ErrorCode.invalidCredentialsError.rawValue))
         expect(error?.userInfo["finishable"]).to(be(false))
 
-        expect(maybeUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
+        expect(underlyingError).toEventuallyNot(beNil())
+        expect(underlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
     }
 
     func testForwards400ErrorsCorrectly() {
@@ -1068,7 +1068,7 @@ class BackendTests: XCTestCase {
                                     error: NSError(domain: NSURLErrorDomain, code: -1009))
         httpClient.mock(requestPath: "/receipts", response: response)
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
                       isRestore: true,
@@ -1078,15 +1078,15 @@ class BackendTests: XCTestCase {
                       subscriberAttributes: nil,
                       completion: { (_, error) in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.networkError.rawValue))
-        expect(maybeReceivedUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeReceivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
-        expect(maybeReceivedUnderlyingError?.code).toEventually(equal(-1009))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
     }
 
     func testNetworkErrorIsForwarded() {
@@ -1095,18 +1095,18 @@ class BackendTests: XCTestCase {
                                     error: NSError(domain: NSURLErrorDomain, code: -1009))
         httpClient.mock(requestPath: "/subscribers/"+userID+"/alias", response: response)
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
         backend?.createAlias(appUserID: userID, newAppUserID: "new", completion: { error in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.networkError.rawValue))
-        expect(maybeReceivedUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeReceivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
-        expect(maybeReceivedUnderlyingError?.code).toEventually(equal(-1009))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
     }
 
     func testForwards500ErrorsCorrectly() {
@@ -1114,18 +1114,18 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/subscribers/"+userID+"/alias", response: response)
 
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
 
         backend?.createAlias(appUserID: userID, newAppUserID: "new", completion: { error in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.code).toEventually(be(ErrorCode.invalidCredentialsError.rawValue))
 
-        expect(maybeReceivedUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeReceivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
     }
 
     func testEligibilityUnknownIfNoReceipt() {
@@ -1154,18 +1154,18 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: path, response: response)
 
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
         backend?.getOfferings(appUserID: userID, completion: { (_, error) in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(ErrorCode._nsErrorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.networkError.rawValue))
-        expect(maybeReceivedUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeReceivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
-        expect(maybeReceivedUnderlyingError?.code).toEventually(equal(-1009))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
     }
 
     func test500GetOfferingsUnexpectedResponse() {
@@ -1174,17 +1174,17 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: path, response: response)
 
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
         backend?.getOfferings(appUserID: userID, completion: { (_, error) in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.code).toEventually(be(ErrorCode.invalidCredentialsError.rawValue))
 
-        expect(maybeReceivedUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeReceivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
     }
 
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
@@ -1411,7 +1411,7 @@ class BackendTests: XCTestCase {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
 
         backend?.post(offerIdForSigning: offerIdentifier,
                       productIdentifier: productIdentifier,
@@ -1419,15 +1419,15 @@ class BackendTests: XCTestCase {
                       receiptData: discountData,
                       appUserID: userID) { _, _, _, _, error in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.networkError.rawValue))
-        expect(maybeReceivedUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeReceivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
-        expect(maybeReceivedUnderlyingError?.code).toEventually(equal(-1009))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
     }
 
     func testOfferForSigningEmptyOffersResponse() {
@@ -1444,7 +1444,7 @@ class BackendTests: XCTestCase {
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
 
         backend?.post(offerIdForSigning: offerIdentifier,
                       productIdentifier: productIdentifier,
@@ -1452,14 +1452,14 @@ class BackendTests: XCTestCase {
                       receiptData: discountData,
                       appUserID: userID) { _, _, _, _, error in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(
             equal(ErrorCode.unexpectedBackendResponseError.rawValue))
-        expect(maybeReceivedUnderlyingError?.code).toEventually(
+        expect(receivedUnderlyingError?.code).toEventually(
             equal(UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse.rawValue))
     }
 
@@ -1488,7 +1488,7 @@ class BackendTests: XCTestCase {
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
 
         backend?.post(offerIdForSigning: offerIdentifier,
                       productIdentifier: productIdentifier,
@@ -1496,17 +1496,17 @@ class BackendTests: XCTestCase {
                       receiptData: discountData,
                       appUserID: userID) { _, _, _, _, error in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(
             equal(ErrorCode.invalidAppleSubscriptionKeyError.rawValue))
-        expect(maybeReceivedUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeReceivedUnderlyingError?.code).toEventually(equal(7234))
-        expect(maybeReceivedUnderlyingError?.domain).toEventually(equal("RevenueCat.BackendErrorCode"))
-        expect(maybeReceivedUnderlyingError?.localizedDescription).toEventually(equal("Ineligible for some reason"))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.code).toEventually(equal(7234))
+        expect(receivedUnderlyingError?.domain).toEventually(equal("RevenueCat.BackendErrorCode"))
+        expect(receivedUnderlyingError?.localizedDescription).toEventually(equal("Ineligible for some reason"))
     }
 
     func testOfferForSigningNoDataAndNoSignatureErrorResponse() {
@@ -1531,7 +1531,7 @@ class BackendTests: XCTestCase {
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
 
         backend?.post(offerIdForSigning: offerIdentifier,
                       productIdentifier: productIdentifier,
@@ -1539,14 +1539,14 @@ class BackendTests: XCTestCase {
                       receiptData: discountData,
                       appUserID: userID) { _, _, _, _, error in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(
             equal(ErrorCode.unexpectedBackendResponseError.rawValue))
-        expect(maybeReceivedUnderlyingError?.code).toEventually(
+        expect(receivedUnderlyingError?.code).toEventually(
             equal(UnexpectedBackendResponseSubErrorCode.postOfferIdSignature.rawValue))
 
     }
@@ -1560,21 +1560,21 @@ class BackendTests: XCTestCase {
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
         var receivedError: NSError?
-        var maybeReceivedUnderlyingError: NSError?
+        var receivedUnderlyingError: NSError?
         backend?.post(offerIdForSigning: offerIdentifier,
                       productIdentifier: productIdentifier,
                       subscriptionGroup: group,
                       receiptData: discountData,
                       appUserID: userID) { _, _, _, _, error in
             receivedError = error as NSError?
-            maybeReceivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.code).toEventually(equal(ErrorCode.invalidCredentialsError.rawValue))
 
-        expect(maybeReceivedUnderlyingError).toEventuallyNot(beNil())
-        expect(maybeReceivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
     }
 
     func testDoesntCacheForDifferentOfferings() {
@@ -1648,10 +1648,10 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { maybeCustomerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
-            receivedCustomerInfo = maybeCustomerInfo
+            receivedError = error
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1682,10 +1682,10 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { maybeCustomerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
-            receivedCustomerInfo = maybeCustomerInfo
+            receivedError = error
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1715,10 +1715,10 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { maybeCustomerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
-            receivedCustomerInfo = maybeCustomerInfo
+            receivedError = error
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1750,10 +1750,10 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { maybeCustomerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
-            receivedCustomerInfo = maybeCustomerInfo
+            receivedError = error
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1778,10 +1778,10 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { maybeCustomerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
-            receivedCustomerInfo = maybeCustomerInfo
+            receivedError = error
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1805,10 +1805,10 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { maybeCustomerInfo, created, maybeError in
+                       newAppUserID: newAppUserID) { customerInfo, created, error in
             completionCalled = true
-            receivedError = maybeError
-            receivedCustomerInfo = maybeCustomerInfo
+            receivedError = error
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 

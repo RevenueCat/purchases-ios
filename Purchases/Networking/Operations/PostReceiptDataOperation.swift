@@ -95,7 +95,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         statusCode: statusCode,
-                                                        maybeError: error,
+                                                        error: error,
                                                         completion: callbackObject.completion)
             }
         }

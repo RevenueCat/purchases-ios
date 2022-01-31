@@ -16,8 +16,8 @@ import Foundation
 
 class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
 
-    var maybeMockError: Error?
-    var maybeMockRefundRequestStatus: RefundRequestStatus?
+    var mockError: Error?
+    var mockRefundRequestStatus: RefundRequestStatus?
 
 #if os(iOS)
     @available(iOS 15.0, *)
@@ -25,10 +25,10 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     override func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
-        if let error = maybeMockError {
+        if let error = mockError {
             throw error
         } else {
-            return maybeMockRefundRequestStatus ?? RefundRequestStatus.success
+            return mockRefundRequestStatus ?? RefundRequestStatus.success
         }
     }
 
@@ -37,10 +37,10 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     override func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
-        if let error = maybeMockError {
+        if let error = mockError {
             throw error
         } else {
-            return maybeMockRefundRequestStatus ?? RefundRequestStatus.success
+            return mockRefundRequestStatus ?? RefundRequestStatus.success
         }
     }
 
@@ -49,10 +49,10 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     override func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
-        if let error = maybeMockError {
+        if let error = mockError {
             throw error
         } else {
-            return maybeMockRefundRequestStatus ?? RefundRequestStatus.success
+            return mockRefundRequestStatus ?? RefundRequestStatus.success
         }
     }
 #endif

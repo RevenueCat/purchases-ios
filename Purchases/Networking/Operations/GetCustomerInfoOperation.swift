@@ -53,7 +53,7 @@ private extension GetCustomerInfoOperation {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         statusCode: statusCode,
-                                                        maybeError: error,
+                                                        error: error,
                                                         completion: callback.completion)
             }
         }

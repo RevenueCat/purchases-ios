@@ -12,11 +12,11 @@ import Nimble
 import StoreKitTest
 
 class TestPurchaseDelegate: NSObject, PurchasesDelegate {
-    var maybeCustomerInfo: CustomerInfo?
+    var customerInfo: CustomerInfo?
     var customerInfoUpdateCount = 0
 
     func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
-        self.maybeCustomerInfo = customerInfo
+        self.customerInfo = customerInfo
         customerInfoUpdateCount += 1
     }
 
@@ -48,17 +48,17 @@ class BackendIntegrationTests: XCTestCase {
         configurePurchases()
         var completionCalled = false
         var receivedError: Error? = nil
-        var maybeReceivedOfferings: Offerings? = nil
+        var receivedOfferings: Offerings? = nil
         Purchases.shared.getOfferings { offerings, error in
             completionCalled = true
             receivedError = error
-            maybeReceivedOfferings = offerings
+            receivedOfferings = offerings
         }
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
         expect(receivedError).to(beNil())
-        let receivedOfferings = try XCTUnwrap(maybeReceivedOfferings)
-        expect(receivedOfferings.all).toNot(beEmpty())
+        let unwrappedOfferings = try XCTUnwrap(receivedOfferings)
+        expect(unwrappedOfferings.all).toNot(beEmpty())
     }
 
     func testCanMakePurchase() throws {
@@ -66,7 +66,7 @@ class BackendIntegrationTests: XCTestCase {
         purchaseMonthlyOffering()
 
         waitUntilEntitlementsGoThrough()
-        let entitlements = purchasesDelegate.maybeCustomerInfo?.entitlements
+        let entitlements = purchasesDelegate.customerInfo?.entitlements
         expect(entitlements?["premium"]?.isActive) == true
     }
 
@@ -76,7 +76,7 @@ class BackendIntegrationTests: XCTestCase {
         var completionCalled = false
         purchaseMonthlyOffering { [self] customerInfo, error in
             expect(customerInfo?.entitlements.all.count) == 1
-            let entitlements = self.purchasesDelegate.maybeCustomerInfo?.entitlements
+            let entitlements = self.purchasesDelegate.customerInfo?.entitlements
             expect(entitlements?["premium"]?.isActive) == true
 
             let anonUserID = Purchases.shared.appUserID
@@ -199,9 +199,9 @@ class BackendIntegrationTests: XCTestCase {
             expect(error).to(beNil())
         }
 
-        expect(self.purchasesDelegate.maybeCustomerInfo?.originalAppUserId)
+        expect(self.purchasesDelegate.customerInfo?.originalAppUserId)
             .toEventually(equal(userID2), timeout: .seconds(10))
-        assertNoPurchases(purchasesDelegate.maybeCustomerInfo)
+        assertNoPurchases(purchasesDelegate.customerInfo)
     }
 
     func testLogOutRemovesEntitlements() {
@@ -236,34 +236,34 @@ class BackendIntegrationTests: XCTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         configurePurchases()
         
-        var maybeProductID: String?
+        var productID: String?
         var completionCalled = false
-        var maybeReceivedEligibility: [String: IntroEligibility]?
+        var receivedEligibility: [String: IntroEligibility]?
         
         Purchases.shared.getOfferings { offerings, error in
-            maybeProductID = offerings?.current?.monthly?.storeProduct.productIdentifier
+            productID = offerings?.current?.monthly?.storeProduct.productIdentifier
             completionCalled = true
         }
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        let productID = try XCTUnwrap(maybeProductID)
+        let unwrappedProductID = try XCTUnwrap(productID)
         
-        Purchases.shared.checkTrialOrIntroDiscountEligibility([productID]) { receivedEligibility in
+        Purchases.shared.checkTrialOrIntroDiscountEligibility([unwrappedProductID]) { eligibility in
             completionCalled = true
-            maybeReceivedEligibility = receivedEligibility
+            receivedEligibility = eligibility
         }
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        var receivedEligibility = try XCTUnwrap(maybeReceivedEligibility)
-        expect(receivedEligibility[productID]?.status) == .eligible
+        var unwrappedEligibility = try XCTUnwrap(receivedEligibility)
+        expect(unwrappedEligibility[unwrappedProductID]?.status) == .eligible
         
         purchaseMonthlyOffering { [self] customerInfo, error in
             expect(customerInfo?.entitlements.all.count) == 1
-            let entitlements = self.purchasesDelegate.maybeCustomerInfo?.entitlements
+            let entitlements = self.purchasesDelegate.customerInfo?.entitlements
             expect(entitlements?["premium"]?.isActive) == true
             
             let anonUserID = Purchases.shared.appUserID
@@ -281,15 +281,15 @@ class BackendIntegrationTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         completionCalled = false
         
-        Purchases.shared.checkTrialOrIntroDiscountEligibility([productID]) { receivedEligibility in
+        Purchases.shared.checkTrialOrIntroDiscountEligibility([unwrappedProductID]) { eligibility in
             completionCalled = true
-            maybeReceivedEligibility = receivedEligibility
+            receivedEligibility = eligibility
         }
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
         
-        receivedEligibility = try XCTUnwrap(maybeReceivedEligibility)
-        expect(receivedEligibility[productID]?.status) == .ineligible
+        unwrappedEligibility = try XCTUnwrap(receivedEligibility)
+        expect(unwrappedEligibility[unwrappedProductID]?.status) == .ineligible
     }
     
 }
@@ -331,7 +331,7 @@ private extension BackendIntegrationTests {
     }
 
     func waitUntilEntitlementsGoThrough() {
-        expect(self.purchasesDelegate.maybeCustomerInfo?.entitlements.all.count)
+        expect(self.purchasesDelegate.customerInfo?.entitlements.all.count)
             .toEventually(equal(1), timeout: .seconds(10))
     }
 

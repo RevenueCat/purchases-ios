@@ -20,7 +20,7 @@ enum BackendErrorStrings {
     case backend_deallocated
 
     // Backend tried to instantiate a CustomerInfo but for some reason it couldn't.
-    case customer_info_instantiation_error(maybeResponse: [String: Any]?)
+    case customer_info_instantiation_error(response: [String: Any]?)
 
     // getOfferings response was totally empty.
     case offerings_empty_response
@@ -32,10 +32,10 @@ enum BackendErrorStrings {
     case no_offerings_response_json(response: [String: Any])
 
     // Posting offerIdForSigning failed due to a signature problem.
-    case signature_error(maybeSignatureDataString: Any?)
+    case signature_error(signatureDataString: Any?)
 
     // getOfferings failed and we're not totally sure why.
-    case unknown_get_offerings_error(statusCode: Int, maybeResponseString: String?)
+    case unknown_get_offerings_error(statusCode: Int, responseString: String?)
 
 }
 
@@ -45,9 +45,9 @@ extension BackendErrorStrings: CustomStringConvertible {
         switch self {
         case .backend_deallocated:
             return "Received response from getOfferings but Backend was already deallocated, response will be ignored."
-        case .customer_info_instantiation_error(let maybeResponse):
+        case .customer_info_instantiation_error(let response):
             var message = "Login failed, unable to instantiate \(CustomerInfo.self)"
-            if let response = maybeResponse {
+            if let response = response {
                 message += " from:\n \(response.debugDescription)"
             }
             return message
@@ -57,11 +57,11 @@ extension BackendErrorStrings: CustomStringConvertible {
             return "Unable to parse Offerings from response:\n\(String(describing: response["offers"]))"
         case .no_offerings_response_json(let response):
             return "No offerings found in response:\n\(String(describing: response["offers"]))"
-        case .signature_error(let maybeSignatureDataString):
-            return "Missing 'signatureData' or its structure changed:\n\(String(describing: maybeSignatureDataString))"
-        case .unknown_get_offerings_error(let statusCode, let maybeResponseString):
+        case .signature_error(let signatureDataString):
+            return "Missing 'signatureData' or its structure changed:\n\(String(describing: signatureDataString))"
+        case .unknown_get_offerings_error(let statusCode, let responseString):
             var message = "Encountered an error getting offerings, status code:\(statusCode)"
-            if let responseString = maybeResponseString {
+            if let responseString = responseString {
                 message += "\nresponse: \(responseString)"
             }
             return message

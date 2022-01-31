@@ -22,71 +22,71 @@ class CustomerInfoResponseHandler {
     }
 
     // swiftlint:disable:next function_body_length
-    func handle(customerInfoResponse maybeResponse: [String: Any]?,
+    func handle(customerInfoResponse response: [String: Any]?,
                 statusCode: Int,
-                maybeError: Error?,
+                error: Error?,
                 file: String = #fileID,
                 function: String = #function,
                 line: UInt = #line,
                 completion: BackendCustomerInfoResponseHandler) {
-        if let error = maybeError {
+        if let error = error {
             completion(nil, ErrorUtils.networkError(withUnderlyingError: error,
                                                     fileName: file, functionName: function, line: line))
             return
         }
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
 
-        let maybeCustomerInfoError: Error?
-        let maybeCustomerInfo: CustomerInfo?
+        let customerInfoError: Error?
+        let customerInfo: CustomerInfo?
 
         if !isErrorStatusCode {
             // Only attempt to parse a response if we don't have an error status code from the backend.
             do {
-                maybeCustomerInfo = try CustomerInfo.from(json: maybeResponse)
-                maybeCustomerInfoError = nil
-            } catch let customerInfoError {
-                maybeCustomerInfo = nil
-                maybeCustomerInfoError = customerInfoError
+                customerInfo = try CustomerInfo.from(json: response)
+                customerInfoError = nil
+            } catch let error {
+                customerInfo = nil
+                customerInfoError = error
             }
         } else {
-            maybeCustomerInfoError = nil
-            maybeCustomerInfo = nil
+            customerInfoError = nil
+            customerInfo = nil
         }
 
-        if !isErrorStatusCode && maybeCustomerInfo == nil {
-            let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
-            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: maybeCustomerInfoError,
+        if !isErrorStatusCode && customerInfo == nil {
+            let extraContext = "statusCode: \(statusCode), json:\(response.debugDescription)"
+            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: customerInfoError,
                                                                  extraContext: extraContext,
                                                                  fileName: file, functionName: function, line: line))
             return
         }
 
         let subscriberAttributesErrorInfo = self.userInfoAttributeParser
-            .attributesUserInfoFromResponse(response: maybeResponse ?? [:], statusCode: statusCode)
+            .attributesUserInfoFromResponse(response: response ?? [:], statusCode: statusCode)
 
         let hasError = (isErrorStatusCode
                         || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil
-                        || maybeCustomerInfoError != nil)
+                        || customerInfoError != nil)
 
         guard !hasError else {
             let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
             var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
-            let backendErrorCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
-            let message = maybeResponse?["message"] as? String
+            let backendErrorCode = BackendErrorCode(code: response?["code"])
+            let message = response?["message"] as? String
             var responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
                                                         backendMessage: message,
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
-            if let maybeCustomerInfoError = maybeCustomerInfoError {
-                responseError = maybeCustomerInfoError
-                    .addingUnderlyingError(responseError, extraContext: maybeResponse?.stringRepresentation)
+            if let customerInfoError = customerInfoError {
+                responseError = customerInfoError
+                    .addingUnderlyingError(responseError, extraContext: response?.stringRepresentation)
             }
 
-            completion(maybeCustomerInfo, responseError)
+            completion(customerInfo, responseError)
             return
         }
 
-        completion(maybeCustomerInfo, nil)
+        completion(customerInfo, nil)
     }
 
 }

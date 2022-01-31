@@ -113,12 +113,12 @@ enum ErrorUtils {
      * of what went wrong with the response.
      */
     static func unexpectedBackendResponse(
-        withSubError maybeSubError: Error?,
-        extraContext maybeExtraContext: String? = nil,
+        withSubError subError: Error?,
+        extraContext: String? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        return backendResponseError(withSubError: maybeSubError,
-                                    extraContext: maybeExtraContext,
+        return backendResponseError(withSubError: subError,
+                                    extraContext: extraContext,
                                     fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -385,12 +385,12 @@ enum ErrorUtils {
 extension ErrorUtils {
 
     static func backendError(withBackendCode backendCode: BackendErrorCode,
-                             backendMessage maybeBackendMessage: String?,
+                             backendMessage: String?,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
                              fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         let errorCode = backendCode.toPurchasesErrorCode()
-        let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: maybeBackendMessage)
+        let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
         return error(with: errorCode,
                      message: errorCode.description,
@@ -418,8 +418,8 @@ private extension ErrorUtils {
                       line: UInt = #line) -> Error {
         var userInfo = extraUserInfo ?? [:]
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = message ?? code.description
-        if let maybeUnderlyingError = underlyingError {
-            userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeUnderlyingError
+        if let underlyingError = underlyingError {
+            userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = underlyingError
         }
         userInfo[ErrorDetails.readableErrorCodeKey] = code.codeName
         userInfo[ErrorDetails.fileKey] = "\(fileName):\(line)"
@@ -436,17 +436,17 @@ private extension ErrorUtils {
     }
 
     static func backendResponseError(
-        withSubError maybeSubError: Error?,
-        extraContext maybeExtraContext: String?,
+        withSubError subError: Error?,
+        extraContext: String?,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         var userInfo: [NSError.UserInfoKey: Any] = [:]
-        let describableSubError = maybeSubError as? DescribableError
+        let describableSubError = subError as? DescribableError
         let errorDescription = describableSubError?.description ?? ErrorCode.unexpectedBackendResponseError.description
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = errorDescription
-        userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeSubError
+        userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = subError
         userInfo[ErrorDetails.readableErrorCodeKey] = ErrorCode.unexpectedBackendResponseError.codeName
-        userInfo[ErrorDetails.extraContextKey] = maybeExtraContext
+        userInfo[ErrorDetails.extraContextKey] = extraContext
         userInfo[ErrorDetails.fileKey] = "\(fileName):\(line)"
         userInfo[ErrorDetails.functionKey] = functionName
 

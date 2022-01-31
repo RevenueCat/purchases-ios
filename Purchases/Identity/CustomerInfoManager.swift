@@ -34,21 +34,21 @@ class CustomerInfoManager {
 
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
-                                   completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
+                                   completion: ((CustomerInfo?, Error?) -> Void)?) {
         deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
-            self.backend.getSubscriberData(appUserID: appUserID) { maybeCustomerInfo, maybeError in
-                if let error = maybeError {
+            self.backend.getSubscriberData(appUserID: appUserID) { customerInfo, error in
+                if let error = error {
                     self.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
                     Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error: error))
-                } else if let info = maybeCustomerInfo {
+                } else if let info = customerInfo {
                     self.cache(customerInfo: info, appUserID: appUserID)
                     Logger.rcSuccess(Strings.customerInfo.customerinfo_updated_from_network)
                 }
 
-                if let completion = maybeCompletion {
+                if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
-                        completion(maybeCustomerInfo, maybeError)
+                        completion(customerInfo, error)
                     }
                 }
 
@@ -59,10 +59,10 @@ class CustomerInfoManager {
     func fetchAndCacheCustomerInfoIfStale(appUserID: String,
                                           isAppBackgrounded: Bool,
                                           completion: ((CustomerInfo?, Error?) -> Void)?) {
-        let maybeCachedCustomerInfo = cachedCustomerInfo(appUserID: appUserID)
+        let cachedCustomerInfo = cachedCustomerInfo(appUserID: appUserID)
         let isCacheStale = deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
                                                                 isAppBackgrounded: isAppBackgrounded)
-        let needsToRefresh = isCacheStale || maybeCachedCustomerInfo == nil
+        let needsToRefresh = isCacheStale || cachedCustomerInfo == nil
         if needsToRefresh {
             Logger.debug(isAppBackgrounded
                             ? Strings.customerInfo.customerinfo_stale_updating_in_background
@@ -73,7 +73,7 @@ class CustomerInfoManager {
         } else {
             if let completion = completion {
                 operationDispatcher.dispatchOnMainThread {
-                    completion(maybeCachedCustomerInfo, nil)
+                    completion(cachedCustomerInfo, nil)
                 }
             }
         }
@@ -87,13 +87,13 @@ class CustomerInfoManager {
         sendUpdateIfChanged(customerInfo: info)
     }
 
-    func customerInfo(appUserID: String, completion maybeCompletion: ((CustomerInfo?, Error?) -> Void)?) {
-        let maybeInfoFromCache = cachedCustomerInfo(appUserID: appUserID)
+    func customerInfo(appUserID: String, completion: ((CustomerInfo?, Error?) -> Void)?) {
+        let infoFromCache = cachedCustomerInfo(appUserID: appUserID)
         var completionCalled = false
 
-        if let infoFromCache = maybeInfoFromCache {
+        if let infoFromCache = infoFromCache {
             Logger.debug(Strings.customerInfo.vending_cache)
-            if let completion = maybeCompletion {
+            if let completion = completion {
                 completionCalled = true
                 operationDispatcher.dispatchOnMainThread {
                     completion(infoFromCache, nil)
@@ -102,7 +102,7 @@ class CustomerInfoManager {
         }
 
         // Prevent calling completion twice.
-        let completionIfNotCalledAlready = completionCalled ? nil : maybeCompletion
+        let completionIfNotCalledAlready = completionCalled ? nil : completion
 
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
@@ -117,8 +117,8 @@ class CustomerInfoManager {
         }
 
         do {
-            let maybeInfoDict = try JSONSerialization.jsonObject(with: customerInfoData) as? [String: Any]
-            guard let customerInfoDict = maybeInfoDict else {
+            let infoDict = try JSONSerialization.jsonObject(with: customerInfoData) as? [String: Any]
+            guard let customerInfoDict = infoDict else {
                 return nil
             }
 

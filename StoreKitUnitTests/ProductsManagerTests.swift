@@ -24,18 +24,18 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
+        var receivedProducts: Result<Set<StoreProduct>, Error>?
 
         manager.products(withIdentifiers: Set([identifier])) { products in
             completionCalled = true
-            maybeReceivedProducts = products
+            receivedProducts = products
         }
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
-        expect(receivedProducts.count) == 1
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts.count) == 1
 
-        let product = try XCTUnwrap(receivedProducts.first).product
+        let product = try XCTUnwrap(unwrappedProducts.first).product
 
         expect(product).to(beAnInstanceOf(SK1StoreProduct.self))
         expect(product.productIdentifier) == identifier
@@ -50,18 +50,18 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Result<Set<StoreProduct>, Error>?
+        var receivedProducts: Result<Set<StoreProduct>, Error>?
 
         manager.products(withIdentifiers: Set([identifier])) { products in
             completionCalled = true
-            maybeReceivedProducts = products
+            receivedProducts = products
         }
 
         expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
-        let receivedProducts = try XCTUnwrap(maybeReceivedProducts?.get())
-        expect(receivedProducts.count) == 1
+        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+        expect(unwrappedProducts.count) == 1
 
-        let product = try XCTUnwrap(receivedProducts.first).product
+        let product = try XCTUnwrap(unwrappedProducts.first).product
 
         expect(product).to(beAnInstanceOf(SK2StoreProduct.self))
         expect(product.productIdentifier) == identifier
