@@ -36,7 +36,7 @@ internal struct SK1StoreTransaction: StoreTransactionType {
 extension SKPaymentTransaction {
 
     var productIdentifier: String? {
-        guard let payment = self.maybePayment else { return nil }
+        guard let payment = self.paymentIfPresent else { return nil }
 
         guard let productIdentifier = payment.productIdentifier as String?,
               !productIdentifier.isEmpty else {
@@ -70,13 +70,13 @@ extension SKPaymentTransaction {
     fileprivate var quantity: Int {
         // Note: multi-quanity purchases aren't supported.
         // Defaulting to `1` if `self.payment` is `nil` (which shouldn't happen) as a reasonable default.
-        return self.maybePayment?.quantity ?? 1
+        return self.paymentIfPresent?.quantity ?? 1
     }
 
     /// Considering issue https://github.com/RevenueCat/purchases-ios/issues/279, sometimes `payment`
     /// and `productIdentifier` can be `nil`, in this case, they must be treated as nullable.
     /// Due to that an optional reference is created so that the compiler would allow us to check for nullability.
-    private var maybePayment: SKPayment? {
+    private var paymentIfPresent: SKPayment? {
         guard let payment = self.payment as SKPayment? else {
             Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
             return nil
