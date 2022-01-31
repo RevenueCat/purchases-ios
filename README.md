@@ -24,3 +24,7 @@
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
+
+## Purchases.framework v4
+You're viewing the documentation for RevenueCat iOS SDK version 3.
+For documentation on version 4, visit [the docs for RevenueCat iOS SDK version 4.](https://revenuecat-docs.netlify.app/documentation/Revenuecat)
