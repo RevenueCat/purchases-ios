@@ -23,15 +23,25 @@ extension PeriodType: Decodable {
                                                   message: "Unable to extract a periodTypeString")
         }
 
-        switch periodTypeString {
-        case "normal":
-            self = .normal
-        case "intro":
-            self = .intro
-        case "trial":
-            self = .trial
-        default:
+        guard let type = Self.mapping[periodTypeString] else {
             throw CodableError.unexpectedValue(PeriodType.self)
+        }
+
+        self = type
+    }
+
+    private static let mapping: [String: Self] = Self.allCases
+        .dictionaryWithKeys { $0.name }
+
+}
+
+private extension PeriodType {
+
+    var name: String {
+        switch self {
+        case .normal: return "normal"
+        case .intro: return "intro"
+        case .trial: return "trial"
         }
     }
 
