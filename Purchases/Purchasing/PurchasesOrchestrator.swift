@@ -240,7 +240,7 @@ class PurchasesOrchestrator {
         self.promotionalOffer(
             forProductDiscount: discount,
             product: StoreProduct(sk1Product: sk1Product)
-        ) { [unowned self] promotionalOffer, error in
+        ) { promotionalOffer, error in
             guard let promotionalOffer = promotionalOffer else {
                 completion(nil, nil, error, false)
                 return
