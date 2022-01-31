@@ -26,7 +26,8 @@ struct MagicWeatherApp: App {
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
                             observerMode: false,
-                            userDefaults: nil)
+                            userDefaults: nil,
+                            useStoreKit2IfAvailable: true)
         
         /* Set the delegate to our shared instance of PurchasesDelegateHandler */
         Purchases.shared.delegate = PurchasesDelegateHandler.shared

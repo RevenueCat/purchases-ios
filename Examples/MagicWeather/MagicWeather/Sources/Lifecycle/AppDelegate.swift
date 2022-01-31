@@ -26,7 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
-                            observerMode: false)
+                            observerMode: false,
+                            userDefaults: nil,
+                            useStoreKit2IfAvailable: true)
         
         /// - Set the delegate to this instance of AppDelegate. Scroll down to see this implementation.
         Purchases.shared.delegate = self
