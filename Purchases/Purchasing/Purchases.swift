@@ -776,7 +776,15 @@ public extension Purchases {
     ///
     /// - Seealso `PurchasesDelegate.purchases(_ purchases: Purchases, didReceiveUpdated:)`
     /// - Seealso `Purchases.customerInfo()`
-    /// - Note: this method is not thread-safe.
+    ///  #### Example:
+    /// ```swift
+    ///     for await customerInfo in Purchases.shared.customerInfoStream {
+    ///       // this gets called whenever new CustomerInfo is available
+    ///       let entitlements = customerInfo.entitlements
+    ///       ...
+    ///     }
+    /// ```
+    /// - note: this method is not thread-safe.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
         return self.customerInfoManager.customerInfoStream

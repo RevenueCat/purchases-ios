@@ -36,6 +36,9 @@ import Foundation
          weekly
 }
 
+/**
+ Enumeration of all possible Package types.
+*/
 private extension PackageType {
 
     var description: String? {
@@ -66,6 +69,9 @@ private extension PackageType {
     }
 }
 
+/**
+ Enumeration of all possible Package types.
+*/
 @objc(RCPackage) public class Package: NSObject {
 
     @objc public let identifier: String
@@ -114,6 +120,10 @@ private extension PackageType {
 
 }
 
+/**
+ Contains information about the product available for the user to purchase.
+ For more info, see [our docs on Packages](https://docs.revenuecat.com/docs/entitlements)
+*/
 @objc public extension Package {
 
     /**

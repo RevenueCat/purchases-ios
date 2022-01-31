@@ -14,6 +14,9 @@
 
 import Foundation
 
+/**
+ Enum of supported attribution networks
+ */
 @objc(RCAttributionNetwork) public enum AttributionNetwork: Int {
 
     /**
