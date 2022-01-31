@@ -103,7 +103,7 @@ internal protocol StoreProductType {
 
     /// The decimal representation of the cost of the product, in local currency.
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
-    /// - Seealso: `pricePerMonth`.
+    /// - Seealso: ``pricePerMonth``.
     var price: Decimal { get }
 
     /// The price of this product using ``priceFormatter``.
@@ -147,7 +147,7 @@ internal protocol StoreProductType {
     ///
     /// Before displaying UI that offers the introductory price,
     /// you must first determine if the user is eligible to receive it.
-    /// - Seealso: `Purchases.checkTrialOrIntroDiscountEligibility` to  determine eligibility.
+    /// - Seealso: ``Purchases/checkTrialOrIntroDiscountEligibility(_:)`` to  determine eligibility.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     var introductoryDiscount: StoreProductDiscount? { get }
 

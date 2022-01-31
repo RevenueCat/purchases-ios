@@ -15,9 +15,9 @@
 import Foundation
 import StoreKit
 
-/// Encapsulates `StoreProductType` information to be sent to the backend
+/// Encapsulates ``StoreProductType`` information to be sent to the backend
 /// when posting receipts.
-/// - Seealso: `Backend.post(receiptData:appUserID:isRestore:productData:...`
+/// - Seealso: `Backend/post(receiptData:appUserID:isRestore:productData:...`
 struct ProductRequestData {
 
     let productIdentifier: String
