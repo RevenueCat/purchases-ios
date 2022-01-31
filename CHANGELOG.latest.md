@@ -10,6 +10,9 @@ RC 2 introduces the following updates:
 
 - Removed `SubscriptionPeriod.Unit.unknown`. Subscriptions with empty `SubscriptionPeriod` values will have `nil` `subscriptionPeriod` instead.
 - Removed `StoreProductDiscount.none`, since it wasn't needed.
+- Added `useStoreKit2IfAvailable` (Experimental) configuration option. This is disabled by default.
+If enabled, the SDK will use StoreKit 2 APIs for purchases under the hood.
+**This is currently in an experimental phase, and we don't recommend using it in production in this build.**
 
 ### Documentation: 
 
