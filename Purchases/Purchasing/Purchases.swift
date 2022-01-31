@@ -194,8 +194,13 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     /// Current version of the Purchases framework.
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
-    /// Whether transactions should be finished automatically.
-    /// `true` by default.
+    /** Whether transactions should be finished automatically.
+     * `true` by default.
+     * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
+     * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
+     * will turn up every time the app is opened.
+     * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
+     */
     @objc public var finishTransactions: Bool {
         get { systemInfo.finishTransactions }
         set { systemInfo.finishTransactions = newValue }
