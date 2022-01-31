@@ -110,7 +110,7 @@ These types replace native StoreKit types in all public API methods that used th
 | RCAttributionNetwork | ``AttributionNetwork`` |
 | RCIntroEligibility | ``IntroEligibility`` |
 | RCIntroEligibilityStatus | ``IntroEligibilityStatus`` |
-| RCPaymentMode | ``StoreProductDiscount.PaymentMode`` |
+| RCPaymentMode | ``StoreProductDiscount/PaymentMode-swift.enum`` |
 | RCPaymentModeNone | <i>REMOVED</i> |
 | Purchases.LogLevel | ``LogLevel`` |
 | Purchases.Offerings | ``Offerings`` |
