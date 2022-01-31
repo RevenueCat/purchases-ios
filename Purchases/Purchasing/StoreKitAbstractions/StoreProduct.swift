@@ -30,7 +30,7 @@ public typealias SK2Product = StoreKit.Product
     let product: StoreProductType
 
     /// Designated initializer.
-    /// - Seealso: ``StoreProduct.from(product:)`` to wrap an instance of `StoreProduct`
+    /// - SeeAlso: ``StoreProduct.from(product:)`` to wrap an instance of `StoreProduct`
     private init(_ product: StoreProductType) {
         self.product = product
 
@@ -103,7 +103,7 @@ internal protocol StoreProductType {
 
     /// The decimal representation of the cost of the product, in local currency.
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
-    /// - Seealso: ``pricePerMonth``.
+    /// - SeeAlso: ``pricePerMonth``.
     var price: Decimal { get }
 
     /// The price of this product using ``priceFormatter``.
@@ -120,7 +120,7 @@ internal protocol StoreProductType {
     ///
     /// Configure your in-app purchases to allow Family Sharing in App Store Connect.
     /// For more information about setting up Family Sharing, see Turn-on Family Sharing for in-app purchases.
-    /// - Seealso: https://support.apple.com/en-us/HT201079
+    /// - SeeAlso: https://support.apple.com/en-us/HT201079
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     var isFamilyShareable: Bool { get }
 
