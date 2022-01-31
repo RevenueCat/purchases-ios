@@ -14,6 +14,8 @@
 
 import Foundation
 
+/// Enumeration of all possible ``Package`` types, as configured on the package.
+/// See [the guide](https://docs.revenuecat.com/docs/entitlements#adding-packages) for more info.
 @objc(RCPackageType) public enum PackageType: Int {
 
     /// A package that was defined with an unknown identifier.
@@ -36,9 +38,6 @@ import Foundation
          weekly
 }
 
-/**
- Enumeration of all possible Package types.
-*/
 private extension PackageType {
 
     var description: String? {
@@ -69,14 +68,17 @@ private extension PackageType {
     }
 }
 
-/**
- Enumeration of all possible Package types.
-*/
+/// A set of cross-platform products.
+/// See [the guide](https://docs.revenuecat.com/docs/entitlements#adding-packages) for more info.
 @objc(RCPackage) public class Package: NSObject {
 
+    /// The identifier for this Package.
     @objc public let identifier: String
+    /// The type configured for this package.
     @objc public let packageType: PackageType
+    /// The underlying ``storeProduct``
     @objc public let storeProduct: StoreProduct
+    /// The identifier of the ``Offering`` containing this Package.
     @objc public let offeringIdentifier: String
 
     /// The price of this product using ``StoreProduct/priceFormatter``.

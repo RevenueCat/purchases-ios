@@ -95,6 +95,7 @@ import Foundation
             .first
     }
 
+    /// - Seealso: ``package(identifier:)``
     @objc public subscript(key: String) -> Package? {
         return package(identifier: key)
     }

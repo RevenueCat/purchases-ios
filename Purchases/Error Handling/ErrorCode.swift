@@ -19,6 +19,8 @@ import Foundation
  */
 @objc(RCPurchasesErrorCode) public enum ErrorCode: Int, Error {
 
+    // swiftlint:disable missing_docs
+
     @objc(RCUnknownError) case unknownError = 0
     @objc(RCPurchaseCancelledError) case purchaseCancelledError = 1
     @objc(RCStoreProblemError) case storeProblemError = 2
@@ -55,12 +57,14 @@ import Foundation
     @objc(RCProductRequestTimedOut) case productRequestTimedOut = 32
     @objc(RCAPIEndpointBlocked) case apiEndpointBlockedError = 33
 
+    // swiftlint:enable missing_docs
 }
 
 extension ErrorCode: CaseIterable { }
 
 extension ErrorCode: DescribableError {
 
+    // swiftlint:disable:next missing_docs
     public var description: String {
         switch self {
         case .networkError:
@@ -156,6 +160,7 @@ extension ErrorCode: DescribableError {
 
 extension ErrorCode: CustomNSError {
 
+    // swiftlint:disable missing_docs
     public var errorUserInfo: [String: Any] {
         return [
             NSDebugDescriptionErrorKey: self.description,

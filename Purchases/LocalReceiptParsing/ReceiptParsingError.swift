@@ -28,7 +28,7 @@ enum ReceiptReadingError: Error, Equatable {
 
 extension ReceiptReadingError: LocalizedError {
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .missingReceipt:
             return "The receipt couldn't be found"

@@ -32,6 +32,7 @@ import Foundation
         return self.all.filter { $0.value.isActive }
     }
 
+    /// - Seealso: ``all``
     @objc public subscript(key: String) -> EntitlementInfo? {
         return self.all[key]
     }

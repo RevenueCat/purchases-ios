@@ -54,14 +54,14 @@ class StoreKitRequestFetcher: NSObject {
 
 extension StoreKitRequestFetcher: SKRequestDelegate {
 
-    public func requestDidFinish(_ request: SKRequest) {
+    func requestDidFinish(_ request: SKRequest) {
         guard request is SKReceiptRefreshRequest else { return }
 
         finishReceiptRequest(request)
         request.cancel()
     }
 
-    public func request(_ request: SKRequest, didFailWithError error: Error) {
+    func request(_ request: SKRequest, didFailWithError error: Error) {
         guard request is SKReceiptRefreshRequest else { return }
 
         Logger.appleError(Strings.storeKit.skrequest_failed(error: error))

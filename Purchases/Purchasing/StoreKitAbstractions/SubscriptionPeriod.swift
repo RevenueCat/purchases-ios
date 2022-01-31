@@ -14,12 +14,18 @@
 import Foundation
 import StoreKit
 
+/// The duration of time between subscription renewals.
+/// Use the value and the unit together to determine the subscription period.
+/// For example, if the unit is  `.month`, and the value is `3`, the subscription period is three months.
 @objc(RCSubscriptionPeriod)
 public class SubscriptionPeriod: NSObject {
 
+    /// The number of period units.
     @objc public let value: Int
+    /// The increment of time that a subscription period is specified in.
     @objc public let unit: Unit
 
+    /// Creates a new ``SubscriptionPeriod`` with the given value and unit.
     public init(value: Int, unit: Unit) {
         assert(value > 0, "Invalid value: \(value)")
 
@@ -27,12 +33,17 @@ public class SubscriptionPeriod: NSObject {
         self.unit = unit
     }
 
+    /// Units of time used to describe subscription periods.
     @objc(RCSubscriptionPeriodUnit)
     public enum Unit: Int {
 
+        /// A subscription period unit of a day.
         case day = 0
+        /// A subscription period unit of a week.
         case week = 1
+        /// A subscription period unit of a month.
         case month = 2
+        /// A subscription period unit of a year.
         case year = 3
 
     }
@@ -112,6 +123,7 @@ extension SubscriptionPeriod {
 }
 
 extension SubscriptionPeriod.Unit: CustomDebugStringConvertible {
+    // swiftlint:disable missing_docs
     public var debugDescription: String {
         switch self {
         case .day: return "day"

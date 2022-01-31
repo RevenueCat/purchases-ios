@@ -14,6 +14,8 @@
 
 import Foundation
 
+/// The types used to describe whether a transaction was purchased by the user,
+/// or is available to them through Family Sharing.
 @objc(RCPurchaseOwnershipType) public enum PurchaseOwnershipType: Int {
 
     /**
@@ -25,6 +27,9 @@ import Foundation
      */
     case familyShared = 1
 
+    /**
+     The ownership type could not be determined.
+     */
     case unknown = 2
 
 }

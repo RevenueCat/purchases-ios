@@ -52,6 +52,7 @@ import Foundation
         return all[identifier]
     }
 
+    /// - Seealso: ``offering(identifier:)``
     @objc public subscript(key: String) -> Offering? {
         return offering(identifier: key)
     }

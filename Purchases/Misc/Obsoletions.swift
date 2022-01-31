@@ -17,7 +17,7 @@ import StoreKit
 // and therefore the `fatalError`s are unreachable.
 // See also: docs/Deprecations.md
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length missing_docs
 
 public extension Purchases {
 

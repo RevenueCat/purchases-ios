@@ -51,7 +51,7 @@ struct ProductRequestData {
 
 extension ProductRequestData: Encodable {
 
-    public enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey {
 
         case productIdentifier = "product_id"
         case paymentMode = "payment_mode"

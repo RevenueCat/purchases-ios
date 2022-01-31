@@ -25,6 +25,7 @@ public typealias SK2ProductDiscount = StoreKit.Product.SubscriptionOffer
 
 /// Type that wraps `StoreKit.Product.SubscriptionOffer` and `SKProductDiscount`
 /// and provides access to their properties.
+/// Information about a subscription offer that you configured in App Store Connect.
 @objc(RCStoreProductDiscount)
 public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
@@ -50,10 +51,15 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
         super.init()
     }
 
+    // Note: this class inherits its docs from `StoreProductDiscountType`
+    // swiftlint:disable missing_docs
+
     @objc public var offerIdentifier: String? { self.discount.offerIdentifier }
     @objc public var price: Decimal { self.discount.price }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
+
+    // swiftlint:enable missing_docs
 
     /// Creates an instance from any `StoreProductDiscountType`.
     /// If `discount` is already a wrapped `StoreProductDiscount` then this returns it instead.
@@ -144,6 +150,7 @@ extension StoreProductDiscount: Encodable {
 
     }
 
+    // swiftlint:disable:next missing_docs
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
