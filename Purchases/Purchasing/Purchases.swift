@@ -765,7 +765,7 @@ public extension Purchases {
      * Get latest available customer  info.
      * Returns a value immediately if ``CustomerInfo`` is cached.
      *
-     * - Seealso `Purchases.customerInfoStream`
+     * - Seealso ``Purchases/customerInfoStream``
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo() async throws -> CustomerInfo {
@@ -774,8 +774,8 @@ public extension Purchases {
 
     /// Returns an `AsyncStream` of ``CustomerInfo`` changes.
     ///
-    /// - Seealso `PurchasesDelegate.purchases(_ purchases: Purchases, didReceiveUpdated:)`
-    /// - Seealso `Purchases.customerInfo()`
+    /// - Seealso ``PurchasesDelegate/purchases(_:receivedUpdated:)
+    /// - Seealso ``Purchases/customerInfo()``
     ///  #### Example:
     /// ```swift
     ///     for await customerInfo in Purchases.shared.customerInfoStream {
