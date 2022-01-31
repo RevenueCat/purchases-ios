@@ -30,6 +30,9 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)
 📮 | Great support - [Help Center](https://community.revenuecat.com)
 
+- Important: You're viewing the documentation for RevenueCat iOS SDK version 4.
+For documentation on version 3, visit [the docs for RevenueCat iOS SDK version 3.](https://sdk.revenuecat.com/ios/index.html)
+
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
 
