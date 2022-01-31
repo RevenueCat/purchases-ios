@@ -15,7 +15,7 @@ import Foundation
 
 /// A `UserDefaults` wrapper to synchronize access and writes.
 ///
-/// - Seealso: ``Atomic``.
+/// - SeeAlso: `Atomic`.
 internal class SynchronizedUserDefaults {
 
     private let atomic: Atomic<UserDefaults>

@@ -294,7 +294,7 @@ enum ErrorUtils {
     /**
      * Constructs an Error with the ``ErrorCode/productNotAvailableForPurchaseError`` code.
      *
-     * - Seealso: `StoreKitError.notAvailableInStorefront`
+     * - SeeAlso: `StoreKitError.notAvailableInStorefront`
      */
     static func productNotAvailableForPurchaseError(
         error: Error? = nil,

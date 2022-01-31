@@ -49,7 +49,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     /// - Note: this method will crash with `fatalError` if `Purchases` has not been initialized through `configure()`.
     ///         If there's a chance that may have not happened yet, you can use ``isConfigured``
     ///         to check if it's safe to call.
-    /// - Seealso: ``isConfigured``.
+    /// - SeeAlso: ``isConfigured``.
     @objc(sharedPurchases)
     public static var shared: Purchases {
         guard let purchases = purchases else {
@@ -96,8 +96,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     /**
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat
      *
-     * - Seealso ``logHandler``
-     * - Seealso ``verboseLogHandler``
+     * - SeeAlso: ``logHandler``
+     * - SeeAlso: ``verboseLogHandler``
      */
     @objc public static var logLevel: LogLevel {
         get { Logger.logLevel }
@@ -124,9 +124,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     }
 
     /**
-     * Set this property to true *only* when testing the ask-to-buy / SCA purchases flow. More information:
-     * http://rev.cat/ask-to-buy
-     * - Seealso: https://support.apple.com/en-us/HT201089
+     * Set this property to true *only* when testing the ask-to-buy / SCA purchases flow.
+     * More information [available here](http://rev.cat/ask-to-buy).
+     * - SeeAlso: [Approve what kids buy with Ask to Buy](https://support.apple.com/en-us/HT201089)
      */
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     @objc public static var simulatesAskToBuyInSandbox: Bool {
@@ -146,8 +146,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
      *
      * - Note:``verboseLogHandler`` provides additional information.
      *
-     * - Seealso: ``verboseLogHandler``
-     * - Seealso: ``logLevel``
+     * - SeeAlso: ``verboseLogHandler``
+     * - SeeAlso: ``logLevel``
      */
     @objc public static var logHandler: LogHandler {
         get {
@@ -170,8 +170,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
      *
      * - Note: you can use ``logHandler`` if you don't need filename information.
      *
-     * - Seealso: ``logHandler``
-     * - Seealso: ``logLevel``
+     * - SeeAlso: ``logHandler``
+     * - SeeAlso: ``logLevel``
      */
     @objc public static var verboseLogHandler: VerboseLogHandler {
         get { Logger.logHandler }
@@ -183,8 +183,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
      *  Filename, line, and method data.
      * You can also access that information for your own logging system by using ``verboseLogHandler``.
      *
-     * - Seealso: ``verboseLogHandler``
-     * - Seealso: ``logLevel``
+     * - SeeAlso: ``verboseLogHandler``
+     * - SeeAlso: ``logLevel``
      */
     @objc public static var verboseLogs: Bool {
         get { return Logger.verbose }
@@ -765,7 +765,7 @@ public extension Purchases {
      * Get latest available customer  info.
      * Returns a value immediately if ``CustomerInfo`` is cached.
      *
-     * - Seealso ``Purchases/customerInfoStream``
+     * - SeeAlso: ``Purchases/customerInfoStream``
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo() async throws -> CustomerInfo {
@@ -774,8 +774,8 @@ public extension Purchases {
 
     /// Returns an `AsyncStream` of ``CustomerInfo`` changes.
     ///
-    /// - Seealso ``PurchasesDelegate/purchases(_:receivedUpdated:)
-    /// - Seealso ``Purchases/customerInfo()``
+    /// - SeeAlso: ``PurchasesDelegate/purchases(_:receivedUpdated:)``
+    /// - SeeAlso: ``Purchases/customerInfo()``
     ///  #### Example:
     /// ```swift
     ///     for await customerInfo in Purchases.shared.customerInfoStream {
