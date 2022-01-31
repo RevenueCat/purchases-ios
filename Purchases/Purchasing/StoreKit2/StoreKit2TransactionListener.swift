@@ -34,7 +34,11 @@ class StoreKit2TransactionListener {
             for await result in StoreKit.Transaction.updates {
                 guard let self = self else { break }
 
-                await self.handle(transactionResult: result)
+                do {
+                    _ = try await self.handle(transactionResult: result)
+                } catch {
+                    Logger.error(error.localizedDescription)
+                }
             }
         }
     }
@@ -44,23 +48,22 @@ class StoreKit2TransactionListener {
         self.taskHandle = nil
     }
 
-    func handle(purchaseResult: StoreKit.Product.PurchaseResult) async -> Bool {
+    /// - Returns: whether the user cancelled
+    /// - Throws: Error if purchase was not completed successfully
+    func handle(purchaseResult: StoreKit.Product.PurchaseResult) async throws -> Bool {
         switch purchaseResult {
         case .success(let verificationResult):
-            await handle(transactionResult: verificationResult)
-            // todo: proper handling
+            try await handle(transactionResult: verificationResult)
             return false
         case .pending:
-            Logger.info("the transaction is pending")
-            // todo: proper handling
-            return false
+            throw ErrorUtils.paymentDeferredError()
         case .userCancelled:
-            Logger.info("the transaction is cancelled")
             return true
         @unknown default:
-            // todo: proper handling
-            Logger.info("")
-            return false
+            throw ErrorUtils.storeProblemError(
+                withMessage: Strings.purchase.unknown_purchase_result(result: String(describing: purchaseResult))
+                    .description
+            )
         }
     }
 
@@ -69,18 +72,18 @@ class StoreKit2TransactionListener {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension StoreKit2TransactionListener {
 
-    func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async {
+    /// - Throws: ``ErrorCode`` if the transaction fails to verify.
+    func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async throws {
         switch transactionResult {
-        case .unverified(let unverifiedTransaction, let verificationError):
-            // todo: update once StoreKit fixes the issue with verifying sandbox purchases.
-            #if DEBUG
-            Logger.debug("The transaction has failed verification, but Sandbox purchases dont' support" +
-                         "verification as of Beta 8. Details: \(verificationError.localizedDescription)")
-            await finish(transaction: unverifiedTransaction)
-            #else
-            Logger.error("StoreKit has parsed the JWS but failed verification. The content will not be" +
-                         "made available to the user. Details: \(verificationError.localizedDescription)")
-            #endif
+        case let .unverified(unverifiedTransaction, verificationError):
+            throw ErrorUtils.storeProblemError(
+                withMessage: Strings.purchase.transaction_unverified(
+                    productID: unverifiedTransaction.productID,
+                    errorMessage: verificationError.localizedDescription
+                ).description,
+                error: verificationError
+            )
+
         case .verified(let verifiedTransaction):
             await finish(transaction: verifiedTransaction)
         }

@@ -50,6 +50,7 @@ enum PurchaseStrings {
     case unknown_refund_request_status
     case product_unpurchased_or_missing
     case transaction_unverified(productID: String, errorMessage: String)
+    case unknown_purchase_result(result: String)
     case begin_refund_request_unsupported
     case begin_refund_for_entitlement_nil_customer_info(entitlementID: String?)
     case begin_refund_no_entitlement_found(entitlementID: String?)
@@ -180,8 +181,10 @@ extension PurchaseStrings: CustomStringConvertible {
         case .product_unpurchased_or_missing:
             return "Product hasn't been purchased or doesn't exist."
         case .transaction_unverified(let productID, let errorMessage):
-            return "Transaction for productID \(productID) is unverified by AppStore. " +
-                "Verification error \(errorMessage)"
+            return "Transaction for productID \(productID) is unverified by AppStore.\n" +
+                "Verification error: \(errorMessage)"
+        case let .unknown_purchase_result(result):
+            return "Received unknown purchase result: \(result)"
         case .begin_refund_request_unsupported:
             return "Tried to call beginRefundRequest in a platform that doesn't support it!"
         case .begin_refund_for_entitlement_nil_customer_info(let entitlementID):

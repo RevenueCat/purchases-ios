@@ -16,25 +16,71 @@ import Nimble
 import StoreKitTest
 import XCTest
 
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private var listener: StoreKit2TransactionListener! = nil
+
+    override func setUp() {
+        super.setUp()
+
+        self.listener = .init(delegate: nil)
+    }
+
     func testStopsListeningToTransactions() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        var listener: StoreKit2TransactionListener? = .init(delegate: nil)
         var handle: Task<Void, Never>?
 
-        expect(listener!.taskHandle).to(beNil())
+        expect(self.listener!.taskHandle).to(beNil())
 
-        listener!.listenForTransactions()
-        handle = listener!.taskHandle
+        self.listener!.listenForTransactions()
+        handle = self.listener!.taskHandle
 
         expect(handle).toNot(beNil())
         expect(handle?.isCancelled) == false
 
-        listener = nil
+        self.listener = nil
         expect(handle?.isCancelled) == true
+    }
+
+    // MARK: -
+
+    func testIsCancelledIsTrueWhenPurchaseIsCancelled() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let isCancelled = try await self.listener.handle(purchaseResult: .userCancelled)
+        expect(isCancelled) == true
+    }
+
+    func testPendingTransactionsReturnPaymentPendingError() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // Note: can't use `expect().to(throwError)` or `XCTAssertThrowsError`
+        // because neither of them accept `async`
+        do {
+            _ = try await self.listener.handle(purchaseResult: .pending)
+            XCTFail("Error expected")
+        } catch {
+            expect(error).to(matchError(ErrorCode.paymentPendingError))
+        }
+    }
+
+    func testUnverifiedTransactionsReturnStoreProblemError() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let transaction = try await self.createTransactionWithPurchase()
+        let error: VerificationResult<Transaction>.VerificationError = .invalidSignature
+        let result: VerificationResult<Transaction> = .unverified(transaction, error)
+
+        // Note: can't use `expect().to(throwError)` or `XCTAssertThrowsError`
+        // because neither of them accept `async`
+        do {
+            _ = try await self.listener.handle(purchaseResult: .success(result))
+            XCTFail("Error expected")
+        } catch {
+            expect(error).to(matchError(ErrorCode.storeProblemError))
+        }
     }
 
 }
