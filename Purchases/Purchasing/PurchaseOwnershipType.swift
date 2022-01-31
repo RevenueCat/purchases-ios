@@ -14,7 +14,8 @@
 
 import Foundation
 
-/// The types used to describe whether a transaction was purchased by the user, or is available to them through Family Sharing.
+/// The types used to describe whether a transaction was purchased by the user,
+/// or is available to them through Family Sharing.
 @objc(RCPurchaseOwnershipType) public enum PurchaseOwnershipType: Int {
 
     /**
