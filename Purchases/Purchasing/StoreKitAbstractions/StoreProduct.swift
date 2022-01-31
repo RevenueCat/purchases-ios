@@ -157,8 +157,8 @@ internal protocol StoreProductType {
     /// An array of subscription offers available for the auto-renewable subscription.
     /// - Note: the currenet user may or may not be eligible for some of these.
     /// - Seealso: ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:)``
-    /// - Seealso: ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)`
-    /// - Seealso: ``StoreProduct/eligibleDiscounts(withPurchases:)``
+    /// - Seealso: ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``
+    /// - Seealso: ``StoreProduct/getEligibleDiscounts()``
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     var discounts: [StoreProductDiscount] { get }
 
@@ -190,12 +190,14 @@ public extension StoreProduct {
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 public extension StoreProduct {
-    /// Asynchronously determines the subset of ``discounts`` that's eligible for the current user.
+    /// Finds the subset of ``discounts`` that's eligible for the current user.
     /// - Parameter purchases: the instance of `Purchases` to use when determining eligibility.
     /// - Seealso: ``discounts``
     /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
-    /// that discount will fail silently and be considered not eligible.
-    func eligibleDiscounts(withPurchases purchases: Purchases) async -> [StoreProductDiscount] {
+    ///   that discount will fail silently and be considered not eligible.
+    /// - Warning: this method implicitly relies on ``Purchases`` already being initialized.
+    func getEligibleDiscounts() async -> [StoreProductDiscount] {
+        let purchases = Purchases.shared
         let discounts = self.discounts
         let product = self
 
