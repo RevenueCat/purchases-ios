@@ -34,7 +34,6 @@ enum ISOPeriodFormatter {
             return "M"
         case .year:
             return "Y"
-        case .unknown: fallthrough
         @unknown default:
             fatalError("New SKProduct.PeriodUnit \(unit) unaccounted for")
         }

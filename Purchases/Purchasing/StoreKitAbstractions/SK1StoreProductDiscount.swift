@@ -17,7 +17,8 @@ import StoreKit
 internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 
     init?(sk1Discount: SK1ProductDiscount) {
-        guard let paymentMode = StoreProductDiscount.PaymentMode(skProductDiscountPaymentMode: sk1Discount.paymentMode)
+        guard let paymentMode = StoreProductDiscount.PaymentMode(skProductDiscountPaymentMode: sk1Discount.paymentMode),
+              let subscriptionPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod)
         else { return nil }
 
         self.underlyingSK1Discount = sk1Discount
@@ -29,7 +30,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         }
         self.price = sk1Discount.price as Decimal
         self.paymentMode = paymentMode
-        self.subscriptionPeriod = .from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod)
+        self.subscriptionPeriod = subscriptionPeriod
     }
 
     let underlyingSK1Discount: SK1ProductDiscount

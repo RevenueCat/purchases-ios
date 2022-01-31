@@ -21,10 +21,9 @@
 }
 
 + (void)checkUnitEnum {
-    RCSubscriptionPeriodUnit unit = RCSubscriptionPeriodUnitUnknown;
+    RCSubscriptionPeriodUnit unit = RCSubscriptionPeriodUnitDay;
 
     switch (unit) {
-        case RCSubscriptionPeriodUnitUnknown:
         case RCSubscriptionPeriodUnitDay:
         case RCSubscriptionPeriodUnitWeek:
         case RCSubscriptionPeriodUnitMonth:

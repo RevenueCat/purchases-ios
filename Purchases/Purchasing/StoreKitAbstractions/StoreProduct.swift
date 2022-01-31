@@ -163,12 +163,7 @@ public extension StoreProduct {
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var pricePerMonth: NSDecimalNumber? {
-        guard let period = self.subscriptionPeriod,
-              period.unit != .unknown else {
-                  return nil
-              }
-
-        return period.pricePerMonth(withTotalPrice: self.price) as NSDecimalNumber?
+        return self.subscriptionPeriod?.pricePerMonth(withTotalPrice: self.price) as NSDecimalNumber?
     }
 
     /// The price of the `introductoryPrice` formatted using ``priceFormatter``.

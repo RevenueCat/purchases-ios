@@ -25,19 +25,19 @@ class SubscriptionPeriodTests: XCTestCase {
         }
 
         var sk1Period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .month)
-        var subscriptionPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Period)
+        var subscriptionPeriod = try XCTUnwrap(SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Period))
 
         expect(subscriptionPeriod.value) == 1
         expect(subscriptionPeriod.unit) == .month
 
         sk1Period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .year)
-        subscriptionPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Period)
+        subscriptionPeriod = try XCTUnwrap(SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Period))
 
         expect(subscriptionPeriod.value) == 3
         expect(subscriptionPeriod.unit) == .year
 
         sk1Period = SKProductSubscriptionPeriod(numberOfUnits: 5, unit: .week)
-        subscriptionPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Period)
+        subscriptionPeriod = try XCTUnwrap(SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Period))
 
         expect(subscriptionPeriod.value) == 5
         expect(subscriptionPeriod.unit) == .week

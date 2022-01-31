@@ -30,7 +30,6 @@ public class SubscriptionPeriod: NSObject {
     @objc(RCSubscriptionPeriodUnit)
     public enum Unit: Int {
 
-        case unknown = -1
         case day = 0
         case week = 1
         case month = 2
@@ -39,15 +38,21 @@ public class SubscriptionPeriod: NSObject {
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    static func from(sk1SubscriptionPeriod: SKProductSubscriptionPeriod) -> SubscriptionPeriod {
-        return .init(value: sk1SubscriptionPeriod.numberOfUnits,
-                     unit: SubscriptionPeriod.Unit.from(sk1PeriodUnit: sk1SubscriptionPeriod.unit))
+    static func from(sk1SubscriptionPeriod: SKProductSubscriptionPeriod) -> SubscriptionPeriod? {
+        guard let unit = SubscriptionPeriod.Unit.from(sk1PeriodUnit: sk1SubscriptionPeriod.unit) else {
+            return nil
+        }
+
+        return .init(value: sk1SubscriptionPeriod.numberOfUnits, unit: unit)
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8, *)
-    static func from(sk2SubscriptionPeriod: StoreKit.Product.SubscriptionPeriod) -> SubscriptionPeriod {
-        return .init(value: sk2SubscriptionPeriod.value,
-                     unit: SubscriptionPeriod.Unit.from(sk2PeriodUnit: sk2SubscriptionPeriod.unit))
+    static func from(sk2SubscriptionPeriod: StoreKit.Product.SubscriptionPeriod) -> SubscriptionPeriod? {
+        guard let unit = SubscriptionPeriod.Unit.from(sk2PeriodUnit: sk2SubscriptionPeriod.unit) else {
+            return nil
+        }
+
+        return .init(value: sk2SubscriptionPeriod.value, unit: unit)
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
@@ -88,7 +93,6 @@ extension SubscriptionPeriod {
             case .week: return 1 / 4
             case .month: return 1
             case .year: return 12
-            case .unknown: return 1
             }
         }() * Decimal(self.value)
 
@@ -110,7 +114,6 @@ extension SubscriptionPeriod {
 extension SubscriptionPeriod.Unit: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
-        case .unknown: return "unknown"
         case .day: return "day"
         case .week: return "week"
         case .month: return "month"
@@ -128,24 +131,24 @@ extension SubscriptionPeriod {
 fileprivate extension SubscriptionPeriod.Unit {
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-    static func from(sk1PeriodUnit: SK1Product.PeriodUnit) -> Self {
+    static func from(sk1PeriodUnit: SK1Product.PeriodUnit) -> Self? {
         switch sk1PeriodUnit {
         case .day: return .day
         case .week: return .week
         case .month: return .month
         case .year: return .year
-        @unknown default: return .unknown
+        @unknown default: return nil
         }
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8, *)
-    static func from(sk2PeriodUnit: StoreKit.Product.SubscriptionPeriod.Unit) -> Self {
+    static func from(sk2PeriodUnit: StoreKit.Product.SubscriptionPeriod.Unit) -> Self? {
         switch sk2PeriodUnit {
         case .day: return .day
         case .week: return .week
         case .month: return .month
         case .year: return .year
-        @unknown default: return .unknown
+        @unknown default: return nil
         }
     }
 
