@@ -26,6 +26,11 @@ class BackendTests: XCTestCase {
         let statusCode: NSInteger
         let response: [String: Any]?
         let error: Error?
+        init(statusCode: NSInteger, response: [String: Any]?, error: Error? = nil) {
+            self.statusCode = statusCode
+            self.response = response
+            self.error = error
+        }
     }
 
     class MockHTTPClient: HTTPClient {
@@ -1885,6 +1890,86 @@ class BackendTests: XCTestCase {
         expect(completion1Called).toEventually(beTrue())
         expect(completion2Called).toEventually(beTrue())
     }
+
+    func testGetsUpdatedSubscriberInfoAfterPost() {
+        var dateComponent = DateComponents()
+        dateComponent.month = 1
+        let futureDateString = ISO8601DateFormatter()
+            .string(from: Calendar.current.date(byAdding: dateComponent, to: Date())!)
+
+        let validSubscriberResponse: [String: Any] = [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
+                "subscriptions": [
+                    "onemonth_freetrial": [
+                        "expires_date": futureDateString
+                    ]
+                ]
+            ]
+        ]
+
+        let validUpdatedSubscriberResponse: [String: Any] = [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
+                "subscriptions": [
+                    "onemonth_freetrial": [
+                        "expires_date": futureDateString
+                    ],
+                    "twomonth_awesome": [
+                        "expires_date": futureDateString
+                    ]
+                ]
+            ]
+        ]
+        let initialCustomerInfoResponse = HTTPResponse(statusCode: 200, response: validSubscriberResponse)
+        let updatedCustomerInfoResponse = HTTPResponse(statusCode: 200, response: validUpdatedSubscriberResponse)
+        let postResponse = HTTPResponse(statusCode: 200, response: validUpdatedSubscriberResponse)
+        httpClient.mock(requestPath: "/receipts", response: postResponse)
+        httpClient.mock(requestPath: "/subscribers/" + userID, response: initialCustomerInfoResponse)
+
+        var originalSubscriberInfo: CustomerInfo?
+        var updatedSubscriberInfo: CustomerInfo?
+        var postSubscriberInfo: CustomerInfo?
+
+        var callOrder = [0, 0, 0]
+        backend?.getSubscriberData(appUserID: userID, completion: { (customerInfo, _) in
+            print("1 Initial customer response set")
+            originalSubscriberInfo = customerInfo
+            callOrder[0] = 1
+        })
+
+        backend?.post(receiptData: receiptData,
+                      appUserID: userID,
+                      isRestore: false,
+                      productData: nil,
+                      presentedOfferingIdentifier: nil,
+                      observerMode: true,
+                      subscriberAttributes: nil,
+                      completion: { (customerInfo, _) in
+            print("2 Mocking updated customer response")
+            self.httpClient.mock(requestPath: "/subscribers/" + self.userID, response: updatedCustomerInfoResponse)
+            callOrder[1] = 1
+            print("3 Post customer response set")
+            postSubscriberInfo = customerInfo
+        })
+
+        backend?.getSubscriberData(appUserID: userID, completion: { (newSubscriberInfo, _) in
+            expect(callOrder) == [1, 1, 0]
+            print("4 Updated customer response set")
+            updatedSubscriberInfo = newSubscriberInfo
+            callOrder[2] = 1
+        })
+
+        expect(callOrder).toEventually(equal([1, 1, 1]))
+        expect(updatedSubscriberInfo).toEventuallyNot(beNil())
+        expect(updatedSubscriberInfo).toEventually(equal(postSubscriberInfo))
+        expect(updatedSubscriberInfo).toEventuallyNot(equal(originalSubscriberInfo))
+    }
+
 }
 
 private extension BackendTests {
