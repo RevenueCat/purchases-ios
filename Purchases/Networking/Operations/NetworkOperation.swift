@@ -44,7 +44,7 @@ class NetworkOperation: Operation {
         super.init()
     }
 
-    override func main() {
+    override final func main() {
         if isCancelled == true {
             return
         }

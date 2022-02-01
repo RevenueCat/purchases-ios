@@ -45,17 +45,20 @@ class CallbackCache<T> where T: CacheKeyProviding {
 
     func performOnAllItemsAndRemoveFromCache(withCacheable cacheable: CacheKeyProviding, _ block: (T) -> Void) {
         callbackQueue.sync {
-            guard let items = cachedCallbacksByKey[cacheable.cacheKey] else {
+            guard let items = cachedCallbacksByKey.removeValue(forKey: cacheable.cacheKey) else {
                 return
             }
 
-            items.forEach { block($0) }
-            cachedCallbacksByKey.removeValue(forKey: cacheable.cacheKey)
+            items.forEach(block)
         }
     }
 
 }
 
+/**
+ For use with `CallbackCache`. We store a list of callback objects in the cache and the key used for the list of
+ callbacks is provided by an object that conforms to `CacheKeyProviding`.
+ */
 protocol CacheKeyProviding {
 
     var cacheKey: String { get }

@@ -105,18 +105,15 @@ private extension GetIntroEligibilityOperation {
             return
         }
 
-        var eligibilities: [String: IntroEligibility] = [:]
-        for productID in response.productIdentifiers {
-            let status: IntroEligibilityStatus
-
-            if let eligibility = eligibilitiesByProductIdentifier[productID] as? Bool {
-                status = eligibility ? .eligible : .ineligible
-            } else {
-                status = .unknown
+        let eligibilities: [String: IntroEligibility] = Set(response.productIdentifiers)
+            .dictionaryWithValues { productID in
+                if let eligibility = eligibilitiesByProductIdentifier[productID] as? Bool {
+                    return eligibility ? .eligible : .ineligible
+                } else {
+                    return .unknown
+                }
             }
-
-            eligibilities[productID] = IntroEligibility(eligibilityStatus: status)
-        }
+            .mapValues(IntroEligibility.init(eligibilityStatus:))
         response.completion(eligibilities, nil)
     }
 
