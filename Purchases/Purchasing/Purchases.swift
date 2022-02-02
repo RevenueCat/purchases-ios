@@ -28,7 +28,7 @@ public typealias PurchaseCompletedBlock = (StoreTransaction?, CustomerInfo?, Err
 public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
 /**
- * `Purchases` is the entry point for RevenueCat.framework. It should be instantiated as soon as your app has a unique
+ * ``Purchases`` is the entry point for RevenueCat.framework. It should be instantiated as soon as your app has a unique
  * user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random
  * user identifier.
  *  - Warning: Only one instance of Purchases should be instantiated at a time! Use a configure method to let the
@@ -799,8 +799,8 @@ public extension Purchases {
     }
 
     /**
-     * Fetches the `StoreProducts` for your IAPs for given `productIdentifiers`.
-     * Use this method if you aren't using `getOfferings(completion:)`.
+     * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
+     * Use this method if you aren't using ``getOfferings(completion:)``.
      * You should use getOfferings though.
      *
      * - Note: `completion` may be called without `StoreProduct`s that you are expecting. This is usually caused by
@@ -848,15 +848,15 @@ public extension Purchases {
      *
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
      *
-     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
      * handle this for you.
      *
-     * - Parameter product: The `StoreProduct` the user intends to purchase
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      *
      * If the purchase was not successful, there will be an `NSError`.
      *
