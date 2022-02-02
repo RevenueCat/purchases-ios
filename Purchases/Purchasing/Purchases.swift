@@ -47,8 +47,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
-    /// ``configure(withAPIKey:)`` or one of its overloads. If there's a chance that may have not happened yet, you can use ``isConfigured``
-    /// to check if it's safe to call.
+    /// ``configure(withAPIKey:)`` or one of its overloads. If there's a chance that may have not happened yet,
+    /// you can use ``isConfigured`` to check if it's safe to call.
     /// - SeeAlso: ``isConfigured``.
     @objc(sharedPurchases)
     public static var shared: Purchases {
@@ -60,7 +60,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     }
     private static var purchases: Purchases?
 
-    /// Returns `true` if RevenueCat has already been initialized through ``configure(withAPIKey:)`` or one of is overloads.
+    /// Returns `true` if RevenueCat has already been initialized through ``configure(withAPIKey:)``
+    /// or one of is overloads.
     @objc public static var isConfigured: Bool { purchases != nil }
 
     /**
@@ -818,6 +819,7 @@ public extension Purchases {
         return self.customerInfoManager.customerInfoStream
     }
 
+    // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      * Use this method if you aren't using ``getOfferings(completion:)``.
@@ -828,7 +830,7 @@ public extension Purchases {
      * Also ensure that you have an active developer program subscription and you have signed the latest paid
      * application agreements.
      * If you're having trouble, see:
-     * [App Store Connect In-App Purchase Configuration](https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard)
+     *  [App Store Connect In-App Purchase Configuration](https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard)
      *
      * - Parameter productIdentifiers: A set of product identifiers for in-app purchases setup via
      * [AppStoreConnect](https://appstoreconnect.apple.com/)
@@ -841,7 +843,9 @@ public extension Purchases {
     func getProducts(_ productIdentifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
+    // swiftlint:enable line_length
 
+    // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct`` for your IAPs for given `productIdentifiers`.
      * Use this method if you aren't using ``getOfferings(completion:)``.
@@ -863,6 +867,7 @@ public extension Purchases {
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await productsAsync(productIdentifiers)
     }
+    // swiftlint:enable line_length
 
     /**
      * Use this function if you are not using the Offerings system to purchase an ``StoreProduct``.
@@ -1101,7 +1106,7 @@ public extension Purchases {
      *  Going forward, either ``appUserID`` will be able to reference the same user.
      *
      * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
-     * by your app passing the same ``appUserId`` used to purchase originally.
+     * by your app passing the same ``appUserID`` used to purchase originally.
      *
      * - Note: This may force your users to enter the App Store password so should only be performed on request of
      * the user. Typically with a button in settings or near your purchase UI. Use
@@ -1118,7 +1123,7 @@ public extension Purchases {
      *  Going forward, either ``appUserID`` will be able to reference the same user.
      *
      * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
-     * by your app passing the same ``appUserId`` used to purchase originally.
+     * by your app passing the same ``appUserID`` used to purchase originally.
      *
      * - Note: This may force your users to enter the App Store password so should only be performed on request of
      * the user. Typically with a button in settings or near your purchase UI. Use
