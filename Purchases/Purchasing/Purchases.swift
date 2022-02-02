@@ -753,7 +753,8 @@ public extension Purchases {
      * This will generate a random user id and save it in the cache.
      * If this method is called and the current user is anonymous, it will return an error.
      * See [Identifying Users](https://docs.revenuecat.com/docs/user-ids).
-     * - SeeAlso: ``isAnonymous``
+     * #### Related Symbols
+     * - ``isAnonymous``
      */
     @objc func logOut(completion: ((CustomerInfo?, Error?) -> Void)?) {
         identityManager.logOut { error in
@@ -776,7 +777,8 @@ public extension Purchases {
      * This will generate a random user id and save it in the cache.
      * If this method is called and the current user is anonymous, it will return an error.
      * See [Identifying Users](https://docs.revenuecat.com/docs/user-ids).
-     * - SeeAlso: ``isAnonymous``
+     * #### Related Symbols
+     * - ``isAnonymous``
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOut() async throws -> CustomerInfo {
@@ -833,7 +835,8 @@ public extension Purchases {
      * Get latest available customer  info.
      * Returns a value immediately if ``CustomerInfo`` is cached.
      *
-     * - SeeAlso: ``Purchases/customerInfoStream``
+     * #### Related Symbols
+     * - ``Purchases/customerInfoStream``
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo() async throws -> CustomerInfo {
@@ -842,15 +845,17 @@ public extension Purchases {
 
     /// Returns an `AsyncStream` of ``CustomerInfo`` changes.
     ///
-    /// - SeeAlso: ``PurchasesDelegate/purchases(_:receivedUpdated:)``
-    /// - SeeAlso: ``Purchases/customerInfo()``
-    ///  #### Example:
+    /// #### Related Symbols
+    /// - ``PurchasesDelegate/purchases(_:receivedUpdated:)``
+    /// - ``Purchases/customerInfo()``
+    ///
+    /// #### Example:
     /// ```swift
-    ///     for await customerInfo in Purchases.shared.customerInfoStream {
-    ///       // this gets called whenever new CustomerInfo is available
-    ///       let entitlements = customerInfo.entitlements
-    ///       ...
-    ///     }
+    /// for await customerInfo in Purchases.shared.customerInfoStream {
+    ///   // this gets called whenever new CustomerInfo is available
+    ///   let entitlements = customerInfo.entitlements
+    ///   ...
+    /// }
     /// ```
     /// - note: this method is not thread-safe.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
