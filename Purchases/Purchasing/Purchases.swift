@@ -60,11 +60,11 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     }
     private static var purchases: Purchases?
 
-    /// Returns `true` if RevenueCat has already been intialized through `configure()`.
+    /// Returns `true` if RevenueCat has already been initialized through ``configure(withAPIKey:)`` or one of is overloads.
     @objc public static var isConfigured: Bool { purchases != nil }
 
     /**
-     * Delegate for `Purchases` instance. The delegate is responsible for handling promotional product purchases and
+     * Delegate for ``Purchases`` instance. The delegate is responsible for handling promotional product purchases and
      * changes to customer information.
      */
     @objc public var delegate: PurchasesDelegate? {
@@ -89,7 +89,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     private let operationDispatcher: OperationDispatcher
 
     /**
-     * Enable automatic collection of Apple Search Ads attribution. Disabled by default
+     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
      */
     @objc public static var automaticAppleSearchAdsAttributionCollection: Bool = false
 
@@ -105,7 +105,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     }
 
     /**
-     * Set this property to your proxy URL before configuring Purchases *only* if you've received a proxy key value
+     * Set this property to your proxy URL before configuring ``Purchases`` *only* if you've received a proxy key value
      * from your RevenueCat contact.
      */
     @objc public static var proxyURL: URL? {
@@ -116,7 +116,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     /**
      * Set this property to true *only* if you're transitioning an existing Mac app from the Legacy
      * Mac App Store into the Universal Store, and you've configured your RevenueCat app accordingly.
-     * Contact support before using this.
+     * Contact RevenueCat support before using this.
      */
     @objc public static var forceUniversalAppStore: Bool {
         get { SystemInfo.forceUniversalAppStore }
@@ -125,8 +125,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Set this property to true *only* when testing the ask-to-buy / SCA purchases flow.
-     * More information [available here](http://rev.cat/ask-to-buy).
-     * - SeeAlso: [Approve what kids buy with Ask to Buy](https://support.apple.com/en-us/HT201089)
+     * More information [available here](https://rev.cat/ask-to-buy).
+     * - SeeAlso: [Approve what kids buy with Ask to Buy](https://rev.cat/approve-kids-purchases-apple)
      */
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     @objc public static var simulatesAskToBuyInSandbox: Bool {
@@ -136,6 +136,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Indicates whether the user is allowed to make payments.
+     * [More information on when this might be `false` here](https://rev.cat/can-make-payments-apple)
      */
     @objc public static func canMakePayments() -> Bool { SKPaymentQueue.canMakePayments() }
 
@@ -165,8 +166,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
-     * By default, this sends Info, Warn, and Error messages. If you wish to receive Debug level messages,
-     * you must enable debug logs.
+     * By default, this sends ``LogLevel/info``, ``LogLevel/warn``, and ``LogLevel/error`` messages.
+     * If you wish to receive Debug level messages, set the log level to ``LogLevel/debug``.
      *
      * - Note: you can use ``logHandler`` if you don't need filename information.
      *
@@ -191,11 +192,10 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         set { Logger.verbose = newValue }
     }
 
-    /// Current version of the Purchases framework.
+    /// Current version of the ``Purchases`` framework.
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
-    /** Whether transactions should be finished automatically.
-     * `true` by default.
+    /** Whether transactions should be finished automatically. `true` by default.
      * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
      * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
      * will turn up every time the app is opened.
