@@ -1260,25 +1260,41 @@ public extension Purchases {
 
     /**
      * Use this function to open the manage subscriptions page.
-     * If the manage subscriptions page can't be opened, the managementURL in the customerInfo will be opened.
-     * If managementURL is not available, the App Store's subscription management section will be opened.
-     *
+
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If it was not successful, there will be an `Error`.
+
+     * If the manage subscriptions page can't be opened, the ``CustomerInfo/managementURL`` in
+     * the ``CustomerInfo`` will be opened. If ``CustomerInfo/managementURL`` is not available,
+     * the App Store's subscription management section will be opened.
+     *
+     * The `completion` block will be called when the modal is opened, not when it's actually closed.
+     * This is because of an undocumented change in StoreKit's behavior between iOS 15.0 and 15.2,
+     * where 15.0 would return when the modal was closed,
+     * and 15.2 returns when the modal is opened.
      */
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(iOS 13.0, macOS 10.15, *)
     @objc func showManageSubscriptions(completion: @escaping (Error?) -> Void) {
         purchasesOrchestrator.showManageSubscription(completion: completion)
     }
 
     /**
      * Use this function to open the manage subscriptions modal.
-     * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
-     * If managementURL is not available, the App Store's subscription management section will be opened.
      *
-     * - Parameter completion: A completion block that is called when the modal is closed.
-     * If it was not successful, there will be an `Error`.
+     * - Parameter completion: A completion block that is called when the modal is opened.
+     * - throws: an Error will be thrown if the current window scene couldn't be opened,
+     * or the ``CustomerInfo/managementURL`` couldn't be obtained.
+
+     * If the manage subscriptions page can't be opened, the ``CustomerInfo/managementURL`` in
+     * the ``CustomerInfo`` will be opened. If ``CustomerInfo/managementURL`` is not available,
+     * the App Store's subscription management section will be opened.
+     *
+     * The `completion` block will be called when the modal is opened, not when it's actually closed.
+     * This is because of an undocumented change in StoreKit's behavior between iOS 15.0 and 15.2,
+     * where 15.0 would return when the modal was closed,
+     * and 15.2 returns when the modal is opened.
      */
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -1292,11 +1308,12 @@ public extension Purchases {
 #if os(iOS)
     /**
      * Presents a refund request sheet in the current window scene for
-     * the latest transaction associated with the productID
+     * the latest transaction associated with the `productID`
      *
-     * - Parameter productID: The productID to begin a refund request for.
-     * If the request was successful, there will be a `RefundRequestStatus`.
-     * Keep in mind the status could be `userCancelled`
+     * - Parameter productID: The `productID` to begin a refund request for.
+     * If the request was successful, there will be a ``RefundRequestStatus``.
+     * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
+     *
      * If the request was unsuccessful, there will be an `Error` and `RefundRequestStatus.error`.
      */
     @available(iOS 15.0, *)
@@ -1310,11 +1327,13 @@ public extension Purchases {
 
     /**
      * Presents a refund request sheet in the current window scene for
-     * the latest transaction associated with the entitlement ID
+     * the latest transaction associated with the entitlement ID.
      *
      * - Parameter entitlementID: The entitlementID to begin a refund request for.
-     * - returns RefundRequestStatus: The status of the refund request (the status could be `userCancelled`)
-     * If the request was unsuccessful or the entitlement could not be found, there will be an `Error` thrown.
+     * - returns ``RefundRequestStatus``: The status of the refund request.
+     * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
+     *
+     * If the request was unsuccessful or the entitlement could not be found, an `Error` will be thrown.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
@@ -1329,8 +1348,10 @@ public extension Purchases {
      * Presents a refund request sheet in the current window scene for
      * the latest transaction associated with the active entitlement.
      *
-     * - returns RefundRequestStatus: The status of the refund request (the status could be `userCancelled`)
-     * If the request was unsuccessful or there is no active entitlement, there will be an `Error` thrown.
+     * - returns ``RefundRequestStatus``: The status of the refund request.
+     * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
+     *
+     * If the request was unsuccessful or no active entitlements could be found for the user, an `Error` will be thrown.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
