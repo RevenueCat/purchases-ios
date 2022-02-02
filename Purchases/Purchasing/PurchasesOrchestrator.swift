@@ -732,6 +732,8 @@ private extension PurchasesOrchestrator {
                     forProductDiscount: discount,
                     product: StoreProduct(sk2Product: sk2Product)
                 )
+
+                Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(discount.identifier))
                 options.insert(try discount.sk2PurchaseOption)
             }
 
