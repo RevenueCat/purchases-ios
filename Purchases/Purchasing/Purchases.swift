@@ -462,8 +462,9 @@ extension Purchases {
     }
 
     /**
-     * Subscriber attribute associated with the email address for the user
+     * Subscriber attribute associated with the email address for the user.
      *
+     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter email: Empty String or nil will delete the subscriber attribute.
      */
     @objc public func setEmail(_ email: String?) {
@@ -473,6 +474,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the phone number for the user
      *
+     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter phoneNumber: Empty String or nil will delete the subscriber attribute.
      */
     @objc public func setPhoneNumber(_ phoneNumber: String?) {
@@ -482,6 +484,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the display name for the user
      *
+     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter displayName: Empty String or nil will delete the subscriber attribute.
      */
     @objc public func setDisplayName(_ displayName: String?) {
@@ -491,6 +494,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the push token for the user
      *
+     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter pushToken: nil will delete the subscriber attribute.
      */
     @objc public func setPushToken(_ pushToken: Data?) {
@@ -501,6 +505,7 @@ extension Purchases {
      * Subscriber attribute associated with the Adjust Id for the user
      * Required for the RevenueCat Adjust integration
      *
+     * - SeeAlso: [Adjust RevenueCat Integration](https://docs.revenuecat.com/docs/adjust)
      * - Parameter adjustID: nil will delete the subscriber attribute
      */
     @objc public func setAdjustID(_ adjustID: String?) {
@@ -511,6 +516,7 @@ extension Purchases {
      * Subscriber attribute associated with the Appsflyer Id for the user
      * Required for the RevenueCat Appsflyer integration
      *
+     * - SeeAlso: [AppsFlyer RevenueCat Integration](https://docs.revenuecat.com/docs/appsflyer)
      * - Parameter appsflyerID: nil will delete the subscriber attribute
      */
     @objc public func setAppsflyerID(_ appsflyerID: String?) {
@@ -521,6 +527,7 @@ extension Purchases {
      * Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
      * Recommended for the RevenueCat Facebook integration
      *
+     * - SeeAlso: [Facebook Ads RevenueCat Integration](https://docs.revenuecat.com/docs/facebook-ads)
      * - Parameter fbAnonymousID: nil will delete the subscriber attribute
      */
     @objc public func setFBAnonymousID(_ fbAnonymousID: String?) {
@@ -531,6 +538,7 @@ extension Purchases {
      * Subscriber attribute associated with the mParticle Id for the user
      * Recommended for the RevenueCat mParticle integration
      *
+     * - SeeAlso: [mParticle RevenueCat Integration](https://docs.revenuecat.com/docs/mparticle)
      * - Parameter mparticleID: nil will delete the subscriber attribute
      */
     @objc public func setMparticleID(_ mparticleID: String?) {
