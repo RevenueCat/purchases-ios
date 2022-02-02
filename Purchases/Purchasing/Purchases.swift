@@ -915,7 +915,7 @@ public extension Purchases {
     /**
      * Purchase the passed ``Package``.
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
-     * From here `Purchases` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
      * handle this for you.
@@ -1097,11 +1097,11 @@ public extension Purchases {
     /**
      * This method will post all purchases associated with the current App Store account to RevenueCat and become
      * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
-     * ``appUserID`` will be aliased together with the `appUserID` of the existing user.
-     *  Going forward, either `appUserID` will be able to reference the same user.
+     * ``appUserID`` will be aliased together with the ``appUserID`` of the existing user.
+     *  Going forward, either ``appUserID`` will be able to reference the same user.
      *
      * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
-     * by your app passing the same `appUserId` used to purchase originally.
+     * by your app passing the same ``appUserId`` used to purchase originally.
      *
      * - Note: This may force your users to enter the App Store password so should only be performed on request of
      * the user. Typically with a button in settings or near your purchase UI. Use
@@ -1114,11 +1114,11 @@ public extension Purchases {
     /**
      * This method will post all purchases associated with the current App Store account to RevenueCat and become
      * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
-     * ``appUserID`` will be aliased together with the `appUserID` of the existing user.
-     *  Going forward, either `appUserID` will be able to reference the same user.
+     * ``appUserID`` will be aliased together with the ``appUserID`` of the existing user.
+     *  Going forward, either ``appUserID`` will be able to reference the same user.
      *
      * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
-     * by your app passing the same `appUserId` used to purchase originally.
+     * by your app passing the same ``appUserId`` used to purchase originally.
      *
      * - Note: This may force your users to enter the App Store password so should only be performed on request of
      * the user. Typically with a button in settings or near your purchase UI. Use
@@ -1135,18 +1135,18 @@ public extension Purchases {
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
-     * - Note: If you're looking to use Promotional Offers use instead,
+     * - Note: If you're looking to use Promotional Offers instead,
      * use ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``.
      *
      * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
-     * definitively compute the eligibilty, most likely because of missing group information, it will return
+     * definitively compute the eligibility, most likely because of missing group information, it will return
      * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
      * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
      * version of iOS so that the subscription group can be collected by the SDK.
      *
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
-     * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
+     * - Parameter completion: A block that receives a dictionary of `product_id` -> ``IntroEligibility``.
      */
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
@@ -1161,17 +1161,17 @@ public extension Purchases {
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
-     * - Note: If you're looking to use Promotional Offers use instead,
+     * - Note: If you're looking to use Promotional Offers instead,
      * use ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``.
      *
      * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
-     * definitively compute the eligibilty, most likely because of missing group information, it will return
+     * definitively compute the eligibility, most likely because of missing group information, it will return
      * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
      * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
      * version of iOS so that the subscription group can be collected by the SDK.
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
-     * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
+     * - Parameter completion: A block that receives a dictionary of `product_id` -> ``IntroEligibility``.
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
@@ -1348,12 +1348,12 @@ public extension Purchases {
      * You should access the singleton instance using ``Purchases/shared``
      *
      * - Note: Use this initializer if your app does not have an account system.
-     * `Purchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
+     * ``Purchases`` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
      * This also affects the behavior of ``Purchases/restorePurchases(completion:)``.
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
-     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:)
     @discardableResult static func configure(withAPIKey apiKey: String) -> Purchases {
@@ -1372,10 +1372,10 @@ public extension Purchases {
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
      * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want `Purchases`
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:)
     @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
@@ -1391,13 +1391,13 @@ public extension Purchases {
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
      * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want `Purchases`
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
      *
-     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:)
     @discardableResult static func configure(withAPIKey apiKey: String,
@@ -1415,7 +1415,7 @@ public extension Purchases {
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
      * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want `Purchases`
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
@@ -1423,7 +1423,7 @@ public extension Purchases {
      *
      * - Parameter userDefaults: Custom `UserDefaults` to use
      *
-     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
     @discardableResult static func configure(withAPIKey apiKey: String,
@@ -1448,7 +1448,7 @@ public extension Purchases {
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
      * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want `Purchases`
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
@@ -1461,7 +1461,7 @@ public extension Purchases {
      * - Important: Support for purchases using StoreKit 2 is currently in an experimental phase.
      * We recommend setting this value to `false` (default) for production apps.
      *
-     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
     @discardableResult static func configure(withAPIKey apiKey: String,
@@ -1493,10 +1493,10 @@ extension Purchases: PurchasesOrchestratorDelegate {
      * If the app is not in a state to make a purchase: cache the defermentBlock, then call the defermentBlock
      * when the app is ready to make the promotional purchase.
      *
-     * If the purchase should never be made, you don't need to ever call the defermentBlock and `Purchases`
+     * If the purchase should never be made, you don't need to ever call the defermentBlock and ``Purchases``
      * will not proceed with promotional purchases.
      *
-     * - Parameter product: `StoreProduct` the product that was selected from the app store.
+     * - Parameter product: ``StoreProduct`` the product that was selected from the app store.
      */
     @objc
     public func shouldPurchasePromoProduct(_ product: StoreProduct,
