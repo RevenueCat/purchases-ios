@@ -475,7 +475,7 @@ extension Purchases {
      *
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
-     * 
+     *
      * - Parameter email: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setEmail(_ email: String?) {
@@ -575,7 +575,7 @@ extension Purchases {
      * Required for the RevenueCat OneSignal integration.
      *
      * #### Related Articles
-     * - [mParticle RevenueCat Integration](https://docs.revenuecat.com/docs/onesignal)
+     * - [OneSignal RevenueCat Integration](https://docs.revenuecat.com/docs/onesignal)
      *
      *- Parameter onesignalID: Empty String or `nil` will delete the subscriber attribute..
      */
