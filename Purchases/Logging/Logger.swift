@@ -14,8 +14,10 @@
 
 import Foundation
 
-/// Enumeration of the different verbosity levels
-/// - Seealso: ``Purchases/logLevel``
+/// Enumeration of the different verbosity levels.
+///
+/// #### Related Symbols
+/// - ``Purchases/logLevel``
 @objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible {
 
     // swiftlint:disable:next missing_docs

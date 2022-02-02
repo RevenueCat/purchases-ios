@@ -49,7 +49,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
     /// ``configure(withAPIKey:)`` or one of its overloads. If there's a chance that may have not happened yet,
     /// you can use ``isConfigured`` to check if it's safe to call.
-    /// - SeeAlso: ``isConfigured``.
+    /// ### Related symbols
+    /// - ``isConfigured``
     @objc(sharedPurchases)
     public static var shared: Purchases {
         guard let purchases = purchases else {
@@ -97,8 +98,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     /**
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat
      *
-     * - SeeAlso: ``logHandler``
-     * - SeeAlso: ``verboseLogHandler``
+     * #### Related Symbols
+     * - ``logHandler``
+     * - ``verboseLogHandler``
      */
     @objc public static var logLevel: LogLevel {
         get { Logger.logLevel }
@@ -127,7 +129,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     /**
      * Set this property to true *only* when testing the ask-to-buy / SCA purchases flow.
      * More information [available here](https://rev.cat/ask-to-buy).
-     * - SeeAlso: [Approve what kids buy with Ask to Buy](https://rev.cat/approve-kids-purchases-apple)
+     * #### Related Articles
+     * -  [Approve what kids buy with Ask to Buy](https://rev.cat/approve-kids-purchases-apple)
      */
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     @objc public static var simulatesAskToBuyInSandbox: Bool {
@@ -148,8 +151,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
      *
      * - Note:``verboseLogHandler`` provides additional information.
      *
-     * - SeeAlso: ``verboseLogHandler``
-     * - SeeAlso: ``logLevel``
+     * #### Related Symbols
+     * - ``verboseLogHandler``
+     * - ``logLevel``
      */
     @objc public static var logHandler: LogHandler {
         get {
@@ -172,8 +176,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
      *
      * - Note: you can use ``logHandler`` if you don't need filename information.
      *
-     * - SeeAlso: ``logHandler``
-     * - SeeAlso: ``logLevel``
+     * #### Related Symbols
+     * - ``logHandler``
+     * - ``logLevel``
      */
     @objc public static var verboseLogHandler: VerboseLogHandler {
         get { Logger.logHandler }
@@ -185,8 +190,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
      *  Filename, line, and method data.
      * You can also access that information for your own logging system by using ``verboseLogHandler``.
      *
-     * - SeeAlso: ``verboseLogHandler``
-     * - SeeAlso: ``logLevel``
+     * #### Related Symbols
+     * - ``verboseLogHandler``
+     * - ``logLevel``
      */
     @objc public static var verboseLogs: Bool {
         get { return Logger.verbose }
@@ -414,7 +420,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Automatically collect subscriber attributes associated with the device identifiers
-     * $idfa, $idfv, $ip
+     * - `$idfa`
+     * - `$idfv`
+     * - `$ip`
      */
     @objc public func collectDeviceIdentifiers() {
         subscriberAttributesManager.collectDeviceIdentifiers(forAppUserID: appUserID)
@@ -465,7 +473,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the email address for the user.
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter email: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setEmail(_ email: String?) {
@@ -475,7 +484,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the phone number for the user.
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter phoneNumber: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setPhoneNumber(_ phoneNumber: String?) {
@@ -485,7 +495,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the display name for the user.
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter displayName: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setDisplayName(_ displayName: String?) {
@@ -495,7 +506,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the push token for the user.
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter pushToken: `nil` will delete the subscriber attribute..
      */
     @objc public func setPushToken(_ pushToken: Data?) {
@@ -572,7 +584,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install media source for the user.
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter mediaSource: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setMediaSource(_ mediaSource: String?) {
@@ -582,7 +595,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install campaign for the user.
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter campaign: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setCampaign(_ campaign: String?) {
@@ -592,7 +606,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install ad group for the user
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter adGroup: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setAdGroup(_ adGroup: String?) {
@@ -602,7 +617,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install ad for the user
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter installAd: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setAd(_ installAd: String?) {
@@ -612,7 +628,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install keyword for the user
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter keyword: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setKeyword(_ keyword: String?) {
@@ -622,7 +639,8 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install ad creative for the user.
      *
-     * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter creative: Empty String or `nil` will delete the subscriber attribute..
      */
     @objc public func setCreative(_ creative: String?) {
