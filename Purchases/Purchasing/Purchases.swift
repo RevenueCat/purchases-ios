@@ -865,7 +865,7 @@ public extension Purchases {
     }
 
     /**
-     * Use this function if you are not using the Offerings system to purchase an `StoreProduct`.
+     * Use this function if you are not using the Offerings system to purchase an ``StoreProduct``.
      * If you are using the Offerings system, use ``Purchases/purchase(package:completion:)`` instead.
      *
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
@@ -882,7 +882,7 @@ public extension Purchases {
      *
      * If the purchase was not successful, there will be an `NSError`.
      *
-     * If the user cancelled, `userCancelled` will be `YES`.
+     * If the user cancelled, `userCancelled` will be `true`.
      */
     @objc(purchaseProduct:withCompletion:)
     func purchase(product: StoreProduct, completion: @escaping PurchaseCompletedBlock) {
@@ -890,20 +890,20 @@ public extension Purchases {
     }
 
     /**
-     * Use this function if you are not using the Offerings system to purchase an `StoreProduct`.
+     * Use this function if you are not using the Offerings system to purchase an ``StoreProduct``.
      * If you are using the Offerings system, use ``Purchases/purchase(package:completion:)`` instead.
      *
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
      *
-     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
-     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * - Note: You do not need to finish the transaction yourself in the completion callback, ``Purchases`` will
      * handle this for you.
      *
-     * - Parameter product: The `StoreProduct` the user intends to purchase
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the user cancelled, `userCancelled` will be `YES`.
+     * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: StoreProduct) async throws ->
@@ -915,7 +915,7 @@ public extension Purchases {
     /**
      * Purchase the passed ``Package``.
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
-     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
      * handle this for you.
@@ -923,7 +923,7 @@ public extension Purchases {
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      *
      * If the purchase was not successful, there will be an `Error`.
      *
@@ -937,7 +937,7 @@ public extension Purchases {
     /**
      * Purchase the passed ``Package``.
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
-     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
      * handle this for you.
@@ -955,23 +955,23 @@ public extension Purchases {
     }
 
     /**
-     * Use this function if you are not using the Offerings system to purchase a `StoreProduct` with an
-     * applied `StoreProductDiscount`.
+     * Use this function if you are not using the Offerings system to purchase a ``StoreProduct`` with an
+     * applied ``StoreProductDiscount``.
      * If you are using the Offerings system, use ``Purchases/purchase(package:discount:completion:)`` instead.
      *
      * Call this method when a user has decided to purchase a product with an applied discount.
      * Only call this in direct response to user input.
      *
-     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
      * this for you.
      *
-     * - Parameter product: The `StoreProduct` the user intends to purchase
-     * - Parameter discount: The `StoreProductDiscount` to apply to the purchase
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase
+     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -984,20 +984,20 @@ public extension Purchases {
     }
 
     /**
-     * Use this function if you are not using the Offerings system to purchase a `StoreProduct` with an
-     * applied `StoreProductDiscount`.
+     * Use this function if you are not using the Offerings system to purchase a ``StoreProduct`` with an
+     * applied ``StoreProductDiscount``.
      * If you are using the Offerings system, use ``Purchases/purchase(package:discount:completion:)`` instead.
      *
      * Call this method when a user has decided to purchase a product with an applied discount.
      * Only call this in direct response to user input.
      *
-     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
      * this for you.
      *
-     * - Parameter product: The `StoreProduct` the user intends to purchase
-     * - Parameter discount: The `StoreProductDiscount` to apply to the purchase
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase
+     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the user cancelled, `userCancelled` will be `true`.
@@ -1012,17 +1012,17 @@ public extension Purchases {
     /**
      * Purchase the passed ``Package``.
      * Call this method when a user has decided to purchase a product with an applied discount. Only call this in
-     * direct response to user input. From here `Purchases` will handle the purchase with `StoreKit` and call the
-     * `PurchaseCompletedBlock`.
+     * direct response to user input. From here ``Purchases`` will handle the purchase with `StoreKit` and call the
+     * ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
      * this for you.
      *
      * - Parameter package: The ``Package`` the user intends to purchase
-     * - Parameter discount: The `StoreProductDiscount` to apply to the purchase
+     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `StoreTransaction` and a ``CustomerInfo``.
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -1038,14 +1038,14 @@ public extension Purchases {
     /**
      * Purchase the passed ``Package``.
      * Call this method when a user has decided to purchase a product with an applied discount. Only call this in
-     * direct response to user input. From here `Purchases` will handle the purchase with `StoreKit` and call the
-     * `PurchaseCompletedBlock`.
+     * direct response to user input. From here ``Purchases`` will handle the purchase with `StoreKit` and call the
+     * ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
      * this for you.
      *
      * - Parameter package: The ``Package`` the user intends to purchase
-     * - Parameter discount: The `StoreProductDiscount` to apply to the purchase
+     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the user cancelled, `userCancelled` will be `true`.
@@ -1062,14 +1062,14 @@ public extension Purchases {
      * become associated with the current ``appUserID``.
      *
      * If the receipt is being used by an existing user, the current ``appUserID`` will be aliased together with
-     * the `appUserID` of the existing user.
-     * Going forward, either `appUserID` will be able to reference the same user.
+     * the ``appUserID`` of the existing user.
+     * Going forward, either ``appUserID`` will be able to reference the same user.
      *
      * - Warning: This function should only be called if you're not calling any purchase method.
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use `restorePurchases(completion:)` to cover those cases.
+     * won't be able to restore them. Use ``restorePurchases(completion:)`` to cover those cases.
      */
     @objc func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
         purchasesOrchestrator.syncPurchases(completion: completion)
@@ -1080,14 +1080,14 @@ public extension Purchases {
      * become associated with the current ``appUserID``.
      *
      * If the receipt is being used by an existing user, the current ``appUserID`` will be aliased together with
-     * the `appUserID` of the existing user.
-     * Going forward, either `appUserID` will be able to reference the same user.
+     * the ``appUserID`` of the existing user.
+     * Going forward, either ``appUserID`` will be able to reference the same user.
      *
      * - Warning: This function should only be called if you're not calling any purchase method.
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use `restorePurchases(completion:)` to cover those cases.
+     * won't be able to restore them. Use ``restorePurchases(completion:)`` to cover those cases.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchases() async throws -> CustomerInfo {
