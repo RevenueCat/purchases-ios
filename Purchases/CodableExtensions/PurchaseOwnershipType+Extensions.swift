@@ -32,8 +32,9 @@ extension PurchaseOwnershipType: Decodable {
     }
 
     private static let mapping: [String: Self] = Self.allCases
-        .filter { $0.name != nil }
-        .dictionaryWithKeys { $0.name! }
+        .reduce(into: [:]) { result, type in
+            if let name = type.name { result[name] = type }
+        }
 
 }
 
