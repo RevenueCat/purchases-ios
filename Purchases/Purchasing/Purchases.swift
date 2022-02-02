@@ -472,7 +472,7 @@ extension Purchases {
     }
 
     /**
-     * Subscriber attribute associated with the phone number for the user
+     * Subscriber attribute associated with the phone number for the user.
      *
      * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter phoneNumber: Empty String or nil will delete the subscriber attribute.
@@ -482,7 +482,7 @@ extension Purchases {
     }
 
     /**
-     * Subscriber attribute associated with the display name for the user
+     * Subscriber attribute associated with the display name for the user.
      *
      * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter displayName: Empty String or nil will delete the subscriber attribute.
@@ -492,7 +492,7 @@ extension Purchases {
     }
 
     /**
-     * Subscriber attribute associated with the push token for the user
+     * Subscriber attribute associated with the push token for the user.
      *
      * - SeeAlso: [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      * - Parameter pushToken: nil will delete the subscriber attribute.
@@ -503,7 +503,7 @@ extension Purchases {
 
     /**
      * Subscriber attribute associated with the Adjust Id for the user
-     * Required for the RevenueCat Adjust integration
+     * Required for the RevenueCat Adjust integration.
      *
      * - SeeAlso: [Adjust RevenueCat Integration](https://docs.revenuecat.com/docs/adjust)
      * - Parameter adjustID: nil will delete the subscriber attribute
@@ -514,7 +514,7 @@ extension Purchases {
 
     /**
      * Subscriber attribute associated with the Appsflyer Id for the user
-     * Required for the RevenueCat Appsflyer integration
+     * Required for the RevenueCat Appsflyer integration.
      *
      * - SeeAlso: [AppsFlyer RevenueCat Integration](https://docs.revenuecat.com/docs/appsflyer)
      * - Parameter appsflyerID: nil will delete the subscriber attribute
@@ -525,7 +525,7 @@ extension Purchases {
 
     /**
      * Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
-     * Recommended for the RevenueCat Facebook integration
+     * Recommended for the RevenueCat Facebook integration.
      *
      * - SeeAlso: [Facebook Ads RevenueCat Integration](https://docs.revenuecat.com/docs/facebook-ads)
      * - Parameter fbAnonymousID: nil will delete the subscriber attribute
@@ -536,10 +536,10 @@ extension Purchases {
 
     /**
      * Subscriber attribute associated with the mParticle Id for the user
-     * Recommended for the RevenueCat mParticle integration
+     * Recommended for the RevenueCat mParticle integration.
      *
      * - SeeAlso: [mParticle RevenueCat Integration](https://docs.revenuecat.com/docs/mparticle)
-     * - Parameter mparticleID: nil will delete the subscriber attribute
+     * - Parameter mparticleID: nil will delete the subscriber attribute.
      */
     @objc public func setMparticleID(_ mparticleID: String?) {
         subscriberAttributesManager.setMparticleID(mparticleID, appUserID: appUserID)
@@ -547,9 +547,11 @@ extension Purchases {
 
     /**
      * Subscriber attribute associated with the OneSignal Player ID for the user
-     * Required for the RevenueCat OneSignal integration
+     * Required for the RevenueCat OneSignal integration.
      *
-     * - Parameter onesignalID: nil will delete the subscriber attribute
+     * - SeeAlso:
+     * [mParticle RevenueCat Integration](https://docs.revenuecat.com/docs/onesignal)
+     * - Parameter onesignalID: nil will delete the subscriber attribute.
      */
     @objc public func setOnesignalID(_ onesignalID: String?) {
         subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: appUserID)
@@ -557,7 +559,7 @@ extension Purchases {
 
     /**
      * Subscriber attribute associated with the Airship Channel ID for the user
-     * Required for the RevenueCat Airship integration
+     * Required for the RevenueCat Airship integration.
      *
      * - Parameter airshipChannelID: nil will delete the subscriber attribute
      */
