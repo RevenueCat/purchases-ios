@@ -45,11 +45,10 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     )
 #endif
 
-    /// Returns the already configured instance of `Purchases`.
-    /// - Warning: this method will crash with `fatalError` if `Purchases` has not been
-    ///            initialized through `configure()`.
-    ///            If there's a chance that may have not happened yet, you can use ``isConfigured``
-    ///            to check if it's safe to call.
+    /// Returns the already configured instance of ``Purchases``.
+    /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
+    /// ``configure(withAPIKey:)`` or one of its overloads. If there's a chance that may have not happened yet, you can use ``isConfigured``
+    /// to check if it's safe to call.
     /// - SeeAlso: ``isConfigured``.
     @objc(sharedPurchases)
     public static var shared: Purchases {
