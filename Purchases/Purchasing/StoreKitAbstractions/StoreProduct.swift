@@ -191,48 +191,12 @@ public extension StoreProduct {
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 public extension StoreProduct {
     /// Finds the subset of ``discounts`` that's eligible for the current user.
-    /// - Parameter purchases: the instance of `Purchases` to use when determining eligibility.
     /// - Seealso: ``discounts``
     /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
     ///   that discount will fail silently and be considered not eligible.
     /// - Warning: this method implicitly relies on ``Purchases`` already being initialized.
     func getEligibleDiscounts() async -> [StoreProductDiscount] {
-        let purchases = Purchases.shared
-        let discounts = self.discounts
-        let product = self
-
-        return await withTaskGroup(of: Optional<StoreProductDiscount>.self) { group in
-            for discount in discounts {
-                group.addTask {
-                    do {
-                        let eligibility = try await purchases.checkPromotionalDiscountEligibility(
-                            forProductDiscount: discount,
-                            product: product
-                        )
-
-                        return eligibility.isEligible ? discount : nil
-                    } catch {
-                        Logger.error(
-                            Strings.purchase.check_eligibility_failed(
-                                productIdentifier: product.productIdentifier,
-                                error: error
-                            )
-                        )
-                        return nil
-                    }
-                }
-            }
-
-            var result: [StoreProductDiscount] = []
-
-            for await discount in group {
-                if let discount = discount {
-                    result.append(discount)
-                }
-            }
-
-            return result
-        }
+        return await Purchases.shared.getEligibleDiscounts(forProduct: self)
     }
 }
 

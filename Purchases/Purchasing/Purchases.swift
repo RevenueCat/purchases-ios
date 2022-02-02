@@ -1300,6 +1300,15 @@ public extension Purchases {
         return try await checkPromotionalDiscountEligibilityAsync(forProductDiscount: discount, product: product)
     }
 
+    /// Finds the subset of ``StoreProduct/discounts`` that's eligible for the current user.
+    /// - Seealso: ``StoreProduct/getEligibleDiscounts()``
+    /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
+    ///   that discount will fail silently and be considered not eligible.
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func getEligibleDiscounts(forProduct product: StoreProduct) async -> [StoreProductDiscount] {
+        return await getEligibleDiscountsAsync(forProduct: product)
+    }
+
 #if os(iOS) || os(macOS)
 
     /**
