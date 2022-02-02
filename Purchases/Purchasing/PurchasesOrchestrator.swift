@@ -732,7 +732,7 @@ private extension PurchasesOrchestrator {
                     forProductDiscount: discount,
                     product: StoreProduct(sk2Product: sk2Product)
                 )
-                options.insert(discount.sk2PurchaseOption)
+                options.insert(try discount.sk2PurchaseOption)
             }
 
             let result = try await sk2Product.purchase(options: options)
