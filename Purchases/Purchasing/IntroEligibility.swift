@@ -68,6 +68,12 @@ private extension IntroEligibilityStatus {
     )
 }
 
+// Note about the need for `IntroEligibility`: it only holds a `IntroEligibilityStatus`
+// so one might think it's redundant, but it's actually the only way for the APIs that
+// a dictionary of Product Identifier -> Eligibility to work in Objective-C.
+// `[String: IntroEligibilityStatus]` can't be represented in Obj-C, other than through
+// `[String: NSNumber]`, which would be a worse API.
+
 /**
  Holds the introductory price status
  */
