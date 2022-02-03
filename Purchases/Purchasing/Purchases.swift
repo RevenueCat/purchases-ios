@@ -1328,9 +1328,8 @@ public extension Purchases {
      * Use this function to open the manage subscriptions modal.
      *
      * - Parameter completion: A completion block that is called when the modal is opened.
-     * - throws: an Error will be thrown if the current window scene couldn't be opened,
+     * - throws: an `Error` will be thrown if the current window scene couldn't be opened,
      * or the ``CustomerInfo/managementURL`` couldn't be obtained.
-
      * If the manage subscriptions page can't be opened, the ``CustomerInfo/managementURL`` in
      * the ``CustomerInfo`` will be opened. If ``CustomerInfo/managementURL`` is not available,
      * the App Store's subscription management section will be opened.
