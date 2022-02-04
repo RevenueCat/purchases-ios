@@ -438,6 +438,83 @@ platform :ios do
     }
   end
 
+  desc "Create or delete sandbox testers"
+  lane :sandbox_testers do
+    Spaceship::ConnectAPI.login(use_portal: false)
+
+    UI.deprecated("Email pattern will be used when creating and deleting multiple testers")
+    UI.deprecated("fastlane will increment a number before '@'")
+    UI.deprecated("Example: testparty.v4@revenuecat.com will make: ")
+    UI.deprecated("   testparty.v4.1@revenuecat.com")
+    UI.deprecated("   testparty.v4.2@revenuecat.com")
+    UI.deprecated("   testparty.v4.3@revenuecat.com")
+    email_pattern = UI.input("Sanbox Tester Email pattern:")
+
+    options = ["Create", "Delete"]
+    option = UI.select("What do you want to do?", options)
+
+    if option == options[0]
+      sandbox_testers_create(email_pattern: email_pattern)
+    elsif option == options[1]
+      sandbox_testers_delete(email_pattern: email_pattern)
+    end
+  end
+
+  private_lane :sandbox_testers_delete do |options|
+    email_pattern = options[:email_pattern]
+
+    email_prefix = email_pattern.split('@').first
+
+    testers = Spaceship::ConnectAPI::SandboxTester.all.select do |tester|
+      tester.email.start_with?(email_prefix)
+    end
+
+    UI.important("Found testers:")
+    testers.each do |tester|
+      UI.message(tester.email)
+    end
+
+    if UI.confirm("Do you want to delete these sandbox testers?")
+      testers.each do |tester|
+        UI.message("Deleting #{tester.email}...")
+        tester.delete!
+      end
+    end
+  end
+
+  private_lane :sandbox_testers_create do |options|
+    email_pattern = options[:email_pattern]
+
+    number = UI.input("Number of testers:").to_i
+    UI.user_error!("Number needs to be more than 0") if number <= 0 
+    UI.user_error!("Number needs to be less than 51") if number > 50
+
+    password = UI.input("Sandbox Tester Password (ex: 'SuperSecret01'):")
+
+    question = UI.input("Sandbox Tester Secret Question (ex: 'Secret'):")
+    answer = UI.input("Sandbox Tester Secret Answer (ex: 'Answer'):")
+
+    emails = (1..number).map do |i|
+      email_pattern.gsub('@', ".#{i.to_s}@")
+    end
+
+    emails.each do |email|
+      data = {
+        first_name: "Tester",
+        last_name: "FastlaneCreated",
+        email: email,
+        password: password,
+        confirm_password: password,
+        secret_question: question,
+        secret_answer: answer,
+        birth_date: "1990-01-01",
+        app_store_territory: "USA"
+      }
+      UI.message("Creating #{email}...")
+      Spaceship::ConnectAPI::SandboxTester.create(**data)
+    end
+  end
+
 end
 
 def push_pods
