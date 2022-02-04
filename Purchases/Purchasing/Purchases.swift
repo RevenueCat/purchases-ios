@@ -849,7 +849,7 @@ public extension Purchases {
         return try await customerInfoAsync()
     }
 
-    /// Returns an `AsyncStream` of ``CustomerInfo`` changes.
+    /// Returns an `AsyncStream` of ``CustomerInfo`` changes, starting from the last known value.
     ///
     /// #### Related Symbols
     /// - ``PurchasesDelegate/purchases(_:receivedUpdated:)``
@@ -863,7 +863,8 @@ public extension Purchases {
     ///   ...
     /// }
     /// ```
-    /// - note: this method is not thread-safe.
+    /// - Note: an alternative way of getting ``CustomerInfo`` updates is using ``PurchasesDelegate``
+    /// - Note: this method is not thread-safe.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
         return self.customerInfoManager.customerInfoStream
