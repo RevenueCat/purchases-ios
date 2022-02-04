@@ -17,6 +17,15 @@ import Foundation
 import StoreKit
 
 // MARK: Block definitions
+
+/**
+ Result for ``Purchases/purchase(product:)``.
+ Counterpart of `PurchaseCompletedBlock` for `async` APIs.
+ */
+public typealias PurchaseResultData = (transaction: StoreTransaction?,
+                                       customerInfo: CustomerInfo,
+                                       userCancelled: Bool)
+
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
@@ -807,9 +816,6 @@ public extension Purchases {
      *
      * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,
      * your prices are loaded for your purchase flow. Time is money.
-     *
-     * - Parameter completion: A completion block called when offerings are available.
-     * Called immediately if offerings are cached. ``Offerings`` will be `nil` if an error occurred.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings() async throws -> Offerings {
@@ -950,14 +956,11 @@ public extension Purchases {
      * handle this for you.
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase
-     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(product: StoreProduct) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchase(product: StoreProduct) async throws -> PurchaseResultData {
         return try await purchaseAsync(product: product)
     }
 
@@ -992,14 +995,11 @@ public extension Purchases {
      * handle this for you.
      *
      * - Parameter package: The ``Package`` the user intends to purchase
-     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(package: Package) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchase(package: Package) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package)
     }
 
@@ -1047,14 +1047,11 @@ public extension Purchases {
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase
      * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
-     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(product: StoreProduct, discount: StoreProductDiscount) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchase(product: StoreProduct, discount: StoreProductDiscount) async throws -> PurchaseResultData {
         return try await purchaseAsync(product: product, discount: discount)
     }
 
@@ -1095,14 +1092,11 @@ public extension Purchases {
      *
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
-     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(package: Package, discount: StoreProductDiscount) async throws ->
-    // swiftlint:disable:next large_tuple
-    (transaction: StoreTransaction, customerInfo: CustomerInfo, userCancelled: Bool) {
+    func purchase(package: Package, discount: StoreProductDiscount) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package, discount: discount)
     }
 
@@ -1220,7 +1214,6 @@ public extension Purchases {
      * version of iOS so that the subscription group can be collected by the SDK.
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
-     * - Parameter completion: A block that receives a dictionary of `product_id` -> ``IntroEligibility``.
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
@@ -1272,13 +1265,8 @@ public extension Purchases {
     func checkPromotionalDiscountEligibility(forProductDiscount discount: StoreProductDiscount,
                                              product: StoreProduct,
                                              completion: @escaping (PromotionalOfferEligibility, Error?) -> Void) {
-        guard let sk1Product = product.sk1Product else {
-            // todo: add support for SK2 discounts
-            fatalError("StoreKit2 not supported yet")
-        }
-
         purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
-                                               product: sk1Product) { promotionalOffer, error in
+                                               product: product) { promotionalOffer, error in
             completion(promotionalOffer == nil ? .ineligible : .eligible, error)
         }
     }
@@ -1291,8 +1279,6 @@ public extension Purchases {
      *
      * - Parameter discount: The ``StoreProductDiscount`` to apply to the product.
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
-     * - Parameter completion: A completion block that is called when the ``PromotionalOfferEligibility`` is returned.
-     * If it was not successful, there will be an `Error`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func checkPromotionalDiscountEligibility(forProductDiscount discount: StoreProductDiscount,
@@ -1327,17 +1313,11 @@ public extension Purchases {
     /**
      * Use this function to open the manage subscriptions modal.
      *
-     * - Parameter completion: A completion block that is called when the modal is opened.
      * - throws: an `Error` will be thrown if the current window scene couldn't be opened,
      * or the ``CustomerInfo/managementURL`` couldn't be obtained.
      * If the manage subscriptions page can't be opened, the ``CustomerInfo/managementURL`` in
      * the ``CustomerInfo`` will be opened. If ``CustomerInfo/managementURL`` is not available,
      * the App Store's subscription management section will be opened.
-     *
-     * The `completion` block will be called when the modal is opened, not when it's actually closed.
-     * This is because of an undocumented change in StoreKit's behavior between iOS 15.0 and 15.2,
-     * where 15.0 would return when the modal was closed,
-     * and 15.2 returns when the modal is opened.
      */
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
