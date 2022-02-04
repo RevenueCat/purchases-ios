@@ -2572,15 +2572,16 @@ class PurchasesTests: XCTestCase {
         expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 
-    func testSyncsPurchasesIfEntitlementsRevokedForProductIDs() {
-        if #available(iOS 14.0, macOS 14.0, tvOS 14.0, watchOS 7.0, *) {
-            setupPurchases()
-            guard purchases != nil else { fatalError() }
-            expect(self.backend.postReceiptDataCalled).to(beFalse())
-            (purchasesOrchestrator as StoreKitWrapperDelegate)
-                .storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
-            expect(self.backend.postReceiptDataCalled).to(beTrue())
-        }
+    @available(iOS 14.0, macOS 14.0, tvOS 14.0, watchOS 7.0, *)
+    func testSyncsPurchasesIfEntitlementsRevokedForProductIDs() throws {
+        try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
+
+        setupPurchases()
+        guard purchases != nil else { fatalError() }
+        expect(self.backend.postReceiptDataCalled).to(beFalse())
+        (purchasesOrchestrator as StoreKitWrapperDelegate)
+            .storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
     @available(*, deprecated) // Ignore deprecation warnings
