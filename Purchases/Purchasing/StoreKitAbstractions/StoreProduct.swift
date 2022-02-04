@@ -156,7 +156,7 @@ internal protocol StoreProductType {
     var introductoryDiscount: StoreProductDiscount? { get }
 
     /// An array of subscription offers available for the auto-renewable subscription.
-    /// - Note: the currenet user may or may not be eligible for some of these.
+    /// - Note: the current user may or may not be eligible for some of these.
     /// #### Related Symbols
     /// - ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:)``
     /// - ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``
