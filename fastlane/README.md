@@ -191,14 +191,6 @@ Export XCFramework
 
 Run BackendIntegrationTests
 
-### ios zip_xcresults
-
-```sh
-[bundle exec] fastlane ios zip_xcresults
-```
-
-
-
 ### ios update_swift_package_commit
 
 ```sh
@@ -206,6 +198,14 @@ Run BackendIntegrationTests
 ```
 
 Update swift package commit
+
+### ios sandbox_testers
+
+```sh
+[bundle exec] fastlane ios sandbox_testers
+```
+
+Create or delete sandbox testers
 
 ----
 
