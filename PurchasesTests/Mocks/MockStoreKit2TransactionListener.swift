@@ -30,7 +30,9 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
     var invokedDelegateGetterCount = 0
     weak var stubbedDelegate: StoreKit2TransactionListenerDelegate!
 
-    var mockTransaction: SK2Transaction?
+    // StoreKit.Transaction but we can't store it directly as a property.
+    // see https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825.
+    var mockTransaction: Any?
 
     override var delegate: StoreKit2TransactionListenerDelegate? {
         get {
@@ -69,6 +71,8 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
         invokedHandleCount += 1
         invokedHandleParameters = (purchaseResult, ())
         invokedHandleParametersList.append((purchaseResult, ()))
-        return (false, mockTransaction)
+
+        // swiftlint:disable:next force_cast
+        return (false, mockTransaction as! StoreKit.Transaction?)
     }
 }
