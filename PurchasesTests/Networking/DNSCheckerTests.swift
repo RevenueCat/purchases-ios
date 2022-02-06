@@ -19,18 +19,21 @@ import XCTest
 
 class DNSCheckerTests: XCTestCase {
 
-    let apiURL = URL(string: "https://api.revenuecat.com")!
-    let fakeSubscribersURL1 = URL(string: "https://0.0.0.0/subscribers")!
-    let fakeSubscribersURL2 = URL(string: "https://127.0.0.1/subscribers")!
-    let fakeOffersURL = URL(string: "https://0.0.0.0/offers")!
+    private let apiURL = URL(string: "https://api.revenuecat.com")!
+    private let fakeSubscribersURL1 = URL(string: "https://0.0.0.0/subscribers")!
+    private let fakeSubscribersURL2 = URL(string: "https://127.0.0.1/subscribers")!
+    private let fakeOffersURL = URL(string: "https://0.0.0.0/offers")!
 
-    func testResolvedHost() {
-        let host = DNSChecker.resolvedHost(fromURL: apiURL)
+    func testResolvedHost() throws {
+        let host = try XCTUnwrap(
+            DNSChecker.resolvedHost(fromURL: apiURL),
+            "The host couldn't be resolved. Note that this test requires a working internet connection"
+        )
         // swiftlint:disable:next line_length
         let validIPAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
 
-        expect(host!.range(of: validIPAddressRegex, options: .regularExpression)).toNot(beNil())
-        expect(DNSChecker.invalidHosts.contains(host!)).to(equal(false))
+        expect(host.range(of: validIPAddressRegex, options: .regularExpression)).toNot(beNil())
+        expect(DNSChecker.invalidHosts.contains(host)).to(equal(false))
     }
 
     func testIsBlockedURL() throws {
