@@ -42,6 +42,8 @@ private extension GetCustomerInfoOperation {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, ErrorUtils.missingAppUserIDError())
             }
+            self.finish()
+
             return
         }
 
@@ -56,6 +58,8 @@ private extension GetCustomerInfoOperation {
                                                         error: error,
                                                         completion: callback.completion)
             }
+
+            self.finish()
         }
     }
 

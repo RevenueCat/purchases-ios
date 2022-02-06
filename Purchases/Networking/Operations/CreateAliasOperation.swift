@@ -45,6 +45,8 @@ private extension CreateAliasOperation {
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion?(ErrorUtils.missingAppUserIDError())
             }
+
+            self.finish()
             return
         }
         Logger.user(Strings.identity.creating_alias)
@@ -65,6 +67,8 @@ private extension CreateAliasOperation {
                                                        error: error,
                                                        completion: completion)
             }
+
+            self.finish()
         }
     }
 

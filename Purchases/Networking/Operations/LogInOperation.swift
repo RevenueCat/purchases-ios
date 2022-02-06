@@ -42,6 +42,8 @@ private extension LogInOperation {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, false, ErrorUtils.missingAppUserIDError())
             }
+            self.finish()
+
             return
         }
 
@@ -56,6 +58,8 @@ private extension LogInOperation {
                                  error: error,
                                  completion: callbackObject.completion)
             }
+
+            self.finish()
         }
     }
 

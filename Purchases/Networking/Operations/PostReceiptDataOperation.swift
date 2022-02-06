@@ -74,6 +74,8 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
                 self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                     callback.completion(nil, error)
                 }
+
+                self.finish()
                 return
             }
         }
@@ -98,6 +100,8 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
                                                         error: error,
                                                         completion: callbackObject.completion)
             }
+
+            self.finish()
         }
     }
 

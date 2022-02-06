@@ -42,6 +42,7 @@ class PostOfferForSigningOperation: NetworkOperation {
         self.post()
     }
 
+    // swiftlint:disable:next function_body_length
     private func post() {
         let requestBody: [String: Any] = ["app_user_id": self.configuration.appUserID,
                                           "fetch_token": self.postOfferData.receiptData.asFetchToken,
@@ -56,6 +57,10 @@ class PostOfferForSigningOperation: NetworkOperation {
                                            path: "/offers",
                                            requestBody: requestBody,
                                            headers: authHeaders) { statusCode, response, error in
+            defer {
+                self.finish()
+            }
+
             if let error = error {
                 self.completion(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
                 return

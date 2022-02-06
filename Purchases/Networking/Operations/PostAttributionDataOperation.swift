@@ -42,6 +42,8 @@ class PostAttributionDataOperation: NetworkOperation {
     private func post() {
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
             self.completion?(ErrorUtils.missingAppUserIDError())
+            self.finish()
+
             return
         }
 
@@ -51,6 +53,10 @@ class PostAttributionDataOperation: NetworkOperation {
                                            path: path,
                                            requestBody: body,
                                            headers: self.authHeaders) { statusCode, response, error in
+            defer {
+                self.finish()
+            }
+
             guard let completion = self.completion else {
                 return
             }

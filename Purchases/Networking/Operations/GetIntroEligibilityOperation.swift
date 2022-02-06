@@ -43,6 +43,8 @@ private extension GetIntroEligibilityOperation {
     func getIntroEligibility() {
         guard self.productIdentifiers.count > 0 else {
             self.completion([:], nil)
+            self.finish()
+
             return
         }
 
@@ -58,6 +60,8 @@ private extension GetIntroEligibilityOperation {
             }
 
             completion(eligibilities, nil)
+            self.finish()
+
             return
         }
 
@@ -72,6 +76,8 @@ private extension GetIntroEligibilityOperation {
 
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
             self.completion(unknownEligibilityClosure(), ErrorUtils.missingAppUserIDError())
+            self.finish()
+
             return
         }
 
@@ -95,6 +101,10 @@ private extension GetIntroEligibilityOperation {
     }
 
     func handleIntroEligibility(response: IntroEligibilityResponse) {
+        defer {
+            self.finish()
+        }
+
         var eligibilitiesByProductIdentifier = response.response
         if response.statusCode >= HTTPStatusCodes.redirect.rawValue || response.error != nil {
             eligibilitiesByProductIdentifier = [:]

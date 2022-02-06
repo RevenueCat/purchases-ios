@@ -43,11 +43,15 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         guard self.subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
             completion?(ErrorCode.emptySubscriberAttributes)
+            self.finish()
+
             return
         }
 
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
             completion?(ErrorUtils.missingAppUserIDError())
+            self.finish()
+
             return
         }
 
@@ -59,6 +63,10 @@ class PostSubscriberAttributesOperation: NetworkOperation {
                                       path: path,
                                       requestBody: ["attributes": attributesInBackendFormat],
                                       headers: self.authHeaders) { statusCode, response, error in
+            defer {
+                self.finish()
+            }
+
             guard let completion = self.completion else {
                 return
             }

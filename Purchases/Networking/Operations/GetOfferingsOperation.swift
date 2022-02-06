@@ -39,6 +39,8 @@ private extension GetOfferingsOperation {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, ErrorUtils.missingAppUserIDError())
             }
+            self.finish()
+
             return
         }
 
@@ -46,6 +48,10 @@ private extension GetOfferingsOperation {
         httpClient.performGETRequest(serially: true,
                                      path: path,
                                      headers: authHeaders) { statusCode, response, error in
+            defer {
+                self.finish()
+            }
+
             if error == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
                 self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                     callbackObject.completion(response, nil)
