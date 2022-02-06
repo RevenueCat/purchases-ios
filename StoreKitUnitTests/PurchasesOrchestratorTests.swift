@@ -73,6 +73,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    var mockStoreKit2TransactionListener: MockStoreKit2TransactionListener? {
+        return orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener
+    }
+
     fileprivate func setUpSystemInfo(finishTransactions: Bool = true) throws {
         systemInfo = try MockSystemInfo(platformFlavor: "xyz",
                                         platformFlavorVersion: "1.2.3",
@@ -181,25 +186,19 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     func testPurchaseSK2PackageReturnsCorrectValues() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        let mockTransaction = try await createTransactionWithPurchase()
+
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        mockStoreKit2TransactionListener?.mockTransaction = mockTransaction
 
-        let storeProduct = StoreProduct.from(product: try await fetchSk2StoreProduct())
-        let package = Package(identifier: "package",
-                              packageType: .monthly,
-                              storeProduct: storeProduct,
-                              offeringIdentifier: "offering")
+        let product = try await self.fetchSk2Product()
 
-        let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
-            orchestrator.purchase(product: storeProduct,
-                                  package: package) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
-            }
-        }
+        let (transaction, customerInfo, userCancelled) = try await orchestrator.purchase(sk2Product: product,
+                                                                                         discount: nil)
 
-        expect(transaction).to(beNil())
+        expect(transaction?.sk2Transaction) == mockTransaction
         expect(userCancelled) == false
-        expect(error).to(beNil())
 
         let expectedCustomerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",

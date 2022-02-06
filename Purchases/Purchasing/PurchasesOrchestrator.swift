@@ -324,21 +324,48 @@ class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(sk2Product product: SK2Product,
-                  discount: StoreProductDiscountType?) async throws -> PurchaseResultData {
-        let result: Result<(CustomerInfo, Bool), Error> = await self.purchase(sk2Product: product, discount: discount)
+    func purchase(
+        sk2Product: SK2Product,
+        discount: StoreProductDiscountType?
+    ) async throws -> PurchaseResultData {
+        var options: Set<Product.PurchaseOption> = [
+            .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
+        ]
 
-        switch result {
-        case .failure(let error) where error is StoreKitError:
+        if let discount = discount {
+            let discount = try await self.promotionalOffer(
+                forProductDiscount: discount,
+                product: StoreProduct(sk2Product: sk2Product)
+            )
+
+            Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(discount.identifier))
+            options.insert(try discount.sk2PurchaseOption)
+        }
+
+        let result: Product.PurchaseResult
+
+        do {
+            result = try await sk2Product.purchase(options: options)
+        } catch {
             throw ErrorUtils.purchasesError(withStoreKitError: error)
-        case .failure(let error):
-            throw error
-        case .success(let (customerInfo, userCancelled)):
-            if userCancelled {
-                return (nil, customerInfo, userCancelled)
-            } else {
-                // todo: change API and send transaction
-                return (nil, customerInfo, userCancelled)
+        }
+
+        let (userCancelled, transaction) = try await storeKit2Listener.handle(purchaseResult: result)
+
+        return try await withCheckedThrowingContinuation { continuation in
+            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { customerInfo, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let customerInfo = customerInfo else {
+                    continuation.resume(throwing: ErrorUtils.unexpectedBackendResponseError())
+                    return
+                }
+
+                continuation.resume(returning: (transaction.map(StoreTransaction.init(sk2Transaction:)),
+                                                customerInfo,
+                                                userCancelled))
             }
         }
     }
@@ -715,48 +742,6 @@ private extension PurchasesOrchestrator {
     func preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: String) {
         deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
         deviceCache.setOfferingsCacheTimestampToNow()
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(
-        sk2Product: SK2Product,
-        discount: StoreProductDiscountType?
-    ) async -> Result<(CustomerInfo, Bool), Error> {
-        do {
-            var options: Set<Product.PurchaseOption> = [
-                .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
-            ]
-
-            if let discount = discount {
-                let discount = try await self.promotionalOffer(
-                    forProductDiscount: discount,
-                    product: StoreProduct(sk2Product: sk2Product)
-                )
-
-                Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(discount.identifier))
-                options.insert(try discount.sk2PurchaseOption)
-            }
-
-            let result = try await sk2Product.purchase(options: options)
-            let userCancelled = try await storeKit2Listener.handle(purchaseResult: result)
-
-            return await withCheckedContinuation { continuation in
-                syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { customerInfo, error in
-                    if let error = error {
-                        continuation.resume(returning: .failure(error))
-                        return
-                    }
-                    guard let customerInfo = customerInfo else {
-                        continuation.resume(returning: .failure(ErrorUtils.unexpectedBackendResponseError()))
-                        return
-                    }
-
-                    continuation.resume(returning: .success((customerInfo, userCancelled)))
-                }
-            }
-        } catch {
-            return .failure(error)
-        }
     }
 
     func purchase(sk1Product: SK1Product, package: Package, completion: @escaping PurchaseCompletedBlock) {
