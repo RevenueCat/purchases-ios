@@ -190,7 +190,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
-        mockStoreKit2TransactionListener?.mockTransaction = mockTransaction
+        mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction)
 
         let product = try await self.fetchSk2Product()
 
