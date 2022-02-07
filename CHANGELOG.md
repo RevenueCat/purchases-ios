@@ -1,3 +1,8 @@
+## 3.14.1
+- Fixed an issue where `checkTrialOrIntroductoryPriceEligibility` might refresh the receipt if it's not present on device,
+causing a log in prompt for App Store credentials.
+    https://github.com/RevenueCat/purchases-ios/pull/1264
+
 ## 3.14.0
 - Added a setting to disable automatic syncinc of purchases. This setting will prevent RevenueCat from listening to 
 the StoreKit queue so you should only use if suggested by RevenueCat support team.
