@@ -88,14 +88,14 @@ class TrialOrIntroPriceEligibilityChecker {
         let products = try await productsManager.sk2StoreProducts(withIdentifiers: identifiers)
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
-            let isEligible = await sk2Product.subscription?.isEligibleForIntroOffer
 
             let eligibilityStatus: IntroEligibilityStatus
 
-            if let isEligible = isEligible {
+            if let subscription = sk2Product.subscription {
+                let isEligible = await subscription.isEligibleForIntroOffer
                 eligibilityStatus = isEligible ? .eligible : .ineligible
             } else {
-                eligibilityStatus = .unknown
+                eligibilityStatus = .noIntroOfferExists
             }
 
             introDict[sk2StoreProduct.productIdentifier] =
@@ -137,7 +137,7 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
                              productIdentifiers: [String],
                              completion: @escaping ReceiveIntroEligibilityBlock) {
         if #available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *) {
-            self.productsWithIntroOffers(productIdentifiers: productIdentifiers) {
+            self.mapProductsWithIntroEligibility(productIdentifiers: productIdentifiers) {
                 self.getIntroEligibility(with: receiptData,
                                          productIdentifiers: productIdentifiers,
                                          productIdsToIntroEligibleStatusFromApple: $0,
@@ -153,14 +153,22 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
 
 }
 
-private extension TrialOrIntroPriceEligibilityChecker {
+internal extension TrialOrIntroPriceEligibilityChecker {
 
     @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
-    func productsWithIntroOffers(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock) {
+    func mapProductsWithIntroEligibility(productIdentifiers: [String],
+                                         completion: @escaping ReceiveIntroEligibilityBlock) {
         self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
             let eligibility: [(String, IntroEligibility)] = Array(products.value ?? [])
-                .filter { $0.introductoryDiscount != nil }
-                .map { ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible)) }
+                .map({ storeProduct in
+                    let status: IntroEligibilityStatus
+                    if storeProduct.introductoryDiscount == nil {
+                        status = .noIntroOfferExists
+                    } else {
+                        status = .eligible
+                    }
+                    return (storeProduct.productIdentifier, IntroEligibility(eligibilityStatus: status))
+                })
 
             let productIdsToIntroEligibleStatus = Dictionary(uniqueKeysWithValues: eligibility)
             completion(productIdsToIntroEligibleStatus)

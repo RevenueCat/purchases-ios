@@ -38,6 +38,11 @@ import Foundation
      */
     case eligible
 
+    /**
+     There is no free trial or intro pricing for this product.
+     */
+    case noIntroOfferExists
+
 }
 
 extension IntroEligibilityStatus: CaseIterable {}
@@ -90,6 +95,8 @@ private extension IntroEligibilityStatus {
             return "Eligible for trial or introductory price."
         case .ineligible:
             return "Not eligible for trial or introductory price."
+        case .noIntroOfferExists:
+            return "Product does not have trial or introductory price."
 
         case .unknown: fallthrough
         @unknown default:

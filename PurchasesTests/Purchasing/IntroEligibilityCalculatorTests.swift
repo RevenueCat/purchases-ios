@@ -121,7 +121,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         ]
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityForProductWithoutIntroTrialReturnsIneligible() {
+    func testCheckTrialOrIntroDiscountEligibilityForProductWithoutIntroTrialReturnsNoIntroOfferExists() {
         var receivedError: Error?
         var receivedEligibility: [String: IntroEligibilityStatus]?
         var completionCalled = false
@@ -145,7 +145,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).to(beNil())
         expect(receivedEligibility) == [
-            "com.revenuecat.product1": IntroEligibilityStatus.ineligible
+            "com.revenuecat.product1": IntroEligibilityStatus.noIntroOfferExists
         ]
     }
 

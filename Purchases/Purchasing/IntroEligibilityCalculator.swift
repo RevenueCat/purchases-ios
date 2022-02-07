@@ -30,6 +30,7 @@ class IntroEligibilityCalculator {
     func checkEligibility(with receiptData: Data,
                           productIdentifiers candidateProductIdentifiers: Set<String>,
                           completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
+
         guard candidateProductIdentifiers.count > 0 else {
             completion([:], nil)
             return
@@ -94,10 +95,13 @@ private extension IntroEligibilityCalculator {
                     return foundByGroupId
                 }
 
-            let hasIntroductoryPrice = candidate.introductoryDiscount != nil
-            result[candidate.productIdentifier] = !hasIntroductoryPrice || usedIntroForProductIdentifier
-                ? IntroEligibilityStatus.ineligible
-                : IntroEligibilityStatus.eligible
+            if candidate.introductoryDiscount == nil {
+                result[candidate.productIdentifier] = .noIntroOfferExists
+            } else {
+                result[candidate.productIdentifier] = usedIntroForProductIdentifier
+                    ? IntroEligibilityStatus.ineligible
+                    : IntroEligibilityStatus.eligible
+            }
         }
         return result
     }

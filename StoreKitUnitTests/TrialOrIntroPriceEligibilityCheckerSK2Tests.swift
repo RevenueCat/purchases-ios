@@ -59,7 +59,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let expected = ["product_id": IntroEligibilityStatus.unknown,
                         "com.revenuecat.monthly_4.99.1_week_intro": IntroEligibilityStatus.eligible,
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
-                        "lifetime": IntroEligibilityStatus.unknown]
+                        "lifetime": IntroEligibilityStatus.noIntroOfferExists]
 
         let eligibilities = try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products)
         let receivedEligibilities = try XCTUnwrap(eligibilities)
@@ -81,7 +81,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let expected = ["product_id": IntroEligibilityStatus.unknown,
                         "com.revenuecat.monthly_4.99.1_week_intro": IntroEligibilityStatus.eligible,
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
-                        "lifetime": IntroEligibilityStatus.unknown]
+                        "lifetime": IntroEligibilityStatus.noIntroOfferExists]
 
         var completionCalled = false
         var eligibilities: [String: IntroEligibility]?

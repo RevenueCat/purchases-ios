@@ -75,6 +75,35 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         expect(receivedEligibilities.count) == 1
     }
 
+    func testSK1EligibilityMapAllProductsWithIntroEligibility() throws {
+        let productIdentifiersAndDiscounts = [("product_id", nil),
+                        ("com.revenuecat.monthly_4.99.1_week_intro", MockSKProductDiscount()),
+                        ("com.revenuecat.annual_39.99.2_week_intro", MockSKProductDiscount()),
+                        ("lifetime", MockSKProductDiscount())
+        ]
+        let productIdentifiers = productIdentifiersAndDiscounts.map({$0.0})
+        let storeProducts = productIdentifiersAndDiscounts.map { (productIdentifier, discount) -> StoreProduct in
+            let sk1Product = MockSK1Product(mockProductIdentifier: productIdentifier)
+            sk1Product.mockDiscount = discount
+            return StoreProduct(sk1Product: sk1Product)
+        }
+
+        var finalResults: [String: IntroEligibility] = [:]
+
+        self.mockProductsManager.stubbedProductsCompletionResult = Set(storeProducts)
+        trialOrIntroPriceEligibilityChecker.mapProductsWithIntroEligibility(
+            productIdentifiers: productIdentifiers
+        ) { results in
+            finalResults = results
+        }
+
+        expect(productIdentifiersAndDiscounts.count) == finalResults.count
+        expect(finalResults["product_id"]?.status) == IntroEligibilityStatus.noIntroOfferExists
+        expect(finalResults["com.revenuecat.monthly_4.99.1_week_intro"]?.status) == IntroEligibilityStatus.eligible
+        expect(finalResults["com.revenuecat.annual_39.99.2_week_intro"]?.status) == IntroEligibilityStatus.eligible
+        expect(finalResults["lifetime"]?.status) == IntroEligibilityStatus.eligible
+    }
+
     func testSK1EligibilityIsFetchedFromBackendIfErrorCalculatingEligibilityAndStoreKitDoesNotHaveIt() throws {
         self.mockProductsManager.stubbedProductsCompletionResult = Set()
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
