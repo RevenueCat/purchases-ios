@@ -2,7 +2,7 @@
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.rc.1...4.0.0-rc.2)
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
 
 RC 2 introduces the following updates:
 
