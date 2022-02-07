@@ -52,11 +52,15 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         }
     }
 
-    func testSK1CheckTrialOrIntroPriceEligibilityFetchesAReceipt() throws {
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { _ in
-        }
+    func testSK1CheckTrialOrIntroPriceEligibilityDoesntFetchAReceipt() throws {
+        self.receiptFetcher.shouldReturnReceipt = false
+
+        expect(self.receiptFetcher.receiptDataCalled) == false
+
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { _ in }
 
         expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .never
     }
 
     func testSK1EligibilityIsCalculatedFromReceiptData() throws {
