@@ -216,6 +216,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: RefundRequestStatus = try await purchases.beginRefundRequest(forProduct: "")
         let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
         let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
+
+        let _: [StoreProductDiscount] = await purchases.getEligibleDiscounts(forProduct: stp)
         #endif
     } catch {}
 }

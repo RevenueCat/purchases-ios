@@ -202,8 +202,8 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-     func checkPromotionalDiscountEligibilityAsync(forProductDiscount discount: StoreProductDiscount,
-                                                   product: StoreProduct) async throws -> PromotionalOfferEligibility {
+    func checkPromotionalDiscountEligibilityAsync(forProductDiscount discount: StoreProductDiscount,
+                                                  product: StoreProduct) async throws -> PromotionalOfferEligibility {
          return try await withCheckedThrowingContinuation { continuation in
              checkPromotionalDiscountEligibility(forProductDiscount: discount, product: product) { isEligible, error in
                  if let error = error {
@@ -214,6 +214,44 @@ extension Purchases {
              }
          }
      }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func getEligibleDiscountsAsync(forProduct product: StoreProduct) async -> [StoreProductDiscount] {
+        let discounts = product.discounts
+
+        return await withTaskGroup(of: Optional<StoreProductDiscount>.self) { group in
+            for discount in discounts {
+                group.addTask {
+                    do {
+                        let eligibility = try await self.checkPromotionalDiscountEligibility(
+                            forProductDiscount: discount,
+                            product: product
+                        )
+
+                        return eligibility.isEligible ? discount : nil
+                    } catch {
+                        Logger.error(
+                            Strings.purchase.check_eligibility_failed(
+                                productIdentifier: product.productIdentifier,
+                                error: error
+                            )
+                        )
+                        return nil
+                    }
+                }
+            }
+
+            var result: [StoreProductDiscount] = []
+
+            for await discount in group {
+                if let discount = discount {
+                    result.append(discount)
+                }
+            }
+
+            return result
+        }
+    }
 
 #if os(iOS) || os(macOS)
 

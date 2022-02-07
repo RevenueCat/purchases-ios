@@ -58,6 +58,7 @@ enum PurchaseStrings {
     case begin_refund_customer_info_error(entitlementID: String?)
     case cached_app_user_id_deleted
     case check_eligibility_no_identifiers
+    case check_eligibility_failed(productIdentifier: String, error: Error)
 
 }
 
@@ -208,6 +209,10 @@ extension PurchaseStrings: CustomStringConvertible {
         case .check_eligibility_no_identifiers:
             return "Requested trial or introductory price eligibility with no identifiers. " +
             "This is likely a program error."
+
+        case let .check_eligibility_failed(productIdentifier, error):
+            return "Error checking discount eligibility for product '\(productIdentifier)': \(error).\n" +
+            "Will be considered not eligible."
         }
     }
 

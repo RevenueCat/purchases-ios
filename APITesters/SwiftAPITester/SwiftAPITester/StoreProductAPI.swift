@@ -26,6 +26,12 @@ func checkStoreProductAPI() {
     let sk1Product: SK1Product? = product.sk1Product
     let sk2Product: SK2Product? = product.sk2Product
 
+    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
+        _ = Task.init {
+            await checkStoreProductAsyncAPI()
+        }
+    }
+
     print(
         product!,
         localizedDescription,
@@ -44,4 +50,8 @@ func checkStoreProductAPI() {
         sk1Product!,
         sk2Product!
     )
+}
+
+func checkStoreProductAsyncAPI() async {
+    let _: [StoreProductDiscount] = await product.getEligibleDiscounts()
 }

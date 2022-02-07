@@ -150,11 +150,17 @@ internal protocol StoreProductType {
     ///
     /// Before displaying UI that offers the introductory price,
     /// you must first determine if the user is eligible to receive it.
-    /// - Seealso: ``Purchases/checkTrialOrIntroDiscountEligibility(_:)`` to  determine eligibility.
+    /// #### Related Symbols
+    /// - ``Purchases/checkTrialOrIntroDiscountEligibility(_:)`` to  determine eligibility.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     var introductoryDiscount: StoreProductDiscount? { get }
 
     /// An array of subscription offers available for the auto-renewable subscription.
+    /// - Note: the current user may or may not be eligible for some of these.
+    /// #### Related Symbols
+    /// - ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:)``
+    /// - ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``
+    /// - ``StoreProduct/getEligibleDiscounts()``
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     var discounts: [StoreProductDiscount] { get }
 
@@ -182,6 +188,19 @@ public extension StoreProduct {
         return formatter.string(from: intro.price as NSDecimalNumber)
     }
 
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+public extension StoreProduct {
+    /// Finds the subset of ``discounts`` that's eligible for the current user.
+    /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
+    ///   that discount will fail silently and be considered not eligible.
+    /// - Warning: this method implicitly relies on ``Purchases`` already being initialized.
+    /// #### Related Symbols
+    /// - ``discounts``
+    func getEligibleDiscounts() async -> [StoreProductDiscount] {
+        return await Purchases.shared.getEligibleDiscounts(forProduct: self)
+    }
 }
 
 // MARK: - Wrapper constructors / getters
