@@ -1374,6 +1374,20 @@ class PurchasesTests: XCTestCase {
         expect(self.receiptFetcher.receiptDataCalled).to(beTrue())
     }
 
+    func testGetEligibilityDoesntRefreshReceipt() {
+        setupPurchases()
+        self.receiptFetcher.shouldReturnReceipt = false
+
+        expect(self.requestFetcher.refreshReceiptCalled) == false
+        expect(self.receiptFetcher.receiptDataCalled) == false
+
+        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in
+        }
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.requestFetcher.refreshReceiptCalled) == false
+    }
+
     func testFetchVersionSendsAReceiptIfNoVersion() {
         setupPurchases()
 
