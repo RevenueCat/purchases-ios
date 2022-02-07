@@ -26,20 +26,20 @@ class GetOfferingsOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID)
     }
 
-    override func begin() {
-        self.getOfferings()
+    override func begin(completion: @escaping () -> Void) {
+        self.getOfferings(completion: completion)
     }
 
 }
 
 private extension GetOfferingsOperation {
 
-    func getOfferings() {
+    func getOfferings(completion: @escaping () -> Void) {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(nil, ErrorUtils.missingAppUserIDError())
             }
-            self.finish()
+            completion()
 
             return
         }
@@ -49,7 +49,7 @@ private extension GetOfferingsOperation {
                                      path: path,
                                      headers: authHeaders) { statusCode, response, error in
             defer {
-                self.finish()
+                completion()
             }
 
             if error == nil && statusCode < HTTPStatusCodes.redirect.rawValue {

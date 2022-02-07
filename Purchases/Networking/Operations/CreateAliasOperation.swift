@@ -32,21 +32,21 @@ class CreateAliasOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID + newAppUserID)
     }
 
-    override func begin() {
-        createAlias()
+    override func begin(completion: @escaping () -> Void) {
+        createAlias(completion: completion)
     }
 
 }
 
 private extension CreateAliasOperation {
 
-    func createAlias() {
+    func createAlias(completion: @escaping () -> Void) {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion?(ErrorUtils.missingAppUserIDError())
             }
 
-            self.finish()
+            completion()
             return
         }
         Logger.user(Strings.identity.creating_alias)
@@ -68,7 +68,7 @@ private extension CreateAliasOperation {
                                                        completion: completion)
             }
 
-            self.finish()
+            completion()
         }
     }
 

@@ -54,11 +54,11 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, individualizedCacheKeyPart: cacheKey)
     }
 
-    override func begin() {
-        self.post()
+    override func begin(completion: @escaping () -> Void) {
+        self.post(completion: completion)
     }
 
-    private func post() {
+    private func post(completion: @escaping () -> Void) {
         let fetchToken = self.postData.receiptData.asFetchToken
         var body: [String: Any] = [
             "fetch_token": fetchToken,
@@ -75,7 +75,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
                     callback.completion(nil, error)
                 }
 
-                self.finish()
+                completion()
                 return
             }
         }
@@ -101,7 +101,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
                                                         completion: callbackObject.completion)
             }
 
-            self.finish()
+            completion()
         }
     }
 

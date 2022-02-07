@@ -89,7 +89,9 @@ class NetworkOperation: Operation {
         self.isExecuting = true
 
         Self.log("Started")
-        self.begin()
+        self.begin {
+            self.finish()
+        }
     }
 
     override final func cancel() {
@@ -100,19 +102,19 @@ class NetworkOperation: Operation {
         Self.log("Cancelled")
     }
 
-    /// Called by subclasses to complete this operation
-    final func finish() {
+    /// Overriden by subclasses to define the body of the operation
+    /// - Parameter completion: must be called when the operation has finished.
+    func begin(completion: @escaping () -> Void) {
+        fatalError("Subclasses must override this method")
+    }
+
+    private final func finish() {
         assert(!self.isFinished, "Operation \(type(of: self)) (\(self)) was already finished")
 
         Self.log("Finished")
 
         self.isExecuting = false
         self.isFinished = true
-    }
-
-    /// Overriden by subclasses to define the body of the operation
-    func begin() {
-        fatalError("Subclasses must override this method")
     }
 
     // MARK: -

@@ -26,24 +26,24 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let postOfferData: PostOfferForSigningData
-    private let completion: OfferSigningResponseHandler
+    private let responseHandler: OfferSigningResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          postOfferForSigningData: PostOfferForSigningData,
-         completion: @escaping OfferSigningResponseHandler) {
+         responseHandler: @escaping OfferSigningResponseHandler) {
         self.configuration = configuration
         self.postOfferData = postOfferForSigningData
-        self.completion = completion
+        self.responseHandler = responseHandler
 
         super.init(configuration: configuration)
     }
 
-    override func begin() {
-        self.post()
+    override func begin(completion: @escaping () -> Void) {
+        self.post(completion: completion)
     }
 
     // swiftlint:disable:next function_body_length
-    private func post() {
+    private func post(completion: @escaping () -> Void) {
         let requestBody: [String: Any] = ["app_user_id": self.configuration.appUserID,
                                           "fetch_token": self.postOfferData.receiptData.asFetchToken,
                                           "generate_offers": [
@@ -58,11 +58,11 @@ class PostOfferForSigningOperation: NetworkOperation {
                                            requestBody: requestBody,
                                            headers: authHeaders) { statusCode, response, error in
             defer {
-                self.finish()
+                completion()
             }
 
             if let error = error {
-                self.completion(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
+                self.responseHandler(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
                 return
             }
 
@@ -70,7 +70,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let backendCode = BackendErrorCode(code: response?["code"])
                 let backendMessage = response?["message"] as? String
                 let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
-                self.completion(nil, nil, nil, nil, error)
+                self.responseHandler(nil, nil, nil, nil, error)
                 return
             }
 
@@ -78,7 +78,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferEmptyResponse
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.offerings_empty_response)
-                self.completion(nil, nil, nil, nil, error)
+                self.responseHandler(nil, nil, nil, nil, error)
                 return
             }
 
@@ -87,7 +87,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
                                                                  extraContext: response.stringRepresentation)
                 Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
-                self.completion(nil, nil, nil, nil, error)
+                self.responseHandler(nil, nil, nil, nil, error)
                 return
             }
 
@@ -95,12 +95,12 @@ class PostOfferForSigningOperation: NetworkOperation {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse
                 let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.no_offerings_response_json(response: response))
-                self.completion(nil, nil, nil, nil, error)
+                self.responseHandler(nil, nil, nil, nil, error)
                 return
             }
 
             let offer = offers[0]
-            self.handleOffer(offer, completion: self.completion)
+            self.handleOffer(offer, completion: self.responseHandler)
         }
     }
 
