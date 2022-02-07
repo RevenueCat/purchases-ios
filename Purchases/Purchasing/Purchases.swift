@@ -863,7 +863,8 @@ public extension Purchases {
     ///   ...
     /// }
     /// ```
-    /// - Note: an alternative way of getting ``CustomerInfo`` updates is using ``PurchasesDelegate``
+    /// - Note: an alternative way of getting ``CustomerInfo`` updates
+    /// is using ``PurchasesDelegate/purchases(_:receivedUpdated:)``
     /// - Note: this method is not thread-safe.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
