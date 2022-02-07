@@ -47,7 +47,11 @@ public typealias LogHandler = (_ level: LogLevel,
                                _ message: String) -> Void
 
 enum Logger {
+    #if DEBUG
+    static var logLevel: LogLevel = .debug
+    #else
     static var logLevel: LogLevel = .info
+    #endif
     static var logHandler: VerboseLogHandler = { level, message, file, functionName, line in
         let fileContext: String
         if Logger.verbose, let file = file, let functionName = functionName {
