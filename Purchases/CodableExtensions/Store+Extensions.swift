@@ -22,19 +22,30 @@ extension Store: Decodable {
             throw decoder.throwValueNotFoundError(expectedType: Store.self, message: "Unable to extract a storeString")
         }
 
-        switch storeString {
-        case "app_store":
-            self = .appStore
-        case "mac_app_store":
-            self = .macAppStore
-        case "play_store":
-            self = .playStore
-        case "stripe":
-            self = .stripe
-        case "promotional":
-            self = .promotional
-        default:
+        guard let type = Self.mapping[storeString] else {
             throw CodableError.unexpectedValue(Store.self)
+        }
+
+        self = type
+    }
+
+    private static let mapping: [String: Self] = Self.allCases
+        .reduce(into: [:]) { result, store in
+            if let name = store.name { result[name] = store }
+        }
+
+}
+
+private extension Store {
+
+    var name: String? {
+        switch self {
+        case .appStore: return "app_store"
+        case .macAppStore: return "mac_app_store"
+        case .playStore: return "play_store"
+        case .stripe: return "stripe"
+        case .promotional: return "promotional"
+        case .unknownStore: return nil
         }
     }
 

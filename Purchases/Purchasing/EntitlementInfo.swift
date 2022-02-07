@@ -39,6 +39,8 @@ import Foundation
 
 }
 
+extension Store: CaseIterable {}
+
 /**
  Enum of supported period types for an entitlement.
  */
