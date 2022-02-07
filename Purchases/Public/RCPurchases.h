@@ -382,7 +382,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
 /**
  Computes whether or not a user is eligible for the introductory pricing period of a given product. You should use this method to determine whether or not you show the user the normal product price or the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
 
- @note Subscription groups are automatically collected for determining eligibility. If RevenueCat can't definitively compute the eligiibilty, most likely because of missing group information, it will return `RCIntroEligibilityStatusUnknown`. The best course of action on unknown status is to display the non-intro pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest version of iOS so that the subscription group can be collected by the SDK.
+ @note Subscription groups are automatically collected for determining eligibility. If RevenueCat can't definitively compute the eligibility, most likely because of missing group information, it will return `RCIntroEligibilityStatusUnknown`. The best course of action on unknown status is to display the non-intro pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest version of iOS so that the subscription group can be collected by the SDK.
 
  @param productIdentifiers Array of product identifiers for which you want to compute eligibility
  @param receiveEligibility A block that receives a dictionary of product_id -> `RCIntroEligibility`.
