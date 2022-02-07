@@ -33,3 +33,5 @@ import Foundation
     case unknown = 2
 
 }
+
+extension PurchaseOwnershipType: CaseIterable {}
