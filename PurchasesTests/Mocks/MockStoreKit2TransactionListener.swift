@@ -30,9 +30,9 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
     var invokedDelegateGetterCount = 0
     weak var stubbedDelegate: StoreKit2TransactionListenerDelegate!
 
-    // StoreKit.Transaction but we can't store it directly as a property.
-    // see https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825.
-    var mockTransaction: Any?
+    // `StoreKit.Transaction` can't be stored directly as a property.
+    // See https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825
+    var mockTransaction: Box<StoreKit.Transaction?> = .init(nil)
 
     override var delegate: StoreKit2TransactionListenerDelegate? {
         get {
@@ -58,21 +58,28 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
 
     var invokedHandle = false
     var invokedHandleCount = 0
-    // purchaseResult will always be an instance of StoreKit.Product.PurchaseResult
-    // but we can't store it directly as a property.
-    // see https://openradar.appspot.com/radar?id=4970535809187840
-    var invokedHandleParameters: (purchaseResult: Any, Void)?
-    var invokedHandleParametersList = [(purchaseResult: Any, Void)]()
+    // `purchaseResult` can't be stored directly as a property.
+    // See https://openradar.appspot.com/radar?id=4970535809187840
+    var invokedHandleParameters: (purchaseResult: Box<StoreKit.Product.PurchaseResult>, Void)?
+    var invokedHandleParametersList = [(purchaseResult: Box<StoreKit.Product.PurchaseResult>, Void)]()
 
     override func handle(
         purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> (userCancelled: Bool, transaction: SK2Transaction?) {
         invokedHandle = true
         invokedHandleCount += 1
-        invokedHandleParameters = (purchaseResult, ())
-        invokedHandleParametersList.append((purchaseResult, ()))
+        invokedHandleParameters = (.init(purchaseResult), ())
+        invokedHandleParametersList.append((.init(purchaseResult), ()))
 
-        // swiftlint:disable:next force_cast
-        return (false, mockTransaction as! StoreKit.Transaction?)
+        return (false, mockTransaction.value)
     }
+}
+
+// Workaround for https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825
+final class Box<T> {
+
+    var value: T
+
+    init(_ value: T) { self.value = value }
+
 }
