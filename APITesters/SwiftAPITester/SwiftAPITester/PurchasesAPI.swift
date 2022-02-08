@@ -173,6 +173,7 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setFBAnonymousID("")
     purchases.setMparticleID("")
     purchases.setOnesignalID("")
+    purchases.setCleverTapID("")
     purchases.setMediaSource("")
     purchases.setCampaign("")
     purchases.setAdGroup("")

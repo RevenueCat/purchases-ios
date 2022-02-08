@@ -104,6 +104,8 @@ BOOL isAnonymous;
     [p setMparticleID: @""];
     [p setOnesignalID: nil];
     [p setOnesignalID: @""];
+    [p setCleverTapID: nil];
+    [p setCleverTapID: @""];
     [p setMediaSource: nil];
     [p setMediaSource: @""];
     [p setCampaign: nil];
