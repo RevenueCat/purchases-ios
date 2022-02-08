@@ -103,3 +103,5 @@ extension StoreTransaction {
     }
 
 }
+
+extension StoreTransaction: Identifiable {}

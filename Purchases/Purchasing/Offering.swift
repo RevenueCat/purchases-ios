@@ -151,3 +151,5 @@ import Foundation
     }
 
 }
+
+extension Offering: Identifiable {}

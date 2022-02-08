@@ -149,3 +149,5 @@ private extension PackageType {
     }
 
 }
+
+extension Package: Identifiable {}
