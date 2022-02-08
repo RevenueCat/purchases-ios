@@ -19,29 +19,31 @@ class PostAttributionDataOperation: NetworkOperation {
     private let postAttributionDataResponseHandler: NoContentResponseHandler
     private let attributionData: [String: Any]
     private let network: AttributionNetwork
-    private let completion: SimpleResponseHandler?
+    private let responseHandler: SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          attributionData: [String: Any],
          network: AttributionNetwork,
-         completion: SimpleResponseHandler?,
+         responseHandler: SimpleResponseHandler?,
          postAttributionDataResponseHandler: NoContentResponseHandler = NoContentResponseHandler()) {
         self.postAttributionDataResponseHandler = postAttributionDataResponseHandler
         self.attributionData = attributionData
         self.network = network
         self.configuration = configuration
-        self.completion = completion
+        self.responseHandler = responseHandler
 
         super.init(configuration: configuration)
     }
 
-    override func begin() {
-        self.post()
+    override func begin(completion: @escaping () -> Void) {
+        self.post(completion: completion)
     }
 
-    private func post() {
+    private func post(completion: @escaping () -> Void) {
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
-            self.completion?(ErrorUtils.missingAppUserIDError())
+            self.responseHandler?(ErrorUtils.missingAppUserIDError())
+            completion()
+
             return
         }
 
@@ -51,14 +53,18 @@ class PostAttributionDataOperation: NetworkOperation {
                                            path: path,
                                            requestBody: body,
                                            headers: self.authHeaders) { statusCode, response, error in
-            guard let completion = self.completion else {
+            defer {
+                completion()
+            }
+
+            guard let responseHandler = self.responseHandler else {
                 return
             }
 
             self.postAttributionDataResponseHandler.handle(response: response,
                                                            statusCode: statusCode,
                                                            error: error,
-                                                           completion: completion)
+                                                           completion: responseHandler)
         }
     }
 

@@ -120,7 +120,7 @@ class Backend {
                                                                                  receiptData: receiptData)
         let postOfferForSigningOperation = PostOfferForSigningOperation(configuration: config,
                                                                         postOfferForSigningData: postOfferData,
-                                                                        completion: completion)
+                                                                        responseHandler: completion)
         self.operationQueue.addOperation(postOfferForSigningOperation)
     }
 
@@ -134,7 +134,7 @@ class Backend {
         let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
                                                                         attributionData: attributionData,
                                                                         network: network,
-                                                                        completion: completion)
+                                                                        responseHandler: completion)
         self.operationQueue.addOperation(postAttributionDataOperation)
     }
 
@@ -177,7 +177,7 @@ class Backend {
         let getIntroEligibilityOperation = GetIntroEligibilityOperation(configuration: config,
                                                                         receiptData: receiptData,
                                                                         productIdentifiers: productIdentifiers,
-                                                                        completion: completion)
+                                                                        responseHandler: completion)
         self.operationQueue.addOperation(getIntroEligibilityOperation)
     }
 

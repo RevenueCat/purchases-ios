@@ -18,31 +18,33 @@ class GetIntroEligibilityOperation: NetworkOperation {
     private let configuration: UserSpecificConfiguration
     private let receiptData: Data
     private let productIdentifiers: [String]
-    private let completion: IntroEligibilityResponseHandler
+    private let responseHandler: IntroEligibilityResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          receiptData: Data,
          productIdentifiers: [String],
-         completion: @escaping IntroEligibilityResponseHandler) {
+         responseHandler: @escaping IntroEligibilityResponseHandler) {
         self.configuration = configuration
         self.receiptData = receiptData
         self.productIdentifiers = productIdentifiers
-        self.completion = completion
+        self.responseHandler = responseHandler
 
         super.init(configuration: configuration)
     }
 
-    override func begin() {
-        self.getIntroEligibility()
+    override func begin(completion: @escaping () -> Void) {
+        self.getIntroEligibility(completion: completion)
     }
 
 }
 
 private extension GetIntroEligibilityOperation {
 
-    func getIntroEligibility() {
+    func getIntroEligibility(completion: @escaping () -> Void) {
         guard self.productIdentifiers.count > 0 else {
-            self.completion([:], nil)
+            self.responseHandler([:], nil)
+            completion()
+
             return
         }
 
@@ -57,7 +59,9 @@ private extension GetIntroEligibilityOperation {
                 eligibilities[productID] = IntroEligibility(eligibilityStatus: .unknown)
             }
 
-            completion(eligibilities, nil)
+            self.responseHandler(eligibilities, nil)
+            completion()
+
             return
         }
 
@@ -67,11 +71,14 @@ private extension GetIntroEligibilityOperation {
             let unknownEligibilities = [IntroEligibility](repeating: IntroEligibility(eligibilityStatus: .unknown),
                                                           count: self.productIdentifiers.count)
             let productIdentifiersToEligibility = zip(self.productIdentifiers, unknownEligibilities)
+
             return Dictionary(uniqueKeysWithValues: productIdentifiersToEligibility)
         }
 
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
-            self.completion(unknownEligibilityClosure(), ErrorUtils.missingAppUserIDError())
+            self.responseHandler(unknownEligibilityClosure(), ErrorUtils.missingAppUserIDError())
+            completion()
+
             return
         }
 
@@ -89,8 +96,9 @@ private extension GetIntroEligibilityOperation {
                                                                error: error,
                                                                productIdentifiers: self.productIdentifiers,
                                                                unknownEligibilityClosure: unknownEligibilityClosure,
-                                                               completion: self.completion)
+                                                               completion: self.responseHandler)
             self.handleIntroEligibility(response: eligibilityResponse)
+            completion()
         }
     }
 

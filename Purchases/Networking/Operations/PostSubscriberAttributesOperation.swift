@@ -19,7 +19,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
     private let subscriberAttributeHandler: SubscriberAttributeHandler
     private let configuration: UserSpecificConfiguration
     private let subscriberAttributes: SubscriberAttributeDict
-    private let completion: SimpleResponseHandler?
+    private let responseHandler: SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          subscriberAttributes: SubscriberAttributeDict,
@@ -28,26 +28,30 @@ class PostSubscriberAttributesOperation: NetworkOperation {
          subscriberAttributeHandler: SubscriberAttributeHandler = SubscriberAttributeHandler()) {
         self.configuration = configuration
         self.subscriberAttributes = subscriberAttributes
-        self.completion = completion
+        self.responseHandler = completion
         self.subscriberAttributesMarshaller = subscriberAttributesMarshaller
         self.subscriberAttributeHandler = subscriberAttributeHandler
 
         super.init(configuration: configuration)
     }
 
-    override func begin() {
-        post()
+    override func begin(completion: @escaping () -> Void) {
+        post(completion: completion)
     }
 
-    private func post() {
+    private func post(completion: @escaping () -> Void) {
         guard self.subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
-            completion?(ErrorCode.emptySubscriberAttributes)
+            self.responseHandler?(ErrorCode.emptySubscriberAttributes)
+            completion()
+
             return
         }
 
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
-            completion?(ErrorUtils.missingAppUserIDError())
+            self.responseHandler?(ErrorUtils.missingAppUserIDError())
+            completion()
+
             return
         }
 
@@ -59,14 +63,18 @@ class PostSubscriberAttributesOperation: NetworkOperation {
                                       path: path,
                                       requestBody: ["attributes": attributesInBackendFormat],
                                       headers: self.authHeaders) { statusCode, response, error in
-            guard let completion = self.completion else {
+            defer {
+                completion()
+            }
+
+            guard let responseHandler = self.responseHandler else {
                 return
             }
 
             self.subscriberAttributeHandler.handleSubscriberAttributesResult(statusCode: statusCode,
                                                                              response: response,
                                                                              error: error,
-                                                                             completion: completion)
+                                                                             completion: responseHandler)
         }
     }
 
