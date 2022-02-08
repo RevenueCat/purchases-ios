@@ -83,6 +83,10 @@ class SubscriberAttributesManager {
         setAttributionID(airshipChannelID, forNetworkID: .airshipChannelID, appUserID: appUserID)
     }
 
+    func setCleverTapID(_ cleverTapID: String?, appUserID: String) {
+        setAttributionID(cleverTapID, forNetworkID: .cleverTapID, appUserID: appUserID)
+    }
+
     func setMediaSource(_ mediaSource: String?, appUserID: String) {
         setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
     }

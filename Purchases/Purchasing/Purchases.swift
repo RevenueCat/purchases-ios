@@ -606,6 +606,19 @@ extension Purchases {
     }
 
     /**
+     * Subscriber attribute associated with the CleverTap ID for the user.
+     * Required for the RevenueCat CleverTap integration.
+     *
+     * #### Related Articles
+     * - [CleverTap RevenueCat Integration](https://docs.revenuecat.com/docs/clevertap)
+     *
+     *- Parameter airshipChannelID: Empty String or `nil` will delete the subscriber attribute..
+     */
+    @objc public func setCleverTapID(_ cleveTapID: String?) {
+        subscriberAttributesManager.setCleverTapID(cleveTapID, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the install media source for the user.
      *
      * #### Related Articles
