@@ -160,7 +160,7 @@ internal extension TrialOrIntroPriceEligibilityChecker {
                                          completion: @escaping ReceiveIntroEligibilityBlock) {
         self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
             let eligibility: [(String, IntroEligibility)] = Array(products.value ?? [])
-                .map({ storeProduct in
+                .map { storeProduct in
                     let status: IntroEligibilityStatus
                     if storeProduct.introductoryDiscount == nil {
                         status = .noIntroOfferExists
@@ -168,7 +168,7 @@ internal extension TrialOrIntroPriceEligibilityChecker {
                         status = .eligible
                     }
                     return (storeProduct.productIdentifier, IntroEligibility(eligibilityStatus: status))
-                })
+                }
 
             let productIdsToIntroEligibleStatus = Dictionary(uniqueKeysWithValues: eligibility)
             completion(productIdsToIntroEligibleStatus)
