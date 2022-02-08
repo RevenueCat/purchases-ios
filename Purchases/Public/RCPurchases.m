@@ -746,7 +746,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
-    [self receiptData:^(NSData *data) {
+    [self receiptDataWithReceiptRefreshPolicy:RCReceiptRefreshPolicyNever completion:^(NSData *data) {
         if (data != nil && data.length > 0) {
             if (@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)) {
                 NSSet *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
