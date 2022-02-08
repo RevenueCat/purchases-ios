@@ -358,3 +358,5 @@ extension EntitlementInfo {
     }
 
 }
+
+extension EntitlementInfo: Identifiable {}

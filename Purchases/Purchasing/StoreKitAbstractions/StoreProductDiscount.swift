@@ -163,4 +163,6 @@ extension StoreProductDiscount: Encodable {
 
 }
 
-extension StoreProductDiscount.PaymentMode: Encodable { }
+extension StoreProductDiscount.PaymentMode: Encodable {}
+
+extension StoreProductDiscount: Identifiable {}
