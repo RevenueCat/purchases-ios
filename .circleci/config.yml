@@ -1,24 +1,3 @@
-release-tags-and-branches: &release-tags-and-branches
-  filters:
-    tags:
-      ignore: /^.*-SNAPSHOT/
-    branches:
-      only: /^release\/.*/
-
-release-branches: &release-branches
-  filters:
-    tags:
-      ignore: /.*/
-    branches:
-      only: /^release\/.*/
-
-release-tags: &release-tags
-  filters: 
-    tags:
-      ignore: /^.*-SNAPSHOT/
-    branches:
-      ignore: /.*/
-
 orbs:
    macos: circleci/macos@2.0.1
 
@@ -135,13 +114,38 @@ commands:
           command: |
               bundle exec fastlane update_carthage_commit
 
-jobs:
-  runtest:
+aliases:
+  base_job: &base_job
     resource_class: macos.x86.medium.gen2
     macos:
-      xcode: "13.2.1"
+      xcode: << parameters.xcode_version >>
+    parameters:
+      xcode_version:
+        type: string
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
+  release-tags-and-branches: &release-tags-and-branches
+    filters:
+      tags:
+        ignore: /^.*-SNAPSHOT/
+      branches:
+        only: /^release\/.*/
+  release-branches: &release-branches
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only: /^release\/.*/
+  release-tags: &release-tags
+    filters: 
+      tags:
+        ignore: /^.*-SNAPSHOT/
+      branches:
+        ignore: /.*/
+
+jobs:
+  runtest:
+    <<: *base_job
     steps:
       - checkout
       
@@ -156,11 +160,7 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
   buildTvWatchAndMacOS:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       - run:
@@ -172,11 +172,7 @@ jobs:
           command: bundle exec fastlane build_tv_watch_mac
 
   backend_integration_tests:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       - install-dependencies
@@ -194,11 +190,7 @@ jobs:
 
 
   release-checks: 
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       - trust-github-key
@@ -227,11 +219,7 @@ jobs:
           destination: test_report.html
           
   docs-deploy:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       - install-dependencies
@@ -240,11 +228,7 @@ jobs:
           command: bundle exec fastlane deploy_docs
   
   make-release:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       - trust-github-key
@@ -254,11 +238,7 @@ jobs:
           command: bundle exec fastlane release
 
   prepare-next-version:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       - install-dependencies
@@ -268,11 +248,7 @@ jobs:
           command: bundle exec fastlane prepare_next_version
 
   integration-tests-cocoapods:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       
@@ -290,11 +266,7 @@ jobs:
           directory: IntegrationTests/CocoapodsIntegration
       
   integration-tests-swift-package-manager:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       - trust-github-key
@@ -305,11 +277,7 @@ jobs:
           directory: IntegrationTests/SPMIntegration/
 
   integration-tests-carthage:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base_job
     steps:
       - checkout
       - trust-github-key
@@ -329,9 +297,7 @@ jobs:
           directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
+    <<: *base_job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -341,9 +307,7 @@ jobs:
           directory: IntegrationTests/XcodeDirectIntegration/
 
   lint:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
+    <<: *base_job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -365,21 +329,39 @@ workflows:
   version: 2
   build-test:
     jobs:
-      - lint
-      - runtest
-      - buildTvWatchAndMacOS
-      - release-checks: *release-branches
+      - lint:
+          xcode_version: '13.2.1'
+      - runtest:
+          xcode_version: '13.2.1'
+      - buildTvWatchAndMacOS:
+          xcode_version: '13.2.1'
+      - release-checks:
+          xcode_version: '13.2.1'
+          <<: *release-branches
       - backend_integration_tests:
-        filters:
-            branches:
-              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-              ignore: /pull\/[0-9]+/
-      - integration-tests-cocoapods: *release-tags-and-branches
-      - integration-tests-swift-package-manager: *release-tags-and-branches
-      - integration-tests-carthage: *release-tags-and-branches
-      - integration-tests-xcode-direct-integration: *release-tags-and-branches
+          xcode_version: '13.2.1'
+          filters:
+              branches:
+                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+                ignore: /pull\/[0-9]+/
+      - integration-tests-cocoapods:
+          xcode_version: '13.2.1'
+          <<: *release-tags-and-branches
+      - integration-tests-swift-package-manager:
+          xcode_version: '13.2.1'
+          <<: *release-tags-and-branches
+      - integration-tests-carthage:
+          xcode_version: '13.2.1'
+          <<: *release-tags-and-branches
+      - integration-tests-xcode-direct-integration:
+          xcode_version: '13.2.1'
+          <<: *release-tags-and-branches
   deploy:
     jobs:
-      - make-release: *release-tags
+      - make-release:
+          xcode_version: '13.2.1'
+          <<: *release-tags
       # - prepare-next-version: *release-tags Disabled for beta releases.
-      - docs-deploy: *release-tags
+      - docs-deploy:
+          xcode_version: '13.2.1'
+          <<: *release-tags
