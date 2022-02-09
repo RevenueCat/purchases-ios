@@ -38,38 +38,38 @@ platform :ios do
     end
   end
 
-  desc "Runs all the tests"
-  lane :test do |options|
-    # Used by CircleCI when wanting to test other devices
-    ios_devices = options[:ios_devices]&.split(',')
-    tvos_devices = options[:tvos_devices]&.split(',')
+  desc "Runs all the iOS tests"
+  lane :test_ios do |options|
+    devices = options[:devices]&.split(',')
+    devices ||= ["iPhone 8 (14.5)", "iPhone 12 (15.2)"]
 
-    ios_devices ||= ["iPhone 8 (14.5)", "iPhone 12 (15.2)"]
-    tvos_devices ||= ["Apple TV (15.2)"]
-    
-    # Scan can't target two different platforms in devices
-    # Need to run scan multiple times
     scan(
       step_name: "scan - iPhone", 
-      devices: ios_devices,
+      devices: devices,
       scheme: "RevenueCat",
       testplan: "Coverage",
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/ios"
-    ) unless options[:skip_ios]
+    )
+  end
+
+  desc "Runs all the tvOS tests"
+  lane :test_tvos do |options|
+    devices = options[:devices]&.split(',')
+    devices ||= ["Apple TV (15.2)"]
 
     scan(
       step_name: "scan - Apple TV",
-      devices: tvos_devices,
+      devices: devices,
       scheme: "RevenueCat",
       testplan: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/tvos"
-    ) unless options[:skip_tvos]
+    )
   end
 
   desc "Replace version number in project and supporting files"

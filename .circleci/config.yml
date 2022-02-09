@@ -174,14 +174,28 @@ commands:
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  run-test:
+  run-test-ios:
     <<: *base-job
     steps:
       - checkout
       - install-dependencies
       - run:
           name: Run tests
-          command: bundle exec fastlane test
+          command: bundle exec fastlane test_ios
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  run-test-tvos:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_tvos
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -200,7 +214,7 @@ jobs:
           sim-name: iPhone 6 (12.4)
       - run:
           name: Run tests
-          command: bundle exec fastlane test ios_devices:"iPhone 6 (12.4)" skip_tvos:true
+          command: bundle exec fastlane test devices:"iPhone 6 (12.4)"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -372,7 +386,9 @@ workflows:
     jobs:
       - lint:
           xcode_version: '13.2.1'
-      - run-test:
+      - run-test-ios:
+          xcode_version: '13.2.1'
+      - run-test-tvos:
           xcode_version: '13.2.1'
       - run-test-ios-12:
           xcode_version: '13.2.1'
