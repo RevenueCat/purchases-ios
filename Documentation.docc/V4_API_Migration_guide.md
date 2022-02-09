@@ -1,10 +1,12 @@
 # RevenueCat V4 API Migration Guide
-There were various updates to our API when we migrated the ObjC pieces to Swift. Most were unavoidable, 
-but a number of updates make our Swift API more idomatic. We'll be updating this list as we continue to release betas.
+Migrating from Objective-C to Swift required a number of API changes, but we feel that the changes resulted in the SDK having a more natural feel for developers.
 
-To start us off, our framework name changed from `Purchases` to `RevenueCat`! 😻 We also updated all references of `Purchaser` to `Customer` to be more consistent across our platform. 
+To start us off, our framework name changed from `Purchases` to `RevenueCat`! 😻  You'll now need to explicitly import `RevenueCat` instead of `Purchases`. If you're using `Carthage`, make sure to use the new `RevenueCat.framework` or `RevenueCat.xcframework` instead of the old `Purchases`.
 
-If you're using `Carthage`, make sure to use the new `RevenueCat.framework` or `RevenueCat.xcframework` instead of the old `Purchases`.
+Some additional changes include:
+- Updated references of `Purchaser` to `Customer` to be more consistent across our platform
+- Further abstraction away from `StoreKit` with new types (additionally, the `StoreKit` framework is no longer imported automatically)
+- All applicable methods have an [async/await alternative](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html).
 
 ### Xcode version requirements and updated deployment targets
 `purchases-ios` v4 requires using Xcode 13.2 or newer. 
@@ -36,6 +38,10 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 When building your project using v4, Xcode should automatically provide one-click fixes methods and types that have been renamed. For the most part, the migration should be doable by just building and applying Xcode's automatic fix-its when they pop up.
 
 If you see any issues or new APIs that fix-its didn't cover, we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
+
+#### Error: `'_' is not a member type of class 'RevenueCat.Purchases'`
+
+The class `Purchases` is no longer the parent of classes such as `Offering`. You should reference classes directly or as a child of `RevenueCat`, e.g. `RevenueCat.Offering` instead of `Purchases.Offering`.
 
 ## New Types
 
@@ -183,7 +189,7 @@ if let error = error as? RevenueCat.ErrorCode {
 ```
 
 ## New APIs
-
+- All applicable methods have an [async/await alternative](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html).
 - `showManageSuscriptions(completion:)`: Use this method to show the subscription management for the current user. Depending on where they made the purchase and their OS version, this might take them to the `managementURL`, or open the iOS Subscription Management page. 
 - `beginRefundRequestForCurrentEntitlement`: Use this method to begin a refund request for the purchase that granted the current entitlement.
 - `beginRefundRequest(forProduct:)`: Use this method to begin a refund request for a purchase, specifying the product identifier.
