@@ -105,9 +105,9 @@ These types replace native StoreKit types in all public API methods that used th
 | Purchases.ErrorCode.Code | See error handling below |
 | Purchases.Package | ``Package`` |
 | Purchases.PurchaserInfo | <strong>``CustomerInfo``</strong> |
-| Purchases.EntitlementInfos | ``EntitlementInfos`` |
 | Purchases.Transaction | ``StoreTransaction`` |
 | Purchases.EntitlementInfo | ``EntitlementInfo`` |
+| Purchases.EntitlementInfos | ``EntitlementInfos`` |
 | Purchases.PeriodType | ``PeriodType`` |
 | Purchases.Store | ``Store`` |
 | RCPurchaseOwnershipType | ``PurchaseOwnershipType`` |
@@ -119,6 +119,8 @@ These types replace native StoreKit types in all public API methods that used th
 | Purchases.LogLevel | ``LogLevel`` |
 | Purchases.Offerings | ``Offerings`` |
 | Purchases.PackageType | ``PackageType`` |
+| Purchases.Errors | ``ErrorCode`` |
+| Purchases.ErrorCode | ``ErrorCode`` |
 | Package.product | ``Package/storeProduct`` |
 | Package.product.price: NSDecimalNumber | ``StoreProduct/price``: Decimal |
 | Package.localizedIntroductoryPriceString: String | ``Package/localizedIntroductoryPriceString``: String? |
