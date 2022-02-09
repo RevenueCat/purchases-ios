@@ -40,12 +40,9 @@ platform :ios do
 
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
-    devices = options[:devices]&.split(',')
-    devices ||= ["iPhone 8 (14.5)", "iPhone 12 (15.2)"]
-
     scan(
       step_name: "scan - iPhone", 
-      devices: devices,
+      device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       scheme: "RevenueCat",
       testplan: "Coverage",
       prelaunch_simulator: true,
@@ -57,12 +54,9 @@ platform :ios do
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
-    devices = options[:devices]&.split(',')
-    devices ||= ["Apple TV (15.2)"]
-
     scan(
       step_name: "scan - Apple TV",
-      devices: devices,
+      device: ENV['SCAN_DEVICE'] || "Apple TV (15.2)",
       scheme: "RevenueCat",
       testplan: "RevenueCat",
       prelaunch_simulator: true,
