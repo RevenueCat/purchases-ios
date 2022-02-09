@@ -918,7 +918,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         checkDeviceIdentifiersAreSet()
     }
     // endregion
-    // region OnesignalID
+    // region AirshipChannelID
     func testSetAirshipChannelID() throws {
         let airshipChannelID = "airshipChannelID"
 
@@ -984,6 +984,79 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetAirshipChannelIDSetsDeviceIdentifiers() {
         let airshipChannelID = "airshipChannelID"
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+
+        checkDeviceIdentifiersAreSet()
+    }
+    // endregion
+    // region CleverTapID
+    func testSetCleverTapID() throws {
+        let cleverTapID = "cleverTapID"
+
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$clevertapId"
+        expect(receivedAttribute.value) == cleverTapID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetCleverTapIDSetsEmptyIfNil() throws {
+        let cleverTapID = "cleverTapID"
+
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
+        self.subscriberAttributesManager.setCleverTapID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 8
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$clevertapId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetCleverTapIDSkipsIfSameValue() {
+        let cleverTapID = "cleverTapID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$clevertapId",
+                                                                                    value: cleverTapID)
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 3
+    }
+
+    func testSetCleverTapIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let cleverTapID = "cleverTapID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$clevertapId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$clevertapId"
+        expect(receivedAttribute.value) == cleverTapID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetCleverTapIDSetsDeviceIdentifiers() {
+        let cleverTapID = "cleverTapID"
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 4
 
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4

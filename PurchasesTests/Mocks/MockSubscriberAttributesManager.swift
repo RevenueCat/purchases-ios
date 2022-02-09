@@ -154,6 +154,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetAirshipChannelIDParametersList.append((airshipChannelID, appUserID))
     }
 
+    var invokedSetCleverTapID = false
+    var invokedSetCleverTapIDCount = 0
+    var invokedSetCleverTapIDParameters: (CleverTapID: String?, appUserID: String?)?
+    var invokedSetCleverTapIDParametersList = [(CleverTapID: String?, appUserID: String?)]()
+
+    override func setCleverTapID(_ cleverTapID: String?, appUserID: String) {
+        invokedSetCleverTapID = true
+        invokedSetCleverTapIDCount += 1
+        invokedSetCleverTapIDParameters = (cleverTapID, appUserID)
+        invokedSetCleverTapIDParametersList.append((cleverTapID, appUserID))
+    }
+
     var invokedSetMediaSource = false
     var invokedSetMediaSourceCount = 0
     var invokedSetMediaSourceParameters: (mediaSource: String?, appUserID: String?)?
