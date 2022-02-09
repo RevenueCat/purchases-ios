@@ -25,10 +25,10 @@ var status: IntroEligibilityStatus!
 func checkIntroEligibilityEnums() {
     switch status! {
     case .unknown,
+    .noIntroOfferExists,
     .ineligible,
     .eligible:
         print(status!)
-
     @unknown default: fatalError()
     }
 }
