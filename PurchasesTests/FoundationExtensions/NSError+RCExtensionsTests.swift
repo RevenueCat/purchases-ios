@@ -12,14 +12,14 @@ class NSErrorRCExtensionsTests: XCTestCase {
 
     func testSuccessfullySyncedFalseIfCodeIsNetworkError() {
         let errorCode = ErrorCode.networkError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
+        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
         expect(error.successfullySynced) == false
     }
 
     func testSuccessfullySyncedFalseIfNotShouldMarkSynced() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(
-            domain: RCPurchasesErrorCodeDomain,
+            domain: Purchases.ErrorDomain,
             code: errorCode,
             userInfo: [Backend.RCSuccessfullySyncedKey as String: false]
         )
@@ -28,14 +28,14 @@ class NSErrorRCExtensionsTests: XCTestCase {
 
     func testSuccessfullySyncedFalseIfShouldMarkSyncedNotPresent() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
+        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
         expect(error.successfullySynced) == false
     }
 
     func testSuccessfullySyncedTrueIfShouldMarkSynced() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(
-            domain: RCPurchasesErrorCodeDomain,
+            domain: Purchases.ErrorDomain,
             code: errorCode,
             userInfo: [Backend.RCSuccessfullySyncedKey as String: true]
         )
@@ -45,7 +45,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
     func testSubscriberAttributesErrorsNilIfNoAttributesErrors() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(
-            domain: RCPurchasesErrorCodeDomain,
+            domain: Purchases.ErrorDomain,
             code: errorCode,
             userInfo: [Backend.RCSuccessfullySyncedKey as String: true]
         )
@@ -57,7 +57,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
         let attributeErrors = ["$phoneNumber": "phone number is in invalid format",
                                "$email": "email is too long"]
         let error = NSError(
-            domain: RCPurchasesErrorCodeDomain,
+            domain: Purchases.ErrorDomain,
             code: errorCode,
             userInfo: [Backend.RCAttributeErrorsKey as String: attributeErrors]
         )

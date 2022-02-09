@@ -150,7 +150,7 @@ class IdentityManagerTests: XCTestCase {
         var receivedCustomerInfo: CustomerInfo?
         var receivedError: NSError?
 
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
 
@@ -214,7 +214,7 @@ class IdentityManagerTests: XCTestCase {
 
         let manager = create(appUserID: nil)
 
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
         self.mockBackend.stubbedLogInCompletionResult = (nil, false, stubbedError)

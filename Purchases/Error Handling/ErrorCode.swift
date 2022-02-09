@@ -14,10 +14,20 @@
 
 import Foundation
 
-/**
- Error codes used by the Purchases SDK
- */
-@objc(RCPurchasesErrorCode) public enum ErrorCode: Int, Error {
+public extension Purchases {
+
+    /// The domain for ``ErrorCode`` errors.
+    static let ErrorDomain: String = "RevenueCatErrorDomain"
+
+}
+
+///
+/// Error codes used by the RevenueCat SDK
+///
+/// ### Related symbols
+/// `RCPurchasesErrorCodeDomain`: auto-generated domain name for errors in Objective-C.
+@objc(RCPurchasesErrorCode)
+public enum ErrorCode: Int, Error {
 
     // swiftlint:disable missing_docs
 
@@ -159,6 +169,15 @@ extension ErrorCode: DescribableError {
 }
 
 extension ErrorCode: CustomNSError {
+
+    /// The domain for ``ErrorCode`` errors.
+    public static let errorDomain: String = Purchases.ErrorDomain
+
+    // Workaround for https://bugs.swift.org/browse/SR-15841
+    // This makes `(ErrorCode as NSError).domain` correct in Swift,
+    // but `RCPurchasesErrorCodeDomain` is still `RevenueCat.ErrorCode`.
+    // swiftlint:disable:next identifier_name missing_docs
+    public static let _nsErrorDomain = Self.errorDomain
 
     // swiftlint:disable missing_docs
     public var errorUserInfo: [String: Any] {

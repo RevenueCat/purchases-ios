@@ -1079,7 +1079,7 @@ class PurchasesTests: XCTestCase {
 
         expect(receivedInfo).toEventually(beNil())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.operationAlreadyInProgressForProductError.rawValue))
         expect(self.storeKitWrapper.addPaymentCallCount).to(equal(1))
         expect(receivedUserCancelled).toEventually(beFalse())
@@ -2002,7 +2002,7 @@ class PurchasesTests: XCTestCase {
 
         expect(receivedUserCancelled).toEventually(beFalse())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.productAlreadyPurchasedError.rawValue))
         expect(receivedUnderlyingError?.domain).toEventually(equal(unknownError.domain))
         expect(receivedUnderlyingError?.code).toEventually(equal(unknownError.code))
@@ -2030,7 +2030,7 @@ class PurchasesTests: XCTestCase {
 
         expect(receivedUserCancelled).toEventually(beTrue())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.purchaseCancelledError.rawValue))
         expect(receivedUnderlyingError?.domain).toEventually(be(SKErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(SKError.Code.paymentCancelled.rawValue))
@@ -2568,7 +2568,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beFalse())
         expect(self.storeKitWrapper.finishCalled).to(beFalse())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 

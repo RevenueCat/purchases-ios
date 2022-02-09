@@ -207,7 +207,7 @@ extension OfferingsManagerTests {
         // then
         expect(completionCalled).toEventually(beTrue())
         let unwrappedError = try XCTUnwrap(receivedError)
-        expect(unwrappedError.domain).to(equal(RCPurchasesErrorCodeDomain))
+        expect(unwrappedError.domain).to(equal(Purchases.ErrorDomain))
         expect(unwrappedError.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
@@ -271,7 +271,7 @@ private extension OfferingsManagerTests {
             ],
             "current_offering_id": "base"
         ]
-        static let unexpectedBackendResponseError = NSError(domain: RCPurchasesErrorCodeDomain,
+        static let unexpectedBackendResponseError = NSError(domain: Purchases.ErrorDomain,
                                                             code: ErrorCode.unexpectedBackendResponseError.rawValue,
                                                             userInfo: nil)
     }

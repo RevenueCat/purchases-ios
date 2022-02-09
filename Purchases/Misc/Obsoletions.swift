@@ -489,15 +489,6 @@ public extension StoreProductDiscount.PaymentMode {
 @available(macCatalyst, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
 public enum RCPaymentMode {}
 
-/// `NSErrorDomain` for errors occurring within the scope of the Purchases SDK.
-@available(iOS, obsoleted: 1, message: "Use ErrorCode instead")
-@available(tvOS, obsoleted: 1, message: "Use ErrorCode instead")
-@available(watchOS, obsoleted: 1, message: "Use ErrorCode instead")
-@available(macOS, obsoleted: 1, message: "Use ErrorCode instead")
-@available(macCatalyst, obsoleted: 1, message: "Use ErrorCode instead")
-// swiftlint:disable:next identifier_name
-public var ErrorDomain: NSErrorDomain { fatalError() }
-
 @available(iOS, obsoleted: 1, message: "Use ErrorCode instead")
 @available(tvOS, obsoleted: 1, message: "Use ErrorCode instead")
 @available(watchOS, obsoleted: 1, message: "Use ErrorCode instead")

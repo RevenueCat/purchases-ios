@@ -101,7 +101,6 @@ These types replace native StoreKit types in all public API methods that used th
 | v3 | v4 |
 | ------------ | ------------------------------------- | 
 | Purchases.Offering | ``Offering`` |
-| Purchases.ErrorDomain | See error handling below |
 | Purchases.ErrorCode.Code | See error handling below |
 | Purchases.Package | ``Package`` |
 | Purchases.PurchaserInfo | <strong>``CustomerInfo``</strong> |
@@ -172,7 +171,7 @@ if error.domain == Purchases.ErrorDomain {
 	}
 }
 ```
-Starting from Version 4, this becomes much simpler:
+Starting from Version 4, this becomes much simpler in Swift (Objective-C error handling is unchanged):
 ```swift
 if let error = error as? RevenueCat.ErrorCode {
 	switch error {

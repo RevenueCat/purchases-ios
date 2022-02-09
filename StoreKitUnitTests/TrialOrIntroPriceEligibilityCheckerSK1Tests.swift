@@ -81,7 +81,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
     func testSK1EligibilityIsFetchedFromBackendIfErrorCalculatingEligibilityAndStoreKitDoesNotHaveIt() throws {
         self.mockProductsManager.stubbedProductsCompletionResult = Set()
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
@@ -105,7 +105,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
     }
 
     func testSK1EligibilityIsNotFetchedFromBackendIfEligibilityAlreadyExists() throws {
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
@@ -132,7 +132,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         self.mockProductsManager.stubbedProductsCompletionResult = Set()
         let productId = "product_id"
 
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)

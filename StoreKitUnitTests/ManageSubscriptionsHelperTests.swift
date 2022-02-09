@@ -117,7 +117,7 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
-        customerInfoManager.stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
+        customerInfoManager.stubbedError = NSError(domain: Purchases.ErrorDomain, code: 123, userInfo: nil)
 
         // when
         helper.showManageSubscriptions { result in

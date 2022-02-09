@@ -348,7 +348,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
             return
         }
 
-        expect(nsError.domain) == RevenueCat.ErrorCode._nsErrorDomain
+        expect(nsError.domain) == Purchases.ErrorDomain as String
         expect(nsError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
 
         guard let underlyingError = nsError.userInfo[NSUnderlyingErrorKey] as? NSError else {
