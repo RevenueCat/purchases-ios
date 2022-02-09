@@ -43,8 +43,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
     }
 
-    /// The discount type for a `StoreProductDiscount`
-    /// Indicates how the type of discount.
+    /// The discount type for a `StoreProductDiscount`g
     @objc(RCDiscountType)
     public enum DiscountType: Int {
 
