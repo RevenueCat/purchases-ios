@@ -31,8 +31,36 @@ aliases:
         ignore: /^.*-SNAPSHOT/
       branches:
         ignore: /.*/
+  release-branches-and-main: &release-branches-and-main
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only:
+          - main
+          - /^release\/.*/
 
 commands:
+  install-and-create-sim:
+    parameters:
+      install-name:
+        type: string
+      sim-device-type:
+        type: string
+      sim-device-runtime:
+        type: string
+      sim-name:
+        type: string
+    steps:
+      - run:
+          name: Install xcode-install
+          command: gem install xcode-install
+      - run:
+          name: Install simulator
+          command: xcversion simulators --install="<< parameters.install-name >>"
+      - run:
+          name: Install xcode-install
+          command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
   install-dependencies:
     parameters:
       directory:
@@ -164,15 +192,11 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - run:
-          name: Install xcode-install
-          command: gem install xcode-install
-      - run:
-          name: Install simulator
-          command: xcversion simulators --install="iOS 12.4 Simulator"
-      - run:
-          name: Install xcode-install
-          command: xcrun simctl create 'iPhone 6 (12.4) JOSH' com.apple.CoreSimulator.SimDeviceType.iPhone-6 com.apple.CoreSimulator.SimRuntime.iOS-12-4
+      - install-and-create-sim:
+          install-name: iOS 12.4 Simulator
+          sim-device-type: iPhone-6
+          sim-device-runtime: iOS-12-4
+          sim-name: iPhone 6 (12.4)
       - run:
           name: Run tests
           command: bundle exec fastlane test ios_devices:"iPhone 6 (12.4)" skip_tvos:true
@@ -345,11 +369,11 @@ workflows:
   version: 2
   build-test:
     jobs:
-      - runtest_ios_12:
-          xcode_version: '13.2.1'
       - lint:
           xcode_version: '13.2.1'
       - runtest:
+          xcode_version: '13.2.1'
+      - runtest_ios_12:
           xcode_version: '13.2.1'
       - buildTvWatchAndMacOS:
           xcode_version: '13.2.1'
