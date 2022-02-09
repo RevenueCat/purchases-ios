@@ -18,4 +18,5 @@ struct MockStoreProductDiscount: StoreProductDiscountType {
     let price: Decimal
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
+    let type: StoreProductDiscount.DiscountType
 }

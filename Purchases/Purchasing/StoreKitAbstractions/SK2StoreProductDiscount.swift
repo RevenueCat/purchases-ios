@@ -27,6 +27,15 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
         self.price = sk2Discount.price
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
+
+        switch sk2Discount.type {
+        case SK2ProductDiscount.OfferType.introductory:
+            self.type = .introductory
+        case SK2ProductDiscount.OfferType.promotional:
+            self.type = .promotional
+        default:
+            return nil
+        }
     }
 
     let underlyingSK2Discount: SK2ProductDiscount
@@ -35,6 +44,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
     let price: Decimal
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
+    let type: StoreProductDiscount.DiscountType
 
 }
 

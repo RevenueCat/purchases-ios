@@ -31,6 +31,19 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         self.price = sk1Discount.price as Decimal
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
+
+        if #available(iOSApplicationExtension 12.2, *) {
+            switch sk1Discount.type {
+            case .introductory:
+                self.type = .introductory
+            case .subscription:
+                self.type = .promotional
+            @unknown default:
+                return nil
+            }
+        } else {
+            return nil
+        }
     }
 
     let underlyingSK1Discount: SK1ProductDiscount
@@ -39,6 +52,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
     let price: Decimal
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
+    let type: StoreProductDiscount.DiscountType
 
 }
 

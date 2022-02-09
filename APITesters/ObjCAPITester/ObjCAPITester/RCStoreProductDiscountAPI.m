@@ -38,4 +38,14 @@
     }
 }
 
++ (void)checkTypeEnum {
+    RCDiscountType paymentMode = RCDiscountTypeIntroductory;
+
+    switch (paymentMode) {
+        case RCDiscountTypeIntroductory:
+        case RCDiscountTypePromotional:
+            break;
+    }
+}
+
 @end

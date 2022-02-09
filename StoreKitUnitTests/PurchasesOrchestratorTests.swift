@@ -141,7 +141,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                             price: 11.1,
                                                             paymentMode: .payAsYouGo,
-                                                            subscriptionPeriod: .init(value: 1, unit: .month))
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            type: .promotional)
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
@@ -169,7 +170,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                             price: 11.1,
                                                             paymentMode: .payAsYouGo,
-                                                            subscriptionPeriod: .init(value: 1, unit: .month))
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            type: .promotional)
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
@@ -261,7 +263,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                             price: 11.1,
                                                             paymentMode: .payAsYouGo,
-                                                            subscriptionPeriod: .init(value: 1, unit: .month))
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            type: .promotional)
 
         do {
             _ = try await orchestrator.purchase(sk2Product: product, discount: storeProductDiscount)
@@ -333,7 +336,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                             price: 11.1,
                                                             paymentMode: .payAsYouGo,
-                                                            subscriptionPeriod: .init(value: 1, unit: .month))
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            type: .promotional)
 
         _ = try await orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
                                                     product: StoreProduct(sk2Product: product))

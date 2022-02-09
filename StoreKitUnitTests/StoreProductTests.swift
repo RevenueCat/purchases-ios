@@ -158,6 +158,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(intro.price) == 0.0
         expect(intro.paymentMode) == .freeTrial
+        expect(intro.type) == .introductory
         expect(intro.offerIdentifier).to(beNil())
         expect(intro.subscriptionPeriod) == SubscriptionPeriod(value: 3, unit: .month)
 
@@ -166,11 +167,13 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(offers[0].price) == 40.99
         expect(offers[0].paymentMode) == .payUpFront
+        expect(offers[0].type) == .promotional
         expect(offers[0].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.year_discount"
         expect(offers[0].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
 
         expect(offers[1].price) == 20.15
         expect(offers[1].paymentMode) == .payAsYouGo
+        expect(offers[0].type) == .promotional
         expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
 
         expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)

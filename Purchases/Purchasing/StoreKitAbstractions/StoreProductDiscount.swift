@@ -43,6 +43,36 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
     }
 
+    /// The discount type for a `StoreProductDiscount`
+    /// Indicates how the type of discount.
+    @objc(RCDiscountType)
+    public enum DiscountType: Int {
+
+        /// Intro
+        case introductory = 0
+        /// Sub
+        case promotional = 1
+    }
+
+//    enum Type {
+//
+//        @available(iOSApplicationExtension 15.0, *)
+//        func storeProduct() {
+//            let sk1ProductDiscount: SK1ProductDiscount! = nil
+//
+//            switch sk1ProductDiscount.type {
+//            case .introductory: ()
+//            case .subscription: ()
+//            @unknown default: ()
+//            }
+//
+//            let sk2ProductDiscount: SK2ProductDiscount! = nil
+//            if sk2ProductDiscount.type == SK2ProductDiscount.OfferType.introductory {
+//
+//            }
+//        }
+//    }
+
     private let discount: StoreProductDiscountType
 
     init(_ discount: StoreProductDiscountType) {
@@ -58,6 +88,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc public var price: Decimal { self.discount.price }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
+    @objc public var type: DiscountType { self.discount.type }
 
     // swiftlint:enable missing_docs
 
@@ -103,6 +134,9 @@ internal protocol StoreProductDiscountType {
 
     /// The period for the product discount.
     var subscriptionPeriod: SubscriptionPeriod { get }
+
+    /// The type of product discount.
+    var type: StoreProductDiscount.DiscountType { get }
 
 }
 
