@@ -214,7 +214,7 @@ jobs:
           sim-name: iPhone 6 (12.4)
       - run:
           name: Run tests
-          command: bundle exec fastlane test devices:"iPhone 6 (12.4)"
+          command: bundle exec fastlane test_ios devices:"iPhone 6 (12.4)"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -392,6 +392,7 @@ workflows:
           xcode_version: '13.2.1'
       - run-test-ios-12:
           xcode_version: '13.2.1'
+          #<<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '13.2.1'
       - release-checks:
