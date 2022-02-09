@@ -48,30 +48,11 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc(RCDiscountType)
     public enum DiscountType: Int {
 
-        /// Intro
+        /// Introductory offer
         case introductory = 0
-        /// Sub
+        /// Promotional offer for subscriptions
         case promotional = 1
     }
-
-//    enum Type {
-//
-//        @available(iOSApplicationExtension 15.0, *)
-//        func storeProduct() {
-//            let sk1ProductDiscount: SK1ProductDiscount! = nil
-//
-//            switch sk1ProductDiscount.type {
-//            case .introductory: ()
-//            case .subscription: ()
-//            @unknown default: ()
-//            }
-//
-//            let sk2ProductDiscount: SK2ProductDiscount! = nil
-//            if sk2ProductDiscount.type == SK2ProductDiscount.OfferType.introductory {
-//
-//            }
-//        }
-//    }
 
     private let discount: StoreProductDiscountType
 
