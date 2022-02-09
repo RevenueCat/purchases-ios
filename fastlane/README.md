@@ -13,6 +13,17 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
+### check_pods
+
+```sh
+[bundle exec] fastlane check_pods
+```
+
+
+
+----
+
+
 ## iOS
 
 ### ios setup_dev
@@ -54,14 +65,6 @@ Increment build number and update changelog
 ```
 
 Make github release
-
-### ios create_sandbox_account
-
-```sh
-[bundle exec] fastlane ios create_sandbox_account
-```
-
-Create sandbox account
 
 ### ios release_checks
 

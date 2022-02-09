@@ -1,29 +1,67 @@
-release-tags-and-branches: &release-tags-and-branches
-  filters:
-    tags:
-      ignore: /^.*-SNAPSHOT/
-    branches:
-      only: /^release\/.*/
-
-release-branches: &release-branches
-  filters:
-    tags:
-      ignore: /.*/
-    branches:
-      only: /^release\/.*/
-
-release-tags: &release-tags
-  filters: 
-    tags:
-      ignore: /^.*-SNAPSHOT/
-    branches:
-      ignore: /.*/
-
 orbs:
    macos: circleci/macos@2.0.1
 
 version: 2.1
+
+aliases:
+  base-job: &base-job
+    resource_class: macos.x86.medium.gen2
+    macos:
+      xcode: << parameters.xcode_version >>
+    parameters:
+      xcode_version:
+        type: string
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+  release-tags-and-branches: &release-tags-and-branches
+    filters:
+      tags:
+        ignore: /^.*-SNAPSHOT/
+      branches:
+        only: /^release\/.*/
+  release-branches: &release-branches
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only: /^release\/.*/
+  release-tags: &release-tags
+    filters: 
+      tags:
+        ignore: /^.*-SNAPSHOT/
+      branches:
+        ignore: /.*/
+  release-branches-and-main: &release-branches-and-main
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only:
+          - main
+          - /^release\/.*/
+
 commands:
+  install-and-create-sim:
+    parameters:
+      install-name:
+        type: string
+      sim-device-type:
+        type: string
+      sim-device-runtime:
+        type: string
+      sim-name:
+        type: string
+    steps:
+      - run:
+          name: Install xcode-install
+          command: gem install xcode-install
+      - run:
+          name: Install simulator
+          command: xcversion simulators --install="<< parameters.install-name >>"
+      - run:
+          name: Create simulator
+          command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
+
   install-dependencies:
     parameters:
       directory:
@@ -136,31 +174,73 @@ commands:
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  runtest:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+  run-test-ios:
+    <<: *base-job
     steps:
       - checkout
-      
       - install-dependencies
-      
       - run:
           name: Run tests
-          command: bundle exec fastlane test
+          command: bundle exec fastlane test_ios
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-  buildTvWatchAndMacOS:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+
+  run-test-tvos:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_tvos
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  run-test-ios-14:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          environment:
+            SCAN_DEVICE: iPhone 8 (14.5)
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  run-test-ios-12:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - install-and-create-sim:
+          install-name: iOS 12.4 Simulator
+          sim-device-type: iPhone-6
+          sim-device-runtime: iOS-12-4
+          sim-name: iPhone 6 (12.4)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          environment:
+            SCAN_DEVICE: iPhone 6 (12.4)
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  build-tv-watch-and-macos:
+    <<: *base-job
     steps:
       - checkout
       - run:
@@ -171,16 +251,11 @@ jobs:
           name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
-  backend_integration_tests:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+  backend-integration-tests:
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
-      
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests
@@ -194,15 +269,10 @@ jobs:
 
 
   release-checks: 
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
-
       # Bundler
       - restore_cache:
           keys: 
@@ -212,9 +282,7 @@ jobs:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
-      
       - update-spm-integration-commit
-      
       - run:
           name: Deployment checks
           command: bundle exec fastlane release_checks
@@ -227,11 +295,7 @@ jobs:
           destination: test_report.html
           
   docs-deploy:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -240,11 +304,7 @@ jobs:
           command: bundle exec fastlane deploy_docs
   
   make-release:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -254,11 +314,7 @@ jobs:
           command: bundle exec fastlane release
 
   prepare-next-version:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -268,33 +324,22 @@ jobs:
           command: bundle exec fastlane prepare_next_version
 
   integration-tests-cocoapods:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
-      
       - install-dependencies
       - install-dependencies:
           directory: IntegrationTests/CocoapodsIntegration
-
       - run:
           name: Install Pods
           working_directory: IntegrationTests/CocoapodsIntegration/
           command: |
               pod install
-      
       - scan-and-archive:
           directory: IntegrationTests/CocoapodsIntegration
       
   integration-tests-swift-package-manager:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -305,11 +350,7 @@ jobs:
           directory: IntegrationTests/SPMIntegration/
 
   integration-tests-carthage:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -329,9 +370,7 @@ jobs:
           directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
+    <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -341,9 +380,7 @@ jobs:
           directory: IntegrationTests/XcodeDirectIntegration/
 
   lint:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.1"
+    <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -365,21 +402,46 @@ workflows:
   version: 2
   build-test:
     jobs:
-      - lint
-      - runtest
-      - buildTvWatchAndMacOS
-      - release-checks: *release-branches
-      - backend_integration_tests:
-        filters:
-            branches:
-              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-              ignore: /pull\/[0-9]+/
-      - integration-tests-cocoapods: *release-tags-and-branches
-      - integration-tests-swift-package-manager: *release-tags-and-branches
-      - integration-tests-carthage: *release-tags-and-branches
-      - integration-tests-xcode-direct-integration: *release-tags-and-branches
+      - lint:
+          xcode_version: '13.2.1'
+      - run-test-ios:
+          xcode_version: '13.2.1'
+      - run-test-tvos:
+          xcode_version: '13.2.1'
+      - run-test-ios-14:
+          xcode_version: '13.2.1'
+      - run-test-ios-12:
+          xcode_version: '13.2.1'
+          <<: *release-branches-and-main
+      - build-tv-watch-and-macos:
+          xcode_version: '13.2.1'
+      - release-checks:
+          xcode_version: '13.2.1'
+          <<: *release-branches
+      - backend-integration-tests:
+          xcode_version: '13.2.1'
+          filters:
+              branches:
+                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+                ignore: /pull\/[0-9]+/
+      - integration-tests-cocoapods:
+          xcode_version: '13.2.1'
+          <<: *release-tags-and-branches
+      - integration-tests-swift-package-manager:
+          xcode_version: '13.2.1'
+          <<: *release-tags-and-branches
+      - integration-tests-carthage:
+          xcode_version: '13.2.1'
+          <<: *release-tags-and-branches
+      - integration-tests-xcode-direct-integration:
+          xcode_version: '13.2.1'
+          <<: *release-tags-and-branches
   deploy:
     jobs:
-      - make-release: *release-tags
+      - make-release:
+          xcode_version: '13.2.1'
+          <<: *release-tags
       # - prepare-next-version: *release-tags Disabled for beta releases.
-      - docs-deploy: *release-tags
+      - docs-deploy:
+          xcode_version: '13.2.1'
+          <<: *release-tags
