@@ -38,13 +38,11 @@ platform :ios do
     end
   end
 
-  desc "Runs all the tests"
-  lane :test do |options|
-    # Scan can't target two different platforms in devices
-    # Need to run scan multiple times
+  desc "Runs all the iOS tests"
+  lane :test_ios do |options|
     scan(
       step_name: "scan - iPhone", 
-      devices: ["iPhone 8 (14.5)", "iPhone 12 (15.2)"],
+      device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       scheme: "RevenueCat",
       testplan: "Coverage",
       prelaunch_simulator: true,
@@ -52,10 +50,13 @@ platform :ios do
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/ios"
     )
+  end
 
+  desc "Runs all the tvOS tests"
+  lane :test_tvos do |options|
     scan(
       step_name: "scan - Apple TV",
-      devices: ["Apple TV (15.2)"],
+      device: ENV['SCAN_DEVICE'] || "Apple TV (15.2)",
       scheme: "RevenueCat",
       testplan: "RevenueCat",
       prelaunch_simulator: true,
@@ -531,7 +532,7 @@ def carthage_archive
   end
 end
 
-def check_pods
+lane :check_pods do
   pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec')
 end
 

@@ -4,7 +4,7 @@ orbs:
 version: 2.1
 
 aliases:
-  base_job: &base_job
+  base-job: &base-job
     resource_class: macos.x86.medium.gen2
     macos:
       xcode: << parameters.xcode_version >>
@@ -31,8 +31,37 @@ aliases:
         ignore: /^.*-SNAPSHOT/
       branches:
         ignore: /.*/
+  release-branches-and-main: &release-branches-and-main
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only:
+          - main
+          - /^release\/.*/
 
 commands:
+  install-and-create-sim:
+    parameters:
+      install-name:
+        type: string
+      sim-device-type:
+        type: string
+      sim-device-runtime:
+        type: string
+      sim-name:
+        type: string
+    steps:
+      - run:
+          name: Install xcode-install
+          command: gem install xcode-install
+      - run:
+          name: Install simulator
+          command: xcversion simulators --install="<< parameters.install-name >>"
+      - run:
+          name: Create simulator
+          command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
+
   install-dependencies:
     parameters:
       directory:
@@ -145,22 +174,73 @@ commands:
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  runtest:
-    <<: *base_job
+  run-test-ios:
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
       - run:
           name: Run tests
-          command: bundle exec fastlane test
+          command: bundle exec fastlane test_ios
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  buildTvWatchAndMacOS:
-    <<: *base_job
+  run-test-tvos:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_tvos
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  run-test-ios-14:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          environment:
+            SCAN_DEVICE: iPhone 8 (14.5)
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  run-test-ios-12:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - install-and-create-sim:
+          install-name: iOS 12.4 Simulator
+          sim-device-type: iPhone-6
+          sim-device-runtime: iOS-12-4
+          sim-name: iPhone 6 (12.4)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          environment:
+            SCAN_DEVICE: iPhone 6 (12.4)
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  build-tv-watch-and-macos:
+    <<: *base-job
     steps:
       - checkout
       - run:
@@ -171,8 +251,8 @@ jobs:
           name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
-  backend_integration_tests:
-    <<: *base_job
+  backend-integration-tests:
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -189,7 +269,7 @@ jobs:
 
 
   release-checks: 
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -215,7 +295,7 @@ jobs:
           destination: test_report.html
           
   docs-deploy:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -224,7 +304,7 @@ jobs:
           command: bundle exec fastlane deploy_docs
   
   make-release:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -234,7 +314,7 @@ jobs:
           command: bundle exec fastlane release
 
   prepare-next-version:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -244,7 +324,7 @@ jobs:
           command: bundle exec fastlane prepare_next_version
 
   integration-tests-cocoapods:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -259,7 +339,7 @@ jobs:
           directory: IntegrationTests/CocoapodsIntegration
       
   integration-tests-swift-package-manager:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -270,7 +350,7 @@ jobs:
           directory: IntegrationTests/SPMIntegration/
 
   integration-tests-carthage:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -290,7 +370,7 @@ jobs:
           directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
-    <<: *base_job
+    <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -300,7 +380,7 @@ jobs:
           directory: IntegrationTests/XcodeDirectIntegration/
 
   lint:
-    <<: *base_job
+    <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -324,14 +404,21 @@ workflows:
     jobs:
       - lint:
           xcode_version: '13.2.1'
-      - runtest:
+      - run-test-ios:
           xcode_version: '13.2.1'
-      - buildTvWatchAndMacOS:
+      - run-test-tvos:
+          xcode_version: '13.2.1'
+      - run-test-ios-14:
+          xcode_version: '13.2.1'
+      - run-test-ios-12:
+          xcode_version: '13.2.1'
+          <<: *release-branches-and-main
+      - build-tv-watch-and-macos:
           xcode_version: '13.2.1'
       - release-checks:
           xcode_version: '13.2.1'
           <<: *release-branches
-      - backend_integration_tests:
+      - backend-integration-tests:
           xcode_version: '13.2.1'
           filters:
               branches:
