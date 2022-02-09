@@ -614,8 +614,8 @@ extension Purchases {
      *
      *- Parameter airshipChannelID: Empty String or `nil` will delete the subscriber attribute.
      */
-    @objc public func setCleverTapID(_ cleveTapID: String?) {
-        subscriberAttributesManager.setCleverTapID(cleveTapID, appUserID: appUserID)
+    @objc public func setCleverTapID(_ cleverTapID: String?) {
+        subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: appUserID)
     }
 
     /**
