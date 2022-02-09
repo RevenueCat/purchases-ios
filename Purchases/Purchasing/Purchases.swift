@@ -485,7 +485,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter email: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter email: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setEmail(_ email: String?) {
         subscriberAttributesManager.setEmail(email, appUserID: appUserID)
@@ -497,7 +497,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter phoneNumber: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter phoneNumber: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setPhoneNumber(_ phoneNumber: String?) {
         subscriberAttributesManager.setPhoneNumber(phoneNumber, appUserID: appUserID)
@@ -509,7 +509,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter displayName: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter displayName: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setDisplayName(_ displayName: String?) {
         subscriberAttributesManager.setDisplayName(displayName, appUserID: appUserID)
@@ -521,7 +521,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter pushToken: `nil` will delete the subscriber attribute..
+     * - Parameter pushToken: `nil` will delete the subscriber attribute.
      */
     @objc public func setPushToken(_ pushToken: Data?) {
         subscriberAttributesManager.setPushToken(pushToken, appUserID: appUserID)
@@ -534,7 +534,7 @@ extension Purchases {
      * #### Related Articles
      * - [Adjust RevenueCat Integration](https://docs.revenuecat.com/docs/adjust)
      *
-     *- Parameter adjustID: Empty String or `nil` will delete the subscriber attribute..
+     *- Parameter adjustID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setAdjustID(_ adjustID: String?) {
         subscriberAttributesManager.setAdjustID(adjustID, appUserID: appUserID)
@@ -547,7 +547,7 @@ extension Purchases {
      * #### Related Articles
      * - [AppsFlyer RevenueCat Integration](https://docs.revenuecat.com/docs/appsflyer)
      *
-     *- Parameter appsflyerID: Empty String or `nil` will delete the subscriber attribute..
+     *- Parameter appsflyerID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setAppsflyerID(_ appsflyerID: String?) {
         subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: appUserID)
@@ -560,7 +560,7 @@ extension Purchases {
      * #### Related Articles
      * - [Facebook Ads RevenueCat Integration](https://docs.revenuecat.com/docs/facebook-ads)
      *
-     *- Parameter fbAnonymousID: Empty String or `nil` will delete the subscriber attribute..
+     *- Parameter fbAnonymousID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setFBAnonymousID(_ fbAnonymousID: String?) {
         subscriberAttributesManager.setFBAnonymousID(fbAnonymousID, appUserID: appUserID)
@@ -573,7 +573,7 @@ extension Purchases {
      * #### Related Articles
      * - [mParticle RevenueCat Integration](https://docs.revenuecat.com/docs/mparticle)
      *
-     *- Parameter mparticleID: Empty String or `nil` will delete the subscriber attribute..
+     *- Parameter mparticleID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setMparticleID(_ mparticleID: String?) {
         subscriberAttributesManager.setMparticleID(mparticleID, appUserID: appUserID)
@@ -586,7 +586,7 @@ extension Purchases {
      * #### Related Articles
      * - [OneSignal RevenueCat Integration](https://docs.revenuecat.com/docs/onesignal)
      *
-     *- Parameter onesignalID: Empty String or `nil` will delete the subscriber attribute..
+     *- Parameter onesignalID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setOnesignalID(_ onesignalID: String?) {
         subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: appUserID)
@@ -599,7 +599,7 @@ extension Purchases {
      * #### Related Articles
      * - [AirShip RevenueCat Integration](https://docs.revenuecat.com/docs/airship)
      *
-     *- Parameter airshipChannelID: Empty String or `nil` will delete the subscriber attribute..
+     *- Parameter airshipChannelID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setAirshipChannelID(_ airshipChannelID: String?) {
         subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: appUserID)
@@ -612,7 +612,7 @@ extension Purchases {
      * #### Related Articles
      * - [CleverTap RevenueCat Integration](https://docs.revenuecat.com/docs/clevertap)
      *
-     *- Parameter airshipChannelID: Empty String or `nil` will delete the subscriber attribute..
+     *- Parameter airshipChannelID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setCleverTapID(_ cleveTapID: String?) {
         subscriberAttributesManager.setCleverTapID(cleveTapID, appUserID: appUserID)
@@ -624,7 +624,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter mediaSource: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter mediaSource: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setMediaSource(_ mediaSource: String?) {
         subscriberAttributesManager.setMediaSource(mediaSource, appUserID: appUserID)
@@ -636,7 +636,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter campaign: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter campaign: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setCampaign(_ campaign: String?) {
         subscriberAttributesManager.setCampaign(campaign, appUserID: appUserID)
@@ -648,7 +648,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter adGroup: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter adGroup: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setAdGroup(_ adGroup: String?) {
         subscriberAttributesManager.setAdGroup(adGroup, appUserID: appUserID)
@@ -660,7 +660,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter installAd: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter installAd: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setAd(_ installAd: String?) {
         subscriberAttributesManager.setAd(installAd, appUserID: appUserID)
@@ -672,7 +672,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter keyword: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter keyword: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setKeyword(_ keyword: String?) {
         subscriberAttributesManager.setKeyword(keyword, appUserID: appUserID)
@@ -684,7 +684,7 @@ extension Purchases {
      * #### Related Articles
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
-     * - Parameter creative: Empty String or `nil` will delete the subscriber attribute..
+     * - Parameter creative: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setCreative(_ creative: String?) {
         subscriberAttributesManager.setCreative(creative, appUserID: appUserID)

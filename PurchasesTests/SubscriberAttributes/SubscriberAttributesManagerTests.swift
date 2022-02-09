@@ -995,13 +995,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetCleverTapID() throws {
         let cleverTapID = "cleverTapID"
 
-        self.subscriberAttributesManager.setAirshipChannelID(cleverTapID, appUserID: "kratos")
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 4
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
 
-        expect(receivedAttribute.key) == "$airshipChannelId"
+        expect(receivedAttribute.key) == "$clevertapId"
         expect(receivedAttribute.value) == cleverTapID
         expect(receivedAttribute.isSynced) == false
     }
@@ -1009,15 +1009,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetCleverTapIDSetsEmptyIfNil() throws {
         let cleverTapID = "cleverTapID"
 
-        self.subscriberAttributesManager.setAirshipChannelID(cleverTapID, appUserID: "kratos")
-        self.subscriberAttributesManager.setAirshipChannelID(nil, appUserID: "kratos")
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
+        self.subscriberAttributesManager.setCleverTapID(nil, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 8
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
 
-        expect(receivedAttribute.key) == "$airshipChannelId"
+        expect(receivedAttribute.key) == "$clevertapId"
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
@@ -1025,9 +1025,9 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetCleverTapIDSkipsIfSameValue() {
         let cleverTapID = "cleverTapID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airshipChannelId",
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$clevertapId",
                                                                                     value: cleverTapID)
-        self.subscriberAttributesManager.setAirshipChannelID(cleverTapID, appUserID: "kratos")
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 3
     }
@@ -1036,19 +1036,19 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let cleverTapID = "cleverTapID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airshipChannelId",
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$clevertapId",
                                                                                     value: "old_id",
                                                                                     isSynced: true,
                                                                                     setTime: oldSyncTime)
 
-        self.subscriberAttributesManager.setAirshipChannelID(cleverTapID, appUserID: "kratos")
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 4
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
 
-        expect(receivedAttribute.key) == "$airshipChannelId"
+        expect(receivedAttribute.key) == "$clevertapId"
         expect(receivedAttribute.value) == cleverTapID
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
@@ -1056,7 +1056,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
     func testSetCleverTapIDSetsDeviceIdentifiers() {
         let cleverTapID = "cleverTapID"
-        self.subscriberAttributesManager.setAirshipChannelID(cleverTapID, appUserID: "kratos")
+        self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 4
 
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
