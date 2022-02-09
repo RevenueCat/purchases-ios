@@ -159,6 +159,29 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  runtest_ios_12:
+    <<: *base_job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Install xcode-install
+          command: gem install xcode-install
+      - run:
+          name: Install simulator
+          command: xcversion simulators --install="iOS 12.4 Simulator"
+      - run:
+          name: Install xcode-install
+          command: xcrun simctl create 'iPhone 6 (12.4) JOSH' com.apple.CoreSimulator.SimDeviceType.iPhone-6 com.apple.CoreSimulator.SimRuntime.iOS-12-4
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test ios_devices:"iPhone 6 (12.4)" skip_tvos:true
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
   buildTvWatchAndMacOS:
     <<: *base_job
     steps:
@@ -322,6 +345,8 @@ workflows:
   version: 2
   build-test:
     jobs:
+      - runtest_ios_12:
+          xcode_version: '13.2.1'
       - lint:
           xcode_version: '13.2.1'
       - runtest:
