@@ -612,7 +612,7 @@ extension Purchases {
      * #### Related Articles
      * - [CleverTap RevenueCat Integration](https://docs.revenuecat.com/docs/clevertap)
      *
-     *- Parameter airshipChannelID: Empty String or `nil` will delete the subscriber attribute.
+     *- Parameter cleverTapID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc public func setCleverTapID(_ cleverTapID: String?) {
         subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: appUserID)
