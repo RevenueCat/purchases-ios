@@ -40,6 +40,7 @@ platform :ios do
 
   desc "Runs all the tests"
   lane :test do |options|
+    # Used by CircleCI when wanting to test other devices
     ios_devices = options[:ios_devices]&.split(',')
     tvos_devices = options[:tvos_devices]&.split(',')
 

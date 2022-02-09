@@ -4,7 +4,7 @@ orbs:
 version: 2.1
 
 aliases:
-  base_job: &base_job
+  base-job: &base-job
     resource_class: macos.x86.medium.gen2
     macos:
       xcode: << parameters.xcode_version >>
@@ -61,6 +61,7 @@ commands:
       - run:
           name: Install xcode-install
           command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
+
   install-dependencies:
     parameters:
       directory:
@@ -173,8 +174,8 @@ commands:
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  runtest:
-    <<: *base_job
+  run-test:
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -187,8 +188,8 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  runtest_ios_12:
-    <<: *base_job
+  run-test-ios-12:
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -206,8 +207,8 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  buildTvWatchAndMacOS:
-    <<: *base_job
+  build-tv-watch-and-macos:
+    <<: *base-job
     steps:
       - checkout
       - run:
@@ -218,8 +219,8 @@ jobs:
           name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
-  backend_integration_tests:
-    <<: *base_job
+  backend-integration-tests:
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -236,7 +237,7 @@ jobs:
 
 
   release-checks: 
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -262,7 +263,7 @@ jobs:
           destination: test_report.html
           
   docs-deploy:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -271,7 +272,7 @@ jobs:
           command: bundle exec fastlane deploy_docs
   
   make-release:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -281,7 +282,7 @@ jobs:
           command: bundle exec fastlane release
 
   prepare-next-version:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -291,7 +292,7 @@ jobs:
           command: bundle exec fastlane prepare_next_version
 
   integration-tests-cocoapods:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -306,7 +307,7 @@ jobs:
           directory: IntegrationTests/CocoapodsIntegration
       
   integration-tests-swift-package-manager:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -317,7 +318,7 @@ jobs:
           directory: IntegrationTests/SPMIntegration/
 
   integration-tests-carthage:
-    <<: *base_job
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
@@ -337,7 +338,7 @@ jobs:
           directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
-    <<: *base_job
+    <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -347,7 +348,7 @@ jobs:
           directory: IntegrationTests/XcodeDirectIntegration/
 
   lint:
-    <<: *base_job
+    <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -371,16 +372,16 @@ workflows:
     jobs:
       - lint:
           xcode_version: '13.2.1'
-      - runtest:
+      - run-test:
           xcode_version: '13.2.1'
-      - runtest_ios_12:
+      - run-test-ios-12:
           xcode_version: '13.2.1'
-      - buildTvWatchAndMacOS:
+      - build-tv-watch-and-macos:
           xcode_version: '13.2.1'
       - release-checks:
           xcode_version: '13.2.1'
           <<: *release-branches
-      - backend_integration_tests:
+      - backend-integration-tests:
           xcode_version: '13.2.1'
           filters:
               branches:
