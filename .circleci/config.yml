@@ -2,6 +2,36 @@ orbs:
    macos: circleci/macos@2.0.1
 
 version: 2.1
+
+aliases:
+  base_job: &base_job
+    resource_class: macos.x86.medium.gen2
+    macos:
+      xcode: << parameters.xcode_version >>
+    parameters:
+      xcode_version:
+        type: string
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+  release-tags-and-branches: &release-tags-and-branches
+    filters:
+      tags:
+        ignore: /^.*-SNAPSHOT/
+      branches:
+        only: /^release\/.*/
+  release-branches: &release-branches
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only: /^release\/.*/
+  release-tags: &release-tags
+    filters: 
+      tags:
+        ignore: /^.*-SNAPSHOT/
+      branches:
+        ignore: /.*/
+
 commands:
   install-dependencies:
     parameters:
@@ -114,43 +144,12 @@ commands:
           command: |
               bundle exec fastlane update_carthage_commit
 
-aliases:
-  base_job: &base_job
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: << parameters.xcode_version >>
-    parameters:
-      xcode_version:
-        type: string
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-  release-tags-and-branches: &release-tags-and-branches
-    filters:
-      tags:
-        ignore: /^.*-SNAPSHOT/
-      branches:
-        only: /^release\/.*/
-  release-branches: &release-branches
-    filters:
-      tags:
-        ignore: /.*/
-      branches:
-        only: /^release\/.*/
-  release-tags: &release-tags
-    filters: 
-      tags:
-        ignore: /^.*-SNAPSHOT/
-      branches:
-        ignore: /.*/
-
 jobs:
   runtest:
     <<: *base_job
     steps:
       - checkout
-      
       - install-dependencies
-      
       - run:
           name: Run tests
           command: bundle exec fastlane test
@@ -159,6 +158,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+
   buildTvWatchAndMacOS:
     <<: *base_job
     steps:
@@ -176,7 +176,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests
@@ -194,7 +193,6 @@ jobs:
     steps:
       - checkout
       - trust-github-key
-
       # Bundler
       - restore_cache:
           keys: 
@@ -204,9 +202,7 @@ jobs:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
-      
       - update-spm-integration-commit
-      
       - run:
           name: Deployment checks
           command: bundle exec fastlane release_checks
@@ -251,17 +247,14 @@ jobs:
     <<: *base_job
     steps:
       - checkout
-      
       - install-dependencies
       - install-dependencies:
           directory: IntegrationTests/CocoapodsIntegration
-
       - run:
           name: Install Pods
           working_directory: IntegrationTests/CocoapodsIntegration/
           command: |
               pod install
-      
       - scan-and-archive:
           directory: IntegrationTests/CocoapodsIntegration
       
