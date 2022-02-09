@@ -32,7 +32,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
 
-        if #available(iOSApplicationExtension 12.2, *) {
+        if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) {
             switch sk1Discount.type {
             case .introductory:
                 self.type = .introductory
