@@ -497,3 +497,119 @@ public enum RCPaymentMode {}
 @available(macCatalyst, obsoleted: 1, message: "Use ErrorCode instead")
 // swiftlint:disable:next identifier_name
 public var ErrorDomain: NSErrorDomain { fatalError() }
+
+@available(iOS, obsoleted: 1, message: "Use ErrorCode instead")
+@available(tvOS, obsoleted: 1, message: "Use ErrorCode instead")
+@available(watchOS, obsoleted: 1, message: "Use ErrorCode instead")
+@available(macOS, obsoleted: 1, message: "Use ErrorCode instead")
+@available(macCatalyst, obsoleted: 1, message: "Use ErrorCode instead")
+public enum RCBackendErrorCode {}
+
+@available(iOS, obsoleted: 1)
+@available(tvOS, obsoleted: 1)
+@available(watchOS, obsoleted: 1)
+@available(macOS, obsoleted: 1)
+@available(macCatalyst, obsoleted: 1)
+public class RCPurchasesErrorUtils: NSObject {}
+
+public extension Purchases {
+
+    @available(iOS, obsoleted: 1, renamed: "ErrorCode")
+    @available(tvOS, obsoleted: 1, renamed: "ErrorCode")
+    @available(watchOS, obsoleted: 1, renamed: "ErrorCode")
+    @available(macOS, obsoleted: 1, renamed: "ErrorCode")
+    @available(macCatalyst, obsoleted: 1, renamed: "ErrorCode")
+    enum Errors {}
+
+    @available(iOS, obsoleted: 1)
+    @available(tvOS, obsoleted: 1)
+    @available(watchOS, obsoleted: 1)
+    @available(macOS, obsoleted: 1)
+    @available(macCatalyst, obsoleted: 1)
+    enum FinishableKey {}
+
+    @available(iOS, obsoleted: 1)
+    @available(tvOS, obsoleted: 1)
+    @available(watchOS, obsoleted: 1)
+    @available(macOS, obsoleted: 1)
+    @available(macCatalyst, obsoleted: 1)
+    enum ReadableErrorCodeKey {}
+
+    @available(iOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(tvOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(watchOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
+    enum ErrorCode {}
+
+    @available(iOS, obsoleted: 1)
+    @available(tvOS, obsoleted: 1)
+    @available(watchOS, obsoleted: 1)
+    @available(macOS, obsoleted: 1)
+    @available(macCatalyst, obsoleted: 1)
+    enum RevenueCatBackendErrorCode {}
+
+    @available(iOS, obsoleted: 1, renamed: "StoreTransaction")
+    @available(tvOS, obsoleted: 1, renamed: "StoreTransaction")
+    @available(watchOS, obsoleted: 1, renamed: "StoreTransaction")
+    @available(macOS, obsoleted: 1, renamed: "StoreTransaction")
+    @available(macCatalyst, obsoleted: 1, renamed: "StoreTransaction")
+    enum Transaction {}
+
+    @available(iOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(tvOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(watchOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
+    enum EntitlementInfo {}
+
+    @available(iOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(tvOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(watchOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
+    enum EntitlementInfos {}
+
+    @available(iOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(tvOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(watchOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
+    enum PackageType {}
+
+    @available(iOS, obsoleted: 1, renamed: "CustomerInfo")
+    @available(tvOS, obsoleted: 1, renamed: "CustomerInfo")
+    @available(watchOS, obsoleted: 1, renamed: "CustomerInfo")
+    @available(macOS, obsoleted: 1, renamed: "CustomerInfo")
+    @available(macCatalyst, obsoleted: 1, renamed: "CustomerInfo")
+    enum PurchaserInfo {}
+
+    @available(iOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(tvOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(watchOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
+    enum Offering {}
+
+    @available(iOS, obsoleted: 1)
+    @available(tvOS, obsoleted: 1)
+    @available(watchOS, obsoleted: 1)
+    @available(macOS, obsoleted: 1)
+    @available(macCatalyst, obsoleted: 1)
+    enum ErrorUtils {}
+
+    @available(iOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(tvOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(watchOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
+    enum Store {}
+
+    @available(iOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(tvOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(watchOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
+    @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
+    enum PeriodType {}
+
+}
