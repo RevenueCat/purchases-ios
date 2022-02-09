@@ -40,29 +40,35 @@ platform :ios do
 
   desc "Runs all the tests"
   lane :test do |options|
+    ios_devices = options[:ios_devices]&.split(',')
+    tvos_devices = options[:tvos_devices]&.split(',')
+
+    ios_devices ||= ["iPhone 8 (14.5)", "iPhone 12 (15.2)"]
+    tvos_devices ||= ["Apple TV (15.2)"]
+    
     # Scan can't target two different platforms in devices
     # Need to run scan multiple times
     scan(
       step_name: "scan - iPhone", 
-      devices: ["iPhone 8 (14.5)", "iPhone 12 (15.2)"],
+      devices: ios_devices,
       scheme: "RevenueCat",
       testplan: "Coverage",
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/ios"
-    )
+    ) unless options[:skip_ios]
 
     scan(
       step_name: "scan - Apple TV",
-      devices: ["Apple TV (15.2)"],
+      devices: tvos_devices,
       scheme: "RevenueCat",
       testplan: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/tvos"
-    )
+    ) unless options[:skip_tvos]
   end
 
   desc "Replace version number in project and supporting files"
@@ -531,7 +537,7 @@ def carthage_archive
   end
 end
 
-def check_pods
+lane :check_pods do
   pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec')
 end
 
