@@ -392,7 +392,7 @@ workflows:
           xcode_version: '13.2.1'
       - run-test-ios-12:
           xcode_version: '13.2.1'
-          #<<: *release-branches-and-main
+          <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '13.2.1'
       - release-checks:
