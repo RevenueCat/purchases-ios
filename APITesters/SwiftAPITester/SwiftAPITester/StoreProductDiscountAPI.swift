@@ -36,3 +36,16 @@ func checkPaymentModeEnum() {
     @unknown default: fatalError()
     }
 }
+
+var type: StoreProductDiscount.DiscountType!
+
+func checkTypeEnum() {
+    switch type! {
+    case
+            .introductory,
+            .promotional:
+        break
+
+    @unknown default: fatalError()
+    }
+}

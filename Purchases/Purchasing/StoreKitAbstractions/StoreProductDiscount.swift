@@ -43,6 +43,19 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
     }
 
+    /// The discount type for a `StoreProductDiscount`
+    /// Wraps `SKProductDiscount.Type` if this `StoreProductDiscount` represents a `SKProductDiscount`.
+    /// Wraps  `Product.SubscriptionOffer.OfferType` if this `StoreProductDiscount` represents
+    /// a `Product.SubscriptionOffer`.
+    @objc(RCDiscountType)
+    public enum DiscountType: Int {
+
+        /// Introductory offer
+        case introductory = 0
+        /// Promotional offer for subscriptions
+        case promotional = 1
+    }
+
     private let discount: StoreProductDiscountType
 
     init(_ discount: StoreProductDiscountType) {
@@ -58,6 +71,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc public var price: Decimal { self.discount.price }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
+    @objc public var type: DiscountType { self.discount.type }
 
     // swiftlint:enable missing_docs
 
@@ -103,6 +117,9 @@ internal protocol StoreProductDiscountType {
 
     /// The period for the product discount.
     var subscriptionPeriod: SubscriptionPeriod { get }
+
+    /// The type of product discount.
+    var type: StoreProductDiscount.DiscountType { get }
 
 }
 
@@ -161,6 +178,37 @@ extension StoreProductDiscount: Encodable {
         try container.encode(self.paymentMode, forKey: .paymentMode)
     }
 
+}
+
+extension StoreProductDiscount.DiscountType {
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    static func from(sk1Discount: SK1ProductDiscount) -> Self? {
+        if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
+            switch sk1Discount.type {
+            case .introductory:
+                return .introductory
+            case .subscription:
+                return .promotional
+            @unknown default:
+                return nil
+            }
+        } else {
+            return nil
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    static func from(sk2Discount: SK2ProductDiscount) -> Self? {
+        switch sk2Discount.type {
+        case SK2ProductDiscount.OfferType.introductory:
+            return .introductory
+        case SK2ProductDiscount.OfferType.promotional:
+            return .promotional
+        default:
+            Logger.warn(Strings.attribution.unknown_sk2_product_discount_type(rawValue: sk2Discount.type.rawValue))
+            return nil
+        }
+    }
 }
 
 extension StoreProductDiscount.PaymentMode: Encodable {}

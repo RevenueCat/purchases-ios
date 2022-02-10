@@ -1234,7 +1234,8 @@ class BackendTests: XCTestCase {
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
                                                 price: 12,
                                                 paymentMode: .payAsYouGo,
-                                                subscriptionPeriod: .init(value: 10, unit: .month))
+                                                subscriptionPeriod: .init(value: 10, unit: .month),
+                                                type: .promotional)
         let productData: ProductRequestData = .createMockProductData(discounts: [discount])
         backend.post(receiptData: receiptData,
                      appUserID: userID,
@@ -1265,7 +1266,8 @@ class BackendTests: XCTestCase {
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
                                                 price: 12.1,
                                                 paymentMode: .payAsYouGo,
-                                                subscriptionPeriod: .init(value: 1, unit: .year))
+                                                subscriptionPeriod: .init(value: 1, unit: .year),
+                                                type: .promotional)
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
                                                                      paymentMode: paymentMode,
                                                                      currencyCode: currencyCode,
