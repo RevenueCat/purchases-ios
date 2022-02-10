@@ -100,7 +100,6 @@ Most features require configuring the SDK before using it.
 - ``Purchases/setFBAnonymousID(_:)``
 
 ### Advanced Configuration
-- ``Purchases/allowSharingAppStoreAccount``
 - ``Purchases/finishTransactions``
 - ``Purchases/invalidateCustomerInfoCache()``
 - ``Purchases/forceUniversalAppStore``
@@ -108,3 +107,4 @@ Most features require configuring the SDK before using it.
 - ``Purchases/proxyURL``
 - ``Purchases/verboseLogs``
 - ``Purchases/verboseLogHandler``
+- ``Purchases/allowSharingAppStoreAccount``
