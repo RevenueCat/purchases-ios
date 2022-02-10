@@ -1364,7 +1364,7 @@ public extension Purchases {
      * If the request was successful, there will be a ``RefundRequestStatus``.
      * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
      *
-     * If the request was unsuccessful, there will be an `Error` and `RefundRequestStatus.error`.
+     * - throws: If the request was unsuccessful, there will be an `Error` and `RefundRequestStatus.error`.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
@@ -1383,7 +1383,7 @@ public extension Purchases {
      * - returns ``RefundRequestStatus``: The status of the refund request.
      * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
      *
-     * If the request was unsuccessful or the entitlement could not be found, an `Error` will be thrown.
+     * - throws: If the request was unsuccessful or the entitlement could not be found, an `Error` will be thrown.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
@@ -1401,7 +1401,12 @@ public extension Purchases {
      * - returns ``RefundRequestStatus``: The status of the refund request.
      * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
      *
-     * If the request was unsuccessful or no active entitlements could be found for the user, an `Error` will be thrown.
+     *- throws: If the request was unsuccessful, no active entitlements could be found for the user,
+     * or multiple active entitlements were found for the user, an `Error` will be thrown.
+     *
+     *- important: This method should only be used if your user can only
+     * have a single active entitlement at a given time.
+     * If a user could have more than one entitlement at a time, use ``beginRefundRequest(forEntitlement:)`` instead.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
