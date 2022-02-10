@@ -18,7 +18,8 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 
     init?(sk1Discount: SK1ProductDiscount) {
         guard let paymentMode = StoreProductDiscount.PaymentMode(skProductDiscountPaymentMode: sk1Discount.paymentMode),
-              let subscriptionPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod)
+              let subscriptionPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod),
+              let type = StoreProductDiscount.DiscountType.from(sk1Discount: sk1Discount)
         else { return nil }
 
         self.underlyingSK1Discount = sk1Discount
@@ -31,19 +32,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         self.price = sk1Discount.price as Decimal
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
-
-        if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
-            switch sk1Discount.type {
-            case .introductory:
-                self.type = .introductory
-            case .subscription:
-                self.type = .promotional
-            @unknown default:
-                return nil
-            }
-        } else {
-            return nil
-        }
+        self.type = type
     }
 
     let underlyingSK1Discount: SK1ProductDiscount

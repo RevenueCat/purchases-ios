@@ -177,6 +177,36 @@ extension StoreProductDiscount: Encodable {
 
 }
 
+extension StoreProductDiscount.DiscountType {
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    static func from(sk1Discount: SK1ProductDiscount) -> Self? {
+        if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
+            switch sk1Discount.type {
+            case .introductory:
+                return .introductory
+            case .subscription:
+                return .promotional
+            @unknown default:
+                return nil
+            }
+        } else {
+            return nil
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    static func from(sk2Discount: SK2ProductDiscount) -> Self? {
+        switch sk2Discount.type {
+        case SK2ProductDiscount.OfferType.introductory:
+            return .introductory
+        case SK2ProductDiscount.OfferType.promotional:
+            return .promotional
+        default:
+            return nil
+        }
+    }
+}
+
 extension StoreProductDiscount.PaymentMode: Encodable {}
 
 extension StoreProductDiscount: Identifiable {}
