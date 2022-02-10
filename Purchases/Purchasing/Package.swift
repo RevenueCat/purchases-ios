@@ -14,8 +14,13 @@
 
 import Foundation
 
+///
 /// Enumeration of all possible ``Package`` types, as configured on the package.
-/// See [the guide](https://docs.revenuecat.com/docs/entitlements#adding-packages) for more info.
+///
+/// #### Related Articles
+/// - ``Package``
+/// -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
+///
 @objc(RCPackageType) public enum PackageType: Int {
 
     /// A package that was defined with an unknown identifier.
@@ -68,8 +73,13 @@ private extension PackageType {
     }
 }
 
-/// A set of cross-platform products.
-/// See [the guide](https://docs.revenuecat.com/docs/entitlements#adding-packages) for more info.
+///
+/// Packages help abstract platform-specific products by grouping equivalent products across iOS, Android, and web
+/// A package is made up of three parts: ``identifier``, ``packageType``, and underlying ``StoreProduct``.
+///
+/// #### Related Articles
+/// - [Displaying Packages](https://docs.revenuecat.com/docs/displaying-products#displaying-packages)
+///
 @objc(RCPackage) public class Package: NSObject {
 
     /// The identifier for this Package.
@@ -122,10 +132,6 @@ private extension PackageType {
 
 }
 
-/**
- Contains information about the product available for the user to purchase.
- For more info, see [our docs on Packages](https://docs.revenuecat.com/docs/entitlements)
-*/
 @objc public extension Package {
 
     /**
