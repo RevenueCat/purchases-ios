@@ -44,7 +44,7 @@ platform :ios do
       step_name: "scan - iPhone", 
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       scheme: "RevenueCat",
-      testplan: "Coverage",
+      testplan: "AllTests",
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
