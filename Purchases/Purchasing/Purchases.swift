@@ -730,7 +730,8 @@ public extension Purchases {
      * This function will log in the current user with an ``appUserID``.
      *
      * - Parameter appUserID: The ``appUserID`` that should be linked to the current user.
-     * - returns: The completion block will be called with the latest ``CustomerInfo`` and a `Boolean` specifying
+     *
+     * The `completion` block will be called with the latest ``CustomerInfo`` and a `Boolean` specifying
      * whether the user was created for the first time in the RevenueCat backend.
      *
      * RevenueCat provides a source of truth for a subscriber's status across different platforms.
@@ -774,7 +775,7 @@ public extension Purchases {
      * This function will log in the current user with an ``appUserID``.
      *
      * - Parameter appUserID: The ``appUserID`` that should be linked to the current user.
-     * - returns: The completion block will be called with the latest ``CustomerInfo`` and a `Boolean` specifying
+     * - returns: A tuple of: the latest ``CustomerInfo`` and a `Boolean` specifying
      * whether the user was created for the first time in the RevenueCat backend.
      *
      * RevenueCat provides a source of truth for a subscriber's status across different platforms.
