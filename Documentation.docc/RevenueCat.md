@@ -33,15 +33,20 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 - Important: You're viewing the documentation for RevenueCat iOS SDK version 4.
 For documentation on version 3, visit [the docs for RevenueCat iOS SDK version 3.](https://sdk.revenuecat.com/ios/index.html)
 
+## Migrating from Purchases v3
+When transitioning between our V3 SDK, we ported our entire SDK into Swift. 
+Migrating from Objective-C to Swift required a number of API changes, but we feel that the
+changes resulted in the SDK having a more natural feel for developers. In addition,
+we introduced several new types and APIs.
+
+Our <doc:V4_API_Migration_guide> provides information on how to migrate from V3 to V4. 
+
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
 
 Or browse our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
-
-## Migrating from Purchases v3
-- <doc:V4_API_Migration_guide>
 
 ## Topics
 
