@@ -1404,7 +1404,7 @@ public extension Purchases {
      *- throws: If the request was unsuccessful, no active entitlements could be found for the user,
      * or multiple active entitlements were found for the user, an `Error` will be thrown.
      *
-     *- warning: This method should only be used if your user can only have a single active entitlement at a given time.
+     *- important: This method should only be used if your user can only have a single active entitlement at a given time.
      * If a user could have more than one entitlement at a time, use ``beginRefundRequest(forEntitlement:)`` instead.
      */
     @available(iOS 15.0, *)
