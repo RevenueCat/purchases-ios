@@ -22,6 +22,7 @@
     RCIntroEligibilityStatus s = RCIntroEligibilityStatusUnknown;
     switch(s) {
         case RCIntroEligibilityStatusUnknown:
+        case RCIntroEligibilityStatusNoIntroOfferExists:
         case RCIntroEligibilityStatusIneligible:
         case RCIntroEligibilityStatusEligible:
             NSLog(@"%ld", (long)s);

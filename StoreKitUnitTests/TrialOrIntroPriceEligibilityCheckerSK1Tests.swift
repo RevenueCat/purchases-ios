@@ -79,6 +79,34 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         expect(receivedEligibilities.count) == 1
     }
 
+    func testSK1EligibilityProductsWithKnownIntroEligibilityStatus() throws {
+        let productIdentifiersAndDiscounts = [("product_id", nil),
+                        ("com.revenuecat.monthly_4.99.1_week_intro", MockSKProductDiscount()),
+                        ("com.revenuecat.annual_39.99.2_week_intro", MockSKProductDiscount()),
+                        ("lifetime", MockSKProductDiscount())
+        ]
+        let productIdentifiers = productIdentifiersAndDiscounts.map({$0.0})
+        let storeProducts = productIdentifiersAndDiscounts.map { (productIdentifier, discount) -> StoreProduct in
+            let sk1Product = MockSK1Product(mockProductIdentifier: productIdentifier)
+            sk1Product.mockDiscount = discount
+            return StoreProduct(sk1Product: sk1Product)
+        }
+
+        var finalResults: [String: IntroEligibility] = [:]
+
+        self.mockProductsManager.stubbedProductsCompletionResult = Set(storeProducts)
+        trialOrIntroPriceEligibilityChecker.productsWithKnownIntroEligibilityStatus(
+            productIdentifiers: productIdentifiers) { results in
+            finalResults = results
+        }
+
+        expect(finalResults.count) == 1
+        expect(finalResults["product_id"]?.status) == IntroEligibilityStatus.noIntroOfferExists
+        expect(finalResults["com.revenuecat.monthly_4.99.1_week_intro"]?.status) == nil
+        expect(finalResults["com.revenuecat.annual_39.99.2_week_intro"]?.status) == nil
+        expect(finalResults["lifetime"]?.status) == nil
+    }
+
     func testSK1EligibilityIsFetchedFromBackendIfErrorCalculatingEligibilityAndStoreKitDoesNotHaveIt() throws {
         self.mockProductsManager.stubbedProductsCompletionResult = Set()
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
@@ -110,6 +138,14 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
                                    userInfo: [:])
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
 
+        let sk1Product = MockSK1Product(mockProductIdentifier: "product_id")
+        sk1Product.mockDiscount = nil
+        let storeProduct =  StoreProduct(sk1Product: sk1Product)
+
+        self.mockProductsManager.stubbedProductsCompletionResult = Set(
+            [storeProduct]
+        )
+
         let productId = "product_id"
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
@@ -123,7 +159,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         expect(completionCalled).toEventually(beTrue())
         let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities.count) == 1
-        expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.eligible
+        expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.noIntroOfferExists
 
         expect(self.mockBackend.invokedGetIntroEligibilityCount) == 0
     }

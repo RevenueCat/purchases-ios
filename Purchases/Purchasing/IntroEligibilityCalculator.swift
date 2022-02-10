@@ -94,10 +94,13 @@ private extension IntroEligibilityCalculator {
                     return foundByGroupId
                 }
 
-            let hasIntroductoryPrice = candidate.introductoryDiscount != nil
-            result[candidate.productIdentifier] = !hasIntroductoryPrice || usedIntroForProductIdentifier
-                ? IntroEligibilityStatus.ineligible
-                : IntroEligibilityStatus.eligible
+            if candidate.introductoryDiscount == nil {
+                result[candidate.productIdentifier] = .noIntroOfferExists
+            } else {
+                result[candidate.productIdentifier] = usedIntroForProductIdentifier
+                    ? IntroEligibilityStatus.ineligible
+                    : IntroEligibilityStatus.eligible
+            }
         }
         return result
     }

@@ -88,14 +88,14 @@ class TrialOrIntroPriceEligibilityChecker {
         let products = try await productsManager.sk2StoreProducts(withIdentifiers: identifiers)
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
-            let isEligible = await sk2Product.subscription?.isEligibleForIntroOffer
 
             let eligibilityStatus: IntroEligibilityStatus
 
-            if let isEligible = isEligible {
+            if let subscription = sk2Product.subscription {
+                let isEligible = await subscription.isEligibleForIntroOffer
                 eligibilityStatus = isEligible ? .eligible : .ineligible
             } else {
-                eligibilityStatus = .unknown
+                eligibilityStatus = .noIntroOfferExists
             }
 
             introDict[sk2StoreProduct.productIdentifier] =
@@ -137,50 +137,56 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
                              productIdentifiers: [String],
                              completion: @escaping ReceiveIntroEligibilityBlock) {
         if #available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *) {
-            self.productsWithIntroOffers(productIdentifiers: productIdentifiers) {
-                self.getIntroEligibility(with: receiptData,
-                                         productIdentifiers: productIdentifiers,
-                                         productIdsToIntroEligibleStatusFromApple: $0,
-                                         completion: completion)
+            // Products that don't have an introductory discount don't need to be sent to the backend
+            // Step 1: Filter out products without introductory discount and give .noIntroOfferExists status
+            // Step 2: Send products without eligibility status to backend
+            // Step 3: Merge results from step 1 and step 2
+            self.productsWithKnownIntroEligibilityStatus(productIdentifiers: productIdentifiers) { onDeviceResults in
+                let nilProductIdentifiers = productIdentifiers.filter { productIdentifier in
+                    return onDeviceResults[productIdentifier] == nil
+                }
+
+                self.getIntroEligibilityFromBackend(with: receiptData,
+                                                    productIdentifiers: nilProductIdentifiers) { backendResults in
+                    let results = onDeviceResults + backendResults
+                    completion(results)
+                }
             }
         } else {
-            self.getIntroEligibility(with: receiptData,
-                                     productIdentifiers: productIdentifiers,
-                                     productIdsToIntroEligibleStatusFromApple: [:],
-                                     completion: completion)
+            self.getIntroEligibilityFromBackend(with: receiptData,
+                                                productIdentifiers: productIdentifiers,
+                                                completion: completion)
         }
     }
 
 }
 
-private extension TrialOrIntroPriceEligibilityChecker {
+extension TrialOrIntroPriceEligibilityChecker {
 
     @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
-    func productsWithIntroOffers(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock) {
+    func productsWithKnownIntroEligibilityStatus(productIdentifiers: [String],
+                                                 completion: @escaping ReceiveIntroEligibilityBlock) {
         self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
             let eligibility: [(String, IntroEligibility)] = Array(products.value ?? [])
-                .filter { $0.introductoryDiscount != nil }
-                .map { ($0.productIdentifier, IntroEligibility(eligibilityStatus: .eligible)) }
+                .filter { $0.introductoryDiscount == nil }
+                .map { ($0.productIdentifier, IntroEligibility(eligibilityStatus: .noIntroOfferExists)) }
 
             let productIdsToIntroEligibleStatus = Dictionary(uniqueKeysWithValues: eligibility)
             completion(productIdsToIntroEligibleStatus)
         }
     }
 
-    func getIntroEligibility(with receiptData: Data,
-                             productIdentifiers: [String],
-                             productIdsToIntroEligibleStatusFromApple: [String: IntroEligibility],
-                             completion: @escaping ReceiveIntroEligibilityBlock) {
-        // Remove any productIds we already have intro pricing for so we don't try to fetch them from the backend.
-        let idsToFetchFromBackend = productIdentifiers.filter { productIdsToIntroEligibleStatusFromApple[$0] == nil }
-        if idsToFetchFromBackend.isEmpty {
-            completion(productIdsToIntroEligibleStatusFromApple)
+    func getIntroEligibilityFromBackend(with receiptData: Data,
+                                        productIdentifiers: [String],
+                                        completion: @escaping ReceiveIntroEligibilityBlock) {
+        if productIdentifiers.isEmpty {
+            completion([:])
             return
         }
 
         self.backend.getIntroEligibility(appUserID: self.appUserID,
                                          receiptData: receiptData,
-                                         productIdentifiers: idsToFetchFromBackend) { backendResult, error in
+                                         productIdentifiers: productIdentifiers) { backendResult, error in
             var result = backendResult
             if let error = error {
                 Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
