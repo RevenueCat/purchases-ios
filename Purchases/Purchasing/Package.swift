@@ -74,7 +74,7 @@ private extension PackageType {
 }
 
 ///
-/// Packages help abstract platform-specific products by grouping equivalent products across iOS, Android, and web
+/// Packages help abstract platform-specific products by grouping equivalent products across iOS, Android, and web.
 /// A package is made up of three parts: ``identifier``, ``packageType``, and underlying ``StoreProduct``.
 ///
 /// #### Related Articles
