@@ -198,7 +198,8 @@ extension PurchaseStrings: CustomStringConvertible {
         case .begin_refund_no_active_entitlement:
             return "Could not begin refund request. No active entitlement."
         case .begin_refund_multiple_active_entitlements:
-            return "Could not begin refund request. Multiple active entitlements."
+            return "Could not begin refund request. There are multiple active entitlements. Use" +
+                " `beginRefundRequest(forEntitlement:)` to specify a single entitlement instead."
         case .begin_refund_customer_info_error(let entitlementID):
             return "Failed to get CustomerInfo to proceed with refund for " +
                 "\(entitlementID.flatMap { "entitlement with ID " + $0 } ?? "active entitlement")."

@@ -171,10 +171,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
     }
 
 #if os(iOS)
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundRequestFailsAndPassesErrorThroughIfPurchasesUnverified() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
 
         sk2Helper.transactionVerified = false
@@ -192,10 +191,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundRequestCallsStoreKitRefundRequestMethodForVerifiedTransaction() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         sk2Helper.mockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
         sk2Helper.transactionVerified = true
@@ -208,10 +206,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         expect(self.sk2Helper.refundRequestCalled).to(beTrue())
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundReturnsSuccessOnStoreKitSuccess() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         sk2Helper.mockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
 
@@ -221,10 +218,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         expect(receivedStatus) == expectedStatus
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundReturnsFailureOnStoreKitRefundRequestFailure() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
         sk2Helper.mockSK2Error = expectedError
@@ -237,10 +233,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "")
 
@@ -257,10 +252,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForActiveEntitlementFailsOnCustomerInfoFetchFail() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "")
 
@@ -276,10 +270,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForEntitlementFailsIfCustomerInfoNil() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCustomerInfo = nil
 
@@ -296,10 +289,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForActiveEntitlementFailsIfCustomerInfoNil() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCustomerInfo = nil
 
@@ -316,10 +308,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForEntitlementFailsIfEntitlementNotInCustomerInfo() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoResponseWithoutMockEntitlement)
 
@@ -336,10 +327,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForActiveEntitlementFailsIfNoActiveEntitlement() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCustomerInfo =
             try CustomerInfo(data: mockCustomerInfoResponseWithNoActiveEntitlement)
@@ -356,10 +346,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForActiveEntitlementFailsIfMultipleActiveEntitlements() async throws {
-        guard #available(iOS 15.0, macCatalyst 15.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCustomerInfo =
             try CustomerInfo(data: mockCustomerInfoResponseWithMockEntitlementActiveMultiple)
