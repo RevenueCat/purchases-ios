@@ -46,6 +46,9 @@ To start us off, our framework name changed from `Purchases` to `RevenueCat`! ðŸ
 
 Select your target in Xcode, then go to Build Phases, and ensure that your target's `Link Binary with Libraries` section
 references `RevenueCat`, and remove the reference to `Purchases` if it was still there.
+| Before | After |
+| :-: | :-: |
+| ![link binary with libraries before](link_binary_with_libraries_before_spm) | ![link binary with libraries after](link_binary_with_libraries_after_spm) |
 
 #### 1.2 Update CocoaPods dependency (if needed)
 
@@ -56,7 +59,33 @@ In your Podfile, update the reference to the Pod from `Purchases` to `RevenueCat
 | `pod 'Purchases'` | `pod 'RevenueCat'` |
 
 #### 1.3 Update Carthage Framework (if needed)
-If you're using `Carthage`, make sure to use the new `RevenueCat.framework` or `RevenueCat.xcframework` instead of the old `Purchases`.
+
+##### 1.3.1 Using XCFrameworks (recommended)
+
+Select your target in Xcode, then go to Build Phases, and ensure that your target's `Link Binary with Libraries` section
+references `RevenueCat`, and remove the reference to `Purchases` if it was still there.
+Do the same with the Embed Frameworks section. 
+
+| Before | After |
+| :-: | :-: |
+| ![link binary with libraries before](link_binary_with_libraries_before_carthage) | ![link binary with libraries after](link_binary_with_libraries_after_carthage) |
+| ![embed frameworks before](embed_frameworks_before_carthage) | ![embed frameworks after](embed_frameworks_after_carthage) |
+
+##### 1.3.2 Using Platform-specific frameworks
+
+We highly recommend moving into XCFrameworks, since these have a simpler setup and prevent compatibility issues with 
+multi-platform setups.
+
+Carthage has a [migration guide to move into XCFrameworks available here](https://github.com/carthage/carthage#migrating-a-project-from-framework-bundles-to-xcframeworks).
+
+After migrating into XCFrameworks, follow the steps outlined in 1.3.1 to set up the `RevenueCat.xcframework`. 
+
+If you can't move into XCFrameworks, you will still need to update the `Link Binary with Libraries` phase as outlined
+in 1.3.1 (only using a `.framework` instead of `.xcframework`).
+
+After that, update the your `input.xcfilelist` and `output.xcfilelist` for the Run Script phase of Carthage frameworks, 
+replacing `Purchases.framework` with `RevenueCat.framework`. 
+
 
 ## 2. Update code references
 
