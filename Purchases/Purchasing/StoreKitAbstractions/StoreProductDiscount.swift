@@ -205,6 +205,7 @@ extension StoreProductDiscount.DiscountType {
         case SK2ProductDiscount.OfferType.promotional:
             return .promotional
         default:
+            Logger.warn(Strings.attribution.unknown_sk2_product_discount_type(rawValue: sk2Discount.type.rawValue))
             return nil
         }
     }
