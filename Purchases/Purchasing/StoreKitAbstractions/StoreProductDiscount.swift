@@ -43,7 +43,10 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
     }
 
-    /// The discount type for a `StoreProductDiscount`g
+    /// The discount type for a `StoreProductDiscount`
+    /// Wraps `SKProductDiscount.Type` if this `StoreProductDiscount` represents a `SKProductDiscount`.
+    /// Wraps  `Product.SubscriptionOffer.OfferType` if this `StoreProductDiscount` represents
+    /// a `Product.SubscriptionOffer`.
     @objc(RCDiscountType)
     public enum DiscountType: Int {
 
