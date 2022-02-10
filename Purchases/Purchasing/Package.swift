@@ -79,6 +79,8 @@ private extension PackageType {
 ///
 /// #### Related Articles
 /// - [Displaying Packages](https://docs.revenuecat.com/docs/displaying-products#displaying-packages)
+/// - ``Offering``
+/// - ``Offerings``
 ///
 @objc(RCPackage) public class Package: NSObject {
 

@@ -23,6 +23,8 @@ import Foundation
  *
  * #### Related Articles
  * -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
+ * - ``Offering``
+ * - ``Package``
  */
 @objc(RCOfferings) public class Offerings: NSObject {
 
