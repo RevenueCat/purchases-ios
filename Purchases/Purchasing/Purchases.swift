@@ -876,9 +876,27 @@ public extension Purchases {
     ///   ...
     /// }
     /// ```
-    /// - Note: an alternative way of getting ``CustomerInfo`` updates
-    /// is using ``PurchasesDelegate/purchases(_:receivedUpdated:)``
-    /// - Note: this method is not thread-safe.
+    /// #### SwiftUI Example:
+    /// ```swift
+    /// ContentView()
+    ///   .environmentObject(revenueCatCustomerData)
+    ///   .task {
+    ///     if let customerInfo = try? await Purchases.shared.customerInfo() {
+    ///         self.revenueCatCustomerData.customerInfo = customerInfo
+    ///         self.revenueCatCustomerData.appUserID = Purchases.shared.appUserID
+    ///     }
+    ///
+    ///     for await customerInfo in Purchases.shared.customerInfoStream {
+    ///         self.revenueCatCustomerData.customerInfo = customerInfo
+    ///         self.revenueCatCustomerData.appUserID = Purchases.shared.appUserID
+    ///     }
+    /// }
+    ///
+    /// ```
+    ///
+    /// - Note: An alternative way of getting ``CustomerInfo`` updates
+    /// is using ``PurchasesDelegate/purchases(_:receivedUpdated:)``.
+    /// - Important: this method is not thread-safe.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
         return self.customerInfoManager.customerInfoStream
