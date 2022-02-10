@@ -174,7 +174,7 @@ commands:
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  run-test-ios:
+  run-test-ios-15:
     <<: *base-job
     steps:
       - checkout
@@ -182,6 +182,8 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
+          environment:
+            SCAN_DEVICE: iPhone 12 (15.2)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -404,7 +406,7 @@ workflows:
     jobs:
       - lint:
           xcode_version: '13.2.1'
-      - run-test-ios:
+      - run-test-ios-15:
           xcode_version: '13.2.1'
       - run-test-tvos:
           xcode_version: '13.2.1'
