@@ -54,7 +54,11 @@ class TrialOrIntroPriceEligibilityChecker {
                     completion(try await sk2CheckEligibility(productIdentifiers))
                 } catch {
                     Logger.appleError(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
-                    completion([:])
+
+                    let introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                        resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
+                    }
+                    completion(introDict)
                 }
             }
         } else {

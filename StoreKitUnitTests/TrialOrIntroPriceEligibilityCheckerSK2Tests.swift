@@ -33,7 +33,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                                             finishTransactions: true)
 
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
-        let mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
+        mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
@@ -100,4 +100,35 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testCheckEligibilityNoAsyncWithFailure() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let products = ["product_id",
+                        "com.revenuecat.monthly_4.99.1_week_intro",
+                        "com.revenuecat.annual_39.99.2_week_intro",
+                        "lifetime"]
+        let expected = ["product_id": IntroEligibilityStatus.unknown,
+                        "com.revenuecat.monthly_4.99.1_week_intro": IntroEligibilityStatus.unknown,
+                        "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.unknown,
+                        "lifetime": IntroEligibilityStatus.unknown]
+
+        mockProductsManager?.stubbedSk2StoreProductsThrowsError = true
+
+        var completionCalled = false
+        var eligibilities: [String: IntroEligibility]?
+        trialOrIntroPriceEligibilityChecker!.checkEligibility(productIdentifiers: products) { receivedEligibilities in
+            completionCalled = true
+            eligibilities = receivedEligibilities
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+
+        let receivedEligibilities = try XCTUnwrap(eligibilities)
+        expect(receivedEligibilities.count) == expected.count
+
+        for (product, receivedEligibility) in receivedEligibilities {
+            expect(receivedEligibility.status) == expected[product]
+        }
+    }
 }

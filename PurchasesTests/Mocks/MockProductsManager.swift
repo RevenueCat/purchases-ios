@@ -62,6 +62,26 @@ class MockProductsManager: ProductsManager {
         invokedCacheProductParameter = product
     }
 
+    var invokedSk2StoreProducts = false
+    var invokedSk2StoreProductsCount = 0
+    var invokedSk2StoreProductsParameter: Set<String>?
+
+    var stubbedSk2StoreProductsThrowsError = false
+    struct MockSk2StoreProductsError: Error {}
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    override func sk2StoreProducts(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
+        invokedSk2StoreProducts = true
+        invokedSk2StoreProductsCount += 1
+        invokedSk2StoreProductsParameter = identifiers
+
+        if stubbedSk2StoreProductsThrowsError {
+            throw MockSk2StoreProductsError()
+        } else {
+            return try await super.sk2StoreProducts(withIdentifiers: identifiers)
+        }
+    }
+
     func resetMock() {
         invokedProducts = false
         invokedProductsCount = 0
