@@ -95,11 +95,15 @@ When building your project using v4, Xcode should automatically provide one-clic
 
 If you see any issues or new APIs that fix-its didn't cover, we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
 
-#### Error: `'_' is not a member type of class 'RevenueCat.Purchases'`
+### 2.2 Update references to `Purchases.foo` to `RevenueCat.foo`
 
-The class `Purchases` is no longer the parent of classes such as `Offering`. You should reference classes directly or as a child of `RevenueCat`, e.g. `RevenueCat.Offering` instead of `Purchases.Offering`.
+You might run into compilation errors with a message like `Error: `'_' is not a member type of class 'RevenueCat.Purchases'`. 
 
-### 2.2 Import StoreKit (if needed)
+The reason is that the class `Purchases` is no longer the parent of classes such as `Offerings`.
+You should reference classes directly or as a child of `RevenueCat`, e.g. `RevenueCat.Offerings`
+instead of `Purchases.Offerings`. You can also omit the framework entirely, i.e.: just using `Offerings` directly.
+
+### 2.3 Import StoreKit (if needed)
 
 Our V3 SDK automatically imported `StoreKit` whenever you did `import Purchases`. Due to Swift limitations, our 
 V4 SDK doesn't do this automatically.
@@ -107,12 +111,12 @@ V4 SDK doesn't do this automatically.
 So if you're referencing StoreKit types directly, you might need to add
 `import StoreKit` in Swift, and `@import StoreKit;` in Objective-C.
 
-### 2.3 Update code to use the new types (if needed)
+### 2.4 Update code to use the new types (if needed)
 
 Step 2.1 should automatically help you convert your code into the new types. See the "New Types" section for
 more information on what the new types introduce. 
 
-### 2.4 Take advantage of our new APIs
+### 2.5 Take advantage of our new APIs
 
 We introduced new features for Customer Support, as well as
  [async/await alternatives](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html) for our APIs.
