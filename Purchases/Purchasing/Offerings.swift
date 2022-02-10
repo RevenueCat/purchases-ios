@@ -15,8 +15,13 @@
 import Foundation
 
 /**
- This class contains all the offerings configured in RevenueCat dashboard.
- For more info see [RevenueCat Entitlements](https://docs.revenuecat.com/docs/entitlements)
+ * This class contains all the offerings configured in RevenueCat dashboard. Offerings let you control which products are shown to users without
+ * requiring an app update.
+ *
+ * Building paywalls that are dynamic and can react to different product configurations gives you maximum flexibility to make remote updates.
+ *
+ * #### Related Articles
+ * -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
  */
 @objc(RCOfferings) public class Offerings: NSObject {
 
