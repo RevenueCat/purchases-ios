@@ -30,7 +30,6 @@ class IntroEligibilityCalculator {
     func checkEligibility(with receiptData: Data,
                           productIdentifiers candidateProductIdentifiers: Set<String>,
                           completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
-
         guard candidateProductIdentifiers.count > 0 else {
             completion([:], nil)
             return

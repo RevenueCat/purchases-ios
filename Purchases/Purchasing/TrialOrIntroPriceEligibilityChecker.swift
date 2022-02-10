@@ -148,7 +148,7 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
 
                 self.getIntroEligibilityFromBackend(with: receiptData,
                                                     productIdentifiers: nilProductIdentifiers) { backendResults in
-                    let results = onDeviceResults.merging(backendResults)
+                    let results = onDeviceResults + backendResults
                     completion(results)
                 }
             }
@@ -161,7 +161,7 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
 
 }
 
-internal extension TrialOrIntroPriceEligibilityChecker {
+extension TrialOrIntroPriceEligibilityChecker {
 
     @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
     func productsWithKnownIntroEligibilityStatus(productIdentifiers: [String],
