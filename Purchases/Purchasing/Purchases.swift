@@ -1401,7 +1401,8 @@ public extension Purchases {
      * - returns ``RefundRequestStatus``: The status of the refund request.
      * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
      *
-     * If the request was unsuccessful or no active entitlements could be found for the user, an `Error` will be thrown.
+     * If the request was unsuccessful, no active entitlements could be found for the user,
+     * or multiple active entitlements were found for the user, an `Error` will be thrown.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)

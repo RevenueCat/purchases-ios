@@ -121,6 +121,13 @@ private extension BeginRefundRequestHelper {
                     return
                 }
 
+                guard customerInfo.entitlements.active.count < 2 else {
+                    let message = Strings.purchase.begin_refund_multiple_active_entitlements.description
+                    continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
+                    Logger.error(message)
+                    return
+                }
+
                 guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
                     let message = Strings.purchase.begin_refund_no_active_entitlement.description
                     continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))

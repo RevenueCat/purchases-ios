@@ -55,6 +55,7 @@ enum PurchaseStrings {
     case begin_refund_for_entitlement_nil_customer_info(entitlementID: String?)
     case begin_refund_no_entitlement_found(entitlementID: String?)
     case begin_refund_no_active_entitlement
+    case begin_refund_multiple_active_entitlements
     case begin_refund_customer_info_error(entitlementID: String?)
     case cached_app_user_id_deleted
     case check_eligibility_no_identifiers
@@ -196,6 +197,8 @@ extension PurchaseStrings: CustomStringConvertible {
                 " for refund."
         case .begin_refund_no_active_entitlement:
             return "Could not begin refund request. No active entitlement."
+        case .begin_refund_multiple_active_entitlements:
+            return "Could not begin refund request. Multiple active entitlements."
         case .begin_refund_customer_info_error(let entitlementID):
             return "Failed to get CustomerInfo to proceed with refund for " +
                 "\(entitlementID.flatMap { "entitlement with ID " + $0 } ?? "active entitlement")."
