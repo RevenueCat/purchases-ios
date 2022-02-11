@@ -15,8 +15,16 @@
 import Foundation
 
 /**
- An offering is a collection of Packages (`RCPackage`) available for the user to purchase.
- For more info, see [our docs on Entitlements](https://docs.revenuecat.com/docs/entitlements)
+ * An offering is a collection of ``Package``s, and they let you control which products
+ * are shown to users without requiring an app update.
+ *
+ * Building paywalls that are dynamic and can react to different product
+ * configurations gives you maximum flexibility to make remote updates.
+ *
+ * #### Related Articles
+ * -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
+ * - ``Offerings``
+ * - ``Package``
  */
 @objc(RCOffering) public class Offering: NSObject {
 
