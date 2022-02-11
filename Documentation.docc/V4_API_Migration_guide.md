@@ -132,9 +132,9 @@ See the "New APIs" section of this guide for more details.
 
 To better support `StoreKit 2`, `RevenueCat v4` introduces several new types to encapsulate data from `StoreKit 1` and `StoreKit 2`:
 
-- ``StoreProduct`` / `RCStoreProduct`: wraps a `StoreKit.SKProduct` or `StoreKit.Product`
-- ``StoreTransaction`` / `RCStoreTransaction`: wraps a `StoreKit.SKPaymentTransaction` or `StoreKit.Transaction`
-- ``StoreProductDiscount`` / `RCStoreProductDiscount`: wraps a `StoreKit.SKProductDiscount` or `StoreKit.Product.SubscriptionOffer`
+- ``StoreProduct``: wraps a `StoreKit.SKProduct` or `StoreKit.Product`
+- ``StoreTransaction``: wraps a `StoreKit.SKPaymentTransaction` or `StoreKit.Transaction`
+- ``StoreProductDiscount``: wraps a `StoreKit.SKProductDiscount` or `StoreKit.Product.SubscriptionOffer`
 
 These types replace native StoreKit types in all public API methods that used them.
 
