@@ -267,7 +267,7 @@ if let error = error as? RevenueCat.ErrorCode {
 - `beginRefundRequestForCurrentEntitlement`: Use this method to begin a refund request for the purchase that granted the current entitlement.
 - `beginRefundRequest(forProduct:)`: Use this method to begin a refund request for a purchase, specifying the product identifier.
 - `beginRefundRequest(forEntitlement:)`: Use this method to begin a refund request for a purchase, specifying the entitlement identifier.
-- You can now use ``Purchases/customerInfoStream`` to be notified whenever there's new CustomerInfo available, 
+- You can now use ``Purchases/customerInfoStream`` to be notified whenever there's new ``CustomerInfo`` available, 
 as an alternative to ``PurchasesDelegate/purchases(_:receivedUpdated:)``.
 
 ## Reporting undocumented issues:
