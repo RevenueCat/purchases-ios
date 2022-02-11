@@ -226,10 +226,16 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCAttributionNetwork, "AttributionNetwork", 
   RCAttributionNetworkMParticle = 6,
 };
 
+@class NSNumber;
 
 SWIFT_CLASS("_TtC10RevenueCat16NetworkOperation")
 @interface NetworkOperation : NSOperation
+@property (nonatomic, readonly, getter=isExecuting) BOOL executing;
+@property (nonatomic, readonly, getter=isFinished) BOOL finished;
+@property (nonatomic, readonly, getter=isCancelled) BOOL cancelled;
 - (void)main;
+- (void)cancel;
+@property (nonatomic, readonly, getter=isAsynchronous) BOOL asynchronous;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -250,7 +256,6 @@ SWIFT_CLASS("_TtC10RevenueCat20CreateAliasOperation")
 @class NSDate;
 @class RCStoreTransaction;
 @class NSURL;
-@class NSNumber;
 
 /// A container for the most recent customer info returned from <code>Purchases</code>.
 /// These objects are non-mutable and do not update automatically.
@@ -410,6 +415,7 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 
 
 
+
 /// This class contains all the entitlements associated to the user.
 SWIFT_CLASS_NAMED("EntitlementInfos")
 @interface RCEntitlementInfos : NSObject
@@ -553,6 +559,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCIntroEligibilityStatus, "IntroEligibilityS
   RCIntroEligibilityStatusIneligible = 1,
 /// The user is eligible for a free trial or intro pricing for this product.
   RCIntroEligibilityStatusEligible = 2,
+/// There is no free trial or intro pricing for this product.
+  RCIntroEligibilityStatusNoIntroOfferExists = 3,
 };
 
 
@@ -561,6 +569,13 @@ SWIFT_CLASS("_TtC10RevenueCat14LogInOperation")
 @end
 
 
+/// Enumeration of the different verbosity levels.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>Purchases/logLevel</code>
+///   </li>
+/// </ul>
 typedef SWIFT_ENUM_NAMED(NSInteger, RCLogLevel, "LogLevel", open) {
   RCLogLevelDebug = 0,
   RCLogLevelInfo = 1,
@@ -574,8 +589,22 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCLogLevel, "LogLevel", open) {
 
 @class RCPackage;
 
-/// An offering is a collection of Packages (<code>RCPackage</code>) available for the user to purchase.
-/// For more info, see <a href="https://docs.revenuecat.com/docs/entitlements">our docs on Entitlements</a>
+/// An offering is a collection of <code>Package</code>s, and they let you control which products
+/// are shown to users without requiring an app update.
+/// Building paywalls that are dynamic and can react to different product
+/// configurations gives you maximum flexibility to make remote updates.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/displaying-products">Displaying Products</a>
+///   </li>
+///   <li>
+///     <code>Offerings</code>
+///   </li>
+///   <li>
+///     <code>Package</code>
+///   </li>
+/// </ul>
 SWIFT_CLASS_NAMED("Offering")
 @interface RCOffering : NSObject
 /// Unique identifier defined in RevenueCat dashboard.
@@ -609,8 +638,23 @@ SWIFT_CLASS_NAMED("Offering")
 @end
 
 
+
 /// This class contains all the offerings configured in RevenueCat dashboard.
-/// For more info see <a href="https://docs.revenuecat.com/docs/entitlements">RevenueCat Entitlements</a>
+/// Offerings let you control which products are shown to users without requiring an app update.
+/// Building paywalls that are dynamic and can react to different product
+/// configurations gives you maximum flexibility to make remote updates.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/displaying-products">Displaying Products</a>
+///   </li>
+///   <li>
+///     <code>Offering</code>
+///   </li>
+///   <li>
+///     <code>Package</code>
+///   </li>
+/// </ul>
 SWIFT_CLASS_NAMED("Offerings")
 @interface RCOfferings : NSObject
 /// Dictionary of all Offerings (<code>Offering</code>) objects keyed by their identifier. This dictionary can also be accessed
@@ -633,12 +677,29 @@ SWIFT_CLASS_NAMED("Offerings")
 enum RCPackageType : NSInteger;
 @class RCStoreProduct;
 
-/// Enumeration of all possible Package types.
+/// Packages help abstract platform-specific products by grouping equivalent products across iOS, Android, and web.
+/// A package is made up of three parts: <code>identifier</code>, <code>packageType</code>, and underlying <code>StoreProduct</code>.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/displaying-products#displaying-packages">Displaying Packages</a>
+///   </li>
+///   <li>
+///     <code>Offering</code>
+///   </li>
+///   <li>
+///     <code>Offerings</code>
+///   </li>
+/// </ul>
 SWIFT_CLASS_NAMED("Package")
 @interface RCPackage : NSObject
+/// The identifier for this Package.
 @property (nonatomic, readonly, copy) NSString * _Nonnull identifier;
+/// The type configured for this package.
 @property (nonatomic, readonly) enum RCPackageType packageType;
+/// The underlying <code>storeProduct</code>
 @property (nonatomic, readonly, strong) RCStoreProduct * _Nonnull storeProduct;
+/// The identifier of the <code>Offering</code> containing this Package.
 @property (nonatomic, readonly, copy) NSString * _Nonnull offeringIdentifier;
 /// The price of this product using <code>StoreProduct/priceFormatter</code>.
 @property (nonatomic, readonly, copy) NSString * _Nonnull localizedPriceString;
@@ -653,12 +714,6 @@ SWIFT_CLASS_NAMED("Package")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-@class SKProduct;
-
-@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
-/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
-@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
-@end
 
 
 @interface RCPackage (SWIFT_EXTENSION(RevenueCat))
@@ -676,6 +731,23 @@ SWIFT_CLASS_NAMED("Package")
 + (enum RCPackageType)packageTypeFrom:(NSString * _Nonnull)string SWIFT_WARN_UNUSED_RESULT;
 @end
 
+@class SKProduct;
+
+@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
+/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
+@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
+@end
+
+/// Enumeration of all possible <code>Package</code> types, as configured on the package.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <code>Package</code>
+///   </li>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/displaying-products">Displaying Products</a>
+///   </li>
+/// </ul>
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPackageType, "PackageType", open) {
 /// A package that was defined with an unknown identifier.
   RCPackageTypeUnknown = -2,
@@ -770,11 +842,14 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPromotionalOfferEligibility, "PromotionalO
   RCPromotionalOfferEligibilityEligible = 1,
 };
 
+/// The types used to describe whether a transaction was purchased by the user,
+/// or is available to them through Family Sharing.
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchaseOwnershipType, "PurchaseOwnershipType", open) {
 /// The purchase was made directly by this user.
   RCPurchaseOwnershipTypePurchased = 0,
 /// The purchase has been shared to this user by a family member.
   RCPurchaseOwnershipTypeFamilyShared = 1,
+/// The ownership type could not be determined.
   RCPurchaseOwnershipTypeUnknown = 2,
 };
 
@@ -795,92 +870,137 @@ SWIFT_CLASS_NAMED("PurchaserInfo") SWIFT_AVAILABILITY(macos,obsoleted=1,message=
 SWIFT_CLASS_NAMED("Purchases")
 @interface RCPurchases : NSObject
 /// Returns the already configured instance of <code>Purchases</code>.
-/// note:
-/// this method will crash with <code>fatalError</code> if <code>Purchases</code> has not been initialized through <code>configure()</code>.
-/// If there’s a chance that may have not happened yet, you can use <code>isConfigured</code>
-/// to check if it’s safe to call.
-/// seealso:
-/// <code>isConfigured</code>.
+/// warning:
+/// this method will crash with <code>fatalError</code> if <code>Purchases</code> has not been initialized through
+/// <code>configure(withAPIKey:)</code> or one of its overloads. If there’s a chance that may have not happened yet,
+/// you can use <code>isConfigured</code> to check if it’s safe to call.
+/// <h3>Related symbols</h3>
+/// <ul>
+///   <li>
+///     <code>isConfigured</code>
+///   </li>
+/// </ul>
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCPurchases * _Nonnull sharedPurchases;)
 + (RCPurchases * _Nonnull)sharedPurchases SWIFT_WARN_UNUSED_RESULT;
-/// Returns <code>true</code> if RevenueCat has already been intialized through <code>configure()</code>.
+/// Returns <code>true</code> if RevenueCat has already been initialized through <code>configure(withAPIKey:)</code>
+/// or one of is overloads.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly) BOOL isConfigured;)
 + (BOOL)isConfigured SWIFT_WARN_UNUSED_RESULT;
 /// Delegate for <code>Purchases</code> instance. The delegate is responsible for handling promotional product purchases and
 /// changes to customer information.
 @property (nonatomic, strong) id <RCPurchasesDelegate> _Nullable delegate;
-/// Enable automatic collection of Apple Search Ads attribution. Disabled by default
+/// Enable automatic collection of Apple Search Ads attribution. Defaults to <code>false</code>.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAttributionCollection;)
 + (BOOL)automaticAppleSearchAdsAttributionCollection SWIFT_WARN_UNUSED_RESULT;
 + (void)setAutomaticAppleSearchAdsAttributionCollection:(BOOL)value;
-/// Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat
-/// seealso:
-/// <code>logHandler</code>
-/// seealso:
-/// <code>verboseLogHandler</code>
+/// Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>logHandler</code>
+///   </li>
+///   <li>
+///     <code>verboseLogHandler</code>
+///   </li>
+/// </ul>
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) enum RCLogLevel logLevel;)
 + (enum RCLogLevel)logLevel SWIFT_WARN_UNUSED_RESULT;
 + (void)setLogLevel:(enum RCLogLevel)newValue;
-/// Set this property to your proxy URL before configuring Purchases <em>only</em> if you’ve received a proxy key value
+/// Set this property to your proxy URL before configuring <code>Purchases</code> <em>only</em> if you’ve received a proxy key value
 /// from your RevenueCat contact.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, copy) NSURL * _Nullable proxyURL;)
 + (NSURL * _Nullable)proxyURL SWIFT_WARN_UNUSED_RESULT;
 + (void)setProxyURL:(NSURL * _Nullable)newValue;
 /// Set this property to true <em>only</em> if you’re transitioning an existing Mac app from the Legacy
 /// Mac App Store into the Universal Store, and you’ve configured your RevenueCat app accordingly.
-/// Contact support before using this.
+/// Contact RevenueCat support before using this.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL forceUniversalAppStore;)
 + (BOOL)forceUniversalAppStore SWIFT_WARN_UNUSED_RESULT;
 + (void)setForceUniversalAppStore:(BOOL)newValue;
 /// Set this property to true <em>only</em> when testing the ask-to-buy / SCA purchases flow.
-/// More information <a href="http://rev.cat/ask-to-buy">available here</a>.
-/// seealso:
-/// <a href="https://support.apple.com/en-us/HT201089">Approve what kids buy with Ask to Buy</a>
+/// More information <a href="https://rev.cat/ask-to-buy">available here</a>.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://rev.cat/approve-kids-purchases-apple">Approve what kids buy with Ask to Buy</a>
+///   </li>
+/// </ul>
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL simulatesAskToBuyInSandbox SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.14) SWIFT_AVAILABILITY(ios,introduced=8.0);)
 + (BOOL)simulatesAskToBuyInSandbox SWIFT_WARN_UNUSED_RESULT;
 + (void)setSimulatesAskToBuyInSandbox:(BOOL)newValue;
 /// Indicates whether the user is allowed to make payments.
+/// <a href="https://rev.cat/can-make-payments-apple">More information on when this might be <code>false</code> here</a>
 + (BOOL)canMakePayments SWIFT_WARN_UNUSED_RESULT;
 /// Set a custom log handler for redirecting logs to your own logging system.
-/// By default, this sends Info, Warn, and Error messages. If you wish to receive Debug level messages,
-/// you must enable debug logs.
+/// By default, this sends <code>LogLevel/info</code>, <code>LogLevel/warn</code>, and <code>LogLevel/error</code> messages.
+/// If you wish to receive Debug level messages, set the log level to <code>LogLevel/debug</code>.
 /// note:
 /// <code>verboseLogHandler</code> provides additional information.
-/// seealso:
-/// <code>verboseLogHandler</code>
-/// seealso:
-/// <code>logLevel</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>verboseLogHandler</code>
+///   </li>
+///   <li>
+///     <code>logLevel</code>
+///   </li>
+/// </ul>
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, copy) void (^ _Nonnull logHandler)(enum RCLogLevel, NSString * _Nonnull);)
 + (void (^ _Nonnull)(enum RCLogLevel, NSString * _Nonnull))logHandler SWIFT_WARN_UNUSED_RESULT;
 + (void)setLogHandler:(void (^ _Nonnull)(enum RCLogLevel, NSString * _Nonnull))newValue;
 /// Set a custom log handler for redirecting logs to your own logging system.
-/// By default, this sends Info, Warn, and Error messages. If you wish to receive Debug level messages,
-/// you must enable debug logs.
+/// By default, this sends <code>LogLevel/info</code>, <code>LogLevel/warn</code>, and <code>LogLevel/error</code> messages.
+/// If you wish to receive Debug level messages, set the log level to <code>LogLevel/debug</code>.
 /// note:
 /// you can use <code>logHandler</code> if you don’t need filename information.
-/// seealso:
-/// <code>logHandler</code>
-/// seealso:
-/// <code>logLevel</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>logHandler</code>
+///   </li>
+///   <li>
+///     <code>logLevel</code>
+///   </li>
+/// </ul>
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, copy) void (^ _Nonnull verboseLogHandler)(enum RCLogLevel, NSString * _Nonnull, NSString * _Nullable, NSString * _Nullable, NSUInteger);)
 + (void (^ _Nonnull)(enum RCLogLevel, NSString * _Nonnull, NSString * _Nullable, NSString * _Nullable, NSUInteger))verboseLogHandler SWIFT_WARN_UNUSED_RESULT;
 + (void)setVerboseLogHandler:(void (^ _Nonnull)(enum RCLogLevel, NSString * _Nonnull, NSString * _Nullable, NSString * _Nullable, NSUInteger))newValue;
 /// Setting this to <code>true</code> adds additional information to the default log handler:
 /// Filename, line, and method data.
 /// You can also access that information for your own logging system by using <code>verboseLogHandler</code>.
-/// seealso:
-/// <code>verboseLogHandler</code>
-/// seealso:
-/// <code>logLevel</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>verboseLogHandler</code>
+///   </li>
+///   <li>
+///     <code>logLevel</code>
+///   </li>
+/// </ul>
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL verboseLogs;)
 + (BOOL)verboseLogs SWIFT_WARN_UNUSED_RESULT;
 + (void)setVerboseLogs:(BOOL)newValue;
-/// Current version of the Purchases framework.
+/// Current version of the <code>Purchases</code> framework.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _Nonnull frameworkVersion;)
 + (NSString * _Nonnull)frameworkVersion SWIFT_WARN_UNUSED_RESULT;
+/// Whether transactions should be finished automatically. <code>true</code> by default.
+/// * - Warning: Setting this value to <code>false</code> will prevent the SDK from finishing transactions.
+/// * In this case, you <em>must</em> finish transactions in your app, otherwise they will remain in the queue and
+/// * will turn up every time the app is opened.
+/// * More information on finishing transactions manually <a href="https://rev.cat/finish-transactions">is available here</a>.
 @property (nonatomic) BOOL finishTransactions;
 /// Automatically collect subscriber attributes associated with the device identifiers
-/// $idfa, $idfv, $ip
+/// <ul>
+///   <li>
+///     <code>$idfa</code>
+///   </li>
+///   <li>
+///     <code>$idfv</code>
+///   </li>
+///   <li>
+///     <code>$ip</code>
+///   </li>
+/// </ul>
 - (void)collectDeviceIdentifiers;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
@@ -909,7 +1029,8 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @class NSUserDefaults;
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-/// Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton.
+/// Configures an instance of the Purchases SDK with a specified API key.
+/// The instance will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
 /// note:
 /// Use this initializer if your app does not have an account system.
@@ -938,7 +1059,8 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID;
-/// Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
+/// Configures an instance of the Purchases SDK with a custom <code>UserDefaults</code>.
+/// Use this constructor if you want to
 /// sync status across a shared container, such as between a host app and an extension. The instance of the
 /// Purchases SDK will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
@@ -955,7 +1077,8 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode;
-/// Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
+/// Configures an instance of the Purchases SDK with a custom <code>UserDefaults</code>.
+/// Use this constructor if you want to
 /// sync status across a shared container, such as between a host app and an extension. The instance of the
 /// Purchases SDK will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
@@ -974,6 +1097,32 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults;
+/// Configures an instance of the Purchases SDK with a custom userDefaults.
+/// Use this constructor if you want to sync status across a shared container,
+/// such as between a host app and an extension.
+/// The instance of the <code>Purchases</code> SDK will be set as a singleton.
+/// You should access the singleton instance using <code>Purchases/shared</code>
+/// important:
+/// Support for purchases using StoreKit 2 is currently in an experimental phase.
+/// We recommend setting this value to <code>false</code> (default) for production apps.
+/// \param apiKey The API Key generated for your app from https://app.revenuecat.com/
+///
+/// \param appUserID The unique app user id for this user. This user id will allow users to share their
+/// purchases and subscriptions across devices. Pass <code>nil</code> or an empty string if you want <code>Purchases</code>
+/// to generate this for you.
+///
+/// \param observerMode Set this to <code>true</code> if you have your own IAP implementation and want to use only
+/// RevenueCat’s backend. Default is <code>false</code>.
+///
+/// \param userDefaults Custom <code>UserDefaults</code> to use
+///
+/// \param useStoreKit2IfAvailable EXPERIMENTAL. opt in to using StoreKit 2 on devices that support it.
+/// Purchases will be made using StoreKit 2 under the hood automatically.
+///
+///
+/// returns:
+/// An instantiated <code>Purchases</code> object that has been set as a singleton.
++ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable;
 @end
 
 
@@ -985,16 +1134,26 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// Deprecated
 @property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("Configure behavior through the RevenueCat dashboard instead");
 /// Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
+/// <h4>Related articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
+///   </li>
+/// </ul>
 /// \param data Dictionary provided by the network.
-/// See <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
 ///
 /// \param network Enum for the network the data is coming from, see <code>AttributionNetwork</code> for supported
 /// networks.
 ///
 + (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
 /// Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
+/// <h4>Related articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
+///   </li>
+/// </ul>
 /// \param data Dictionary provided by the network.
-/// See <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
 ///
 /// \param network Enum for the network the data is coming from, see <code>AttributionNetwork</code> for supported
 /// networks.
@@ -1016,30 +1175,75 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///   </li>
 /// </ul>
 @property (nonatomic, readonly, copy) NSString * _Nonnull appUserID;
-/// If the <code>appUserID</code> has been generated by RevenueCat
+/// Returns <code>true</code> if the <code>appUserID</code> has been generated by RevenueCat, <code>false</code> otherwise.
 @property (nonatomic, readonly) BOOL isAnonymous;
-/// This function will logIn the current user with an appUserID.
-/// The callback will be called with the latest CustomerInfo for the user, as well as a boolean
-/// indicating whether the user was created for the first time in the RevenueCat backend.
-/// See <a href="https://docs.revenuecat.com/docs/user-ids">Identifying Users</a>
-/// \param appUserID The appUserID that should be linked to the current user.
+/// This function will log in the current user with an <code>appUserID</code>.
+/// The <code>completion</code> block will be called with the latest <code>CustomerInfo</code> and a <code>Bool</code> specifying
+/// whether the user was created for the first time in the RevenueCat backend.
+/// RevenueCat provides a source of truth for a subscriber’s status across different platforms.
+/// To do this, each subscriber has an App User ID that uniquely identifies them within your application.
+/// User identity is one of the most important components of many mobile applications,
+/// and it’s extra important to make sure the subscription status RevenueCat is
+/// tracking gets associated with the correct user.
+/// The Purchases SDK allows you to specify your own user identifiers or use anonymous identifiers
+/// generated by RevenueCat. Some apps will use a combination
+/// of their own identifiers and RevenueCat anonymous Ids - that’s okay!
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/user-ids">Identifying Users</a>
+///   </li>
+///   <li>
+///     <code>logOut(completion:)</code>
+///   </li>
+///   <li>
+///     <code>isAnonymous</code>
+///   </li>
+///   <li>
+///     <code>Purchases/appUserID</code>
+///   </li>
+/// </ul>
+/// \param appUserID The <code>appUserID</code> that should be linked to the current user.
 ///
 - (void)logIn:(NSString * _Nonnull)appUserID completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completion;
-/// Logs out the Purchases client clearing the saved appUserID.
+/// Logs out the <code>Purchases</code> client, clearing the saved <code>appUserID</code>.
 /// This will generate a random user id and save it in the cache.
 /// If this method is called and the current user is anonymous, it will return an error.
-/// See <a href="https://docs.revenuecat.com/docs/user-ids">Identifying Users</a>
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/user-ids">Identifying Users</a>
+///   </li>
+///   <li>
+///     <code>logIn(_:completion:)</code>
+///   </li>
+///   <li>
+///     <code>isAnonymous</code>
+///   </li>
+///   <li>
+///     <code>Purchases/appUserID</code>
+///   </li>
+/// </ul>
 - (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
-/// Fetch the configured offerings for this users. <code>Offerings</code> allows you to configure your in-app products
-/// via RevenueCat and greatly simplifies management.
-/// See <a href="https://docs.revenuecat.com/entitlements">the guide</a> for more info.
+/// Fetch the configured <code>Offerings</code> for this user.
+/// \code
+///  *``Offerings`` allows you to configure your in-app products
+///
+/// \endcodevia RevenueCat and greatly simplifies management.
 /// <code>Offerings</code> will be fetched and cached on instantiation so that, by the time they are needed,
 /// your prices are loaded for your purchase flow. Time is money.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/displaying-products">Displaying Products</a>
+///   </li>
+/// </ul>
 /// \param completion A completion block called when offerings are available.
-/// Called immediately if offerings are cached. Offerings will be nil if an error occurred.
+/// Called immediately if offerings are cached. <code>Offerings</code> will be <code>nil</code> if an error occurred.
 ///
 - (void)getOfferingsWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
 @end
+
 
 
 @class NSData;
@@ -1053,74 +1257,174 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// \param attributes Map of attributes by key. Set the value as an empty string to delete an attribute.
 ///
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
-/// Subscriber attribute associated with the email address for the user
-/// \param email Empty String or nil will delete the subscriber attribute.
+/// Subscriber attribute associated with the email address for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param email Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setEmail:(NSString * _Nullable)email;
-/// Subscriber attribute associated with the phone number for the user
-/// \param phoneNumber Empty String or nil will delete the subscriber attribute.
+/// Subscriber attribute associated with the phone number for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param phoneNumber Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setPhoneNumber:(NSString * _Nullable)phoneNumber;
-/// Subscriber attribute associated with the display name for the user
-/// \param displayName Empty String or nil will delete the subscriber attribute.
+/// Subscriber attribute associated with the display name for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param displayName Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setDisplayName:(NSString * _Nullable)displayName;
-/// Subscriber attribute associated with the push token for the user
-/// \param pushToken nil will delete the subscriber attribute.
+/// Subscriber attribute associated with the push token for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param pushToken <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setPushToken:(NSData * _Nullable)pushToken;
-/// Subscriber attribute associated with the Adjust Id for the user
-/// Required for the RevenueCat Adjust integration
-/// \param adjustID nil will delete the subscriber attribute
-///
+/// Subscriber attribute associated with the Adjust Id for the user.
+/// Required for the RevenueCat Adjust integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/adjust">Adjust RevenueCat Integration</a>
+///     *- Parameter adjustID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
 - (void)setAdjustID:(NSString * _Nullable)adjustID;
-/// Subscriber attribute associated with the Appsflyer Id for the user
-/// Required for the RevenueCat Appsflyer integration
-/// \param appsflyerID nil will delete the subscriber attribute
-///
+/// Subscriber attribute associated with the Appsflyer Id for the user.
+/// Required for the RevenueCat Appsflyer integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/appsflyer">AppsFlyer RevenueCat Integration</a>
+///     *- Parameter appsflyerID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
 - (void)setAppsflyerID:(NSString * _Nullable)appsflyerID;
-/// Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
-/// Recommended for the RevenueCat Facebook integration
-/// \param fbAnonymousID nil will delete the subscriber attribute
-///
+/// Subscriber attribute associated with the Facebook SDK Anonymous Id for the user.
+/// Recommended for the RevenueCat Facebook integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/facebook-ads">Facebook Ads RevenueCat Integration</a>
+///     *- Parameter fbAnonymousID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
 - (void)setFBAnonymousID:(NSString * _Nullable)fbAnonymousID;
-/// Subscriber attribute associated with the mParticle Id for the user
-/// Recommended for the RevenueCat mParticle integration
-/// \param mparticleID nil will delete the subscriber attribute
-///
+/// Subscriber attribute associated with the mParticle Id for the user.
+/// Recommended for the RevenueCat mParticle integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/mparticle">mParticle RevenueCat Integration</a>
+///     *- Parameter mparticleID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
 - (void)setMparticleID:(NSString * _Nullable)mparticleID;
-/// Subscriber attribute associated with the OneSignal Player ID for the user
-/// Required for the RevenueCat OneSignal integration
-/// \param onesignalID nil will delete the subscriber attribute
-///
+/// Subscriber attribute associated with the OneSignal Player ID for the user.
+/// Required for the RevenueCat OneSignal integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/onesignal">OneSignal RevenueCat Integration</a>
+///     *- Parameter onesignalID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
 - (void)setOnesignalID:(NSString * _Nullable)onesignalID;
-/// Subscriber attribute associated with the Airship Channel ID for the user
-/// Required for the RevenueCat Airship integration
-/// \param airshipChannelID nil will delete the subscriber attribute
-///
+/// Subscriber attribute associated with the Airship Channel ID for the user.
+/// Required for the RevenueCat Airship integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/airship">AirShip RevenueCat Integration</a>
+///     *- Parameter airshipChannelID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
 - (void)setAirshipChannelID:(NSString * _Nullable)airshipChannelID;
-/// Subscriber attribute associated with the install media source for the user
-/// \param mediaSource nil will delete the subscriber attribute.
+/// Subscriber attribute associated with the CleverTap ID for the user.
+/// Required for the RevenueCat CleverTap integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/clevertap">CleverTap RevenueCat Integration</a>
+///     *- Parameter cleverTapID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setCleverTapID:(NSString * _Nullable)cleverTapID;
+/// Subscriber attribute associated with the install media source for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param mediaSource Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setMediaSource:(NSString * _Nullable)mediaSource;
-/// Subscriber attribute associated with the install campaign for the user
-/// \param campaign nil will delete the subscriber attribute.
+/// Subscriber attribute associated with the install campaign for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param campaign Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setCampaign:(NSString * _Nullable)campaign;
 /// Subscriber attribute associated with the install ad group for the user
-/// \param adGroup nil will delete the subscriber attribute.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param adGroup Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setAdGroup:(NSString * _Nullable)adGroup;
 /// Subscriber attribute associated with the install ad for the user
-/// \param installAd nil will delete the subscriber attribute.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param installAd Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setAd:(NSString * _Nullable)installAd;
 /// Subscriber attribute associated with the install keyword for the user
-/// \param keyword nil will delete the subscriber attribute.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param keyword Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setKeyword:(NSString * _Nullable)keyword;
 /// Subscriber attribute associated with the install ad creative for the user.
-/// \param creative nil will delete the subscriber attribute.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param creative Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setCreative:(NSString * _Nullable)creative;
 @end
@@ -1170,9 +1474,14 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 - (void)productsWithIdentifiers:(NSArray<NSString *> * _Nonnull)productIdentifiers completionBlock:(void (^ _Nonnull)(NSArray<SKProduct *> * _Nonnull))completion SWIFT_AVAILABILITY(macos,obsoleted=1,message="'products' has been renamed to 'getProductsWithIdentifiers:completion:'") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'products' has been renamed to 'getProductsWithIdentifiers:completion:'") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'products' has been renamed to 'getProductsWithIdentifiers:completion:'") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'products' has been renamed to 'getProductsWithIdentifiers:completion:'");
 /// Fetch the configured offerings for this users.
 /// Offerings allows you to configure your in-app products via RevenueCat and greatly simplifies management.
-/// See <a href="https://docs.revenuecat.com/entitlements">the guide</a> for more info.
 /// Offerings will be fetched and cached on instantiation so that, by the time they are needed,
 /// your prices are loaded for your purchase flow. Time is money.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/displaying-products">Displaying Products</a>
+///   </li>
+/// </ul>
 /// \param completion A completion block called when offerings are available.
 /// Called immediately if offerings are cached. Offerings will be nil if an error occurred.
 ///
@@ -1290,41 +1599,47 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// Called immediately if <code>CustomerInfo</code> is cached. Customer info can be nil if an error occurred.
 ///
 - (void)getCustomerInfoWithCompletion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
-/// Fetches the <code>StoreProducts</code> for your IAPs for given <code>productIdentifiers</code>.
+/// Fetches the <code>StoreProduct</code>s for your IAPs for given <code>productIdentifiers</code>.
 /// Use this method if you aren’t using <code>getOfferings(completion:)</code>.
-/// You should use getOfferings though.
+/// You should use <code>getOfferings(completion:)</code> though.
 /// note:
 /// <code>completion</code> may be called without <code>StoreProduct</code>s that you are expecting. This is usually caused by
 /// iTunesConnect configuration errors. Ensure your IAPs have the “Ready to Submit” status in iTunesConnect.
 /// Also ensure that you have an active developer program subscription and you have signed the latest paid
 /// application agreements.
-/// If you’re having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
-/// \param productIdentifiers A set of product identifiers for in app purchases setup via AppStoreConnect:
-/// https://appstoreconnect.apple.com/
+/// If you’re having trouble, see:
+/// <a href="https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard">App Store Connect In-App Purchase Configuration</a>
+/// \param productIdentifiers A set of product identifiers for in-app purchases setup via
+/// <a href="https://appstoreconnect.apple.com/">AppStoreConnect</a>
 /// This should be either hard coded in your application, from a file, or from a custom endpoint if you want
 /// to be able to deploy new IAPs without an app update.
 ///
-/// \param completion An @escaping callback that is called with the loaded products.
+/// \param completion An <code>@escaping</code> callback that is called with the loaded products.
 /// If the fetch fails for any reason it will return an empty array.
 ///
 - (void)getProductsWithIdentifiers:(NSArray<NSString *> * _Nonnull)productIdentifiers completion:(void (^ _Nonnull)(NSArray<RCStoreProduct *> * _Nonnull))completion;
-/// Use this function if you are not using the Offerings system to purchase an <code>StoreProduct</code>.
-/// If you are using the Offerings system, use <code>Purchases/purchase(package:completion:)</code> instead.
-/// Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+/// Initiates a purchase of a <code>StoreProduct</code>.
+/// Use this function if you are not using the <code>Offerings</code> system to purchase an <code>StoreProduct</code>.
+/// If you are using the <code>Offerings</code> system, use <code>Purchases/purchase(package:completion:)</code> instead.
+/// important:
+/// Call this method when a user has decided to purchase a product.
+/// Only call this in direct response to user input.
 /// From here <code>Purchases</code> will handle the purchase with <code>StoreKit</code> and call the <code>PurchaseCompletedBlock</code>.
 /// note:
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will
 /// handle this for you.
 /// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
 /// If the purchase was not successful, there will be an <code>NSError</code>.
-/// If the user cancelled, <code>userCancelled</code> will be <code>YES</code>.
-/// \param product The <code>StoreProduct</code> the user intends to purchase
+/// If the user cancelled, <code>userCancelled</code> will be <code>true</code>.
+/// \param product The <code>StoreProduct</code> the user intends to purchase.
 ///
 /// \param completion A completion block that is called when the purchase completes.
 ///
 - (void)purchaseProduct:(RCStoreProduct * _Nonnull)product withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
-/// Purchase the passed <code>Package</code>.
-/// Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+/// Initiates a purchase of a <code>Package</code>.
+/// important:
+/// Call this method when a user has decided to purchase a product.
+/// Only call this in direct response to user input.
 /// From here <code>Purchases</code> will handle the purchase with <code>StoreKit</code> and call the <code>PurchaseCompletedBlock</code>.
 /// note:
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will
@@ -1337,11 +1652,16 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// \param completion A completion block that is called when the purchase completes.
 ///
 - (void)purchasePackage:(RCPackage * _Nonnull)package withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
+/// Initiates a purchase of a <code>StoreProduct</code> with a <code>StoreProductDiscount</code>.
 /// Use this function if you are not using the Offerings system to purchase a <code>StoreProduct</code> with an
 /// applied <code>StoreProductDiscount</code>.
 /// If you are using the Offerings system, use <code>Purchases/purchase(package:discount:completion:)</code> instead.
+/// important:
 /// Call this method when a user has decided to purchase a product with an applied discount.
 /// Only call this in direct response to user input.
+/// important:
+/// Before calling this method, check that the user is eligible for the discount
+/// by calling <code>checkPromotionalDiscountEligibility(forProductDiscount:product:)</code>.
 /// From here <code>Purchases</code> will handle the purchase with <code>StoreKit</code> and call the <code>PurchaseCompletedBlock</code>.
 /// note:
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will handle
@@ -1349,9 +1669,9 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
 /// If the purchase was not successful, there will be an <code>Error</code>.
 /// If the user cancelled, <code>userCancelled</code> will be <code>true</code>.
-/// \param product The <code>StoreProduct</code> the user intends to purchase
+/// \param product The <code>StoreProduct</code> the user intends to purchase.
 ///
-/// \param discount The <code>StoreProductDiscount</code> to apply to the purchase
+/// \param discount The <code>StoreProductDiscount</code> to apply to the purchase.
 ///
 /// \param completion A completion block that is called when the purchase completes.
 ///
@@ -1390,7 +1710,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// <code>appUserID</code> will be aliased together with the <code>appUserID</code> of the existing user.
 /// Going forward, either <code>appUserID</code> will be able to reference the same user.
 /// You shouldn’t use this method if you have your own account system. In that case “restoration” is provided
-/// by your app passing the same <code>appUserId</code> used to purchase originally.
+/// by your app passing the same <code>appUserID</code> used to purchase originally.
 /// note:
 /// This may force your users to enter the App Store password so should only be performed on request of
 /// the user. Typically with a button in settings or near your purchase UI. Use
@@ -1401,17 +1721,17 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
 /// <a href="https://docs.revenuecat.com/docs/ios-subscription-offers">iOS Introductory  Offers</a>.
 /// note:
-/// If you’re looking to use Promotional Offers use instead,
+/// If you’re looking to use Promotional Offers instead,
 /// use <code>Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)</code>.
 /// note:
 /// Subscription groups are automatically collected for determining eligibility. If RevenueCat can’t
-/// definitively compute the eligibilty, most likely because of missing group information, it will return
+/// definitively compute the eligibility, most likely because of missing group information, it will return
 /// <code>IntroEligibilityStatus/unknown</code>. The best course of action on unknown status is to display the non-intro
 /// pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
 /// version of iOS so that the subscription group can be collected by the SDK.
 /// \param productIdentifiers Array of product identifiers for which you want to compute eligibility
 ///
-/// \param completion A block that receives a dictionary of product_id -> <code>IntroEligibility</code>.
+/// \param completion A block that receives a dictionary of <code>product_id</code> -> <code>IntroEligibility</code>.
 ///
 - (void)checkTrialOrIntroDiscountEligibility:(NSArray<NSString *> * _Nonnull)productIdentifiers completion:(void (^ _Nonnull)(NSDictionary<NSString *, RCIntroEligibility *> * _Nonnull))completion;
 /// Invalidates the cache for customer information.
@@ -1436,12 +1756,17 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 - (void)checkPromotionalDiscountEligibilityForProductDiscount:(RCStoreProductDiscount * _Nonnull)discount withProduct:(RCStoreProduct * _Nonnull)product withCompletion:(void (^ _Nonnull)(enum RCPromotionalOfferEligibility, NSError * _Nullable))completion SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
 /// Use this function to open the manage subscriptions page.
-/// If the manage subscriptions page can’t be opened, the managementURL in the customerInfo will be opened.
-/// If managementURL is not available, the App Store’s subscription management section will be opened.
+/// If the manage subscriptions page can’t be opened, the <code>CustomerInfo/managementURL</code> in
+/// the <code>CustomerInfo</code> will be opened. If <code>CustomerInfo/managementURL</code> is not available,
+/// the App Store’s subscription management section will be opened.
+/// The <code>completion</code> block will be called when the modal is opened, not when it’s actually closed.
+/// This is because of an undocumented change in StoreKit’s behavior between iOS 15.0 and 15.2,
+/// where 15.0 would return when the modal was closed,
+/// and 15.2 returns when the modal is opened.
 /// \param completion A completion block that is called when the modal is closed.
 /// If it was not successful, there will be an <code>Error</code>.
 ///
-- (void)showManageSubscriptionsWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completion SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
+- (void)showManageSubscriptionsWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
 @end
 
 
@@ -1475,6 +1800,12 @@ SWIFT_PROTOCOL_NAMED("PurchasesDelegate")
 - (void)purchases:(RCPurchases * _Nonnull)purchases shouldPurchasePromoProduct:(RCStoreProduct * _Nonnull)product defermentBlock:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))makeDeferredPurchase;
 @end
 
+
+
+SWIFT_CLASS("_TtC10RevenueCat21RCPurchasesErrorUtils") SWIFT_AVAILABILITY(maccatalyst,obsoleted=1) SWIFT_AVAILABILITY(macos,obsoleted=1) SWIFT_AVAILABILITY(watchos,obsoleted=1) SWIFT_AVAILABILITY(tvos,obsoleted=1) SWIFT_AVAILABILITY(ios,obsoleted=1)
+@interface RCPurchasesErrorUtils : NSObject
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
 
 /// Status codes for refund requests.
 typedef SWIFT_ENUM_NAMED(NSInteger, RCRefundRequestStatus, "RefundRequestStatus", open) {
@@ -1558,14 +1889,6 @@ SWIFT_CLASS_NAMED("StoreProduct")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-@class NSLocale;
-
-@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
-/// The object containing introductory price information for the product.
-@property (nonatomic, readonly, strong) SKProductDiscount * _Nullable introductoryPrice SWIFT_AVAILABILITY(macos,unavailable,message="'introductoryPrice' has been renamed to 'introductoryDiscount': Use StoreProductDiscount instead") SWIFT_AVAILABILITY(watchos,unavailable,message="'introductoryPrice' has been renamed to 'introductoryDiscount': Use StoreProductDiscount instead") SWIFT_AVAILABILITY(tvos,unavailable,message="'introductoryPrice' has been renamed to 'introductoryDiscount': Use StoreProductDiscount instead") SWIFT_AVAILABILITY(ios,unavailable,message="'introductoryPrice' has been renamed to 'introductoryDiscount': Use StoreProductDiscount instead");
-/// The locale used to format the price of the product.
-@property (nonatomic, readonly, copy) NSLocale * _Nonnull priceLocale SWIFT_AVAILABILITY(macos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(watchos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(tvos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(ios,unavailable,message="Use localizedPriceString instead");
-@end
 
 @class NSDecimalNumber;
 
@@ -1582,6 +1905,15 @@ SWIFT_CLASS_NAMED("StoreProduct")
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
 @end
 
+@class NSLocale;
+
+@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
+/// The object containing introductory price information for the product.
+@property (nonatomic, readonly, strong) SKProductDiscount * _Nullable introductoryPrice SWIFT_AVAILABILITY(macos,unavailable,message="'introductoryPrice' has been renamed to 'introductoryDiscount': Use StoreProductDiscount instead") SWIFT_AVAILABILITY(watchos,unavailable,message="'introductoryPrice' has been renamed to 'introductoryDiscount': Use StoreProductDiscount instead") SWIFT_AVAILABILITY(tvos,unavailable,message="'introductoryPrice' has been renamed to 'introductoryDiscount': Use StoreProductDiscount instead") SWIFT_AVAILABILITY(ios,unavailable,message="'introductoryPrice' has been renamed to 'introductoryDiscount': Use StoreProductDiscount instead");
+/// The locale used to format the price of the product.
+@property (nonatomic, readonly, copy) NSLocale * _Nonnull priceLocale SWIFT_AVAILABILITY(macos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(watchos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(tvos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(ios,unavailable,message="Use localizedPriceString instead");
+@end
+
 
 @interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
 /// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
@@ -1589,15 +1921,18 @@ SWIFT_CLASS_NAMED("StoreProduct")
 @end
 
 enum RCPaymentMode : NSInteger;
+enum RCDiscountType : NSInteger;
 
 /// Type that wraps <code>StoreKit.Product.SubscriptionOffer</code> and <code>SKProductDiscount</code>
 /// and provides access to their properties.
+/// Information about a subscription offer that you configured in App Store Connect.
 SWIFT_CLASS_NAMED("StoreProductDiscount")
 @interface RCStoreProductDiscount : NSObject
 @property (nonatomic, readonly, copy) NSString * _Nullable offerIdentifier;
 @property (nonatomic, readonly) NSDecimal price;
 @property (nonatomic, readonly) enum RCPaymentMode paymentMode;
 @property (nonatomic, readonly, strong) RCSubscriptionPeriod * _Nonnull subscriptionPeriod;
+@property (nonatomic, readonly) enum RCDiscountType type;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -1614,6 +1949,18 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPaymentMode, "PaymentMode", open) {
 /// No initial charge
   RCPaymentModeFreeTrial = 2,
 };
+
+/// The discount type for a <code>StoreProductDiscount</code>
+/// Wraps <code>SKProductDiscount.Type</code> if this <code>StoreProductDiscount</code> represents a <code>SKProductDiscount</code>.
+/// Wraps  <code>Product.SubscriptionOffer.OfferType</code> if this <code>StoreProductDiscount</code> represents
+/// a <code>Product.SubscriptionOffer</code>.
+typedef SWIFT_ENUM_NAMED(NSInteger, RCDiscountType, "DiscountType", open) {
+/// Introductory offer
+  RCDiscountTypeIntroductory = 0,
+/// Promotional offer for subscriptions
+  RCDiscountTypePromotional = 1,
+};
+
 
 
 
@@ -1637,6 +1984,7 @@ SWIFT_CLASS_NAMED("StoreTransaction")
 @end
 
 
+
 @interface RCStoreTransaction (SWIFT_EXTENSION(RevenueCat))
 /// Returns the <code>SKPaymentTransaction</code> if this <code>StoreTransaction</code> represents a <code>SKPaymentTransaction</code>.
 @property (nonatomic, readonly, strong) SKPaymentTransaction * _Nullable sk1Transaction;
@@ -1644,9 +1992,14 @@ SWIFT_CLASS_NAMED("StoreTransaction")
 
 enum RCSubscriptionPeriodUnit : NSInteger;
 
+/// The duration of time between subscription renewals.
+/// Use the value and the unit together to determine the subscription period.
+/// For example, if the unit is  <code>.month</code>, and the value is <code>3</code>, the subscription period is three months.
 SWIFT_CLASS_NAMED("SubscriptionPeriod")
 @interface RCSubscriptionPeriod : NSObject
+/// The number of period units.
 @property (nonatomic, readonly) NSInteger value;
+/// The increment of time that a subscription period is specified in.
 @property (nonatomic, readonly) enum RCSubscriptionPeriodUnit unit;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
@@ -1654,10 +2007,15 @@ SWIFT_CLASS_NAMED("SubscriptionPeriod")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+/// Units of time used to describe subscription periods.
 typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
+/// A subscription period unit of a day.
   RCSubscriptionPeriodUnitDay = 0,
+/// A subscription period unit of a week.
   RCSubscriptionPeriodUnitWeek = 1,
+/// A subscription period unit of a month.
   RCSubscriptionPeriodUnitMonth = 2,
+/// A subscription period unit of a year.
   RCSubscriptionPeriodUnitYear = 3,
 };
 
