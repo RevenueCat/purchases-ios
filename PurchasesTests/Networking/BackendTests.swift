@@ -23,9 +23,14 @@ class BackendTests: XCTestCase {
     }
 
     struct HTTPResponse {
-        let statusCode: NSInteger
+        let statusCode: Int
         let response: [String: Any]?
         let error: Error?
+        init(statusCode: Int, response: [String: Any]?, error: Error? = nil) {
+            self.statusCode = statusCode
+            self.response = response
+            self.error = error
+        }
     }
 
     class MockHTTPClient: HTTPClient {
@@ -1887,6 +1892,116 @@ class BackendTests: XCTestCase {
         expect(completion1Called).toEventually(beTrue())
         expect(completion2Called).toEventually(beTrue())
     }
+
+    func testGetSubscriberInfoDoesNotMakeTwoRequests() {
+        let subscriberResponse: [String: Any] = [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "user",
+                "subscriptions": []
+            ]
+        ]
+        let customerInfoResponse = HTTPResponse(statusCode: 200, response: subscriberResponse)
+        httpClient.mock(requestPath: "/subscribers/" + userID, response: customerInfoResponse)
+
+        var firstCustomerInfo: CustomerInfo?
+        var secondCustomerInfo: CustomerInfo?
+
+        backend.getSubscriberData(appUserID: userID, completion: { (customerInfo, _) in
+            firstCustomerInfo = customerInfo
+        })
+
+        backend.getSubscriberData(appUserID: userID, completion: { (customerInfo, _) in
+            secondCustomerInfo = customerInfo
+        })
+
+        expect(firstCustomerInfo).toEventuallyNot(beNil())
+
+        expect(secondCustomerInfo) == firstCustomerInfo
+        expect(self.httpClient.calls.count) == 1
+    }
+
+    func testGetsUpdatedSubscriberInfoAfterPost() {
+        var dateComponent = DateComponents()
+        dateComponent.month = 1
+        let futureDateString = ISO8601DateFormatter()
+            .string(from: Calendar.current.date(byAdding: dateComponent, to: Date())!)
+
+        let validSubscriberResponse: [String: Any] = [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "ORIGINAL",
+                "subscriptions": [
+                    "onemonth_freetrial": [
+                        "expires_date": futureDateString
+                    ]
+                ]
+            ]
+        ]
+
+        let validUpdatedSubscriberResponse: [String: Any] = [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "UPDATED",
+                "subscriptions": [
+                    "onemonth_freetrial": [
+                        "expires_date": futureDateString
+                    ],
+                    "twomonth_awesome": [
+                        "expires_date": futureDateString
+                    ]
+                ]
+            ]
+        ]
+        let initialCustomerInfoResponse = HTTPResponse(statusCode: 200, response: validSubscriberResponse)
+        let updatedCustomerInfoResponse = HTTPResponse(statusCode: 200, response: validUpdatedSubscriberResponse)
+        let postResponse = HTTPResponse(statusCode: 200, response: validUpdatedSubscriberResponse)
+        httpClient.mock(requestPath: "/receipts", response: postResponse)
+        httpClient.mock(requestPath: "/subscribers/" + userID, response: initialCustomerInfoResponse)
+
+        var originalSubscriberInfo: CustomerInfo?
+        var updatedSubscriberInfo: CustomerInfo?
+        var postSubscriberInfo: CustomerInfo?
+
+        var callOrder: (initialGet: Bool,
+                        postResponse: Bool,
+                        updatedGet: Bool) = (false, false, false)
+        backend.getSubscriberData(appUserID: userID, completion: { (customerInfo, _) in
+            originalSubscriberInfo = customerInfo
+            callOrder.initialGet = true
+
+            self.httpClient.mocks.removeValue(forKey: "/subscribers/\(self.userID)")
+        })
+
+        backend.post(receiptData: receiptData,
+                     appUserID: userID,
+                     isRestore: false,
+                     productData: nil,
+                     presentedOfferingIdentifier: nil,
+                     observerMode: true,
+                     subscriberAttributes: nil,
+                     completion: { (customerInfo, _) in
+            self.httpClient.mock(requestPath: "/subscribers/" + self.userID, response: updatedCustomerInfoResponse)
+            callOrder.postResponse = true
+            postSubscriberInfo = customerInfo
+        })
+
+        backend.getSubscriberData(appUserID: userID, completion: { (newSubscriberInfo, _) in
+            expect(callOrder) == (true, true, false)
+            updatedSubscriberInfo = newSubscriberInfo
+            callOrder.updatedGet = true
+        })
+
+        expect(callOrder).toEventually(equal((true, true, true)))
+
+        expect(updatedSubscriberInfo).toNot(beNil())
+        expect(updatedSubscriberInfo).to(equal(postSubscriberInfo))
+        expect(updatedSubscriberInfo).toNot(equal(originalSubscriberInfo))
+    }
+
 }
 
 private extension BackendTests {

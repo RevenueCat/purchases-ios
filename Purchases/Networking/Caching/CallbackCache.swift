@@ -23,8 +23,8 @@ import Foundation
  */
 class CallbackCache<T> where T: CacheKeyProviding {
 
-    private var cachedCallbacksByKey: [String: [T]] = [:]
-    private let callbackQueue: DispatchQueue
+    private(set) var cachedCallbacksByKey: [String: [T]] = [:]
+    let callbackQueue: DispatchQueue
 
     init(callbackQueue: DispatchQueue) {
         self.callbackQueue = callbackQueue

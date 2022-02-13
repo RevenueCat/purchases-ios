@@ -15,7 +15,16 @@ import Foundation
 
 struct CustomerInfoCallback: CacheKeyProviding {
 
+    typealias Completion = (CustomerInfo?, Error?) -> Void
+
     let cacheKey: String
-    let completion: (CustomerInfo?, Error?) -> Void
+    let source: NetworkOperation.Type
+    let completion: Completion
+
+    init(operation: CacheableNetworkOperation, completion: @escaping Completion) {
+        self.cacheKey = operation.cacheKey
+        self.source = type(of: operation)
+        self.completion = completion
+    }
 
 }
