@@ -162,7 +162,7 @@ private extension HTTPClient {
         task.resume()
     }
 
-    // swiftlint:disable:next function_parameter_count
+    // swiftlint:disable:next function_body_length function_parameter_count
     func handleResponse(urlResponse: URLResponse?,
                         request: HTTPRequest,
                         data: Data?,
@@ -170,23 +170,6 @@ private extension HTTPClient {
                         completion completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
-        threadUnsafeHandleResponse(urlResponse: urlResponse,
-                                   request: request,
-                                   data: data,
-                                   error: networkError,
-                                   completionHandler: completionHandler,
-                                   beginNextRequestWhenFinished: beginNextRequestWhenFinished,
-                                   retried: retried)
-    }
-
-    // swiftlint:disable:next function_body_length function_parameter_count
-    func threadUnsafeHandleResponse(urlResponse: URLResponse?,
-                                    request: HTTPRequest,
-                                    data: Data?,
-                                    error networkError: Error?,
-                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
-                                    beginNextRequestWhenFinished: Bool,
-                                    retried: Bool) {
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
         var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?
