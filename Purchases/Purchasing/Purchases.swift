@@ -105,7 +105,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     @objc public static var automaticAppleSearchAdsAttributionCollection: Bool = false
 
     /**
-     * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat
+     * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
      *
      * #### Related Symbols
      * - ``logHandler``
@@ -155,8 +155,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
-     * By default, this sends Info, Warn, and Error messages. If you wish to receive Debug level messages,
-     * you must enable debug logs.
+     *
+     * By default, this sends ``LogLevel/info``, ``LogLevel/warn``, and ``LogLevel/error`` messages.
+     * If you wish to receive Debug level messages, set the log level to ``LogLevel/debug``.
      *
      * - Note:``verboseLogHandler`` provides additional information.
      *
@@ -180,6 +181,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
+     *
      * By default, this sends ``LogLevel/info``, ``LogLevel/warn``, and ``LogLevel/error`` messages.
      * If you wish to receive Debug level messages, set the log level to ``LogLevel/debug``.
      *
@@ -845,7 +847,9 @@ public extension Purchases {
     }
 
     /**
-     * Fetch the configured offerings for this users. ``Offerings`` allows you to configure your in-app products
+     * Fetch the configured ``Offerings`` for this user.
+     *
+     *``Offerings`` allows you to configure your in-app products
      * via RevenueCat and greatly simplifies management.
      *
      * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,
@@ -862,7 +866,9 @@ public extension Purchases {
     }
 
     /**
-     * Fetch the configured offerings for this users. ``Offerings`` allows you to configure your in-app products
+     * Fetch the configured ``Offerings`` for this user.
+     *
+     *``Offerings`` allows you to configure your in-app products
      * via RevenueCat and greatly simplifies management.
      *
      * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,
@@ -929,8 +935,9 @@ public extension Purchases {
     // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
+     *
      * Use this method if you aren't using ``getOfferings(completion:)``.
-     * You should use getOfferings though.
+     * You should use ``getOfferings(completion:)`` though.
      *
      * - Note: `completion` may be called without ``StoreProduct``s that you are expecting. This is usually caused by
      * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
@@ -954,9 +961,10 @@ public extension Purchases {
 
     // swiftlint:disable line_length
     /**
-     * Fetches the ``StoreProduct`` for your IAPs for given `productIdentifiers`.
+     * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
+     *
      * Use this method if you aren't using ``getOfferings(completion:)``.
-     * You should use getOfferings though.
+     * You should use ``getOfferings(completion:)`` though.
      *
      * - Note: The result might not contain the ``StoreProduct``s that you are expecting. This is usually caused by
      * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
@@ -977,17 +985,20 @@ public extension Purchases {
     // swiftlint:enable line_length
 
     /**
-     * Use this function if you are not using the Offerings system to purchase an ``StoreProduct``.
-     * If you are using the Offerings system, use ``Purchases/purchase(package:completion:)`` instead.
+     * Initiates a purchase of a ``StoreProduct``.
      *
-     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
+     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
      *
      * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
      * handle this for you.
      *
-     * - Parameter product: The ``StoreProduct`` the user intends to purchase
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
@@ -1002,17 +1013,20 @@ public extension Purchases {
     }
 
     /**
-     * Use this function if you are not using the Offerings system to purchase an ``StoreProduct``.
-     * If you are using the Offerings system, use ``Purchases/purchase(package:completion:)`` instead.
+     * Initiates a purchase of a ``StoreProduct``.
      *
-     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
+     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
      *
      * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, ``Purchases`` will
      * handle this for you.
      *
-     * - Parameter product: The ``StoreProduct`` the user intends to purchase
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -1022,8 +1036,11 @@ public extension Purchases {
     }
 
     /**
-     * Purchase the passed ``Package``.
-     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * Initiates a purchase of a ``Package``.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+
      * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
@@ -1044,8 +1061,11 @@ public extension Purchases {
     }
 
     /**
-     * Purchase the passed ``Package``.
-     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * Initiates a purchase of a ``Package``.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+     *
      * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
@@ -1061,20 +1081,25 @@ public extension Purchases {
     }
 
     /**
+     * Initiates a purchase of a ``StoreProduct`` with a ``StoreProductDiscount``.
+     *
      * Use this function if you are not using the Offerings system to purchase a ``StoreProduct`` with an
      * applied ``StoreProductDiscount``.
      * If you are using the Offerings system, use ``Purchases/purchase(package:discount:completion:)`` instead.
      *
-     * Call this method when a user has decided to purchase a product with an applied discount.
+     * - Important: Call this method when a user has decided to purchase a product with an applied discount.
      * Only call this in direct response to user input.
+     *
+     * - Important: Before calling this method, check that the user is eligible for the discount
+     * by calling ``checkPromotionalDiscountEligibility(forProductDiscount:product:)``. 
      *
      * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
      * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
      * this for you.
      *
-     * - Parameter product: The ``StoreProduct`` the user intends to purchase
-     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
+     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase.
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
@@ -1467,7 +1492,9 @@ public extension Purchases {
 public extension Purchases {
 
     /**
-     * Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton.
+     * Configures an instance of the Purchases SDK with a specified API key.
+     *
+     * The instance will be set as a singleton.
      * You should access the singleton instance using ``Purchases/shared``
      *
      * - Note: Use this initializer if your app does not have an account system.
@@ -1485,6 +1512,7 @@ public extension Purchases {
 
     /**
      * Configures an instance of the Purchases SDK with a specified API key and app user ID.
+     *
      * The instance will be set as a singleton.
      * You should access the singleton instance using ``Purchases/shared``
      *
@@ -1506,7 +1534,9 @@ public extension Purchases {
     }
 
     /**
-     * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
+     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
+     *
+     * Use this constructor if you want to
      * sync status across a shared container, such as between a host app and an extension. The instance of the
      * Purchases SDK will be set as a singleton.
      * You should access the singleton instance using ``Purchases/shared``
@@ -1530,7 +1560,9 @@ public extension Purchases {
     }
 
     /**
-     * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
+     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
+     *
+     * Use this constructor if you want to
      * sync status across a shared container, such as between a host app and an extension. The instance of the
      * Purchases SDK will be set as a singleton.
      * You should access the singleton instance using ``Purchases/shared``
@@ -1563,9 +1595,11 @@ public extension Purchases {
     }
 
     /**
-     * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
-     * sync status across a shared container, such as between a host app and an extension. The instance of the
-     * Purchases SDK will be set as a singleton.
+     * Configures an instance of the Purchases SDK with a custom userDefaults.
+     *
+     * Use this constructor if you want to sync status across a shared container,
+     * such as between a host app and an extension.
+     * The instance of the `Purchases` SDK will be set as a singleton.
      * You should access the singleton instance using ``Purchases/shared``
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
