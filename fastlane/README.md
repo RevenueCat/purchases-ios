@@ -34,13 +34,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Setup development environment
 
-### ios test
+### ios test_ios
 
 ```sh
-[bundle exec] fastlane ios test
+[bundle exec] fastlane ios test_ios
 ```
 
-Runs all the tests
+Runs all the iOS tests
+
+### ios test_tvos
+
+```sh
+[bundle exec] fastlane ios test_tvos
+```
+
+Runs all the tvOS tests
 
 ### ios replace_version_number
 
