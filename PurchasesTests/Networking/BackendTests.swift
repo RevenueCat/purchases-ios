@@ -1919,7 +1919,7 @@ class BackendTests: XCTestCase {
         expect(firstCustomerInfo).toEventuallyNot(beNil())
 
         expect(secondCustomerInfo) == firstCustomerInfo
-        expect(self.httpClient.calls.count) == 1
+        expect(self.httpClient.calls.map { $0.path }) == ["/subscribers/\(self.userID)"]
     }
 
     func testGetsUpdatedSubscriberInfoAfterPost() {
@@ -2000,6 +2000,12 @@ class BackendTests: XCTestCase {
         expect(updatedSubscriberInfo).toNot(beNil())
         expect(updatedSubscriberInfo).to(equal(postSubscriberInfo))
         expect(updatedSubscriberInfo).toNot(equal(originalSubscriberInfo))
+
+        expect(self.httpClient.calls.map { $0.path }) == [
+            "/subscribers/\(self.userID)",
+            "/receipts",
+            "/subscribers/\(self.userID)"
+        ]
     }
 
 }
