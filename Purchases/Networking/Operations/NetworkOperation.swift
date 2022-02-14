@@ -88,7 +88,7 @@ class NetworkOperation: Operation {
 
         self.isExecuting = true
 
-        Self.log("Started")
+        self.log("Started")
         self.begin {
             self.finish()
         }
@@ -99,7 +99,7 @@ class NetworkOperation: Operation {
         self.isExecuting = false
         self.isFinished = true
 
-        Self.log("Cancelled")
+        self.log("Cancelled")
     }
 
     /// Overriden by subclasses to define the body of the operation
@@ -111,7 +111,7 @@ class NetworkOperation: Operation {
     private final func finish() {
         assert(!self.isFinished, "Operation \(type(of: self)) (\(self)) was already finished")
 
-        Self.log("Finished")
+        self.log("Finished")
 
         self.isExecuting = false
         self.isFinished = true
@@ -125,7 +125,7 @@ class NetworkOperation: Operation {
 
     // MARK: -
 
-    private static func log(_ message: String) {
+    private func log(_ message: String) {
         Logger.debug("\(type(of: self)): \(message)")
     }
 
