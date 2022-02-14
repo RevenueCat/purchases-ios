@@ -45,8 +45,8 @@ Our <doc:V4_API_Migration_guide> provides information on how to migrate from V3 
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
 
 Or browse our iOS sample apps:
-- [MagicWeather](Examples/MagicWeather)
-- [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
+- [MagicWeather](https://github.com/RevenueCat/purchases-ios/tree/main/Examples/MagicWeather)
+- [MagicWeather SwiftUI](https://github.com/RevenueCat/purchases-ios/tree/main/Examples/MagicWeatherSwiftUI)
 
 ## Topics
 
