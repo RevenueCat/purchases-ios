@@ -79,6 +79,7 @@ BOOL isAnonymous;
     RCCustomerInfo *pi = nil;
     RCStoreProduct *storeProduct = nil;
     RCStoreProductDiscount *stpd = nil;
+    RCPromotionalOffer *pro = nil;
     
     RCPackage *pack;
 
@@ -129,12 +130,12 @@ BOOL isAnonymous;
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     
     [p checkTrialOrIntroDiscountEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    [p checkPromotionalDiscountEligibilityForProductDiscount:stpd
-                                                 withProduct:storeProduct
-                                              withCompletion:^(RCPromotionalOfferEligibility status, NSError *error) { }];
+    [p getPromotionalOfferForProductDiscount:stpd
+                                 withProduct:storeProduct
+                              withCompletion:^(RCPromotionalOffer *offer, NSError *error) { }];
     
-    [p purchaseProduct:storeProduct withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p purchasePackage:pack withDiscount:stpd completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchaseProduct:storeProduct withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];

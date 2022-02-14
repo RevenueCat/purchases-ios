@@ -124,10 +124,10 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchaseAsync(product: StoreProduct, discount: StoreProductDiscount) async throws -> PurchaseResultData {
+    func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
-                     discount: discount) { transaction, customerInfo, error, userCancelled in
+                     promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -142,10 +142,10 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchaseAsync(package: Package, discount: StoreProductDiscount) async throws -> PurchaseResultData {
+    func purchaseAsync(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package,
-                     discount: discount) { transaction, customerInfo, error, userCancelled in
+                     promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -202,33 +202,34 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func checkPromotionalDiscountEligibilityAsync(forProductDiscount discount: StoreProductDiscount,
-                                                  product: StoreProduct) async throws -> PromotionalOfferEligibility {
-         return try await withCheckedThrowingContinuation { continuation in
-             checkPromotionalDiscountEligibility(forProductDiscount: discount, product: product) { isEligible, error in
+    func getPromotionalOfferAsync(forProductDiscount discount: StoreProductDiscount,
+                                  product: StoreProduct) async throws -> PromotionalOffer {
+        return try await withCheckedThrowingContinuation { continuation in
+            getPromotionalOffer(forProductDiscount: discount, product: product) { offer, error in
                  if let error = error {
                      continuation.resume(throwing: error)
                      return
+                 } else if let offer = offer {
+                     continuation.resume(returning: offer)
+                 } else {
+                     fatalError("Unexpected non-nil result for nil error")
                  }
-                 continuation.resume(returning: isEligible)
              }
          }
      }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func getEligibleDiscountsAsync(forProduct product: StoreProduct) async -> [StoreProductDiscount] {
+    func getEligiblePromotionalOffersAsync(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         let discounts = product.discounts
 
-        return await withTaskGroup(of: Optional<StoreProductDiscount>.self) { group in
+        return await withTaskGroup(of: Optional<PromotionalOffer>.self) { group in
             for discount in discounts {
                 group.addTask {
                     do {
-                        let eligibility = try await self.checkPromotionalDiscountEligibility(
+                        return try await self.getPromotionalOffer(
                             forProductDiscount: discount,
                             product: product
                         )
-
-                        return eligibility.isEligible ? discount : nil
                     } catch {
                         Logger.error(
                             Strings.purchase.check_eligibility_failed(
@@ -241,11 +242,11 @@ extension Purchases {
                 }
             }
 
-            var result: [StoreProductDiscount] = []
+            var result: [PromotionalOffer] = []
 
-            for await discount in group {
-                if let discount = discount {
-                    result.append(discount)
+            for await offer in group {
+                if let offer = offer {
+                    result.append(offer)
                 }
             }
 

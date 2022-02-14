@@ -44,12 +44,12 @@ Most features require configuring the SDK before using it.
 ### Making Purchases with Subscription Offers
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``
-- ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:)``
-- ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``
-- ``Purchases/purchase(package:discount:)``
-- ``Purchases/purchase(package:discount:completion:)``
-- ``Purchases/purchase(product:discount:)``
-- ``Purchases/purchase(product:discount:completion:)``
+- ``Purchases/getPromotionalOffer(forProductDiscount:product:)``
+- ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
+- ``Purchases/purchase(package:promotionalOffer:)``
+- ``Purchases/purchase(package:promotionalOffer:completion:)``
+- ``Purchases/purchase(product:promotionalOffer:)``
+- ``Purchases/purchase(product:promotionalOffer:completion:)``
 - ``Purchases/presentCodeRedemptionSheet()``
 
 ### Subscription Status

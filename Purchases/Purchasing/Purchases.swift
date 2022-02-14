@@ -1081,17 +1081,14 @@ public extension Purchases {
     }
 
     /**
-     * Initiates a purchase of a ``StoreProduct`` with a ``StoreProductDiscount``.
+     * Initiates a purchase of a ``StoreProduct`` with a ``PromotionalOffer``.
      *
      * Use this function if you are not using the Offerings system to purchase a ``StoreProduct`` with an
-     * applied ``StoreProductDiscount``.
-     * If you are using the Offerings system, use ``Purchases/purchase(package:discount:completion:)`` instead.
+     * applied ``PromotionalOffer``.
+     * If you are using the Offerings system, use ``Purchases/purchase(package:promotionalOffer:completion:)`` instead.
      *
      * - Important: Call this method when a user has decided to purchase a product with an applied discount.
      * Only call this in direct response to user input.
-     *
-     * - Important: Before calling this method, check that the user is eligible for the discount
-     * by calling ``checkPromotionalDiscountEligibility(forProductDiscount:product:)``. 
      *
      * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
      *
@@ -1099,25 +1096,33 @@ public extension Purchases {
      * this for you.
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
-     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase.
+     * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase.
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
+     *
+     * #### Related Symbols
+     * - ``StoreProduct/discounts``
+     * - ``StoreProduct/getEligiblePromotionalOffers()``
+     * - ``getPromotionalOffer(forProductDiscount:product:)``
      */
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    @objc(purchaseProduct:withDiscount:completion:)
+    @objc(purchaseProduct:withPromotionalOffer:completion:)
     func purchase(product: StoreProduct,
-                  discount: StoreProductDiscount,
+                  promotionalOffer: PromotionalOffer,
                   completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: product, package: nil, discount: discount, completion: completion)
+        purchasesOrchestrator.purchase(product: product,
+                                       package: nil,
+                                       promotionalOffer: promotionalOffer,
+                                       completion: completion)
     }
 
     /**
      * Use this function if you are not using the Offerings system to purchase a ``StoreProduct`` with an
-     * applied ``StoreProductDiscount``.
-     * If you are using the Offerings system, use ``Purchases/purchase(package:discount:completion:)`` instead.
+     * applied ``PromotionalOffer``.
+     * If you are using the Offerings system, use ``Purchases/purchase(package:promotionalOffer:completion:)`` instead.
      *
      * Call this method when a user has decided to purchase a product with an applied discount.
      * Only call this in direct response to user input.
@@ -1128,13 +1133,13 @@ public extension Purchases {
      * this for you.
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase
-     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
+     * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(product: StoreProduct, discount: StoreProductDiscount) async throws -> PurchaseResultData {
-        return try await purchaseAsync(product: product, discount: discount)
+    func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        return try await purchaseAsync(product: product, promotionalOffer: promotionalOffer)
     }
 
     /**
@@ -1147,7 +1152,7 @@ public extension Purchases {
      * this for you.
      *
      * - Parameter package: The ``Package`` the user intends to purchase
-     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
+     * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
@@ -1155,11 +1160,11 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    @objc(purchasePackage:withDiscount:completion:)
-    func purchase(package: Package, discount: StoreProductDiscount, completion: @escaping PurchaseCompletedBlock) {
+    @objc(purchasePackage:withPromotionalOffer:completion:)
+    func purchase(package: Package, promotionalOffer: PromotionalOffer, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: package.storeProduct,
                                        package: package,
-                                       discount: discount,
+                                       promotionalOffer: promotionalOffer,
                                        completion: completion)
     }
 
@@ -1173,13 +1178,13 @@ public extension Purchases {
      * this for you.
      *
      * - Parameter package: The ``Package`` the user intends to purchase
-     * - Parameter discount: The ``StoreProductDiscount`` to apply to the purchase
+     * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func purchase(package: Package, discount: StoreProductDiscount) async throws -> PurchaseResultData {
-        return try await purchaseAsync(package: package, discount: discount)
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer)
     }
 
     /**
@@ -1261,7 +1266,7 @@ public extension Purchases {
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
      * - Note: If you're looking to use Promotional Offers instead,
-     * use ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``.
+     * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
      *
      * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
      * definitively compute the eligibility, most likely because of missing group information, it will return
@@ -1287,7 +1292,7 @@ public extension Purchases {
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
      * - Note: If you're looking to use Promotional Offers instead,
-     * use ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``.
+     * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
      *
      * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
      * definitively compute the eligibility, most likely because of missing group information, it will return
@@ -1332,24 +1337,25 @@ public extension Purchases {
 #endif
 
     /**
-     * Use this method to find eligibility for this user for
+     * Use this method to fetch ``PromotionalOffer``
+     *  to use in ``purchase(package:promotionalOffer:)`` or ``purchase(product:promotionalOffer:)``.
      * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
      * - Note: If you're looking to use free trials or Introductory Offers instead,
      * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``.
      *
      * - Parameter discount: The ``StoreProductDiscount`` to apply to the product.
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
-     * - Parameter completion: A completion block that is called when the ``PromotionalOfferEligibility`` is returned.
+     * - Parameter completion: A completion block that is called when the ``PromotionalOffer`` is returned.
      * If it was not successful, there will be an `Error`.
      */
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
-    @objc(checkPromotionalDiscountEligibilityForProductDiscount:withProduct:withCompletion:)
-    func checkPromotionalDiscountEligibility(forProductDiscount discount: StoreProductDiscount,
-                                             product: StoreProduct,
-                                             completion: @escaping (PromotionalOfferEligibility, Error?) -> Void) {
+    @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
+    func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
+                             product: StoreProduct,
+                             completion: @escaping (PromotionalOffer?, Error?) -> Void) {
         purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
                                                product: product) { promotionalOffer, error in
-            completion(promotionalOffer == nil ? .ineligible : .eligible, error)
+            completion(promotionalOffer, error)
         }
     }
 
@@ -1363,21 +1369,23 @@ public extension Purchases {
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func checkPromotionalDiscountEligibility(forProductDiscount discount: StoreProductDiscount,
-                                             product: StoreProduct) async throws -> PromotionalOfferEligibility {
-        return try await checkPromotionalDiscountEligibilityAsync(forProductDiscount: discount, product: product)
+    func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
+                             product: StoreProduct) async throws -> PromotionalOffer {
+        return try await getPromotionalOfferAsync(forProductDiscount: discount, product: product)
     }
 
     /// Finds the subset of ``StoreProduct/discounts`` that's eligible for the current user.
+    ///
     /// - Parameter product: the product to filter discounts from.
     /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
     ///   that discount will fail silently and be considered not eligible.
     /// #### Related Symbols
-    /// - ``StoreProduct/getEligibleDiscounts()``
+    /// - ``getPromotionalOffer(forProductDiscount:product:)``
+    /// - ``StoreProduct/getEligiblePromotionalOffers()``
     /// - ``StoreProduct/discounts``
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func getEligibleDiscounts(forProduct product: StoreProduct) async -> [StoreProductDiscount] {
-        return await getEligibleDiscountsAsync(forProduct: product)
+    func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
+        return await getEligiblePromotionalOffersAsync(forProduct: product)
     }
 
 #if os(iOS) || os(macOS)

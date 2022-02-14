@@ -208,11 +208,11 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(iOS, introduced: 12.2, unavailable, renamed: "purchase(package:discount:completion:)")
-    @available(tvOS, introduced: 12.2, unavailable, renamed: "purchase(package:discount:completion:)")
-    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:discount:completion:)")
-    @available(macOS, introduced: 10.14.4, unavailable, renamed: "purchase(package:discount:completion:)")
-    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:discount:completion:)")
+    @available(iOS, introduced: 12.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(tvOS, introduced: 12.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(macOS, introduced: 10.14.4, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
     @objc(purchasePackage:withDiscount:completionBlock:)
     func purchasePackage(_ package: Package,
                          discount: SKPaymentDiscount,
@@ -228,11 +228,11 @@ public extension Purchases {
      * Purchases will handle this for you.
      * - Parameter package: The `Package` the user intends to purchase
      */
-    @available(iOS, introduced: 13.0, unavailable, renamed: "purchase(package:discount:)")
-    @available(tvOS, introduced: 13.0, unavailable, renamed: "purchase(package:discount:)")
-    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:discount:)")
-    @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:discount:)")
-    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:discount:)")
+    @available(iOS, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(tvOS, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
     func purchasePackage(_ package: Package,
                          discount: SKPaymentDiscount) async throws -> PurchaseResultData {
         fatalError()
@@ -294,11 +294,11 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(iOS, introduced: 12.2, unavailable, renamed: "purchase(product:discount:completion:)")
-    @available(tvOS, introduced: 12.2, unavailable, renamed: "purchase(product:discount:completion:)")
-    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(product:discount:completion:)")
-    @available(macOS, introduced: 10.14.4, unavailable, renamed: "purchase(product:discount:completion:)")
-    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(product:discount:completion:)")
+    @available(iOS, introduced: 12.2, unavailable, renamed: "purchase(product:promotionalOffer:completion:)")
+    @available(tvOS, introduced: 12.2, unavailable, renamed: "purchase(product:promotionalOffer:completion:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(product:promotionalOffer:completion:)")
+    @available(macOS, introduced: 10.14.4, unavailable, renamed: "purchase(product:promotionalOffer:completion:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(product:promotionalOffer:completion:)")
     @objc(purchaseProduct:withDiscount:completionBlock:)
     func purchaseProduct(_ product: SKProduct,
                          discount: SKPaymentDiscount,
@@ -316,12 +316,73 @@ public extension Purchases {
      * Purchases will handle this for you.
      * - Parameter product: The `SKProduct` the user intends to purchase
      */
-    @available(iOS, introduced: 13.0, unavailable, renamed: "purchase(product:discount:)")
-    @available(tvOS, introduced: 13.0, unavailable, renamed: "purchase(product:discount:)")
-    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(product:discount:)")
-    @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(product:discount:)")
-    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(product:discount:)")
+    @available(iOS, introduced: 13.0, unavailable, renamed: "purchase(product:promotionalOffer:)")
+    @available(tvOS, introduced: 13.0, unavailable, renamed: "purchase(product:promotionalOffer:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(product:promotionalOffer:)")
+    @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(product:promotionalOffer:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(product:promotionalOffer:)")
     func purchaseProduct(_ product: SKProduct, discount: SKPaymentDiscount) async throws {
+        fatalError()
+    }
+
+    @available(iOS, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(tvOS, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    func purchase(package: Package, discount: StoreProductDiscount) async throws -> PurchaseResultData {
+        fatalError()
+    }
+
+    @available(iOS, introduced: 12.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(tvOS, introduced: 12.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(macOS, introduced: 10.14.4, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(macCatalyst, introduced: 12.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    func purchase(package: Package, discount: StoreProductDiscount, completion: @escaping PurchaseCompletedBlock) {
+        fatalError()
+    }
+
+    @available(iOS, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(tvOS, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
+    func purchase(product: StoreProduct, discount: StoreProductDiscount) async throws -> PurchaseResultData {
+        fatalError()
+    }
+
+    @available(iOS, introduced: 12.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(tvOS, introduced: 12.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(macOS, introduced: 10.14.4, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    @available(macCatalyst, introduced: 12.2, unavailable, renamed: "purchase(package:promotionalOffer:completion:)")
+    func purchase(product: StoreProduct, discount: StoreProductDiscount, completion: @escaping PurchaseCompletedBlock) {
+        fatalError()
+    }
+
+    @available(iOS, introduced: 13.0, unavailable, renamed: "getPromotionalOffer(forProductDiscount:product:)")
+    @available(tvOS, introduced: 13.0, unavailable, renamed: "getPromotionalOffer(forProductDiscount:product:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "getPromotionalOffer(forProductDiscount:product:)")
+    @available(macOS, introduced: 10.15, unavailable, renamed: "getPromotionalOffer(forProductDiscount:product:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "getPromotionalOffer(forProductDiscount:product:)")
+    func checkPromotionalDiscountEligibility(forProductDiscount: StoreProductDiscount, product: StoreProduct) {
+        fatalError()
+    }
+
+    @available(iOS, introduced: 12.2, unavailable,
+               renamed: "getPromotionalOffer(forProductDiscount:product:completion:)")
+    @available(tvOS, introduced: 12.2, unavailable,
+               renamed: "getPromotionalOffer(forProductDiscount:product:completion:)")
+    @available(watchOS, introduced: 6.2, unavailable,
+               renamed: "getPromotionalOffer(forProductDiscount:product:completion:)")
+    @available(macOS, introduced: 10.14.4, unavailable,
+               renamed: "getPromotionalOffer(forProductDiscount:product:completion:)")
+    @available(macCatalyst, introduced: 12.2, unavailable,
+               renamed: "getPromotionalOffer(forProductDiscount:product:completion:)")
+    func checkPromotionalDiscountEligibility(forProductDiscount: StoreProductDiscount,
+                                             product: StoreProduct,
+                                             completion: @escaping (AnyObject, Error?) -> Void) {
         fatalError()
     }
 
@@ -363,15 +424,15 @@ public extension Purchases {
      * If it was not successful, there will be an `Error`.
      */
     @available(iOS, introduced: 12.2, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @available(tvOS, introduced: 12.2, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @available(watchOS, introduced: 6.2, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @available(macOS, introduced: 10.14.4, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @available(macCatalyst, introduced: 13.0, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @objc(paymentDiscountForProductDiscount:product:completion:)
     func paymentDiscount(for discount: SKProductDiscount,
                          product: SKProduct,
@@ -386,15 +447,15 @@ public extension Purchases {
      * - Parameter product: The `SKProduct` the user intends to purchase.
      */
     @available(iOS, introduced: 13.0, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @available(tvOS, introduced: 13.0, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @available(watchOS, introduced: 6.2, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @available(macOS, introduced: 10.15, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     @available(macCatalyst, introduced: 13.0, unavailable,
-               message: "Check eligibility for a discount using checkPromotionalOfferEligibility:")
+               message: "Check eligibility for a discount using getPromotionalOffer:")
     func paymentDiscount(for discount: SKProductDiscount,
                          product: SKProduct) async throws -> SKPaymentDiscount {
         fatalError()
@@ -490,6 +551,14 @@ public extension StoreProductDiscount.PaymentMode {
 @available(macOS, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
 @available(macCatalyst, obsoleted: 1, renamed: "StoreProductDiscount.PaymentMode")
 public enum RCPaymentMode {}
+
+@available(iOS, obsoleted: 1, message: "Use PromotionalOffer instead")
+@available(tvOS, obsoleted: 1, message: "Use PromotionalOffer instead")
+@available(watchOS, obsoleted: 1, message: "Use PromotionalOffer instead")
+@available(macOS, obsoleted: 1, message: "Use PromotionalOffer instead")
+@available(macCatalyst, obsoleted: 1, message: "Use PromotionalOffer instead")
+@objc(RCPromotionalOfferEligibility)
+public class PromotionalOfferEligibility: NSObject {}
 
 /// `NSErrorDomain` for errors occurring within the scope of the Purchases SDK.
 @available(iOS, obsoleted: 1, message: "Use ErrorCode instead")

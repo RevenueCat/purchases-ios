@@ -81,17 +81,17 @@ Or browse our iOS sample apps:
 
 ### Making Purchases with Subscription Offers
 - ``IntroEligibility``
-- ``PromotionalOfferEligibility``
+- ``PromotionalOffer``
 - ``StoreProductDiscount``
 
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``
-- ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:)``
-- ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:completion:)``
-- ``Purchases/purchase(package:discount:)``
-- ``Purchases/purchase(package:discount:completion:)``
-- ``Purchases/purchase(product:discount:)``
-- ``Purchases/purchase(product:discount:completion:)``
+- ``Purchases/getPromotionalOffer(forProductDiscount:product:)``
+- ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
+- ``Purchases/purchase(package:promotionalOffer:)``
+- ``Purchases/purchase(package:promotionalOffer:completion:)``
+- ``Purchases/purchase(product:promotionalOffer:)``
+- ``Purchases/purchase(product:promotionalOffer:completion:)``
 
 ### Subscription Status
 - ``CustomerInfo``

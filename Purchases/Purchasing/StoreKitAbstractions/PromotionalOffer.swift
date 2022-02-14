@@ -14,17 +14,49 @@
 import Foundation
 import StoreKit
 
-/// The signed discount applied to a payment.
-/// Contains the details of a promotional offer discount that you want to apply to a payment.
-internal struct PromotionalOffer {
-    var identifier: String
-    var keyIdentifier: String
-    var nonce: UUID
-    var signature: String
-    var timestamp: Int
+/// Represents a ``StoreProductDiscount`` that has been validated and
+/// is ready to be used for a purchase.
+///
+/// #### Related Symbols
+/// - ``Purchases/getPromotionalOffer(forProductDiscount:product:)``
+/// - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
+/// - ``StoreProduct/getEligiblePromotionalOffers()``
+/// - ``Purchases/getEligiblePromotionalOffers(forProduct:)``
+/// - ``Purchases/purchase(package:promotionalOffer:)``
+/// - ``Purchases/purchase(package:promotionalOffer:completion:)``
+/// - ``Purchases/purchase(product:promotionalOffer:)``
+/// - ``Purchases/purchase(product:promotionalOffer:completion:)``
+@objc(RCPromotionalOffer)
+public final class PromotionalOffer: NSObject {
+
+    /// The ``StoreProductDiscount`` in this offer.
+    public let discount: StoreProductDiscount
+    let signedData: SignedData
+
+    init(discount: StoreProductDiscountType, signedData: SignedData) {
+        self.discount = StoreProductDiscount.from(discount: discount)
+        self.signedData = signedData
+    }
+
 }
 
+// MARK: - SignedData
+
 extension PromotionalOffer {
+
+    /// Contains the details of a promotional offer discount that you want to apply to a payment.
+    internal struct SignedData {
+        var identifier: String
+        var keyIdentifier: String
+        var nonce: UUID
+        var signature: String
+        var timestamp: Int
+    }
+
+}
+
+extension PromotionalOffer.SignedData {
+
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     var sk1PromotionalOffer: SKPaymentDiscount {
         return SKPaymentDiscount(identifier: self.identifier,
@@ -40,7 +72,7 @@ extension PromotionalOffer {
         get throws {
             guard let signatureData = self.signature.data(using: .utf8) else {
                 throw ErrorUtils.unexpectedBackendResponse(
-                    withSubError: Self.Error.invalidSignature(self.signature)
+                    withSubError: PromotionalOffer.Error.invalidSignature(self.signature)
                 )
             }
 
@@ -53,6 +85,7 @@ extension PromotionalOffer {
             )
         }
     }
+
 }
 
 extension PromotionalOffer {
@@ -70,36 +103,4 @@ extension PromotionalOffer {
 
     }
 
-}
-
-/**
- * Enum of different possible states for intro price eligibility status.
- * * ``PromotionalOfferEligibility/ineligible`` The user is not eligible for a free trial or intro pricing for this
- * product.
- * * ``PromotionalOfferEligibility/eligible`` The user is eligible for a free trial or intro pricing for this product.
- */
-@objc(RCPromotionalOfferEligibility) public enum PromotionalOfferEligibility: Int {
-
-    /**
-     The user is not eligible for promotional offer for this product.
-     */
-    case ineligible
-
-    /**
-     The user is eligible for a promotional offer for this product.
-     */
-    case eligible
-
-}
-
-extension PromotionalOfferEligibility: CaseIterable {}
-
-public extension PromotionalOfferEligibility {
-    /// - Returns: `true` if the offer is eligible.
-    var isEligible: Bool {
-        switch self {
-        case .eligible: return true
-        case .ineligible: return false
-        }
-    }
 }

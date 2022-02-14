@@ -182,12 +182,13 @@ class PurchasesOrchestrator {
                           return
                       }
 
-                let promotionalOffer = PromotionalOffer(identifier: discountIdentifier,
-                                                        keyIdentifier: keyIdentifier,
-                                                        nonce: nonce,
-                                                        signature: signature,
-                                                        timestamp: timestamp)
-                completion(promotionalOffer, nil)
+                let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
+                                                             keyIdentifier: keyIdentifier,
+                                                             nonce: nonce,
+                                                             signature: signature,
+                                                             timestamp: timestamp)
+                completion(.init(discount: productDiscount, signedData: signedData),
+                           nil)
             }
         }
     }
@@ -205,7 +206,7 @@ class PurchasesOrchestrator {
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
             purchase(sk2Product: sk2Product,
-                     discount: nil,
+                     promotionalOffer: nil,
                      completion: completion)
         } else {
             fatalError("Unrecognized product: \(product)")
@@ -215,17 +216,17 @@ class PurchasesOrchestrator {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(product: StoreProduct,
                   package: Package?,
-                  discount: StoreProductDiscountType,
+                  promotionalOffer: PromotionalOffer,
                   completion: @escaping PurchaseCompletedBlock) {
         if let sk1Product = product.sk1Product {
             purchase(sk1Product: sk1Product,
-                     discount: discount,
+                     promotionalOffer: promotionalOffer,
                      package: package,
                      completion: completion)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
             purchase(sk2Product: sk2Product,
-                     discount: discount,
+                     promotionalOffer: promotionalOffer,
                      completion: completion)
         } else {
             fatalError("Unrecognized product: \(product)")
@@ -234,25 +235,15 @@ class PurchasesOrchestrator {
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(sk1Product: SK1Product,
-                  discount: StoreProductDiscountType,
+                  promotionalOffer: PromotionalOffer,
                   package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
-        self.promotionalOffer(
-            forProductDiscount: discount,
-            product: StoreProduct(sk1Product: sk1Product)
-        ) { promotionalOffer, error in
-            guard let promotionalOffer = promotionalOffer else {
-                completion(nil, nil, error, false)
-                return
-            }
-
-            let discount = promotionalOffer.sk1PromotionalOffer
-            let payment = self.storeKitWrapper.payment(withProduct: sk1Product, discount: discount)
-            self.purchase(sk1Product: sk1Product,
-                          payment: payment,
-                          package: package,
-                          completion: completion)
-        }
+        let discount = promotionalOffer.signedData.sk1PromotionalOffer
+        let payment = self.storeKitWrapper.payment(withProduct: sk1Product, discount: discount)
+        self.purchase(sk1Product: sk1Product,
+                      payment: payment,
+                      package: package,
+                      completion: completion)
     }
 
     func purchase(sk1Product: SK1Product,
@@ -306,11 +297,12 @@ class PurchasesOrchestrator {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(sk2Product product: SK2Product,
-                  discount: StoreProductDiscountType?,
+                  promotionalOffer: PromotionalOffer?,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
             do {
-                let result: PurchaseResultData = try await self.purchase(sk2Product: product, discount: discount)
+                let result: PurchaseResultData = try await self.purchase(sk2Product: product,
+                                                                         promotionalOffer: promotionalOffer)
 
                 DispatchQueue.main.async {
                     completion(result.0, result.1, nil, result.2)
@@ -326,20 +318,15 @@ class PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(
         sk2Product: SK2Product,
-        discount: StoreProductDiscountType?
+        promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData {
         var options: Set<Product.PurchaseOption> = [
             .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
         ]
 
-        if let discount = discount {
-            let discount = try await self.promotionalOffer(
-                forProductDiscount: discount,
-                product: StoreProduct(sk2Product: sk2Product)
-            )
-
-            Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(discount.identifier))
-            options.insert(try discount.sk2PurchaseOption)
+        if let signedData = promotionalOffer?.signedData {
+            Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier))
+            options.insert(try signedData.sk2PurchaseOption)
         }
 
         let result: Product.PurchaseResult

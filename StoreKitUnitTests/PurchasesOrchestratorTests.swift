@@ -167,15 +167,21 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
-                                                            price: 11.1,
-                                                            paymentMode: .payAsYouGo,
-                                                            subscriptionPeriod: .init(value: 1, unit: .month),
-                                                            type: .promotional)
+        let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                price: 11.1,
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: .init(value: 1, unit: .month),
+                                                type: .promotional)
+        let offer = PromotionalOffer(discount: discount,
+                                     signedData: .init(identifier: "",
+                                                       keyIdentifier: "",
+                                                       nonce: UUID(),
+                                                       signature: "",
+                                                       timestamp: 0))
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
-                                  discount: storeProductDiscount,
+                                  promotionalOffer: offer,
                                   package: package) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
@@ -197,7 +203,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let product = try await self.fetchSk2Product()
 
         let (transaction, customerInfo, userCancelled) = try await orchestrator.purchase(sk2Product: product,
-                                                                                         discount: nil)
+                                                                                         promotionalOffer: nil)
 
         expect(transaction?.sk2Transaction) == mockTransaction
         expect(userCancelled) == false
@@ -246,7 +252,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await fetchSk2Product()
 
-        _ = try await orchestrator.purchase(sk2Product: product, discount: nil)
+        _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
     }
@@ -260,14 +266,20 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
         let product = try await fetchSk2Product()
-        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
-                                                            price: 11.1,
-                                                            paymentMode: .payAsYouGo,
-                                                            subscriptionPeriod: .init(value: 1, unit: .month),
-                                                            type: .promotional)
+        let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                price: 11.1,
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: .init(value: 1, unit: .month),
+                                                type: .promotional)
+        let offer = PromotionalOffer(discount: discount,
+                                     signedData: .init(identifier: "",
+                                                       keyIdentifier: "",
+                                                       nonce: UUID(),
+                                                       signature: "",
+                                                       timestamp: 0))
 
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, discount: storeProductDiscount)
+            _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: offer)
             XCTFail("Expected error")
         } catch {
             expect(self.backend.invokedPostReceiptData) == false
@@ -286,7 +298,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let product = try await fetchSk2Product()
 
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, discount: nil)
+            _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
 
             XCTFail("Expected error")
         } catch {
