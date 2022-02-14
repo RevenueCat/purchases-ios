@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
-                       Save yourself the hastle of implementing a subscriptions backend. Use RevenueCat instead https://www.revenuecat.com/
+                       Save yourself the hassle of implementing a subscriptions backend. Use RevenueCat instead https://www.revenuecat.com/
                        DESC
 
   s.homepage         = "https://www.revenuecat.com/"
