@@ -987,7 +987,7 @@ public extension Purchases {
     /**
      * Initiates a purchase of a ``StoreProduct``.
      *
-     * Use this function if you are not using the ``Offerings`` system to purchase an ``StoreProduct``.
+     * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
      * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
      *
      * - Important: Call this method when a user has decided to purchase a product.
@@ -1015,7 +1015,7 @@ public extension Purchases {
     /**
      * Initiates a purchase of a ``StoreProduct``.
      *
-     * Use this function if you are not using the ``Offerings`` system to purchase an ``StoreProduct``.
+     * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
      * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
      *
      * - Important: Call this method when a user has decided to purchase a product.
