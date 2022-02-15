@@ -30,6 +30,10 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_promotional_offer_option(String)
 
+    case sk2_unknown_product_type(String)
+
+    case sk1_no_known_product_type
+
 }
 
 extension StoreKitStrings: CustomStringConvertible {
@@ -60,6 +64,13 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case let .sk2_purchasing_added_promotional_offer_option(discountIdentifier):
             return "Adding Product.PurchaseOption for discount '\(discountIdentifier)'"
+
+        case let .sk2_unknown_product_type(type):
+            return "Product.ProductType '\(type)' unknown, the product type will be undefined."
+
+        case .sk1_no_known_product_type:
+            return "This StoreProduct represents an SK1 product, the type of product cannot be determined, " +
+            "the value will be undefined. Use `StoreProduct.subscriptionType` instead."
         }
     }
 

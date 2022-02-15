@@ -9,6 +9,8 @@ import RevenueCat
 
 var product: StoreProduct!
 func checkStoreProductAPI() {
+    let subType: StoreProduct.SubscriptionType = product.subscriptionType
+    let productType: StoreProduct.ProductType = product.productType
     let localizedDescription: String = product.localizedDescription
     let localizedTitle: String = product.localizedTitle
     let price: Decimal = product.price
@@ -34,6 +36,8 @@ func checkStoreProductAPI() {
 
     print(
         product!,
+        subType,
+        productType,
         localizedDescription,
         localizedTitle,
         price,
@@ -50,6 +54,22 @@ func checkStoreProductAPI() {
         sk1Product!,
         sk2Product!
     )
+}
+
+func checkSubscriptionType(_ type: StoreProduct.SubscriptionType) {
+    switch type {
+    case .subscription: break
+    case .inAppPurchase: break
+    }
+}
+
+func checkProductType(_ type: StoreProduct.ProductType) {
+    switch type {
+    case .consumable: break
+    case .nonConsumable: break
+    case .nonRenewableSubscription: break
+    case .autoRenewableSubscription: break
+    }
 }
 
 func checkStoreProductAsyncAPI() async {

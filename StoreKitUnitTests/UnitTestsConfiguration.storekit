@@ -1,7 +1,21 @@
 {
   "identifier" : "B495CDA2",
   "nonRenewingSubscriptions" : [
-
+    {
+      "displayPrice" : "1.69",
+      "familyShareable" : false,
+      "internalID" : "DD970C3E",
+      "localizations" : [
+        {
+          "description" : "Non Renewable Subscription",
+          "displayName" : "Non Renewable Subscription",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.revenuecat.non_renewable",
+      "referenceName" : "Non Renewable",
+      "type" : "NonRenewingSubscription"
+    }
   ],
   "products" : [
     {
@@ -18,6 +32,21 @@
       "productID" : "lifetime",
       "referenceName" : "lifetime",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.49",
+      "familyShareable" : false,
+      "internalID" : "9CF3BDC4",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.revenuecat.consumable",
+      "referenceName" : "Consumable IAP",
+      "type" : "Consumable"
     }
   ],
   "settings" : {

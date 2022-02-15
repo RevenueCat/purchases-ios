@@ -49,4 +49,24 @@
       );
 }
 
++ (void)checkSubscriptionType {
+    RCStoreProductSubscriptionType type = RCStoreProductSubscriptionTypeSubscription;
+
+    switch (type) {
+        case RCStoreProductSubscriptionTypeSubscription: break;
+        case RCStoreProductSubscriptionTypeInAppPurchase: break;
+    }
+}
+
++ (void)checkProductType {
+    RCStoreProductType type = RCStoreProductTypeNonRenewableSubscription;
+
+    switch (type) {
+        case RCStoreProductTypeConsumable: break;
+        case RCStoreProductTypeNonConsumable: break;
+        case RCStoreProductTypeNonRenewableSubscription: break;
+        case RCStoreProductTypeAutoRenewableSubscription: break;
+    }
+}
+
 @end
