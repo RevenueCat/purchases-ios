@@ -120,23 +120,22 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let storeProduct: StoreProduct! = nil
     let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
+    let offer: PromotionalOffer! = nil
 
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
-    purchases.checkPromotionalDiscountEligibility(
+    purchases.getPromotionalOffer(
         forProductDiscount: discount,
         product: storeProduct
-    ) { (_: PromotionalOfferEligibility, _: Error?) in
-
-    }
+    ) { (_: PromotionalOffer?, _: Error?) in }
 
     purchases.purchase(product: storeProduct,
-                       discount: discount) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+                       promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack,
-                       discount: discount) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+                       promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.invalidateCustomerInfoCache()
 
 #if os(iOS)
@@ -187,11 +186,12 @@ private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
     let stp: StoreProduct! = nil
     let discount: StoreProductDiscount! = nil
+    let offer: PromotionalOffer! = nil
 
     do {
         let _: (CustomerInfo, Bool) = try await purchases.logIn("")
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility([])
-        let _: PromotionalOfferEligibility = try await purchases.checkPromotionalDiscountEligibility(
+        let _: PromotionalOffer = try await purchases.getPromotionalOffer(
             forProductDiscount: discount,
             product: stp
         )
@@ -199,13 +199,12 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: Offerings = try await purchases.offerings()
 
         let _: [StoreProduct] = await purchases.products([])
-        let discount: StoreProductDiscount! = nil
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
-                                                                                      discount: discount)
+                                                                                      promotionalOffer: offer)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
-                                                                                      discount: discount)
+                                                                                      promotionalOffer: offer)
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.restorePurchases()
         let _: CustomerInfo = try await purchases.syncPurchases()
@@ -218,7 +217,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
         let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
 
-        let _: [StoreProductDiscount] = await purchases.getEligibleDiscounts(forProduct: stp)
+        let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)
         #endif
     } catch {}
 }

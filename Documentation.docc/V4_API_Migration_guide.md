@@ -164,7 +164,9 @@ These types replace native StoreKit types in all public API methods that used th
 | Purchases -restoreTransactionsWithCompletion: | Purchases -restorePurchasesWithCompletion: |
 | Purchases -offeringsWithCompletion: | Purchases -getOfferingsWithCompletion: |
 | Purchases -productsWithIdentifiers:completion: | Purchases -getProductsWithIdentifiers:completion: |
-| Purchases -paymentDiscountForProductDiscount:product:completion: | REMOVED - Check eligibility for a discount using `checkPromotionalOfferEligibility:`, then pass the discount directly to `purchasePackage:withDiscount:completion:` or `purchaseProduct:withDiscount:completion:` |
+| Purchases -paymentDiscountForProductDiscount:product:completion: | REMOVED - Check eligibility for a discount using `getPromotionalOffer:forProductDiscount:product:completion:`, then pass the promotional offer directly to `purchasePackage:withPromotionalOffer:completion:` or `purchaseProduct:withPromotionalOffer:completion:` |
+| Purchases -purchaseProduct(_:discount:_) | Purchases -purchaseProduct:withPromotionalOffer:completion: |
+| Purchases -purchasePackage(_:discount:_) | Purchases -purchasePackage:withPromotionalOffer:completion: |
 | Purchases -createAlias: | Purchases -logIn: |
 | Purchases -identify: | Purchases -logIn: |
 | Purchases -reset: | Purchases -logOut: |
@@ -229,9 +231,9 @@ These types replace native StoreKit types in all public API methods that used th
 | purchasePackage(_ package:, _ completion:) | ``Purchases/purchase(package:completion:)`` |
 | restoreTransactions(_ completion:) | ``Purchases/restorePurchases(completion:)`` |
 | syncPurchases(_ completion:) | ``Purchases/syncPurchases(completion:)`` |
-| paymentDiscount(for:product:completion:) | REMOVED - Check eligibility for a discount using ``Purchases/checkPromotionalDiscountEligibility(forProductDiscount:product:)``, then pass the discount directly to ``Purchases/purchase(package:discount:)`` or ``Purchases/purchase(product:discount:)`` |
-| purchaseProduct(_:discount:_) | ``Purchases/purchase(product:discount:completion:)`` |
-| purchasePackage(_:discount:_) | ``Purchases/purchase(package:discount:completion:)`` |
+| paymentDiscount(for:product:completion:) | REMOVED - Get eligibility for a discount using ``Purchases/getPromotionalOffer(forProductDiscount:product:)``, then pass the offer directly to ``Purchases/purchase(package:promotionalOffer:)`` or ``Purchases/purchase(product:promotionalOffer:)`` |
+| purchaseProduct(_:discount:_) | ``Purchases/purchase(product:promotionalOffer:completion:)`` |
+| purchasePackage(_:discount:_) | ``Purchases/purchase(package:promotionalOffer:completion:)`` |
 
 #### PurchasesDelegate
 | v3 | v4 |
