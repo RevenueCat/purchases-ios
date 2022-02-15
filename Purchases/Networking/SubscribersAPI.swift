@@ -54,7 +54,7 @@ class SubscribersAPI {
         let operation = GetCustomerInfoOperation(configuration: config,
                                                  customerInfoCallbackCache: self.customerInfoCallbackCache)
 
-        let callback = CustomerInfoCallback(cacheKey: operation.cacheKey, completion: completion)
+        let callback = CustomerInfoCallback(operation: operation, completion: completion)
         let cacheStatus = self.customerInfoCallbackCache.add(callback: callback)
         operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
@@ -93,7 +93,8 @@ class SubscribersAPI {
                                                             postData: postData,
                                                             customerInfoCallbackCache: self.customerInfoCallbackCache)
 
-        let callbackObject = CustomerInfoCallback(cacheKey: postReceiptOperation.cacheKey, completion: completion)
+        let callbackObject = CustomerInfoCallback(operation: postReceiptOperation, completion: completion)
+
         let cacheStatus = customerInfoCallbackCache.add(callback: callbackObject)
 
         operationQueue.addCacheableOperation(postReceiptOperation, cacheStatus: cacheStatus)

@@ -26,7 +26,18 @@ class GetCustomerInfoOperation: CacheableNetworkOperation {
         self.customerInfoResponseHandler = customerInfoResponseHandler
         self.customerInfoCallbackCache = customerInfoCallbackCache
 
-        super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID)
+        var individualizedCacheKeyPart = configuration.appUserID
+
+        // If there is any enqueued `PostReceiptDataOperation` we don't want this new
+        // `GetCustomerInfoOperation` to share the same cache key.
+        // If it did, future `GetCustomerInfoOperation` would receive a cached value
+        // instead of an up-to-date `CustomerInfo` after those post receipt operations finish.
+        if customerInfoCallbackCache.hasPostReceiptOperations {
+            individualizedCacheKeyPart += "-\(customerInfoCallbackCache.numberOfGetCustomerInfoOperations)"
+        }
+
+        super.init(configuration: configuration,
+                   individualizedCacheKeyPart: individualizedCacheKeyPart)
     }
 
     override func begin(completion: @escaping () -> Void) {
@@ -60,6 +71,29 @@ private extension GetCustomerInfoOperation {
             }
 
             completion()
+        }
+    }
+
+}
+
+private extension CallbackCache where T == CustomerInfoCallback {
+
+    var numberOfGetCustomerInfoOperations: Int {
+        return self.callbacks(ofType: GetCustomerInfoOperation.self)
+    }
+
+    var hasPostReceiptOperations: Bool {
+        return self.callbacks(ofType: PostReceiptDataOperation.self) > 0
+    }
+
+    private func callbacks(ofType type: NetworkOperation.Type) -> Int {
+        return self.callbackQueue.sync {
+            self
+                .cachedCallbacksByKey
+                .lazy
+                .flatMap(\.value)
+                .filter { $0.source == type }
+                .count
         }
     }
 
