@@ -54,7 +54,7 @@
 
     switch (type) {
         case RCStoreProductSubscriptionTypeSubscription: break;
-        case RCStoreProductSubscriptionTypeInAppPurchase: break;
+        case RCStoreProductSubscriptionTypeNonSubscription: break;
     }
 }
 

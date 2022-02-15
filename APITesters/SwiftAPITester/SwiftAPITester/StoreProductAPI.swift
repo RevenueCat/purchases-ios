@@ -59,7 +59,7 @@ func checkStoreProductAPI() {
 func checkSubscriptionType(_ type: StoreProduct.SubscriptionType) {
     switch type {
     case .subscription: break
-    case .inAppPurchase: break
+    case .nonSubscription: break
     }
 }
 

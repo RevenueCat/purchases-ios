@@ -26,7 +26,7 @@ extension StoreProduct {
         case subscription
 
         /// A consumable or non-consumable in-app purchase.
-        case inAppPurchase
+        case nonSubscription
 
     }
 
@@ -57,8 +57,8 @@ extension StoreProduct.ProductType {
 
     var subscriptionType: StoreProduct.SubscriptionType {
         switch self {
-        case .consumable: return .inAppPurchase
-        case .nonConsumable: return .inAppPurchase
+        case .consumable: return .nonSubscription
+        case .nonConsumable: return .nonSubscription
         case .nonRenewableSubscription: return .subscription
         case .autoRenewableSubscription: return .subscription
         }

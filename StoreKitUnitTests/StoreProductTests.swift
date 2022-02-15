@@ -268,10 +268,10 @@ class StoreProductTests: StoreKitConfigTestCase {
 
     func testSK1SubscriptionType() async throws {
         let subscription = try await self.sk1Fetcher.product(withIdentifier: Self.productID)
-        let inApp = try await self.sk1Fetcher.product(withIdentifier: Self.lifetimeProductID)
+        let nonSubscription = try await self.sk1Fetcher.product(withIdentifier: Self.lifetimeProductID)
 
         expect(subscription.subscriptionType) == .subscription
-        expect(inApp.subscriptionType) == .inAppPurchase
+        expect(nonSubscription.subscriptionType) == .nonSubscription
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -298,10 +298,10 @@ class StoreProductTests: StoreKitConfigTestCase {
         let fetcher = ProductsFetcherSK2()
 
         let subscription = try await fetcher.product(withIdentifier: Self.productID)
-        let inApp = try await fetcher.product(withIdentifier: Self.lifetimeProductID)
+        let nonSubscription = try await fetcher.product(withIdentifier: Self.lifetimeProductID)
 
         expect(subscription.subscriptionType) == .subscription
-        expect(inApp.subscriptionType) == .inAppPurchase
+        expect(nonSubscription.subscriptionType) == .nonSubscription
     }
 
 }
