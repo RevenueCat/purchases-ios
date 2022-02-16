@@ -54,8 +54,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     }
 
     func testSK1AndStoreProductDetailsAreEquivalent() async throws {
-        let products = try await self.sk1Fetcher.products(withIdentifiers: ["com.revenuecat.monthly_4.99.1_week_intro"])
-        let product = try XCTUnwrap(products.first)
+        let product = try await self.sk1Fetcher.product(withIdentifier: Self.productID)
 
         expectEqualProducts(product, StoreProduct.from(product: product))
     }
@@ -64,18 +63,16 @@ class StoreProductTests: StoreKitConfigTestCase {
     func testSK2AndStoreProductDetailsAreEquivalent() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let products = try await ProductsFetcherSK2()
-            .products(identifiers: ["com.revenuecat.monthly_4.99.1_week_intro"])
-        let product = try XCTUnwrap(products.first)
+        let product = try await ProductsFetcherSK2()
+            .product(withIdentifier: Self.productID)
 
         expectEqualProducts(product, StoreProduct.from(product: product))
     }
 
     func testSk1DetailsWrapsCorrectly() throws {
-        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        var result: Result<Set<SK1StoreProduct>, Error>!
+        var result: Result<Set<SK1StoreProduct>, Swift.Error>!
 
-        self.sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { products in
+        self.sk1Fetcher.products(withIdentifiers: Set([Self.productID])) { products in
             result = products
         }
 
@@ -89,11 +86,11 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(storeProduct.sk1Product) === sk1Product.underlyingSK1Product
 
-        expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+        expect(storeProduct.productIdentifier) == Self.productID
+        expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.localizedPriceString) == "$4.99"
-        expect(storeProduct.productIdentifier) == productIdentifier
         expect(storeProduct.isFamilyShareable) == true
         expect(storeProduct.localizedTitle) == "Monthly Free Trial"
         // open the StoreKit Config file as source code to see the expected value
@@ -128,24 +125,19 @@ class StoreProductTests: StoreKitConfigTestCase {
     func testSk2DetailsWrapsCorrectly() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk2Fetcher = ProductsFetcherSK2()
 
-        let storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
-
-        expect(storeProductSet).to(haveCount(1))
-
-        let sk2Product = try XCTUnwrap(storeProductSet.first)
-        let storeProduct = StoreProduct.from(product: sk2Product)
+        let storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
         // Can't use `===` because `SK2Product` is a `struct`
-        expect(storeProduct.sk2Product) == sk2Product.underlyingSK2Product
+        expect(storeProduct.sk2Product) == storeProduct.sk2Product
 
-        expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+        expect(storeProduct.productIdentifier) == Self.productID
+        expect(storeProduct.productCategory) == .subscription
+        expect(storeProduct.productType) == .autoRenewableSubscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.localizedPriceString) == "$4.99"
-        expect(storeProduct.productIdentifier) == productIdentifier
         expect(storeProduct.isFamilyShareable) == true
         expect(storeProduct.localizedTitle) == "Monthly Free Trial"
         // open the StoreKit Config file as source code to see the expected value
@@ -183,12 +175,10 @@ class StoreProductTests: StoreKitConfigTestCase {
     func testSk2PriceFormatterFormatsCorrectly() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk2Fetcher = ProductsFetcherSK2()
 
-        let storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+        let storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
-        let storeProduct = try XCTUnwrap(storeProductSet.first)
         let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         let productPrice = storeProduct.price as NSNumber
 
@@ -200,11 +190,8 @@ class StoreProductTests: StoreKitConfigTestCase {
     func testSk1PriceFormatterFormatsCorrectly() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let storeProduct = try await self.sk1Fetcher.product(withIdentifier: Self.productID)
 
-        let storeProductSet = try await self.sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
-
-        let storeProduct = try XCTUnwrap(storeProductSet.first)
         let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         let productPrice = storeProduct.price as NSNumber
 
@@ -219,12 +206,10 @@ class StoreProductTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         await changeStorefront("ESP")
 
-        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var sk1Fetcher = ProductsFetcherSK1()
 
-        var storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        var storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
-        var storeProduct = try XCTUnwrap(storeProductSet.first)
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         var productPrice = storeProduct.price as NSNumber
 
@@ -238,9 +223,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         // detect Storefront changes to invalidate the cache like `ProductsFetcherSK2` does.
         sk1Fetcher = ProductsFetcherSK1()
 
-        storeProductSet = try await sk1Fetcher.products(withIdentifiers: Set([productIdentifier]))
+        storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
-        storeProduct = try XCTUnwrap(storeProductSet.first)
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         productPrice = storeProduct.price as NSNumber
 
@@ -256,11 +240,8 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         let sk2Fetcher = ProductsFetcherSK2()
 
-        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
-        var storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
-
-        var storeProduct = try XCTUnwrap(storeProductSet.first)
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         var productPrice = storeProduct.price as NSNumber
 
@@ -269,17 +250,68 @@ class StoreProductTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "en_EN")
         await changeStorefront("USA")
 
-        storeProductSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+        storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
-        storeProduct = try XCTUnwrap(storeProductSet.first)
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
     }
 
-    private func expectEqualProducts(_ productA: StoreProductType, _ productB: StoreProductType) {
+    func testSK1ProductTypeDoesNotCrash() async throws {
+        let products = try await self.sk1Fetcher.products(withIdentifiers: [Self.productID])
+        let product = try XCTUnwrap(products.first)
+
+        // The value is undefined so we don't need to check it, just making sure this does not crash
+        _ = product.productType
+    }
+
+    func testSK1ProductCategory() async throws {
+        let subscription = try await self.sk1Fetcher.product(withIdentifier: Self.productID)
+        let nonSubscription = try await self.sk1Fetcher.product(withIdentifier: Self.lifetimeProductID)
+
+        expect(subscription.productCategory) == .subscription
+        expect(nonSubscription.productCategory) == .nonSubscription
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSK2ProductType() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let fetcher = ProductsFetcherSK2()
+
+        let consumable = try await fetcher.product(withIdentifier: "com.revenuecat.consumable")
+        let nonConsumable = try await fetcher.product(withIdentifier: Self.lifetimeProductID)
+        let nonRenewable = try await fetcher.product(withIdentifier: "com.revenuecat.non_renewable")
+        let autoRenewable = try await fetcher.product(withIdentifier: Self.productID)
+
+        expect(consumable.productType) == .consumable
+        expect(nonConsumable.productType) == .nonConsumable
+        expect(nonRenewable.productType) == .nonRenewableSubscription
+        expect(autoRenewable.productType) == .autoRenewableSubscription
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSK2ProductCategory() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let fetcher = ProductsFetcherSK2()
+
+        let subscription = try await fetcher.product(withIdentifier: Self.productID)
+        let nonSubscription = try await fetcher.product(withIdentifier: Self.lifetimeProductID)
+
+        expect(subscription.productCategory) == .subscription
+        expect(nonSubscription.productCategory) == .nonSubscription
+    }
+
+}
+
+private extension StoreProductTests {
+
+    func expectEqualProducts(_ productA: StoreProductType, _ productB: StoreProductType) {
         expect(productA.productIdentifier) == productB.productIdentifier
+        // Note: can't compare productTypes because SK1 doesn't have full information
+        expect(productA.productCategory) == productB.productCategory
         expect(productA.localizedDescription) == productB.localizedDescription
         expect(productA.price) == productB.price
         expect(productA.localizedPriceString) == productB.localizedPriceString
@@ -313,7 +345,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     /// Updates `SKTestSession.storefront` and waits for `Storefront.current` to reflect the change
     /// This is necessary because the change is aynchronous within `StoreKit`, and otherwise code that depends
     /// on the change might not see it in time, resulting in race conditions and flaky tests.
-    private func changeStorefront(_ new: String) async {
+    func changeStorefront(_ new: String) async {
         testSession.storefront = new
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -340,4 +372,46 @@ class StoreProductTests: StoreKitConfigTestCase {
             expect(detected).to(beTrue(), description: "Storefront change not detected")
         }
     }
+
+}
+
+private extension StoreProductTests {
+
+    enum Error: Swift.Error {
+
+        case noProductsFound
+        case multipleProductsFound
+
+    }
+
+}
+
+private extension ProductsFetcherSK1 {
+
+    func product(withIdentifier identifier: String) async throws -> StoreProduct {
+        let products = try await self.products(withIdentifiers: Set([identifier]))
+
+        switch products.count {
+        case 0: throw StoreProductTests.Error.noProductsFound
+        case 1: return StoreProduct.from(product: products.first!)
+        default: throw StoreProductTests.Error.multipleProductsFound
+        }
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension ProductsFetcherSK2 {
+
+    func product(withIdentifier identifier: String) async throws -> StoreProduct {
+        let products = try await self.products(identifiers: Set([identifier]))
+
+        switch products.count {
+        case 0: throw StoreProductTests.Error.noProductsFound
+        case 1: return StoreProduct.from(product: products.first!)
+        default: throw StoreProductTests.Error.multipleProductsFound
+        }
+    }
+
 }

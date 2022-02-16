@@ -21,6 +21,22 @@ internal struct SK1StoreProduct: StoreProductType {
 
     let underlyingSK1Product: SK1Product
 
+    var productCategory: StoreProduct.ProductCategory {
+        guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) else {
+            return .nonSubscription
+        }
+
+        return self.subscriptionPeriod == nil
+            ? .nonSubscription
+            : .subscription
+    }
+
+    var productType: StoreProduct.ProductType {
+        Logger.warn(Strings.storeKit.sk1_no_known_product_type)
+
+        return .defaultType
+    }
+
     var localizedDescription: String { return underlyingSK1Product.localizedDescription }
 
     var price: Decimal { return underlyingSK1Product.price as Decimal }

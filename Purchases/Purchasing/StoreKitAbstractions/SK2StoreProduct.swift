@@ -30,6 +30,14 @@ internal struct SK2StoreProduct: StoreProductType {
         _underlyingSK2Product as! SK2Product
     }
 
+    var productCategory: StoreProduct.ProductCategory {
+        return self.productType.productCategory
+    }
+
+    var productType: StoreProduct.ProductType {
+        return .init(self.underlyingSK2Product.type)
+    }
+
     var localizedDescription: String { underlyingSK2Product.description }
 
     var price: Decimal { underlyingSK2Product.price }

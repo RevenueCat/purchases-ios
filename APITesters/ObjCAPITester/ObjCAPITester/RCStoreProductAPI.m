@@ -49,4 +49,24 @@
       );
 }
 
++ (void)checkProductCategory {
+    RCStoreProductCategory category = RCStoreProductCategorySubscription;
+
+    switch (category) {
+        case RCStoreProductCategorySubscription: break;
+        case RCStoreProductCategoryNonSubscription: break;
+    }
+}
+
++ (void)checkProductType {
+    RCStoreProductType type = RCStoreProductTypeNonRenewableSubscription;
+
+    switch (type) {
+        case RCStoreProductTypeConsumable: break;
+        case RCStoreProductTypeNonConsumable: break;
+        case RCStoreProductTypeNonRenewableSubscription: break;
+        case RCStoreProductTypeAutoRenewableSubscription: break;
+    }
+}
+
 @end

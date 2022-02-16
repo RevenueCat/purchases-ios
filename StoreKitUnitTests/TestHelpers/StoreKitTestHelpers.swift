@@ -60,5 +60,6 @@ extension StoreKitConfigTestCase {
 extension StoreKitConfigTestCase {
 
     static let productID = "com.revenuecat.monthly_4.99.1_week_intro"
+    static let lifetimeProductID = "lifetime"
 
 }

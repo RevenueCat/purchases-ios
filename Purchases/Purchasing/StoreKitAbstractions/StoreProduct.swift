@@ -61,6 +61,10 @@ public typealias SK2Product = StoreKit.Product
     // Note: this class inherits its docs from `StoreProductType`
     // swiftlint:disable missing_docs
 
+    @objc public var productType: ProductType { self.product.productType }
+
+    @objc public var productCategory: ProductCategory { self.product.productCategory }
+
     @objc public var localizedDescription: String { self.product.localizedDescription }
 
     @objc public var localizedTitle: String { self.product.localizedTitle }
@@ -93,6 +97,19 @@ public typealias SK2Product = StoreKit.Product
 
 /// Type that provides access to all of `StoreKit`'s product type's properties.
 internal protocol StoreProductType {
+
+    /// The category of this product, whether a subscription or a one-time purchase.
+
+    /// ### Related Symbols:
+    /// - ``StoreProduct/productType-swift.property``
+    var productCategory: StoreProduct.ProductCategory { get }
+
+    /// The type of product.
+    /// - Important: `StoreProduct`s backing SK1 products cannot determine the type.
+    ///
+    /// ### Related Symbols:
+    /// - ``StoreProduct/productCategory-swift.property``
+    var productType: StoreProduct.ProductType { get }
 
     /// A description of the product.
     /// - Note: The description's language is determined by the storefront that the user's device is connected to,
