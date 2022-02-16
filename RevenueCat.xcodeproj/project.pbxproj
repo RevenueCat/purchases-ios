@@ -343,7 +343,6 @@
 		F591492826B9956C00D32E58 /* MockTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492726B9956C00D32E58 /* MockTransaction.swift */; };
 		F5BE424026962ACF00254A30 /* ReceiptRefreshPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */; };
 		F5BE424226965F9F00254A30 /* ProductRequestData+Initialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE424126965F9F00254A30 /* ProductRequestData+Initialization.swift */; };
-		F5BE443D26977F9B00254A30 /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE443C26977F9B00254A30 /* HTTPRequest.swift */; };
 		F5BE44432698581100254A30 /* AttributionTypeFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE44422698581100254A30 /* AttributionTypeFactory.swift */; };
 		F5BE444726985E7B00254A30 /* AttributionTypeFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E350420D54B99BB39448E0 /* AttributionTypeFactoryTests.swift */; };
 		F5BE4479269E4A4C00254A30 /* AfficheClientProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE4478269E4A4C00254A30 /* AfficheClientProxy.swift */; };
@@ -726,7 +725,6 @@
 		F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptRefreshPolicy.swift; sourceTree = "<group>"; };
 		F5BE424126965F9F00254A30 /* ProductRequestData+Initialization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductRequestData+Initialization.swift"; sourceTree = "<group>"; };
 		F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcherTests.swift; sourceTree = "<group>"; };
-		F5BE443C26977F9B00254A30 /* HTTPRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequest.swift; sourceTree = "<group>"; };
 		F5BE44422698581100254A30 /* AttributionTypeFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionTypeFactory.swift; sourceTree = "<group>"; };
 		F5BE4478269E4A4C00254A30 /* AfficheClientProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AfficheClientProxy.swift; sourceTree = "<group>"; };
 		F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingManagerProxy.swift; sourceTree = "<group>"; };
@@ -1273,7 +1271,6 @@
 				35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */,
 				35D832CC262A5B7500E60AC5 /* ETagManager.swift */,
 				35F82BB326A9A74D0051DF03 /* HTTPClient.swift */,
-				F5BE443C26977F9B00254A30 /* HTTPRequest.swift */,
 				35D832F3262E606500E60AC5 /* HTTPResponse.swift */,
 				35D832D1262E56DB00E60AC5 /* HTTPStatusCodes.swift */,
 				B3766F1D26BDA95100141450 /* IntroEligibilityResponse.swift */,
@@ -2025,7 +2022,6 @@
 				F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */,
 				80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */,
 				B34605C6279A6E380031CA74 /* UserInfoAttributeParser.swift in Sources */,
-				F5BE443D26977F9B00254A30 /* HTTPRequest.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
 				B3B5FBC1269E17CE00104A0C /* DeviceCache.swift in Sources */,
