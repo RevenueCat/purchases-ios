@@ -15,12 +15,14 @@
     RCStoreProductDiscount *discount;
 
     NSString *offerIdentifier = discount.offerIdentifier;
+    NSString *currencyCode = discount.currencyCode;
     NSDecimal price = discount.price;
     RCPaymentMode paymentMode = discount.paymentMode;
     RCSubscriptionPeriod *period = discount.subscriptionPeriod;
 
     NSLog(
           offerIdentifier,
+          currencyCode,
           price,
           paymentMode,
           period

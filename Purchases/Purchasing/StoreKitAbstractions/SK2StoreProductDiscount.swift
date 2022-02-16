@@ -40,6 +40,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
     let type: StoreProductDiscount.DiscountType
+
 }
 
 private extension StoreProductDiscount.PaymentMode {

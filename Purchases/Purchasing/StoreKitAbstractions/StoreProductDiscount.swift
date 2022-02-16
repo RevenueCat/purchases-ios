@@ -110,7 +110,7 @@ internal protocol StoreProductDiscountType {
     /// A string used to uniquely identify a discount offer for a product.
     var offerIdentifier: String? { get }
 
-    /// The ccurrency of the product's price.
+    /// The currency of the product's price.
     var currencyCode: String? { get }
 
     /// The discount price of the product in the local currency.

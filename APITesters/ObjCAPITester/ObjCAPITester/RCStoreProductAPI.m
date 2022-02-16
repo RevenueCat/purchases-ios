@@ -16,6 +16,7 @@
 
     NSString *localizedDescription = product.localizedDescription;
     NSString *localizedTitle = product.localizedTitle;
+    NSString *currencyCode = product.currencyCode;
     NSDecimal price = product.price;
     NSString *localizedPriceString = product.localizedPriceString;
     NSString *productIdentifier = product.productIdentifier;
@@ -34,6 +35,7 @@
           product,
           localizedDescription,
           localizedTitle,
+          currencyCode,
           price,
           localizedPriceString,
           productIdentifier,
