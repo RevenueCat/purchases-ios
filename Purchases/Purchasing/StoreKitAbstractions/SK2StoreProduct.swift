@@ -80,12 +80,12 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var introductoryDiscount: StoreProductDiscount? {
         self.underlyingSK2Product.subscription?.introductoryOffer
-            .flatMap({ StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode)  })
+            .flatMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode)  }
     }
 
     var discounts: [StoreProductDiscount] {
         (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
-            .compactMap({ StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode)  })
+            .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode)  }
     }
 
 }
