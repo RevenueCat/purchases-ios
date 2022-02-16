@@ -1237,6 +1237,7 @@ class BackendTests: XCTestCase {
         })
 
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
+                                                currencyCode: "USD",
                                                 price: 12,
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 10, unit: .month),
@@ -1269,6 +1270,7 @@ class BackendTests: XCTestCase {
         let paymentMode: StoreProductDiscount.PaymentMode? = nil
         var completionCalled = false
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
+                                                currencyCode: currencyCode,
                                                 price: 12.1,
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .year),

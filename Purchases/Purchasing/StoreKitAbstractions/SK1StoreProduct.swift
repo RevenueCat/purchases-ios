@@ -39,6 +39,8 @@ internal struct SK1StoreProduct: StoreProductType {
 
     var localizedDescription: String { return underlyingSK1Product.localizedDescription }
 
+    var currencyCode: String? { return underlyingSK1Product.priceLocale.currencyCode }
+
     var price: Decimal { return underlyingSK1Product.price as Decimal }
 
     var localizedPriceString: String {

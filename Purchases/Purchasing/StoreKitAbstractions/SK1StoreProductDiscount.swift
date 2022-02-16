@@ -29,6 +29,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         } else {
             self.offerIdentifier = nil
         }
+        self.currencyCode = sk1Discount.priceLocale.currencyCode
         self.price = sk1Discount.price as Decimal
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
@@ -38,6 +39,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
     let underlyingSK1Discount: SK1ProductDiscount
 
     let offerIdentifier: String?
+    let currencyCode: String?
     let price: Decimal
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod

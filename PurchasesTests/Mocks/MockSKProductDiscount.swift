@@ -13,6 +13,11 @@ class MockSKProductDiscount: SKProductDiscount {
         return mockPaymentMode ?? SKProductDiscount.PaymentMode.payAsYouGo
     }
 
+    var mockLocale: Locale?
+    override var priceLocale: Locale {
+        return mockLocale ?? Locale(identifier: "USD")
+    }
+
     var mockPrice: Decimal?
     override var price: NSDecimalNumber {
         return (mockPrice as NSDecimalNumber?) ?? 1.99

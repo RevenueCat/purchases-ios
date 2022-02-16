@@ -89,6 +89,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
+        expect(storeProduct.currencyCode) == "USD"
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.localizedPriceString) == "$4.99"
         expect(storeProduct.isFamilyShareable) == true
@@ -136,6 +137,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.productType) == .autoRenewableSubscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
+        expect(storeProduct.currencyCode) == "USD"
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.localizedPriceString) == "$4.99"
         expect(storeProduct.isFamilyShareable) == true
@@ -214,6 +216,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         var productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "4,99 €"
+        expect(storeProduct.currencyCode) == "EUR"
 
         testSession.locale = Locale(identifier: "en_EN")
         await changeStorefront("USA")
@@ -229,6 +232,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
+        expect(storeProduct.currencyCode) == "USD"
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -246,6 +250,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         var productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "€4.99"
+        expect(storeProduct.currencyCode) == "EUR"
 
         testSession.locale = Locale(identifier: "en_EN")
         await changeStorefront("USA")
@@ -256,6 +261,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
+        expect(storeProduct.currencyCode) == "USD"
     }
 
     func testSK1ProductTypeDoesNotCrash() async throws {

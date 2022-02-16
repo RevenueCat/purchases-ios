@@ -68,6 +68,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     // swiftlint:disable missing_docs
 
     @objc public var offerIdentifier: String? { self.discount.offerIdentifier }
+    @objc public var currencyCode: String? { self.discount.currencyCode }
     @objc public var price: Decimal { self.discount.price }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
@@ -109,6 +110,9 @@ internal protocol StoreProductDiscountType {
     /// A string used to uniquely identify a discount offer for a product.
     var offerIdentifier: String? { get }
 
+    /// The currency of the product's price.
+    var currencyCode: String? { get }
+
     /// The discount price of the product in the local currency.
     var price: Decimal { get }
 
@@ -135,8 +139,9 @@ extension StoreProductDiscount {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    internal convenience init?(sk2Discount: SK2ProductDiscount) {
-        guard let discount = SK2StoreProductDiscount(sk2Discount: sk2Discount) else { return nil }
+    internal convenience init?(sk2Discount: SK2ProductDiscount, currencyCode: String?) {
+        guard let discount = SK2StoreProductDiscount(sk2Discount: sk2Discount,
+                                                     currencyCode: currencyCode) else { return nil }
 
         self.init(discount)
     }

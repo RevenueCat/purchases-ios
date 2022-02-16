@@ -40,6 +40,14 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedDescription: String { underlyingSK2Product.description }
 
+    var currencyCode: String? {
+        // note: if we ever need more information from the jsonRepresentation object, we
+        // should use Codable or another decoding method to clean up this code.
+        let attributes = jsonDict["attributes"] as? [String: Any]
+        let offers = attributes?["offers"] as? [[String: Any]]
+        return offers?.first?["currencyCode"] as? String
+    }
+
     var price: Decimal { underlyingSK2Product.price }
 
     var localizedPriceString: String { underlyingSK2Product.displayPrice }
@@ -51,14 +59,10 @@ internal struct SK2StoreProduct: StoreProductType {
     var localizedTitle: String { underlyingSK2Product.displayName }
 
     var priceFormatter: NumberFormatter? {
-        // note: if we ever need more information from the jsonRepresentation object, we
-        // should use Codable or another decoding method to clean up this code.
-        guard let attributes = jsonDict["attributes"] as? [String: Any],
-              let offers = attributes["offers"] as? [[String: Any]],
-              let currencyCode: String = offers.first?["currencyCode"] as? String else {
-                  Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
-                  return nil
-              }
+        guard let currencyCode = self.currencyCode else {
+          Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
+          return nil
+      }
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = currencyCode
@@ -84,12 +88,12 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var introductoryDiscount: StoreProductDiscount? {
         self.underlyingSK2Product.subscription?.introductoryOffer
-            .flatMap(StoreProductDiscount.init)
+            .flatMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
     }
 
     var discounts: [StoreProductDiscount] {
         (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
-            .compactMap(StoreProductDiscount.init)
+            .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
     }
 
 }

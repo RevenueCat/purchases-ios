@@ -139,6 +139,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let product = try await fetchSk1Product()
 
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            currencyCode: product.priceLocale.currencyCode,
                                                             price: 11.1,
                                                             paymentMode: .payAsYouGo,
                                                             subscriptionPeriod: .init(value: 1, unit: .month),
@@ -168,6 +169,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               offeringIdentifier: "offering")
 
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                currencyCode: storeProduct.currencyCode,
                                                 price: 11.1,
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .month),
@@ -266,7 +268,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
         let product = try await fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                currencyCode: storeProduct.currencyCode,
                                                 price: 11.1,
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .month),
@@ -344,8 +348,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
 
         let product = try await fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
 
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            currencyCode: storeProduct.currencyCode,
                                                             price: 11.1,
                                                             paymentMode: .payAsYouGo,
                                                             subscriptionPeriod: .init(value: 1, unit: .month),

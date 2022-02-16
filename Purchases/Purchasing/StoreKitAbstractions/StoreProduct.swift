@@ -69,6 +69,8 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public var localizedTitle: String { self.product.localizedTitle }
 
+    @objc public var currencyCode: String? { self.product.currencyCode }
+
     @objc public var price: Decimal { self.product.price }
 
     @objc public var localizedPriceString: String { self.product.localizedPriceString}
@@ -120,6 +122,9 @@ internal protocol StoreProductType {
     /// - Note: The title's language is determined by the storefront that the user's device is connected to,
     /// not the preferred language set on the device.
     var localizedTitle: String { get }
+
+    /// The ccurrency of the product's price.
+    var currencyCode: String? { get }
 
     /// The decimal representation of the cost of the product, in local currency.
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
