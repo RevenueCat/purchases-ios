@@ -91,6 +91,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
+        expect(storeProduct.currencyCode) == "USD"
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.localizedPriceString) == "$4.99"
         expect(storeProduct.productIdentifier) == productIdentifier
@@ -143,6 +144,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(storeProduct.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
+        expect(storeProduct.currencyCode) == "USD"
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.localizedPriceString) == "$4.99"
         expect(storeProduct.productIdentifier) == productIdentifier
