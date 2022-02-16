@@ -25,7 +25,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsPrice() {
-        let price: Decimal = 10.99
+        let price: NSDecimalNumber = 10.99
         product.mockPrice = price
 
         let receivedProductData = self.extract()
@@ -159,7 +159,7 @@ class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
             let mockDiscount = MockSKProductDiscount()
             let paymentMode: SKProductDiscount.PaymentMode = .freeTrial
             mockDiscount.mockPaymentMode = paymentMode
-            let price: Decimal = 10.99
+            let price: NSDecimalNumber = 10.99
             mockDiscount.mockPrice = price
             let discountID = "cool_discount"
             mockDiscount.mockIdentifier = discountID

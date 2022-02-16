@@ -10,11 +10,11 @@ extension ProductRequestData {
     static func createMockProductData(productIdentifier: String = "product_id",
                                       paymentMode: StoreProductDiscount.PaymentMode? = nil,
                                       currencyCode: String = "UYU",
-                                      price: Decimal = 15.99,
+                                      price: NSDecimalNumber = 15.99,
                                       normalDuration: String? = nil,
                                       introDuration: String? = nil,
                                       introDurationType: StoreProductDiscount.PaymentMode? = nil,
-                                      introPrice: Decimal? = nil,
+                                      introPrice: NSDecimalNumber? = nil,
                                       subscriptionGroup: String? = nil,
                                       discounts: [StoreProductDiscountType]? = nil) -> ProductRequestData {
         ProductRequestData(productIdentifier: productIdentifier,

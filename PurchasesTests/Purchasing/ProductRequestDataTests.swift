@@ -43,7 +43,7 @@ class ProductRequestDataTests: XCTestCase {
 
     func testAsDictionaryConvertsPriceCorrectly() throws {
         let price: NSDecimalNumber = 9.99
-        let productData: ProductRequestData = .createMockProductData(price: price as Decimal)
+        let productData: ProductRequestData = .createMockProductData(price: price)
         expect(try productData.asDictionary()["price"] as? String) == price.description
     }
 
@@ -79,7 +79,7 @@ class ProductRequestDataTests: XCTestCase {
 
     func testAsDictionaryConvertsIntroPriceCorrectly() throws {
         let introPrice: NSDecimalNumber = 6.99
-        let productData: ProductRequestData = .createMockProductData(introPrice: introPrice as Decimal)
+        let productData: ProductRequestData = .createMockProductData(introPrice: introPrice)
         expect(try productData.asDictionary()["introductory_price"] as? String) == introPrice.description
     }
 

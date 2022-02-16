@@ -25,7 +25,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
         self.underlyingSK2Discount = sk2Discount
 
         self.offerIdentifier = sk2Discount.id
-        self.price = sk2Discount.price
+        self.price = sk2Discount.price as NSDecimalNumber
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
         self.type = type
@@ -34,7 +34,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
     let underlyingSK2Discount: SK2ProductDiscount
 
     let offerIdentifier: String?
-    let price: Decimal
+    let price: NSDecimalNumber
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
     let type: StoreProductDiscount.DiscountType

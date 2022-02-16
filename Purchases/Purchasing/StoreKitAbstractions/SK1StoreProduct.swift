@@ -23,7 +23,7 @@ internal struct SK1StoreProduct: StoreProductType {
 
     var localizedDescription: String { return underlyingSK1Product.localizedDescription }
 
-    var price: Decimal { return underlyingSK1Product.price as Decimal }
+    var price: NSDecimalNumber { return underlyingSK1Product.price }
 
     var localizedPriceString: String {
         return priceFormatter?.string(from: underlyingSK1Product.price) ?? ""

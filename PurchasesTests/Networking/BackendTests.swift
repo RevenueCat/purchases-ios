@@ -409,7 +409,7 @@ class BackendTests: XCTestCase {
 
         let productIdentifier = "a_great_product"
         let offeringIdentifier = "a_offering"
-        let price: Decimal = 10.98
+        let price: NSDecimalNumber = 10.98
         let group = "sub_group"
 
         let currencyCode = "BFD"
@@ -1258,7 +1258,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
 
         let productIdentifier = "a_great_product"
-        let price: Decimal = 15.99
+        let price: NSDecimalNumber = 15.99
         let group = "sub_group"
         let currencyCode = "BFD"
         let paymentMode: StoreProductDiscount.PaymentMode? = nil

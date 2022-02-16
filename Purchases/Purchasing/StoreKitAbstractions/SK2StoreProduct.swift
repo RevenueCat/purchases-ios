@@ -32,7 +32,7 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedDescription: String { underlyingSK2Product.description }
 
-    var price: Decimal { underlyingSK2Product.price }
+    var price: NSDecimalNumber { underlyingSK2Product.price as NSDecimalNumber }
 
     var localizedPriceString: String { underlyingSK2Product.displayPrice }
 

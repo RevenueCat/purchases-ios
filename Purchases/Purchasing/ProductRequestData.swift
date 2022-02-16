@@ -23,11 +23,11 @@ struct ProductRequestData {
     let productIdentifier: String
     let paymentMode: StoreProductDiscount.PaymentMode?
     let currencyCode: String?
-    let price: Decimal
+    let price: NSDecimalNumber
     let normalDuration: String?
     let introDuration: String?
     let introDurationType: StoreProductDiscount.PaymentMode?
-    let introPrice: Decimal?
+    let introPrice: NSDecimalNumber?
     let subscriptionGroup: String?
     let discounts: [StoreProductDiscount]?
 

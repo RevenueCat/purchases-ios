@@ -15,7 +15,7 @@
 
 struct MockStoreProductDiscount: StoreProductDiscountType {
     let offerIdentifier: String?
-    let price: Decimal
+    let price: NSDecimalNumber
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
     let type: StoreProductDiscount.DiscountType

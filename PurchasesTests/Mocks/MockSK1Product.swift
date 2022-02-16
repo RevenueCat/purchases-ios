@@ -29,7 +29,7 @@ class MockSK1Product: SK1Product {
         return mockPriceLocale ?? Locale(identifier: "en_US")
     }
 
-    var mockPrice: Decimal?
+    var mockPrice: NSDecimalNumber?
     override var price: NSDecimalNumber {
         return (mockPrice ?? 2.99) as NSDecimalNumber
     }

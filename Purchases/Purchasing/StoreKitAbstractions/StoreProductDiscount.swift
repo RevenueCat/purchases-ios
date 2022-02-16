@@ -68,7 +68,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     // swiftlint:disable missing_docs
 
     @objc public var offerIdentifier: String? { self.discount.offerIdentifier }
-    @objc public var price: Decimal { self.discount.price }
+    @objc public var price: NSDecimalNumber { self.discount.price }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
     @objc public var type: DiscountType { self.discount.type }
@@ -110,7 +110,7 @@ internal protocol StoreProductDiscountType {
     var offerIdentifier: String? { get }
 
     /// The discount price of the product in the local currency.
-    var price: Decimal { get }
+    var price: NSDecimalNumber { get }
 
     /// The payment mode for this product discount.
     var paymentMode: StoreProductDiscount.PaymentMode { get }

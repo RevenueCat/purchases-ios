@@ -13,7 +13,7 @@ class MockSKProductDiscount: SKProductDiscount {
         return mockPaymentMode ?? SKProductDiscount.PaymentMode.payAsYouGo
     }
 
-    var mockPrice: Decimal?
+    var mockPrice: NSDecimalNumber?
     override var price: NSDecimalNumber {
         return (mockPrice as NSDecimalNumber?) ?? 1.99
     }

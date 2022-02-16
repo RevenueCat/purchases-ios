@@ -11,7 +11,7 @@ var discount: StoreProductDiscount!
 
 func checkStoreProductDiscountAPI() {
     let offerIdentifier: String? = discount.offerIdentifier
-    let price: Decimal = discount.price
+    let price: NSDecimalNumber = discount.price
     let paymentMode: StoreProductDiscount.PaymentMode = discount.paymentMode
     let subscriptionPeriod: SubscriptionPeriod = discount.subscriptionPeriod
 

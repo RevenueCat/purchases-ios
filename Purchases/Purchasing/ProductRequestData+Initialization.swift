@@ -33,11 +33,11 @@ extension ProductRequestData {
             productIdentifier: product.productIdentifier,
             paymentMode: paymentMode,
             currencyCode: product.priceFormatter?.currencyCode,
-            price: product.price as Decimal,
+            price: product.price,
             normalDuration: normalDuration,
             introDuration: introDuration,
             introDurationType: introDurationType,
-            introPrice: introPrice as Decimal?,
+            introPrice: introPrice,
             subscriptionGroup: subscriptionGroup,
             discounts: discounts
         )

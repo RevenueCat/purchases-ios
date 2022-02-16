@@ -11,7 +11,7 @@ var product: StoreProduct!
 func checkStoreProductAPI() {
     let localizedDescription: String = product.localizedDescription
     let localizedTitle: String = product.localizedTitle
-    let price: Decimal = product.price
+    let price: NSDecimalNumber = product.price
     let localizedPriceString: String = product.localizedPriceString
     let productIdentifier: String = product.productIdentifier
     let isFamilyShareable: Bool = product.isFamilyShareable

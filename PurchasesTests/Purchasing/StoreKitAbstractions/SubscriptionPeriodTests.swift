@@ -46,7 +46,7 @@ class SubscriptionPeriodTests: XCTestCase {
     // Note: can't test creation from `StoreKit.Product.SubscriptionPeriod` because it has no public constructors.
 
     func testPricePerMonth() {
-        let expectations: [(period: SubscriptionPeriod, price: Decimal, expected: Decimal)] = [
+        let expectations: [(period: SubscriptionPeriod, price: NSDecimalNumber, expected: Decimal)] = [
             (p(1, .day), 2, 60),
             (p(15, .day), 5, 10),
             (p(1, .week), 10, 40),

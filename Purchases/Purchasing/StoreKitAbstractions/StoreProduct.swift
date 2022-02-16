@@ -65,7 +65,7 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public var localizedTitle: String { self.product.localizedTitle }
 
-    @objc public var price: Decimal { self.product.price }
+    @objc public var price: NSDecimalNumber { self.product.price }
 
     @objc public var localizedPriceString: String { self.product.localizedPriceString}
 
@@ -107,7 +107,7 @@ internal protocol StoreProductType {
     /// The decimal representation of the cost of the product, in local currency.
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
     /// - SeeAlso: ``pricePerMonth``.
-    var price: Decimal { get }
+    var price: NSDecimalNumber { get }
 
     /// The price of this product using ``priceFormatter``.
     var localizedPriceString: String { get }
@@ -172,7 +172,7 @@ public extension StoreProduct {
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var pricePerMonth: NSDecimalNumber? {
-        return self.subscriptionPeriod?.pricePerMonth(withTotalPrice: self.price) as NSDecimalNumber?
+        return self.subscriptionPeriod?.pricePerMonth(withTotalPrice: self.price)
     }
 
     /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
