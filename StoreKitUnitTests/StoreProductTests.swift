@@ -215,7 +215,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         var productPrice = storeProduct.price as NSNumber
 
-        expect(priceFormatter.string(from: productPrice)) == "4,99 €"
+        expect(priceFormatter.string(from: productPrice)) == "€4.99"
         expect(storeProduct.currencyCode) == "EUR"
 
         testSession.locale = Locale(identifier: "en_EN")

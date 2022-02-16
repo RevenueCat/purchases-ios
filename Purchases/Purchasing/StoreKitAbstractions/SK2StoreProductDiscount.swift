@@ -41,6 +41,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
     let subscriptionPeriod: SubscriptionPeriod
     let type: StoreProductDiscount.DiscountType
 
+    var localizedPriceString: String { underlyingSK2Discount.displayPrice }
 }
 
 private extension StoreProductDiscount.PaymentMode {

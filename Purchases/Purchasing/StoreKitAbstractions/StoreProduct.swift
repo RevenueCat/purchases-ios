@@ -131,7 +131,7 @@ internal protocol StoreProductType {
     /// - SeeAlso: ``pricePerMonth``.
     var price: Decimal { get }
 
-    /// The price of this product using ``priceFormatter``.
+    /// The price of this product formatted for locale.
     var localizedPriceString: String { get }
 
     /// The string that identifies the product to the Apple App Store.
@@ -155,11 +155,6 @@ internal protocol StoreProductType {
     /// This property is `nil` if the product is not an auto-renewable subscription.
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     var subscriptionGroupIdentifier: String? { get }
-
-    /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
-    /// - Note: This creates a new formatter for every product, which can be slow.
-    /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
-    var priceFormatter: NumberFormatter? { get }
 
     /// The period details for products that are subscriptions.
     /// - Returns: `nil` if the product is not a subscription.
@@ -187,6 +182,23 @@ internal protocol StoreProductType {
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     var discounts: [StoreProductDiscount] { get }
 
+}
+
+extension StoreProductType {
+    /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
+    /// - Note: This creates a new formatter for every product, which can be slow.
+    /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
+    var priceFormatter: NumberFormatter? {
+        guard let currencyCode = self.currencyCode else {
+          Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
+          return nil
+      }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+        formatter.locale = .autoupdatingCurrent
+        return formatter
+    }
 }
 
 public extension StoreProduct {

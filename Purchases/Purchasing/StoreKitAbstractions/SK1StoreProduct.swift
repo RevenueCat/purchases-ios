@@ -57,13 +57,6 @@ internal struct SK1StoreProduct: StoreProductType {
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
-    var priceFormatter: NumberFormatter? {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = underlyingSK1Product.priceLocale
-        return formatter
-    }
-
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     var subscriptionPeriod: SubscriptionPeriod? {
         guard let skSubscriptionPeriod = underlyingSK1Product.subscriptionPeriod,

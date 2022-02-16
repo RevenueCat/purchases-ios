@@ -58,18 +58,6 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedTitle: String { underlyingSK2Product.displayName }
 
-    var priceFormatter: NumberFormatter? {
-        guard let currencyCode = self.currencyCode else {
-          Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
-          return nil
-      }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
-        formatter.locale = .autoupdatingCurrent
-        return formatter
-    }
-
     var subscriptionGroupIdentifier: String? {
         underlyingSK2Product.subscription?.subscriptionGroupID
     }

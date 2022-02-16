@@ -18,6 +18,7 @@
     NSString *currencyCode = discount.currencyCode;
     NSDecimal price = discount.price;
     RCPaymentMode paymentMode = discount.paymentMode;
+    NSNumberFormatter *priceFormatter = discount.priceFormatter;
     RCSubscriptionPeriod *period = discount.subscriptionPeriod;
 
     NSLog(
@@ -25,6 +26,7 @@
           currencyCode,
           price,
           paymentMode,
+          priceFormatter,
           period
     );
 }

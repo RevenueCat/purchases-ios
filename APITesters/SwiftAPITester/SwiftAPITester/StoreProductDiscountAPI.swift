@@ -14,6 +14,7 @@ func checkStoreProductDiscountAPI() {
     let currentyCode: String? = discount.currencyCode
     let price: Decimal = discount.price
     let paymentMode: StoreProductDiscount.PaymentMode = discount.paymentMode
+    let priceFormatter: NumberFormatter? = product.priceFormatter
     let subscriptionPeriod: SubscriptionPeriod = discount.subscriptionPeriod
 
     print(
@@ -21,6 +22,7 @@ func checkStoreProductDiscountAPI() {
         currentyCode!,
         price,
         paymentMode,
+        priceFormatter!,
         subscriptionPeriod
     )
 }

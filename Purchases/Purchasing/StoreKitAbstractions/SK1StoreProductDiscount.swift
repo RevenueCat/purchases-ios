@@ -45,6 +45,9 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
     let subscriptionPeriod: SubscriptionPeriod
     let type: StoreProductDiscount.DiscountType
 
+    var localizedPriceString: String {
+        return priceFormatter?.string(from: underlyingSK1Discount.price) ?? ""
+    }
 }
 
 private extension StoreProductDiscount.PaymentMode {
