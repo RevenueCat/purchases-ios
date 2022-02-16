@@ -420,8 +420,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             }
         }
 
-        if (self.systemInfo.dangerousSettings.autoSyncPurchases) {
-            storeKitWrapper.delegate = purchasesOrchestrator;
+        if self.systemInfo.dangerousSettings.autoSyncPurchases {
+            storeKitWrapper.delegate = purchasesOrchestrator
         }
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
@@ -1677,6 +1677,7 @@ public extension Purchases {
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:dangerousSettings:useStoreKit2IfAvailable:)
+    // swiftlint:disable:next function_parameter_count
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
                                              observerMode: Bool,

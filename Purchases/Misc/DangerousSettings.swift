@@ -12,12 +12,12 @@
 @objc(RCDangerousSettings) public class DangerousSettings: NSObject {
 
     /**
-     Disable or enable subscribing to the StoreKit queue. If this is disabled, RevenueCat won't observe
-     the StoreKit queue, and it will not sync any purchase automatically.
-     Call syncPurchases whenever a new transaction is completed so the receipt is sent to RevenueCat's backend.
-     Consumables disappear from the receipt after the transaction is finished, so make sure purchases are
-     synced before finishing any consumable transaction, otherwise RevenueCat won't register the purchase.
-     Auto syncing of purchases is enabled by default.
+     * Disable or enable subscribing to the StoreKit queue. If this is disabled, RevenueCat won't observe
+     * the StoreKit queue, and it will not sync any purchase automatically.
+     * Call syncPurchases whenever a new transaction is completed so the receipt is sent to RevenueCat's backend.
+     * Consumables disappear from the receipt after the transaction is finished, so make sure purchases are
+     * synced before finishing any consumable transaction, otherwise RevenueCat won't register the purchase.
+     * Auto syncing of purchases is enabled by default.
      */
     @objc public let autoSyncPurchases: Bool
 
@@ -25,6 +25,12 @@
         self.autoSyncPurchases = true
     }
 
+    /**
+     * Only use a Dangerous Setting if suggested by RevenueCat support team.
+     *
+     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
+     * If this is disabled, RevenueCat won't observethe StoreKit queue, and it will not sync any purchase automatically.
+     */
     @objc public init(autoSyncPurchases: Bool = true) {
         self.autoSyncPurchases = autoSyncPurchases
     }
