@@ -1296,6 +1296,17 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
+    func testSyncPurchasesPostsTheReceiptIfAutoSyncPurchasesSettingIsOff() throws {
+        systemInfo = try MockSystemInfo(platformFlavor: nil,
+                                        platformFlavorVersion: nil,
+                                        finishTransactions: false,
+                                        dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+        initializePurchasesInstance(appUserId: nil)
+
+        purchases!.syncPurchases(completion: nil)
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+    }
+
     func testSyncPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
@@ -2223,6 +2234,62 @@ class PurchasesTests: XCTestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+    }
+
+    func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOffInObserverMode() throws {
+        systemInfo = try MockSystemInfo(platformFlavor: nil,
+                                        platformFlavorVersion: nil,
+                                        finishTransactions: false,
+                                        dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+        initializePurchasesInstance(appUserId: nil)
+
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+        self.purchases?.purchase(product: product) { (_, _, _, _) in
+
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(
+            self.storeKitWrapper, updatedTransaction: transaction)
+
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(beFalse())
+        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+    }
+
+    func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOff() throws {
+        systemInfo = try MockSystemInfo(platformFlavor: nil,
+                                        platformFlavorVersion: nil,
+                                        finishTransactions: true,
+                                        dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+        initializePurchasesInstance(appUserId: nil)
+
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+        self.purchases?.purchase(product: product) { (_, _, _, _) in
+
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(beFalse())
+        // Sync purchases never finishes transactions
         expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
     }
 

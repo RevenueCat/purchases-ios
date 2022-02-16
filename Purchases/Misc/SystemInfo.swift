@@ -49,6 +49,7 @@ class SystemInfo {
     let platformFlavor: String
     let platformFlavorVersion: String?
     let bundle: Bundle
+    let dangerousSettings: DangerousSettings
 
     static var forceUniversalAppStore: Bool = false
     var isSandbox: Bool {
@@ -119,7 +120,8 @@ class SystemInfo {
          platformFlavorVersion: String?,
          finishTransactions: Bool,
          bundle: Bundle = .main,
-         useStoreKit2IfAvailable: Bool = false) throws {
+         useStoreKit2IfAvailable: Bool = false,
+         dangerousSettings: DangerousSettings? = nil) throws {
         self.platformFlavor = platformFlavor ?? "native"
         self.platformFlavorVersion = platformFlavorVersion
         self.bundle = bundle
@@ -132,6 +134,7 @@ class SystemInfo {
 
         self.finishTransactions = finishTransactions
         self.useStoreKit2IfAvailable = useStoreKit2IfAvailable
+        self.dangerousSettings = dangerousSettings ?? DangerousSettings()
     }
 
     func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {

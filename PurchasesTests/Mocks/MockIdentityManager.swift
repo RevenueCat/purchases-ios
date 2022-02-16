@@ -19,7 +19,8 @@ class MockIdentityManager: IdentityManager {
         // swiftlint:disable:next force_try
         let mockSystemInfo = try! MockSystemInfo(platformFlavor: nil,
                                                  platformFlavorVersion: nil,
-                                                 finishTransactions: false)
+                                                 finishTransactions: false,
+                                                 dangerousSettings: nil)
         let mockDeviceCache = MockDeviceCache(systemInfo: mockSystemInfo)
         let mockBackend = MockBackend()
 
