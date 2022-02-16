@@ -91,18 +91,21 @@ class ProductRequestDataTests: XCTestCase {
 
     func testAsDictionaryConvertsDiscountsCorrectly() throws {
         let discount1 = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                 currencyCode: "USD",
                                                  price: 11.1,
                                                  paymentMode: .payAsYouGo,
                                                  subscriptionPeriod: .init(value: 1, unit: .month),
                                                  type: .promotional)
 
         let discount2 = MockStoreProductDiscount(offerIdentifier: "offerid2",
+                                                 currencyCode: "USD",
                                                  price: 12.2,
                                                  paymentMode: .payUpFront,
                                                  subscriptionPeriod: .init(value: 5, unit: .week),
                                                  type: .promotional)
 
         let discount3 = MockStoreProductDiscount(offerIdentifier: "offerid3",
+                                                 currencyCode: "USD",
                                                  price: 13.3,
                                                  paymentMode: .freeTrial,
                                                  subscriptionPeriod: .init(value: 3, unit: .month),
@@ -128,18 +131,21 @@ class ProductRequestDataTests: XCTestCase {
 
     func testEncoding() throws {
         let discount1 = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                 currencyCode: "USD",
                                                  price: 11.2,
                                                  paymentMode: .payAsYouGo,
                                                  subscriptionPeriod: .init(value: 1, unit: .month),
                                                  type: .promotional)
 
         let discount2 = MockStoreProductDiscount(offerIdentifier: "offerid2",
+                                                 currencyCode: "USD",
                                                  price: 12.2,
                                                  paymentMode: .payUpFront,
                                                  subscriptionPeriod: .init(value: 2, unit: .year),
                                                  type: .promotional)
 
         let discount3 = MockStoreProductDiscount(offerIdentifier: "offerid3",
+                                                 currencyCode: "USD",
                                                  price: 13.3,
                                                  paymentMode: .freeTrial,
                                                  subscriptionPeriod: .init(value: 3, unit: .day),
@@ -163,18 +169,21 @@ class ProductRequestDataTests: XCTestCase {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
 
         let discount1 = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                 currencyCode: "USD",
                                                  price: 11,
                                                  paymentMode: .payAsYouGo,
                                                  subscriptionPeriod: .init(value: 1, unit: .month),
                                                  type: .promotional)
 
         let discount2 = MockStoreProductDiscount(offerIdentifier: "offerid2",
+                                                 currencyCode: "USD",
                                                  price: 12,
                                                  paymentMode: .payUpFront,
                                                  subscriptionPeriod: .init(value: 2, unit: .year),
                                                  type: .promotional)
 
         let discount3 = MockStoreProductDiscount(offerIdentifier: "offerid3",
+                                                 currencyCode: "USD",
                                                  price: 13,
                                                  paymentMode: .freeTrial,
                                                  subscriptionPeriod: .init(value: 3, unit: .day),

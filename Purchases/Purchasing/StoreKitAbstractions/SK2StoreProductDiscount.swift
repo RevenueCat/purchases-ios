@@ -16,7 +16,7 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2StoreProductDiscount: StoreProductDiscountType {
 
-    init?(sk2Discount: SK2ProductDiscount) {
+    init?(sk2Discount: SK2ProductDiscount, currencyCode: String?) {
         guard let paymentMode = StoreProductDiscount.PaymentMode(subscriptionOfferPaymentMode: sk2Discount.paymentMode),
               let subscriptionPeriod = SubscriptionPeriod.from(sk2SubscriptionPeriod: sk2Discount.period),
               let type = StoreProductDiscount.DiscountType.from(sk2Discount: sk2Discount)
@@ -25,6 +25,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
         self.underlyingSK2Discount = sk2Discount
 
         self.offerIdentifier = sk2Discount.id
+        self.currencyCode = currencyCode
         self.price = sk2Discount.price
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
@@ -34,11 +35,11 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
     let underlyingSK2Discount: SK2ProductDiscount
 
     let offerIdentifier: String?
+    let currencyCode: String?
     let price: Decimal
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
     let type: StoreProductDiscount.DiscountType
-
 }
 
 private extension StoreProductDiscount.PaymentMode {
