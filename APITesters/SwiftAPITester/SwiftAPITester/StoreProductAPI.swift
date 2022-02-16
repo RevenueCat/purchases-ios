@@ -11,6 +11,7 @@ var product: StoreProduct!
 func checkStoreProductAPI() {
     let localizedDescription: String = product.localizedDescription
     let localizedTitle: String = product.localizedTitle
+    let currencyCode: String? = product.currencyCode
     let price: Decimal = product.price
     let localizedPriceString: String = product.localizedPriceString
     let productIdentifier: String = product.productIdentifier
@@ -36,6 +37,7 @@ func checkStoreProductAPI() {
         product!,
         localizedDescription,
         localizedTitle,
+        currencyCode!,
         price,
         localizedPriceString,
         productIdentifier,

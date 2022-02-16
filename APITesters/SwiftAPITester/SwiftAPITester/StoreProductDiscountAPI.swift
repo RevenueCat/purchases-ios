@@ -11,12 +11,14 @@ var discount: StoreProductDiscount!
 
 func checkStoreProductDiscountAPI() {
     let offerIdentifier: String? = discount.offerIdentifier
+    let currentyCode: String? = discount.currencyCode
     let price: Decimal = discount.price
     let paymentMode: StoreProductDiscount.PaymentMode = discount.paymentMode
     let subscriptionPeriod: SubscriptionPeriod = discount.subscriptionPeriod
 
     print(
         offerIdentifier!,
+        currentyCode!,
         price,
         paymentMode,
         subscriptionPeriod
