@@ -21,7 +21,7 @@ internal struct SK1StoreProduct: StoreProductType {
 
     let underlyingSK1Product: SK1Product
 
-    var subscriptionType: StoreProduct.SubscriptionType {
+    var productCategory: StoreProduct.ProductCategory {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) else {
             return .nonSubscription
         }

@@ -70,7 +70,7 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .sk1_no_known_product_type:
             return "This StoreProduct represents an SK1 product, the type of product cannot be determined, " +
-            "the value will be undefined. Use `StoreProduct.subscriptionType` instead."
+            "the value will be undefined. Use `StoreProduct.productCategory` instead."
         }
     }
 

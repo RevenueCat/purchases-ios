@@ -30,8 +30,8 @@ internal struct SK2StoreProduct: StoreProductType {
         _underlyingSK2Product as! SK2Product
     }
 
-    var subscriptionType: StoreProduct.SubscriptionType {
-        return self.productType.subscriptionType
+    var productCategory: StoreProduct.ProductCategory {
+        return self.productType.productCategory
     }
 
     var productType: StoreProduct.ProductType {

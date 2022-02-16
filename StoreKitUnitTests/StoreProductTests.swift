@@ -87,7 +87,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.sk1Product) === sk1Product.underlyingSK1Product
 
         expect(storeProduct.productIdentifier) == Self.productID
-        expect(storeProduct.subscriptionType) == .subscription
+        expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.localizedPriceString) == "$4.99"
@@ -133,7 +133,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.sk2Product) == storeProduct.sk2Product
 
         expect(storeProduct.productIdentifier) == Self.productID
-        expect(storeProduct.subscriptionType) == .subscription
+        expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.productType) == .autoRenewableSubscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
         expect(storeProduct.price.description) == "4.99"
@@ -266,12 +266,12 @@ class StoreProductTests: StoreKitConfigTestCase {
         _ = product.productType
     }
 
-    func testSK1SubscriptionType() async throws {
+    func testSK1ProductCategory() async throws {
         let subscription = try await self.sk1Fetcher.product(withIdentifier: Self.productID)
         let nonSubscription = try await self.sk1Fetcher.product(withIdentifier: Self.lifetimeProductID)
 
-        expect(subscription.subscriptionType) == .subscription
-        expect(nonSubscription.subscriptionType) == .nonSubscription
+        expect(subscription.productCategory) == .subscription
+        expect(nonSubscription.productCategory) == .nonSubscription
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -292,7 +292,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testSK2SubscriptionType() async throws {
+    func testSK2ProductCategory() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let fetcher = ProductsFetcherSK2()
@@ -300,8 +300,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         let subscription = try await fetcher.product(withIdentifier: Self.productID)
         let nonSubscription = try await fetcher.product(withIdentifier: Self.lifetimeProductID)
 
-        expect(subscription.subscriptionType) == .subscription
-        expect(nonSubscription.subscriptionType) == .nonSubscription
+        expect(subscription.productCategory) == .subscription
+        expect(nonSubscription.productCategory) == .nonSubscription
     }
 
 }
@@ -311,7 +311,7 @@ private extension StoreProductTests {
     func expectEqualProducts(_ productA: StoreProductType, _ productB: StoreProductType) {
         expect(productA.productIdentifier) == productB.productIdentifier
         // Note: can't compare productTypes because SK1 doesn't have full information
-        expect(productA.subscriptionType) == productB.subscriptionType
+        expect(productA.productCategory) == productB.productCategory
         expect(productA.localizedDescription) == productB.localizedDescription
         expect(productA.price) == productB.price
         expect(productA.localizedPriceString) == productB.localizedPriceString

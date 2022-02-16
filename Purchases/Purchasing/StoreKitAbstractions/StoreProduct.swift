@@ -63,7 +63,7 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public var productType: ProductType { self.product.productType }
 
-    @objc public var subscriptionType: SubscriptionType { self.product.subscriptionType }
+    @objc public var productCategory: ProductCategory { self.product.productCategory }
 
     @objc public var localizedDescription: String { self.product.localizedDescription }
 
@@ -98,17 +98,17 @@ public typealias SK2Product = StoreKit.Product
 /// Type that provides access to all of `StoreKit`'s product type's properties.
 internal protocol StoreProductType {
 
-    /// The type of subscription of a product, whether a subscription or a one-time purchase.
+    /// The category of this product, whether a subscription or a one-time purchase.
 
     /// ### Related Symbols:
     /// - ``StoreProduct/productType-swift.property``
-    var subscriptionType: StoreProduct.SubscriptionType { get }
+    var productCategory: StoreProduct.ProductCategory { get }
 
     /// The type of product.
     /// - Important: `StoreProduct`s backing SK1 products cannot determine the type.
     ///
     /// ### Related Symbols:
-    /// - ``StoreProduct/subscriptionType-swift.property``
+    /// - ``StoreProduct/productCategory-swift.property``
     var productType: StoreProduct.ProductType { get }
 
     /// A description of the product.

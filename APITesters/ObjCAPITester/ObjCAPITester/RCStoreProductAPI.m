@@ -49,12 +49,12 @@
       );
 }
 
-+ (void)checkSubscriptionType {
-    RCStoreProductSubscriptionType type = RCStoreProductSubscriptionTypeSubscription;
++ (void)checkProductCategory {
+    RCStoreProductCategory category = RCStoreProductCategorySubscription;
 
-    switch (type) {
-        case RCStoreProductSubscriptionTypeSubscription: break;
-        case RCStoreProductSubscriptionTypeNonSubscription: break;
+    switch (category) {
+        case RCStoreProductCategorySubscription: break;
+        case RCStoreProductCategoryNonSubscription: break;
     }
 }
 

@@ -15,12 +15,12 @@ import StoreKit
 
 extension StoreProduct {
 
-    /// The type of subscription of a product, whether a subscription or a one-time purchase.
+    /// The category of a product, whether a subscription or a one-time purchase.
     ///
     /// ### Related Symbols
     /// - ``StoreProduct/ProductType-swift.enum``
-    @objc(RCStoreProductSubscriptionType)
-    public enum SubscriptionType: Int {
+    @objc(RCStoreProductCategory)
+    public enum ProductCategory: Int {
 
         /// A non-renewable or auto-renewable subscription.
         case subscription
@@ -33,7 +33,7 @@ extension StoreProduct {
     /// The type of product, equivalent to StoreKit's `Product.ProductType`.
     ///
     /// ### Related Symbols
-    /// - ``StoreProduct/SubscriptionType-swift.enum``
+    /// - ``StoreProduct/ProductCategory``
     @objc(RCStoreProductType)
     public enum ProductType: Int {
 
@@ -55,7 +55,7 @@ extension StoreProduct {
 
 extension StoreProduct.ProductType {
 
-    var subscriptionType: StoreProduct.SubscriptionType {
+    var productCategory: StoreProduct.ProductCategory {
         switch self {
         case .consumable: return .nonSubscription
         case .nonConsumable: return .nonSubscription
