@@ -216,6 +216,39 @@ class BasicCustomerInfoTests: XCTestCase {
         var customerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "management_url": "",
+                "first_seen": "2019-07-17T00:05:54Z",
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_app_user_id": ""
+            ]])
+        expect(customerInfo!.managementURL).to(beNil())
+
+        customerInfo = CustomerInfo(testData: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "management_url": URL(string: "http://google.com") as Any,
+                "first_seen": "2019-07-17T00:05:54Z",
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_app_user_id": ""
+            ]])
+        expect(customerInfo!.managementURL).to(beNil())
+
+        customerInfo = CustomerInfo(testData: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "management_url": nil,
+                "first_seen": "2019-07-17T00:05:54Z",
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_app_user_id": ""
+            ]])
+        expect(customerInfo!.managementURL).to(beNil())
+
+        customerInfo = CustomerInfo(testData: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
                 "management_url": "this isnt' a URL!",
                 "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
