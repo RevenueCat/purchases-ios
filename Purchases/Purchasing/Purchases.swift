@@ -1676,7 +1676,7 @@ public extension Purchases {
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:dangerousSettings:useStoreKit2IfAvailable:)
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:dangerousSettings:)
     // swiftlint:disable:next function_parameter_count
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
