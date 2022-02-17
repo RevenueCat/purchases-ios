@@ -4,7 +4,6 @@ class MockHTTPClient: HTTPClient {
 
     struct InvokedPerformRequestParameters {
         let httpMethod: String
-        let performSerially: Bool
         let path: String
         let requestBody: [String: Any]?
         let headers: [String: String]?
@@ -22,25 +21,21 @@ class MockHTTPClient: HTTPClient {
     var invokedPerformRequestParameters: InvokedPerformRequestParameters?
     var invokedPerformRequestParametersList = [InvokedPerformRequestParameters]()
 
-    override func performGETRequest(serially: Bool = false,
-                                    path: String,
+    override func performGETRequest(path: String,
                                     headers authHeaders: [String: String],
                                     completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         performRequest("GET",
-                       serially: serially,
                        path: path,
                        requestBody: nil,
                        headers: authHeaders,
                        completionHandler: completionHandler)
     }
 
-    override func performPOSTRequest(serially: Bool = false,
-                                     path: String,
+    override func performPOSTRequest(path: String,
                                      requestBody: [String: Any],
                                      headers authHeaders: [String: String],
                                      completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         performRequest("POST",
-                       serially: serially,
                        path: path,
                        requestBody: requestBody,
                        headers: authHeaders,
@@ -49,9 +44,7 @@ class MockHTTPClient: HTTPClient {
 }
 
 private extension MockHTTPClient {
-    // swiftlint:disable:next function_parameter_count
     func performRequest(_ httpMethod: String,
-                        serially: Bool,
                         path: String,
                         requestBody: [String: Any]?,
                         headers: [String: String]?,
@@ -60,7 +53,6 @@ private extension MockHTTPClient {
         invokedPerformRequestCount += 1
         let parameters = InvokedPerformRequestParameters(
             httpMethod: httpMethod,
-            performSerially: serially,
             path: path,
             requestBody: requestBody,
             headers: headers,

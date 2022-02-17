@@ -52,8 +52,7 @@ private extension CreateAliasOperation {
         Logger.user(Strings.identity.creating_alias)
 
         let path = "/subscribers/\(appUserID)/alias"
-        httpClient.performPOSTRequest(serially: true,
-                                      path: path,
+        httpClient.performPOSTRequest(path: path,
                                       requestBody: ["new_app_user_id": newAppUserID],
                                       headers: authHeaders) { statusCode, response, error in
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { aliasCallback in

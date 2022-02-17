@@ -87,8 +87,7 @@ private extension GetIntroEligibilityOperation {
         let body: [String: Any] = ["product_identifiers": self.productIdentifiers,
                                    "fetch_token": fetchToken]
 
-        httpClient.performPOSTRequest(serially: true,
-                                      path: path,
+        httpClient.performPOSTRequest(path: path,
                                       requestBody: body,
                                       headers: authHeaders) { statusCode, response, error in
             let eligibilityResponse = IntroEligibilityResponse(response: response,

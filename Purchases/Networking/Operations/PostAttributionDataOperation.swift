@@ -49,8 +49,7 @@ class PostAttributionDataOperation: NetworkOperation {
 
         let path = "/subscribers/\(appUserID)/attribution"
         let body: [String: Any] = ["network": self.network.rawValue, "data": self.attributionData]
-        self.httpClient.performPOSTRequest(serially: true,
-                                           path: path,
+        self.httpClient.performPOSTRequest(path: path,
                                            requestBody: body,
                                            headers: self.authHeaders) { statusCode, response, error in
             defer {

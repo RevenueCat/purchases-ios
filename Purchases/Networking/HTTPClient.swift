@@ -34,27 +34,23 @@ class HTTPClient {
         self.dnsChecker = dnsChecker
     }
 
-    func performGETRequest(serially: Bool = true,
-                           path: String,
+    func performGETRequest(path: String,
                            headers authHeaders: [String: String],
                            completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         perform(request: .init(method: .get,
                                path: path,
                                headers: authHeaders,
-                               completionHandler: completionHandler),
-                serially: serially)
+                               completionHandler: completionHandler))
     }
 
-    func performPOSTRequest(serially: Bool = true,
-                            path: String,
+    func performPOSTRequest(path: String,
                             requestBody: [String: Any],
                             headers authHeaders: [String: String],
                             completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         perform(request: .init(method: .post(body: requestBody),
                                path: path,
                                headers: authHeaders,
-                               completionHandler: completionHandler),
-                serially: serially)
+                               completionHandler: completionHandler))
     }
 
     func clearCaches() {
@@ -164,8 +160,8 @@ private extension HTTPClient {
         return headers
     }
 
-    func perform(request: Request, serially: Bool = true) {
-        if serially && !request.retried {
+    func perform(request: Request) {
+        if !request.retried {
             let requestEnqueued: Bool = self.state.modify {
                 if $0.currentSerialRequest != nil {
                     Logger.debug(Strings.network.serial_request_queued(httpMethod: request.method.httpMethod,
@@ -185,17 +181,15 @@ private extension HTTPClient {
             guard !requestEnqueued else { return }
         }
 
-        self.start(request: request, serially: serially)
+        self.start(request: request)
     }
 
-    // swiftlint:disable:next function_body_length function_parameter_count
+    // swiftlint:disable:next function_body_length
     func handle(urlResponse: URLResponse?,
                 request: Request,
                 urlRequest: URLRequest,
                 data: Data?,
-                error networkError: Error?,
-                beginNextRequestWhenFinished: Bool) {
-        var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
+                error networkError: Error?) {
         var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?
         var httpResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
@@ -235,7 +229,6 @@ private extension HTTPClient {
                     self.state.modify {
                         $0.queuedRequests.insert(request.retriedRequest(), at: 0)
                     }
-                    shouldBeginNextRequestWhenFinished = true
                 }
             }
         }
@@ -253,9 +246,7 @@ private extension HTTPClient {
             completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }
 
-        if shouldBeginNextRequestWhenFinished {
-            self.beginNextRequest()
-        }
+        self.beginNextRequest()
     }
 
     func beginNextRequest() {
@@ -270,11 +261,11 @@ private extension HTTPClient {
 
         if let nextRequest = nextRequest {
             Logger.debug(Strings.network.starting_next_request(request: nextRequest.description))
-            self.start(request: nextRequest, serially: true)
+            self.start(request: nextRequest)
         }
     }
 
-    func start(request: Request, serially: Bool) {
+    func start(request: Request) {
         let urlRequest = self.convert(request: request.adding(defaultHeaders: self.defaultHeaders))
 
         guard let urlRequest = urlRequest else {
@@ -296,8 +287,7 @@ private extension HTTPClient {
                         request: request,
                         urlRequest: urlRequest,
                         data: data,
-                        error: error,
-                        beginNextRequestWhenFinished: serially)
+                        error: error)
         }
         task.resume()
     }
