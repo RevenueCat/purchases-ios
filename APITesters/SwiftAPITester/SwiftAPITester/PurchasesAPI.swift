@@ -33,6 +33,24 @@ func checkPurchasesAPI() {
                         observerMode: true,
                         userDefaults: UserDefaults(),
                         useStoreKit2IfAvailable: true)
+    Purchases.configure(withAPIKey: "",
+                        appUserID: "",
+                        observerMode: true,
+                        userDefaults: UserDefaults(),
+                        useStoreKit2IfAvailable: true,
+                        dangerousSettings: nil)
+    Purchases.configure(withAPIKey: "",
+                        appUserID: "",
+                        observerMode: true,
+                        userDefaults: UserDefaults(),
+                        useStoreKit2IfAvailable: true,
+                        dangerousSettings: DangerousSettings())
+    Purchases.configure(withAPIKey: "",
+                        appUserID: "",
+                        observerMode: true,
+                        userDefaults: UserDefaults(),
+                        useStoreKit2IfAvailable: true,
+                        dangerousSettings: DangerousSettings(autoSyncPurchases: false))
 
     let finishTransactions: Bool = purch.finishTransactions
     let delegate: PurchasesDelegate? = purch.delegate
