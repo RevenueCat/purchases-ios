@@ -70,7 +70,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc public var offerIdentifier: String? { self.discount.offerIdentifier }
     @objc public var currencyCode: String? { self.discount.currencyCode }
     @objc public var price: Decimal { self.discount.price }
-    @objc public var localizedPriceString: String { self.discount.localizedPriceString}
+    @objc public var localizedPriceString: String { self.discount.localizedPriceString }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var priceFormatter: NumberFormatter? { self.discount.priceFormatter }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
