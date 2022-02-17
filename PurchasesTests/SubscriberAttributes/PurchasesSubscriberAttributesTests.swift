@@ -27,7 +27,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var userDefaults: UserDefaults! = nil
     let mockOfferingsFactory = MockOfferingsFactory()
     var mockDeviceCache: MockDeviceCache!
-    let mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user")
+    var mockIdentityManager: MockIdentityManager!
     var mockSubscriberAttributesManager: MockSubscriberAttributesManager!
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
@@ -89,6 +89,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             deviceCache: self.mockDeviceCache,
             attributionFetcher: self.mockAttributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
+        self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user")
         self.mockAttributionPoster = AttributionPoster(deviceCache: mockDeviceCache,
                                                        identityManager: mockIdentityManager,
                                                        backend: mockBackend,

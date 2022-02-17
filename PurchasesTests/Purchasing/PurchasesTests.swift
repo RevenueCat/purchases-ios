@@ -38,6 +38,7 @@ class PurchasesTests: XCTestCase {
         mockProductsManager = MockProductsManager(systemInfo: systemInfo)
         mockOperationDispatcher = MockOperationDispatcher()
         mockReceiptParser = MockReceiptParser()
+        identityManager = MockIdentityManager(mockAppUserID: "app_user")
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: mockReceiptParser)
         let systemInfoAttribution = try MockSystemInfo(platformFlavor: "iOS",
@@ -274,7 +275,7 @@ class PurchasesTests: XCTestCase {
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
-    let identityManager = MockIdentityManager(mockAppUserID: "app_user")
+    var identityManager: MockIdentityManager!
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
