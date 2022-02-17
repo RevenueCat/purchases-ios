@@ -8,6 +8,8 @@
 import RevenueCat
 
 var product: StoreProduct!
+
+// swiftlint:disable:next function_body_length
 func checkStoreProductAPI() {
     let category: StoreProduct.ProductCategory = product.productCategory
     let productType: StoreProduct.ProductType = product.productType

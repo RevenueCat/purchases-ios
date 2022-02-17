@@ -72,7 +72,6 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc public var price: Decimal { self.discount.price }
     @objc public var localizedPriceString: String { self.discount.localizedPriceString }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
-    @objc public var priceFormatter: NumberFormatter? { self.discount.priceFormatter }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
     @objc public var type: DiscountType { self.discount.type }
 
@@ -129,26 +128,6 @@ internal protocol StoreProductDiscountType {
 
     /// The type of product discount.
     var type: StoreProductDiscount.DiscountType { get }
-
-}
-
-extension StoreProductDiscountType {
-
-    /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
-    /// - Note: This creates a new formatter for every product discount, which can be slow.
-    /// - Returns: `nil` for StoreKit 2 backed discount products if the currency code could not be determined.
-    var priceFormatter: NumberFormatter? {
-        guard let currencyCode = self.currencyCode else {
-          Logger.appleError("Can't initialize priceFormatter for SK2 product discount!" +
-                            " Could not find the currency code")
-          return nil
-      }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
-        formatter.locale = .autoupdatingCurrent
-        return formatter
-    }
 
 }
 

@@ -17,11 +17,8 @@ struct MockStoreProductDiscount: StoreProductDiscountType {
     let offerIdentifier: String?
     let currencyCode: String?
     let price: Decimal
+    let localizedPriceString: String
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
     let type: StoreProductDiscount.DiscountType
-
-    var localizedPriceString: String {
-        return priceFormatter?.string(from: self.price as NSNumber) ?? ""
-    }
 }
