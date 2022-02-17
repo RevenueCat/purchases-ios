@@ -21,7 +21,7 @@
      */
     @objc public let autoSyncPurchases: Bool
 
-    @objc override public convenience init() {
+    @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
     }
 
