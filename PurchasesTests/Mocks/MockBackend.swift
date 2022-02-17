@@ -34,7 +34,8 @@ class MockBackend: Backend {
     public convenience init() {
         self.init(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
                                                                              platformFlavorVersion: nil,
-                                                                             finishTransactions: false),
+                                                                             finishTransactions: false,
+                                                                             dangerousSettings: nil),
                                              eTagManager: MockETagManager()),
                   apiKey: "mockAPIKey")
     }

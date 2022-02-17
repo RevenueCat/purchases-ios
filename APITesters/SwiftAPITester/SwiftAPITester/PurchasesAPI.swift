@@ -17,22 +17,7 @@ import StoreKit
 
 func checkPurchasesAPI() {
     // initializers
-    let purch = Purchases.configure(withAPIKey: "")
-    Purchases.configure(withAPIKey: "", appUserID: nil)
-    Purchases.configure(withAPIKey: "", appUserID: "")
-
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
-
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: nil)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
-    Purchases.configure(withAPIKey: "",
-                        appUserID: nil,
-                        observerMode: true,
-                        userDefaults: UserDefaults(),
-                        useStoreKit2IfAvailable: true)
+    let purch = checkConfigure()
 
     let finishTransactions: Bool = purch.finishTransactions
     let delegate: PurchasesDelegate? = purch.delegate
@@ -220,4 +205,42 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)
         #endif
     } catch {}
+}
+
+private func checkConfigure() -> Purchases {
+    let purch = Purchases.configure(withAPIKey: "")
+    Purchases.configure(withAPIKey: "", appUserID: nil)
+    Purchases.configure(withAPIKey: "", appUserID: "")
+
+    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
+
+    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: nil)
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
+    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
+    Purchases.configure(withAPIKey: "",
+                        appUserID: nil,
+                        observerMode: true,
+                        userDefaults: UserDefaults(),
+                        useStoreKit2IfAvailable: true)
+    Purchases.configure(withAPIKey: "",
+                        appUserID: "",
+                        observerMode: true,
+                        userDefaults: UserDefaults(),
+                        useStoreKit2IfAvailable: true,
+                        dangerousSettings: nil)
+    Purchases.configure(withAPIKey: "",
+                        appUserID: "",
+                        observerMode: true,
+                        userDefaults: UserDefaults(),
+                        useStoreKit2IfAvailable: true,
+                        dangerousSettings: DangerousSettings())
+    Purchases.configure(withAPIKey: "",
+                        appUserID: "",
+                        observerMode: true,
+                        userDefaults: UserDefaults(),
+                        useStoreKit2IfAvailable: true,
+                        dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+    return purch
 }

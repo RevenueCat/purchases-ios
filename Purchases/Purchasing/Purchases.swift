@@ -253,7 +253,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                      observerMode: Bool = false,
                      platformFlavor: String? = nil,
                      platformFlavorVersion: String? = nil,
-                     useStoreKit2IfAvailable: Bool = false) {
+                     useStoreKit2IfAvailable: Bool = false,
+                     dangerousSettings: DangerousSettings? = nil) {
         let operationDispatcher = OperationDispatcher()
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
@@ -263,7 +264,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             systemInfo = try SystemInfo(platformFlavor: platformFlavor,
                                         platformFlavorVersion: platformFlavorVersion,
                                         finishTransactions: !observerMode,
-                                        useStoreKit2IfAvailable: useStoreKit2IfAvailable)
+                                        useStoreKit2IfAvailable: useStoreKit2IfAvailable,
+                                        dangerousSettings: dangerousSettings)
         } catch {
             fatalError(error.localizedDescription)
         }
@@ -418,7 +420,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             }
         }
 
-        storeKitWrapper.delegate = purchasesOrchestrator
+        if self.systemInfo.dangerousSettings.autoSyncPurchases {
+            storeKitWrapper.delegate = purchasesOrchestrator
+        }
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
@@ -1634,13 +1638,60 @@ public extension Purchases {
                                              observerMode: Bool,
                                              userDefaults: UserDefaults?,
                                              useStoreKit2IfAvailable: Bool) -> Purchases {
+        configure(
+            withAPIKey: apiKey,
+            appUserID: appUserID,
+            observerMode: observerMode,
+            userDefaults: userDefaults,
+            useStoreKit2IfAvailable: useStoreKit2IfAvailable,
+            dangerousSettings: nil
+        )
+    }
+
+    /**
+     * Configures an instance of the Purchases SDK with a custom userDefaults.
+     *
+     * Use this constructor if you want to sync status across a shared container,
+     * such as between a host app and an extension.
+     * The instance of the `Purchases` SDK will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
+     * to generate this for you.
+     *
+     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is `false`.
+     *
+     * - Parameter userDefaults: Custom `UserDefaults` to use
+     *
+     * - Parameter dangerousSettings: Only use if suggested by RevenueCat support team.
+     *
+     * - Parameter useStoreKit2IfAvailable: EXPERIMENTAL. opt in to using StoreKit 2 on devices that support it.
+     * Purchases will be made using StoreKit 2 under the hood automatically.
+     * - Important: Support for purchases using StoreKit 2 is currently in an experimental phase.
+     * We recommend setting this value to `false` (default) for production apps.
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     */
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:dangerousSettings:)
+    // swiftlint:disable:next function_parameter_count
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool,
+                                             dangerousSettings: DangerousSettings?) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                   appUserID: appUserID,
                                   userDefaults: userDefaults,
                                   observerMode: observerMode,
                                   platformFlavor: nil,
                                   platformFlavorVersion: nil,
-                                  useStoreKit2IfAvailable: useStoreKit2IfAvailable)
+                                  useStoreKit2IfAvailable: useStoreKit2IfAvailable,
+                                  dangerousSettings: dangerousSettings)
         setDefaultInstance(purchases)
         return purchases
     }
