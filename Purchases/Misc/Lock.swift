@@ -15,7 +15,12 @@ import Foundation
 
 internal final class Lock {
 
-    private let recursiveLock = NSRecursiveLock()
+    private let recursiveLock: NSRecursiveLock = {
+        let lock = NSRecursiveLock()
+        lock.name = "com.revenuecat.purchases.lock"
+
+        return lock
+    }()
 
     @discardableResult
     func perform<T>(_ block: () throws -> T) rethrows -> T {
