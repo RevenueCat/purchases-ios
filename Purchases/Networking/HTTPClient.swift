@@ -19,7 +19,7 @@ class HTTPClient {
     internal let systemInfo: SystemInfo
     private var queuedRequests: [Request] = []
     private var currentSerialRequest: Request?
-    private var eTagManager: ETagManager
+    private let eTagManager: ETagManager
     private let recursiveLock = NSRecursiveLock()
     private let dnsChecker: DNSCheckerType.Type
 
