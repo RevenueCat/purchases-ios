@@ -21,8 +21,8 @@
      */
     @objc public let autoSyncPurchases: Bool
 
-    @objc override public init() {
-        self.autoSyncPurchases = true
+    @objc override public convenience init() {
+        self.init(autoSyncPurchases: true)
     }
 
     /**
@@ -32,7 +32,7 @@
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
      */
-    @objc public init(autoSyncPurchases: Bool = true) {
+    @objc public init(autoSyncPurchases: Bool) {
         self.autoSyncPurchases = autoSyncPurchases
     }
 
