@@ -69,7 +69,8 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
     @objc public var offerIdentifier: String? { self.discount.offerIdentifier }
     @objc public var currencyCode: String? { self.discount.currencyCode }
-    @objc public var price: Decimal { self.discount.price }
+    // See also `priceDecimalNumber` for Objective-C
+    public var price: Decimal { self.discount.price }
     @objc public var localizedPriceString: String { self.discount.localizedPriceString }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
@@ -101,6 +102,16 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
         hasher.combine(self.subscriptionPeriod)
 
         return hasher.finalize()
+    }
+
+}
+
+public extension StoreProductDiscount {
+
+    /// The discount price of the product in the local currency.
+    /// - Note: this is meant for  Objective-C. For Swift, use ``price`` instead.
+    @objc(price) var priceDecimalNumber: NSDecimalNumber {
+        return self.price as NSDecimalNumber
     }
 
 }

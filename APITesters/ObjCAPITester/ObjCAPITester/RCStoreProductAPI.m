@@ -17,7 +17,7 @@
     NSString *localizedDescription = product.localizedDescription;
     NSString *localizedTitle = product.localizedTitle;
     NSString *currencyCode = product.currencyCode;
-    NSDecimal price = product.price;
+    NSDecimalNumber *price = product.price;
     NSString *localizedPriceString = product.localizedPriceString;
     NSString *productIdentifier = product.productIdentifier;
     BOOL isFamilyShareable = product.isFamilyShareable;
