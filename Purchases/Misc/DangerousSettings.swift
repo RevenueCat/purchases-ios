@@ -29,7 +29,8 @@
      * Only use a Dangerous Setting if suggested by RevenueCat support team.
      *
      * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
-     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase automatically.
+     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
+     * automatically.
      */
     @objc public init(autoSyncPurchases: Bool = true) {
         self.autoSyncPurchases = autoSyncPurchases
