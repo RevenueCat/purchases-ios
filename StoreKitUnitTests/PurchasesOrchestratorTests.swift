@@ -141,6 +141,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                             currencyCode: product.priceLocale.currencyCode,
                                                             price: 11.1,
+                                                            localizedPriceString: "$11.10",
                                                             paymentMode: .payAsYouGo,
                                                             subscriptionPeriod: .init(value: 1, unit: .month),
                                                             type: .promotional)
@@ -171,6 +172,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                 currencyCode: storeProduct.currencyCode,
                                                 price: 11.1,
+                                                localizedPriceString: "$11.10",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .month),
                                                 type: .promotional)
@@ -272,6 +274,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                 currencyCode: storeProduct.currencyCode,
                                                 price: 11.1,
+                                                localizedPriceString: "$11.10",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .month),
                                                 type: .promotional)
@@ -353,6 +356,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                             currencyCode: storeProduct.currencyCode,
                                                             price: 11.1,
+                                                            localizedPriceString: "$11.10",
                                                             paymentMode: .payAsYouGo,
                                                             subscriptionPeriod: .init(value: 1, unit: .month),
                                                             type: .promotional)

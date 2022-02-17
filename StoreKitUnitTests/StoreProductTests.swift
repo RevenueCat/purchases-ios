@@ -212,7 +212,11 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         var storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
+        // This formatter would normally get locale form user preferences
+        // but that's not possible to change in the tests so manually setting
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        priceFormatter.locale = Locale(identifier: "es_ES")
+
         var productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "4,99 €"
@@ -229,6 +233,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        priceFormatter.locale = Locale(identifier: "en_US")
+
         productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"
@@ -246,10 +252,14 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         var storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
+        // This formatter would normally get locale form user preferences
+        // but that's not possible to change in the tests so manually setting
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        priceFormatter.locale = Locale(identifier: "es_ES")
+
         var productPrice = storeProduct.price as NSNumber
 
-        expect(priceFormatter.string(from: productPrice)) == "€4.99"
+        expect(priceFormatter.string(from: productPrice)) == "4,99 €"
         expect(storeProduct.currencyCode) == "EUR"
 
         testSession.locale = Locale(identifier: "en_EN")
@@ -258,6 +268,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        priceFormatter.locale = Locale(identifier: "en_US")
+
         productPrice = storeProduct.price as NSNumber
 
         expect(priceFormatter.string(from: productPrice)) == "$4.99"

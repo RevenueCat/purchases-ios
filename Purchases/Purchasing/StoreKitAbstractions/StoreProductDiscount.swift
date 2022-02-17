@@ -70,6 +70,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc public var offerIdentifier: String? { self.discount.offerIdentifier }
     @objc public var currencyCode: String? { self.discount.currencyCode }
     @objc public var price: Decimal { self.discount.price }
+    @objc public var localizedPriceString: String { self.discount.localizedPriceString }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
     @objc public var type: DiscountType { self.discount.type }
@@ -115,6 +116,9 @@ internal protocol StoreProductDiscountType {
 
     /// The discount price of the product in the local currency.
     var price: Decimal { get }
+
+    /// The price of this product discount formatted for locale.
+    var localizedPriceString: String { get }
 
     /// The payment mode for this product discount.
     var paymentMode: StoreProductDiscount.PaymentMode { get }

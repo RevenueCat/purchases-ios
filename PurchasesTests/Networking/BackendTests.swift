@@ -1239,6 +1239,7 @@ class BackendTests: XCTestCase {
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
                                                 currencyCode: "USD",
                                                 price: 12,
+                                                localizedPriceString: "$12.00",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 10, unit: .month),
                                                 type: .promotional)
@@ -1272,6 +1273,7 @@ class BackendTests: XCTestCase {
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
                                                 currencyCode: currencyCode,
                                                 price: 12.1,
+                                                localizedPriceString: "$12.10",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .year),
                                                 type: .promotional)
