@@ -33,7 +33,7 @@ extension StoreProduct {
     /// The type of product, equivalent to StoreKit's `Product.ProductType`.
     ///
     /// ### Related Symbols
-    /// - ``StoreProduct/ProductCategory``
+    /// - ``StoreProduct/ProductCategory-swift.enum``
     @objc(RCStoreProductType)
     public enum ProductType: Int {
 
