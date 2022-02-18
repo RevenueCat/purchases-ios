@@ -16,7 +16,7 @@
 
     NSString *offerIdentifier = discount.offerIdentifier;
     NSString *currencyCode = discount.currencyCode;
-    NSDecimal price = discount.price;
+    NSDecimalNumber *price = discount.price;
     NSString *localizedPriceString = discount.localizedPriceString;
     RCPaymentMode paymentMode = discount.paymentMode;
     RCSubscriptionPeriod *period = discount.subscriptionPeriod;

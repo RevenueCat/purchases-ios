@@ -13,6 +13,8 @@ func checkStoreProductDiscountAPI() {
     let offerIdentifier: String? = discount.offerIdentifier
     let currentyCode: String? = discount.currencyCode
     let price: Decimal = discount.price
+    // This is mainly for Objective-C
+    let decimalPrice: NSDecimalNumber = discount.priceDecimalNumber
     let localizedPriceString: String = discount.localizedPriceString
     let paymentMode: StoreProductDiscount.PaymentMode = discount.paymentMode
     let priceFormatter: NumberFormatter? = product.priceFormatter
@@ -22,6 +24,7 @@ func checkStoreProductDiscountAPI() {
         offerIdentifier!,
         currentyCode!,
         price,
+        decimalPrice,
         localizedPriceString,
         paymentMode,
         priceFormatter!,

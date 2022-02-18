@@ -91,6 +91,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
         expect(storeProduct.currencyCode) == "USD"
         expect(storeProduct.price.description) == "4.99"
+        expect(storeProduct.priceDecimalNumber).to(beCloseTo(4.99))
         expect(storeProduct.localizedPriceString) == "$4.99"
         expect(storeProduct.isFamilyShareable) == true
         expect(storeProduct.localizedTitle) == "Monthly Free Trial"
@@ -103,6 +104,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let intro = try XCTUnwrap(storeProduct.introductoryDiscount)
 
         expect(intro.price) == 0.0
+        expect(intro.priceDecimalNumber) == 0.0
         expect(intro.paymentMode) == .freeTrial
         expect(intro.offerIdentifier).to(beNil())
         expect(intro.subscriptionPeriod) == SubscriptionPeriod(value: 3, unit: .month)
@@ -111,11 +113,13 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(offers).to(haveCount(2))
 
         expect(offers[0].price) == 40.99
+        expect(offers[0].priceDecimalNumber).to(beCloseTo(40.99))
         expect(offers[0].paymentMode) == .payUpFront
         expect(offers[0].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.year_discount"
         expect(offers[0].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
 
         expect(offers[1].price) == 20.15
+        expect(offers[1].priceDecimalNumber).to(beCloseTo(20.15))
         expect(offers[1].paymentMode) == .payAsYouGo
         expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
 
@@ -139,6 +143,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
         expect(storeProduct.currencyCode) == "USD"
         expect(storeProduct.price.description) == "4.99"
+        expect(storeProduct.priceDecimalNumber).to(beCloseTo(4.99))
         expect(storeProduct.localizedPriceString) == "$4.99"
         expect(storeProduct.isFamilyShareable) == true
         expect(storeProduct.localizedTitle) == "Monthly Free Trial"
@@ -151,6 +156,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let intro = try XCTUnwrap(storeProduct.introductoryDiscount)
 
         expect(intro.price) == 0.0
+        expect(intro.priceDecimalNumber) == 0.0
         expect(intro.paymentMode) == .freeTrial
         expect(intro.type) == .introductory
         expect(intro.offerIdentifier).to(beNil())
@@ -160,12 +166,14 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(offers).to(haveCount(2))
 
         expect(offers[0].price) == 40.99
+        expect(offers[0].priceDecimalNumber).to(beCloseTo(40.99))
         expect(offers[0].paymentMode) == .payUpFront
         expect(offers[0].type) == .promotional
         expect(offers[0].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.year_discount"
         expect(offers[0].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
 
         expect(offers[1].price) == 20.15
+        expect(offers[1].priceDecimalNumber).to(beCloseTo(20.15))
         expect(offers[1].paymentMode) == .payAsYouGo
         expect(offers[0].type) == .promotional
         expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
