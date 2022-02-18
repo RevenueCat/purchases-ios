@@ -233,4 +233,9 @@ extension StoreProductDiscount.DiscountType {
 
 extension StoreProductDiscount.PaymentMode: Encodable {}
 
-extension StoreProductDiscount: Identifiable {}
+extension StoreProductDiscount: Identifiable {
+
+    /// The stable identity of the entity associated with this instance.
+    public var id: String? { return self.offerIdentifier }
+
+}

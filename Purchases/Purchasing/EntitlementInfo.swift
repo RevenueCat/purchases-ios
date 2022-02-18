@@ -359,4 +359,9 @@ extension EntitlementInfo {
 
 }
 
-extension EntitlementInfo: Identifiable {}
+extension EntitlementInfo: Identifiable {
+
+    /// The stable identity of the entity associated with this instance.
+    public var id: String { return self.identifier }
+
+}
