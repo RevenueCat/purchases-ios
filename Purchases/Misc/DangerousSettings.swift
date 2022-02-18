@@ -6,6 +6,8 @@
 //  Copyright © 2022 Purchases. All rights reserved.
 //
 
+import Foundation
+
 /**
  Only use a Dangerous Setting if suggested by RevenueCat support team.
  */
