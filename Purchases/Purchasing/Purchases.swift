@@ -251,8 +251,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                      appUserID: String?,
                      userDefaults: UserDefaults? = nil,
                      observerMode: Bool = false,
-                     platformFlavor: String? = Purchases.platformInfo?.flavor,
-                     platformFlavorVersion: String? = Purchases.platformInfo?.version,
+                     platformInfo: PlatformInfo? = Purchases.platformInfo,
                      useStoreKit2IfAvailable: Bool = false,
                      dangerousSettings: DangerousSettings? = nil) {
         let operationDispatcher = OperationDispatcher()
@@ -261,8 +260,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                              operationDispatcher: operationDispatcher)
         let systemInfo: SystemInfo
         do {
-            systemInfo = try SystemInfo(platformFlavor: platformFlavor,
-                                        platformFlavorVersion: platformFlavorVersion,
+            systemInfo = try SystemInfo(platformFlavor: platformInfo?.flavor,
+                                        platformFlavorVersion: platformInfo?.version,
                                         finishTransactions: !observerMode,
                                         useStoreKit2IfAvailable: useStoreKit2IfAvailable,
                                         dangerousSettings: dangerousSettings)
@@ -1688,8 +1687,7 @@ public extension Purchases {
                                   appUserID: appUserID,
                                   userDefaults: userDefaults,
                                   observerMode: observerMode,
-                                  platformFlavor: nil,
-                                  platformFlavorVersion: nil,
+                                  platformInfo: nil,
                                   useStoreKit2IfAvailable: useStoreKit2IfAvailable,
                                   dangerousSettings: dangerousSettings)
         setDefaultInstance(purchases)

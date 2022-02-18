@@ -14,10 +14,10 @@
 import Foundation
 
 // swiftlint:disable missing_docs
-public extension Purchases {
+extension Purchases {
 
     @objc(RCPlatformInfo)
-    final class PlatformInfo: NSObject {
+    public final class PlatformInfo: NSObject {
         let flavor: String
         let version: String?
 
@@ -27,6 +27,6 @@ public extension Purchases {
         }
     }
 
-    @objc static var platformInfo: PlatformInfo?
+    @objc public static var platformInfo: PlatformInfo?
 
 }
