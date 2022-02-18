@@ -29,8 +29,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        let systemInfo = try MockSystemInfo(platformFlavor: "iOS",
-                                            platformFlavorVersion: "3.2.1",
+        let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
+        let systemInfo = try MockSystemInfo(platformInfo: platformInfo,
                                             finishTransactions: true)
 
         self.mockDeviceCache = MockDeviceCache(systemInfo: systemInfo)

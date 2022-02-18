@@ -260,8 +260,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                              operationDispatcher: operationDispatcher)
         let systemInfo: SystemInfo
         do {
-            systemInfo = try SystemInfo(platformFlavor: platformInfo?.flavor,
-                                        platformFlavorVersion: platformInfo?.version,
+            systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: !observerMode,
                                         useStoreKit2IfAvailable: useStoreKit2IfAvailable,
                                         dangerousSettings: dangerousSettings)

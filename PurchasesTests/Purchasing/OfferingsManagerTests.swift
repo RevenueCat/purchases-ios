@@ -21,8 +21,7 @@ class OfferingsManagerTests: XCTestCase {
     var mockDeviceCache: MockDeviceCache!
     let mockOperationDispatcher = MockOperationDispatcher()
     // swiftlint:disable:next force_try
-    let mockSystemInfo = try! MockSystemInfo(platformFlavor: "iOS",
-                                             platformFlavorVersion: "3.2.1",
+    let mockSystemInfo = try! MockSystemInfo(platformInfo: Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1"),
                                              finishTransactions: true)
     let mockBackend = MockBackend()
     let mockOfferingsFactory = MockOfferingsFactory()

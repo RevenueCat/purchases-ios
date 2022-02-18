@@ -35,7 +35,9 @@ class BackendSubscriberAttributesTests: XCTestCase {
     ]
 
     // swiftlint:disable:next force_try
-    let systemInfo = try! SystemInfo(platformFlavor: "Unity", platformFlavorVersion: "2.3.3", finishTransactions: true)
+    let systemInfo = try! SystemInfo(platformInfo: Purchases.PlatformInfo(flavor: "Unity",
+                                                                          version: "2.3.3"),
+                                     finishTransactions: true)
 
     override func setUp() {
         mockETagManager = MockETagManager(userDefaults: MockUserDefaults())

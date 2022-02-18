@@ -116,21 +116,14 @@ class SystemInfo {
         return URL(string: defaultServerHostName)!
     }
 
-    init(platformFlavor: String?,
-         platformFlavorVersion: String?,
+    init(platformInfo: Purchases.PlatformInfo?,
          finishTransactions: Bool,
          bundle: Bundle = .main,
          useStoreKit2IfAvailable: Bool = false,
          dangerousSettings: DangerousSettings? = nil) throws {
-        self.platformFlavor = platformFlavor ?? "native"
-        self.platformFlavorVersion = platformFlavorVersion
+        self.platformFlavor = platformInfo?.flavor ?? "native"
+        self.platformFlavorVersion = platformInfo?.version
         self.bundle = bundle
-
-        if (platformFlavor == nil && platformFlavorVersion != nil) ||
-            (platformFlavor != nil && platformFlavorVersion == nil) {
-            Logger.error("RCSystemInfo initialized with non-matching platform flavor and platform flavor versions!")
-            throw SystemInfoError.invalidInitializationData
-        }
 
         self.finishTransactions = finishTransactions
         self.useStoreKit2IfAvailable = useStoreKit2IfAvailable

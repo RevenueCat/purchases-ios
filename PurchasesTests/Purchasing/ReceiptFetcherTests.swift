@@ -28,8 +28,7 @@ class ReceiptFetcherTests: XCTestCase {
 
         mockBundle = MockBundle()
         mockRequestFetcher = MockRequestFetcher()
-        mockSystemInfo = try MockSystemInfo(platformFlavor: nil,
-                                            platformFlavorVersion: nil,
+        mockSystemInfo = try MockSystemInfo(platformInfo: nil,
                                             finishTransactions: false,
                                             bundle: mockBundle)
         receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: mockSystemInfo)

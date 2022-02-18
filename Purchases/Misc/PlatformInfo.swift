@@ -19,9 +19,9 @@ extension Purchases {
     @objc(RCPlatformInfo)
     public final class PlatformInfo: NSObject {
         let flavor: String
-        let version: String?
+        let version: String
 
-        @objc public init(flavor: String, version: String?) {
+        @objc public init(flavor: String, version: String) {
             self.flavor = flavor
             self.version = version
         }

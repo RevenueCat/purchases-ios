@@ -68,10 +68,10 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     private func createManager(useStoreKit2IfAvailable: Bool) throws -> ProductsManager {
+        let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         return ProductsManager(
             systemInfo: try MockSystemInfo(
-                platformFlavor: "xyz",
-                platformFlavorVersion: "123",
+                platformInfo: platformInfo,
                 finishTransactions: true,
                 useStoreKit2IfAvailable: useStoreKit2IfAvailable
             ),

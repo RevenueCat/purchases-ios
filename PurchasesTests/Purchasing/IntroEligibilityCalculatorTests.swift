@@ -13,7 +13,8 @@ class IntroEligibilityCalculatorTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        systemInfo = try MockSystemInfo(platformFlavor: "xyz", platformFlavorVersion: "123", finishTransactions: true)
+        let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
+        systemInfo = try MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
         self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
         calculator = IntroEligibilityCalculator(productsManager: mockProductsManager,
                                                 receiptParser: mockReceiptParser)

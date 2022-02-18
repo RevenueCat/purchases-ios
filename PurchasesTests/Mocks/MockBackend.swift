@@ -32,8 +32,7 @@ class MockBackend: Backend {
         completion: BackendCustomerInfoResponseHandler?)]()
 
     public convenience init() {
-        self.init(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
-                                                                             platformFlavorVersion: nil,
+        self.init(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformInfo: nil,
                                                                              finishTransactions: false,
                                                                              dangerousSettings: nil),
                                              eTagManager: MockETagManager()),

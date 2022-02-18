@@ -79,8 +79,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                              receiptParser: mockReceiptParser)
-        let systemInfoAttribution = try MockSystemInfo(platformFlavor: "iOS",
-                                                       platformFlavorVersion: "3.2.1",
+        let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
+        let systemInfoAttribution = try MockSystemInfo(platformInfo: platformInfo,
                                                        finishTransactions: true)
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfoAttribution)
