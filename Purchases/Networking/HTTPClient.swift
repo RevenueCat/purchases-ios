@@ -17,10 +17,8 @@ class HTTPClient {
 
     private let session: URLSession
     internal let systemInfo: SystemInfo
-    private var queuedRequests: [Request] = []
-    private var currentSerialRequest: Request?
+    private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
-    private let recursiveLock = NSRecursiveLock()
     private let dnsChecker: DNSCheckerType.Type
 
     init(
@@ -63,6 +61,16 @@ class HTTPClient {
         eTagManager.clearCaches()
     }
 
+}
+
+private extension HTTPClient {
+    struct State {
+        var queuedRequests: [Request]
+        var currentSerialRequest: Request?
+
+        static let initial: Self = .init(queuedRequests: [],
+                                         currentSerialRequest: nil)
+    }
 }
 
 private extension HTTPClient {
@@ -156,50 +164,28 @@ private extension HTTPClient {
         return headers
     }
 
-    func perform(request: Request,
-                 serially: Bool = true) {
-        let urlRequest = convert(request: request.adding(defaultHeaders: self.defaultHeaders))
-
-        guard let urlRequest = urlRequest else {
-            if case let .post(requestBody) = request.method {
-                Logger.error("Could not create request to \(request.path) with body \(requestBody)")
-            } else {
-                Logger.error("Could not create request to \(request.path) without body")
-            }
-
-            request.completionHandler?(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
-            return
-        }
-
+    func perform(request: Request, serially: Bool = true) {
         if serially && !request.retried {
-            recursiveLock.lock()
-            if currentSerialRequest != nil {
-                Logger.debug(Strings.network.serial_request_queued(httpMethod: request.method.httpMethod,
-                                                                   path: request.path,
-                                                                   queuedRequestsCount: queuedRequests.count))
-                queuedRequests.append(request)
-                recursiveLock.unlock()
-                return
-            } else {
-                Logger.debug(Strings.network.starting_request(httpMethod: request.method.httpMethod,
-                                                              path: request.path))
-                currentSerialRequest = request
-                recursiveLock.unlock()
+            let requestEnqueued: Bool = self.state.modify {
+                if $0.currentSerialRequest != nil {
+                    Logger.debug(Strings.network.serial_request_queued(httpMethod: request.method.httpMethod,
+                                                                       path: request.path,
+                                                                       queuedRequestsCount: $0.queuedRequests.count))
+
+                    $0.queuedRequests.append(request)
+                    return true
+                } else {
+                    Logger.debug(Strings.network.starting_request(httpMethod: request.method.httpMethod,
+                                                                  path: request.path))
+                    $0.currentSerialRequest = request
+                    return false
+                }
             }
+
+            guard !requestEnqueued else { return }
         }
 
-        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod,
-                                                         path: urlRequest.url?.path))
-
-        let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
-            self.handle(urlResponse: urlResponse,
-                        request: request,
-                        urlRequest: urlRequest,
-                        data: data,
-                        error: error,
-                        beginNextRequestWhenFinished: serially)
-        }
-        task.resume()
+        self.start(request: request, serially: serially)
     }
 
     // swiftlint:disable:next function_body_length function_parameter_count
@@ -246,8 +232,9 @@ private extension HTTPClient {
                 if httpResponse == nil {
                     Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod,
                                                                   path: request.path))
-                    let retriedRequest = request.retriedRequest()
-                    self.queuedRequests.insert(retriedRequest, at: 0)
+                    self.state.modify {
+                        $0.queuedRequests.insert(request.retriedRequest(), at: 0)
+                    }
                     shouldBeginNextRequestWhenFinished = true
                 }
             }
@@ -267,19 +254,52 @@ private extension HTTPClient {
         }
 
         if shouldBeginNextRequestWhenFinished {
-            recursiveLock.lock()
-            Logger.debug(Strings.network.serial_request_done(httpMethod: currentSerialRequest?.method.httpMethod,
-                                                             path: currentSerialRequest?.path,
-                                                             queuedRequestsCount: queuedRequests.count))
-            self.currentSerialRequest = nil
-            if !self.queuedRequests.isEmpty {
-                let nextRequest = self.queuedRequests.removeFirst()
-                Logger.debug(Strings.network.starting_next_request(request: nextRequest.description))
-                self.perform(request: nextRequest,
-                             serially: true)
-            }
-            recursiveLock.unlock()
+            self.beginNextRequest()
         }
+    }
+
+    func beginNextRequest() {
+        let nextRequest: Request? = self.state.modify {
+            Logger.debug(Strings.network.serial_request_done(httpMethod: $0.currentSerialRequest?.method.httpMethod,
+                                                             path: $0.currentSerialRequest?.path,
+                                                             queuedRequestsCount: $0.queuedRequests.count))
+            $0.currentSerialRequest = $0.queuedRequests.popFirst()
+
+            return $0.currentSerialRequest
+        }
+
+        if let nextRequest = nextRequest {
+            Logger.debug(Strings.network.starting_next_request(request: nextRequest.description))
+            self.start(request: nextRequest, serially: true)
+        }
+    }
+
+    func start(request: Request, serially: Bool) {
+        let urlRequest = self.convert(request: request.adding(defaultHeaders: self.defaultHeaders))
+
+        guard let urlRequest = urlRequest else {
+            if case let .post(requestBody) = request.method {
+                Logger.error("Could not create request to \(request.path) with body \(requestBody)")
+            } else {
+                Logger.error("Could not create request to \(request.path) without body")
+            }
+
+            request.completionHandler?(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            return
+        }
+
+        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod,
+                                                         path: urlRequest.url?.path))
+
+        let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
+            self.handle(urlResponse: urlResponse,
+                        request: request,
+                        urlRequest: urlRequest,
+                        data: data,
+                        error: error,
+                        beginNextRequestWhenFinished: serially)
+        }
+        task.resume()
     }
 
     func convert(request: Request) -> URLRequest? {
