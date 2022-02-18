@@ -251,8 +251,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                      appUserID: String?,
                      userDefaults: UserDefaults? = nil,
                      observerMode: Bool = false,
-                     platformFlavor: String? = nil,
-                     platformFlavorVersion: String? = nil,
+                     platformFlavor: String? = Purchases.platformInfo?.flavor,
+                     platformFlavorVersion: String? = Purchases.platformInfo?.version,
                      useStoreKit2IfAvailable: Bool = false,
                      dangerousSettings: DangerousSettings? = nil) {
         let operationDispatcher = OperationDispatcher()
