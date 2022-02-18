@@ -37,11 +37,6 @@ class SystemInfo {
     static let platformHeaderConstant = "macOS"
     #endif
 
-    enum SystemInfoError: Error {
-
-        case invalidInitializationData
-    }
-
     let appleSubscriptionsURL = URL(string: "https://rev.cat/manage-apple-subscription")
 
     let useStoreKit2IfAvailable: Bool

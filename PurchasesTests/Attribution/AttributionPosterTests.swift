@@ -30,7 +30,7 @@ class AttributionPosterTests: XCTestCase {
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
     // swiftlint:disable:next force_try
     var systemInfo: MockSystemInfo! = try! MockSystemInfo(
-        platformInfo: Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1"),
+        platformInfo: .init(flavor: "iOS", version: "3.2.1"),
         finishTransactions: true)
 
     let userDefaultsSuiteName = "testUserDefaults"
