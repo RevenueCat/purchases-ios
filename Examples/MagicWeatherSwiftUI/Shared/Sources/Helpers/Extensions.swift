@@ -38,7 +38,6 @@ extension SubscriptionPeriod {
         case .week: return "week"
         case .month: return "month"
         case .year: return "year"
-        case .unknown: fallthrough
         @unknown default: return "Unknown"
         }
     }
