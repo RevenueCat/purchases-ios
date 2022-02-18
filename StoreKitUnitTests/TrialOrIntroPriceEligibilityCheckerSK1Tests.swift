@@ -28,8 +28,8 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        mockSystemInfo = try MockSystemInfo(platformFlavor: "xyz",
-                                            platformFlavorVersion: "123",
+        let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
+        mockSystemInfo = try MockSystemInfo(platformInfo: platformInfo,
                                             finishTransactions: true)
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
         self.mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)

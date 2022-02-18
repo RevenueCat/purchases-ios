@@ -102,7 +102,7 @@ class BackendTests: XCTestCase {
     }
 
     // swiftlint:disable:next force_try
-    let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+    let systemInfo = try! SystemInfo(platformInfo: nil, finishTransactions: true)
     var httpClient: MockHTTPClient!
     let apiKey = "asharedsecret"
     let bundleID = "com.bundle.id"

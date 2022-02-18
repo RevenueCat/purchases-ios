@@ -40,8 +40,8 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser = MockReceiptParser()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: mockReceiptParser)
-        let systemInfoAttribution = try MockSystemInfo(platformFlavor: "iOS",
-                                                       platformFlavorVersion: "3.2.1",
+        let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
+        let systemInfoAttribution = try MockSystemInfo(platformInfo: platformInfo,
                                                        finishTransactions: true)
         receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher, systemInfo: systemInfoAttribution)
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
@@ -308,7 +308,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func setupPurchasesObserverModeOn() throws {
-        systemInfo = try MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        systemInfo = try MockSystemInfo(platformInfo: nil, finishTransactions: false)
         initializePurchasesInstance(appUserId: nil)
     }
 
@@ -1297,8 +1297,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSyncPurchasesPostsTheReceiptIfAutoSyncPurchasesSettingIsOff() throws {
-        systemInfo = try MockSystemInfo(platformFlavor: nil,
-                                        platformFlavorVersion: nil,
+        systemInfo = try MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         initializePurchasesInstance(appUserId: nil)
@@ -2238,8 +2237,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOffInObserverMode() throws {
-        systemInfo = try MockSystemInfo(platformFlavor: nil,
-                                        platformFlavorVersion: nil,
+        systemInfo = try MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         initializePurchasesInstance(appUserId: nil)
@@ -2266,8 +2264,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOff() throws {
-        systemInfo = try MockSystemInfo(platformFlavor: nil,
-                                        platformFlavorVersion: nil,
+        systemInfo = try MockSystemInfo(platformInfo: nil,
                                         finishTransactions: true,
                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         initializePurchasesInstance(appUserId: nil)

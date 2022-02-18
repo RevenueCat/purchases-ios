@@ -27,53 +27,29 @@ class SystemInfoTests: XCTestCase {
 
     func testPlatformFlavor() throws {
         let flavor = "flavor"
-        let systemInfo = try SystemInfo(platformFlavor: flavor,
-                                        platformFlavorVersion: "foo",
+        let platformInfo = Purchases.PlatformInfo(flavor: flavor, version: "foo")
+        let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: false)
         expect(systemInfo.platformFlavor) == flavor
     }
 
     func testPlatformFlavorVersion() throws {
         let flavorVersion = "flavorVersion"
-        let systemInfo = try SystemInfo(platformFlavor: "foo",
-                                        platformFlavorVersion: flavorVersion,
+        let platformInfo = Purchases.PlatformInfo(flavor: "foo", version: flavorVersion)
+        let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: false)
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
 
-    func testPlatformFlavorAndPlatformFlavorVersionMustSimultaneouslyExistOrNotExist() {
-        expect(try SystemInfo(platformFlavor: "a",
-                              platformFlavorVersion: "b",
-                              finishTransactions: true))
-            .toNot(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
-
-        expect(try SystemInfo(platformFlavor: nil,
-                              platformFlavorVersion: "b",
-                              finishTransactions: true))
-            .to(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
-
-        expect(try SystemInfo(platformFlavor: "a",
-                              platformFlavorVersion: nil,
-                              finishTransactions: true))
-            .to(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
-
-        expect(try SystemInfo(platformFlavor: nil,
-                              platformFlavorVersion: nil,
-                              finishTransactions: true))
-            .toNot(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
-    }
-
     func testFinishTransactions() throws {
         var finishTransactions = false
-        var systemInfo = try SystemInfo(platformFlavor: nil,
-                                        platformFlavorVersion: nil,
+        var systemInfo = try SystemInfo(platformInfo: nil,
                                         finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
 
         finishTransactions = true
 
-        systemInfo = try SystemInfo(platformFlavor: nil,
-                                    platformFlavorVersion: nil,
+        systemInfo = try SystemInfo(platformInfo: nil,
                                     finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
     }
@@ -92,16 +68,14 @@ class SystemInfoTests: XCTestCase {
 
     func testUseStoreKit2IfAvailable() throws {
         var useSK2 = false
-        var systemInfo = try SystemInfo(platformFlavor: nil,
-                                        platformFlavorVersion: nil,
+        var systemInfo = try SystemInfo(platformInfo: nil,
                                         finishTransactions: true,
                                         useStoreKit2IfAvailable: useSK2)
         expect(systemInfo.useStoreKit2IfAvailable) == useSK2
 
         useSK2 = true
 
-        systemInfo = try SystemInfo(platformFlavor: nil,
-                                    platformFlavorVersion: nil,
+        systemInfo = try SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
                                     useStoreKit2IfAvailable: useSK2)
         expect(systemInfo.useStoreKit2IfAvailable) == useSK2
@@ -114,8 +88,7 @@ private extension SystemInfo {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
-        return try SystemInfo(platformFlavor: nil,
-                              platformFlavorVersion: nil,
+        return try SystemInfo(platformInfo: nil,
                               finishTransactions: false,
                               bundle: bundle)
     }

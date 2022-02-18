@@ -453,8 +453,8 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
-        let systemInfo = try SystemInfo(platformFlavor: "react-native",
-                                        platformFlavorVersion: "3.2.1",
+        let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
+        let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
@@ -474,8 +474,8 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
-        let systemInfo = try SystemInfo(platformFlavor: "react-native",
-                                        platformFlavorVersion: "1.2.3",
+        let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
+        let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
@@ -496,7 +496,7 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
-        let systemInfo = try SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+        let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
@@ -515,7 +515,7 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
-        let systemInfo = try SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,

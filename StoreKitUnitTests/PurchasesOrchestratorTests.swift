@@ -79,8 +79,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     fileprivate func setUpSystemInfo(finishTransactions: Bool = true) throws {
-        systemInfo = try MockSystemInfo(platformFlavor: "xyz",
-                                        platformFlavorVersion: "1.2.3",
+        let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3")
+        systemInfo = try MockSystemInfo(platformInfo: platformInfo,
                                         finishTransactions: finishTransactions)
     }
 

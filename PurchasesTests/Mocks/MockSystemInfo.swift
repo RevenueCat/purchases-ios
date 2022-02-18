@@ -15,8 +15,7 @@ class MockSystemInfo: SystemInfo {
 
     convenience init(finishTransactions: Bool) {
         // swiftlint:disable:next force_try
-        try! self.init(platformFlavor: nil,
-                       platformFlavorVersion: nil,
+        try! self.init(platformInfo: nil,
                        finishTransactions: finishTransactions)
     }
 
