@@ -9,12 +9,6 @@ import Foundation
 import RevenueCat
 import StoreKit
 
-/* The `Package` class needs to be identifiable to work with a List */
-
-extension Package: Identifiable {
-    public var id: String { self.identifier }
-}
-
 /* Some methods to make displaying subscription terms easier */
 
 extension Package {
