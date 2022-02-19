@@ -16,46 +16,46 @@ import Foundation
 
 enum MockDNSChecker: DNSCheckerType {
 
-    static var invokedIsBlockedAPIError = false
-    static var stubbedIsBlockedAPIErrorResult = false
+    static let invokedIsBlockedAPIError: Atomic<Bool> = .init(false)
+    static let stubbedIsBlockedAPIErrorResult: Atomic<Bool> = .init(false)
     static func isBlockedAPIError(_ error: Error?) -> Bool {
-        Self.invokedIsBlockedAPIError = true
-        return Self.stubbedIsBlockedAPIErrorResult
+        Self.invokedIsBlockedAPIError.value = true
+        return Self.stubbedIsBlockedAPIErrorResult.value
     }
 
-    static var invokedErrorWithBlockedHostFromError = false
-    static var stubbedErrorWithBlockedHostFromErrorResult: DNSError?
+    static let invokedErrorWithBlockedHostFromError: Atomic<Bool> = .init(false)
+    static let stubbedErrorWithBlockedHostFromErrorResult: Atomic<DNSError?> = .init(nil)
     static func errorWithBlockedHostFromError(_ error: Error?) -> DNSError? {
-        Self.invokedErrorWithBlockedHostFromError = true
-        return Self.stubbedErrorWithBlockedHostFromErrorResult
+        Self.invokedErrorWithBlockedHostFromError.value = true
+        return Self.stubbedErrorWithBlockedHostFromErrorResult.value
     }
 
-    static var invokedIsBlockedURL = false
-    static var stubbedIsBlockedURLResult = false
+    static let invokedIsBlockedURL: Atomic<Bool> = .init(false)
+    static let stubbedIsBlockedURLResult: Atomic<Bool> = .init(false)
     static func isBlockedURL(_ url: URL) -> Bool {
-        Self.invokedIsBlockedURL = true
-        return Self.stubbedIsBlockedURLResult
+        Self.invokedIsBlockedURL.value = true
+        return Self.stubbedIsBlockedURLResult.value
     }
 
-    static var invokedResolvedHostFromURL = false
-    static var stubbedResolvedHostFromURLResult: String?
+    static let invokedResolvedHostFromURL: Atomic<Bool> = .init(false)
+    static let stubbedResolvedHostFromURLResult: Atomic<String?> = .init(nil)
     static func resolvedHost(fromURL url: URL) -> String? {
-        Self.invokedResolvedHostFromURL = true
-        return Self.stubbedResolvedHostFromURLResult
+        Self.invokedResolvedHostFromURL.value = true
+        return Self.stubbedResolvedHostFromURLResult.value
     }
 
     static func resetData() {
-        Self.invokedIsBlockedAPIError = false
-        Self.stubbedIsBlockedAPIErrorResult = false
+        Self.invokedIsBlockedAPIError.value = false
+        Self.stubbedIsBlockedAPIErrorResult.value = false
 
-        Self.invokedErrorWithBlockedHostFromError = false
-        Self.stubbedErrorWithBlockedHostFromErrorResult = nil
+        Self.invokedErrorWithBlockedHostFromError.value = false
+        Self.stubbedErrorWithBlockedHostFromErrorResult.value = nil
 
-        Self.invokedIsBlockedURL = false
-        Self.stubbedIsBlockedURLResult = false
+        Self.invokedIsBlockedURL.value = false
+        Self.stubbedIsBlockedURLResult.value = false
 
-        Self.invokedResolvedHostFromURL = false
-        Self.stubbedResolvedHostFromURLResult = nil
+        Self.invokedResolvedHostFromURL.value = false
+        Self.stubbedResolvedHostFromURLResult.value = nil
     }
 
 }
