@@ -13,10 +13,8 @@ import XCTest
 @testable import RevenueCat
 
 class EmptyCustomerInfoTests: XCTestCase {
-    let customerInfo = CustomerInfo(testData: [String: Any]())
-
-    func testEmptyDataYieldsANilInfo() {
-        expect(self.customerInfo).to(beNil())
+    func testEmptyDataFails() throws {
+        expect(try CustomerInfo(data: [:])).to(throwError())
     }
 }
 
@@ -83,12 +81,12 @@ class BasicCustomerInfoTests: XCTestCase {
                 "\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}" +
             "}}}"
 
-    var customerInfo: CustomerInfo?
+    var customerInfo: CustomerInfo!
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
 
-        customerInfo = CustomerInfo(testData: validSubscriberResponse)
+        customerInfo = try CustomerInfo(data: validSubscriberResponse)
     }
 
     func testParsesSubscriptions() {
@@ -98,44 +96,44 @@ class BasicCustomerInfoTests: XCTestCase {
     func testParsesExpirationDate() throws {
         let customerInfo = try XCTUnwrap(self.customerInfo)
         let expireDate = try XCTUnwrap(customerInfo.expirationDate(forProductIdentifier: "onemonth_freetrial"))
-        expect(expireDate.timeIntervalSince1970).to(equal(4123276836))
+        expect(expireDate.timeIntervalSince1970) == 4123276836
     }
 
     func testListActiveSubscriptions() {
-        XCTAssertEqual(Set(["onemonth_freetrial"]), customerInfo!.activeSubscriptions)
+        XCTAssertEqual(Set(["onemonth_freetrial"]), customerInfo.activeSubscriptions)
     }
 
     func testAllPurchasedProductIdentifier() {
-        let allPurchased = customerInfo!.allPurchasedProductIdentifiers
+        let allPurchased = customerInfo.allPurchasedProductIdentifiers
 
-        expect(allPurchased).to(equal(Set(["onemonth_freetrial", "threemonth_freetrial", "onetime_purchase"])))
+        expect(allPurchased) == Set(["onemonth_freetrial", "threemonth_freetrial", "onetime_purchase"])
     }
 
     func testLatestExpirationDateHelper() {
-        let latestExpiration = customerInfo!.latestExpirationDate
+        let latestExpiration = customerInfo.latestExpirationDate
 
         expect(latestExpiration).toNot(beNil())
 
-        expect(latestExpiration).to(equal(customerInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")))
+        expect(latestExpiration) == customerInfo.expirationDate(forProductIdentifier: "onemonth_freetrial")
     }
 
     func testParsesOtherPurchases() {
-        let nonConsumables = customerInfo!.nonSubscriptionTransactions
-        expect(nonConsumables.count).to(equal(1))
+        let nonConsumables = customerInfo.nonSubscriptionTransactions
+        expect(nonConsumables.count) == 1
 
-        expect(nonConsumables[0].productIdentifier).to(equal("onetime_purchase"))
+        expect(nonConsumables[0].productIdentifier) == "onetime_purchase"
     }
 
     @available(*, deprecated) // Ignore deprecation warnings
     func testDeprecatedParsesOtherPurchases() {
-        let nonConsumables = customerInfo!.nonConsumablePurchases
-        expect(nonConsumables.count).to(equal(1))
+        let nonConsumables = customerInfo.nonConsumablePurchases
+        expect(nonConsumables.count) == 1
 
         expect(nonConsumables).to(contain(["onetime_purchase"]))
     }
 
-    func testOriginalApplicationVersionNilIfNotPresent() {
-        let customerInfo = CustomerInfo(testData: [
+    func testOriginalApplicationVersionNilIfNotPresent() throws {
+        let customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -143,11 +141,11 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        expect(customerInfo!.originalApplicationVersion).to(beNil())
+        expect(customerInfo.originalApplicationVersion).to(beNil())
     }
 
-    func testOriginalApplicationVersionNilIfNull() {
-        let customerInfo = CustomerInfo(testData: [
+    func testOriginalApplicationVersionNilIfNull() throws {
+        let customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -156,11 +154,11 @@ class BasicCustomerInfoTests: XCTestCase {
                 "other_purchases": [:],
                 "original_application_version": NSNull()
             ]])
-        expect(customerInfo!.originalApplicationVersion).to(beNil())
+        expect(customerInfo.originalApplicationVersion).to(beNil())
     }
 
-    func testOriginalApplicationVersion() {
-        let customerInfo = CustomerInfo(testData: [
+    func testOriginalApplicationVersion() throws {
+        let customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -169,11 +167,11 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        expect(customerInfo!.originalApplicationVersion).to(equal("1.0"))
+        expect(customerInfo.originalApplicationVersion) == "1.0"
     }
 
-    func testOriginalPurchaseDate() {
-        let customerInfo = CustomerInfo(testData: [
+    func testOriginalPurchaseDate() throws {
+        let customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -183,11 +181,11 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        expect(customerInfo!.originalPurchaseDate).to(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
+        expect(customerInfo.originalPurchaseDate) == Date(timeIntervalSinceReferenceDate: 562288673)
     }
 
-    func testManagementURLNullIfNotPresent() {
-        let customerInfo = CustomerInfo(testData: [
+    func testManagementURLNullIfNotPresent() throws {
+        let customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -195,11 +193,11 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        expect(customerInfo!.managementURL).to(beNil())
+        expect(customerInfo.managementURL).to(beNil())
     }
 
-    func testManagementURLIsPresentWithValidURL() {
-        let customerInfo = CustomerInfo(testData: [
+    func testManagementURLIsPresentWithValidURL() throws {
+        let customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -208,12 +206,11 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        expect(customerInfo!.managementURL).toNot(beNil())
-        expect(customerInfo!.managementURL!.absoluteString) == "https://apple.com/manage_subscription"
+        expect(customerInfo.managementURL?.absoluteString) == "https://apple.com/manage_subscription"
     }
 
-    func testManagementURLIsNullWithInvalidURL() {
-        var customerInfo = CustomerInfo(testData: [
+    func testManagementURLIsNullWithInvalidURL() throws {
+        var customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": "",
@@ -222,9 +219,9 @@ class BasicCustomerInfoTests: XCTestCase {
                 "other_purchases": [:],
                 "original_app_user_id": ""
             ]])
-        expect(customerInfo!.managementURL).to(beNil())
+        expect(customerInfo.managementURL).to(beNil())
 
-        customerInfo = CustomerInfo(testData: [
+        customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": URL(string: "http://google.com") as Any,
@@ -233,9 +230,9 @@ class BasicCustomerInfoTests: XCTestCase {
                 "other_purchases": [:],
                 "original_app_user_id": ""
             ]])
-        expect(customerInfo!.managementURL).to(beNil())
+        expect(customerInfo.managementURL).to(beNil())
 
-        customerInfo = CustomerInfo(testData: [
+        customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": nil,
@@ -244,9 +241,9 @@ class BasicCustomerInfoTests: XCTestCase {
                 "other_purchases": [:],
                 "original_app_user_id": ""
             ]])
-        expect(customerInfo!.managementURL).to(beNil())
+        expect(customerInfo.managementURL).to(beNil())
 
-        customerInfo = CustomerInfo(testData: [
+        customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": "this isnt' a URL!",
@@ -255,9 +252,9 @@ class BasicCustomerInfoTests: XCTestCase {
                 "other_purchases": [:],
                 "original_app_user_id": ""
             ]])
-        expect(customerInfo!.managementURL).to(beNil())
+        expect(customerInfo.managementURL).to(beNil())
 
-        customerInfo = CustomerInfo(testData: [
+        customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": 68546984,
@@ -266,54 +263,55 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        expect(customerInfo!.managementURL).to(beNil())
+        expect(customerInfo.managementURL).to(beNil())
 
     }
 
-    func testPreservesOriginalJSONSerializableObject() {
-        let json = customerInfo?.jsonObject()
-        let newInfo = CustomerInfo(testData: json!)
-        expect(newInfo).toNot(beNil())
+    func testPreservesOriginalJSONSerializableObject() throws {
+        let newInfo = try CustomerInfo(data: self.customerInfo.jsonObject())
+
+        expect(newInfo.rawData).toNot(beEmpty())
     }
 
     func testTwoProductJson() throws {
         let jsonData = try XCTUnwrap(validTwoProductsJSON.data(using: String.Encoding.utf8))
         let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: [])
         let jsonDict = try XCTUnwrap(jsonObject as? [String: Any])
-        let info = CustomerInfo(testData: jsonDict)
-        expect(info?.latestExpirationDate).toNot(beNil())
+        let info = try CustomerInfo(data: jsonDict)
+
+        expect(info.latestExpirationDate).toNot(beNil())
     }
 
     func testActiveEntitlementInfos() {
-        let entitlements = customerInfo!.entitlements.active
+        let entitlements = customerInfo.entitlements.active
         expect(entitlements.keys).to(contain("pro"))
         expect(entitlements.keys).toNot(contain("old_pro"))
     }
 
     func testRandomEntitlementInfos() {
-        let entitlements = customerInfo!.entitlements.all
+        let entitlements = customerInfo.entitlements.all
         expect(entitlements.keys).toNot(contain("random"))
     }
 
     func testGetExpirationDates() {
-        let proDate = customerInfo!.expirationDate(forEntitlement: "pro")
-        expect(proDate?.timeIntervalSince1970).to(equal(4123276836))
+        let proDate = customerInfo.expirationDate(forEntitlement: "pro")
+        expect(proDate?.timeIntervalSince1970) == 4123276836
     }
 
     func testLifetimeSubscriptionsEntitlementInfos() {
-        let entitlements = customerInfo!.entitlements.active
+        let entitlements = customerInfo.entitlements.active
         expect(entitlements.keys).to(contain("forever_pro"))
     }
 
     func testExpirationLifetime() {
-        expect(self.customerInfo!.expirationDate(forEntitlement: "forever_pro")).to(beNil())
+        expect(self.customerInfo.expirationDate(forEntitlement: "forever_pro")).to(beNil())
     }
 
     func testRequestDate() {
-        expect(self.customerInfo!.requestDate).toNot(beNil())
+        expect(self.customerInfo.requestDate).toNot(beNil())
     }
 
-    func testIfRequestDateIsNilUsesCurrentTime() {
+    func testIfRequestDateIsNilUsesCurrentTime() throws {
         let response = [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -377,26 +375,24 @@ class BasicCustomerInfoTests: XCTestCase {
                 ]
             ]
         ] as [String: Any]
-        let customerInfoWithoutRequestData = CustomerInfo(testData: response)
+        let customerInfoWithoutRequestData = try CustomerInfo(data: response)
 
-        let entitlements: [String: EntitlementInfo] = customerInfoWithoutRequestData!.entitlements.active
+        let entitlements: [String: EntitlementInfo] = customerInfoWithoutRequestData.entitlements.active
         expect(entitlements["pro"]).toNot(beNil())
         expect(entitlements["old_pro"]).to(beNil())
     }
 
     func testPurchaseDateForEntitlement() throws {
-        let customerInfo = try XCTUnwrap(self.customerInfo)
-        let purchaseDate = customerInfo.purchaseDate(forEntitlement: "pro")
-        expect(purchaseDate).to(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
+        let purchaseDate = self.customerInfo.purchaseDate(forEntitlement: "pro")
+        expect(purchaseDate) == Date(timeIntervalSinceReferenceDate: 562288673)
     }
 
     func testPurchaseDateForProductIdentifier() throws {
-        let customerInfo = try XCTUnwrap(self.customerInfo)
-        let purchaseDate = try XCTUnwrap(customerInfo.purchaseDate(forProductIdentifier: "threemonth_freetrial"))
+        let purchaseDate = try XCTUnwrap(self.customerInfo.purchaseDate(forProductIdentifier: "threemonth_freetrial"))
         expect(purchaseDate) == Date(timeIntervalSince1970: 1526797490)
     }
 
-    func testPurchaseDateEmpty() {
+    func testPurchaseDateEmpty() throws {
         let response = [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -428,13 +424,13 @@ class BasicCustomerInfoTests: XCTestCase {
                 ]
             ]
         ] as [String: Any]
-        let customerInfoWithoutRequestData = CustomerInfo(testData: response)
-        let purchaseDate = customerInfoWithoutRequestData!.purchaseDate(forEntitlement: "pro")
+        let customerInfoWithoutRequestData = try CustomerInfo(data: response)
+        let purchaseDate = customerInfoWithoutRequestData.purchaseDate(forEntitlement: "pro")
         expect(purchaseDate).to(beNil())
     }
 
-    func testEmptyInfosEqual() {
-        let info1 = CustomerInfo(testData: [
+    func testEmptyInfosEqual() throws {
+        let info1 = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -442,7 +438,7 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let info2 = CustomerInfo(testData: [
+        let info2 = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -450,11 +446,11 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        expect(info1).to(equal(info2))
+        expect(info1) == info2
     }
 
-    func testDifferentFetchDatesStillEqual() {
-        let info1 = CustomerInfo(testData: [
+    func testDifferentFetchDatesStillEqual() throws {
+        let info1 = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -462,7 +458,7 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let info2 = CustomerInfo(testData: [
+        let info2 = try CustomerInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -470,11 +466,11 @@ class BasicCustomerInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        expect(info1).to(equal(info2))
+        expect(info1) == info2
     }
 
-    func testDifferentActiveEntitlementsNotEqual() {
-        let info1 = CustomerInfo(testData: [
+    func testDifferentActiveEntitlementsNotEqual() throws {
+        let info1 = try CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -491,7 +487,7 @@ class BasicCustomerInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = CustomerInfo(testData: [
+        let info2 = try CustomerInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -509,11 +505,11 @@ class BasicCustomerInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        expect(info1).toNot(equal(info2))
+        expect(info1) != info2
     }
 
-    func testDifferentEntitlementsNotEqual() {
-        let info1 = CustomerInfo(testData: [
+    func testDifferentEntitlementsNotEqual() throws {
+        let info1 = try CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -539,7 +535,7 @@ class BasicCustomerInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = CustomerInfo(testData: [
+        let info2 = try CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -565,11 +561,11 @@ class BasicCustomerInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        expect(info1).toNot(equal(info2))
+        expect(info1) != info2
     }
 
-    func testSameEntitlementsDifferentRequestDateEqual() {
-        let info1 = CustomerInfo(testData: [
+    func testSameEntitlementsDifferentRequestDateEqual() throws {
+        let info1 = try CustomerInfo(data: [
             "request_date": "2018-12-21T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -595,7 +591,7 @@ class BasicCustomerInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = CustomerInfo(testData: [
+        let info2 = try CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -621,78 +617,83 @@ class BasicCustomerInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        expect(info1).to(equal(info2))
+        expect(info1) == info2
     }
 
     func testInitFailsIfNoRequestDate() {
-        let info = CustomerInfo(testData: [
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "management_url": "https://apple.com/manage_subscription",
-                "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
-        expect(info).to(beNil())
+        expect(
+            try CustomerInfo(data: [
+                "subscriber": [
+                    "first_seen": "2019-07-17T00:05:54Z",
+                    "management_url": "https://apple.com/manage_subscription",
+                    "original_app_user_id": "",
+                    "subscriptions": [:],
+                    "other_purchases": [:]
+                ]])
+        ).to(throwError())
     }
 
     func testInitFailsIfNoSubscriberOriginalAppUserId() {
-        let info = CustomerInfo(testData: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "management_url": "https://apple.com/manage_subscription",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
-        expect(info).to(beNil())
+        expect(
+            try CustomerInfo(data: [
+                "request_date": "2019-08-16T10:30:42Z",
+                "subscriber": [
+                    "first_seen": "2019-07-17T00:05:54Z",
+                    "management_url": "https://apple.com/manage_subscription",
+                    "subscriptions": [:],
+                    "other_purchases": [:]
+                ]])
+        ).to(throwError())
     }
 
     func testInitFailsIfNoSubscriber() {
-        let info = CustomerInfo(testData: [
-            "request_date": "2019-08-16T10:30:42Z"
-           ])
-        expect(info).to(beNil())
+        expect(
+            try CustomerInfo(data: [
+                "request_date": "2019-08-16T10:30:42Z"
+            ])
+        ).to(throwError())
     }
 
     func testInitFailsIfNoSubscriberFirstSeen() {
-        let info = CustomerInfo(testData: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "management_url": "https://apple.com/manage_subscription",
-                "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
-        expect(info).to(beNil())
+        expect(
+            try CustomerInfo(data: [
+                "request_date": "2019-08-16T10:30:42Z",
+                "subscriber": [
+                    "management_url": "https://apple.com/manage_subscription",
+                    "original_app_user_id": "",
+                    "subscriptions": [:],
+                    "other_purchases": [:]
+                ]])
+        ).to(throwError())
     }
 
-    func testInitFailsIfMalformedRequestDate() {
-        let info = CustomerInfo(testData: [
-            "request_date": "2019-08-110:30:42Z",
-            "subscriber": [
-                "original_app_user_id": "app_user_id",
-                "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
-
-        expect(info).to(beNil())
+    func testInitFailsIfMalformedRequestDate() throws {
+        expect(
+            try CustomerInfo(data: [
+                "request_date": "2019-08-110:30:42Z",
+                "subscriber": [
+                    "original_app_user_id": "app_user_id",
+                    "first_seen": "2019-07-17T00:05:54Z",
+                    "subscriptions": [:],
+                    "other_purchases": [:]
+                ]])
+        ).to(throwError())
     }
 
     func testInitFailsIfMalformedFirstSeenDate() {
-        let info = CustomerInfo(testData: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "original_app_user_id": "app_user_id",
-                "first_seen": "2019-07-",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
-        expect(info).to(beNil())
+        expect(
+            try CustomerInfo(data: [
+                "request_date": "2019-08-16T10:30:42Z",
+                "subscriber": [
+                    "original_app_user_id": "app_user_id",
+                    "first_seen": "2019-07-",
+                    "subscriptions": [:],
+                    "other_purchases": [:]
+                ]])
+        ).to(throwError())
     }
 
-    func testActiveSubscriptionsIncludesSubsWithNullExpirationDate() {
+    func testActiveSubscriptionsIncludesSubsWithNullExpirationDate() throws {
         let response = [
             "request_date": "2018-10-19T02:40:36Z",
             "subscriber": [
@@ -732,12 +733,11 @@ class BasicCustomerInfoTests: XCTestCase {
             ]
         ] as [String: Any]
 
-        let info = CustomerInfo(testData: response)
-        XCTAssertEqual(Set(["onemonth_freetrial", "twomonth_freetrial"]), info!.activeSubscriptions)
-
+        let info = try CustomerInfo(data: response)
+        expect(info.activeSubscriptions) == Set(["onemonth_freetrial", "twomonth_freetrial"])
     }
 
-    func testAllPurchasedProductIdentifiersIncludesNullExpDate() {
+    func testAllPurchasedProductIdentifiersIncludesNullExpDate() throws {
         let response = [
             "request_date": "2018-10-19T02:40:36Z",
             "subscriber": [
@@ -777,9 +777,9 @@ class BasicCustomerInfoTests: XCTestCase {
             ]
         ] as [String: Any]
 
-        let info = CustomerInfo(testData: response)
-        XCTAssertEqual(Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"]),
-                       info!.allPurchasedProductIdentifiers)
+        let info = try CustomerInfo(data: response)
+        expect(info.allPurchasedProductIdentifiers)
+        == Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"])
     }
 
 }
