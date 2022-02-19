@@ -119,6 +119,8 @@ public extension StoreProductDiscount {
 /// The details of an introductory offer or a promotional offer for an auto-renewable subscription.
 internal protocol StoreProductDiscountType {
 
+    // Note: this is only `nil` for SK1 products before iOS 12.2.
+    // It can become `String` once it's not longer supported.
     /// A string used to uniquely identify a discount offer for a product.
     var offerIdentifier: String? { get }
 
