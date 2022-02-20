@@ -136,8 +136,14 @@ import Foundation
             case .weekly:
                 Self.checkForNilAndLogReplacement(package: self.weekly, newPackage: package)
                 self.weekly = package
+            case .custom where package.storeProduct.productCategory == .nonSubscription:
+                // Non-subscription product, ignoring
+                break
             case .unknown, .custom:
-                Logger.warn("Unknown subscription length for package:\(package.offeringIdentifier), ignoring.")
+                Logger.warn(
+                    "Unknown subscription length for package '\(package.offeringIdentifier)': " +
+                    "\(package.packageType). Ignoring."
+                )
             }
         }
     }
