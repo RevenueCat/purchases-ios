@@ -32,6 +32,8 @@ class BackendIntegrationTests: XCTestCase {
     var userDefaults: UserDefaults!
     var purchasesDelegate: TestPurchaseDelegate!
 
+    private static let timeout: DispatchTimeInterval = .seconds(10)
+
     override func setUpWithError() throws {
         testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
         testSession.disableDialogs = true
@@ -55,7 +57,7 @@ class BackendIntegrationTests: XCTestCase {
             receivedError = error
             receivedOfferings = offerings
         }
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
 
         expect(receivedError).to(beNil())
         let unwrappedOfferings = try XCTUnwrap(receivedOfferings)
@@ -88,7 +90,7 @@ class BackendIntegrationTests: XCTestCase {
                 completionCalled = true
             }
         }
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
     }
 
     func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() {
@@ -103,7 +105,7 @@ class BackendIntegrationTests: XCTestCase {
             }
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
 
         // purchase as anonymous user, then log in
         purchaseMonthlyOffering()
@@ -118,7 +120,7 @@ class BackendIntegrationTests: XCTestCase {
             expect(logInError).to(beNil())
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
 
         Purchases.shared.restorePurchases()
 
@@ -135,7 +137,7 @@ class BackendIntegrationTests: XCTestCase {
             completionCalled = true
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
 
         waitUntilEntitlementsGoThrough()
 
@@ -147,7 +149,7 @@ class BackendIntegrationTests: XCTestCase {
             completionCalled = true
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
 
         Purchases.shared.restorePurchases()
 
@@ -171,7 +173,7 @@ class BackendIntegrationTests: XCTestCase {
             }
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
     }
 
     func testLogInThenLogInAsAnotherUserWontTransferPurchases() {
@@ -192,7 +194,7 @@ class BackendIntegrationTests: XCTestCase {
         }
 
         expect(self.purchasesDelegate.customerInfo?.originalAppUserId)
-            .toEventually(equal(userID2), timeout: .seconds(10))
+            .toEventually(equal(userID2), timeout: Self.timeout)
         assertNoPurchases(purchasesDelegate.customerInfo)
     }
 
@@ -218,7 +220,7 @@ class BackendIntegrationTests: XCTestCase {
             completionCalled = true
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -234,7 +236,7 @@ class BackendIntegrationTests: XCTestCase {
             completionCalled = true
         }
         
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
         completionCalled = false
         
         let unwrappedProductID = try XCTUnwrap(productID)
@@ -244,7 +246,7 @@ class BackendIntegrationTests: XCTestCase {
             receivedEligibility = eligibility
         }
         
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
         completionCalled = false
         
         var unwrappedEligibility = try XCTUnwrap(receivedEligibility)
@@ -267,7 +269,7 @@ class BackendIntegrationTests: XCTestCase {
             }
         }
         
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
         completionCalled = false
         
         Purchases.shared.checkTrialOrIntroDiscountEligibility([unwrappedProductID]) { eligibility in
@@ -275,7 +277,7 @@ class BackendIntegrationTests: XCTestCase {
             receivedEligibility = eligibility
         }
         
-        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
         
         unwrappedEligibility = try XCTUnwrap(receivedEligibility)
         expect(unwrappedEligibility[unwrappedProductID]?.status) == .ineligible
@@ -321,7 +323,7 @@ private extension BackendIntegrationTests {
 
     func waitUntilEntitlementsGoThrough() {
         expect(self.purchasesDelegate.customerInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: .seconds(10))
+            .toEventually(equal(1), timeout: Self.timeout)
     }
 
     func assertNoPurchases(_ customerInfo: CustomerInfo?) {
@@ -329,7 +331,7 @@ private extension BackendIntegrationTests {
     }
 
     func waitUntilCustomerInfoIsUpdated() {
-        expect(self.purchasesDelegate.customerInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
+        expect(self.purchasesDelegate.customerInfoUpdateCount).toEventually(equal(1), timeout: Self.timeout)
     }
     
 }
