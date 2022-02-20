@@ -188,6 +188,15 @@ class OfferingsTests: XCTestCase {
         try testPackageType(packageType: PackageType.custom)
     }
 
+    @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
+    func testCustomNonSubscriptionPackage() throws {
+        let sk1Product = MockSK1Product(mockProductIdentifier: "com.myProduct")
+        sk1Product.mockSubscriptionPeriod = nil
+
+        try testPackageType(packageType: PackageType.custom,
+                            product: StoreProduct(sk1Product: sk1Product))
+    }
+
     func testUnknownPackageType() throws {
         try testPackageType(packageType: PackageType.unknown)
     }
@@ -238,7 +247,7 @@ class OfferingsTests: XCTestCase {
 }
 
 private extension OfferingsTests {
-    func testPackageType(packageType: PackageType) throws {
+    func testPackageType(packageType: PackageType, product: StoreProduct? = nil) throws {
         var identifier = Package.string(from: packageType)
         if identifier == nil {
             if packageType == PackageType.unknown {
@@ -247,9 +256,10 @@ private extension OfferingsTests {
                 identifier = "custom"
             }
         }
-        let productIdentifier = "com.myproduct"
+        let productIdentifier = product?.productIdentifier ?? "com.myproduct"
         let products = [
-            productIdentifier: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
+            productIdentifier: product
+            ?? StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
         ]
         let offerings = try XCTUnwrap(
             offeringsFactory.createOfferings(from: products, data: [
@@ -259,7 +269,7 @@ private extension OfferingsTests {
                         "description": "This is the base offering",
                         "packages": [
                             ["identifier": identifier,
-                             "platform_product_identifier": "com.myproduct"]
+                             "platform_product_identifier": productIdentifier]
                         ]
                     ]
                 ],
