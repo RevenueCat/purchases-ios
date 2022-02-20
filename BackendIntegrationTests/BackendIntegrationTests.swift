@@ -289,18 +289,17 @@ private extension BackendIntegrationTests {
 
     func purchaseMonthlyOffering(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         Purchases.shared.getOfferings { offerings, error in
-            expect(error).to(beNil())
+            guard error == nil else { XCTFail("Error fetching offerings: \(error!)"); return }
 
             let offering = offerings?.current
             expect(offering).toNot(beNil())
             
-            let monthlyPackage = offering?.monthly
-            expect(monthlyPackage).toNot(beNil())
+            guard let monthlyPackage = offering?.monthly else { XCTFail("Package not found"); return }
 
-            Purchases.shared.purchase(package: monthlyPackage!) { transaction,
-                                                                  customerInfo,
-                                                                  purchaseError,
-                                                                  userCancelled in
+            Purchases.shared.purchase(package: monthlyPackage) { transaction,
+                                                                 customerInfo,
+                                                                 purchaseError,
+                                                                 userCancelled in
                 expect(purchaseError).to(beNil())
                 expect(customerInfo).toNot(beNil())
             }
