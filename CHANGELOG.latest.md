@@ -1,4 +1,4 @@
-- Third RC for RevenueCat framework v4 🎉
+- Fourth RC for RevenueCat framework v4 🎉
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-rc.3...4.0.0-rc.4)
