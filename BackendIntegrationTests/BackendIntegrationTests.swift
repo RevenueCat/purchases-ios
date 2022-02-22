@@ -12,6 +12,7 @@ import Nimble
 import StoreKitTest
 
 class TestPurchaseDelegate: NSObject, PurchasesDelegate {
+
     var customerInfo: CustomerInfo?
     var customerInfoUpdateCount = 0
 
@@ -20,10 +21,6 @@ class TestPurchaseDelegate: NSObject, PurchasesDelegate {
         customerInfoUpdateCount += 1
     }
 
-    func purchases(_ purchases: Purchases,
-                   shouldPurchasePromoProduct product: StoreProduct,
-                   defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock) {
-    }
 }
 
 class BackendIntegrationSK2Tests: BackendIntegrationSK1Tests {
@@ -63,266 +60,157 @@ class BackendIntegrationSK1Tests: XCTestCase {
         configurePurchases()
     }
 
-    func testCanGetOfferings() throws {
-        var completionCalled = false
-        var receivedError: Error? = nil
-        var receivedOfferings: Offerings? = nil
-        Purchases.shared.getOfferings { offerings, error in
-            completionCalled = true
-            receivedError = error
-            receivedOfferings = offerings
-        }
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
-
-        expect(receivedError).to(beNil())
-        let unwrappedOfferings = try XCTUnwrap(receivedOfferings)
-        expect(unwrappedOfferings.all).toNot(beEmpty())
+    func testCanGetOfferings() async throws {
+        let receivedOfferings = try await Purchases.shared.offerings()
+        expect(receivedOfferings.all).toNot(beEmpty())
     }
 
-    func testCanMakePurchase() throws {
-        purchaseMonthlyOffering()
+    func testCanMakePurchase() async throws {
+        try await self.purchaseMonthlyOffering()
 
-        waitUntilEntitlementsGoThrough()
-        let entitlements = purchasesDelegate.customerInfo?.entitlements
+        self.verifyEntitlementWentThrough()
+        let entitlements = self.purchasesDelegate.customerInfo?.entitlements
         expect(entitlements?["premium"]?.isActive) == true
     }
 
-    func testPurchaseMadeBeforeLogInIsRetainedAfter() {
-        var completionCalled = false
-        purchaseMonthlyOffering { [self] customerInfo, error in
-            expect(customerInfo?.entitlements.all.count) == 1
-            let entitlements = self.purchasesDelegate.customerInfo?.entitlements
-            expect(entitlements?["premium"]?.isActive) == true
+    func testPurchaseMadeBeforeLogInIsRetainedAfter() async throws {
+        let customerInfo = try await self.purchaseMonthlyOffering()
+        expect(customerInfo.entitlements.all.count) == 1
 
-            let anonUserID = Purchases.shared.appUserID
-            let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
+        let entitlements = self.purchasesDelegate.customerInfo?.entitlements
+        expect(entitlements?["premium"]?.isActive) == true
 
-            Purchases.shared.logIn(identifiedUserID) { identifiedCustomerInfo, created, error in
-                expect(error).to(beNil())
+        let anonUserID = Purchases.shared.appUserID
+        let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
 
-                expect(created).to(beTrue())
-                expect(identifiedCustomerInfo?.entitlements["premium"]?.isActive) == true
-                completionCalled = true
-            }
-        }
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
+        let (identifiedCustomerInfo, created) = try await Purchases.shared.logIn(identifiedUserID)
+        expect(created) == true
+        expect(identifiedCustomerInfo.entitlements["premium"]?.isActive) == true
     }
 
-    func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() {
-        var completionCalled = false
+    func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() async throws {
         let existingUserID = "\(#function)\(UUID().uuidString)"
-        self.waitUntilCustomerInfoIsUpdated()
+        try await self.waitUntilCustomerInfoIsUpdated()
 
         // log in to create the user, then log out
-        Purchases.shared.logIn(existingUserID) { logInCustomerInfo, created, logInError in
-            Purchases.shared.logOut() { loggedOutCustomerInfo, logOutError in
-                completionCalled = true
-            }
-        }
-
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
+        _ = try await Purchases.shared.logIn(existingUserID)
+        _ = try await Purchases.shared.logOut()
 
         // purchase as anonymous user, then log in
-        purchaseMonthlyOffering()
-        waitUntilEntitlementsGoThrough()
+        try await self.purchaseMonthlyOffering()
+        self.verifyEntitlementWentThrough()
 
-        completionCalled = false
+        let (customerInfo, created) = try await Purchases.shared.logIn(existingUserID)
+        self.assertNoPurchases(customerInfo)
+        expect(created) == false
 
-        Purchases.shared.logIn(existingUserID) { customerInfo, created, logInError in
-            completionCalled = true
-            self.assertNoPurchases(customerInfo)
-            expect(created).to(beFalse())
-            expect(logInError).to(beNil())
-        }
+        _ = try await Purchases.shared.restorePurchases()
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
-
-        Purchases.shared.restorePurchases()
-
-        waitUntilEntitlementsGoThrough()
+        self.verifyEntitlementWentThrough()
     }
 
-    func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() {
-        var completionCalled = false
+    func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() async throws {
         let existingUserID = UUID().uuidString
-        self.waitUntilCustomerInfoIsUpdated()
+        try await self.waitUntilCustomerInfoIsUpdated()
 
-        Purchases.shared.logIn(existingUserID) { logInCustomerInfo, created, logInError in
-            self.purchaseMonthlyOffering()
-            completionCalled = true
-        }
+        _ = try await Purchases.shared.logIn(existingUserID)
+        try await self.purchaseMonthlyOffering()
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
+        self.verifyEntitlementWentThrough()
 
-        waitUntilEntitlementsGoThrough()
+        let customerInfo = try await Purchases.shared.logOut()
+        self.assertNoPurchases(customerInfo)
 
-        completionCalled = false
+        _ = try await Purchases.shared.restorePurchases()
 
-        Purchases.shared.logOut { customerInfo, error in
-            self.assertNoPurchases(customerInfo)
-            expect(error).to(beNil())
-            completionCalled = true
-        }
-
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
-
-        Purchases.shared.restorePurchases()
-
-        waitUntilEntitlementsGoThrough()
+        self.verifyEntitlementWentThrough()
     }
 
-    func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() {
+    func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() async throws {
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "\(#function)_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
-        var completionCalled = false
-        Purchases.shared.logIn(identifiedUserID) { identifiedCustomerInfo, created, error in
-            expect(error).to(beNil())
-            expect(created).to(beTrue())
-            Purchases.shared.logOut { loggedOutCustomerInfo, logOutError in
-                Purchases.shared.logIn(identifiedUserID) { identifiedCustomerInfo, created, error in
-                    expect(error).to(beNil())
-                    expect(created).to(beFalse())
-                    completionCalled = true
-                }
-            }
-        }
+        var (_, created) = try await Purchases.shared.logIn(identifiedUserID)
+        expect(created) == true
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
+        _ = try await Purchases.shared.logOut()
+
+        (_, created) = try await Purchases.shared.logIn(identifiedUserID)
+        expect(created) == false
     }
 
-    func testLogInThenLogInAsAnotherUserWontTransferPurchases() {
+    func testLogInThenLogInAsAnotherUserWontTransferPurchases() async throws {
         let userID1 = UUID().uuidString
         let userID2 = UUID().uuidString
 
-        Purchases.shared.logIn(userID1) { identifiedCustomerInfo, created, error in
-            self.purchaseMonthlyOffering()
-        }
+        _ = try await Purchases.shared.logIn(userID1)
+        try await self.purchaseMonthlyOffering()
 
-        waitUntilEntitlementsGoThrough()
+        self.verifyEntitlementWentThrough()
 
         testSession.clearTransactions()
 
-        Purchases.shared.logIn(userID2) { identifiedCustomerInfo, created, error in
-            self.assertNoPurchases(identifiedCustomerInfo)
-            expect(error).to(beNil())
-        }
+        let (identifiedCustomerInfo, _) = try await Purchases.shared.logIn(userID2)
+        self.assertNoPurchases(identifiedCustomerInfo)
 
-        expect(self.purchasesDelegate.customerInfo?.originalAppUserId)
-            .toEventually(equal(userID2), timeout: Self.timeout)
-        assertNoPurchases(purchasesDelegate.customerInfo)
+        expect(self.purchasesDelegate.customerInfo?.originalAppUserId) == userID2
+        self.assertNoPurchases(self.purchasesDelegate.customerInfo)
     }
 
-    func testLogOutRemovesEntitlements() {
+    func testLogOutRemovesEntitlements() async throws {
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
-        Purchases.shared.logIn(identifiedUserID) { identifiedCustomerInfo, created, error in
-            expect(error).to(beNil())
+        let (_, created) = try await Purchases.shared.logIn(identifiedUserID)
+        expect(created) == true
 
-            expect(created).to(beTrue())
-            print("identifiedCustomerInfo: \(String(describing: identifiedCustomerInfo))")
+        try await self.purchaseMonthlyOffering()
 
-            self.purchaseMonthlyOffering()
-        }
+        self.verifyEntitlementWentThrough()
 
-        waitUntilEntitlementsGoThrough()
-
-        var completionCalled = false
-        Purchases.shared.logOut { loggedOutCustomerInfo, logOutError in
-            expect(logOutError).to(beNil())
-            self.assertNoPurchases(loggedOutCustomerInfo)
-            completionCalled = true
-        }
-
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
+        let loggedOutCustomerInfo = try await Purchases.shared.logOut()
+        self.assertNoPurchases(loggedOutCustomerInfo)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testEligibleForIntroBeforePurchaseAndIneligibleAfter() throws {
+    func testEligibleForIntroBeforePurchaseAndIneligibleAfter() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        var productID: String?
-        var completionCalled = false
-        var receivedEligibility: [String: IntroEligibility]?
+        let offerings = try await Purchases.shared.offerings()
+        let productID = try XCTUnwrap(offerings.current?.monthly?.storeProduct.productIdentifier)
+
+        var eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility([productID])
+        expect(eligibility[productID]?.status) == .eligible
         
-        Purchases.shared.getOfferings { offerings, error in
-            productID = offerings?.current?.monthly?.storeProduct.productIdentifier
-            completionCalled = true
-        }
-        
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
-        completionCalled = false
-        
-        let unwrappedProductID = try XCTUnwrap(productID)
-        
-        Purchases.shared.checkTrialOrIntroDiscountEligibility([unwrappedProductID]) { eligibility in
-            completionCalled = true
-            receivedEligibility = eligibility
-        }
-        
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
-        completionCalled = false
-        
-        var unwrappedEligibility = try XCTUnwrap(receivedEligibility)
-        expect(unwrappedEligibility[unwrappedProductID]?.status) == .eligible
-        
-        purchaseMonthlyOffering { [self] customerInfo, error in
-            expect(customerInfo?.entitlements.all.count) == 1
-            let entitlements = self.purchasesDelegate.customerInfo?.entitlements
-            expect(entitlements?["premium"]?.isActive) == true
+        let customerInfo = try await self.purchaseMonthlyOffering()
+
+        expect(customerInfo.entitlements.all.count) == 1
+        let entitlements = self.purchasesDelegate.customerInfo?.entitlements
+        expect(entitlements?["premium"]?.isActive) == true
             
-            let anonUserID = Purchases.shared.appUserID
-            let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
-            
-            Purchases.shared.logIn(identifiedUserID) { identifiedCustomerInfo, created, error in
-                expect(error).to(beNil())
-                
-                expect(created).to(beTrue())
-                expect(identifiedCustomerInfo?.entitlements["premium"]?.isActive) == true
-                completionCalled = true
-            }
-        }
-        
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
-        completionCalled = false
-        
-        Purchases.shared.checkTrialOrIntroDiscountEligibility([unwrappedProductID]) { eligibility in
-            completionCalled = true
-            receivedEligibility = eligibility
-        }
-        
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.timeout)
-        
-        unwrappedEligibility = try XCTUnwrap(receivedEligibility)
-        expect(unwrappedEligibility[unwrappedProductID]?.status) == .ineligible
+        let anonUserID = Purchases.shared.appUserID
+        let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
+
+        let (identifiedCustomerInfo, created) = try await Purchases.shared.logIn(identifiedUserID)
+        expect(created) == true
+        expect(identifiedCustomerInfo.entitlements["premium"]?.isActive) == true
+
+        eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility([productID])
+        expect(eligibility[productID]?.status) == .ineligible
     }
     
 }
 
 private extension BackendIntegrationSK1Tests {
 
-    func purchaseMonthlyOffering(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
-        Purchases.shared.getOfferings { offerings, error in
-            guard error == nil else { XCTFail("Error fetching offerings: \(error!)"); return }
+    @discardableResult
+    func purchaseMonthlyOffering() async throws -> CustomerInfo {
+        let offerings = try await Purchases.shared.offerings()
+        let monthlyPackage = try XCTUnwrap(offerings.current?.monthly)
 
-            let offering = offerings?.current
-            expect(offering).toNot(beNil())
-            
-            guard let monthlyPackage = offering?.monthly else { XCTFail("Package not found"); return }
-
-            Purchases.shared.purchase(package: monthlyPackage) { transaction,
-                                                                 customerInfo,
-                                                                 purchaseError,
-                                                                 userCancelled in
-                expect(purchaseError).to(beNil())
-                expect(customerInfo).toNot(beNil())
-            }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
-                Purchases.shared.syncPurchases(completion: completion)
-            }
-        }
+        return try await Purchases.shared
+            .purchase(package: monthlyPackage)
+            .customerInfo
     }
 
     func configurePurchases() {
@@ -336,17 +224,20 @@ private extension BackendIntegrationSK1Tests {
         Purchases.shared.delegate = purchasesDelegate
     }
 
-    func waitUntilEntitlementsGoThrough() {
-        expect(self.purchasesDelegate.customerInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: Self.timeout)
+    func verifyEntitlementWentThrough() {
+        expect(self.purchasesDelegate.customerInfo?.entitlements.all.count) == 1
     }
-
+    
     func assertNoPurchases(_ customerInfo: CustomerInfo?) {
         expect(customerInfo?.entitlements.all.count) == 0
     }
 
-    func waitUntilCustomerInfoIsUpdated() {
-        expect(self.purchasesDelegate.customerInfoUpdateCount).toEventually(equal(1), timeout: Self.timeout)
+    @discardableResult
+    func waitUntilCustomerInfoIsUpdated() async throws -> CustomerInfo {
+        let customerInfo = try await Purchases.shared.customerInfo()
+        expect(self.purchasesDelegate.customerInfoUpdateCount) == 1
+
+        return customerInfo
     }
-    
+
 }
