@@ -129,9 +129,8 @@ class BackendIntegrationSK1Tests: XCTestCase {
     func testPurchaseWithAskToBuyPostsReceipt() async throws {
         try await self.waitUntilCustomerInfoIsUpdated()
 
-        // Both of these are required for the test session
+        // `SKTestSession` ignores the override done by `Purchases.simulatesAskToBuyInSandbox = true`
         self.testSession.askToBuyEnabled = true
-        Purchases.simulatesAskToBuyInSandbox = true
 
         let customerInfo = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
 
