@@ -48,6 +48,7 @@ class BackendIntegrationSK1Tests: XCTestCase {
         }
 
         testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        testSession.resetToDefaultState()
         testSession.disableDialogs = true
         testSession.clearTransactions()
 
