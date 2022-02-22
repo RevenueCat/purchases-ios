@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // we're requesting push notifications on app start only to showcase how to set the push token in RevenueCat
         requestPushNotificationsPermissions()
         
-        Purchases.shared.checkTrialOrIntroductoryPriceEligibility(["com.revenuecat.monthly_4.99.1_week_intro"]) { introEligibilityDict in
+        Purchases.shared.checkTrialOrIntroDiscountEligibility(["com.revenuecat.monthly_4.99.1_week_intro"]) { introEligibilityDict in
             print(introEligibilityDict)
         }
 

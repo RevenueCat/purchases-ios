@@ -567,8 +567,6 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
                     trialLength = "\(numUnits)-year"
                     cancelDate = Calendar.current.date(byAdding: .year, value: numUnits, to: Date())
                     cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
-                case .unknown:
-                    fallthrough
                 @unknown default:
                     fatalError("Unknown unit: \(introPrice.subscriptionPeriod.unit)")
                 }
