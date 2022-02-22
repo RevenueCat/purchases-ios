@@ -42,10 +42,11 @@ class BackendIntegrationTests: XCTestCase {
         if !Constants.proxyURL.isEmpty {
             Purchases.proxyURL = URL(string: Constants.proxyURL)
         }
+
+        configurePurchases()
     }
 
     func testCanGetOfferings() throws {
-        configurePurchases()
         var completionCalled = false
         var receivedError: Error? = nil
         var receivedOfferings: Offerings? = nil
@@ -62,7 +63,6 @@ class BackendIntegrationTests: XCTestCase {
     }
 
     func testCanMakePurchase() throws {
-        configurePurchases()
         purchaseMonthlyOffering()
 
         waitUntilEntitlementsGoThrough()
@@ -71,8 +71,6 @@ class BackendIntegrationTests: XCTestCase {
     }
 
     func testPurchaseMadeBeforeLogInIsRetainedAfter() {
-        configurePurchases()
-
         var completionCalled = false
         purchaseMonthlyOffering { [self] customerInfo, error in
             expect(customerInfo?.entitlements.all.count) == 1
@@ -94,7 +92,6 @@ class BackendIntegrationTests: XCTestCase {
     }
 
     func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() {
-        configurePurchases()
         var completionCalled = false
         let existingUserID = "\(#function)\(UUID().uuidString)"
         expect(self.purchasesDelegate.customerInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
@@ -129,7 +126,6 @@ class BackendIntegrationTests: XCTestCase {
     }
 
     func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() {
-        configurePurchases()
         var completionCalled = false
         let existingUserID = UUID().uuidString
         expect(self.purchasesDelegate.customerInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
@@ -159,8 +155,6 @@ class BackendIntegrationTests: XCTestCase {
     }
 
     func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() {
-        configurePurchases()
-
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "\(#function)_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
@@ -181,8 +175,6 @@ class BackendIntegrationTests: XCTestCase {
     }
 
     func testLogInThenLogInAsAnotherUserWontTransferPurchases() {
-        configurePurchases()
-
         let userID1 = UUID().uuidString
         let userID2 = UUID().uuidString
 
@@ -205,8 +197,6 @@ class BackendIntegrationTests: XCTestCase {
     }
 
     func testLogOutRemovesEntitlements() {
-        configurePurchases()
-
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
@@ -234,8 +224,7 @@ class BackendIntegrationTests: XCTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testEligibleForIntroBeforePurchaseAndIneligibleAfter() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        configurePurchases()
-        
+
         var productID: String?
         var completionCalled = false
         var receivedEligibility: [String: IntroEligibility]?
@@ -338,4 +327,5 @@ private extension BackendIntegrationTests {
     func assertNoPurchases(_ customerInfo: CustomerInfo?) {
         expect(customerInfo?.entitlements.all.count) == 0
     }
+    
 }
