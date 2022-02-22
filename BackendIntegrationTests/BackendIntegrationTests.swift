@@ -43,6 +43,13 @@ class BackendIntegrationSK1Tests: XCTestCase {
     private static let timeout: DispatchTimeInterval = .seconds(10)
 
     override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        guard Constants.apiKey != "REVENUECAT_API_KEY", Constants.proxyURL != "REVENUECAT_PROXY_URL" else {
+            XCTFail("Must set configuration in `Constants.swift`")
+            throw ErrorCode.configurationError
+        }
+
         testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
         testSession.disableDialogs = true
         testSession.clearTransactions()
@@ -54,8 +61,6 @@ class BackendIntegrationSK1Tests: XCTestCase {
         }
 
         configurePurchases()
-
-        try super.setUpWithError()
     }
 
     func testCanGetOfferings() throws {
