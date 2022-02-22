@@ -26,11 +26,19 @@ class TestPurchaseDelegate: NSObject, PurchasesDelegate {
     }
 }
 
-class BackendIntegrationTests: XCTestCase {
+class BackendIntegrationSK2Tests: BackendIntegrationSK1Tests {
 
-    var testSession: SKTestSession!
-    var userDefaults: UserDefaults!
-    var purchasesDelegate: TestPurchaseDelegate!
+    override class var sk2Enabled: Bool { return true }
+
+}
+
+class BackendIntegrationSK1Tests: XCTestCase {
+
+    private var testSession: SKTestSession!
+    private var userDefaults: UserDefaults!
+    private var purchasesDelegate: TestPurchaseDelegate!
+
+    class var sk2Enabled: Bool { return false }
 
     private static let timeout: DispatchTimeInterval = .seconds(10)
 
@@ -46,6 +54,8 @@ class BackendIntegrationTests: XCTestCase {
         }
 
         configurePurchases()
+
+        try super.setUpWithError()
     }
 
     func testCanGetOfferings() throws {
@@ -285,7 +295,7 @@ class BackendIntegrationTests: XCTestCase {
     
 }
 
-private extension BackendIntegrationTests {
+private extension BackendIntegrationSK1Tests {
 
     func purchaseMonthlyOffering(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         Purchases.shared.getOfferings { offerings, error in
@@ -315,7 +325,8 @@ private extension BackendIntegrationTests {
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
                             observerMode: false,
-                            userDefaults: userDefaults)
+                            userDefaults: userDefaults,
+                            useStoreKit2IfAvailable: Self.sk2Enabled)
         Purchases.logLevel = .debug
         Purchases.shared.delegate = purchasesDelegate
     }
