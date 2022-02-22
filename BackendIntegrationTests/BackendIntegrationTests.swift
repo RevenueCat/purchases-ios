@@ -6,10 +6,10 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-import XCTest
-import RevenueCat
 import Nimble
+import RevenueCat
 import StoreKitTest
+import XCTest
 
 class TestPurchaseDelegate: NSObject, PurchasesDelegate {
 
@@ -33,6 +33,7 @@ class BackendIntegrationSK1Tests: XCTestCase {
 
     private var testSession: SKTestSession!
     private var userDefaults: UserDefaults!
+    // swiftlint:disable:next weak_delegate
     private var purchasesDelegate: TestPurchaseDelegate!
 
     class var sk2Enabled: Bool { return false }
@@ -209,13 +210,13 @@ class BackendIntegrationSK1Tests: XCTestCase {
 
         var eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility([productID])
         expect(eligibility[productID]?.status) == .eligible
-        
+
         let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
 
         expect(customerInfo.entitlements.all.count) == 1
         let entitlements = self.purchasesDelegate.customerInfo?.entitlements
         expect(entitlements?["premium"]?.isActive) == true
-            
+
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
 
@@ -226,7 +227,7 @@ class BackendIntegrationSK1Tests: XCTestCase {
         eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility([productID])
         expect(eligibility[productID]?.status) == .ineligible
     }
-    
+
 }
 
 private extension BackendIntegrationSK1Tests {

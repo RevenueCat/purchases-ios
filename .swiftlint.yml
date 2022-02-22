@@ -3,7 +3,6 @@ excluded:
   - Pods
   - Examples
   - IntegrationTests
-  - BackendIntegrationTests
   - PublicSDKAPITester
   - vendor
   - scan_derived_data
