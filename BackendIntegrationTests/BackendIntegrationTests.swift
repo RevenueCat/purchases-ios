@@ -74,7 +74,7 @@ class BackendIntegrationSK1Tests: XCTestCase {
     }
 
     func testPurchaseMadeBeforeLogInIsRetainedAfter() async throws {
-        let customerInfo = try await self.purchaseMonthlyOffering()
+        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
         expect(customerInfo.entitlements.all.count) == 1
 
         let entitlements = self.purchasesDelegate.customerInfo?.entitlements
@@ -122,6 +122,34 @@ class BackendIntegrationSK1Tests: XCTestCase {
         self.assertNoPurchases(customerInfo)
 
         _ = try await Purchases.shared.restorePurchases()
+
+        self.verifyEntitlementWentThrough()
+    }
+
+    func testPurchaseWithAskToBuyPostsReceipt() async throws {
+        try await self.waitUntilCustomerInfoIsUpdated()
+
+        // Both of these are required for the test session
+        self.testSession.askToBuyEnabled = true
+        Purchases.simulatesAskToBuyInSandbox = true
+
+        let customerInfo = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+
+        do {
+            try await self.purchaseMonthlyOffering()
+            XCTFail("Expected payment to be deferred")
+        } catch ErrorCode.paymentPendingError { /* Expected error */ }
+
+        self.assertNoPurchases(customerInfo)
+
+        let transactions = self.testSession.allTransactions()
+        expect(transactions).to(haveCount(1))
+        let transaction = transactions.first!
+
+        try self.testSession.approveAskToBuyTransaction(identifier: transaction.identifier)
+
+        // This shouldn't throw error anymore
+        try await self.purchaseMonthlyOffering()
 
         self.verifyEntitlementWentThrough()
     }
@@ -182,7 +210,7 @@ class BackendIntegrationSK1Tests: XCTestCase {
         var eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility([productID])
         expect(eligibility[productID]?.status) == .eligible
         
-        let customerInfo = try await self.purchaseMonthlyOffering()
+        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
 
         expect(customerInfo.entitlements.all.count) == 1
         let entitlements = self.purchasesDelegate.customerInfo?.entitlements
@@ -204,13 +232,11 @@ class BackendIntegrationSK1Tests: XCTestCase {
 private extension BackendIntegrationSK1Tests {
 
     @discardableResult
-    func purchaseMonthlyOffering() async throws -> CustomerInfo {
+    func purchaseMonthlyOffering() async throws -> PurchaseResultData {
         let offerings = try await Purchases.shared.offerings()
         let monthlyPackage = try XCTUnwrap(offerings.current?.monthly)
 
-        return try await Purchases.shared
-            .purchase(package: monthlyPackage)
-            .customerInfo
+        return try await Purchases.shared.purchase(package: monthlyPackage)
     }
 
     func configurePurchases() {
@@ -227,9 +253,9 @@ private extension BackendIntegrationSK1Tests {
     func verifyEntitlementWentThrough() {
         expect(self.purchasesDelegate.customerInfo?.entitlements.all.count) == 1
     }
-    
+
     func assertNoPurchases(_ customerInfo: CustomerInfo?) {
-        expect(customerInfo?.entitlements.all.count) == 0
+        expect(customerInfo?.entitlements.all).to(beEmpty())
     }
 
     @discardableResult
