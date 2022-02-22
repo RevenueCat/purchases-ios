@@ -104,4 +104,9 @@ extension StoreTransaction {
 
 }
 
-extension StoreTransaction: Identifiable {}
+extension StoreTransaction: Identifiable {
+
+    /// The stable identity of the entity associated with this instance.
+    public var id: String { return self.transactionIdentifier }
+
+}

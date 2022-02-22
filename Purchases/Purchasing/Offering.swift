@@ -166,4 +166,9 @@ import Foundation
 
 }
 
-extension Offering: Identifiable {}
+extension Offering: Identifiable {
+
+    /// The stable identity of the entity associated with this instance.
+    public var id: String { return self.identifier }
+
+}

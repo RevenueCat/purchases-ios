@@ -158,4 +158,9 @@ private extension PackageType {
 
 }
 
-extension Package: Identifiable {}
+extension Package: Identifiable {
+
+    /// The stable identity of the entity associated with this instance.
+    public var id: String { return self.identifier }
+
+}

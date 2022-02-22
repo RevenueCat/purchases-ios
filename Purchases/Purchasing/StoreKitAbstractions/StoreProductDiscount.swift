@@ -86,22 +86,13 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? StoreProductDiscount else { return false }
+        guard let other = object as? StoreProductDiscountType else { return false }
 
-        return self.offerIdentifier == other.offerIdentifier
-            && self.price == other.price
-            && self.paymentMode == other.paymentMode
-            && self.subscriptionPeriod == other.subscriptionPeriod
+        return Data(discount: self) == Data(discount: other)
     }
 
     public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine(self.offerIdentifier)
-        hasher.combine(self.price)
-        hasher.combine(self.paymentMode)
-        hasher.combine(self.subscriptionPeriod)
-
-        return hasher.finalize()
+        return Data(discount: self).hashValue
     }
 
 }
@@ -116,9 +107,36 @@ public extension StoreProductDiscount {
 
 }
 
+extension StoreProductDiscount {
+
+    /// Used to represent `StoreProductDiscount/id`. Not for public use.
+    public struct Data: Hashable {
+        private var offerIdentifier: String?
+        private var currencyCode: String?
+        private var price: Decimal
+        private var localizedPriceString: String
+        private var paymentMode: StoreProductDiscount.PaymentMode
+        private var subscriptionPeriod: SubscriptionPeriod
+        private var type: StoreProductDiscount.DiscountType
+
+        fileprivate init(discount: StoreProductDiscountType) {
+            self.offerIdentifier = discount.offerIdentifier
+            self.currencyCode = discount.currencyCode
+            self.price = discount.price
+            self.localizedPriceString = discount.localizedPriceString
+            self.paymentMode = discount.paymentMode
+            self.subscriptionPeriod = discount.subscriptionPeriod
+            self.type = discount.type
+        }
+    }
+
+}
+
 /// The details of an introductory offer or a promotional offer for an auto-renewable subscription.
 internal protocol StoreProductDiscountType {
 
+    // Note: this is only `nil` for SK1 products before iOS 12.2.
+    // It can become `String` once it's not longer supported.
     /// A string used to uniquely identify a discount offer for a product.
     var offerIdentifier: String? { get }
 
@@ -233,4 +251,9 @@ extension StoreProductDiscount.DiscountType {
 
 extension StoreProductDiscount.PaymentMode: Encodable {}
 
-extension StoreProductDiscount: Identifiable {}
+extension StoreProductDiscount: Identifiable {
+
+    /// The stable identity of the entity associated with this instance.
+    public var id: Data { return Data(discount: self) }
+
+}
