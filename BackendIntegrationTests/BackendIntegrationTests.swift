@@ -94,7 +94,7 @@ class BackendIntegrationTests: XCTestCase {
     func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() {
         var completionCalled = false
         let existingUserID = "\(#function)\(UUID().uuidString)"
-        expect(self.purchasesDelegate.customerInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
+        self.waitUntilCustomerInfoIsUpdated()
 
         // log in to create the user, then log out
         Purchases.shared.logIn(existingUserID) { logInCustomerInfo, created, logInError in
@@ -128,7 +128,7 @@ class BackendIntegrationTests: XCTestCase {
     func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() {
         var completionCalled = false
         let existingUserID = UUID().uuidString
-        expect(self.purchasesDelegate.customerInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
+        self.waitUntilCustomerInfoIsUpdated()
 
         Purchases.shared.logIn(existingUserID) { logInCustomerInfo, created, logInError in
             self.purchaseMonthlyOffering()
@@ -326,6 +326,10 @@ private extension BackendIntegrationTests {
 
     func assertNoPurchases(_ customerInfo: CustomerInfo?) {
         expect(customerInfo?.entitlements.all.count) == 0
+    }
+
+    func waitUntilCustomerInfoIsUpdated() {
+        expect(self.purchasesDelegate.customerInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
     }
     
 }
