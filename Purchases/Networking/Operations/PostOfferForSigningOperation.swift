@@ -53,8 +53,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                                             ]
                                           ]]
 
-        self.httpClient.performPOSTRequest(serially: true,
-                                           path: "/offers",
+        self.httpClient.performPOSTRequest(path: "/offers",
                                            requestBody: requestBody,
                                            headers: authHeaders) { statusCode, response, error in
             defer {

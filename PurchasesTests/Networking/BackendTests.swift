@@ -16,7 +16,6 @@ import XCTest
 class BackendTests: XCTestCase {
     struct HTTPRequest {
         let HTTPMethod: String
-        let serially: Bool
         let path: String
         let body: [String: Any]?
         let headers: [String: String]
@@ -40,34 +39,28 @@ class BackendTests: XCTestCase {
 
         var shouldFinish = true
 
-        override func performGETRequest(serially performSerially: Bool = false,
-                                        path: String,
+        override func performGETRequest(path: String,
                                         headers authHeaders: [String: String],
                                         completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
             performRequest("GET",
-                           performSerially: performSerially,
                            path: path,
                            requestBody: nil,
                            headers: authHeaders,
                            completionHandler: completionHandler)
         }
 
-        override func performPOSTRequest(serially performSerially: Bool = false,
-                                         path: String,
+        override func performPOSTRequest(path: String,
                                          requestBody: [String: Any],
                                          headers authHeaders: [String: String],
                                          completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
             performRequest("POST",
-                           performSerially: performSerially,
                            path: path,
                            requestBody: requestBody,
                            headers: authHeaders,
                            completionHandler: completionHandler)
         }
 
-        // swiftlint:disable:next function_parameter_count
         private func performRequest(_ httpMethod: String,
-                                    performSerially: Bool,
                                     path: String,
                                     requestBody: [String: Any]?,
                                     headers: [String: String],
@@ -82,7 +75,6 @@ class BackendTests: XCTestCase {
             }
 
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
-                                     serially: performSerially,
                                      path: path,
                                      body: requestBody,
                                      headers: headers))
@@ -188,7 +180,6 @@ class BackendTests: XCTestCase {
         })
 
         let expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       serially: true,
                                        path: "/receipts",
                                        body: ["app_user_id": userID,
                                               "fetch_token": receiptData.base64EncodedString(),
@@ -452,7 +443,6 @@ class BackendTests: XCTestCase {
         ]
 
         let expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       serially: true,
                                        path: "/receipts",
                                        body: body,
                                        headers: ["Authorization": "Bearer " + apiKey])
@@ -872,17 +862,6 @@ class BackendTests: XCTestCase {
 
         expect(self.httpClient.calls.count).toEventuallyNot(equal(0))
         expect(offeringsData).toEventuallyNot(beNil())
-    }
-
-    func testGetOfferingsCallsHTTPMethodSerially() {
-        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String: Any], error: nil)
-        let path = "/subscribers/" + userID + "/offerings"
-        httpClient.mock(requestPath: path, response: response)
-
-        backend.getOfferings(appUserID: userID) { _, _ in }
-
-        expect(self.httpClient.calls.count).toEventually(equal(1))
-        expect(self.httpClient.calls[0].serially).to(beTrue())
     }
 
     func testGetOfferingsCachesForSameUserID() {
@@ -1316,13 +1295,11 @@ class BackendTests: XCTestCase {
         var expectedCall: HTTPRequest
         if #available(iOS 12.2, macOS 10.14.4, *) {
             expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       serially: true,
                                        path: "/receipts",
                                        body: bodyWithOffers,
                                        headers: ["Authorization": "Bearer " + apiKey])
         } else {
             expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       serially: true,
                                        path: "/receipts",
                                        body: body,
                                        headers: ["Authorization": "Bearer " + apiKey])
@@ -1390,7 +1367,6 @@ class BackendTests: XCTestCase {
         ]
 
         let expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       serially: true,
                                        path: "/offers",
                                        body: body,
                                        headers: ["Authorization": "Bearer " + apiKey])
@@ -1638,7 +1614,6 @@ class BackendTests: XCTestCase {
 
         let receivedCall = self.httpClient.calls[0]
         expect(receivedCall.path) == requestPath
-        expect(receivedCall.serially) == true
         expect(receivedCall.HTTPMethod) == "POST"
         expect(receivedCall.body as? [String: String]) == ["new_app_user_id": newAppUserID,
                                                            "app_user_id": currentAppUserID]

@@ -90,8 +90,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
             body["presented_offering_identifier"] = offeringIdentifier
         }
 
-        httpClient.performPOSTRequest(serially: true,
-                                      path: "/receipts",
+        httpClient.performPOSTRequest(path: "/receipts",
                                       requestBody: body,
                                       headers: self.authHeaders) { statusCode, response, error in
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in

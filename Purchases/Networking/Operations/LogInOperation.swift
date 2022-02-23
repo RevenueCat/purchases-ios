@@ -48,8 +48,7 @@ private extension LogInOperation {
         }
 
         let requestBody = ["app_user_id": self.configuration.appUserID, "new_app_user_id": newAppUserID]
-        self.httpClient.performPOSTRequest(serially: true,
-                                           path: "/subscribers/identify",
+        self.httpClient.performPOSTRequest(path: "/subscribers/identify",
                                            requestBody: requestBody,
                                            headers: self.authHeaders) { statusCode, response, error in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
