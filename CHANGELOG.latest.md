@@ -14,6 +14,7 @@ Here are the highlights:
 - Cleaned up API naming.
 - The SDK was rewritten in Swift.
 - We built a [new Documentation site](https://revenuecat-docs.netlify.app/documentation/Revenuecat) with Docc with cleaner and more detailed docs. 
+- [Experimental] Introduced support for using StoreKit 2 under the hood for compatible devices. This is currently in beta phase, and disabled by default. 
  
 - See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
 

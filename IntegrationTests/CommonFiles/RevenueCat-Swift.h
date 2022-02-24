@@ -735,7 +735,6 @@ SWIFT_CLASS_NAMED("Package")
 @end
 
 
-
 @interface RCPackage (SWIFT_EXTENSION(RevenueCat))
 /// \param packageType A <code>PackageType</code>.
 ///
@@ -757,6 +756,7 @@ SWIFT_CLASS_NAMED("Package")
 /// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
 @property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
 @end
+
 
 /// Enumeration of all possible <code>Package</code> types, as configured on the package.
 /// <h4>Related Articles</h4>
@@ -1127,6 +1127,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 + (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
 @end
 
+
 @class NSUserDefaults;
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -1253,7 +1254,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable dangerousSettings:(RCDangerousSettings * _Nullable)dangerousSettings;
 @end
-
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -2118,6 +2118,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCDiscountType, "DiscountType", open) {
 /// this is meant for  Objective-C. For Swift, use <code>price</code> instead.
 @property (nonatomic, readonly, strong) NSDecimalNumber * _Nonnull price;
 @end
+
 
 
 
