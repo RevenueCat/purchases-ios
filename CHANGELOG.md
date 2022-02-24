@@ -38,7 +38,7 @@ On devices that don't support StoreKit 2, StoreKit 1 will be used automatically 
 ### Documentation: 
 
 We built a new Documentation site with Docc with cleaner and more detailed docs. 
-The new documentation can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat. 
+The new documentation can be found [here](https://revenuecat-docs.netlify.app/documentation/Revenuecat). 
 
 ## 4.0.0-RC.4
 
