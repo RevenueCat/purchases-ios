@@ -22,7 +22,7 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 | --- | --- |
 ✅ | Server-side receipt validation
 ➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more
-🖥 | macOS support
+🖥 | iOS, tvOS, macOS and watchOS support
 🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web
 📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn
 📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date

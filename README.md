@@ -6,13 +6,23 @@
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://docs.revenuecat.com/docs/ios#section-install-via-carthage)
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-orange.svg)](https://docs.revenuecat.com/docs/ios#section-install-via-swift-package-manager)
 
-## Purchases.framework (currently supported)
-We're in the process of releasing a new version of the framework, entirely re-written in Swift 🎉. The new framework is called `RevenueCat.framework`. It's currently in Release Candidate status. If you don't want to stick that close to the bleeding edge, you should use `Purchases.framework`, which is available in purchases-ios v3.
+RevenueCat is a powerful, reliable, and free to use in-app purchase server with cross-platform support. Our open-source framework provides a backend and a wrapper around StoreKit and Google Play Billing to make implementing in-app purchases and subscriptions easy. 
+
+Whether you are building a new app or already have millions of customers, you can use RevenueCat to:
+
+  * Fetch products, make purchases, and check subscription status with our [native SDKs](https://docs.revenuecat.com/docs/installation). 
+  * Host and [configure products](https://docs.revenuecat.com/docs/entitlements) remotely from our dashboard. 
+  * Analyze the most important metrics for your app business [in one place](https://docs.revenuecat.com/docs/charts).
+  * See customer transaction histories, chart lifetime value, and [grant promotional subscriptions](https://docs.revenuecat.com/docs/customers).
+  * Get notified of real-time events through [webhooks](https://docs.revenuecat.com/docs/webhooks).
+  * Send enriched purchase events to analytics and attribution tools with our easy integrations.
+
+Sign up to [get started for free](https://app.revenuecat.com/signup).
 
 ## Migrating from Purchases v3
 - See our [Migration guide](Documentation.docc/V4_API_Migration_guide.md)
 
-## RevenueCat.framework Release Candidate
+## RevenueCat.framework
 
 *Purchases* and *RevenueCat* are clients for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system.
 
@@ -20,41 +30,12 @@ We're in the process of releasing a new version of the framework, entirely re-wr
 
 **RevenueCat** is our next big release (what we've been calling Purchases V4). It is a rename of `Purchases` to `RevenueCat`, and now, 100% `Swift` (while maintaining `Objective-C` compatibility). It contains all the same functionality (and almost exactly the same API) as `Purchases`. It's not a brand-new framework, but rather, a migration of the ObjC bits over to Swift with improved nullability, various bug fixes, and some new features. You can see what's changed in the [API updates doc](https://rev.cat/uet).
 
-### ⚠️ Release Candidate build warning
-Are you here because you saw a build warning about being on the RC?
-
-If you're cool being in the RC, there's nothing more for you to do 🎉
-If you think you've made a mistake:
-
-### Getting out of the RC 😿
-#### Swift package manager
-
-- First, you'll need to remove the ReveneCat package from your project.
-- Next, re-add it, but make sure you update the package's repo rules to use `3.0.0 < 4.0.0`
-
-#### Cocoapods
-
-- You need to use `Purchases` pod instead of `RevenueCat`
-
-#### Carthage
-
-- You need to use `github "RevenueCat/purchases-ios" ~> 3.12` in your `Cartfile`
-
-#### Direct Integration
-
-- You'll want to check out one of the `3.x`[Purchases.framework tags](https://github.com/RevenueCat/purchases-ios/tags).
-
-#### After you get out of the RC
-
-Once you revert to version 3 of the framework you'll need to do a reverse migration. While not explicitly outlined in our [API updates doc](https://rev.cat/uet).
-You can see the differences between v3 and V4. The changes are mostly naming updates, so don't worry about having to refactor things beyond that.
-
 ## RevenueCat SDK Features
 |   | RevenueCat |
 | --- | --- |
 ✅ | Server-side receipt validation
 ➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more
-🖥 | macOS support
+🖥 | iOS, tvOS, macOS and watchOS support
 🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web
 📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn
 📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date
