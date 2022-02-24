@@ -4,7 +4,7 @@ RevenueCat iOS SDK v4 is here!!
 
 ![Dancing cats](https://media.giphy.com/media/lkbNG2zqzHZUA/giphy.gif)
 
-[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0...3.14.1)
+[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/main...4.0.0)
 
 ### Migration Guide
 - See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
