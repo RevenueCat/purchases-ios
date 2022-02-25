@@ -17,6 +17,9 @@ import Foundation
  * A generic object that performs all write and read operations atomically.
  * Use it to prevent data races when accessing an object.
  *
+ * - Important: The closures aren't re-entrant.
+ * In other words, `Atomic` instances cannot be used from within the `modify` and `withValue` closures
+ *
  * Usage:
  * ```swift
  * let foo = Atomic<MyClass>

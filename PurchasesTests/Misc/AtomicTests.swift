@@ -44,4 +44,5 @@ class AtomicTests: XCTestCase {
 
         expect(result) == 20
     }
+
 }
