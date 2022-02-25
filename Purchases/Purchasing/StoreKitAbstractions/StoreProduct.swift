@@ -239,6 +239,7 @@ public extension StoreProduct {
 
 extension StoreProduct {
 
+    @objc
     public convenience init(sk1Product: SK1Product) {
         self.init(SK1StoreProduct(sk1Product: sk1Product))
     }
