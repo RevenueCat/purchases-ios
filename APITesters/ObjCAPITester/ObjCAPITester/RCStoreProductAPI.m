@@ -51,6 +51,14 @@
       );
 }
 
++ (void)checkConstructors {
+    SKProduct *sk1Product = nil;
+
+    RCStoreProduct *stp1 = [[RCStoreProduct alloc] initWithSk1Product:sk1Product];
+
+    NSLog(@"%@", stp1);
+}
+
 + (void)checkProductCategory {
     RCStoreProductCategory category = RCStoreProductCategorySubscription;
 

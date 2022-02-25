@@ -62,6 +62,14 @@ func checkStoreProductAPI() {
     )
 }
 
+func checkConstructors() {
+    let sk1Product: SK1Product! = nil
+    let sk2Product: SK2Product! = nil
+
+    _ = StoreProduct(sk1Product: sk1Product!)
+    _ = StoreProduct(sk2Product: sk2Product!)
+}
+
 func checkProductCategory(_ category: StoreProduct.ProductCategory) {
     switch category {
     case .subscription: break
