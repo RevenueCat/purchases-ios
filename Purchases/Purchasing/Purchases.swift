@@ -45,15 +45,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
  */
 @objc(RCPurchases) public class Purchases: NSObject {
 
-#if DEBUG
-#warning(
-    """
-    You're using a beta release (4.0.0-rc.4). If that's not intentional, you'll want to point to one of the \
-    3.x release tags, or a specific branch instead of `main` see https://rev.cat/v4rmd for more information.
-    """
-    )
-#endif
-
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
     /// ``configure(withAPIKey:)`` or one of its overloads. If there's a chance that may have not happened yet,

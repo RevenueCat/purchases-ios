@@ -443,7 +443,9 @@ workflows:
       - make-release:
           xcode_version: '13.2.1'
           <<: *release-tags
-      # - prepare-next-version: *release-tags Disabled for beta releases.
+      - prepare-next-version:
+          xcode_version: '13.2.1'
+          <<: *release-tags
       - docs-deploy:
           xcode_version: '13.2.1'
           <<: *release-tags
