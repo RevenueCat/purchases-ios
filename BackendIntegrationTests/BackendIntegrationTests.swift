@@ -251,7 +251,7 @@ private extension BackendIntegrationSK1Tests {
     }
 
     func verifyEntitlementWentThrough() {
-        expect(self.purchasesDelegate.customerInfo?.entitlements.all.count) == 1
+        expect(self.purchasesDelegate.customerInfo?.entitlements.active.count) == 1
     }
 
     func assertNoPurchases(_ customerInfo: CustomerInfo?) {
