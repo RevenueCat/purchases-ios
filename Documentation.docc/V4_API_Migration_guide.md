@@ -134,6 +134,8 @@ These types replace native StoreKit types in all public API methods that used th
 | ------------ | ------------------------------------- | 
 | RCPurchaserInfo | RCCustomerInfo |
 | RCTransaction | RCStoreTransaction |
+| RCTransaction.productId | RCStoreTransaction.productIdentifier |
+| RCTransaction.revenueCatId | RCStoreTransaction.transactionIdentifier |
 | RCPackage.product | RCPackage.storeProduct |
 | (RCPurchasesErrorCode).RCOperationAlreadyInProgressError | RCOperationAlreadyInProgressForProductError |
 | RCPurchasesErrorDomain | RCPurchasesErrorCodeDomain |
@@ -185,6 +187,8 @@ These types replace native StoreKit types in all public API methods that used th
 | Purchases.Package | ``Package`` |
 | Purchases.PurchaserInfo | <strong>``CustomerInfo``</strong> |
 | Purchases.Transaction | ``StoreTransaction`` |
+| Purchases.Transaction.productId | ``StoreTransaction/productIdentifier`` |
+| Purchases.Transaction.revenueCatId | ``StoreTransaction/transactionIdentifier`` |
 | Purchases.EntitlementInfo | ``EntitlementInfo`` |
 | Purchases.EntitlementInfos | ``EntitlementInfos`` |
 | Purchases.PeriodType | ``PeriodType`` |
