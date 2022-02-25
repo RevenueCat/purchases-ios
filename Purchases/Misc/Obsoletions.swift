@@ -521,6 +521,22 @@ public extension Purchases {
 @available(macOS, obsoleted: 1, renamed: "StoreTransaction")
 @objc(RCTransaction) public class Transaction: NSObject { }
 
+public extension StoreTransaction {
+
+    @available(iOS, obsoleted: 1, renamed: "productIdentifier")
+    @available(tvOS, obsoleted: 1, renamed: "productIdentifier")
+    @available(watchOS, obsoleted: 1, renamed: "productIdentifier")
+    @available(macOS, obsoleted: 1, renamed: "productIdentifier")
+    @objc var productId: String { fatalError() }
+
+    @available(iOS, obsoleted: 1, renamed: "transactionIdentifier")
+    @available(tvOS, obsoleted: 1, renamed: "transactionIdentifier")
+    @available(watchOS, obsoleted: 1, renamed: "transactionIdentifier")
+    @available(macOS, obsoleted: 1, renamed: "transactionIdentifier")
+    @objc var revenueCatId: String { fatalError() }
+
+}
+
 public extension Package {
     /**
      `SKProduct` assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
