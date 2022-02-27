@@ -66,40 +66,41 @@ private extension LogInOperation {
                      statusCode: Int,
                      error: Error?,
                      completion: LogInResponseHandler) {
-        if let error = error {
-            completion(nil, false, ErrorUtils.networkError(withUnderlyingError: error))
-            return
-        }
+        let result: (info: CustomerInfo?, cancelled: Bool, error: Error?) = {
+            if let error = error {
+                return (nil, false, ErrorUtils.networkError(withUnderlyingError: error))
+            }
 
-        guard let response = response else {
-            let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginMissingResponse
-            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
-            completion(nil, false, responseError)
-            return
-        }
+            guard let response = response else {
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginMissingResponse
+                let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
+                return (nil, false, responseError)
+            }
 
-        if statusCode > HTTPStatusCodes.redirect.rawValue {
-            let backendCode = BackendErrorCode(code: response["code"])
-            let backendMessage = response["message"] as? String
-            let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
-            completion(nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
-            return
-        }
+            if statusCode > HTTPStatusCodes.redirect.rawValue {
+                let backendCode = BackendErrorCode(code: response["code"])
+                let backendMessage = response["message"] as? String
+                let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
+                return (nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
+            }
 
-        do {
-            let customerInfo = try CustomerInfo.from(json: response)
-            let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
-            Logger.user(Strings.identity.login_success)
-            completion(customerInfo, created, nil)
-        } catch let customerInfoError {
-            Logger.error(Strings.backendError.customer_info_instantiation_error(response: response))
-            let extraContext = "statusCode: \(statusCode)"
-            let subErrorCode = UnexpectedBackendResponseSubErrorCode
-                .loginResponseDecoding
-                .addingUnderlyingError(customerInfoError)
-            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
-                                                                     extraContext: extraContext)
-            completion(nil, false, responseError)
-        }
+            do {
+                let customerInfo = try CustomerInfo.from(json: response)
+                let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
+                Logger.user(Strings.identity.login_success)
+                return (customerInfo, created, nil)
+            } catch let customerInfoError {
+                Logger.error(Strings.backendError.customer_info_instantiation_error(response: response))
+                let extraContext = "statusCode: \(statusCode)"
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode
+                    .loginResponseDecoding
+                    .addingUnderlyingError(customerInfoError)
+                let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
+                                                                         extraContext: extraContext)
+                return (nil, false, responseError)
+            }
+        }()
+
+        completion(result.info, result.cancelled, result.error)
     }
 }

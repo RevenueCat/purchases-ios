@@ -102,26 +102,28 @@ private extension GetIntroEligibilityOperation {
     }
 
     func handleIntroEligibility(response: IntroEligibilityResponse) {
-        var eligibilitiesByProductIdentifier = response.response
-        if response.statusCode >= HTTPStatusCodes.redirect.rawValue || response.error != nil {
-            eligibilitiesByProductIdentifier = [:]
-        }
-
-        guard let eligibilitiesByProductIdentifier = eligibilitiesByProductIdentifier else {
-            response.completion(response.unknownEligibilityClosure(), nil)
-            return
-        }
-
-        let eligibilities: [String: IntroEligibility] = Set(response.productIdentifiers)
-            .dictionaryWithValues { productID in
-                if let eligibility = eligibilitiesByProductIdentifier[productID] as? Bool {
-                    return eligibility ? .eligible : .ineligible
-                } else {
-                    return .unknown
-                }
+        let result: [String: IntroEligibility] = {
+            var eligibilitiesByProductIdentifier = response.response
+            if response.statusCode >= HTTPStatusCodes.redirect.rawValue || response.error != nil {
+                eligibilitiesByProductIdentifier = [:]
             }
-            .mapValues(IntroEligibility.init(eligibilityStatus:))
-        response.completion(eligibilities, nil)
+
+            guard let eligibilitiesByProductIdentifier = eligibilitiesByProductIdentifier else {
+                return response.unknownEligibilityClosure()
+            }
+
+            return Set(response.productIdentifiers)
+                .dictionaryWithValues { productID in
+                    if let eligibility = eligibilitiesByProductIdentifier[productID] as? Bool {
+                        return eligibility ? .eligible : .ineligible
+                    } else {
+                        return .unknown
+                    }
+                }
+                .mapValues(IntroEligibility.init(eligibilityStatus:))
+        }()
+
+        response.completion(result, nil)
     }
 
 }
