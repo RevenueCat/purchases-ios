@@ -17,8 +17,8 @@ class UserInfoAttributeParser {
 
     func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: Any] {
         var resultDict: [String: Any] = [:]
-        let isInternalServerError = statusCode >= HTTPStatusCodes.internalServerError.rawValue
-        let isNotFoundError = statusCode == HTTPStatusCodes.notFoundError.rawValue
+        let isInternalServerError = statusCode >= HTTPStatusCode.internalServerError.rawValue
+        let isNotFoundError = statusCode == HTTPStatusCode.notFoundError.rawValue
 
         let successfullySynced = !(isInternalServerError || isNotFoundError)
         resultDict[Backend.RCSuccessfullySyncedKey as String] = successfullySynced

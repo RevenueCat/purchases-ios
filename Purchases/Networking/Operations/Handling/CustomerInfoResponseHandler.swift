@@ -34,7 +34,7 @@ class CustomerInfoResponseHandler {
                                                     fileName: file, functionName: function, line: line))
             return
         }
-        let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
+        let isErrorStatusCode = statusCode >= HTTPStatusCode.redirect.rawValue
 
         let customerInfoError: Error?
         let customerInfo: CustomerInfo?
@@ -69,7 +69,7 @@ class CustomerInfoResponseHandler {
                         || customerInfoError != nil)
 
         guard !hasError else {
-            let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
+            let finishable = statusCode < HTTPStatusCode.internalServerError.rawValue
             var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
             let backendErrorCode = BackendErrorCode(code: response?["code"])

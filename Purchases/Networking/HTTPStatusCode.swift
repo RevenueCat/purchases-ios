@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  HTTPStatusCodes.swift
+//  HTTPStatusCode.swift
 //
 //  Created by César de la Vega on 4/19/21.
 //
 
 import Foundation
 
-enum HTTPStatusCodes: Int {
+enum HTTPStatusCode: Int {
 
     case success = 200,
          createdSuccess = 201,

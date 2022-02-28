@@ -51,7 +51,7 @@ private extension GetOfferingsOperation {
                 completion()
             }
 
-            if error == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
+            if error == nil && statusCode < HTTPStatusCode.redirect.rawValue {
                 self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                     callbackObject.completion(response, nil)
                 }
@@ -61,7 +61,7 @@ private extension GetOfferingsOperation {
             let errorForCallbacks: Error
             if let error = error {
                 errorForCallbacks = ErrorUtils.networkError(withUnderlyingError: error)
-            } else if statusCode >= HTTPStatusCodes.redirect.rawValue {
+            } else if statusCode >= HTTPStatusCode.redirect.rawValue {
                 let backendCode = BackendErrorCode(code: response?["code"])
                 let backendMessage = response?["message"] as? String
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
