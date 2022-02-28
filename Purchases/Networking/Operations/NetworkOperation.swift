@@ -89,6 +89,7 @@ class NetworkOperation: Operation {
         self.isExecuting = true
 
         self.log("Started")
+
         self.begin {
             self.finish()
         }
@@ -103,6 +104,7 @@ class NetworkOperation: Operation {
     }
 
     /// Overriden by subclasses to define the body of the operation
+    /// - Important: this method may be called from any thread so it must be thread-safe.
     /// - Parameter completion: must be called when the operation has finished.
     func begin(completion: @escaping () -> Void) {
         fatalError("Subclasses must override this method")

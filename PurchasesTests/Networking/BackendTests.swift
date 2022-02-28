@@ -40,27 +40,25 @@ class BackendTests: XCTestCase {
         override func perform(_ request: HTTPRequest,
                               authHeaders: [String: String],
                               completionHandler: Completion?) {
-            assert(mocks[request.path] != nil, "Path '\(request.path.relativePath)' not mocked")
-            let response = mocks[request.path]!
+            DispatchQueue.main.async {
+                assert(self.mocks[request.path] != nil, "Path '\(request.path.relativePath)' not mocked")
+                let response = self.mocks[request.path]!
 
-            if let body = request.requestBody {
-                assertSnapshot(matching: body, as: .json,
-                               file: #file, testName: CurrentTestCaseTracker.sanitizedTestName)
-            }
+                if let body = request.requestBody {
+                    assertSnapshot(matching: body, as: .json,
+                                   file: #file, testName: CurrentTestCaseTracker.sanitizedTestName)
+                }
 
-            calls.append(RequestCall(request: request, headers: authHeaders))
+                self.calls.append(RequestCall(request: request, headers: authHeaders))
 
-            if shouldFinish {
-                DispatchQueue.main.async {
-                    if completionHandler != nil {
-                        completionHandler!(response.statusCode, response.response, response.error)
-                    }
+                if self.shouldFinish, let completionHandler = completionHandler {
+                    completionHandler(response.statusCode, response.response, response.error)
                 }
             }
         }
 
         func mock(requestPath: HTTPRequest.Path, response: HTTPResponse) {
-            mocks[requestPath] = response
+            self.mocks[requestPath] = response
         }
     }
 
