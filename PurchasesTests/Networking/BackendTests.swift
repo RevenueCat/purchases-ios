@@ -159,6 +159,10 @@ class BackendTests: XCTestCase {
         XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
     }
 
+    override class func tearDown() {
+        XCTestObservationCenter.shared.removeTestObserver(CurrentTestCaseTracker.shared)
+    }
+
     func testPostsReceiptDataCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
