@@ -192,16 +192,18 @@ class ETagManagerTests: XCTestCase {
     }
 
     private func getHeaders(eTag: String) -> [String: String] {
-        ["Content-Type": "application/json",
-         "X-Platform": "android",
-         "X-Platform-Flavor": "native",
-         "X-Platform-Version": "29",
-         "X-Version": "4.1.0",
-         "X-Client-Locale": "en-US",
-         "X-Client-Version": "1.0",
-         "X-Observer-Mode-Enabled": "false",
-         "Authorization": "Bearer apiKey",
-         ETagManager.eTagHeaderName: eTag]
+        return [
+            "Content-Type": "application/json",
+            "X-Platform": "android",
+            "X-Platform-Flavor": "native",
+            "X-Platform-Version": "29",
+            "X-Version": "4.1.0",
+            "X-Client-Locale": "en-US",
+            "X-Client-Version": "1.0",
+            "X-Observer-Mode-Enabled": "false",
+            ETagManager.eTagHeaderName: eTag
+        ]
+            .merging(HTTPClient.authorizationHeader(withAPIKey: "apikey"))
     }
 
     private func mockStoredETagAndResponse(for url: URL,

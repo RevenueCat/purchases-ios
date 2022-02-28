@@ -15,6 +15,8 @@ import Foundation
 
 class HTTPClient {
 
+    typealias RequestHeaders = [String: String]
+
     private let session: URLSession
     internal let systemInfo: SystemInfo
     private let state: Atomic<State> = .init(.initial)
@@ -48,6 +50,14 @@ class HTTPClient {
 
 }
 
+extension HTTPClient {
+
+    static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
+        return ["Authorization": "Bearer \(apiKey)"]
+    }
+
+}
+
 private extension HTTPClient {
     struct State {
         var queuedRequests: [Request]
@@ -63,11 +73,10 @@ private extension HTTPClient {
     // swiftlint:disable nesting
     struct Request: CustomStringConvertible {
 
-        typealias Headers = [String: String]
         typealias Completion = ((_ statusCode: Int, _ response: [String: Any]?, _ error: Error?) -> Void)
 
         var httpRequest: HTTPRequest
-        var headers: Headers
+        var headers: HTTPClient.RequestHeaders
         var completionHandler: Completion?
         var retried: Bool = false
 
@@ -75,7 +84,7 @@ private extension HTTPClient {
         var path: String { self.httpRequest.path.description }
         var requestBody: HTTPRequest.Body? { self.httpRequest.requestBody }
 
-        func adding(defaultHeaders: Headers) -> Self {
+        func adding(defaultHeaders: HTTPClient.RequestHeaders) -> Self {
             var copy = self
             copy.headers = defaultHeaders.merging(self.headers)
 

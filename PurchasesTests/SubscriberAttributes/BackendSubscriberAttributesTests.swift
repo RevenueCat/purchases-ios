@@ -10,9 +10,10 @@ import XCTest
 
 class BackendSubscriberAttributesTests: XCTestCase {
 
-    let appUserID = "abc123"
-    let now = Date()
-    let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
+    private let appUserID = "abc123"
+    private let now = Date()
+    private let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
+    private static let apiKey = "the api key"
 
     var dateProvider: MockDateProvider!
     var subscriberAttribute1: SubscriberAttribute!
@@ -40,7 +41,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     override func setUp() {
         mockETagManager = MockETagManager(userDefaults: MockUserDefaults())
         mockHTTPClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: mockETagManager)
-        self.backend = Backend(httpClient: mockHTTPClient, apiKey: "key")
+        self.backend = Backend(httpClient: mockHTTPClient, apiKey: Self.apiKey)
         dateProvider = MockDateProvider(stubbedNow: now)
         subscriberAttribute1 = SubscriberAttribute(withKey: "a key",
                                                    value: "a value",
@@ -85,7 +86,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         // This is implicitly checking that the request was .post
         expect(body) == expectedBody
         expect(receivedParameters.request.path) == .postSubscriberAttributes(appUserID: self.appUserID)
-        expect(receivedParameters.headers) == ["Authorization": "Bearer key"]
+        expect(receivedParameters.headers) == HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
     }
 
     func testPostSubscriberAttributesCallsCompletionInSuccessCase() {

@@ -53,7 +53,7 @@ class Backend {
         self.apiKey = apiKey
         self.offeringsCallbacksCache = CallbackCache<OfferingsCallback>(callbackQueue: self.callbackQueue)
         self.logInCallbacksCache = CallbackCache<LogInCallback>(callbackQueue: self.callbackQueue)
-        self.authHeaders = ["Authorization": "Bearer \(apiKey)"]
+        self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
 
         let aliasCallbackCache = CallbackCache<AliasCallback>(callbackQueue: callbackQueue)
         let customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: callbackQueue)
