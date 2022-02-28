@@ -665,7 +665,7 @@ private extension AttributionDataMigratorTests {
                        ip: KeyPresence = .defaultValue) -> [String: Any] {
         var data: [String: Any] = [
             "adset_id": "23847301359550211",
-            "campaign_id": "23847301359200211",
+            "campaign_id": "23847301359.success211",
             "click_time": "2021-05-04 18:08:51.000",
             "iscache": false,
             "adgroup_id": "238473013556789090",

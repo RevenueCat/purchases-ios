@@ -23,7 +23,7 @@ class CustomerInfoResponseHandler {
 
     // swiftlint:disable:next function_body_length
     func handle(customerInfoResponse response: [String: Any]?,
-                statusCode: Int,
+                statusCode: HTTPStatusCode,
                 error: Error?,
                 file: String = #fileID,
                 function: String = #function,
@@ -34,7 +34,7 @@ class CustomerInfoResponseHandler {
                                                     fileName: file, functionName: function, line: line))
             return
         }
-        let isErrorStatusCode = statusCode >= HTTPStatusCode.redirect.rawValue
+        let isErrorStatusCode = !statusCode.isValidResponse
 
         let customerInfoError: Error?
         let customerInfo: CustomerInfo?
@@ -69,7 +69,7 @@ class CustomerInfoResponseHandler {
                         || customerInfoError != nil)
 
         guard !hasError else {
-            let finishable = statusCode < HTTPStatusCode.internalServerError.rawValue
+            let finishable = !statusCode.isInternalServerError
             var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
             let backendErrorCode = BackendErrorCode(code: response?["code"])

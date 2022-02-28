@@ -43,7 +43,7 @@ class ETagManager {
                                       error: Error?,
                                       request: URLRequest,
                                       retried: Bool) -> HTTPResponse? {
-        let statusCode = response.statusCode
+        let statusCode: HTTPStatusCode = .init(rawValue: response.statusCode)
         let resultFromBackend = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         guard error == nil else { return resultFromBackend }
         let headersInResponse = response.allHeaderFields
@@ -84,8 +84,8 @@ class ETagManager {
 
 private extension ETagManager {
 
-    func shouldUseCachedVersion(responseCode: Int) -> Bool {
-        responseCode == HTTPStatusCode.notModifiedResponseCode.rawValue
+    func shouldUseCachedVersion(responseCode: HTTPStatusCode) -> Bool {
+        responseCode == .notModifiedResponseCode
     }
 
     func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
@@ -104,18 +104,18 @@ private extension ETagManager {
         if let storedETagAndResponse = storedETagAndResponse(for: request) {
             return HTTPResponse(
                     statusCode: storedETagAndResponse.statusCode,
-                    jsonObject: storedETagAndResponse.jsonObject)
+                    jsonObject: storedETagAndResponse.jsonObject
+            )
         }
 
         return nil
     }
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
-                                             statusCode: Int,
+                                             statusCode: HTTPStatusCode,
                                              responseObject: [String: Any]?,
                                              eTag: String) {
-        if statusCode != HTTPStatusCode.notModifiedResponseCode.rawValue &&
-            statusCode < HTTPStatusCode.internalServerError.rawValue,
+        if statusCode != .notModifiedResponseCode && !statusCode.isInternalServerError,
            let responseObject = responseObject,
            let cacheKey = eTagDefaultCacheKey(for: request) {
             let eTagAndResponse = ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, jsonObject: responseObject)

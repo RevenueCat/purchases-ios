@@ -64,7 +64,7 @@ private extension LogInOperation {
     }
 
     func handleLogin(response: [String: Any]?,
-                     statusCode: Int,
+                     statusCode: HTTPStatusCode,
                      error: Error?,
                      completion: LogInResponseHandler) {
         let result: (info: CustomerInfo?, cancelled: Bool, error: Error?) = {
@@ -78,7 +78,7 @@ private extension LogInOperation {
                 return (nil, false, responseError)
             }
 
-            if statusCode > HTTPStatusCode.redirect.rawValue {
+            if !statusCode.isValidResponse {
                 let backendCode = BackendErrorCode(code: response["code"])
                 let backendMessage = response["message"] as? String
                 let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
@@ -87,7 +87,7 @@ private extension LogInOperation {
 
             do {
                 let customerInfo = try CustomerInfo.from(json: response)
-                let created = statusCode == HTTPStatusCode.createdSuccess.rawValue
+                let created = statusCode == .createdSuccess
                 Logger.user(Strings.identity.login_success)
                 return (customerInfo, created, nil)
             } catch let customerInfoError {

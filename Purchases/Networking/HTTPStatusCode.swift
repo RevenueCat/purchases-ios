@@ -14,14 +14,61 @@
 
 import Foundation
 
-enum HTTPStatusCode: Int {
+enum HTTPStatusCode: RawRepresentable {
 
-    case success = 200,
-         createdSuccess = 201,
-         redirect = 300,
-         notModifiedResponseCode = 304,
-         internalServerError = 500,
-         notFoundError = 404,
-         networkConnectTimeoutError = 599
+    init(rawValue: Int) {
+        self = Self.statusByCode[rawValue] ?? .other(rawValue)
+    }
+
+    case success
+    case createdSuccess
+    case redirect
+    case notModifiedResponseCode
+    case invalidRequest
+    case notFoundError
+    case internalServerError
+    case networkConnectTimeoutError
+
+    case other(Int)
+
+    var rawValue: Int {
+        switch self {
+        case .success: return 200
+        case .createdSuccess: return 201
+        case .redirect: return 300
+        case .notModifiedResponseCode: return 304
+        case .invalidRequest: return 400
+        case .notFoundError: return 404
+        case .internalServerError: return 500
+        case .networkConnectTimeoutError: return 599
+
+        case let .other(code): return code
+        }
+    }
+
+    private static let knownStatus: Set<HTTPStatusCode> = [
+        .success,
+        .createdSuccess,
+        .redirect,
+        .notModifiedResponseCode,
+        .invalidRequest,
+        .notFoundError,
+        .internalServerError,
+        .networkConnectTimeoutError
+    ]
+    private static let statusByCode: [Int: HTTPStatusCode] = Self.knownStatus.dictionaryWithKeys { $0.rawValue }
+}
+
+extension HTTPStatusCode: Hashable {}
+
+extension HTTPStatusCode {
+
+    var isValidResponse: Bool {
+        return self.rawValue < HTTPStatusCode.redirect.rawValue
+    }
+
+    var isInternalServerError: Bool {
+        return self.rawValue >= HTTPStatusCode.internalServerError.rawValue
+    }
 
 }

@@ -39,13 +39,13 @@ class HTTPClientTests: XCTestCase {
         HTTPStubs.removeAllStubs()
     }
 
-    func testUsesTheCorrectHost() {
+    func testUsesTheCorrectHost() throws {
         let hostCorrect: Atomic<Bool> = .init(false)
 
-        guard let host = SystemInfo.serverHostURL.host else { fatalError() }
+        let host = try XCTUnwrap(SystemInfo.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             hostCorrect.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         let request = HTTPRequest(method: .get, path: .mockPath)
@@ -59,7 +59,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("test_header")) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
@@ -75,7 +75,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("content-type", value: "application/json")) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
@@ -90,7 +90,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform", value: SystemInfo.platformHeader)) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
@@ -105,7 +105,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion)) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
@@ -120,7 +120,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
@@ -137,7 +137,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath(request.path)) { _ in
             pathHit.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.client.perform(request, authHeaders: [:], completionHandler: nil)
@@ -153,7 +153,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasBody(bodyData)) { _ in
             pathHit.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
         let request = HTTPRequest(method: .post(body: body), path: .mockPath)
 
@@ -168,7 +168,7 @@ class HTTPClientTests: XCTestCase {
         let completionCalled: Atomic<Bool> = .init(false)
 
         stub(condition: isPath(request.path)) { _ in
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.client.perform(request, authHeaders: [:]) { (_, _, _) in
@@ -185,13 +185,13 @@ class HTTPClientTests: XCTestCase {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath(request.path)) { _ in
-            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            let response = HTTPStubsResponse.emptyValidResponse
             response.error = error
             return response
         }
         self.client.perform(request, authHeaders: [:]) { (status, data, responseError) in
             if let responseNSError = responseError as NSError? {
-                successFailed.value = (status >= 500
+                successFailed.value = (status.isInternalServerError
                                        && data == nil
                                        && error.domain == responseNSError.domain
                                        && error.code == responseNSError.code)
@@ -206,7 +206,7 @@ class HTTPClientTests: XCTestCase {
     func testServerSide400s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let errorCode = Int32(400 + arc4random() % 50)
+        let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int(arc4random() % 50)
         let correctResponse: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
@@ -214,13 +214,13 @@ class HTTPClientTests: XCTestCase {
             let json = "{\"message\": \"something is broken up in the cloud\"}"
             return HTTPStubsResponse(
                 data: json.data(using: String.Encoding.utf8)!,
-                statusCode: errorCode,
+                statusCode: Int32(errorCode),
                 headers: nil
             )
         }
 
         self.client.perform(request, authHeaders: [:]) { (status, data, error) in
-            correctResponse.value = (status == errorCode) && (data != nil) && (error == nil)
+            correctResponse.value = (status.rawValue == errorCode) && (data != nil) && (error == nil)
             if data != nil {
                 message.value = data?["message"] as? String
             }
@@ -247,7 +247,7 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(request, authHeaders: [:]) { (status, data, error) in
-            correctResponse.value = (status == errorCode) && (data != nil) && (error == nil)
+            correctResponse.value = (status.rawValue == errorCode) && (data != nil) && (error == nil)
             if data != nil {
                 message.value = data?["message"] as? String
             }
@@ -260,7 +260,7 @@ class HTTPClientTests: XCTestCase {
     func testParseError() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let errorCode = Int32(200 + arc4random() % 300)
+        let errorCode = HTTPStatusCode.success.rawValue + Int(arc4random() % 300)
         let correctResponse: Atomic<Bool> = .init(false)
 
         stub(condition: isPath(request.path)) { _ in
@@ -273,7 +273,7 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(request, authHeaders: [:]) { (status, data, error) in
-            correctResponse.value = (status == errorCode) && (data == nil) && (error != nil)
+            correctResponse.value = (status.rawValue == errorCode) && (data == nil) && (error != nil)
         }
 
         expect(correctResponse.value).toEventually(beTrue(), timeout: .seconds(1))
@@ -287,11 +287,13 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!,
+                                     statusCode: .success,
+                                     headers: nil)
         }
 
         self.client.perform(request, authHeaders: [:]) { (status, data, error) in
-            successIsTrue.value = (status == 200) && (error == nil)
+            successIsTrue.value = (status == .success) && (error == nil)
             if data != nil {
                 message.value = data?["message"] as? String
             }
@@ -310,7 +312,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Version", value: version )) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
@@ -327,7 +329,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Build-Version", value: version )) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
@@ -346,7 +348,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
@@ -374,7 +376,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
@@ -390,7 +392,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
@@ -405,7 +407,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
@@ -424,7 +426,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor-Version", value: "1.2.3")) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
@@ -443,7 +445,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "false")) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
@@ -460,7 +462,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "true")) { _ in
             headerPresent.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
@@ -480,7 +482,9 @@ class HTTPClientTests: XCTestCase {
             expect(requestNumber) == completionCallCount.value
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: .utf8)!, statusCode: 200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: .utf8)!,
+                                     statusCode: .success,
+                                     headers: nil)
                 .responseTime(0.003)
         }
 
@@ -508,7 +512,9 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!,
+                                     statusCode: .success,
+                                     headers: nil)
                 .responseTime(0.1)
         }
 
@@ -550,7 +556,9 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: .utf8)!, statusCode: 200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: .utf8)!,
+                                     statusCode: .success,
+                                     headers: nil)
                 .responseTime(responseTime)
         }
 
@@ -577,7 +585,7 @@ class HTTPClientTests: XCTestCase {
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() {
         var completionCalled = false
         var receivedError: Error?
-        var receivedStatus: Int?
+        var receivedStatus: HTTPStatusCode?
         var receivedData: [String: Any]?
         self.client.perform(.init(method: .invalidBody(), path: .mockPath),
                             authHeaders: [:]) { (status, data, error) in
@@ -592,7 +600,7 @@ class HTTPClientTests: XCTestCase {
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == ErrorCode.networkError.rawValue
         expect(receivedData).to(beNil())
-        expect(receivedStatus) == -1
+        expect(receivedStatus) == .invalidRequest
     }
 
     func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
@@ -603,7 +611,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath(path)) { _ in
             httpCallMade.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.client.perform(.init(method: .invalidBody(), path: path),
@@ -626,7 +634,7 @@ class HTTPClientTests: XCTestCase {
                 self.eTagManager.shouldReturnResultFromBackend = true
             }
             firstTimeCalled.value = true
-            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            return .emptyValidResponse
         }
 
         self.eTagManager.shouldReturnResultFromBackend = false
@@ -645,7 +653,7 @@ class HTTPClientTests: XCTestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            let response = HTTPStubsResponse.emptyValidResponse
             response.error = error
             return response
         }
@@ -663,7 +671,7 @@ class HTTPClientTests: XCTestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            let response = HTTPStubsResponse.emptyValidResponse
             response.error = error
             return response
         }
@@ -685,7 +693,7 @@ class HTTPClientTests: XCTestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = true
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            let response = HTTPStubsResponse.emptyValidResponse
             response.error = nsErrorWithUserInfo
             return response
         }
@@ -707,7 +715,7 @@ class HTTPClientTests: XCTestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = true
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            let response = HTTPStubsResponse.emptyValidResponse
             response.error = nsErrorWithUserInfo
             return response
         }
@@ -738,7 +746,7 @@ class HTTPClientTests: XCTestCase {
         defer { Logger.logHandler = originalLogHandler }
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            let response = HTTPStubsResponse.emptyValidResponse
             response.error = error
             return response
         }
@@ -771,7 +779,7 @@ class HTTPClientTests: XCTestCase {
         }
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+            let response = HTTPStubsResponse.emptyValidResponse
             response.error = error
             return response
         }
@@ -830,4 +838,16 @@ private extension HTTPClientTests {
 
 private func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
     return isPath(path.relativePath)
+}
+
+private extension HTTPStubsResponse {
+
+    static let emptyValidResponse: HTTPStubsResponse = .init(data: Data(),
+                                                             statusCode: .success,
+                                                             headers: nil)
+
+    convenience init(data: Data, statusCode: HTTPStatusCode, headers: HTTPClient.RequestHeaders?) {
+        self.init(data: data, statusCode: Int32(statusCode.rawValue), headers: headers)
+    }
+
 }

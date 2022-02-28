@@ -16,6 +16,7 @@ import Foundation
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
+    typealias Completion = ((_ statusCode: HTTPStatusCode, _ response: [String: Any]?, _ error: Error?) -> Void)
 
     private let session: URLSession
     internal let systemInfo: SystemInfo
@@ -38,7 +39,7 @@ class HTTPClient {
 
     func perform(_ request: HTTPRequest,
                  authHeaders: [String: String],
-                 completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+                 completionHandler: Completion?) {
         perform(request: .init(httpRequest: request,
                                headers: authHeaders,
                                completionHandler: completionHandler))
@@ -70,10 +71,7 @@ private extension HTTPClient {
 
 private extension HTTPClient {
 
-    // swiftlint:disable nesting
     struct Request: CustomStringConvertible {
-
-        typealias Completion = ((_ statusCode: Int, _ response: [String: Any]?, _ error: Error?) -> Void)
 
         var httpRequest: HTTPRequest
         var headers: HTTPClient.RequestHeaders
@@ -169,19 +167,19 @@ private extension HTTPClient {
                 urlRequest: URLRequest,
                 data: Data?,
                 error networkError: Error?) {
-        var statusCode = HTTPStatusCode.networkConnectTimeoutError.rawValue
+        var statusCode: HTTPStatusCode = .networkConnectTimeoutError
         var jsonObject: [String: Any]?
         var httpResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         var receivedJSONError: Error?
 
         if networkError == nil {
             if let httpURLResponse = urlResponse as? HTTPURLResponse {
-                statusCode = httpURLResponse.statusCode
+                statusCode = .init(rawValue: httpURLResponse.statusCode)
                 Logger.debug(Strings.network.api_request_completed(httpMethod: request.method.httpMethod,
                                                                    path: request.path,
                                                                    httpCode: statusCode))
 
-                if statusCode == HTTPStatusCode.notModifiedResponseCode.rawValue || data == nil {
+                if statusCode == .notModifiedResponseCode || data == nil {
                     jsonObject = [:]
                 } else if let data = data {
                     do {
@@ -254,7 +252,9 @@ private extension HTTPClient {
                 Logger.error("Could not create request to \(request.path) without body")
             }
 
-            request.completionHandler?(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            request.completionHandler?(.invalidRequest,
+                                       nil,
+                                       ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
             return
         }
 

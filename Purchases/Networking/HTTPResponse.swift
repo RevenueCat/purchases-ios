@@ -14,13 +14,17 @@
 
 import Foundation
 
-struct HTTPResponse: CustomStringConvertible {
+struct HTTPResponse {
 
-    let statusCode: Int
+    let statusCode: HTTPStatusCode
     let jsonObject: [String: Any]?
 
+}
+
+extension HTTPResponse: CustomStringConvertible {
+
     var description: String {
-        "HTTPResponse(statusCode: \(statusCode), jsonObject: \(jsonObject?.description ?? ""))"
+        "HTTPResponse(statusCode: \(self.statusCode.rawValue), jsonObject: \(self.jsonObject?.description ?? ""))"
     }
 
 }

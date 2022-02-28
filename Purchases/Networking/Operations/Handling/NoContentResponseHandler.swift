@@ -16,7 +16,7 @@ import Foundation
 class NoContentResponseHandler {
 
     func handle(response: [String: Any]?,
-                statusCode: Int,
+                statusCode: HTTPStatusCode,
                 error: Error?,
                 completion: SimpleResponseHandler) {
         if let error = error {
@@ -24,7 +24,7 @@ class NoContentResponseHandler {
             return
         }
 
-        guard statusCode <= HTTPStatusCode.redirect.rawValue else {
+        guard statusCode.isValidResponse else {
             let backendErrorCode = BackendErrorCode(code: response?["code"])
             let message = response?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode, backendMessage: message)
