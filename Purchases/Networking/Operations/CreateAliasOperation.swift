@@ -51,10 +51,10 @@ private extension CreateAliasOperation {
         }
         Logger.user(Strings.identity.creating_alias)
 
-        let path = "/subscribers/\(appUserID)/alias"
-        httpClient.performPOSTRequest(path: path,
-                                      requestBody: ["new_app_user_id": newAppUserID],
-                                      headers: authHeaders) { statusCode, response, error in
+        let request = HTTPRequest(method: .post(body: ["new_app_user_id": newAppUserID]),
+                                  path: .createAlias(appUserID: appUserID))
+
+        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { aliasCallback in
 
                 guard let completion = aliasCallback.completion else {

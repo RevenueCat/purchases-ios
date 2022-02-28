@@ -72,8 +72,8 @@ class Backend {
         self.httpClient.clearCaches()
     }
 
-    func getSubscriberData(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
-        self.subscribersAPI.getSubscriberData(appUserID: appUserID, completion: completion)
+    func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
+        self.subscribersAPI.getCustomerInfo(appUserID: appUserID, completion: completion)
     }
 
     // swiftlint:disable:next function_parameter_count

@@ -55,13 +55,12 @@ class PostSubscriberAttributesOperation: NetworkOperation {
             return
         }
 
-        let path = "/subscribers/\(appUserID)/attributes"
-
         let attributesInBackendFormat = self.subscriberAttributesMarshaller
             .map(subscriberAttributes: self.subscriberAttributes)
-        httpClient.performPOSTRequest(path: path,
-                                      requestBody: ["attributes": attributesInBackendFormat],
-                                      headers: self.authHeaders) { statusCode, response, error in
+        let request = HTTPRequest(method: .post(body: ["attributes": attributesInBackendFormat]),
+                                  path: .postSubscriberAttributes(appUserID: appUserID))
+
+        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
             defer {
                 completion()
             }

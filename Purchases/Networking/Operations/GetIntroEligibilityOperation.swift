@@ -82,14 +82,11 @@ private extension GetIntroEligibilityOperation {
             return
         }
 
-        let fetchToken = self.receiptData.asFetchToken
-        let path = "/subscribers/\(appUserID)/intro_eligibility"
-        let body: [String: Any] = ["product_identifiers": self.productIdentifiers,
-                                   "fetch_token": fetchToken]
+        let request = HTTPRequest(method: .post(body: ["product_identifiers": self.productIdentifiers,
+                                                       "fetch_token": self.receiptData.asFetchToken]),
+                                  path: .getIntroEligibility(appUserID: appUserID))
 
-        httpClient.performPOSTRequest(path: path,
-                                      requestBody: body,
-                                      headers: authHeaders) { statusCode, response, error in
+        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
             let eligibilityResponse = IntroEligibilityResponse(response: response,
                                                                statusCode: statusCode,
                                                                error: error,

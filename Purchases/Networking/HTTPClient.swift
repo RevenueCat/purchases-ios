@@ -34,21 +34,10 @@ class HTTPClient {
         self.dnsChecker = dnsChecker
     }
 
-    func performGETRequest(path: String,
-                           headers authHeaders: [String: String],
-                           completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
-        perform(request: .init(method: .get,
-                               path: path,
-                               headers: authHeaders,
-                               completionHandler: completionHandler))
-    }
-
-    func performPOSTRequest(path: String,
-                            requestBody: [String: Any],
-                            headers authHeaders: [String: String],
-                            completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
-        perform(request: .init(method: .post(body: requestBody),
-                               path: path,
+    func perform(_ request: HTTPRequest,
+                 authHeaders: [String: String],
+                 completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+        perform(request: .init(httpRequest: request,
                                headers: authHeaders,
                                completionHandler: completionHandler))
     }
@@ -75,35 +64,16 @@ private extension HTTPClient {
     struct Request: CustomStringConvertible {
 
         typealias Headers = [String: String]
-        typealias RequestBody = [String: Any]
         typealias Completion = ((_ statusCode: Int, _ response: [String: Any]?, _ error: Error?) -> Void)
 
-        enum Method {
-
-            case get
-            case post(body: RequestBody)
-
-            var httpMethod: String {
-                switch self {
-                case .get: return "GET"
-                case .post: return "POST"
-                }
-            }
-
-        }
-
-        var method: Method
-        var path: String
+        var httpRequest: HTTPRequest
         var headers: Headers
         var completionHandler: Completion?
         var retried: Bool = false
 
-        var requestBody: RequestBody? {
-            switch self.method {
-            case let .post(body): return body
-            case .get: return nil
-            }
-        }
+        var method: HTTPRequest.Method { self.httpRequest.method }
+        var path: String { self.httpRequest.path.description }
+        var requestBody: HTTPRequest.Body? { self.httpRequest.requestBody }
 
         func adding(defaultHeaders: Headers) -> Self {
             var copy = self
@@ -293,8 +263,8 @@ private extension HTTPClient {
     }
 
     func convert(request: Request) -> URLRequest? {
-        let relativeURLString = "/v1\(request.path)"
-        guard let requestURL = URL(string: relativeURLString, relativeTo: SystemInfo.serverHostURL) else {
+        guard let requestURL = URL(string: request.httpRequest.path.relativePath,
+                                   relativeTo: SystemInfo.serverHostURL) else {
             return nil
         }
 
@@ -323,5 +293,15 @@ private extension HTTPClient {
 
         return urlRequest
     }
+
+}
+
+extension HTTPRequest.Path {
+
+    var relativePath: String {
+        return "\(Self.pathPrefix)\(self.description)"
+    }
+
+    private static let pathPrefix: String = "/v1"
 
 }

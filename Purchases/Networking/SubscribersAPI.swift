@@ -46,7 +46,7 @@ class SubscribersAPI {
         operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
 
-    func getSubscriberData(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
+    func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)

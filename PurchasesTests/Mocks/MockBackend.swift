@@ -77,7 +77,7 @@ class MockBackend: Backend {
     var stubbedGetSubscriberDataCustomerInfo: CustomerInfo?
     var stubbedGetSubscriberDataError: Error?
 
-    override func getSubscriberData(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
+    override func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
         invokedGetSubscriberDataParameters = (appUserID, completion)

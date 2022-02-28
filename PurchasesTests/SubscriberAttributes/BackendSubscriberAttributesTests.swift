@@ -53,7 +53,6 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
     // MARK: PostSubscriberAttributes
     func testPostSubscriberAttributesSendsRightParameters() {
-
         backend.post(subscriberAttributes: [
             subscriberAttribute1.key: subscriberAttribute1,
             subscriberAttribute2.key: subscriberAttribute2
@@ -68,9 +67,6 @@ class BackendSubscriberAttributesTests: XCTestCase {
             fatalError("no parameters sent!")
         }
 
-        expect(receivedParameters.httpMethod) == "POST"
-        expect(receivedParameters.path) == "/subscribers/abc123/attributes"
-
         let expectedBody: [String: [String: NSObject]] = [
             "attributes": [
                 subscriberAttribute1.key: [
@@ -84,7 +80,11 @@ class BackendSubscriberAttributesTests: XCTestCase {
             ]
         ]
 
-        expect(receivedParameters.requestBody as? [String: [String: NSObject]]).to(equal(expectedBody))
+        let body = receivedParameters.request.requestBody as? [String: [String: NSObject]]
+
+        // This is implicitly checking that the request was .post
+        expect(body) == expectedBody
+        expect(receivedParameters.request.path) == .postSubscriberAttributes(appUserID: self.appUserID)
         expect(receivedParameters.headers) == ["Authorization": "Bearer key"]
     }
 
@@ -278,7 +278,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
     // MARK: PostReceipt with subscriberAttributes
 
-    func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() {
+    func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() throws {
         var completionCallCount = 0
 
         let subscriberAttributesByKey: [String: SubscriberAttribute] = [
@@ -299,10 +299,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         expect(self.mockHTTPClient.invokedPerformRequestCount).toEventually(equal(1))
 
-        guard let receivedParameters = mockHTTPClient.invokedPerformRequestParameters,
-              let requestBody = receivedParameters.requestBody else {
-                  fatalError("parameters or request body missing!")
-              }
+        let receivedParameters = try XCTUnwrap(mockHTTPClient.invokedPerformRequestParameters)
+        let requestBody = try XCTUnwrap(receivedParameters.request.requestBody)
 
         expect(requestBody["attributes"]).toNot(beNil())
 
@@ -368,7 +366,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(parsingError.code) == CustomerInfoError.missingJsonObject.rawValue
     }
 
-    func testPostReceiptWithoutSubscriberAttributesSkipsThem() {
+    func testPostReceiptWithoutSubscriberAttributesSkipsThem() throws {
         var completionCallCount = 0
 
         backend.post(receiptData: receiptData,
@@ -384,10 +382,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         expect(self.mockHTTPClient.invokedPerformRequestCount).toEventually(equal(1))
 
-        guard let receivedParameters = mockHTTPClient.invokedPerformRequestParameters,
-              let requestBody = receivedParameters.requestBody else {
-                  fatalError("parameters or request body missing!")
-              }
+        let receivedParameters = try XCTUnwrap(mockHTTPClient.invokedPerformRequestParameters)
+        let requestBody = try XCTUnwrap(receivedParameters.request.requestBody)
 
         expect(requestBody["attributes"]).to(beNil())
     }
