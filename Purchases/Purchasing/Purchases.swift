@@ -1258,9 +1258,6 @@ public extension Purchases {
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
-     * - Note: If you're looking to just check the eligibility status of a single ``StoreProduct``,
-     * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``.
-     *
      * - Note: If you're looking to use Promotional Offers instead,
      * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
      *
@@ -1273,6 +1270,9 @@ public extension Purchases {
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      * - Parameter completion: A block that receives a dictionary of `product_id` -> ``IntroEligibility``.
+     *
+     * ### Related symbols
+     * - ``checkTrialOrIntroDiscountEligibility(_:)``
      */
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
@@ -1287,9 +1287,6 @@ public extension Purchases {
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
-     * - Note: If you're looking to just check the eligibility status of a single ``StoreProduct``,
-     * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``.
-     *
      * - Note: If you're looking to use Promotional Offers instead,
      * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
      *
@@ -1300,6 +1297,9 @@ public extension Purchases {
      * version of iOS so that the subscription group can be collected by the SDK.
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
+     *
+     * ### Related symbols
+     * - ``checkTrialOrIntroDiscountEligibility(_:)``
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
