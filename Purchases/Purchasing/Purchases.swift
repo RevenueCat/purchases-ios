@@ -1272,7 +1272,7 @@ public extension Purchases {
      * - Parameter completion: A block that receives a dictionary of `product_id` -> ``IntroEligibility``.
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(_:)``
+     * - ``checkTrialOrIntroDiscountEligibility(product:)``
      */
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
@@ -1299,7 +1299,7 @@ public extension Purchases {
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(_:)``
+     * - ``checkTrialOrIntroDiscountEligibility(product:)``
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
@@ -1326,7 +1326,7 @@ public extension Purchases {
      * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
      */
     @objc(checkTrialOrIntroDiscountEligibilityForProduct:completion:)
-    func checkTrialOrIntroDiscountEligibility(_ product: StoreProduct,
+    func checkTrialOrIntroDiscountEligibility(product: StoreProduct,
                                               completion: @escaping (IntroEligibilityStatus) -> Void) {
         trialOrIntroPriceEligibilityChecker.checkEligibility(product: product, completion: completion)
     }
@@ -1351,7 +1351,7 @@ public extension Purchases {
      * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-    func checkTrialOrIntroDiscountEligibility(_ product: StoreProduct) async -> IntroEligibilityStatus {
+    func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
     }
 
