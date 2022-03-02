@@ -195,7 +195,7 @@ extension Purchases {
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
     -> IntroEligibilityStatus {
         return await withCheckedContinuation { continuation in
-            checkTrialOrIntroDiscountEligibility(product) { status in
+            checkTrialOrIntroDiscountEligibility(product: product) { status in
                 continuation.resume(returning: status)
             }
         }
