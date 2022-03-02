@@ -111,6 +111,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
+    purchases.checkTrialOrIntroDiscountEligibility(storeProduct) { (_: IntroEligibilityStatus) in }
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
     purchases.getPromotionalOffer(
         forProductDiscount: discount,
