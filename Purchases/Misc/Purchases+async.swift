@@ -190,6 +190,16 @@ extension Purchases {
             }
         }
     }
+    
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
+    -> IntroEligibilityStatus {
+        return await withCheckedContinuation { continuation in
+            checkTrialOrIntroDiscountEligibility(product) { status in
+                continuation.resume(returning: status)
+            }
+        }
+    }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ productIdentifiers: [String]) async
