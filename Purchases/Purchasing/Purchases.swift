@@ -1272,7 +1272,7 @@ public extension Purchases {
      * - Parameter completion: A block that receives a dictionary of `product_id` -> ``IntroEligibility``.
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(product:)``
+     * - ``checkTrialOrIntroDiscountEligibility(product:completion:)``
      */
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
