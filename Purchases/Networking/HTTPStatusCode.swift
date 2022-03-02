@@ -23,7 +23,7 @@ enum HTTPStatusCode: RawRepresentable {
     case success
     case createdSuccess
     case redirect
-    case notModifiedResponseCode
+    case notModified
     case invalidRequest
     case notFoundError
     case internalServerError
@@ -36,7 +36,7 @@ enum HTTPStatusCode: RawRepresentable {
         case .success: return 200
         case .createdSuccess: return 201
         case .redirect: return 300
-        case .notModifiedResponseCode: return 304
+        case .notModified: return 304
         case .invalidRequest: return 400
         case .notFoundError: return 404
         case .internalServerError: return 500
@@ -50,7 +50,7 @@ enum HTTPStatusCode: RawRepresentable {
         .success,
         .createdSuccess,
         .redirect,
-        .notModifiedResponseCode,
+        .notModified,
         .invalidRequest,
         .notFoundError,
         .internalServerError,
@@ -67,7 +67,7 @@ extension HTTPStatusCode {
         return self.rawValue < HTTPStatusCode.redirect.rawValue
     }
 
-    var isInternalServerError: Bool {
+    var isServerError: Bool {
         return self.rawValue >= HTTPStatusCode.internalServerError.rawValue
     }
 

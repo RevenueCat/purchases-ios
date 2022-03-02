@@ -17,10 +17,10 @@ class UserInfoAttributeParser {
 
     func attributesUserInfoFromResponse(response: [String: Any], statusCode: HTTPStatusCode) -> [String: Any] {
         var resultDict: [String: Any] = [:]
-        let isInternalServerError = statusCode.isInternalServerError
+        let isServerError = statusCode.isServerError
         let isNotFoundError = statusCode == .notFoundError
 
-        let successfullySynced = !(isInternalServerError || isNotFoundError)
+        let successfullySynced = !(isServerError || isNotFoundError)
         resultDict[Backend.RCSuccessfullySyncedKey as String] = successfullySynced
 
         let hasAttributesResponseContainerKey = (response[Backend.RCAttributeErrorsResponseKey] != nil)

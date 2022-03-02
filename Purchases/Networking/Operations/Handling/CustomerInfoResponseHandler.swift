@@ -69,7 +69,7 @@ class CustomerInfoResponseHandler {
                         || customerInfoError != nil)
 
         guard !hasError else {
-            let finishable = !statusCode.isInternalServerError
+            let finishable = !statusCode.isServerError
             var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
             let backendErrorCode = BackendErrorCode(code: response?["code"])

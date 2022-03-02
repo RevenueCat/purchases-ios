@@ -179,7 +179,7 @@ private extension HTTPClient {
                                                                    path: request.path,
                                                                    httpCode: statusCode))
 
-                if statusCode == .notModifiedResponseCode || data == nil {
+                if statusCode == .notModified || data == nil {
                     jsonObject = [:]
                 } else if let data = data {
                     do {

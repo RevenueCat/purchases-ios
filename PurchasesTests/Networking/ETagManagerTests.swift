@@ -49,7 +49,7 @@ class ETagManagerTests: XCTestCase {
         let cachedResponse = mockStoredETagAndResponse(for: url, statusCode: .success, eTag: eTag)
 
         guard let httpURLResponse = HTTPURLResponse(url: url,
-                                                    statusCode: HTTPStatusCode.notModifiedResponseCode.rawValue,
+                                                    statusCode: HTTPStatusCode.notModified.rawValue,
                                                     httpVersion: "HTTP/1.1",
                                                     headerFields: getHeaders(eTag: eTag)) else {
             fatalError("Error initializing HTTPURLResponse")
@@ -88,12 +88,12 @@ class ETagManagerTests: XCTestCase {
         let httpURLResponse = httpURLResponseForTest(
             url: url,
             eTag: eTag,
-            statusCode: .notModifiedResponseCode
+            statusCode: .notModified
         )
         let response = eTagManager.httpResultFromCacheOrBackend(
             with: httpURLResponse, jsonObject: responseObject, error: error, request: request, retried: false)
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .notModifiedResponseCode
+        expect(response?.statusCode) == .notModified
         expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
     }
 
@@ -105,12 +105,12 @@ class ETagManagerTests: XCTestCase {
         let httpURLResponse = httpURLResponseForTest(
             url: url,
             eTag: eTag,
-            statusCode: .notModifiedResponseCode
+            statusCode: .notModified
         )
         let response = eTagManager.httpResultFromCacheOrBackend(
             with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: true)
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .notModifiedResponseCode
+        expect(response?.statusCode) == .notModified
         expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
     }
 
@@ -122,7 +122,7 @@ class ETagManagerTests: XCTestCase {
         let httpURLResponse = httpURLResponseForTest(
             url: url,
             eTag: eTag,
-            statusCode: .notModifiedResponseCode
+            statusCode: .notModified
         )
         let response = eTagManager.httpResultFromCacheOrBackend(
             with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)

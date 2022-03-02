@@ -191,7 +191,7 @@ class HTTPClientTests: XCTestCase {
         }
         self.client.perform(request, authHeaders: [:]) { (status, data, responseError) in
             if let responseNSError = responseError as NSError? {
-                successFailed.value = (status.isInternalServerError
+                successFailed.value = (status.isServerError
                                        && data == nil
                                        && error.domain == responseNSError.domain
                                        && error.code == responseNSError.code)
