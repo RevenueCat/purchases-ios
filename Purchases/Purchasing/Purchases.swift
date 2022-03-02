@@ -1258,6 +1258,9 @@ public extension Purchases {
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
      *
+     * - Note: If you're looking to just check the eligibility status of a single ``StoreProduct``,
+     * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``.
+     *
      * - Note: If you're looking to use Promotional Offers instead,
      * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
      *
@@ -1283,6 +1286,9 @@ public extension Purchases {
      * You should use this method to determine whether or not you show the user the normal product price or
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
      * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
+     *
+     * - Note: If you're looking to just check the eligibility status of a single ``StoreProduct``,
+     * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``.
      *
      * - Note: If you're looking to use Promotional Offers instead,
      * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
