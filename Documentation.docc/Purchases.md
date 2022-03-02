@@ -44,6 +44,8 @@ Most features require configuring the SDK before using it.
 ### Making Purchases with Subscription Offers
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``
+- ``Purchases/checkTrialOrIntroDiscountEligibility(product:)``
+- ``Purchases/checkTrialOrIntroDiscountEligibility(product:completion:)``
 - ``Purchases/getPromotionalOffer(forProductDiscount:product:)``
 - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
 - ``Purchases/purchase(package:promotionalOffer:)``

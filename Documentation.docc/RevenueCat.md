@@ -86,6 +86,8 @@ Or browse our iOS sample apps:
 
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:)``
 - ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``
+- ``Purchases/checkTrialOrIntroDiscountEligibility(product:)``
+- ``Purchases/checkTrialOrIntroDiscountEligibility(product:completion:)``
 - ``Purchases/getPromotionalOffer(forProductDiscount:product:)``
 - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
 - ``Purchases/purchase(package:promotionalOffer:)``
