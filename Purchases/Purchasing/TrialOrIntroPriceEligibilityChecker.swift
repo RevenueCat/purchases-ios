@@ -17,7 +17,6 @@ import StoreKit
 class TrialOrIntroPriceEligibilityChecker {
 
     typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
-    typealias ReceiveIntroEligibilityStatusBlock = (IntroEligibilityStatus) -> Void
 
     private var appUserID: String { identityManager.currentAppUserID }
     private let receiptFetcher: ReceiptFetcher
@@ -68,7 +67,7 @@ class TrialOrIntroPriceEligibilityChecker {
     }
 
     func checkEligibility(product: StoreProduct,
-                          completion: @escaping ReceiveIntroEligibilityStatusBlock) {
+                          completion: @escaping (IntroEligibilityStatus) -> Void) {
         checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
             completion(eligibility[product.productIdentifier]?.status ?? .unknown)
         }
