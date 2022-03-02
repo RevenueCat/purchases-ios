@@ -66,7 +66,7 @@ class TrialOrIntroPriceEligibilityChecker {
             sk1CheckEligibility(productIdentifiers, completion: completion)
         }
     }
-    
+
     func checkEligibility(product: StoreProduct,
                           completion: @escaping ReceiveIntroEligibilityStatusBlock) {
         checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in

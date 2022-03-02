@@ -1299,7 +1299,7 @@ public extension Purchases {
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
     }
-    
+
     /**
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
      * You should use this method to determine whether or not you show the user the normal product price or
@@ -1324,7 +1324,7 @@ public extension Purchases {
                                               completion: @escaping (IntroEligibilityStatus) -> Void) {
         trialOrIntroPriceEligibilityChecker.checkEligibility(product: product, completion: completion)
     }
-    
+
     /**
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
      * You should use this method to determine whether or not you show the user the normal product price or
