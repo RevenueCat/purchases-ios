@@ -1324,6 +1324,9 @@ public extension Purchases {
      *
      * - Parameter product: The ``StoreProduct``  for which you want to compute eligibility.
      * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
+     *
+     * ### Related symbols
+     * - ``checkTrialOrIntroDiscountEligibility(_:completion:)``
      */
     @objc(checkTrialOrIntroDiscountEligibilityForProduct:completion:)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct,
@@ -1349,6 +1352,9 @@ public extension Purchases {
      *
      * - Parameter product: The ``StoreProduct``  for which you want to compute eligibility.
      * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
+     *
+     * ### Related symbols
+     * - ``checkTrialOrIntroDiscountEligibility(_:)``
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
