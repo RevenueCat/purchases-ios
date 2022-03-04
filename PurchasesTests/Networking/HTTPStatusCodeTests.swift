@@ -38,7 +38,7 @@ class HTTPStatusCodeTests: XCTestCase {
     func testIsValidResponse() {
         expect(HTTPStatusCode.success.isValidResponse) == true
         expect(HTTPStatusCode.createdSuccess.isValidResponse) == true
-        expect(status(100).isServerError) == false
+        expect(status(100).isValidResponse) == true
         expect(status(202).isValidResponse) == true
         expect(status(226).isValidResponse) == true
         expect(status(299).isValidResponse) == true
