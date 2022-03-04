@@ -447,6 +447,34 @@ platform :ios do
     end
   end
 
+  desc "Preview docs"
+  lane :preview_docs do
+    sh("swift",
+       "package",
+       "--disable-sandbox",
+       "preview-documentation",
+       "--target",
+       "RevenueCat",
+       "--transform-for-static-hosting")
+  end
+
+  desc "Generate docs"
+  lane :generate_docs do
+
+    sh("swift",
+       "package",
+       "--disable-sandbox",
+       "--allow-writing-to-directory",
+       "generated_docs",
+       "generate-documentation",
+       "--target",
+       "RevenueCat",
+       "--disable-indexing",
+       "--output-path",
+       "generated_docs",
+       "--transform-for-static-hosting")
+  end
+
   private_lane :sandbox_testers_delete do |options|
     email_pattern = options[:email_pattern]
 

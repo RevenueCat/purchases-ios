@@ -218,6 +218,22 @@ Update swift package commit
 
 Create or delete sandbox testers
 
+### ios preview_docs
+
+```sh
+[bundle exec] fastlane ios preview_docs
+```
+
+Preview docs
+
+### ios generate_docs
+
+```sh
+[bundle exec] fastlane ios generate_docs
+```
+
+Generate docs
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
