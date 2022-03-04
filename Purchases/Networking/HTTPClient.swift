@@ -263,8 +263,7 @@ private extension HTTPClient {
     }
 
     func convert(request: Request) -> URLRequest? {
-        guard let requestURL = URL(string: request.httpRequest.path.relativePath,
-                                   relativeTo: SystemInfo.serverHostURL) else {
+        guard let requestURL = request.httpRequest.path.url else {
             return nil
         }
 
@@ -298,8 +297,13 @@ private extension HTTPClient {
 
 extension HTTPRequest.Path {
 
+    var url: URL? {
+        return URL(string: self.relativePath,
+                   relativeTo: SystemInfo.serverHostURL)
+    }
+
     var relativePath: String {
-        return "\(Self.pathPrefix)\(self.description)"
+        return "\(Self.pathPrefix)/\(self.description)"
     }
 
     private static let pathPrefix: String = "/v1"

@@ -83,31 +83,31 @@ extension HTTPRequest.Path: CustomStringConvertible {
     var description: String {
         switch self {
         case let .getCustomerInfo(appUserID):
-            return "/subscribers/\(appUserID)"
+            return "subscribers/\(appUserID)"
 
         case let .getOfferings(appUserID):
-            return "/subscribers/\(appUserID)/offerings"
+            return "subscribers/\(appUserID)/offerings"
 
         case let .getIntroEligibility(appUserID):
-            return "/subscribers/\(appUserID)/intro_eligibility"
+            return "subscribers/\(appUserID)/intro_eligibility"
 
         case .logIn:
-            return "/subscribers/identify"
+            return "subscribers/identify"
 
         case let .createAlias(appUserID):
-            return "/subscribers/\(appUserID)/alias"
+            return "subscribers/\(appUserID)/alias"
 
         case let .postAttributionData(appUserID):
-            return "/subscribers/\(appUserID)/attribution"
+            return "subscribers/\(appUserID)/attribution"
 
         case .postOfferForSigning:
-            return "/offers"
+            return "offers"
 
         case .postReceiptData:
-            return "/receipts"
+            return "receipts"
 
         case let .postSubscriberAttributes(appUserID):
-            return "/subscribers/\(appUserID)/attributes"
+            return "subscribers/\(appUserID)/attributes"
         }
     }
 
