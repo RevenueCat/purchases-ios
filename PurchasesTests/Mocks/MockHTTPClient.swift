@@ -5,14 +5,14 @@ class MockHTTPClient: HTTPClient {
     struct InvokedPerformRequestParameters {
         let request: HTTPRequest
         let headers: [String: String]?
-        let completionHandler: ((Int, [String: Any]?, Error?) -> Void)?
+        let completionHandler: HTTPClient.Completion?
     }
 
     var invokedPerformRequest = false
     var invokedPerformRequestCount = 0
     var shouldInvokeCompletion = true
 
-    var stubbedCompletionStatusCode = 200
+    var stubbedCompletionStatusCode: HTTPStatusCode = .success
     var stubbedCompletionResponse: [String: Any]? = [:]
     var stubbedCompletionError: Error?
 
@@ -21,7 +21,7 @@ class MockHTTPClient: HTTPClient {
 
     override func perform(_ request: HTTPRequest,
                           authHeaders: [String: String],
-                          completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+                          completionHandler: Completion?) {
         invokedPerformRequest = true
         invokedPerformRequestCount += 1
         let parameters = InvokedPerformRequestParameters(

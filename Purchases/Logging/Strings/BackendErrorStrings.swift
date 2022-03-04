@@ -35,7 +35,7 @@ enum BackendErrorStrings {
     case signature_error(signatureDataString: Any?)
 
     // getOfferings failed and we're not totally sure why.
-    case unknown_get_offerings_error(statusCode: Int, responseString: String?)
+    case unknown_get_offerings_error(statusCode: HTTPStatusCode, responseString: String?)
 
 }
 
@@ -59,8 +59,8 @@ extension BackendErrorStrings: CustomStringConvertible {
             return "No offerings found in response:\n\(String(describing: response["offers"]))"
         case .signature_error(let signatureDataString):
             return "Missing 'signatureData' or its structure changed:\n\(String(describing: signatureDataString))"
-        case .unknown_get_offerings_error(let statusCode, let responseString):
-            var message = "Encountered an error getting offerings, status code:\(statusCode)"
+        case let .unknown_get_offerings_error(statusCode, responseString):
+            var message = "Encountered an error getting offerings, status code:\(statusCode.rawValue)"
             if let responseString = responseString {
                 message += "\nresponse: \(responseString)"
             }

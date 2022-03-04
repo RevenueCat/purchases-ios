@@ -137,7 +137,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     func testPostSubscriberAttributesCallsCompletionWithErrorInBackendErrorCase() throws {
         var completionCallCount = 0
         mockHTTPClient.shouldInvokeCompletion = true
-        mockHTTPClient.stubbedCompletionStatusCode = 503
+        mockHTTPClient.stubbedCompletionStatusCode = .other(503)
         mockHTTPClient.stubbedCompletionError = nil
 
         var receivedError: Error?
@@ -168,7 +168,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     func testPostSubscriberAttributesSendsAttributesErrorsIfAny() {
         var completionCallCount = 0
         mockHTTPClient.shouldInvokeCompletion = true
-        mockHTTPClient.stubbedCompletionStatusCode = 503
+        mockHTTPClient.stubbedCompletionStatusCode = .other(503)
         mockHTTPClient.stubbedCompletionError = nil
         let attributeErrors = [Backend.RCAttributeErrorsKey: ["some_attribute": "wasn't valid"]]
         mockHTTPClient.stubbedCompletionResponse = attributeErrors
@@ -204,7 +204,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     func testPostSubscriberAttributesCallsCompletionWithErrorInBadRequestCase() throws {
         var completionCallCount = 0
         mockHTTPClient.shouldInvokeCompletion = true
-        mockHTTPClient.stubbedCompletionStatusCode = 400
+        mockHTTPClient.stubbedCompletionStatusCode = .invalidRequest
         mockHTTPClient.stubbedCompletionError = nil
 
         var receivedError: Error?
@@ -248,7 +248,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     func testPostSubscriberAttributesCallsCompletionWithErrorInNotFoundCase() throws {
         var completionCallCount = 0
         mockHTTPClient.shouldInvokeCompletion = true
-        mockHTTPClient.stubbedCompletionStatusCode = 404
+        mockHTTPClient.stubbedCompletionStatusCode = .notFoundError
         mockHTTPClient.stubbedCompletionError = nil
 
         var receivedError: Error?
@@ -392,7 +392,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsError() {
         var completionCallCount = 0
 
-        self.mockHTTPClient.stubbedCompletionStatusCode = 400
+        self.mockHTTPClient.stubbedCompletionStatusCode = .invalidRequest
         let attributeErrors = [
             Backend.RCAttributeErrorsKey: ["$email": "email is not in valid format"]
         ]
@@ -438,7 +438,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsSuccess() {
         var completionCallCount = 0
 
-        self.mockHTTPClient.stubbedCompletionStatusCode = 200
+        self.mockHTTPClient.stubbedCompletionStatusCode = .success
         let attributeErrors = [
             Backend.RCAttributeErrorsKey: ["$email": "email is not in valid format"]
         ]

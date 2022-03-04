@@ -17,7 +17,7 @@ import Foundation
 struct IntroEligibilityResponse {
 
     let response: [String: Any]?
-    let statusCode: Int
+    let statusCode: HTTPStatusCode
     let error: Error?
     let productIdentifiers: [String]
     let unknownEligibilityClosure: () -> [String: IntroEligibility]

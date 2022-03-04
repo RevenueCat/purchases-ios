@@ -15,12 +15,12 @@ import Foundation
 
 class UserInfoAttributeParser {
 
-    func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: Any] {
+    func attributesUserInfoFromResponse(response: [String: Any], statusCode: HTTPStatusCode) -> [String: Any] {
         var resultDict: [String: Any] = [:]
-        let isInternalServerError = statusCode >= HTTPStatusCode.internalServerError.rawValue
-        let isNotFoundError = statusCode == HTTPStatusCode.notFoundError.rawValue
+        let isServerError = statusCode.isServerError
+        let isNotFoundError = statusCode == .notFoundError
 
-        let successfullySynced = !(isInternalServerError || isNotFoundError)
+        let successfullySynced = !(isServerError || isNotFoundError)
         resultDict[Backend.RCSuccessfullySyncedKey as String] = successfullySynced
 
         let hasAttributesResponseContainerKey = (response[Backend.RCAttributeErrorsResponseKey] != nil)

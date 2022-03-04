@@ -21,13 +21,13 @@ struct ETagAndResponseWrapper {
     private static let jsonObjectKey = "responseObject"
 
     let eTag: String
-    let statusCode: Int
+    let statusCode: HTTPStatusCode
     let jsonObject: [String: Any]
 
     func asDictionary() -> [String: Any] {
         [
             ETagAndResponseWrapper.eTagKey: eTag,
-            ETagAndResponseWrapper.statusCodeKey: statusCode,
+            ETagAndResponseWrapper.statusCodeKey: statusCode.rawValue,
             ETagAndResponseWrapper.jsonObjectKey: jsonObject
         ]
     }
@@ -59,7 +59,7 @@ extension ETagAndResponseWrapper {
             Logger.error("Could not initialize ETagAndResponseWrapper Object from dictionary")
             return nil
         }
-        self.init(eTag: eTag, statusCode: statusCode, jsonObject: jsonObject)
+        self.init(eTag: eTag, statusCode: .init(rawValue: statusCode), jsonObject: jsonObject)
     }
 
 }
