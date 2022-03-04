@@ -1,9 +1,7 @@
 excluded:
   - Carthage
-  - Pods
   - Examples
   - IntegrationTests
-  - PublicSDKAPITester
   - vendor
   - scan_derived_data
 
