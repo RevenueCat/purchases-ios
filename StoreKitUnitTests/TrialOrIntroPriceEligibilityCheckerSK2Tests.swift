@@ -136,24 +136,15 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testCheckEligibilityForProductIsEligibleForEligibleSubscription() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let productIdentifiers = Set([
-            "com.revenuecat.monthly_4.99.1_week_intro"
-        ])
+        let sk2Product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: sk2Product)
 
-        let sk2Product = try await ProductsFetcherSK2().products(identifiers: productIdentifiers).first
-        let receivedProduct = try XCTUnwrap(sk2Product)
-        let storeProduct = StoreProduct.from(product: receivedProduct)
-
-        var completionCalled = false
-
-        let status: IntroEligibilityStatus = try await withCheckedThrowingContinuation({ continuation in
+        let status: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
-                completionCalled = true
                 continuation.resume(returning: status)
             }
-        })
+        }
 
-        expect(completionCalled) == true
         expect(status) == .eligible
     }
 
@@ -169,16 +160,12 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let receivedProduct = try XCTUnwrap(sk2Product)
         let storeProduct = StoreProduct.from(product: receivedProduct)
 
-        var completionCalled = false
-
-        let status: IntroEligibilityStatus = try await withCheckedThrowingContinuation({ continuation in
+        let status: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
-                completionCalled = true
                 continuation.resume(returning: status)
             }
-        })
+        }
 
-        expect(completionCalled) == true
         expect(status) == .noIntroOfferExists
     }
 
@@ -186,39 +173,25 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testCheckEligibilityForProductIsIneligibleAfterPurchasing() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let productIdentifiers = Set([
-            "com.revenuecat.monthly_4.99.1_week_intro"
-        ])
+        let sk2Product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: sk2Product)
 
-        let sk2Product = try await ProductsFetcherSK2().products(identifiers: productIdentifiers).first
-        let receivedProduct = try XCTUnwrap(sk2Product)
-        let storeProduct = StoreProduct.from(product: receivedProduct)
-
-        var completionCalled = false
-
-        let prePurchaseStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation({ continuation in
+        let prePurchaseStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
-                completionCalled = true
                 continuation.resume(returning: status)
             }
-        })
+        }
 
-        expect(completionCalled) == true
         expect(prePurchaseStatus) == .eligible
 
-        let purchasableSK2Product = try XCTUnwrap(storeProduct.sk2Product)
-        _ = try await purchasableSK2Product.purchase()
+        _ = try await sk2Product.purchase()
 
-        completionCalled = false
-
-        let postPurchaseStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation({ continuation in
+        let postPurchaseStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
-                completionCalled = true
                 continuation.resume(returning: status)
             }
-        })
+        }
 
-        expect(completionCalled) == true
         expect(postPurchaseStatus) == .ineligible
     }
 
@@ -226,27 +199,18 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testCheckEligibilityForInvalidProductIsUnknown() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let productIdentifiers = Set([
-            "com.revenuecat.monthly_4.99.1_week_intro"
-        ])
-
-        let sk2Product = try await ProductsFetcherSK2().products(identifiers: productIdentifiers).first
-        let receivedProduct = try XCTUnwrap(sk2Product)
-        let storeProduct = StoreProduct.from(product: receivedProduct)
-
-        var completionCalled = false
+        let sk2Product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: sk2Product)
 
         // We can't fetch an invalid StoreProduct to pass into the
         // eligibility checker so this just fakes an unknown response,
         // regardless of the real status from the checker
         let fakeStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation({ continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { _ in
-                completionCalled = true
                 continuation.resume(returning: .unknown)
             }
         })
 
-        expect(completionCalled) == true
         expect(fakeStatus) == .unknown
     }
 }
