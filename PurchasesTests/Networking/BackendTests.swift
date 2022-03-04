@@ -65,13 +65,14 @@ class BackendTests: XCTestCase {
     }
 
     // swiftlint:disable:next force_try
-    let systemInfo = try! SystemInfo(platformInfo: nil, finishTransactions: true)
-    var httpClient: MockHTTPClient!
-    let apiKey = "asharedsecret"
-    let bundleID = "com.bundle.id"
-    let userID = "user"
-    let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
-    let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!
+    private let systemInfo = try! SystemInfo(platformInfo: nil, finishTransactions: true)
+    private var httpClient: MockHTTPClient!
+    private let bundleID = "com.bundle.id"
+    private let userID = "user"
+    private let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
+    private let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!
+
+    private static let apiKey = "asharedsecret"
 
     private let noOfferingsResponse: [String: Any?] = [
         "offerings": [],
@@ -123,7 +124,7 @@ class BackendTests: XCTestCase {
 
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
         httpClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-        backend = Backend.init(httpClient: httpClient, apiKey: apiKey)
+        backend = Backend.init(httpClient: httpClient, apiKey: Self.apiKey)
     }
 
     override class func setUp() {
@@ -162,7 +163,8 @@ class BackendTests: XCTestCase {
                                                 "is_restore": isRestore,
                                                 "observer_mode": observerMode]),
                            path: path),
-            headers: ["Authorization": "Bearer " + apiKey])
+            headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
+        )
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
         if self.httpClient.calls.count > 0 {
@@ -414,7 +416,7 @@ class BackendTests: XCTestCase {
         ]
 
         let expectedCall = RequestCall(request: .init(method: .post(body: body), path: .postReceiptData),
-                                       headers: ["Authorization": "Bearer " + apiKey])
+                                       headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey))
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
 
@@ -583,7 +585,7 @@ class BackendTests: XCTestCase {
         backend.getCustomerInfo(appUserID: userID) { _, _ in }
 
         let expectedCall = RequestCall(request: .init(method: .get, path: path),
-                                       headers: ["Authorization": "Bearer " + apiKey])
+                                       headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey))
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
 
@@ -692,7 +694,7 @@ class BackendTests: XCTestCase {
                 "fetch_token": ""
             ]),
                            path: .getIntroEligibility(appUserID: userID)),
-            headers: ["Authorization": "Bearer " + apiKey]
+            headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
         )
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
@@ -923,9 +925,7 @@ class BackendTests: XCTestCase {
         let call = self.httpClient.calls[0]
 
         expect(call.request.path) == path
-        expect(call.headers) == [
-            "Authorization": "Bearer " + apiKey
-        ]
+        expect(call.headers) == HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
 
         let body = try XCTUnwrap(call.request.requestBody)
         expect(body.keys).to(contain("new_app_user_id"))
@@ -1245,7 +1245,7 @@ class BackendTests: XCTestCase {
                 "payment_mode": 0
             ]
         ])
-        let headers = ["Authorization": "Bearer " + apiKey]
+        let headers = HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
 
         var expectedCall: RequestCall
         if #available(iOS 12.2, macOS 10.14.4, *) {
@@ -1312,7 +1312,7 @@ class BackendTests: XCTestCase {
         ]
 
         let expectedCall = RequestCall(request: .init(method: .post(body: body), path: path),
-                                       headers: ["Authorization": "Bearer " + apiKey])
+                                       headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey))
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
 
@@ -1553,7 +1553,7 @@ class BackendTests: XCTestCase {
         expect(receivedCall.request.path) == requestPath
         expect(receivedCall.request.requestBody as? [String: String]) == ["new_app_user_id": newAppUserID,
                                                                           "app_user_id": currentAppUserID]
-        expect(receivedCall.headers) == ["Authorization": "Bearer asharedsecret"]
+        expect(receivedCall.headers) == HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
     }
 
     func testLoginPassesNetworkErrorIfCouldntCommunicate() throws {
