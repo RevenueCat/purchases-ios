@@ -24,7 +24,7 @@ class NoContentResponseHandler {
             return
         }
 
-        guard statusCode <= HTTPStatusCodes.redirect.rawValue else {
+        guard statusCode <= HTTPStatusCode.redirect.rawValue else {
             let backendErrorCode = BackendErrorCode(code: response?["code"])
             let message = response?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode, backendMessage: message)

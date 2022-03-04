@@ -101,7 +101,7 @@ private extension GetIntroEligibilityOperation {
     func handleIntroEligibility(response: IntroEligibilityResponse) {
         let result: [String: IntroEligibility] = {
             var eligibilitiesByProductIdentifier = response.response
-            if response.statusCode >= HTTPStatusCodes.redirect.rawValue || response.error != nil {
+            if response.statusCode >= HTTPStatusCode.redirect.rawValue || response.error != nil {
                 eligibilitiesByProductIdentifier = [:]
             }
 

@@ -78,7 +78,7 @@ private extension LogInOperation {
                 return (nil, false, responseError)
             }
 
-            if statusCode > HTTPStatusCodes.redirect.rawValue {
+            if statusCode > HTTPStatusCode.redirect.rawValue {
                 let backendCode = BackendErrorCode(code: response["code"])
                 let backendMessage = response["message"] as? String
                 let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
@@ -87,7 +87,7 @@ private extension LogInOperation {
 
             do {
                 let customerInfo = try CustomerInfo.from(json: response)
-                let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
+                let created = statusCode == HTTPStatusCode.createdSuccess.rawValue
                 Logger.user(Strings.identity.login_success)
                 return (customerInfo, created, nil)
             } catch let customerInfoError {

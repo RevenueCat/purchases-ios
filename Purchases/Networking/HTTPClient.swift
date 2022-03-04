@@ -169,7 +169,7 @@ private extension HTTPClient {
                 urlRequest: URLRequest,
                 data: Data?,
                 error networkError: Error?) {
-        var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
+        var statusCode = HTTPStatusCode.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?
         var httpResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         var receivedJSONError: Error?
@@ -181,7 +181,7 @@ private extension HTTPClient {
                                                                    path: request.path,
                                                                    httpCode: statusCode))
 
-                if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || data == nil {
+                if statusCode == HTTPStatusCode.notModifiedResponseCode.rawValue || data == nil {
                     jsonObject = [:]
                 } else if let data = data {
                     do {

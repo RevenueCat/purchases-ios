@@ -61,7 +61,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                     return (nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
                 }
 
-                guard statusCode < HTTPStatusCodes.redirect.rawValue else {
+                guard statusCode < HTTPStatusCode.redirect.rawValue else {
                     let backendCode = BackendErrorCode(code: response?["code"])
                     let backendMessage = response?["message"] as? String
                     let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)

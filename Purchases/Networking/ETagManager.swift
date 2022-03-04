@@ -85,7 +85,7 @@ class ETagManager {
 private extension ETagManager {
 
     func shouldUseCachedVersion(responseCode: Int) -> Bool {
-        responseCode == HTTPStatusCodes.notModifiedResponseCode.rawValue
+        responseCode == HTTPStatusCode.notModifiedResponseCode.rawValue
     }
 
     func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
@@ -114,8 +114,8 @@ private extension ETagManager {
                                              statusCode: Int,
                                              responseObject: [String: Any]?,
                                              eTag: String) {
-        if statusCode != HTTPStatusCodes.notModifiedResponseCode.rawValue &&
-            statusCode < HTTPStatusCodes.internalServerError.rawValue,
+        if statusCode != HTTPStatusCode.notModifiedResponseCode.rawValue &&
+            statusCode < HTTPStatusCode.internalServerError.rawValue,
            let responseObject = responseObject,
            let cacheKey = eTagDefaultCacheKey(for: request) {
             let eTagAndResponse = ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, jsonObject: responseObject)
