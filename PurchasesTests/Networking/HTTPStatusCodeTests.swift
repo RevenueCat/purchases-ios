@@ -19,6 +19,14 @@ import XCTest
 
 class HTTPStatusCodeTests: XCTestCase {
 
+    func testInitializeFromInteger() {
+        func method(_ status: HTTPStatusCode) {
+            expect(status) == .internalServerError
+        }
+
+        method(500)
+    }
+
     func testCreatingAnUnknownCode() {
         let code = 205
         let status = HTTPStatusCode(rawValue: code)

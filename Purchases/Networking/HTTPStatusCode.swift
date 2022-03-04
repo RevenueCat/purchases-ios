@@ -14,11 +14,7 @@
 
 import Foundation
 
-enum HTTPStatusCode: RawRepresentable {
-
-    init(rawValue: Int) {
-        self = Self.statusByCode[rawValue] ?? .other(rawValue)
-    }
+enum HTTPStatusCode {
 
     case success
     case createdSuccess
@@ -30,6 +26,25 @@ enum HTTPStatusCode: RawRepresentable {
     case networkConnectTimeoutError
 
     case other(Int)
+
+    private static let knownStatus: Set<HTTPStatusCode> = [
+        .success,
+        .createdSuccess,
+        .redirect,
+        .notModified,
+        .invalidRequest,
+        .notFoundError,
+        .internalServerError,
+        .networkConnectTimeoutError
+    ]
+    private static let statusByCode: [Int: HTTPStatusCode] = Self.knownStatus.dictionaryWithKeys { $0.rawValue }
+}
+
+extension HTTPStatusCode: RawRepresentable {
+
+    init(rawValue: Int) {
+        self = Self.statusByCode[rawValue] ?? .other(rawValue)
+    }
 
     var rawValue: Int {
         switch self {
@@ -46,17 +61,14 @@ enum HTTPStatusCode: RawRepresentable {
         }
     }
 
-    private static let knownStatus: Set<HTTPStatusCode> = [
-        .success,
-        .createdSuccess,
-        .redirect,
-        .notModified,
-        .invalidRequest,
-        .notFoundError,
-        .internalServerError,
-        .networkConnectTimeoutError
-    ]
-    private static let statusByCode: [Int: HTTPStatusCode] = Self.knownStatus.dictionaryWithKeys { $0.rawValue }
+}
+
+extension HTTPStatusCode: ExpressibleByIntegerLiteral {
+
+    init(integerLiteral value: IntegerLiteralType) {
+        self.init(rawValue: value)
+    }
+
 }
 
 extension HTTPStatusCode: Hashable {}
