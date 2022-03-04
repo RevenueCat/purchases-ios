@@ -11,7 +11,7 @@ import XCTest
 class BackendSubscriberAttributesTests: XCTestCase {
 
     private let appUserID = "abc123"
-    private let now = Date()
+    private let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
     private let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
     private static let apiKey = "the api key"
 
@@ -42,7 +42,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         mockETagManager = MockETagManager(userDefaults: MockUserDefaults())
         mockHTTPClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: mockETagManager)
         self.backend = Backend(httpClient: mockHTTPClient, apiKey: Self.apiKey)
-        dateProvider = MockDateProvider(stubbedNow: now)
+        dateProvider = MockDateProvider(stubbedNow: self.referenceDate)
         subscriberAttribute1 = SubscriberAttribute(withKey: "a key",
                                                    value: "a value",
                                                    dateProvider: dateProvider)
@@ -52,7 +52,16 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                                    dateProvider: dateProvider)
     }
 
+    override class func setUp() {
+        XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
+    }
+
+    override class func tearDown() {
+        XCTestObservationCenter.shared.removeTestObserver(CurrentTestCaseTracker.shared)
+    }
+
     // MARK: PostSubscriberAttributes
+
     func testPostSubscriberAttributesSendsRightParameters() {
         backend.post(subscriberAttributes: [
             subscriberAttribute1.key: subscriberAttribute1,
@@ -68,24 +77,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
             fatalError("no parameters sent!")
         }
 
-        let expectedBody: [String: [String: NSObject]] = [
-            "attributes": [
-                subscriberAttribute1.key: [
-                    "updated_at_ms": (subscriberAttribute1.setTime as NSDate).millisecondsSince1970AsUInt64(),
-                    "value": subscriberAttribute1.value
-                ] as NSObject,
-                subscriberAttribute2.key: [
-                    "updated_at_ms": (subscriberAttribute2.setTime as NSDate).millisecondsSince1970AsUInt64(),
-                    "value": subscriberAttribute2.value
-                ] as NSObject
-            ]
-        ]
-
-        let body = receivedParameters.request.requestBody as? [String: [String: NSObject]]
-
-        // This is implicitly checking that the request was .post
-        expect(body) == expectedBody
         expect(receivedParameters.request.path) == .postSubscriberAttributes(appUserID: self.appUserID)
+        expect(receivedParameters.request.methodType) == .post
         expect(receivedParameters.headers) == HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
     }
 
@@ -299,24 +292,6 @@ class BackendSubscriberAttributesTests: XCTestCase {
         })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount).toEventually(equal(1))
-
-        let receivedParameters = try XCTUnwrap(mockHTTPClient.invokedPerformRequestParameters)
-        let requestBody = try XCTUnwrap(receivedParameters.request.requestBody)
-
-        expect(requestBody["attributes"]).toNot(beNil())
-
-        let expectedBody: [String: NSObject] = [
-            subscriberAttribute1.key: [
-                "updated_at_ms": (subscriberAttribute1.setTime as NSDate).millisecondsSince1970AsUInt64(),
-                "value": subscriberAttribute1.value
-            ] as NSObject,
-            subscriberAttribute2.key: [
-                "updated_at_ms": (subscriberAttribute2.setTime as NSDate).millisecondsSince1970AsUInt64(),
-                "value": subscriberAttribute2.value
-            ] as NSObject
-        ]
-
-        expect(requestBody["attributes"] as? [String: NSObject]) == expectedBody
     }
 
     func testPostReceiptWithSubscriberAttributesReturnsBadJson() {
@@ -382,11 +357,6 @@ class BackendSubscriberAttributesTests: XCTestCase {
         })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount).toEventually(equal(1))
-
-        let receivedParameters = try XCTUnwrap(mockHTTPClient.invokedPerformRequestParameters)
-        let requestBody = try XCTUnwrap(receivedParameters.request.requestBody)
-
-        expect(requestBody["attributes"]).to(beNil())
     }
 
     func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsError() {
