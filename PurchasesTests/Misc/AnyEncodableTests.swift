@@ -65,4 +65,13 @@ class AnyEncodableTests: XCTestCase {
         assertSnapshot(matching: AnyEncodable(dictionary), as: .json)
     }
 
+    func testEncodingInvalidDataFails() {
+        let dictionary: [String: Any?] = [
+            "a": Double.infinity
+        ]
+
+        expect(try JSONEncoder().encode(AnyEncodable(dictionary)))
+            .to(throwError())
+    }
+
 }
