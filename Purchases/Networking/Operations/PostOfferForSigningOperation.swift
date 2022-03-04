@@ -61,7 +61,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                     return (nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
                 }
 
-                guard statusCode.isValidResponse else {
+                guard statusCode.isSuccessfulResponse else {
                     let backendCode = BackendErrorCode(code: response?["code"])
                     let backendMessage = response?["message"] as? String
                     let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)

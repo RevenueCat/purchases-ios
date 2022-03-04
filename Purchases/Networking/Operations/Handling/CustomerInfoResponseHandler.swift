@@ -34,7 +34,7 @@ class CustomerInfoResponseHandler {
                                                     fileName: file, functionName: function, line: line))
             return
         }
-        let isErrorStatusCode = !statusCode.isValidResponse
+        let isErrorStatusCode = !statusCode.isSuccessfulResponse
 
         let customerInfoError: Error?
         let customerInfo: CustomerInfo?

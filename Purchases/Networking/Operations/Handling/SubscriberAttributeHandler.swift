@@ -32,7 +32,7 @@ class SubscriberAttributeHandler {
 
         let responseError: Error?
 
-        if let response = response, !statusCode.isValidResponse {
+        if let response = response, !statusCode.isSuccessfulResponse {
             let extraUserInfo = self.userInfoAttributeParser
                 .attributesUserInfoFromResponse(response: response, statusCode: statusCode)
             let backendErrorCode = BackendErrorCode(code: response["code"])

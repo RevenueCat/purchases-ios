@@ -51,7 +51,7 @@ private extension GetOfferingsOperation {
                 completion()
             }
 
-            if error == nil && statusCode.isValidResponse {
+            if error == nil && statusCode.isSuccessfulResponse {
                 self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                     callbackObject.completion(response, nil)
                 }
@@ -61,7 +61,7 @@ private extension GetOfferingsOperation {
             let errorForCallbacks: Error
             if let error = error {
                 errorForCallbacks = ErrorUtils.networkError(withUnderlyingError: error)
-            } else if !statusCode.isValidResponse {
+            } else if !statusCode.isSuccessfulResponse {
                 let backendCode = BackendErrorCode(code: response?["code"])
                 let backendMessage = response?["message"] as? String
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,

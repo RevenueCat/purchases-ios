@@ -35,23 +35,23 @@ class HTTPStatusCodeTests: XCTestCase {
         expect(status.rawValue) == code
     }
 
-    func testIsValidResponse() {
-        expect(HTTPStatusCode.success.isValidResponse) == true
-        expect(HTTPStatusCode.createdSuccess.isValidResponse) == true
-        expect(status(100).isValidResponse) == true
-        expect(status(202).isValidResponse) == true
-        expect(status(226).isValidResponse) == true
-        expect(status(299).isValidResponse) == true
+    func testIsSuccessfulResponse() {
+        expect(HTTPStatusCode.success.isSuccessfulResponse) == true
+        expect(HTTPStatusCode.createdSuccess.isSuccessfulResponse) == true
+        expect(status(100).isSuccessfulResponse) == true
+        expect(status(202).isSuccessfulResponse) == true
+        expect(status(226).isSuccessfulResponse) == true
+        expect(status(299).isSuccessfulResponse) == true
     }
 
     func testIsNotValidResponse() {
-        expect(HTTPStatusCode.redirect.isValidResponse) == false
-        expect(HTTPStatusCode.notModified.isValidResponse) == false
-        expect(HTTPStatusCode.invalidRequest.isValidResponse) == false
-        expect(HTTPStatusCode.notFoundError.isValidResponse) == false
-        expect(HTTPStatusCode.internalServerError.isValidResponse) == false
-        expect(HTTPStatusCode.networkConnectTimeoutError.isValidResponse) == false
-        expect(status(418).isValidResponse) == false
+        expect(HTTPStatusCode.redirect.isSuccessfulResponse) == false
+        expect(HTTPStatusCode.notModified.isSuccessfulResponse) == false
+        expect(HTTPStatusCode.invalidRequest.isSuccessfulResponse) == false
+        expect(HTTPStatusCode.notFoundError.isSuccessfulResponse) == false
+        expect(HTTPStatusCode.internalServerError.isSuccessfulResponse) == false
+        expect(HTTPStatusCode.networkConnectTimeoutError.isSuccessfulResponse) == false
+        expect(status(418).isSuccessfulResponse) == false
     }
 
     func testIsServerError() {

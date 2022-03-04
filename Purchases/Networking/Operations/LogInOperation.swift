@@ -78,7 +78,7 @@ private extension LogInOperation {
                 return (nil, false, responseError)
             }
 
-            if !statusCode.isValidResponse {
+            if !statusCode.isSuccessfulResponse {
                 let backendCode = BackendErrorCode(code: response["code"])
                 let backendMessage = response["message"] as? String
                 let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)

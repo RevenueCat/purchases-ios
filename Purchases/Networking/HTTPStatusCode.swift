@@ -63,7 +63,7 @@ extension HTTPStatusCode: Hashable {}
 
 extension HTTPStatusCode {
 
-    var isValidResponse: Bool {
+    var isSuccessfulResponse: Bool {
         return self.rawValue < HTTPStatusCode.redirect.rawValue
     }
 
