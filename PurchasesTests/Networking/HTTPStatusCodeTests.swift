@@ -46,7 +46,6 @@ class HTTPStatusCodeTests: XCTestCase {
     func testIsSuccessfulResponse() {
         expect(HTTPStatusCode.success.isSuccessfulResponse) == true
         expect(HTTPStatusCode.createdSuccess.isSuccessfulResponse) == true
-        expect(status(100).isSuccessfulResponse) == true
         expect(status(202).isSuccessfulResponse) == true
         expect(status(226).isSuccessfulResponse) == true
         expect(status(299).isSuccessfulResponse) == true
@@ -59,6 +58,7 @@ class HTTPStatusCodeTests: XCTestCase {
         expect(HTTPStatusCode.notFoundError.isSuccessfulResponse) == false
         expect(HTTPStatusCode.internalServerError.isSuccessfulResponse) == false
         expect(HTTPStatusCode.networkConnectTimeoutError.isSuccessfulResponse) == false
+        expect(status(100).isSuccessfulResponse) == false
         expect(status(418).isSuccessfulResponse) == false
     }
 
@@ -78,6 +78,7 @@ class HTTPStatusCodeTests: XCTestCase {
         expect(status(202).isServerError) == false
         expect(status(226).isServerError) == false
         expect(status(299).isServerError) == false
+        expect(status(600).isServerError) == false
     }
 
 }

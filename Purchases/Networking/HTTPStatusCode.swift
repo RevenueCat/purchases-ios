@@ -76,11 +76,11 @@ extension HTTPStatusCode: Hashable {}
 extension HTTPStatusCode {
 
     var isSuccessfulResponse: Bool {
-        return self.rawValue < HTTPStatusCode.redirect.rawValue
+        return 200...299 ~= self.rawValue
     }
 
     var isServerError: Bool {
-        return self.rawValue >= HTTPStatusCode.internalServerError.rawValue
+        return 500...599 ~= self.rawValue
     }
 
 }
