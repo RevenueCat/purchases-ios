@@ -7,6 +7,7 @@ import Foundation
 @testable import RevenueCat
 
 extension ProductRequestData {
+
     static func createMockProductData(productIdentifier: String = "product_id",
                                       paymentMode: StoreProductDiscount.PaymentMode? = nil,
                                       currencyCode: String = "UYU",
@@ -28,4 +29,5 @@ extension ProductRequestData {
                            subscriptionGroup: subscriptionGroup,
                            discounts: discounts.map { $0.map(StoreProductDiscount.from) })
     }
+
 }
