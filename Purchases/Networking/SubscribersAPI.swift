@@ -83,7 +83,8 @@ class SubscribersAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
-        let postData = PostReceiptDataOperation.PostData(receiptData: receiptData,
+        let postData = PostReceiptDataOperation.PostData(appUserID: appUserID,
+                                                         receiptData: receiptData,
                                                          isRestore: isRestore,
                                                          productData: productData,
                                                          presentedOfferingIdentifier: offeringIdentifier,

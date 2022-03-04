@@ -82,8 +82,8 @@ private extension GetIntroEligibilityOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(body: ["product_identifiers": self.productIdentifiers,
-                                                       "fetch_token": self.receiptData.asFetchToken]),
+        let request = HTTPRequest(method: .post(Body(productIdentifiers: self.productIdentifiers,
+                                                     fetchToken: self.receiptData.asFetchToken)),
                                   path: .getIntroEligibility(appUserID: appUserID))
 
         httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
@@ -121,6 +121,17 @@ private extension GetIntroEligibilityOperation {
         }()
 
         response.completion(result, nil)
+    }
+
+}
+
+private extension GetIntroEligibilityOperation {
+
+    struct Body: Encodable {
+
+        let productIdentifiers: [String]
+        let fetchToken: String
+
     }
 
 }

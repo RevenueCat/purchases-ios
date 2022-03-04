@@ -55,3 +55,12 @@ import Foundation
     case mParticle
 
 }
+
+extension AttributionNetwork: Encodable {
+
+    // swiftlint:disable:next missing_docs
+    public func encode(to encoder: Encoder) throws {
+        try self.rawValue.encode(to: encoder)
+    }
+
+}

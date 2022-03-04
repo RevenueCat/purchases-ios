@@ -15,7 +15,6 @@ import Foundation
 
 class PostSubscriberAttributesOperation: NetworkOperation {
 
-    private let subscriberAttributesMarshaller: SubscriberAttributesMarshaller
     private let subscriberAttributeHandler: SubscriberAttributeHandler
     private let configuration: UserSpecificConfiguration
     private let subscriberAttributes: SubscriberAttributeDict
@@ -24,12 +23,10 @@ class PostSubscriberAttributesOperation: NetworkOperation {
     init(configuration: UserSpecificConfiguration,
          subscriberAttributes: SubscriberAttributeDict,
          completion: SimpleResponseHandler?,
-         subscriberAttributesMarshaller: SubscriberAttributesMarshaller = SubscriberAttributesMarshaller(),
          subscriberAttributeHandler: SubscriberAttributeHandler = SubscriberAttributeHandler()) {
         self.configuration = configuration
         self.subscriberAttributes = subscriberAttributes
         self.responseHandler = completion
-        self.subscriberAttributesMarshaller = subscriberAttributesMarshaller
         self.subscriberAttributeHandler = subscriberAttributeHandler
 
         super.init(configuration: configuration)
@@ -55,9 +52,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
             return
         }
 
-        let attributesInBackendFormat = self.subscriberAttributesMarshaller
-            .map(subscriberAttributes: self.subscriberAttributes)
-        let request = HTTPRequest(method: .post(body: ["attributes": attributesInBackendFormat]),
+        let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)),
                                   path: .postSubscriberAttributes(appUserID: appUserID))
 
         httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
@@ -74,6 +69,22 @@ class PostSubscriberAttributesOperation: NetworkOperation {
                                                                              error: error,
                                                                              completion: responseHandler)
         }
+    }
+
+}
+
+extension PostSubscriberAttributesOperation {
+
+    private struct Body: Encodable {
+
+        let attributes: AnyEncodable
+
+        init(_ attributes: SubscriberAttributeDict) {
+            self.attributes = AnyEncodable(
+                SubscriberAttributesMarshaller.map(subscriberAttributes: attributes)
+            )
+        }
+
     }
 
 }

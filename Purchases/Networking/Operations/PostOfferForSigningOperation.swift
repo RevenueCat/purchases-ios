@@ -44,14 +44,7 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     private func post(completion: @escaping () -> Void) {
         let request = HTTPRequest(
-            method: .post(body: ["app_user_id": self.configuration.appUserID,
-                                 "fetch_token": self.postOfferData.receiptData.asFetchToken,
-                                 "generate_offers": [
-                                    ["offer_id": self.postOfferData.offerIdentifier,
-                                     "product_id": self.postOfferData.productIdentifier,
-                                     "subscription_group": self.postOfferData.subscriptionGroup
-                                    ]
-                                 ]]),
+            method: .post(Body(appUserID: self.configuration.appUserID, data: self.postOfferData)),
             path: .postOfferForSigning
         )
 
@@ -120,6 +113,39 @@ class PostOfferForSigningOperation: NetworkOperation {
             let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             return (nil, nil, nil, nil, signatureError)
         }
+    }
+
+}
+
+private extension PostOfferForSigningOperation {
+
+    struct Body: Encodable {
+
+        // swiftlint:disable:next nesting
+        struct Offer: Encodable {
+
+            let offerID: String
+            let productID: String
+            let subscriptionGroup: String
+
+        }
+
+        let appUserID: String
+        let fetchToken: String
+        let generateOffers: [Offer]
+
+        init(appUserID: String, data: PostOfferForSigningData) {
+            self.appUserID = appUserID
+            self.fetchToken = data.receiptData.asFetchToken
+            self.generateOffers = [
+                .init(
+                    offerID: data.offerIdentifier,
+                    productID: data.productIdentifier,
+                    subscriptionGroup: data.subscriptionGroup
+                )
+            ]
+        }
+
     }
 
 }

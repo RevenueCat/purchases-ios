@@ -1489,12 +1489,12 @@
 			isa = PBXGroup;
 			children = (
 				B34605AE279A6E380031CA74 /* Handling */,
+				B34605AB279A6E380031CA74 /* NetworkOperation.swift */,
 				B34605AC279A6E380031CA74 /* CreateAliasOperation.swift */,
 				B34605B5279A6E380031CA74 /* GetCustomerInfoOperation.swift */,
 				B34605B4279A6E380031CA74 /* GetIntroEligibilityOperation.swift */,
 				B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */,
 				B34605B7279A6E380031CA74 /* LogInOperation.swift */,
-				B34605AB279A6E380031CA74 /* NetworkOperation.swift */,
 				B34605B8279A6E380031CA74 /* PostAttributionDataOperation.swift */,
 				B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */,
 				B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */,

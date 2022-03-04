@@ -47,8 +47,8 @@ private extension LogInOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(body: ["app_user_id": self.configuration.appUserID,
-                                                       "new_app_user_id": newAppUserID]),
+        let request = HTTPRequest(method: .post(Body(appUserID: self.configuration.appUserID,
+                                                     newAppUserID: newAppUserID)),
                                   path: .logIn)
 
         self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
@@ -104,4 +104,15 @@ private extension LogInOperation {
 
         completion(result.info, result.cancelled, result.error)
     }
+}
+
+private extension LogInOperation {
+
+    struct Body: Encodable {
+
+        let appUserID: String
+        let newAppUserID: String
+
+    }
+
 }

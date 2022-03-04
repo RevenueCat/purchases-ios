@@ -17,6 +17,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
 
     struct PostData {
 
+        let appUserID: String
         let receiptData: Data
         let isRestore: Bool
         let productData: ProductRequestData?
@@ -28,16 +29,13 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
 
     private let postData: PostData
     private let configuration: AppUserConfiguration
-    private let subscriberAttributesMarshaller: SubscriberAttributesMarshaller
     private let customerInfoResponseHandler: CustomerInfoResponseHandler
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
 
     init(configuration: UserSpecificConfiguration,
          postData: PostData,
-         subscriberAttributesMarshaller: SubscriberAttributesMarshaller = SubscriberAttributesMarshaller(),
          customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
          customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>) {
-        self.subscriberAttributesMarshaller = subscriberAttributesMarshaller
         self.customerInfoResponseHandler = customerInfoResponseHandler
         self.customerInfoCallbackCache = customerInfoCallbackCache
         self.postData = postData
@@ -59,38 +57,8 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
     }
 
     private func post(completion: @escaping () -> Void) {
-        let fetchToken = self.postData.receiptData.asFetchToken
-        var body: [String: Any] = [
-            "fetch_token": fetchToken,
-            "app_user_id": self.configuration.appUserID,
-            "is_restore": self.postData.isRestore,
-            "observer_mode": self.postData.observerMode
-        ]
-
-        if let productData = self.postData.productData {
-            do {
-                body += try productData.asDictionary()
-            } catch {
-                self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                    callback.completion(nil, error)
-                }
-
-                completion()
-                return
-            }
-        }
-
-        if let subscriberAttributesByKey = self.postData.subscriberAttributesByKey {
-            let attributesInBackendFormat = self.subscriberAttributesMarshaller
-                .map(subscriberAttributes: subscriberAttributesByKey)
-            body["attributes"] = attributesInBackendFormat
-        }
-
-        if let offeringIdentifier = self.postData.presentedOfferingIdentifier {
-            body["presented_offering_identifier"] = offeringIdentifier
-        }
-
-        let request = HTTPRequest(method: .post(body: body), path: .postReceiptData)
+        let request = HTTPRequest(method: .post(self.postData),
+                                  path: .postReceiptData)
 
         httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
@@ -102,6 +70,44 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
 
             completion()
         }
+    }
+
+}
+
+extension PostReceiptDataOperation.PostData: Encodable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case fetchToken
+        case appUserID
+        case isRestore
+        case observerMode
+        case attributes
+        case presentedOfferingIdentifier
+
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(self.receiptData.asFetchToken, forKey: .fetchToken)
+        try container.encode(self.appUserID, forKey: .appUserID)
+        try container.encode(self.isRestore, forKey: .isRestore)
+        try container.encode(self.observerMode, forKey: .observerMode)
+
+        if let productData = self.productData {
+            try productData.encode(to: encoder)
+        }
+
+        try container.encodeIfPresent(self.presentedOfferingIdentifier,
+                                      forKey: .presentedOfferingIdentifier)
+
+        try container.encodeIfPresent(
+            self.subscriberAttributesByKey
+                .map(SubscriberAttributesMarshaller.map)
+                .map(AnyEncodable.init),
+            forKey: .attributes
+        )
     }
 
 }

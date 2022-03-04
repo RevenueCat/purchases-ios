@@ -80,7 +80,6 @@ private extension HTTPClient {
 
         var method: HTTPRequest.Method { self.httpRequest.method }
         var path: String { self.httpRequest.path.description }
-        var requestBody: HTTPRequest.Body? { self.httpRequest.requestBody }
 
         func adding(defaultHeaders: HTTPClient.RequestHeaders) -> Self {
             var copy = self
@@ -100,12 +99,12 @@ private extension HTTPClient {
             """
             <\(type(of: self)): httpMethod=\(self.method.httpMethod)
             path=\(self.path)
-            requestBody=\(self.requestBody?.description ?? "(null)")
             headers=\(self.headers.description )
             retried=\(self.retried)
             >
             """
         }
+
     }
     // swiftlint:enable nesting
 
@@ -246,11 +245,7 @@ private extension HTTPClient {
         let urlRequest = self.convert(request: request.adding(defaultHeaders: self.defaultHeaders))
 
         guard let urlRequest = urlRequest else {
-            if case let .post(requestBody) = request.method {
-                Logger.error("Could not create request to \(request.path) with body \(requestBody)")
-            } else {
-                Logger.error("Could not create request to \(request.path) without body")
-            }
+            Logger.error("Could not create request to \(request.path)")
 
             request.completionHandler?(.invalidRequest,
                                        nil,
@@ -283,20 +278,11 @@ private extension HTTPClient {
         let headersWithETag = request.headers.merging(eTagHeader)
 
         urlRequest.allHTTPHeaderFields = headersWithETag
-
-        if let requestBody = request.requestBody {
-            if JSONSerialization.isValidJSONObject(requestBody) {
-                do {
-                    urlRequest.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-                } catch {
-                    Logger.error(Strings.network.creating_json_error(requestBody: requestBody,
-                                                                     error: error.localizedDescription))
-                    return nil
-                }
-            } else {
-                Logger.error(Strings.network.creating_json_error_invalid(requestBody: requestBody))
-                return nil
-            }
+        do {
+            urlRequest.httpBody = try request.httpRequest.requestBody?.asData()
+        } catch {
+            Logger.error(Strings.network.creating_json_error(error: error.localizedDescription))
+            return nil
         }
 
         return urlRequest
@@ -318,3 +304,18 @@ extension HTTPRequest.Path {
     private static let pathPrefix: String = "/v1"
 
 }
+
+private extension Encodable {
+
+    func asData() throws -> Data {
+        return try jsonEncoder.encode(self)
+    }
+
+}
+
+private let jsonEncoder: JSONEncoder = {
+    let encoder = JSONEncoder()
+    encoder.keyEncodingStrategy = .convertToSnakeCase
+
+    return encoder
+}()

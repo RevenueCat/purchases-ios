@@ -42,7 +42,7 @@ class MockHTTPClient: HTTPClient {
                           completionHandler: Completion?) {
         DispatchQueue.main.async { [self] in
             if let body = request.requestBody {
-                assertSnapshot(matching: body, as: .json,
+                assertSnapshot(matching: body, as: .formattedJson,
                                file: self.sourceTest,
                                testName: CurrentTestCaseTracker.sanitizedTestName)
             }

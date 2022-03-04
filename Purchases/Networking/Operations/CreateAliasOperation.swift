@@ -51,7 +51,7 @@ private extension CreateAliasOperation {
         }
         Logger.user(Strings.identity.creating_alias)
 
-        let request = HTTPRequest(method: .post(body: ["new_app_user_id": newAppUserID]),
+        let request = HTTPRequest(method: .post(Body(newAppUserID: newAppUserID)),
                                   path: .createAlias(appUserID: appUserID))
 
         httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
@@ -69,6 +69,16 @@ private extension CreateAliasOperation {
 
             completion()
         }
+    }
+
+}
+
+private extension CreateAliasOperation {
+
+    struct Body: Encodable {
+
+        let newAppUserID: String
+
     }
 
 }
