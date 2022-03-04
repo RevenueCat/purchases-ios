@@ -1270,6 +1270,9 @@ public extension Purchases {
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      * - Parameter completion: A block that receives a dictionary of `product_id` -> ``IntroEligibility``.
+     *
+     * ### Related symbols
+     * - ``checkTrialOrIntroDiscountEligibility(product:completion:)``
      */
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
@@ -1294,10 +1297,68 @@ public extension Purchases {
      * version of iOS so that the subscription group can be collected by the SDK.
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
+     *
+     * ### Related symbols
+     * - ``checkTrialOrIntroDiscountEligibility(product:)``
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
+    }
+
+    /**
+     * Computes whether or not a user is eligible for the introductory pricing period of a given product.
+     * You should use this method to determine whether or not you show the user the normal product price or
+     * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+     * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
+     *
+     * - Note: If you're looking to use Promotional Offers instead,
+     * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
+     *
+     * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
+     * definitively compute the eligibility, most likely because of missing group information, it will return
+     * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
+     * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
+     * version of iOS so that the subscription group can be collected by the SDK.
+     *
+     *
+     * - Parameter product: The ``StoreProduct``  for which you want to compute eligibility.
+     * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
+     *
+     * ### Related symbols
+     * - ``checkTrialOrIntroDiscountEligibility(_:completion:)``
+     */
+    @objc(checkTrialOrIntroDiscountEligibilityForProduct:completion:)
+    func checkTrialOrIntroDiscountEligibility(product: StoreProduct,
+                                              completion: @escaping (IntroEligibilityStatus) -> Void) {
+        trialOrIntroPriceEligibilityChecker.checkEligibility(product: product, completion: completion)
+    }
+
+    /**
+     * Computes whether or not a user is eligible for the introductory pricing period of a given product.
+     * You should use this method to determine whether or not you show the user the normal product price or
+     * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+     * [iOS Introductory  Offers](https://docs.revenuecat.com/docs/ios-subscription-offers).
+     *
+     * - Note: If you're looking to use Promotional Offers instead,
+     * use ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``.
+     *
+     * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
+     * definitively compute the eligibility, most likely because of missing group information, it will return
+     * ``IntroEligibilityStatus/unknown``. The best course of action on unknown status is to display the non-intro
+     * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
+     * version of iOS so that the subscription group can be collected by the SDK.
+     *
+     *
+     * - Parameter product: The ``StoreProduct``  for which you want to compute eligibility.
+     * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
+     *
+     * ### Related symbols
+     * - ``checkTrialOrIntroDiscountEligibility(_:)``
+     */
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
+        return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
     }
 
     /**

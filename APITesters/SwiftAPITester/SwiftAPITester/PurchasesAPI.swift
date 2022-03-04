@@ -111,6 +111,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
+    purchases.checkTrialOrIntroDiscountEligibility(product: storeProduct) { (_: IntroEligibilityStatus) in }
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
     purchases.getPromotionalOffer(
         forProductDiscount: discount,
@@ -175,6 +176,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
     do {
         let _: (CustomerInfo, Bool) = try await purchases.logIn("")
+        let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility([])
         let _: PromotionalOffer = try await purchases.getPromotionalOffer(
             forProductDiscount: discount,

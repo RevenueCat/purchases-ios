@@ -66,6 +66,13 @@ class TrialOrIntroPriceEligibilityChecker {
         }
     }
 
+    func checkEligibility(product: StoreProduct,
+                          completion: @escaping (IntroEligibilityStatus) -> Void) {
+        checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
+            completion(eligibility[product.productIdentifier]?.status ?? .unknown)
+        }
+    }
+
     func sk1CheckEligibility(_ productIdentifiers: [String],
                              completion: @escaping ReceiveIntroEligibilityBlock) {
         receiptFetcher.receiptData(refreshPolicy: .never) { data in
