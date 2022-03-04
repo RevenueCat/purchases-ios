@@ -34,7 +34,7 @@ Select your target in Xcode, then go to Build Phases, and ensure that your targe
 references `RevenueCat`, and remove the reference to `Purchases` if it was still there.
 | Before | After |
 | :-: | :-: |
-| ![link binary with libraries before](Resources/migration_guide_assets/link_binary_with_libraries_before_spm.png) | ![link binary with libraries after](Resources/migration_guide_assets/link_binary_with_libraries_after_spm.png) |
+| ![link binary with libraries before](link_binary_with_libraries_before_spm) | ![link binary with libraries after](link_binary_with_libraries_after_spm) |
 
 #### 1.2 Update CocoaPods dependency (if needed)
 
@@ -54,8 +54,8 @@ Do the same with the Embed Frameworks section.
 
 | Before | After |
 | :-: | :-: |
-| ![link binary with libraries before](Resources/migration_guide_assets/link_binary_with_libraries_before_carthage.png) | ![link binary with libraries after](Resources/migration_guide_assets/link_binary_with_libraries_after_carthage.png) |
-| ![embed frameworks before](Resources/migration_guide_assets/embed_frameworks_before_carthage.png) | ![embed frameworks after](Resources/migration_guide_assets/embed_frameworks_after_carthage.png) |
+| ![link binary with libraries before](link_binary_with_libraries_before_carthage) | ![link binary with libraries after](link_binary_with_libraries_after_carthage) |
+| ![embed frameworks before](embed_frameworks_before_carthage) | ![embed frameworks after](embed_frameworks_after_carthage) |
 
 ##### 1.3.2 Using Platform-specific frameworks
 
