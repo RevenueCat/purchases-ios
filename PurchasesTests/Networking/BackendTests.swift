@@ -14,10 +14,8 @@ import XCTest
 @testable import RevenueCat
 
 class BackendTests: XCTestCase {
-    struct HTTPRequest {
-        let HTTPMethod: String
-        let path: String
-        let body: [String: Any]?
+    struct RequestCall {
+        let request: HTTPRequest
         let headers: [String: String]
     }
 
@@ -34,50 +32,23 @@ class BackendTests: XCTestCase {
 
     class MockHTTPClient: HTTPClient {
 
-        var mocks: [String: HTTPResponse] = [:]
-        var calls: [HTTPRequest] = []
+        var mocks: [HTTPRequest.Path: HTTPResponse] = [:]
+        var calls: [RequestCall] = []
 
         var shouldFinish = true
 
-        override func performGETRequest(path: String,
-                                        headers authHeaders: [String: String],
-                                        completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
-            performRequest("GET",
-                           path: path,
-                           requestBody: nil,
-                           headers: authHeaders,
-                           completionHandler: completionHandler)
-        }
+        override func perform(_ request: HTTPRequest,
+                              authHeaders: [String: String],
+                              completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+            assert(mocks[request.path] != nil, "Path '\(request.path.relativePath)' not mocked")
+            let response = mocks[request.path]!
 
-        override func performPOSTRequest(path: String,
-                                         requestBody: [String: Any],
-                                         headers authHeaders: [String: String],
-                                         completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
-            performRequest("POST",
-                           path: path,
-                           requestBody: requestBody,
-                           headers: authHeaders,
-                           completionHandler: completionHandler)
-        }
-
-        private func performRequest(_ httpMethod: String,
-                                    path: String,
-                                    requestBody: [String: Any]?,
-                                    headers: [String: String],
-                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
-                                    file: StaticString = #file) {
-            assert(mocks[path] != nil, "Path " + path + " not mocked")
-            let response = mocks[path]!
-
-            if let body = requestBody {
+            if let body = request.requestBody {
                 assertSnapshot(matching: body, as: .json,
-                               file: file, testName: CurrentTestCaseTracker.sanitizedTestName)
+                               file: #file, testName: CurrentTestCaseTracker.sanitizedTestName)
             }
 
-            calls.append(HTTPRequest(HTTPMethod: httpMethod,
-                                     path: path,
-                                     body: requestBody,
-                                     headers: headers))
+            calls.append(RequestCall(request: request, headers: authHeaders))
 
             if shouldFinish {
                 DispatchQueue.main.async {
@@ -88,7 +59,7 @@ class BackendTests: XCTestCase {
             }
         }
 
-        func mock(requestPath: String, response: HTTPResponse) {
+        func mock(requestPath: HTTPRequest.Path, response: HTTPResponse) {
             mocks[requestPath] = response
         }
     }
@@ -164,8 +135,10 @@ class BackendTests: XCTestCase {
     }
 
     func testPostsReceiptDataCorrectly() {
+        let path: HTTPRequest.Path = .postReceiptData
+
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: path, response: response)
 
         var completionCalled = false
 
@@ -183,22 +156,17 @@ class BackendTests: XCTestCase {
             completionCalled = true
         })
 
-        let expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       path: "/receipts",
-                                       body: ["app_user_id": userID,
-                                              "fetch_token": receiptData.base64EncodedString(),
-                                              "is_restore": isRestore,
-                                              "observer_mode": observerMode],
-                                       headers: ["Authorization": "Bearer " + apiKey])
+        let expectedCall = RequestCall(
+            request: .init(method: .post(body: ["app_user_id": userID,
+                                                "fetch_token": receiptData.base64EncodedString(),
+                                                "is_restore": isRestore,
+                                                "observer_mode": observerMode]),
+                           path: path),
+            headers: ["Authorization": "Bearer " + apiKey])
+
         expect(self.httpClient.calls.count).toEventually(equal(1))
         if self.httpClient.calls.count > 0 {
-            let call = self.httpClient.calls[0]
-
-            expect(call.path).to(equal(expectedCall.path))
-            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
-            XCTAssertEqual(call.body!.keys, expectedCall.body!.keys)
-            expect(call.headers["Authorization"]).toNot(beNil())
-            expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
+            self.httpClient.calls[0].expectToEqual(expectedCall)
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -206,7 +174,7 @@ class BackendTests: XCTestCase {
 
     func testCachesRequestsForSameReceipt() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var completionCalled = 0
 
@@ -241,7 +209,7 @@ class BackendTests: XCTestCase {
 
     func testDoesntCacheForDifferentRestore() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var completionCalled = 0
 
@@ -276,7 +244,7 @@ class BackendTests: XCTestCase {
 
     func testDoesntCacheForDifferentReceipts() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var completionCalled = 0
 
@@ -311,7 +279,7 @@ class BackendTests: XCTestCase {
 
     func testDoesntCacheForDifferentCurrency() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var completionCalled = 0
 
@@ -347,7 +315,7 @@ class BackendTests: XCTestCase {
 
     func testDoesntCacheForDifferentOffering() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var completionCalled = 0
 
@@ -382,10 +350,10 @@ class BackendTests: XCTestCase {
 
     func testCachesSubscriberGetsForSameSubscriber() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID), response: response)
 
-        backend.getSubscriberData(appUserID: userID) { _, _ in }
-        backend.getSubscriberData(appUserID: userID) { _, _ in }
+        backend.getCustomerInfo(appUserID: userID) { _, _ in }
+        backend.getCustomerInfo(appUserID: userID) { _, _ in }
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
     }
@@ -393,19 +361,18 @@ class BackendTests: XCTestCase {
     func testDoesntCacheSubscriberGetsForSameSubscriber() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         let userID2 = "user_id_2"
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
-        httpClient.mock(requestPath: "/subscribers/" + userID2, response: response)
+        httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID), response: response)
+        httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID2), response: response)
 
-        backend.getSubscriberData(appUserID: userID) { _, _ in }
-
-        backend.getSubscriberData(appUserID: userID2) { _, _ in }
+        backend.getCustomerInfo(appUserID: userID) { _, _ in }
+        backend.getCustomerInfo(appUserID: userID2) { _, _ in }
 
         expect(self.httpClient.calls.count).toEventually(equal(2))
     }
 
     func testPostsReceiptDataWithProductRequestDataCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         let productIdentifier = "a_great_product"
         let offeringIdentifier = "a_offering"
@@ -446,22 +413,13 @@ class BackendTests: XCTestCase {
             "observer_mode": false
         ]
 
-        let expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       path: "/receipts",
-                                       body: body,
+        let expectedCall = RequestCall(request: .init(method: .post(body: body), path: .postReceiptData),
                                        headers: ["Authorization": "Bearer " + apiKey])
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
 
         if self.httpClient.calls.count > 0 {
-            let call = self.httpClient.calls[0]
-
-            expect(call.path).to(equal(expectedCall.path))
-            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
-            expect(call.body!.keys) == expectedCall.body!.keys
-
-            expect(call.headers["Authorization"]).toNot(beNil())
-            expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
+            self.httpClient.calls[0].expectToEqual(expectedCall)
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -469,7 +427,7 @@ class BackendTests: XCTestCase {
 
     func testIndividualParamsCanBeNil() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var completionCalled = false
 
@@ -489,7 +447,7 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
 
         let call = self.httpClient.calls[0]
-        expect(call.body!["price"]).toNot(beNil())
+        expect(call.request.requestBody?["price"]).toNot(beNil())
     }
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
@@ -511,40 +469,37 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
     }
 
-    func checkCall(expectedValue: Int) {
-        let call = self.httpClient.calls.last!
-        if let mode = call.body!["payment_mode"] as? Int {
-            XCTAssertEqual(mode, expectedValue)
-        } else {
-            XCTFail("payment mode not in params")
-        }
+    func checkCall(expectedValue: Int, file: FileString = #file, line: UInt = #line) throws {
+        let call = try XCTUnwrap(self.httpClient.calls.last)
+        let mode = try XCTUnwrap(call.request.requestBody?["payment_mode"] as? Int)
+
+        expect(file: file, line: line, mode) == expectedValue
     }
 
-    func testPayAsYouGoPostsCorrectly() {
+    func testPayAsYouGoPostsCorrectly() throws {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
-
+        httpClient.mock(requestPath: .postReceiptData, response: response)
         postPaymentMode(paymentMode: .payAsYouGo)
-        checkCall(expectedValue: 0)
+        try checkCall(expectedValue: 0)
     }
 
-    func testPayUpFrontPostsCorrectly() {
+    func testPayUpFrontPostsCorrectly() throws {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
         postPaymentMode(paymentMode: .payUpFront)
-        checkCall(expectedValue: 1)
+        try checkCall(expectedValue: 1)
     }
 
-    func testFreeTrialPostsCorrectly() {
+    func testFreeTrialPostsCorrectly() throws {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
         postPaymentMode(paymentMode: .freeTrial)
-        checkCall(expectedValue: 2)
+        try checkCall(expectedValue: 2)
     }
 
     func testForwards500ErrorsCorrectlyForCustomerInfoCalls() {
         let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var error: NSError?
         var underlyingError: NSError?
@@ -570,7 +525,7 @@ class BackendTests: XCTestCase {
 
     func testForwards400ErrorsCorrectly() {
         let response = HTTPResponse(statusCode: 400, response: serverErrorResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var error: Error?
         var underlyingError: Error?
@@ -597,7 +552,7 @@ class BackendTests: XCTestCase {
 
     func testPostingReceiptCreatesASubscriberInfoObject() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var customerInfo: CustomerInfo?
 
@@ -620,33 +575,34 @@ class BackendTests: XCTestCase {
     }
 
     func testGetSubscriberCallsBackendProperly() {
-        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: userID)
 
-        backend.getSubscriberData(appUserID: userID) { _, _ in }
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: path, response: response)
+
+        backend.getCustomerInfo(appUserID: userID) { _, _ in }
+
+        let expectedCall = RequestCall(request: .init(method: .get, path: path),
+                                       headers: ["Authorization": "Bearer " + apiKey])
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
 
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
 
-            XCTAssertEqual(call.path, "/subscribers/" + userID)
-            XCTAssertEqual(call.HTTPMethod, "GET")
-            XCTAssertNil(call.body)
-            XCTAssertNotNil(call.headers["Authorization"])
-            XCTAssertEqual(call.headers["Authorization"], "Bearer " + apiKey)
+            call.expectToEqual(expectedCall)
         }
     }
 
     func testGetsSubscriberInfo() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID), response: response)
 
         var subscriberInfo: CustomerInfo?
 
-        backend.getSubscriberData(appUserID: userID, completion: { (newSubscriberInfo, _) in
+        backend.getCustomerInfo(appUserID: userID) { (newSubscriberInfo, _) in
             subscriberInfo = newSubscriberInfo
-        })
+        }
 
         expect(subscriberInfo).toEventuallyNot(beNil())
     }
@@ -655,28 +611,28 @@ class BackendTests: XCTestCase {
         let encodeableUserID = "userid with spaces"
         let encodedUserID = "userid%20with%20spaces"
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + encodedUserID, response: response)
-        httpClient.mock(requestPath: "/subscribers/" + encodeableUserID,
+        httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodedUserID), response: response)
+        httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodeableUserID),
                         response: HTTPResponse(statusCode: 404, response: nil, error: nil))
 
         var subscriberInfo: CustomerInfo?
 
-        backend.getSubscriberData(appUserID: encodeableUserID, completion: { (newSubscriberInfo, _) in
+        backend.getCustomerInfo(appUserID: encodeableUserID) { (newSubscriberInfo, _) in
             subscriberInfo = newSubscriberInfo
-        })
+        }
 
         expect(subscriberInfo).toEventuallyNot(beNil())
     }
 
     func testHandlesGetSubscriberInfoErrors() {
         let response = HTTPResponse(statusCode: 404, response: nil, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID), response: response)
 
         var error: NSError?
 
-        backend.getSubscriberData(appUserID: userID, completion: { (_, newError) in
+        backend.getCustomerInfo(appUserID: userID) { (_, newError) in
             error = newError as NSError?
-        })
+        }
 
         expect(error).toEventuallyNot(beNil())
         expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
@@ -688,13 +644,13 @@ class BackendTests: XCTestCase {
 
     func testHandlesInvalidJSON() {
         let response = HTTPResponse(statusCode: 200, response: ["sjkaljdklsjadkjs": ""], error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID), response: response)
 
         var error: NSError?
 
-        backend.getSubscriberData(appUserID: userID, completion: { (_, newError) in
+        backend.getCustomerInfo(appUserID: userID) { (_, newError) in
             error = newError as NSError?
-        })
+        }
 
         expect(error).toEventuallyNot(beNil())
         expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
@@ -708,16 +664,15 @@ class BackendTests: XCTestCase {
                                     completion: { _, error in
             expect(error).to(beNil())
         })
-        expect(self.httpClient.calls.count).to(equal(0))
 
+        expect(self.httpClient.calls.count).to(equal(0))
     }
 
     func testPostsProductIdentifiers() {
         let response = HTTPResponse(statusCode: 200,
                                     response: ["producta": true, "productb": false, "productd": NSNull()],
                                     error: nil)
-        let path = "/subscribers/" + userID + "/intro_eligibility"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getIntroEligibility(appUserID: userID), response: response)
 
         var eligibility: [String: IntroEligibility]?
 
@@ -731,18 +686,21 @@ class BackendTests: XCTestCase {
 
         })
 
+        let expectedCall = RequestCall(
+            request: .init(method: .post(body: [
+                "product_identifiers": products,
+                "fetch_token": ""
+            ]),
+                           path: .getIntroEligibility(appUserID: userID)),
+            headers: ["Authorization": "Bearer " + apiKey]
+        )
+
         expect(self.httpClient.calls.count).toEventually(equal(1))
         if httpClient.calls.count > 0 {
             let call = httpClient.calls[0]
 
-            expect(path).to(equal("/subscribers/" + userID + "/intro_eligibility"))
-            expect(call.HTTPMethod).to(equal("POST"))
-            expect(call.headers["Authorization"]).toNot(beNil())
-            expect(call.headers["Authorization"]).to(equal("Bearer " + apiKey))
-
-            expect(call.body).toNot(beNil())
-            expect(call.body!["product_identifiers"] as? [String]).to(equal(products))
-            expect(call.body!["fetch_token"]).toNot(beNil())
+            call.expectToEqual(expectedCall)
+            expect(call.request.requestBody?["product_identifiers"] as? [String]) == products
         }
 
         expect(eligibility).toEventuallyNot(beNil())
@@ -755,8 +713,7 @@ class BackendTests: XCTestCase {
 
     func testEligibilityUnknownIfError() {
         let response = HTTPResponse(statusCode: 499, response: serverErrorResponse, error: nil)
-        let path = "/subscribers/" + userID + "/intro_eligibility"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getIntroEligibility(appUserID: userID), response: response)
 
         var eligibility: [String: IntroEligibility]?
 
@@ -778,8 +735,7 @@ class BackendTests: XCTestCase {
     func testEligibilityUnknownIfMissingAppUserID() {
         // Set us up for a 404 because if the input sanitizing code fails, it will execute and we'd get a 404.
         let response = HTTPResponse(statusCode: 404, response: nil, error: nil)
-        let path = "/subscribers//intro_eligibility"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getIntroEligibility(appUserID: ""), response: response)
 
         var eligibility: [String: IntroEligibility]?
         let products = ["producta"]
@@ -833,8 +789,7 @@ class BackendTests: XCTestCase {
     func testEligibilityUnknownIfUnknownError() {
         let error = NSError(domain: "myhouse", code: 12, userInfo: nil) as Error
         let response = HTTPResponse(statusCode: 200, response: serverErrorResponse, error: error)
-        let path = "/subscribers/" + userID + "/intro_eligibility"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getIntroEligibility(appUserID: userID), response: response)
 
         var eligibility: [String: IntroEligibility]?
 
@@ -855,8 +810,7 @@ class BackendTests: XCTestCase {
 
     func testGetOfferingsCallsHTTPMethod() {
         let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String: Any], error: nil)
-        let path = "/subscribers/" + userID + "/offerings"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getOfferings(appUserID: userID), response: response)
 
         var offeringsData: [String: Any]?
 
@@ -870,8 +824,7 @@ class BackendTests: XCTestCase {
 
     func testGetOfferingsCachesForSameUserID() {
         let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String: Any], error: nil)
-        let path = "/subscribers/" + userID + "/offerings"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getOfferings(appUserID: userID), response: response)
         backend.getOfferings(appUserID: userID) { (_, _) in }
         backend.getOfferings(appUserID: userID) { (_, _) in }
 
@@ -881,8 +834,8 @@ class BackendTests: XCTestCase {
     func testGetEntitlementsDoesntCacheForMultipleUserID() {
         let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String: Any], error: nil)
         let userID2 = "user_id_2"
-        httpClient.mock(requestPath: "/subscribers/" + userID + "/offerings", response: response)
-        httpClient.mock(requestPath: "/subscribers/" + userID2 + "/offerings", response: response)
+        httpClient.mock(requestPath: .getOfferings(appUserID: userID), response: response)
+        httpClient.mock(requestPath: .getOfferings(appUserID: userID2), response: response)
 
         backend.getOfferings(appUserID: userID, completion: { (_, _) in })
         backend.getOfferings(appUserID: userID2, completion: { (_, _) in })
@@ -892,8 +845,7 @@ class BackendTests: XCTestCase {
 
     func testGetOfferingsOneOffering() {
         let response = HTTPResponse(statusCode: 200, response: oneOfferingResponse, error: nil)
-        let path = "/subscribers/" + userID + "/offerings"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getOfferings(appUserID: userID), response: response)
         var responseReceived: [String: Any]?
         var offerings: [[String: Any]]?
         var offeringA: [String: Any]?
@@ -920,8 +872,7 @@ class BackendTests: XCTestCase {
 
     func testGetOfferingsFailSendsNil() {
         let response = HTTPResponse(statusCode: 500, response: oneOfferingResponse, error: nil)
-        let path = "/subscribers/" + userID + "/offerings"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getOfferings(appUserID: userID), response: response)
 
         var offerings: [String: Any]?
 
@@ -934,8 +885,7 @@ class BackendTests: XCTestCase {
 
     func testPostAttributesPutsDataInDataKey() throws {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
-        let path = "/subscribers/" + userID + "/attribution"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .postAttributionData(appUserID: userID), response: response)
 
         let data: [String: AnyObject] = ["a": "b" as NSString, "c": "d" as NSString]
 
@@ -945,47 +895,48 @@ class BackendTests: XCTestCase {
                      completion: nil)
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
-        if self.httpClient.calls.count == 0 {
-            return
-        }
+        guard self.httpClient.calls.count >= 0 else { return }
 
         let call = self.httpClient.calls[0]
-        expect(call.body?.keys).to(contain("data"))
-        expect(call.body?.keys).to(contain("network"))
+        expect(call.request.requestBody?.keys).to(contain("data"))
+        expect(call.request.requestBody?.keys).to(contain("network"))
 
-        let postedData = try XCTUnwrap(call.body?["data"] as? [String: AnyObject])
+        let postedData = try XCTUnwrap(call.request.requestBody?["data"] as? [String: AnyObject])
         expect(postedData.keys).to(equal(data.keys))
     }
 
     func testAliasCallsBackendProperly() throws {
         var completionCalled = false
 
+        let path: HTTPRequest.Path = .createAlias(appUserID: userID)
+
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+        httpClient.mock(requestPath: path, response: response)
 
         backend.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: { (_) in
             completionCalled = true
         })
 
+        expect(completionCalled).toEventually(beTrue())
         expect(self.httpClient.calls.count).toEventually(equal(1))
 
         let call = self.httpClient.calls[0]
 
-        XCTAssertEqual(call.path, "/subscribers/" + userID + "/alias")
-        XCTAssertEqual(call.HTTPMethod, "POST")
-        XCTAssertNotNil(call.headers["Authorization"])
-        XCTAssertEqual(call.headers["Authorization"], "Bearer " + apiKey)
+        expect(call.request.path) == path
+        expect(call.headers) == [
+            "Authorization": "Bearer " + apiKey
+        ]
 
-        expect(call.body?.keys).to(contain("new_app_user_id"))
+        let body = try XCTUnwrap(call.request.requestBody)
+        expect(body.keys).to(contain("new_app_user_id"))
 
-        let postedData = try XCTUnwrap(call.body?["new_app_user_id"] as? String)
-        XCTAssertEqual(postedData, "new_alias")
-        expect(completionCalled).toEventually(beTrue())
+        let postedData = try XCTUnwrap(body["new_app_user_id"] as? String)
+        expect(postedData) == "new_alias"
     }
 
     func testCreateAliasCachesForSameUserIDs() {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+        httpClient.mock(requestPath: .createAlias(appUserID: userID), response: response)
 
         backend.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in }
         backend.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in }
@@ -995,10 +946,9 @@ class BackendTests: XCTestCase {
 
     func testCreateAliasDoesntCacheForDifferentNewUserID() {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+        httpClient.mock(requestPath: .createAlias(appUserID: userID), response: response)
 
         backend.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in }
-
         backend.createAlias(appUserID: userID, newAppUserID: "another_new_alias") { _ in }
 
         expect(self.httpClient.calls.count).toEventually(equal(2))
@@ -1006,7 +956,7 @@ class BackendTests: XCTestCase {
 
     func testCreateAliasCachesWhenCallbackNil() {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+        httpClient.mock(requestPath: .createAlias(appUserID: userID), response: response)
 
         backend.createAlias(appUserID: userID, newAppUserID: "new_alias") { _ in }
         backend.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: { _ in })
@@ -1016,7 +966,7 @@ class BackendTests: XCTestCase {
 
     func testCreateAliasCallsAllCompletionBlocksInCache() {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+        httpClient.mock(requestPath: .createAlias(appUserID: userID), response: response)
 
         var completion1Called = false
         var completion2Called = false
@@ -1041,10 +991,10 @@ class BackendTests: XCTestCase {
 
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
 
-        httpClient.mock(requestPath: "/subscribers/" + currentAppUserID1 + "/alias", response: response)
+        httpClient.mock(requestPath: .createAlias(appUserID: currentAppUserID1), response: response)
         backend.createAlias(appUserID: currentAppUserID1, newAppUserID: newAppUserID) { _ in }
 
-        httpClient.mock(requestPath: "/subscribers/" + currentAppUserID2 + "/alias", response: response)
+        httpClient.mock(requestPath: .createAlias(appUserID: currentAppUserID2), response: response)
         backend.createAlias(appUserID: currentAppUserID2, newAppUserID: newAppUserID) { _ in }
 
         expect(self.httpClient.calls.count).toEventually(equal(2))
@@ -1054,7 +1004,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200,
                                     response: nil,
                                     error: NSError(domain: NSURLErrorDomain, code: -1009))
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
         backend.post(receiptData: receiptData,
@@ -1081,7 +1031,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200,
                                     response: nil,
                                     error: NSError(domain: NSURLErrorDomain, code: -1009))
-        httpClient.mock(requestPath: "/subscribers/"+userID+"/alias", response: response)
+        httpClient.mock(requestPath: .createAlias(appUserID: userID), response: response)
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
         backend.createAlias(appUserID: userID, newAppUserID: "new", completion: { error in
@@ -1099,7 +1049,7 @@ class BackendTests: XCTestCase {
 
     func testForwards500ErrorsCorrectly() {
         let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
-        httpClient.mock(requestPath: "/subscribers/"+userID+"/alias", response: response)
+        httpClient.mock(requestPath: .createAlias(appUserID: userID), response: response)
 
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
@@ -1138,8 +1088,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200,
                                     response: nil,
                                     error: NSError(domain: NSURLErrorDomain, code: -1009))
-        let path = "/subscribers/" + userID + "/offerings"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getOfferings(appUserID: userID), response: response)
 
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
@@ -1158,8 +1107,7 @@ class BackendTests: XCTestCase {
 
     func test500GetOfferingsUnexpectedResponse() {
         let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
-        let path = "/subscribers/" + userID + "/offerings"
-        httpClient.mock(requestPath: path, response: response)
+        httpClient.mock(requestPath: .getOfferings(appUserID: userID), response: response)
 
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
@@ -1202,7 +1150,7 @@ class BackendTests: XCTestCase {
     @available(iOS 11.2, *)
     func testDoesntCacheForDifferentDiscounts() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var completionCalled = 0
         let isRestore = true
@@ -1244,8 +1192,10 @@ class BackendTests: XCTestCase {
 
     @available(iOS 11.2, *)
     func testPostsReceiptDataWithDiscountInfoCorrectly() {
+        let path: HTTPRequest.Path = .postReceiptData
+
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: path, response: response)
 
         let productIdentifier = "a_great_product"
         let price: Decimal = 15.99
@@ -1295,32 +1245,22 @@ class BackendTests: XCTestCase {
                 "payment_mode": 0
             ]
         ])
+        let headers = ["Authorization": "Bearer " + apiKey]
 
-        var expectedCall: HTTPRequest
+        var expectedCall: RequestCall
         if #available(iOS 12.2, macOS 10.14.4, *) {
-            expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       path: "/receipts",
-                                       body: bodyWithOffers,
-                                       headers: ["Authorization": "Bearer " + apiKey])
+            expectedCall = .init(request: .init(method: .post(body: bodyWithOffers), path: path),
+                                 headers: headers)
         } else {
-            expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       path: "/receipts",
-                                       body: body,
-                                       headers: ["Authorization": "Bearer " + apiKey])
+            expectedCall = .init(request: .init(method: .post(body: body), path: path),
+                                 headers: headers)
         }
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
 
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
-
-            expect(call.path).to(equal(expectedCall.path))
-            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
-
-            expect(call.headers["Authorization"]).toNot(beNil())
-            expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
-
-            expect(call.body!.keys) == expectedCall.body!.keys
+            call.expectToEqual(expectedCall)
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -1343,8 +1283,9 @@ class BackendTests: XCTestCase {
             ]
         ]
 
+        let path: HTTPRequest.Path = .postOfferForSigning
         let response = HTTPResponse(statusCode: 200, response: validSigningResponse, error: nil)
-        httpClient.mock(requestPath: "/offers", response: response)
+        httpClient.mock(requestPath: path, response: response)
 
         let productIdentifier = "a_great_product"
         let group = "sub_group"
@@ -1370,22 +1311,14 @@ class BackendTests: XCTestCase {
             ]
         ]
 
-        let expectedCall = HTTPRequest(HTTPMethod: "POST",
-                                       path: "/offers",
-                                       body: body,
+        let expectedCall = RequestCall(request: .init(method: .post(body: body), path: path),
                                        headers: ["Authorization": "Bearer " + apiKey])
 
         expect(self.httpClient.calls.count).toEventually(equal(1))
 
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
-
-            expect(call.path).to(equal(expectedCall.path))
-            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
-            XCTAssert(call.body!.keys == expectedCall.body!.keys)
-
-            expect(call.headers["Authorization"]).toNot(beNil())
-            expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
+            call.expectToEqual(expectedCall)
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -1395,7 +1328,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200,
                                     response: nil,
                                     error: NSError(domain: NSURLErrorDomain, code: -1009))
-        httpClient.mock(requestPath: "/offers", response: response)
+        httpClient.mock(requestPath: .postOfferForSigning, response: response)
 
         let productIdentifier = "a_great_product"
         let group = "sub_group"
@@ -1427,7 +1360,7 @@ class BackendTests: XCTestCase {
         ]
 
         let response = HTTPResponse(statusCode: 200, response: validSigningResponse, error: nil)
-        httpClient.mock(requestPath: "/offers", response: response)
+        httpClient.mock(requestPath: .postOfferForSigning, response: response)
 
         let productIdentifier = "a_great_product"
         let group = "sub_group"
@@ -1471,7 +1404,7 @@ class BackendTests: XCTestCase {
         ]
 
         let response = HTTPResponse(statusCode: 200, response: validSigningResponse, error: nil)
-        httpClient.mock(requestPath: "/offers", response: response)
+        httpClient.mock(requestPath: .postOfferForSigning, response: response)
 
         let productIdentifier = "a_great_product"
         let group = "sub_group"
@@ -1514,7 +1447,7 @@ class BackendTests: XCTestCase {
         ]
 
         let response = HTTPResponse(statusCode: 200, response: validSigningResponse, error: nil)
-        httpClient.mock(requestPath: "/offers", response: response)
+        httpClient.mock(requestPath: .postOfferForSigning, response: response)
 
         let productIdentifier = "a_great_product"
         let group = "sub_group"
@@ -1544,7 +1477,7 @@ class BackendTests: XCTestCase {
 
     func testOfferForSigning501Response() {
         let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
-        httpClient.mock(requestPath: "/offers", response: response)
+        httpClient.mock(requestPath: .postOfferForSigning, response: response)
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
@@ -1570,7 +1503,7 @@ class BackendTests: XCTestCase {
 
     func testDoesntCacheForDifferentOfferings() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
-        httpClient.mock(requestPath: "/receipts", response: response)
+        httpClient.mock(requestPath: .postReceiptData, response: response)
 
         var completionCalled = 0
         let isRestore = false
@@ -1604,7 +1537,7 @@ class BackendTests: XCTestCase {
     func testLoginMakesRightCalls() {
         let newAppUserID = "new id"
         let currentAppUserID = "old id"
-        let requestPath = mockLoginRequest(appUserID: currentAppUserID)
+        let requestPath = self.mockLoginRequest(appUserID: currentAppUserID)
         var completionCalled = false
 
         backend.logIn(currentAppUserID: currentAppUserID,
@@ -1617,10 +1550,9 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count) == 1
 
         let receivedCall = self.httpClient.calls[0]
-        expect(receivedCall.path) == requestPath
-        expect(receivedCall.HTTPMethod) == "POST"
-        expect(receivedCall.body as? [String: String]) == ["new_app_user_id": newAppUserID,
-                                                           "app_user_id": currentAppUserID]
+        expect(receivedCall.request.path) == requestPath
+        expect(receivedCall.request.requestBody as? [String: String]) == ["new_app_user_id": newAppUserID,
+                                                                          "app_user_id": currentAppUserID]
         expect(receivedCall.headers) == ["Authorization": "Bearer asharedsecret"]
     }
 
@@ -1664,7 +1596,7 @@ class BackendTests: XCTestCase {
                                    code: errorCode,
                                    userInfo: [:])
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
 
         var completionCalled = false
         var receivedError: Error?
@@ -1695,9 +1627,9 @@ class BackendTests: XCTestCase {
         let currentAppUserID = "old id"
         let underlyingErrorMessage = "header fields too large"
         let underlyingErrorCode = BackendErrorCode.cannotTransferPurchase.rawValue
-        _ = mockLoginRequest(appUserID: currentAppUserID,
-                             statusCode: 431,
-                             response: ["code": underlyingErrorCode, "message": underlyingErrorMessage])
+        _ = self.mockLoginRequest(appUserID: currentAppUserID,
+                                  statusCode: 431,
+                                  response: ["code": underlyingErrorCode, "message": underlyingErrorMessage])
 
         var completionCalled = false
         var receivedError: Error?
@@ -1732,7 +1664,7 @@ class BackendTests: XCTestCase {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: [:])
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: [:])
 
         var completionCalled = false
         var receivedError: Error?
@@ -1760,7 +1692,7 @@ class BackendTests: XCTestCase {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         var completionCalled = false
         var receivedError: Error?
@@ -1785,9 +1717,9 @@ class BackendTests: XCTestCase {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID,
-                             statusCode: 200,
-                             response: mockCustomerInfoDict)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID,
+                                  statusCode: 200,
+                                  response: mockCustomerInfoDict)
 
         var completionCalled = false
         var receivedError: Error?
@@ -1813,7 +1745,7 @@ class BackendTests: XCTestCase {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { _, _, _  in }
@@ -1828,7 +1760,7 @@ class BackendTests: XCTestCase {
         let secondNewAppUserID = "new id 2"
 
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { _, _, _  in }
@@ -1843,7 +1775,7 @@ class BackendTests: XCTestCase {
 
         let currentAppUserID = "old id"
         let currentAppUserID2 = "old id 2"
-        _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { _, _, _  in }
@@ -1857,7 +1789,7 @@ class BackendTests: XCTestCase {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         var completion1Called = false
         var completion2Called = false
@@ -1885,24 +1817,25 @@ class BackendTests: XCTestCase {
                 "subscriptions": []
             ]
         ]
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: userID)
         let customerInfoResponse = HTTPResponse(statusCode: 200, response: subscriberResponse)
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: customerInfoResponse)
+        httpClient.mock(requestPath: path, response: customerInfoResponse)
 
         var firstCustomerInfo: CustomerInfo?
         var secondCustomerInfo: CustomerInfo?
 
-        backend.getSubscriberData(appUserID: userID, completion: { (customerInfo, _) in
+        backend.getCustomerInfo(appUserID: userID, completion: { (customerInfo, _) in
             firstCustomerInfo = customerInfo
         })
 
-        backend.getSubscriberData(appUserID: userID, completion: { (customerInfo, _) in
+        backend.getCustomerInfo(appUserID: userID, completion: { (customerInfo, _) in
             secondCustomerInfo = customerInfo
         })
 
         expect(firstCustomerInfo).toEventuallyNot(beNil())
 
         expect(secondCustomerInfo) == firstCustomerInfo
-        expect(self.httpClient.calls.map { $0.path }) == ["/subscribers/\(self.userID)"]
+        expect(self.httpClient.calls.map { $0.request.path }) == [path]
     }
 
     func testGetsUpdatedSubscriberInfoAfterPost() {
@@ -1910,6 +1843,8 @@ class BackendTests: XCTestCase {
         dateComponent.month = 1
         let futureDateString = ISO8601DateFormatter()
             .string(from: Calendar.current.date(byAdding: dateComponent, to: Date())!)
+
+        let getCustomerInfoPath: HTTPRequest.Path = .getCustomerInfo(appUserID: self.userID)
 
         let validSubscriberResponse: [String: Any] = [
             "request_date": "2019-08-16T10:30:42Z",
@@ -1942,8 +1877,8 @@ class BackendTests: XCTestCase {
         let initialCustomerInfoResponse = HTTPResponse(statusCode: 200, response: validSubscriberResponse)
         let updatedCustomerInfoResponse = HTTPResponse(statusCode: 200, response: validUpdatedSubscriberResponse)
         let postResponse = HTTPResponse(statusCode: 200, response: validUpdatedSubscriberResponse)
-        httpClient.mock(requestPath: "/receipts", response: postResponse)
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: initialCustomerInfoResponse)
+        httpClient.mock(requestPath: .postReceiptData, response: postResponse)
+        httpClient.mock(requestPath: getCustomerInfoPath, response: initialCustomerInfoResponse)
 
         var originalSubscriberInfo: CustomerInfo?
         var updatedSubscriberInfo: CustomerInfo?
@@ -1952,11 +1887,11 @@ class BackendTests: XCTestCase {
         var callOrder: (initialGet: Bool,
                         postResponse: Bool,
                         updatedGet: Bool) = (false, false, false)
-        backend.getSubscriberData(appUserID: userID, completion: { (customerInfo, _) in
+        backend.getCustomerInfo(appUserID: userID, completion: { (customerInfo, _) in
             originalSubscriberInfo = customerInfo
             callOrder.initialGet = true
 
-            self.httpClient.mocks.removeValue(forKey: "/subscribers/\(self.userID)")
+            self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath)
         })
 
         backend.post(receiptData: receiptData,
@@ -1967,12 +1902,12 @@ class BackendTests: XCTestCase {
                      observerMode: true,
                      subscriberAttributes: nil,
                      completion: { (customerInfo, _) in
-            self.httpClient.mock(requestPath: "/subscribers/" + self.userID, response: updatedCustomerInfoResponse)
+            self.httpClient.mock(requestPath: getCustomerInfoPath, response: updatedCustomerInfoResponse)
             callOrder.postResponse = true
             postSubscriberInfo = customerInfo
         })
 
-        backend.getSubscriberData(appUserID: userID, completion: { (newSubscriberInfo, _) in
+        backend.getCustomerInfo(appUserID: userID, completion: { (newSubscriberInfo, _) in
             expect(callOrder) == (true, true, false)
             updatedSubscriberInfo = newSubscriberInfo
             callOrder.updatedGet = true
@@ -1984,10 +1919,10 @@ class BackendTests: XCTestCase {
         expect(updatedSubscriberInfo).to(equal(postSubscriberInfo))
         expect(updatedSubscriberInfo).toNot(equal(originalSubscriberInfo))
 
-        expect(self.httpClient.calls.map { $0.path }) == [
-            "/subscribers/\(self.userID)",
-            "/receipts",
-            "/subscribers/\(self.userID)"
+        expect(self.httpClient.calls.map { $0.request.path }) == [
+            getCustomerInfoPath,
+            .postReceiptData,
+            getCustomerInfoPath
         ]
     }
 
@@ -1998,11 +1933,13 @@ private extension BackendTests {
     func mockLoginRequest(appUserID: String,
                           statusCode: Int = 200,
                           response: [String: Any]? = [:],
-                          error: Error? = nil) -> String {
+                          error: Error? = nil) -> HTTPRequest.Path {
+        let path: HTTPRequest.Path = .logIn
         let response = HTTPResponse(statusCode: statusCode, response: response, error: error)
-        let requestPath = ("/subscribers/identify")
-        httpClient.mock(requestPath: requestPath, response: response)
-        return requestPath
+
+        self.httpClient.mock(requestPath: path, response: response)
+
+        return path
     }
 
     var mockCustomerInfoDict: [String: Any] { [
@@ -2014,4 +1951,21 @@ private extension BackendTests {
             "other_purchases": [:]
         ]
     ]}
+}
+
+private extension BackendTests.RequestCall {
+
+    func expectToEqual(_ other: BackendTests.RequestCall, file: FileString = #file, line: UInt = #line) {
+        switch other.request.method {
+        case .get:
+            expect(file: file, line: line, self.request.requestBody).to(beNil())
+
+        case let .post(body):
+            expect(file: file, line: line, self.request.requestBody?.keys) == body.keys
+        }
+
+        expect(file: file, line: line, self.request.path) == other.request.path
+        expect(file: file, line: line, self.headers) == other.headers
+    }
+
 }

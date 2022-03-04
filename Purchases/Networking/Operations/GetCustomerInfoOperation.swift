@@ -58,10 +58,9 @@ private extension GetCustomerInfoOperation {
             return
         }
 
-        let path = "/subscribers/\(appUserID)"
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: appUserID))
 
-        httpClient.performGETRequest(path: path,
-                                     headers: authHeaders) { statusCode, response, error in
+        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         statusCode: statusCode,

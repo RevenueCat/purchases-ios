@@ -40,7 +40,6 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testUsesTheCorrectHost() {
-        let path = "/a_random_path"
         let hostCorrect: Atomic<Bool> = .init(false)
 
         guard let host = SystemInfo.serverHostURL.host else { fatalError() }
@@ -49,16 +48,13 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: [:],
-                                       headers: [:],
-                                       completionHandler: nil)
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        self.client.perform(request, authHeaders: [:], completionHandler: nil)
 
         expect(hostCorrect.value).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testPassesHeaders() {
-        let path = "/a_random_path"
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("test_header")) { _ in
@@ -66,16 +62,15 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        self.client.perform(request,
+                            authHeaders: ["test_header": "value"],
+                            completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testAlwaysSetsContentTypeHeader() {
-        let path = "/a_random_path"
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("content-type", value: "application/json")) { _ in
@@ -83,16 +78,14 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testAlwaysPassesPlatformHeader() {
-        let path = "/a_random_path"
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("X-Platform", value: SystemInfo.platformHeader)) { _ in
@@ -100,16 +93,14 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testAlwaysPassesVersionHeader() {
-        let path = "/a_random_path"
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion)) { _ in
@@ -117,16 +108,14 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testAlwaysPassesPlatformVersion() {
-        let path = "/a_random_path"
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { _ in
@@ -134,33 +123,29 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testCallsTheGivenPath() {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let pathHit: Atomic<Bool> = .init(false)
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(request.path)) { _ in
             pathHit.value = true
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: [:],
-                                       completionHandler: nil)
+        self.client.perform(request, authHeaders: [:], completionHandler: nil)
 
         expect(pathHit.value).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testSendsBodyData() throws {
-        let path = "/a_random_path"
         let body = ["arg": "value"]
         let pathHit: Atomic<Bool> = .init(false)
 
@@ -170,25 +155,23 @@ class HTTPClientTests: XCTestCase {
             pathHit.value = true
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
+        let request = HTTPRequest(method: .post(body: body), path: .mockPath)
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: body,
-                                       headers: [:],
-                                       completionHandler: nil)
+        self.client.perform(request, authHeaders: [:], completionHandler: nil)
 
         expect(pathHit.value).toEventually(equal(true))
     }
 
     func testCallsCompletionHandlerWhenFinished() {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
         let completionCalled: Atomic<Bool> = .init(false)
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(request.path)) { _ in
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performGETRequest(path: path,
-                                      headers: [:]) { (_, _, _) in
+        self.client.perform(request, authHeaders: [:]) { (_, _, _) in
             completionCalled.value = true
         }
 
@@ -196,17 +179,17 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testHandlesRealErrorConditions() {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
         let successFailed: Atomic<Bool> = .init(false)
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(request.path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
             response.error = error
             return response
         }
-        self.client.performGETRequest(path: path,
-                                      headers: [:]) { (status, data, responseError) in
+        self.client.perform(request, authHeaders: [:]) { (status, data, responseError) in
             if let responseNSError = responseError as NSError? {
                 successFailed.value = (status >= 500
                                        && data == nil
@@ -221,22 +204,22 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testServerSide400s() {
-        let path = "/a_random_path"
-        let errorCode = 400 + arc4random() % 50
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let errorCode = Int32(400 + arc4random() % 50)
         let correctResponse: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
             return HTTPStubsResponse(
                 data: json.data(using: String.Encoding.utf8)!,
-                statusCode: Int32(errorCode),
+                statusCode: errorCode,
                 headers: nil
             )
         }
 
-        self.client.performGETRequest(path: path,
-                                      headers: [:]) { (status, data, error) in
+        self.client.perform(request, authHeaders: [:]) { (status, data, error) in
             correctResponse.value = (status == errorCode) && (data != nil) && (error == nil)
             if data != nil {
                 message.value = data?["message"] as? String
@@ -248,22 +231,22 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testServerSide500s() {
-        let path = "/a_random_path"
-        let errorCode = 500 + arc4random() % 50
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let errorCode = Int32(500 + arc4random() % 50)
         let correctResponse: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
             return HTTPStubsResponse(
                 data: json.data(using: String.Encoding.utf8)!,
-                statusCode: Int32(errorCode),
+                statusCode: errorCode,
                 headers: nil
             )
         }
 
-        self.client.performGETRequest(path: path,
-                                      headers: [:]) { (status, data, error) in
+        self.client.perform(request, authHeaders: [:]) { (status, data, error) in
             correctResponse.value = (status == errorCode) && (data != nil) && (error == nil)
             if data != nil {
                 message.value = data?["message"] as? String
@@ -275,11 +258,12 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testParseError() {
-        let path = "/a_random_path"
-        let errorCode = 200 + arc4random() % 300
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let errorCode = Int32(200 + arc4random() % 300)
         let correctResponse: Atomic<Bool> = .init(false)
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(request.path)) { _ in
             let json = "{this is not JSON.csdsd"
             return HTTPStubsResponse(
                 data: json.data(using: String.Encoding.utf8)!,
@@ -288,8 +272,7 @@ class HTTPClientTests: XCTestCase {
             )
         }
 
-        self.client.performGETRequest(path: path,
-                                      headers: [:]) { (status, data, error) in
+        self.client.perform(request, authHeaders: [:]) { (status, data, error) in
             correctResponse.value = (status == errorCode) && (data == nil) && (error != nil)
         }
 
@@ -297,18 +280,17 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testServerSide200s() {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let successIsTrue: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is great up in the cloud\"}"
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
         }
 
-        self.client.performGETRequest(path: path,
-                                      headers: [:]) { (status, data, error) in
+        self.client.perform(request, authHeaders: [:]) { (status, data, error) in
             successIsTrue.value = (status == 200) && (error == nil)
             if data != nil {
                 message.value = data?["message"] as? String
@@ -320,7 +302,8 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testAlwaysPassesClientVersion() {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
 
         let version = SystemInfo.appVersion
@@ -330,16 +313,14 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testAlwaysPassesClientBuildVersion() throws {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
 
         let version = try XCTUnwrap(Bundle.main.infoDictionary!["CFBundleVersion"] as? String)
@@ -349,17 +330,15 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     #if os(macOS) || targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifierWhenIsSandbox() {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
         systemInfo.stubbedIsSandbox = true
 
@@ -370,10 +349,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -390,7 +366,8 @@ class HTTPClientTests: XCTestCase {
 
     #if !os(macOS) && !targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifier() {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
 
         let idfv = systemInfo.identifierForVendor!
@@ -400,17 +377,15 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
     #endif
 
     func testDefaultsPlatformFlavorToNative() {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { _ in
@@ -418,16 +393,14 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: Dictionary.init(),
-                                       headers: ["test_header": "value"],
-                                       completionHandler: nil)
+        self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testPassesPlatformFlavorHeader() throws {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { _ in
@@ -437,17 +410,16 @@ class HTTPClientTests: XCTestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
+
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-        client.performPOSTRequest(path: path,
-                                  requestBody: Dictionary.init(),
-                                  headers: ["test_header": "value"],
-                                  completionHandler: nil)
+        client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testPassesPlatformFlavorVersionHeader() throws {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor-Version", value: "1.2.3")) { _ in
@@ -459,16 +431,14 @@ class HTTPClientTests: XCTestCase {
                                         finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
-        client.performPOSTRequest(path: path,
-                                  requestBody: Dictionary.init(),
-                                  headers: ["test_header": "value"],
-                                  completionHandler: nil)
+        client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenEnabled() throws {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "false")) { _ in
@@ -477,16 +447,15 @@ class HTTPClientTests: XCTestCase {
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-        client.performPOSTRequest(path: path,
-                                  requestBody: Dictionary.init(),
-                                  headers: ["test_header": "value"],
-                                  completionHandler: nil)
+
+        client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenDisabled() throws {
-        let path = "/a_random_path"
+        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+
         let headerPresent: Atomic<Bool> = .init(false)
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "true")) { _ in
@@ -495,19 +464,18 @@ class HTTPClientTests: XCTestCase {
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-        client.performPOSTRequest(path: path,
-                                  requestBody: Dictionary.init(),
-                                  headers: ["test_header": "value"],
-                                  completionHandler: nil)
+
+        client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
         expect(headerPresent.value).toEventually(equal(true))
     }
 
     func testPerformSerialRequestPerformsAllRequestsInTheCorrectOrder() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let completionCallCount: Atomic<Int> = .init(0)
 
-        stub(condition: isPath("/v1" + path)) { request in
+        stub(condition: isPath(path)) { request in
             let requestNumber = self.extractRequestNumber(from: request)
             expect(requestNumber) == completionCallCount.value
 
@@ -518,9 +486,8 @@ class HTTPClientTests: XCTestCase {
 
         let serialRequests = 10
         for requestNumber in 0..<serialRequests {
-            client.performPOSTRequest(path: path,
-                                      requestBody: ["requestNumber": requestNumber],
-                                      headers: [:]) { (_, _, _) in
+            client.perform(.init(method: .requestNumber(requestNumber), path: path),
+                           authHeaders: [:]) { (_, _, _) in
                 completionCallCount.value += 1
             }
         }
@@ -528,11 +495,12 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let firstRequestFinished: Atomic<Bool> = .init(false)
         let secondRequestFinished: Atomic<Bool> = .init(false)
 
-        stub(condition: isPath("/v1" + path)) { request in
+        stub(condition: isPath(path)) { request in
             usleep(30)
             let requestNumber = self.extractRequestNumber(from: request)
             if requestNumber == 2 {
@@ -544,15 +512,13 @@ class HTTPClientTests: XCTestCase {
                 .responseTime(0.1)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: ["requestNumber": 1],
-                                       headers: [:]) { (_, _, _) in
+        self.client.perform(.init(method: .requestNumber(1), path: path),
+                            authHeaders: [:]) { (_, _, _) in
             firstRequestFinished.value = true
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: ["requestNumber": 2],
-                                       headers: [:]) { (_, _, _) in
+        self.client.perform(.init(method: .requestNumber(2), path: path),
+                            authHeaders: [:]) { (_, _, _) in
             secondRequestFinished.value = true
         }
 
@@ -561,12 +527,13 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPerformSerialRequestWaitsUntilRequestsAreDoneBeforeStartingNext() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let firstRequestFinished: Atomic<Bool> = .init(false)
         let secondRequestFinished: Atomic<Bool> = .init(false)
         let thirdRequestFinished: Atomic<Bool> = .init(false)
 
-        stub(condition: isPath("/v1" + path)) { request in
+        stub(condition: isPath(path)) { request in
             let requestNumber = self.extractRequestNumber(from: request)
             var responseTime = 0.5
             if requestNumber == 1 {
@@ -587,21 +554,18 @@ class HTTPClientTests: XCTestCase {
                 .responseTime(responseTime)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: ["requestNumber": 1],
-                                       headers: [:]) { (_, _, _) in
+        self.client.perform(.init(method: .requestNumber(1), path: path),
+                            authHeaders: [:]) { (_, _, _) in
             firstRequestFinished.value = true
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: ["requestNumber": 2],
-                                       headers: [:]) { (_, _, _) in
+        self.client.perform(.init(method: .requestNumber(2), path: path),
+                            authHeaders: [:]) { (_, _, _) in
             secondRequestFinished.value = true
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: ["requestNumber": 3],
-                                       headers: [:]) { (_, _, _) in
+        self.client.perform(.init(method: .requestNumber(3), path: path),
+                            authHeaders: [:]) { (_, _, _) in
             thirdRequestFinished.value = true
         }
 
@@ -611,18 +575,12 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() {
-        // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
-        // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
-        let nonJSONBody = ["something": Double.infinity]
-
-        let path = "/a_random_path"
         var completionCalled = false
         var receivedError: Error?
         var receivedStatus: Int?
         var receivedData: [String: Any]?
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: nonJSONBody,
-                                       headers: [:]) { (status, data, error) in
+        self.client.perform(.init(method: .invalidBody(), path: .mockPath),
+                            authHeaders: [:]) { (status, data, error) in
             completionCalled = true
             receivedError = error
             receivedStatus = status
@@ -638,22 +596,18 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
-        // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
-        // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
-        let nonJSONBody = ["something": Double.infinity]
+        let path: HTTPRequest.Path = .mockPath
 
-        let path = "/a_random_path"
         var completionCalled = false
         let httpCallMade: Atomic<Bool> = .init(false)
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(path)) { _ in
             httpCallMade.value = true
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
-        self.client.performPOSTRequest(path: path,
-                                       requestBody: nonJSONBody,
-                                       headers: [:]) { (_, _, _) in
+        self.client.perform(.init(method: .invalidBody(), path: path),
+                            authHeaders: [:]) { (_, _, _) in
             completionCalled = true
         }
 
@@ -662,11 +616,12 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testRequestIsRetriedIfResponseFromETagManagerIsNil() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let completionCalled: Atomic<Bool> = .init(false)
 
         let firstTimeCalled: Atomic<Bool> = .init(false)
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(path)) { _ in
             if firstTimeCalled.value {
                 self.eTagManager.shouldReturnResultFromBackend = true
             }
@@ -676,8 +631,7 @@ class HTTPClientTests: XCTestCase {
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.performGETRequest(path: path,
-                                      headers: [:]) { (_, _, _) in
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_, _, _) in
             completionCalled.value = true
         }
 
@@ -685,50 +639,44 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
             response.error = error
             return response
         }
 
-        self.client.performGETRequest(
-            path: path,
-            headers: [:],
-            completionHandler: nil
-        )
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:], completionHandler: nil)
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
     }
 
     func testDNSCheckerIsCalledWhenPOSTRequestFailedWithUnknownError() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
             response.error = error
             return response
         }
 
-        self.client.performPOSTRequest(
-            path: path,
-            requestBody: [:],
-            headers: [:],
-            completionHandler: nil
-        )
+        self.client.perform(.init(method: .post(body: [:]), path: path), authHeaders: [:], completionHandler: nil)
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
     }
 
     func testDNSCheckedIsCalledWhenPOSTRequestFailedWithDNSError() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let fakeSubscribersURL = URL(string: "https://0.0.0.0/subscribers")!
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL]
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
@@ -736,25 +684,21 @@ class HTTPClientTests: XCTestCase {
                                           userInfo: userInfo as [String: Any])
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = true
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
             response.error = nsErrorWithUserInfo
             return response
         }
 
-        self.client.performPOSTRequest(
-            path: path,
-            requestBody: [:],
-            headers: [:],
-            completionHandler: nil
-        )
+        self.client.perform(.init(method: .post(body: [:]), path: path), authHeaders: [:], completionHandler: nil)
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
     }
 
     func testDNSCheckedIsCalledWhenGETRequestFailedWithDNSError() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let fakeSubscribersURL = URL(string: "https://0.0.0.0/subscribers")!
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL]
         let nsErrorWithUserInfo = NSError(domain: NSURLErrorDomain,
@@ -762,24 +706,21 @@ class HTTPClientTests: XCTestCase {
                                           userInfo: userInfo as [String: Any])
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = true
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
             response.error = nsErrorWithUserInfo
             return response
         }
 
-        self.client.performGETRequest(
-            path: path,
-            headers: [:],
-            completionHandler: nil
-        )
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:], completionHandler: nil)
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
     }
 
     func testErrorIsLoggedAndReturnsDNSErrorWhenGETRequestFailedWithDNSError() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         let expectedDNSError = DNSError.blocked(
             failedURL: URL(string: "https://0.0.0.0/subscribers")!,
@@ -796,18 +737,16 @@ class HTTPClientTests: XCTestCase {
         }
         defer { Logger.logHandler = originalLogHandler }
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
             response.error = error
             return response
         }
 
         let obtainedError: Atomic<DNSError?> = .init(nil)
-        self.client.performGETRequest(
-            path: path,
-            headers: [:]) { _, _, error in
-                obtainedError.value = error as? DNSError
-            }
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:] ) { _, _, error in
+            obtainedError.value = error as? DNSError
+        }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
@@ -816,7 +755,8 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testErrorIsntLoggedWhenGETRequestFailedWithUnknownError() {
-        let path = "/a_random_path"
+        let path: HTTPRequest.Path = .mockPath
+
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         let unexpectedDNSError = DNSError.blocked(
             failedURL: URL(string: "https://0.0.0.0/subscribers")!,
@@ -830,17 +770,13 @@ class HTTPClientTests: XCTestCase {
             loggedMessages.append(message)
         }
 
-        stub(condition: isPath("/v1" + path)) { _ in
+        stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
             response.error = error
             return response
         }
 
-        self.client.performGETRequest(
-            path: path,
-            headers: [:],
-            completionHandler: nil
-        )
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:], completionHandler: nil)
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
@@ -850,6 +786,30 @@ class HTTPClientTests: XCTestCase {
 
 }
 
+// MARK: - Extensions
+
+private extension HTTPRequest.Path {
+
+    // Doesn't matter which path this is, we stub requests to it.
+    static let mockPath: Self = .logIn
+
+}
+
+private extension HTTPRequest.Method {
+
+    static func requestNumber(_ number: Int) -> Self {
+        return .post(body: [HTTPClientTests.requestNumberKeyName: number])
+    }
+
+    static func invalidBody() -> Self {
+        // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
+        // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
+        let nonJSONBody = ["something": Double.infinity]
+
+        return .post(body: nonJSONBody)
+    }
+}
+
 private extension HTTPClientTests {
 
     func extractRequestNumber(from urlRequest: URLRequest) -> Int? {
@@ -857,11 +817,17 @@ private extension HTTPClientTests {
             let requestData = urlRequest.ohhttpStubs_httpBody!
             let requestBodyDict = try XCTUnwrap(try JSONSerialization.jsonObject(with: requestData,
                                                                                  options: []) as? [String: Any])
-            return try XCTUnwrap(requestBodyDict["requestNumber"] as? Int)
+            return try XCTUnwrap(requestBodyDict[Self.requestNumberKeyName] as? Int)
         } catch {
             XCTFail("Couldn't extract the request number from the URLRequest")
             return nil
         }
     }
 
+    static let requestNumberKeyName = "request_number"
+
+}
+
+private func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
+    return isPath(path.relativePath)
 }

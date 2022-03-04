@@ -44,9 +44,9 @@ private extension GetOfferingsOperation {
             return
         }
 
-        let path = "/subscribers/\(appUserID)/offerings"
-        httpClient.performGETRequest(path: path,
-                                     headers: authHeaders) { statusCode, response, error in
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
+
+        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
             defer {
                 completion()
             }

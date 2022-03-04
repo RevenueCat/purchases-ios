@@ -102,7 +102,7 @@ class PurchasesTests: XCTestCase {
                 "other_purchases": [:]
             ]])
 
-        override func getSubscriberData(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
+        override func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
             getSubscriberCallCount += 1
             userID = appUserID
 

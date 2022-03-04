@@ -47,10 +47,11 @@ private extension LogInOperation {
             return
         }
 
-        let requestBody = ["app_user_id": self.configuration.appUserID, "new_app_user_id": newAppUserID]
-        self.httpClient.performPOSTRequest(path: "/subscribers/identify",
-                                           requestBody: requestBody,
-                                           headers: self.authHeaders) { statusCode, response, error in
+        let request = HTTPRequest(method: .post(body: ["app_user_id": self.configuration.appUserID,
+                                                       "new_app_user_id": newAppUserID]),
+                                  path: .logIn)
+
+        self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(response: response,
                                  statusCode: statusCode,

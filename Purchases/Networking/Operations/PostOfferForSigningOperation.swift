@@ -43,18 +43,19 @@ class PostOfferForSigningOperation: NetworkOperation {
     }
 
     private func post(completion: @escaping () -> Void) {
-        let requestBody: [String: Any] = ["app_user_id": self.configuration.appUserID,
-                                          "fetch_token": self.postOfferData.receiptData.asFetchToken,
-                                          "generate_offers": [
-                                            ["offer_id": self.postOfferData.offerIdentifier,
-                                             "product_id": self.postOfferData.productIdentifier,
-                                             "subscription_group": self.postOfferData.subscriptionGroup
-                                            ]
-                                          ]]
+        let request = HTTPRequest(
+            method: .post(body: ["app_user_id": self.configuration.appUserID,
+                                 "fetch_token": self.postOfferData.receiptData.asFetchToken,
+                                 "generate_offers": [
+                                    ["offer_id": self.postOfferData.offerIdentifier,
+                                     "product_id": self.postOfferData.productIdentifier,
+                                     "subscription_group": self.postOfferData.subscriptionGroup
+                                    ]
+                                 ]]),
+            path: .postOfferForSigning
+        )
 
-        self.httpClient.performPOSTRequest(path: "/offers",
-                                           requestBody: requestBody,
-                                           headers: authHeaders) { statusCode, response, error in
+        self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
             let result: (String?, String?, UUID?, Int?, Error?) = {
                 if let error = error {
                     return (nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
