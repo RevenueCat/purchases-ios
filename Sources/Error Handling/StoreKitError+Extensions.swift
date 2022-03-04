@@ -30,6 +30,8 @@ extension StoreKitError {
 
         case .notAvailableInStorefront:
             return ErrorUtils.productNotAvailableForPurchaseError(error: self)
+        case .notEntitled:
+            return ErrorUtils.productNotAvailableForPurchaseError(error: self)
 
         case .unknown:
             /// See also https://github.com/RevenueCat/purchases-ios/issues/392

@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -7,37 +7,11 @@ import class Foundation.ProcessInfo
 func resolveTargets() -> [Target] {
     let baseTargets: [Target] = [
         .target(name: "RevenueCat",
-                path: ".",
+                path: "Sources",
                 exclude: [
-                    "APITesters",
-                    "BackendIntegrationTestApp",
-                    "BackendIntegrationTests",
-                    "CHANGELOG.latest.md",
-                    "CHANGELOG.md",
-                    "CODE_OF_CONDUCT.md",
-                    "CONTRIBUTING.md",
-                    "Documentation.docc",
-                    "docs",
-                    "Examples",
-                    "fastlane",
-                    "Gemfile",
-                    "Gemfile.lock",
-                    "IntegrationTests",
-                    "LatestTagDocs",
-                    "LICENSE",
-                    "Purchases/Info.plist",
-                    "PurchasesTests",
-                    "README.md",
-                    "RELEASING.md",
-                    "RevenueCat.podspec",
-                    "scripts",
-                    "StoreKitUnitTests",
-                    "SwiftStyleGuide.swift",
-                    "TestPlans",
-                    "UnitTestsHostApp"
-                    ],
-                sources: ["Purchases"]
-        )
+                    "Info.plist",
+                    ]
+        ),
     ]
 
     return baseTargets
@@ -55,6 +29,8 @@ let package = Package(
         .library(name: "RevenueCat",
                  targets: ["RevenueCat"])
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-docc-plugin", revision: "8aca5c543da5f99dbfc8ff04e50c3ac870f8deca"),
+    ],
     targets: resolveTargets()
 )
