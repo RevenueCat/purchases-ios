@@ -66,7 +66,7 @@ class TrialOrIntroPriceEligibilityChecker {
         }
     }
 
-    func checkEligibility(product: StoreProduct,
+    func checkEligibility(product: StoreProductType,
                           completion: @escaping (IntroEligibilityStatus) -> Void) {
         checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
             completion(eligibility[product.productIdentifier]?.status ?? .unknown)

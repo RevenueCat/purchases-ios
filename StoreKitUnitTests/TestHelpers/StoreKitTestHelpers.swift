@@ -44,15 +44,15 @@ extension StoreKitConfigTestCase {
     }
 
     @MainActor
-    func fetchSk2Product() async throws -> SK2Product {
-        let products: [Any] = try await StoreKit.Product.products(for: [Self.productID])
+    func fetchSk2Product(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2Product {
+        let products: [Any] = try await StoreKit.Product.products(for: [productID])
         return try XCTUnwrap(products.first as? SK2Product)
     }
 
     @MainActor
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func fetchSk2StoreProduct() async throws -> SK2StoreProduct {
-        return SK2StoreProduct(sk2Product: try await fetchSk2Product())
+    func fetchSk2StoreProduct(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2StoreProduct {
+        return SK2StoreProduct(sk2Product: try await self.fetchSk2Product(productID))
     }
 
 }
