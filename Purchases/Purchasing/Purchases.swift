@@ -1275,7 +1275,7 @@ public extension Purchases {
      * - ``checkTrialOrIntroDiscountEligibility(product:completion:)``
      */
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
-    func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
+    func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String],
                                               completion: @escaping ([String: IntroEligibility]) -> Void) {
             trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
                                                                  completion: completion)
@@ -1302,7 +1302,7 @@ public extension Purchases {
      * - ``checkTrialOrIntroDiscountEligibility(product:)``
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-    func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+    func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
     }
 
@@ -1326,7 +1326,7 @@ public extension Purchases {
      * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(_:completion:)``
+     * - ``checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``
      */
     @objc(checkTrialOrIntroDiscountEligibilityForProduct:completion:)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct,
@@ -1354,7 +1354,7 @@ public extension Purchases {
      * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(_:)``
+     * - ``checkTrialOrIntroDiscountEligibility(productIdentifiers:)``
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
@@ -1395,7 +1395,7 @@ public extension Purchases {
      *  to use in ``purchase(package:promotionalOffer:)`` or ``purchase(product:promotionalOffer:)``.
      * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
      * - Note: If you're looking to use free trials or Introductory Offers instead,
-     * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``.
+     * use ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``.
      *
      * - Parameter discount: The ``StoreProductDiscount`` to apply to the product.
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
@@ -1417,7 +1417,7 @@ public extension Purchases {
      * Use this method to find eligibility for this user for
      * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
      * - Note: If you're looking to use free trials or Introductory Offers instead,
-     * use ``Purchases/checkTrialOrIntroDiscountEligibility(_:completion:)``.
+     * use ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``.
      *
      * - Parameter discount: The ``StoreProductDiscount`` to apply to the product.
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
