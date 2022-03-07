@@ -350,8 +350,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
         backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
 
-        let product = try await fetchSk2Product()
-        let storeProduct = StoreProduct(sk2Product: product)
+        let storeProduct = try await self.fetchSk2StoreProduct()
 
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                             currencyCode: storeProduct.currencyCode,
@@ -362,7 +361,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                             type: .promotional)
 
         _ = try await orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
-                                                    product: StoreProduct(sk2Product: product))
+                                                    product: storeProduct)
 
         expect(self.backend.invokedPostOfferCount) == 1
         expect(self.backend.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier

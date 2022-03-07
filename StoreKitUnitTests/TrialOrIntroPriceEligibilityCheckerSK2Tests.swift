@@ -136,8 +136,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testCheckEligibilityForProductIsEligibleForEligibleSubscription() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let sk2Product = try await self.fetchSk2Product()
-        let storeProduct = StoreProduct(sk2Product: sk2Product)
+        let storeProduct = try await self.fetchSk2StoreProduct()
 
         let status: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
@@ -152,13 +151,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testCheckEligibilityForLifetimeProductIsNoIntroOfferExists() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let productIdentifiers = Set([
-            "lifetime"
-        ])
-
-        let sk2Product = try await ProductsFetcherSK2().products(identifiers: productIdentifiers).first
-        let receivedProduct = try XCTUnwrap(sk2Product)
-        let storeProduct = StoreProduct.from(product: receivedProduct)
+        let storeProduct = try await self.fetchSk2StoreProduct("lifetime")
 
         let status: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
@@ -199,17 +192,16 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testCheckEligibilityForInvalidProductIsUnknown() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let sk2Product = try await self.fetchSk2Product()
-        let storeProduct = StoreProduct(sk2Product: sk2Product)
+        let storeProduct = try await self.fetchSk2StoreProduct()
 
         // We can't fetch an invalid StoreProduct to pass into the
         // eligibility checker so this just fakes an unknown response,
         // regardless of the real status from the checker
-        let fakeStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation({ continuation in
+        let fakeStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { _ in
                 continuation.resume(returning: .unknown)
             }
-        })
+        }
 
         expect(fakeStatus) == .unknown
     }
