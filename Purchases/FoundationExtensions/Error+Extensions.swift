@@ -41,7 +41,7 @@ extension Error {
 extension NSError {
 
     var successfullySynced: Bool {
-        if code == ErrorCode.networkError.rawValue {
+        if self.domain == ErrorCode.errorDomain, self.code == ErrorCode.networkError.rawValue {
             return false
         }
 
