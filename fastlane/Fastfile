@@ -465,13 +465,15 @@ platform :ios do
        "package",
        "--disable-sandbox",
        "--allow-writing-to-directory",
-       "generated_docs",
+       "LatestTagDocs",
        "generate-documentation",
        "--target",
        "RevenueCat",
        "--disable-indexing",
        "--output-path",
-       "generated_docs",
+       "LatestTagDocs",
+       "--hosting-base-path",
+       "'purchases-ios'",
        "--transform-for-static-hosting")
   end
 
