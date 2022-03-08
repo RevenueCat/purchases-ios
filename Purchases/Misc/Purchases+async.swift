@@ -20,14 +20,8 @@ extension Purchases {
     func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             logIn(appUserID) { customerInfo, created, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: (customerInfo, created))
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { ($0, created) })
             }
         }
     }
@@ -36,14 +30,7 @@ extension Purchases {
     func logOutAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             logOut { customerInfo, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: customerInfo)
+                continuation.resume(with: Result(customerInfo, error))
             }
         }
     }
@@ -52,14 +39,7 @@ extension Purchases {
     func offeringsAsync() async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
             getOfferings { offerings, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let offerings = offerings else {
-                    fatalError("Expected non-nil result 'result' for nil error")
-                }
-                continuation.resume(returning: offerings)
+                continuation.resume(with: Result(offerings, error))
             }
         }
     }
@@ -68,14 +48,7 @@ extension Purchases {
     func customerInfoAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             getCustomerInfo { customerInfo, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: customerInfo)
+                continuation.resume(with: Result(customerInfo, error))
             }
         }
     }
@@ -93,15 +66,8 @@ extension Purchases {
     func purchaseAsync(product: StoreProduct) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product) { transaction, customerInfo, error, userCancelled in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-
-                continuation.resume(returning: (transaction, customerInfo, userCancelled))
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
     }
@@ -110,15 +76,8 @@ extension Purchases {
     func purchaseAsync(package: Package) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package) { transaction, customerInfo, error, userCancelled in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-
-                continuation.resume(returning: (transaction, customerInfo, userCancelled))
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
     }
@@ -128,15 +87,8 @@ extension Purchases {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
                      promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-
-                continuation.resume(returning: (transaction, customerInfo, userCancelled))
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
     }
@@ -146,15 +98,8 @@ extension Purchases {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package,
                      promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-
-                continuation.resume(returning: (transaction, customerInfo, userCancelled))
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
     }
@@ -163,14 +108,7 @@ extension Purchases {
     func syncPurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             syncPurchases { customerInfo, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: customerInfo)
+                continuation.resume(with: Result(customerInfo, error))
             }
         }
     }
@@ -179,14 +117,7 @@ extension Purchases {
     func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             restorePurchases { customerInfo, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    fatalError("Expected non-nil result 'customerInfo' for nil error")
-                }
-                continuation.resume(returning: customerInfo)
+                continuation.resume(with: Result(customerInfo, error))
             }
         }
     }
@@ -216,14 +147,7 @@ extension Purchases {
                                   product: StoreProduct) async throws -> PromotionalOffer {
         return try await withCheckedThrowingContinuation { continuation in
             getPromotionalOffer(forProductDiscount: discount, product: product) { offer, error in
-                 if let error = error {
-                     continuation.resume(throwing: error)
-                     return
-                 } else if let offer = offer {
-                     continuation.resume(returning: offer)
-                 } else {
-                     fatalError("Unexpected non-nil result for nil error")
-                 }
+                continuation.resume(with: Result(offer, error))
              }
          }
      }
@@ -274,9 +198,9 @@ extension Purchases {
             showManageSubscriptions { error in
                 if let error = error {
                     continuation.resume(throwing: error)
-                    return
+                } else {
+                    continuation.resume(returning: ())
                 }
-                continuation.resume(returning: ())
             }
         }
     }
