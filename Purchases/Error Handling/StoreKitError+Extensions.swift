@@ -31,6 +31,11 @@ extension StoreKitError {
         case .notAvailableInStorefront:
             return ErrorUtils.productNotAvailableForPurchaseError(error: self)
 
+#if swift(>=5.6)
+        case .notEntitled:
+            return ErrorUtils.storeProblemError(error: self)
+#endif
+
         case .unknown:
             /// See also https://github.com/RevenueCat/purchases-ios/issues/392
             /// `StoreKitError` doesn't conform to `CustomNSError` as of `iOS 15.2`
