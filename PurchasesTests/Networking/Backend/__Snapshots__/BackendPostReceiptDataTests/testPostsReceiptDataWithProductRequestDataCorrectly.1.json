@@ -1,11 +1,20 @@
 {
-  "app_user_id" : "user",
-  "currency" : "BFD",
-  "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
-  "is_restore" : false,
-  "observer_mode" : false,
-  "presented_offering_identifier" : "a_offering",
-  "price" : "10.98",
-  "product_id" : "a_great_product",
-  "subscription_group_id" : "sub_group"
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "currency" : "BFD",
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "is_restore" : false,
+      "observer_mode" : false,
+      "presented_offering_identifier" : "a_offering",
+      "price" : "10.98",
+      "product_id" : "a_great_product",
+      "subscription_group_id" : "sub_group"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
 }

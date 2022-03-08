@@ -1,7 +1,16 @@
 {
-  "data" : {
-    "a" : "b",
-    "c" : "d"
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
   },
-  "network" : 0
+  "request" : {
+    "body" : {
+      "data" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "network" : 0
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/subscribers/user/attribution"
+  }
 }

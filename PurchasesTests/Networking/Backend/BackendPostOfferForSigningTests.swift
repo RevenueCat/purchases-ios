@@ -59,16 +59,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
             completionCalled = true
         }
 
-        let expectedCall = MockHTTPClient.Call(request: .init(method: .post([:]), path: path),
-                                               headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey))
-
         expect(self.httpClient.calls).toEventually(haveCount(1))
-
-        if self.httpClient.calls.count > 0 {
-            let call = self.httpClient.calls[0]
-            try call.expectToEqual(expectedCall)
-        }
-
         expect(completionCalled).toEventually(beTrue())
     }
 

@@ -48,14 +48,15 @@ class MockHTTPClient: HTTPClient {
     override func perform(_ request: HTTPRequest,
                           authHeaders: [String: String],
                           completionHandler: Completion?) {
-        DispatchQueue.main.async {
-            self.calls.append(Call(request: request, headers: authHeaders))
+        let call = Call(request: request, headers: authHeaders)
 
-            if let body = request.requestBody {
-                assertSnapshot(matching: body, as: .formattedJson,
-                               file: self.sourceTestFile,
-                               testName: CurrentTestCaseTracker.sanitizedTestName)
-            }
+        DispatchQueue.main.async {
+            self.calls.append(call)
+
+            assertSnapshot(matching: call,
+                           as: .formattedJson,
+                           file: self.sourceTestFile,
+                           testName: CurrentTestCaseTracker.sanitizedTestName)
 
             let response = self.mocks[request.path]
 
@@ -71,38 +72,42 @@ class MockHTTPClient: HTTPClient {
 
 }
 
-extension MockHTTPClient.Call {
+// MARK: - MockHTTPClient.Call Encodable
 
-    // fixme: use SnapshotTesting to compare the whole `HTTPRequest` instead of only `requestBody`.
-    func expectToEqual(_ other: MockHTTPClient.Call, file: FileString = #file, line: UInt = #line) throws {
+extension HTTPRequest: Encodable {
 
-        // Body comparison is done by SnapshotTesting
-        if other.request.requestBody == nil {
-            expect(file: file, line: line, self.request.requestBody).to(beNil())
+    enum CodingKeys: String, CodingKey {
+
+        case method
+        case body
+        case url
+
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(self.path.url, forKey: .url)
+        try container.encode(self.method.httpMethod, forKey: .method)
+
+        if let body = self.requestBody {
+            try body.encode(inContainer: &container, forKey: .body)
         } else {
-            expect(file: file, line: line, self.request.requestBody).toNot(beNil())
+            try container.encodeNil(forKey: .body)
         }
-
-        expect(file: file, line: line, self.request.path) == other.request.path
-        expect(file: file, line: line, self.request.methodType) == other.request.methodType
-        expect(file: file, line: line, self.headers) == other.headers
     }
 
 }
 
-extension HTTPRequest {
+extension MockHTTPClient.Call: Encodable { }
 
-    enum MethodType {
-        case get
-        case post
+// MARK: -
+
+private extension Encodable {
+    func encode<Container: KeyedEncodingContainerProtocol>(
+        inContainer container: inout Container,
+        forKey key: Container.Key
+    ) throws {
+        try container.encode(self, forKey: key)
     }
-
-    /// For testing purposes only
-    var methodType: MethodType {
-        switch self.method {
-        case .get: return .get
-        case .post: return .post
-        }
-    }
-
 }

@@ -54,17 +54,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         self.httpClient.mock(requestPath: path, response: response)
 
         backend.getCustomerInfo(appUserID: Self.userID) { _, _ in }
-
-        let expectedCall = MockHTTPClient.Call(request: .init(method: .get, path: path),
-                                               headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey))
-
         expect(self.httpClient.calls).toEventually(haveCount(1))
-
-        if self.httpClient.calls.count > 0 {
-            let call = self.httpClient.calls[0]
-
-            try call.expectToEqual(expectedCall)
-        }
     }
 
     func testGetsCustomerInfo() {

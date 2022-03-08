@@ -1,3 +1,12 @@
 {
-  "new_app_user_id" : "new_alias"
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "new_app_user_id" : "new_alias"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/subscribers/user2/alias"
+  }
 }

@@ -1,16 +1,25 @@
 {
-  "app_user_id" : "user",
-  "currency" : "UYU",
-  "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
-  "is_restore" : true,
-  "observer_mode" : false,
-  "offers" : [
-    {
-      "offer_identifier" : "offerid",
-      "payment_mode" : 0,
-      "price" : "12"
-    }
-  ],
-  "price" : "15.99",
-  "product_id" : "product_id"
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "currency" : "UYU",
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "is_restore" : true,
+      "observer_mode" : false,
+      "offers" : [
+        {
+          "offer_identifier" : "offerid",
+          "payment_mode" : 0,
+          "price" : "12"
+        }
+      ],
+      "price" : "15.99",
+      "product_id" : "product_id"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
 }

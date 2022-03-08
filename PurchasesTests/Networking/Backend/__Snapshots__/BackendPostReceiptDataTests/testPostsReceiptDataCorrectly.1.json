@@ -1,6 +1,15 @@
 {
-  "app_user_id" : "user",
-  "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
-  "is_restore" : false,
-  "observer_mode" : true
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "is_restore" : false,
+      "observer_mode" : true
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
 }

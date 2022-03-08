@@ -53,18 +53,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
 
         })
 
-        let expectedCall = MockHTTPClient.Call(
-            request: .init(method: .post([:]), path: .getIntroEligibility(appUserID: Self.userID)),
-            headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
-        )
-
         expect(self.httpClient.calls).toEventually(haveCount(1))
-        if httpClient.calls.count > 0 {
-            let call = httpClient.calls[0]
-
-            try call.expectToEqual(expectedCall)
-        }
-
         expect(eligibility).toEventuallyNot(beNil())
 
         expect(eligibility?.keys).to(contain(products))

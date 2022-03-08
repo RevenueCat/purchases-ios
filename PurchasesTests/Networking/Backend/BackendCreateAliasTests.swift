@@ -37,11 +37,6 @@ class BackendCreateAliasTests: BaseBackendTests {
 
         expect(completionCalled).toEventually(beTrue())
         expect(self.httpClient.calls).toEventually(haveCount(1))
-
-        let call = self.httpClient.calls[0]
-
-        expect(call.request.path) == path
-        expect(call.headers) == HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
     }
 
     func testCreateAliasCachesForSameUserIDs() {

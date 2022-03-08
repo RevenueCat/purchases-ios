@@ -48,16 +48,6 @@ class BackendPostReceiptDataTests: BaseBackendTests {
         })
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
-        if self.httpClient.calls.count > 0 {
-            let expectedCall = MockHTTPClient.Call(
-                request: .init(method: .post([:]),
-                               path: path),
-                headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
-            )
-
-            try self.httpClient.calls[0].expectToEqual(expectedCall)
-        }
-
         expect(completionCalled).toEventually(beTrue())
     }
 
@@ -280,15 +270,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
             completionCalled = true
         })
 
-        let expectedCall = MockHTTPClient.Call(request: .init(method: .post([:]), path: .postReceiptData),
-                                               headers: HTTPClient.authorizationHeader(withAPIKey: Self.apiKey))
-
         expect(self.httpClient.calls).toEventually(haveCount(1))
-
-        if self.httpClient.calls.count > 0 {
-            try self.httpClient.calls[0].expectToEqual(expectedCall)
-        }
-
         expect(completionCalled).toEventually(beTrue())
     }
 
@@ -621,18 +603,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
             completionCalled = true
         })
 
-        let headers = HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
-
-        let expectedCall = MockHTTPClient.Call(request: .init(method: .post([:]), path: path),
-                                               headers: headers)
-
         expect(self.httpClient.calls).toEventually(haveCount(1))
-
-        if self.httpClient.calls.count > 0 {
-            let call = self.httpClient.calls[0]
-            try call.expectToEqual(expectedCall)
-        }
-
         expect(completionCalled).toEventually(beTrue())
     }
 
