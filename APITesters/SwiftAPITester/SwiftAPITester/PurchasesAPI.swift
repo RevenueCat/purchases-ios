@@ -114,6 +114,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.checkTrialOrIntroDiscountEligibility(product: storeProduct) { (_: IntroEligibilityStatus) in }
     purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]()) { (_: [String: IntroEligibility]) in
     }
+    // Deprecated
+    purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
     purchases.getPromotionalOffer(
         forProductDiscount: discount,
         product: storeProduct
@@ -181,6 +183,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(
             productIdentifiers: [String]()
         )
+        // Deprecated
+        let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility([String]())
         let _: PromotionalOffer = try await purchases.getPromotionalOffer(
             forProductDiscount: discount,
             product: stp
