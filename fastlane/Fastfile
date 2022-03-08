@@ -463,9 +463,8 @@ platform :ios do
   desc "Generate docs"
   lane :generate_docs do
     Dir.chdir("..") do
-      version = "4.0.0"
-      hosting_base_path = "purchases-ios/#{version}"
-      docs_folder = "docs/#{version}"
+      hosting_base_path = "purchases-ios"
+      docs_folder = "docs"
       sh("swift",
          "package",
          "--disable-sandbox",
