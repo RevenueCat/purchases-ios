@@ -463,17 +463,18 @@ platform :ios do
   desc "Generate docs"
   lane :generate_docs do
     Dir.chdir("..") do
+      docs_folder = "docs/4.0.0"
       sh("swift",
          "package",
          "--disable-sandbox",
          "--allow-writing-to-directory",
-         "docs",
+         docs_folder,
          "generate-documentation",
          "--target",
          "RevenueCat",
          "--disable-indexing",
          "--output-path",
-         "docs",
+         docs_folder,
          "--hosting-base-path",
          "'purchases-ios'",
          "--transform-for-static-hosting")
