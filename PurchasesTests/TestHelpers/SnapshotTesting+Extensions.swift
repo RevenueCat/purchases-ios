@@ -16,33 +16,13 @@ import SnapshotTesting
 
 @testable import RevenueCat
 
-// Remove once https://github.com/pointfreeco/swift-snapshot-testing/pull/552 is available in a release.
-extension Snapshotting where Value == Any, Format == String {
-
-    static var json: Snapshotting {
-        let options: JSONSerialization.WritingOptions = [
-            .prettyPrinted,
-            .sortedKeys
-        ]
-
-        var snapshotting = SimplySnapshotting.lines.pullback { (data: Value) in
-            // swiftlint:disable:next force_try
-            try! String(decoding: JSONSerialization.data(withJSONObject: data,
-                                                         options: options), as: UTF8.self)
-        }
-        snapshotting.pathExtension = "json"
-        return snapshotting
-    }
-
-}
-
 extension Snapshotting where Value == Encodable, Format == String {
 
     /// Equivalent to .json, but with `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase`
     static var formattedJson: Snapshotting {
         var snapshotting = SimplySnapshotting.lines.pullback { (data: Value) in
             // swiftlint:disable:next force_try
-            return String(decoding: try! data.asFormattedData(), as: UTF8.self)
+            return try! data.asFormattedString()
         }
         snapshotting.pathExtension = "json"
         return snapshotting
@@ -51,6 +31,10 @@ extension Snapshotting where Value == Encodable, Format == String {
 }
 
 private extension Encodable {
+
+    func asFormattedString() throws -> String {
+        return String(decoding: try self.asFormattedData(), as: UTF8.self)
+    }
 
     func asFormattedData() throws -> Data {
         let encoder = JSONEncoder()

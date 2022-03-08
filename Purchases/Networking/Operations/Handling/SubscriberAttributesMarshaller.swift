@@ -13,9 +13,10 @@
 
 import Foundation
 
-class SubscriberAttributesMarshaller {
+enum SubscriberAttributesMarshaller {
 
-    func map(subscriberAttributes: SubscriberAttributeDict) -> [String: [String: Any]] {
+    // fixme: make `SubscriberAttributeDict` `Encodable` instead
+    static func map(subscriberAttributes: SubscriberAttributeDict) -> [String: [String: Any]] {
         var attributesByKey: [String: [String: Any]] = [:]
         for (key, value) in subscriberAttributes {
             attributesByKey[key] = value.asBackendDictionary()

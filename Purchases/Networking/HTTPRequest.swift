@@ -23,12 +23,10 @@ struct HTTPRequest {
 
 extension HTTPRequest {
 
-    typealias Body = [String: Any]
-
     enum Method {
 
         case get
-        case post(body: Body)
+        case post(Encodable)
 
     }
 
@@ -36,7 +34,7 @@ extension HTTPRequest {
 
 extension HTTPRequest {
 
-    var requestBody: Body? {
+    var requestBody: Encodable? {
         switch self.method {
         case let .post(body): return body
         case .get: return nil

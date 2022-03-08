@@ -62,7 +62,7 @@ class HTTPClientTests: XCTestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
         self.client.perform(request,
                             authHeaders: ["test_header": "value"],
                             completionHandler: nil)
@@ -78,7 +78,7 @@ class HTTPClientTests: XCTestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
@@ -93,7 +93,7 @@ class HTTPClientTests: XCTestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
@@ -108,7 +108,7 @@ class HTTPClientTests: XCTestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
@@ -123,7 +123,7 @@ class HTTPClientTests: XCTestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         self.client.perform(request, authHeaders: ["test_header": "value"], completionHandler: nil)
 
@@ -131,7 +131,7 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testCallsTheGivenPath() {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let pathHit: Atomic<Bool> = .init(false)
 
@@ -155,7 +155,7 @@ class HTTPClientTests: XCTestCase {
             pathHit.value = true
             return .emptySuccessResponse
         }
-        let request = HTTPRequest(method: .post(body: body), path: .mockPath)
+        let request = HTTPRequest(method: .post(body), path: .mockPath)
 
         self.client.perform(request, authHeaders: [:], completionHandler: nil)
 
@@ -304,7 +304,7 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testAlwaysPassesClientVersion() {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -321,7 +321,7 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testAlwaysPassesClientBuildVersion() throws {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -368,7 +368,7 @@ class HTTPClientTests: XCTestCase {
 
     #if !os(macOS) && !targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifier() {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -386,7 +386,7 @@ class HTTPClientTests: XCTestCase {
     #endif
 
     func testDefaultsPlatformFlavorToNative() {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -401,7 +401,7 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPassesPlatformFlavorHeader() throws {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -420,7 +420,7 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPassesPlatformFlavorVersionHeader() throws {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -439,7 +439,7 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenEnabled() throws {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -456,7 +456,7 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenDisabled() throws {
-        let request = HTTPRequest(method: .post(body: [:]), path: .mockPath)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -676,7 +676,7 @@ class HTTPClientTests: XCTestCase {
             return response
         }
 
-        self.client.perform(.init(method: .post(body: [:]), path: path), authHeaders: [:], completionHandler: nil)
+        self.client.perform(.init(method: .post([:]), path: path), authHeaders: [:], completionHandler: nil)
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
@@ -698,7 +698,7 @@ class HTTPClientTests: XCTestCase {
             return response
         }
 
-        self.client.perform(.init(method: .post(body: [:]), path: path), authHeaders: [:], completionHandler: nil)
+        self.client.perform(.init(method: .post([:]), path: path), authHeaders: [:], completionHandler: nil)
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
@@ -803,19 +803,26 @@ private extension HTTPRequest.Path {
 
 }
 
-private extension HTTPRequest.Method {
+extension HTTPRequest.Method {
 
-    static func requestNumber(_ number: Int) -> Self {
-        return .post(body: [HTTPClientTests.requestNumberKeyName: number])
+    fileprivate static func requestNumber(_ number: Int) -> Self {
+        return .post([HTTPClientTests.requestNumberKeyName: number])
     }
 
-    static func invalidBody() -> Self {
+    fileprivate static func invalidBody() -> Self {
         // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
         // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
         let nonJSONBody = ["something": Double.infinity]
 
-        return .post(body: nonJSONBody)
+        return .post(nonJSONBody)
     }
+
+    /// Creates a `HTTPRequest.Method.post` request with `[String: Any]`.
+    /// - Note: this is for testing only, real requests must use `Encodable`.
+    internal static func post(_ body: [String: Any]) -> Self {
+        return .post(AnyEncodable(body))
+    }
+
 }
 
 private extension HTTPClientTests {

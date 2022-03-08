@@ -19,8 +19,7 @@ enum NetworkStrings {
 
     case api_request_completed(httpMethod: String, path: String, httpCode: HTTPStatusCode)
     case api_request_started(httpMethod: String?, path: String?)
-    case creating_json_error(requestBody: [String: Any], error: String)
-    case creating_json_error_invalid(requestBody: [String: Any])
+    case creating_json_error(error: String)
     case json_data_received(dataString: String)
     case parsing_json_error(error: Error)
     case serial_request_done(httpMethod: String?, path: String?, queuedRequestsCount: Int)
@@ -45,11 +44,8 @@ extension NetworkStrings: CustomStringConvertible {
         case let .api_request_started(httpMethod, path):
             return "API request started: \(httpMethod ?? "") \(path ?? "")"
 
-        case let .creating_json_error(requestBody, error):
-            return "Error creating request with JSON body: \(requestBody) ; error: \(error)"
-
-        case .creating_json_error_invalid(let requestBody):
-            return "JSON body is invalid: \(requestBody)"
+        case let .creating_json_error(error):
+            return "Error creating request with body: \(error)"
 
         case .json_data_received(let dataString):
             return "Data received: \(dataString)"

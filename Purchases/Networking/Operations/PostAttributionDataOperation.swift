@@ -47,7 +47,7 @@ class PostAttributionDataOperation: NetworkOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(body: ["network": self.network.rawValue, "data": self.attributionData]),
+        let request = HTTPRequest(method: .post(Body(network: self.network, attributionData: self.attributionData)),
                                   path: .postAttributionData(appUserID: appUserID))
 
         self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
@@ -64,6 +64,22 @@ class PostAttributionDataOperation: NetworkOperation {
                                                            error: error,
                                                            completion: responseHandler)
         }
+    }
+
+}
+
+private extension PostAttributionDataOperation {
+
+    struct Body: Encodable {
+
+        let network: AttributionNetwork
+        let data: AnyEncodable
+
+        init(network: AttributionNetwork, attributionData: [String: Any]) {
+            self.network = network
+            self.data = AnyEncodable(attributionData)
+        }
+
     }
 
 }
