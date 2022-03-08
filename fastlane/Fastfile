@@ -449,32 +449,35 @@ platform :ios do
 
   desc "Preview docs"
   lane :preview_docs do
-    sh("swift",
-       "package",
-       "--disable-sandbox",
-       "preview-documentation",
-       "--target",
-       "RevenueCat",
-       "--transform-for-static-hosting")
+    Dir.chdir("..") do
+      sh("swift",
+         "package",
+         "--disable-sandbox",
+         "preview-documentation",
+         "--target",
+         "RevenueCat",
+         "--transform-for-static-hosting")
+    end
   end
 
   desc "Generate docs"
   lane :generate_docs do
-
-    sh("swift",
-       "package",
-       "--disable-sandbox",
-       "--allow-writing-to-directory",
-       "docs",
-       "generate-documentation",
-       "--target",
-       "RevenueCat",
-       "--disable-indexing",
-       "--output-path",
-       "docs",
-       "--hosting-base-path",
-       "'purchases-ios'",
-       "--transform-for-static-hosting")
+    Dir.chdir("..") do
+      sh("swift",
+         "package",
+         "--disable-sandbox",
+         "--allow-writing-to-directory",
+         "docs",
+         "generate-documentation",
+         "--target",
+         "RevenueCat",
+         "--disable-indexing",
+         "--output-path",
+         "docs",
+         "--hosting-base-path",
+         "'purchases-ios'",
+         "--transform-for-static-hosting")
+    end
   end
 
   private_lane :sandbox_testers_delete do |options|
