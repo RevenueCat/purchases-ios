@@ -48,3 +48,20 @@ class HTTPRequestTests: XCTestCase {
     }
 
 }
+
+extension HTTPRequest {
+
+    enum MethodType {
+        case get
+        case post
+    }
+
+    /// For testing purposes only
+    var methodType: MethodType {
+        switch self.method {
+        case .get: return .get
+        case .post: return .post
+        }
+    }
+
+}
