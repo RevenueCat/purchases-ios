@@ -9,7 +9,7 @@ class MockHTTPClient: HTTPClient {
     struct Call {
 
         let request: HTTPRequest
-        let headers: [String: String]
+        let headers: RequestHeaders
 
     }
 
@@ -46,7 +46,7 @@ class MockHTTPClient: HTTPClient {
     private let sourceTestFile: StaticString
 
     override func perform(_ request: HTTPRequest,
-                          authHeaders: [String: String],
+                          authHeaders: RequestHeaders,
                           completionHandler: Completion?) {
         let call = Call(request: request, headers: authHeaders)
 
