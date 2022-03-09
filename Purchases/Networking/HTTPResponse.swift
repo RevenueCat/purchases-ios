@@ -48,6 +48,7 @@ extension ErrorResponse {
             backendMessage: self.message,
             extraUserInfo: [
                 ErrorDetails.finishableKey: !statusCode.isServerError,
+                Backend.RCSuccessfullySyncedKey: statusCode.successfullySynced,
                 Backend.RCAttributeErrorsKey as NSError.UserInfoKey: self.attributeErrors
             ]
         )

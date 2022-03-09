@@ -15,11 +15,7 @@ import Foundation
 
 class SubscriberAttributeHandler {
 
-    let userInfoAttributeParser: UserInfoAttributeParser
-
-    init(userInfoAttributeParser: UserInfoAttributeParser = UserInfoAttributeParser()) {
-        self.userInfoAttributeParser = userInfoAttributeParser
-    }
+    init() { }
 
     func handleSubscriberAttributesResult(statusCode: HTTPStatusCode,
                                           response: Result<[String: Any], Error>,

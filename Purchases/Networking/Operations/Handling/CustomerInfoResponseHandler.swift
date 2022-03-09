@@ -15,11 +15,7 @@ import Foundation
 
 class CustomerInfoResponseHandler {
 
-    let userInfoAttributeParser: UserInfoAttributeParser
-
-    init(userInfoAttributeParser: UserInfoAttributeParser = UserInfoAttributeParser()) {
-        self.userInfoAttributeParser = userInfoAttributeParser
-    }
+    init() { }
 
     // swiftlint:disable:next function_body_length
     func handle(customerInfoResponse result: Result<[String: Any], Error>,
@@ -29,6 +25,7 @@ class CustomerInfoResponseHandler {
                 line: UInt = #line,
                 completion: BackendCustomerInfoResponseHandler) {
         let result: Result<CustomerInfo, Error> = result
+            // TODO: remove
             .mapError {
                 ErrorUtils.networkError(withUnderlyingError: $0,
                                         fileName: file, functionName: function, line: line)
@@ -62,32 +59,32 @@ class CustomerInfoResponseHandler {
                     )
                 }
 
-                let subscriberAttributesErrorInfo = self.userInfoAttributeParser
-                    .attributesUserInfoFromResponse(response: response, statusCode: statusCode)
+//                let subscriberAttributesErrorInfo = self.userInfoAttributeParser
+//                    .attributesUserInfoFromResponse(response: response, statusCode: statusCode)
 
-                let hasError = (isErrorStatusCode
-                                || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil
-                                || customerInfoError != nil)
-
-                var responseError: Error?
-
-                if hasError {
-                    // TODO: ?
-                    let finishable = !statusCode.isServerError
-                    var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
-                    extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
-
-                    // TODO: move this parsing to `HTTPClient`
-                    let backendErrorCode = BackendErrorCode(code: response["code"])
-                    let message = response["message"] as? String
-                    responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
-                                                            backendMessage: message,
-                                                            extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
-                    if let customerInfoError = customerInfoError {
-                        responseError = customerInfoError
-                            .addingUnderlyingError(responseError, extraContext: response.stringRepresentation)
-                    }
-                }
+//                let hasError = (isErrorStatusCode
+//                                || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil
+//                                || customerInfoError != nil)
+//
+//                var responseError: Error?
+//
+//                if hasError {
+//                    // TODO: ?
+//                    let finishable = !statusCode.isServerError
+//                    var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
+//                    extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
+//
+//                    // TODO: move this parsing to `HTTPClient`
+//                    let backendErrorCode = BackendErrorCode(code: response["code"])
+//                    let message = response["message"] as? String
+//                    responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
+//                                                            backendMessage: message,
+//                                                            extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
+//                    if let customerInfoError = customerInfoError {
+//                        responseError = customerInfoError
+//                            .addingUnderlyingError(responseError, extraContext: response.stringRepresentation)
+//                    }
+//                }
 
                 return Result(customerInfo, responseError)
             }
