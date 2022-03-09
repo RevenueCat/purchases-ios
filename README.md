@@ -19,16 +19,12 @@ Whether you are building a new app or already have millions of customers, you ca
 
 Sign up to [get started for free](https://app.revenuecat.com/signup).
 
-## Migrating from Purchases v3
-- See our [Migration guide](Documentation.docc/V4_API_Migration_guide.md)
-
 ## RevenueCat.framework
 
-*Purchases* and *RevenueCat* are clients for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system.
+*RevenueCat* is the client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It's 100% `Swift` and compatible with `Objective-C`.
 
-**Purchases** is the currently supported, production-ready, open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing in-app subscriptions in `Swift` or `Objective-C` easy - receipt validation and status tracking included! 
-
-**RevenueCat** is our next big release (what we've been calling Purchases V4). It is a rename of `Purchases` to `RevenueCat`, and now, 100% `Swift` (while maintaining `Objective-C` compatibility). It contains all the same functionality (and almost exactly the same API) as `Purchases`. It's not a brand-new framework, but rather, a migration of the ObjC bits over to Swift with improved nullability, various bug fixes, and some new features. You can see what's changed in the [API updates doc](https://docs.revenuecat.com/docs/ios-native-3x-to-4x-migration).
+## Migrating from Purchases v3
+- See our [Migration guide](Documentation.docc/V4_API_Migration_guide.md)
 
 ## RevenueCat SDK Features
 |   | RevenueCat |
