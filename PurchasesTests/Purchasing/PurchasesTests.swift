@@ -1947,7 +1947,7 @@ class PurchasesTests: XCTestCase {
             receivedError = error as NSError?
         }
 
-        expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.missingReceiptFileError.rawValue))
     }
 
     func testRestorePurchasesCallsCompletionOnMainThreadWhenMissingReceipts() {
@@ -1959,7 +1959,7 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 1
-        expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.missingReceiptFileError.rawValue))
     }
 
     func testUserCancelledFalseIfPurchaseSuccessful() {
@@ -2043,7 +2043,7 @@ class PurchasesTests: XCTestCase {
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.purchaseCancelledError.rawValue))
-        expect(receivedUnderlyingError?.domain).toEventually(be(SKErrorDomain))
+        expect(receivedUnderlyingError?.domain).toEventually(equal(SKErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(SKError.Code.paymentCancelled.rawValue))
     }
 
@@ -2066,7 +2066,7 @@ class PurchasesTests: XCTestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventually(beFalse())
-        expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.missingReceiptFileError.rawValue))
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
     }
 

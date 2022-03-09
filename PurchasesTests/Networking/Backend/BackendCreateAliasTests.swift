@@ -156,7 +156,7 @@ class BackendCreateAliasTests: BaseBackendTests {
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(be(ErrorCode.invalidCredentialsError.rawValue))
+        expect(receivedError?.code) == ErrorCode.invalidCredentialsError.rawValue
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription) == Self.serverErrorResponse["message"]

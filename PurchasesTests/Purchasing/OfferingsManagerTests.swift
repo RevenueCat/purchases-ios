@@ -206,8 +206,8 @@ extension OfferingsManagerTests {
         // then
         expect(completionCalled).toEventually(beTrue())
         let unwrappedError = try XCTUnwrap(receivedError)
-        expect(unwrappedError.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(unwrappedError.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
+        expect(unwrappedError.domain) == RCPurchasesErrorCodeDomain
+        expect(unwrappedError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
     }
 
     func testFailBackendDeviceCacheClearsOfferingsCache() {

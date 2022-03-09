@@ -117,7 +117,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         let underlyingError = (error?.userInfo[NSUnderlyingErrorKey]) as? NSError
         expect(underlyingError).toEventuallyNot(beNil())
         expect(underlyingError?.domain).to(equal("RevenueCat.BackendErrorCode"))
-        expect(error?.userInfo["finishable"]).to(be(true))
+        expect(error?.userInfo["finishable"] as? Bool) == true
     }
 
     func testHandlesInvalidJSON() {
