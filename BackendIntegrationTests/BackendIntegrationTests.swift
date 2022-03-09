@@ -206,10 +206,10 @@ class BackendIntegrationSK1Tests: XCTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let offerings = try await Purchases.shared.offerings()
-        let productID = try XCTUnwrap(offerings.current?.monthly?.storeProduct.productIdentifier)
+        let product = try XCTUnwrap(offerings.current?.monthly?.storeProduct)
 
-        var eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility([productID])
-        expect(eligibility[productID]?.status) == .eligible
+        var eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        expect(eligibility) == .eligible
 
         let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
 
@@ -224,8 +224,8 @@ class BackendIntegrationSK1Tests: XCTestCase {
         expect(created) == true
         expect(identifiedCustomerInfo.entitlements["premium"]?.isActive) == true
 
-        eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility([productID])
-        expect(eligibility[productID]?.status) == .ineligible
+        eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        expect(eligibility) == .ineligible
     }
 
 }

@@ -1553,7 +1553,7 @@ class PurchasesTests: XCTestCase {
 
     func testGetEligibility() {
         setupPurchases()
-        purchases.checkTrialOrIntroDiscountEligibility([]) { (_) in
+        purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: []) { (_) in
         }
 
         expect(self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore)

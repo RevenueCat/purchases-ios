@@ -205,7 +205,7 @@ extension Purchases {
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ productIdentifiers: [String]) async
     -> [String: IntroEligibility] {
         return await withCheckedContinuation { continuation in
-            checkTrialOrIntroDiscountEligibility(productIdentifiers) { result in
+            checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers) { result in
                 continuation.resume(returning: result)
             }
         }

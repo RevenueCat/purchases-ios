@@ -7,7 +7,7 @@ As the framework evolves, some APIs change. For Version 4 there's a [general doc
 ### Deprecated ⚠️
 APIs marked as `deprecated` mean that a method or type can continue to be used, but it provides a warning to the developer letting them know that it will go away in a future version.
 
-Because they can still be called, the implementations need to remain valid, so they typically live in their existing files.
+Because they can still be called, the implementations need to remain valid. Some of these live in `Deprecations.swift`.
 
 ### Obsoleted ⛔️
 APIs marked as `obsoleted` result in a compile error, they can't be used.
