@@ -422,7 +422,7 @@ class CustomerInfoManagerTests: XCTestCase {
             self.customerInfoManager.cache(customerInfo: invalidCustomerInfo, appUserID: "myUser")
         }.toNot(throwError())
 
-        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(be(0))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(0))
     }
 
     func testCachePurchaserSendsToDelegateIfChanged() {

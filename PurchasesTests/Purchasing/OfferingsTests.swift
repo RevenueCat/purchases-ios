@@ -88,7 +88,7 @@ class OfferingsTests: XCTestCase {
         expect(offering).toNot(beNil())
         expect(offering?.identifier).to(equal(offeringIdentifier))
         expect(offering?.serverDescription).to(equal(serverDescription))
-        expect(offering?.availablePackages.count).to(be(2))
+        expect(offering?.availablePackages).to(haveCount(2))
         expect(offering?.monthly).toNot(beNil())
         expect(offering?.annual).toNot(beNil())
         expect(offering?.sixMonth).to(beNil())

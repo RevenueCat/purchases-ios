@@ -32,7 +32,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.sk1Transaction) === sk1Transaction
 
         expect(transaction.productIdentifier) == Self.productID
-        expect(transaction.purchaseDate) === sk1Transaction.mockTransactionDate
+        expect(transaction.purchaseDate) == sk1Transaction.mockTransactionDate
         expect(transaction.transactionIdentifier) == sk1Transaction.mockTransactionIdentifier
         expect(transaction.quantity) == payment.quantity
     }

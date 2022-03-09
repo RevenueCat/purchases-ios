@@ -446,8 +446,8 @@ class BackendPostReceiptDataTests: BaseBackendTests {
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.code).toEventually(equal(ErrorCode.invalidCredentialsError.rawValue))
-        expect(error?.userInfo["finishable"]).to(be(false))
+        expect(error?.code) == ErrorCode.invalidCredentialsError.rawValue
+        expect(error?.userInfo["finishable"] as? Bool) == false
 
         expect(underlyingError).toEventuallyNot(beNil())
         expect(underlyingError?.localizedDescription).to(equal(Self.serverErrorResponse["message"]))
@@ -474,8 +474,8 @@ class BackendPostReceiptDataTests: BaseBackendTests {
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect((error as NSError?)?.code).toEventually(be(ErrorCode.invalidCredentialsError.rawValue))
-        expect((error as NSError?)?.userInfo["finishable"]).to(be(true))
+        expect((error as NSError?)?.code) == ErrorCode.invalidCredentialsError.rawValue
+        expect((error as NSError?)?.userInfo["finishable"] as? Bool) == true
 
         underlyingError = (error as NSError?)?.userInfo[NSUnderlyingErrorKey] as? Error
         expect(underlyingError).toEventuallyNot(beNil())
