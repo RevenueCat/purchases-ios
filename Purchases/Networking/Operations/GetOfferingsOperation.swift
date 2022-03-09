@@ -37,7 +37,7 @@ private extension GetOfferingsOperation {
     func getOfferings(completion: @escaping () -> Void) {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(nil, ErrorUtils.missingAppUserIDError())
+                callback.completion(.failure(ErrorUtils.missingAppUserIDError()))
             }
             completion()
 
@@ -46,36 +46,26 @@ private extension GetOfferingsOperation {
 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
+        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, result in
             defer {
                 completion()
             }
 
-            if error == nil && statusCode.isSuccessfulResponse {
-                self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                    callbackObject.completion(response, nil)
+            let parsedResponse: Result<[String: Any], Error> = result
+                .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
+                .flatMap { response in
+                    if statusCode.isSuccessfulResponse {
+                        return .success(response)
+                    } else {
+                        return .failure(
+                            ErrorUtils.backendError(withBackendCode: BackendErrorCode(code: response["code"]),
+                                                    backendMessage: response["message"] as? String)
+                        )
+                    }
                 }
-                return
-            }
 
-            let errorForCallbacks: Error
-            if let error = error {
-                errorForCallbacks = ErrorUtils.networkError(withUnderlyingError: error)
-            } else if !statusCode.isSuccessfulResponse {
-                let backendCode = BackendErrorCode(code: response?["code"])
-                let backendMessage = response?["message"] as? String
-                errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
-                                                            backendMessage: backendMessage)
-            } else {
-                let subErrorCode = UnexpectedBackendResponseSubErrorCode.getOfferUnexpectedResponse
-                errorForCallbacks = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
-            }
-
-            let responseString = response?.debugDescription
-            Logger.error(Strings.backendError.unknown_get_offerings_error(statusCode: statusCode,
-                                                                          responseString: responseString))
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.completion(nil, errorForCallbacks)
+                callbackObject.completion(parsedResponse)
             }
         }
     }

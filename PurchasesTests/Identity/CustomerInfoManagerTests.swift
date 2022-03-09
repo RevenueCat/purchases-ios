@@ -71,34 +71,32 @@ class CustomerInfoManagerTests: XCTestCase {
         expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == false
     }
 
-    func testFetchAndCacheCustomerInfoPassesBackendErrors() {
+    func testFetchAndCacheCustomerInfoPassesBackendErrors() throws {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
         let mockError = NSError(domain: "revenuecat", code: 123)
-        mockBackend.stubbedGetSubscriberDataError = mockError
+        mockBackend.stubbedGetCustomerInfoResult = .failure(mockError)
 
         var completionCalled = false
-        var receivedCustomerInfo: CustomerInfo?
         var receivedError: Error?
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                      isAppBackgrounded: false) { customerInfo, error in
+                                                      isAppBackgrounded: false) { result in
             completionCalled = true
-            receivedCustomerInfo = customerInfo
-            receivedError = error
+            receivedError = result.error
         }
+
         expect(completionCalled).toEventually(beTrue())
-        expect(receivedCustomerInfo).to(beNil())
-        expect(receivedError).toNot(beNil())
-        let receivedNSError = receivedError! as NSError
+
+        let receivedNSError = try XCTUnwrap(receivedError as NSError?)
         expect(receivedNSError) == mockError
     }
 
     func testFetchAndCacheCustomerInfoClearsCustomerInfoTimestampIfBackendError() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
-        mockBackend.stubbedGetSubscriberDataError = NSError(domain: "revenuecat", code: 123)
+        mockBackend.stubbedGetCustomerInfoResult = .failure(NSError(domain: "revenuecat", code: 123))
 
         var completionCalled = false
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                      isAppBackgrounded: false) { _, _ in
+                                                      isAppBackgrounded: false) { _ in
             completionCalled = true
         }
         expect(completionCalled).toEventually(beTrue())
@@ -108,20 +106,18 @@ class CustomerInfoManagerTests: XCTestCase {
     func testFetchAndCacheCustomerInfoCachesIfSuccessful() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
         mockOperationDispatcher.shouldInvokeDispatchOnMainThreadBlock = true
-        mockBackend.stubbedGetSubscriberDataCustomerInfo = mockCustomerInfo
+        mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
         var completionCalled = false
         var receivedCustomerInfo: CustomerInfo?
-        var receivedError: Error?
+
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                      isAppBackgrounded: false) { customerInfo, error in
+                                                      isAppBackgrounded: false) { result in
             completionCalled = true
-            receivedCustomerInfo = customerInfo
-            receivedError = error
+            receivedCustomerInfo = result.value
         }
         expect(completionCalled).toEventually(beTrue())
         expect(receivedCustomerInfo) == mockCustomerInfo
-        expect(receivedError).to(beNil())
 
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
         expect(self.customerInfoManagerChangesCallCount) == 1
@@ -131,11 +127,11 @@ class CustomerInfoManagerTests: XCTestCase {
     func testFetchAndCacheCustomerInfoCallsCompletionOnMainThread() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
         mockOperationDispatcher.shouldInvokeDispatchOnMainThreadBlock = true
-        mockBackend.stubbedGetSubscriberDataCustomerInfo = mockCustomerInfo
+        mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
         var completionCalled = false
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
-                                                      isAppBackgrounded: false) { _, _ in
+                                                      isAppBackgrounded: false) { _ in
             completionCalled = true
         }
 
@@ -152,13 +148,13 @@ class CustomerInfoManagerTests: XCTestCase {
 
         let appUserID = "myUser"
         customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
-                                                             isAppBackgrounded: false) { _, _ in
+                                                             isAppBackgrounded: false) { _ in
             firstCompletionCalled = true
         }
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
         customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
-                                                             isAppBackgrounded: false) { _, _ in
+                                                             isAppBackgrounded: false) { _ in
             secondCompletionCalled = true
         }
 
@@ -174,7 +170,7 @@ class CustomerInfoManagerTests: XCTestCase {
         var completionCalled = false
 
         customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
-                                                             isAppBackgrounded: false) { _, _ in
+                                                             isAppBackgrounded: false) { _ in
             completionCalled = true
         }
 
@@ -187,7 +183,7 @@ class CustomerInfoManagerTests: XCTestCase {
         var completionCalled = false
 
         customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: "myUser",
-                                                             isAppBackgrounded: false) { _, _ in
+                                                             isAppBackgrounded: false) { _ in
             completionCalled = true
         }
 
@@ -278,27 +274,26 @@ class CustomerInfoManagerTests: XCTestCase {
 
         var completionCalled = false
         var receivedCustomerInfo: CustomerInfo?
-        var receivedError: Error?
-        customerInfoManager.customerInfo(appUserID: appUserID) { customerInfo, error in
+
+        customerInfoManager.customerInfo(appUserID: appUserID) { result in
             completionCalled = true
-            receivedCustomerInfo = customerInfo
-            receivedError = error
+            receivedCustomerInfo = result.value
         }
 
         expect(completionCalled).toEventually(beTrue())
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 0
-        expect(receivedCustomerInfo).toNot(beNil())
         expect(receivedCustomerInfo) == mockCustomerInfo
-        expect(receivedError).to(beNil())
     }
 
     func testCustomerInfoReturnsFromCacheAndRefreshesIfStale() {
         let appUserID = "myUser"
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
+
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
 
         var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: appUserID) { _, _ in
+        customerInfoManager.customerInfo(appUserID: appUserID) { _ in
             completionCalled = true
         }
 
@@ -310,7 +305,7 @@ class CustomerInfoManagerTests: XCTestCase {
         let appUserID = "myUser"
 
         var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: appUserID) { _, _ in
+        customerInfoManager.customerInfo(appUserID: appUserID) { _ in
             completionCalled = true
 
             // checking here to ensure that completion gets called from the backend call

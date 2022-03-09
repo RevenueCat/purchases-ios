@@ -237,7 +237,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
     func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "")
+        customerInfoManager.stubbedCustomerInfoResult = .failure(ErrorUtils.customerInfoError(withMessage: ""))
 
         let expectedError = ErrorUtils.beginRefundRequestError(
             withMessage: Strings.purchase.begin_refund_customer_info_error(
@@ -256,7 +256,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
     func testBeginRefundForActiveEntitlementFailsOnCustomerInfoFetchFail() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        customerInfoManager.stubbedError = ErrorUtils.customerInfoError(withMessage: "")
+        customerInfoManager.stubbedCustomerInfoResult = .failure(ErrorUtils.customerInfoError(withMessage: ""))
 
         let expectedError = ErrorUtils.beginRefundRequestError(
             withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description)
@@ -271,48 +271,12 @@ class BeginRefundRequestHelperTests: XCTestCase {
     }
 
     @available(iOS 15.0, macCatalyst 15.0, *)
-    func testBeginRefundForEntitlementFailsIfCustomerInfoNil() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        customerInfoManager.stubbedCustomerInfo = nil
-
-        let expectedError = ErrorUtils.beginRefundRequestError(
-            withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
-                entitlementID: mockEntitlementID).description)
-
-        do {
-            _ = try await helper.beginRefundRequest(forEntitlement: mockEntitlementID)
-            XCTFail("beginRefundRequestForEntitlement should have thrown error")
-        } catch {
-            expect(error.localizedDescription) == expectedError.localizedDescription
-            expect(error).to(matchError(expectedError))
-        }
-    }
-
-    @available(iOS 15.0, macCatalyst 15.0, *)
-    func testBeginRefundForActiveEntitlementFailsIfCustomerInfoNil() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        customerInfoManager.stubbedCustomerInfo = nil
-
-        let expectedError = ErrorUtils.beginRefundRequestError(
-            withMessage: Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
-                entitlementID: nil).description)
-
-        do {
-            _ = try await helper.beginRefundRequestForActiveEntitlement()
-            XCTFail("beginRefundRequestForActiveEntitlement should have thrown error")
-        } catch {
-            expect(error).to(matchError(expectedError))
-            expect(error.localizedDescription) == expectedError.localizedDescription
-        }
-    }
-
-    @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForEntitlementFailsIfEntitlementNotInCustomerInfo() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoResponseWithoutMockEntitlement)
+        customerInfoManager.stubbedCustomerInfoResult = .success(
+            try CustomerInfo(data: mockCustomerInfoResponseWithoutMockEntitlement)
+        )
 
         let expectedMessage =
             Strings.purchase.begin_refund_no_entitlement_found(entitlementID: mockEntitlementID).description
@@ -331,8 +295,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
     func testBeginRefundForActiveEntitlementFailsIfNoActiveEntitlement() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        customerInfoManager.stubbedCustomerInfo =
+        customerInfoManager.stubbedCustomerInfoResult = .success(
             try CustomerInfo(data: mockCustomerInfoResponseWithNoActiveEntitlement)
+        )
 
         let expectedMessage = Strings.purchase.begin_refund_no_active_entitlement.description
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: expectedMessage)
@@ -350,8 +315,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
     func testBeginRefundForActiveEntitlementFailsIfMultipleActiveEntitlements() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        customerInfoManager.stubbedCustomerInfo =
+        customerInfoManager.stubbedCustomerInfoResult = .success(
             try CustomerInfo(data: mockCustomerInfoResponseWithMockEntitlementActiveMultiple)
+        )
 
         let expectedMessage = Strings.purchase.begin_refund_multiple_active_entitlements.description
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: expectedMessage)

@@ -17,8 +17,8 @@ import Foundation
 // swiftlint:disable identifier_name
 enum NetworkStrings {
 
-    case api_request_completed(httpMethod: String, path: String, httpCode: HTTPStatusCode)
-    case api_request_started(httpMethod: String?, path: String?)
+    case api_request_completed(httpMethod: String, path: HTTPRequest.Path, httpCode: HTTPStatusCode)
+    case api_request_started(httpMethod: String, path: HTTPRequest.Path)
     case creating_json_error(error: String)
     case json_data_received(dataString: String)
     case parsing_json_error(error: Error)
@@ -39,10 +39,10 @@ extension NetworkStrings: CustomStringConvertible {
         switch self {
 
         case let .api_request_completed(httpMethod, path, httpCode):
-            return "API request completed with status: \(httpMethod) \(path) \(httpCode.rawValue)"
+            return "API request completed: \(httpMethod) \(path.url?.path ?? "") \(httpCode.rawValue)"
 
         case let .api_request_started(httpMethod, path):
-            return "API request started: \(httpMethod ?? "") \(path ?? "")"
+            return "API request started: \(httpMethod) \(path.url?.path ?? "")"
 
         case let .creating_json_error(error):
             return "Error creating request with body: \(error)"

@@ -43,7 +43,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled = true
         })
 
@@ -68,7 +68,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
-                     subscriberAttributes: nil) { (_, _) in
+                     subscriberAttributes: nil) { _ in
             completionCalled += 1
         }
 
@@ -79,7 +79,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -106,7 +106,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -117,7 +117,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -143,7 +143,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -154,7 +154,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -180,7 +180,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
         let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
@@ -192,7 +192,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -218,7 +218,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: "offering_a",
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -229,7 +229,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: "offering_b",
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -266,7 +266,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: offeringIdentifier,
                      observerMode: false,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled = true
         })
 
@@ -291,7 +291,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled = true
         })
 
@@ -370,12 +370,12 @@ class BackendPostReceiptDataTests: BaseBackendTests {
         var callOrder: (initialGet: Bool,
                         postResponse: Bool,
                         updatedGet: Bool) = (false, false, false)
-        backend.getCustomerInfo(appUserID: Self.userID, completion: { (customerInfo, _) in
-            originalSubscriberInfo = customerInfo
+        backend.getCustomerInfo(appUserID: Self.userID) { result in
+            originalSubscriberInfo = result.value
             callOrder.initialGet = true
 
             self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath)
-        })
+        }
 
         backend.post(receiptData: Self.receiptData,
                      appUserID: Self.userID,
@@ -383,18 +383,17 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: true,
-                     subscriberAttributes: nil,
-                     completion: { (customerInfo, _) in
+                     subscriberAttributes: nil) { result in
             self.httpClient.mock(requestPath: getCustomerInfoPath, response: updatedCustomerInfoResponse)
             callOrder.postResponse = true
-            postSubscriberInfo = customerInfo
-        })
+            postSubscriberInfo = result.value
+        }
 
-        backend.getCustomerInfo(appUserID: Self.userID, completion: { (newSubscriberInfo, _) in
+        backend.getCustomerInfo(appUserID: Self.userID) { result in
             expect(callOrder) == (true, true, false)
-            updatedSubscriberInfo = newSubscriberInfo
+            updatedSubscriberInfo = result.value
             callOrder.updatedGet = true
-        })
+        }
 
         expect(callOrder).toEventually(equal((true, true, true)))
 
@@ -422,8 +421,8 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: nil,
-                     completion: { (_, newError) in
-            error = newError as NSError?
+                     completion: { result in
+            error = result.error as NSError?
             underlyingError = error?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
@@ -451,8 +450,8 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: nil,
-                     completion: { (_, newError) in
-            error = newError
+                     completion: { result in
+            error = result.error
         })
 
         expect(error).toEventuallyNot(beNil())
@@ -479,8 +478,8 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: nil,
-                     completion: { (newCustomerInfo, _) in
-            customerInfo = newCustomerInfo
+                     completion: { result in
+            customerInfo = result.value
         })
 
         expect(customerInfo).toEventuallyNot(beNil())
@@ -494,8 +493,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .postReceiptData,
             response: .init(statusCode: .success,
-                            response: nil,
-                            error: NSError(domain: NSURLErrorDomain, code: -1009))
+                            response: .failure(NSError(domain: NSURLErrorDomain, code: -1009)))
         )
 
         var receivedError: NSError?
@@ -507,8 +505,8 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: nil,
-                     completion: { (_, error) in
-            receivedError = error as NSError?
+                     completion: { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         })
 
@@ -538,7 +536,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -557,7 +555,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -599,7 +597,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled = true
         })
 
@@ -623,7 +621,8 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: observerMode,
-                     subscriberAttributes: nil, completion: { (_, _) in
+                     subscriberAttributes: nil,
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -634,7 +633,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                      presentedOfferingIdentifier: "offering_a",
                      observerMode: observerMode,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled += 1
         })
 
@@ -661,7 +660,7 @@ private extension BackendPostReceiptDataTests {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCalled = true
         })
 

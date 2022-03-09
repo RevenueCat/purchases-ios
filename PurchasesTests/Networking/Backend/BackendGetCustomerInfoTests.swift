@@ -29,8 +29,8 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        backend.getCustomerInfo(appUserID: Self.userID) { _, _ in }
-        backend.getCustomerInfo(appUserID: Self.userID) { _, _ in }
+        backend.getCustomerInfo(appUserID: Self.userID) { _ in }
+        backend.getCustomerInfo(appUserID: Self.userID) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -41,8 +41,8 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: Self.userID), response: response)
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID2), response: response)
 
-        backend.getCustomerInfo(appUserID: Self.userID) { _, _ in }
-        backend.getCustomerInfo(appUserID: userID2) { _, _ in }
+        backend.getCustomerInfo(appUserID: Self.userID) { _ in }
+        backend.getCustomerInfo(appUserID: userID2) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -53,7 +53,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         self.httpClient.mock(requestPath: path, response: response)
 
-        backend.getCustomerInfo(appUserID: Self.userID) { _, _ in }
+        backend.getCustomerInfo(appUserID: Self.userID) { _ in }
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
@@ -63,13 +63,14 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var customerInfo: CustomerInfo?
+        var customerInfo: Result<CustomerInfo, Error>?
 
-        backend.getCustomerInfo(appUserID: Self.userID) { (info, _) in
-            customerInfo = info
+        backend.getCustomerInfo(appUserID: Self.userID) { result in
+            customerInfo = result
         }
 
         expect(customerInfo).toEventuallyNot(beNil())
+        expect(customerInfo?.value).toNot(beNil())
     }
 
     func testEncodesCustomerUserID() {
@@ -79,35 +80,41 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodedUserID), response: response)
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodeableUserID),
-                        response: .init(statusCode: .notFoundError, response: nil))
+                        response: .init(statusCode: .notFoundError,
+                                        error: ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError())))
 
-        var customerInfo: CustomerInfo?
+        var customerInfo: Result<CustomerInfo, Error>?
 
-        backend.getCustomerInfo(appUserID: encodeableUserID) { (info, _) in
-            customerInfo = info
+        backend.getCustomerInfo(appUserID: encodeableUserID) { result in
+            customerInfo = result
         }
 
         expect(customerInfo).toEventuallyNot(beNil())
+        expect(customerInfo?.value).toNot(beNil())
     }
 
-    func testHandlesGetCustomerInfoErrors() {
+    func testHandlesGetCustomerInfoErrors() throws {
         self.httpClient.mock(
             requestPath: .getCustomerInfo(appUserID: Self.userID),
-            response: .init(statusCode: .notFoundError, response: nil)
+            response: .init(statusCode: .notFoundError,
+                            error: ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
         )
 
-        var error: NSError?
+        var result: Result<CustomerInfo, NSError>?
 
-        backend.getCustomerInfo(appUserID: Self.userID) { (_, newError) in
-            error = newError as NSError?
+        backend.getCustomerInfo(appUserID: Self.userID) {
+            result = $0.mapError { $0 as NSError }
         }
 
-        expect(error).toEventuallyNot(beNil())
-        expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        let underlyingError = (error?.userInfo[NSUnderlyingErrorKey]) as? NSError
+        expect(result).toEventuallyNot(beNil())
+
+        let error = try XCTUnwrap(result?.error)
+
+        expect(error.domain).to(equal(RCPurchasesErrorCodeDomain))
+        let underlyingError = (error.userInfo[NSUnderlyingErrorKey]) as? NSError
         expect(underlyingError).toEventuallyNot(beNil())
         expect(underlyingError?.domain).to(equal("RevenueCat.BackendErrorCode"))
-        expect(error?.userInfo["finishable"] as? Bool) == true
+        expect(error.userInfo["finishable"] as? Bool) == true
     }
 
     func testHandlesInvalidJSON() {
@@ -116,15 +123,15 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: ["sjkaljdklsjadkjs": ""])
         )
 
-        var error: NSError?
+        var result: Result<CustomerInfo, NSError>?
 
-        backend.getCustomerInfo(appUserID: Self.userID) { (_, newError) in
-            error = newError as NSError?
+        backend.getCustomerInfo(appUserID: Self.userID) {
+            result = $0.mapError { $0 as NSError }
         }
 
-        expect(error).toEventuallyNot(beNil())
-        expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(error?.code).to(equal(ErrorCode.unexpectedBackendResponseError.rawValue))
+        expect(result).toEventuallyNot(beNil())
+        expect(result?.error?.domain) == RCPurchasesErrorCodeDomain
+        expect(result?.error?.code) == ErrorCode.unexpectedBackendResponseError.rawValue
     }
 
     func testGetCustomerInfoDoesNotMakeTwoRequests() {
@@ -140,19 +147,20 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         let customerInfoResponse = MockHTTPClient.Response(statusCode: .success, response: customerResponse)
         httpClient.mock(requestPath: path, response: customerInfoResponse)
 
-        var firstCustomerInfo: CustomerInfo?
-        var secondCustomerInfo: CustomerInfo?
+        var firstResult: Result<CustomerInfo, Error>?
+        var secondResult: Result<CustomerInfo, Error>?
 
-        backend.getCustomerInfo(appUserID: Self.userID, completion: { (customerInfo, _) in
-            firstCustomerInfo = customerInfo
-        })
+        backend.getCustomerInfo(appUserID: Self.userID) {
+            firstResult = $0
+        }
 
-        backend.getCustomerInfo(appUserID: Self.userID, completion: { (customerInfo, _) in
-            secondCustomerInfo = customerInfo
-        })
+        backend.getCustomerInfo(appUserID: Self.userID) {
+            secondResult = $0
+        }
 
-        expect(firstCustomerInfo).toEventuallyNot(beNil())
-        expect(secondCustomerInfo) == firstCustomerInfo
+        expect(firstResult).toEventuallyNot(beNil())
+        expect(firstResult?.value).toNot(beNil())
+        expect(secondResult?.value) == firstResult?.value
 
         expect(self.httpClient.calls.map { $0.request.path }) == [path]
     }

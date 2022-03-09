@@ -22,28 +22,13 @@ class SubscriberAttributeHandler {
     }
 
     func handleSubscriberAttributesResult(statusCode: HTTPStatusCode,
-                                          response: [String: Any]?,
-                                          error: Error?,
+                                          response: Result<[String: Any], Error>,
                                           completion: SimpleResponseHandler) {
-        if let error = error {
-            completion(ErrorUtils.networkError(withUnderlyingError: error))
-            return
-        }
+        let error = response
+            .mapError { ErrorUtils.networkError(withUnderlyingError: $0) } // TODO: remove
+            .error
 
-        let responseError: Error?
-
-        if let response = response, !statusCode.isSuccessfulResponse {
-            let extraUserInfo = self.userInfoAttributeParser
-                .attributesUserInfoFromResponse(response: response, statusCode: statusCode)
-            let backendErrorCode = BackendErrorCode(code: response["code"])
-            responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
-                                                    backendMessage: response["message"] as? String,
-                                                    extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
-        } else {
-            responseError = nil
-        }
-
-        completion(responseError)
+        completion(error)
     }
 
 }

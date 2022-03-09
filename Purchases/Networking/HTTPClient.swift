@@ -16,7 +16,10 @@ import Foundation
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
-    typealias Completion = ((_ statusCode: HTTPStatusCode, _ response: [String: Any]?, _ error: Error?) -> Void)
+    // TODO: change this to Result: Encodable
+    // TODO: change to only dictionary for now
+//    typealias Completion = ((_ statusCode: HTTPStatusCode, _ result: Result<(Data, [String: Any]), Error>) -> Void)
+    typealias Completion = ((_ statusCode: HTTPStatusCode, _ result: Result<[String: Any], Error>) -> Void)
 
     private let session: URLSession
     internal let systemInfo: SystemInfo
@@ -57,9 +60,24 @@ extension HTTPClient {
         return ["Authorization": "Bearer \(apiKey)"]
     }
 
+    static let jsonEncoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+
+        return encoder
+    }()
+
+    static let jsonDecoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        return decoder
+    }()
+
 }
 
 private extension HTTPClient {
+
     struct State {
         var queuedRequests: [Request]
         var currentSerialRequest: Request?
@@ -67,6 +85,7 @@ private extension HTTPClient {
         static let initial: Self = .init(queuedRequests: [],
                                          currentSerialRequest: nil)
     }
+    
 }
 
 private extension HTTPClient {
@@ -167,6 +186,7 @@ private extension HTTPClient {
                 data: Data?,
                 error networkError: Error?) {
         var statusCode: HTTPStatusCode = .networkConnectTimeoutError
+        // TODO: keep Data -> Encodable
         var jsonObject: [String: Any]?
         var httpResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         var receivedJSONError: Error?
@@ -174,8 +194,11 @@ private extension HTTPClient {
         if networkError == nil {
             if let httpURLResponse = urlResponse as? HTTPURLResponse {
                 statusCode = .init(rawValue: httpURLResponse.statusCode)
+
+//                2022-03-08 09:51:04.633994-0800 BackendIntegrationTestsHostApp[74639:8672511] [Purchases] - DEBUG: ℹ️ API request started: POST /v1/receipts
+//                2022-03-08 09:51:05.037849-0800 BackendIntegrationTestsHostApp[74639:8672508] [Purchases] - DEBUG: ℹ️ API request completed: POST /v1/receipts 200
                 Logger.debug(Strings.network.api_request_completed(httpMethod: request.method.httpMethod,
-                                                                   path: request.path,
+                                                                   path: request.httpRequest.path,
                                                                    httpCode: statusCode))
 
                 if statusCode == .notModified || data == nil {
@@ -219,7 +242,11 @@ private extension HTTPClient {
         if let httpResponse = httpResponse,
            let completionHandler = request.completionHandler {
             let error = receivedJSONError ?? networkError
-            completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
+
+//            let data = data.map { ($0, httpResponse.jsonObject!) }
+            let data = httpResponse.jsonObject
+
+            completionHandler(httpResponse.statusCode, Result(data, error))
         }
 
         self.beginNextRequest()
@@ -248,13 +275,12 @@ private extension HTTPClient {
             Logger.error("Could not create request to \(request.path)")
 
             request.completionHandler?(.invalidRequest,
-                                       nil,
-                                       ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+                                       .failure(ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError())))
             return
         }
 
-        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod,
-                                                         path: urlRequest.url?.path))
+        Logger.debug(Strings.network.api_request_started(httpMethod: request.method.httpMethod,
+                                                         path: request.httpRequest.path))
 
         let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,
@@ -308,14 +334,7 @@ extension HTTPRequest.Path {
 private extension Encodable {
 
     func asData() throws -> Data {
-        return try jsonEncoder.encode(self)
+        return try HTTPClient.jsonEncoder.encode(self)
     }
 
 }
-
-private let jsonEncoder: JSONEncoder = {
-    let encoder = JSONEncoder()
-    encoder.keyEncodingStrategy = .convertToSnakeCase
-
-    return encoder
-}()

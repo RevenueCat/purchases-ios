@@ -13,6 +13,8 @@ import XCTest
 
 @testable import RevenueCat
 
+// TODO: test errors here
+
 class HTTPClientTests: XCTestCase {
 
     let systemInfo = MockSystemInfo(finishTransactions: true)
@@ -171,7 +173,7 @@ class HTTPClientTests: XCTestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(request, authHeaders: [:]) { (_, _, _) in
+        self.client.perform(request, authHeaders: [:]) { _, _ in
             completionCalled.value = true
         }
 
@@ -189,10 +191,9 @@ class HTTPClientTests: XCTestCase {
             response.error = error
             return response
         }
-        self.client.perform(request, authHeaders: [:]) { (status, data, responseError) in
-            if let responseNSError = responseError as NSError? {
+        self.client.perform(request, authHeaders: [:]) { (status, result) in
+            if let responseNSError = result.error as NSError? {
                 successFailed.value = (status.isServerError
-                                       && data == nil
                                        && error.domain == responseNSError.domain
                                        && error.code == responseNSError.code)
             } else {
@@ -219,11 +220,10 @@ class HTTPClientTests: XCTestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (status, data, error) in
-            correctResponse.value = (status.rawValue == errorCode) && (data != nil) && (error == nil)
-            if data != nil {
-                message.value = data?["message"] as? String
-            }
+        self.client.perform(request, authHeaders: [:]) { (status, result) in
+            correctResponse.value = (status.rawValue == errorCode) && (result.value != nil)
+
+            message.value = result.value?["message"] as? String
         }
 
         expect(message.value).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
@@ -246,11 +246,9 @@ class HTTPClientTests: XCTestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (status, data, error) in
-            correctResponse.value = (status.rawValue == errorCode) && (data != nil) && (error == nil)
-            if data != nil {
-                message.value = data?["message"] as? String
-            }
+        self.client.perform(request, authHeaders: [:]) { (status, result) in
+            correctResponse.value = (status.rawValue == errorCode) && (result.value != nil)
+            message.value = result.value?["message"] as? String
         }
 
         expect(message.value).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
@@ -272,8 +270,8 @@ class HTTPClientTests: XCTestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (status, data, error) in
-            correctResponse.value = (status.rawValue == errorCode) && (data == nil) && (error != nil)
+        self.client.perform(request, authHeaders: [:]) { (status, result) in
+            correctResponse.value = (status.rawValue == errorCode) && (result.error != nil)
         }
 
         expect(correctResponse.value).toEventually(beTrue(), timeout: .seconds(1))
@@ -292,11 +290,9 @@ class HTTPClientTests: XCTestCase {
                                      headers: nil)
         }
 
-        self.client.perform(request, authHeaders: [:]) { (status, data, error) in
-            successIsTrue.value = (status == .success) && (error == nil)
-            if data != nil {
-                message.value = data?["message"] as? String
-            }
+        self.client.perform(request, authHeaders: [:]) { (status, result) in
+            successIsTrue.value = (status == .success) && (result.error == nil)
+            message.value = result.value?["message"] as? String
         }
 
         expect(message.value).toEventually(equal("something is great up in the cloud"), timeout: .seconds(1))
@@ -491,7 +487,7 @@ class HTTPClientTests: XCTestCase {
         let serialRequests = 10
         for requestNumber in 0..<serialRequests {
             client.perform(.init(method: .requestNumber(requestNumber), path: path),
-                           authHeaders: [:]) { (_, _, _) in
+                           authHeaders: [:]) { (_, _) in
                 completionCallCount.value += 1
             }
         }
@@ -519,12 +515,12 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(.init(method: .requestNumber(1), path: path),
-                            authHeaders: [:]) { (_, _, _) in
+                            authHeaders: [:]) { (_, _) in
             firstRequestFinished.value = true
         }
 
         self.client.perform(.init(method: .requestNumber(2), path: path),
-                            authHeaders: [:]) { (_, _, _) in
+                            authHeaders: [:]) { (_, _) in
             secondRequestFinished.value = true
         }
 
@@ -563,17 +559,17 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(.init(method: .requestNumber(1), path: path),
-                            authHeaders: [:]) { (_, _, _) in
+                            authHeaders: [:]) { (_, _) in
             firstRequestFinished.value = true
         }
 
         self.client.perform(.init(method: .requestNumber(2), path: path),
-                            authHeaders: [:]) { (_, _, _) in
+                            authHeaders: [:]) { (_, _) in
             secondRequestFinished.value = true
         }
 
         self.client.perform(.init(method: .requestNumber(3), path: path),
-                            authHeaders: [:]) { (_, _, _) in
+                            authHeaders: [:]) { (_, _) in
             thirdRequestFinished.value = true
         }
 
@@ -582,24 +578,20 @@ class HTTPClientTests: XCTestCase {
         expect(thirdRequestFinished.value).toEventually(beTrue(), timeout: .seconds(3))
     }
 
-    func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() {
-        var completionCalled = false
-        var receivedError: Error?
+    func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() throws {
         var receivedStatus: HTTPStatusCode?
-        var receivedData: [String: Any]?
+        var receivedResult: Result<[String: Any], Error>?
+
         self.client.perform(.init(method: .invalidBody(), path: .mockPath),
-                            authHeaders: [:]) { (status, data, error) in
-            completionCalled = true
-            receivedError = error
+                            authHeaders: [:]) { (status, result) in
             receivedStatus = status
-            receivedData = data
+            receivedResult = result
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).toNot(beNil())
-        let receivedNSError = receivedError! as NSError
+        expect(receivedResult).toEventuallyNot(beNil())
+
+        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
         expect(receivedNSError.code) == ErrorCode.networkError.rawValue
-        expect(receivedData).to(beNil())
         expect(receivedStatus) == .invalidRequest
     }
 
@@ -615,7 +607,7 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(.init(method: .invalidBody(), path: path),
-                            authHeaders: [:]) { (_, _, _) in
+                            authHeaders: [:]) { (_, _) in
             completionCalled = true
         }
 
@@ -639,7 +631,7 @@ class HTTPClientTests: XCTestCase {
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_, _, _) in
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_, _) in
             completionCalled.value = true
         }
 
@@ -752,8 +744,8 @@ class HTTPClientTests: XCTestCase {
         }
 
         let obtainedError: Atomic<DNSError?> = .init(nil)
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:] ) { _, _, error in
-            obtainedError.value = error as? DNSError
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:] ) { _, result in
+            obtainedError.value = result.error as? DNSError
         }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))

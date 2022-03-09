@@ -55,7 +55,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, _ in
+                     appUserID: Self.userID) { _ in
             completionCalled = true
         }
 
@@ -67,8 +67,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .postOfferForSigning,
             response: .init(statusCode: .success,
-                            response: nil,
-                            error: NSError(domain: NSURLErrorDomain, code: -1009))
+                            response: .failure(NSError(domain: NSURLErrorDomain, code: -1009)))
         )
 
         let productIdentifier = "a_great_product"
@@ -82,8 +81,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
@@ -117,8 +116,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
@@ -163,8 +162,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
@@ -208,8 +207,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
@@ -238,8 +237,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 

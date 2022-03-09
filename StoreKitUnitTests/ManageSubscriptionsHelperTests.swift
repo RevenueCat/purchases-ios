@@ -54,7 +54,7 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         guard #available(iOS 15.0, *) else { throw XCTSkip("Required API is not available for this test.") }
         // given
         var callbackCalled = false
-        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
+        customerInfoManager.stubbedCustomerInfoResult = .success(try CustomerInfo(data: mockCustomerInfoData))
 
         // when
         helper.showManageSubscriptions { _ in
@@ -77,7 +77,7 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
-        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
+        customerInfoManager.stubbedCustomerInfoResult = .success(try CustomerInfo(data: mockCustomerInfoData))
 
         // when
         helper.showManageSubscriptions { result in
@@ -99,7 +99,7 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
-        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
+        customerInfoManager.stubbedCustomerInfoResult = .success(try CustomerInfo(data: mockCustomerInfoData))
 
         // when
         helper.showManageSubscriptions { result in
@@ -114,10 +114,12 @@ class ManageSubscriptionsHelperTests: XCTestCase {
     }
 
     func testShowManageSubscriptionsFailsIfCouldntGetCustomerInfo() throws {
+let error = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
+
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
-        customerInfoManager.stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
+        customerInfoManager.stubbedCustomerInfoResult = .failure(error)
 
         // when
         helper.showManageSubscriptions { result in
@@ -131,7 +133,7 @@ class ManageSubscriptionsHelperTests: XCTestCase {
         let expectedErrorMessage = "Failed to get managementURL from CustomerInfo. " +
         "Details: The operation couldn’t be completed"
         let expectedError = ErrorUtils.customerInfoError(withMessage: expectedErrorMessage,
-                                                         error: customerInfoManager.stubbedError)
+                                                         error: error)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
         })

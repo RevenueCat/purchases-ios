@@ -50,7 +50,7 @@ class PostAttributionDataOperation: NetworkOperation {
         let request = HTTPRequest(method: .post(Body(network: self.network, attributionData: self.attributionData)),
                                   path: .postAttributionData(appUserID: appUserID))
 
-        self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
+        self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, result in
             defer {
                 completion()
             }
@@ -59,9 +59,8 @@ class PostAttributionDataOperation: NetworkOperation {
                 return
             }
 
-            self.postAttributionDataResponseHandler.handle(response: response,
-                                                           statusCode: statusCode,
-                                                           error: error,
+            self.postAttributionDataResponseHandler.handle(statusCode: statusCode,
+                                                           result: result,
                                                            completion: responseHandler)
         }
     }

@@ -40,7 +40,7 @@ private extension LogInOperation {
     func logIn(completion: @escaping () -> Void) {
         guard let newAppUserID = try? self.newAppUserID.trimmedOrError() else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(nil, false, ErrorUtils.missingAppUserIDError())
+                callback.completion(.failure(ErrorUtils.missingAppUserIDError()))
             }
             completion()
 
@@ -51,11 +51,10 @@ private extension LogInOperation {
                                                      newAppUserID: newAppUserID)),
                                   path: .logIn)
 
-        self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
+        self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, result in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                self.handleLogin(response: response,
+                self.handleLogin(result: result,
                                  statusCode: statusCode,
-                                 error: error,
                                  completion: callbackObject.completion)
             }
 
@@ -63,46 +62,43 @@ private extension LogInOperation {
         }
     }
 
-    func handleLogin(response: [String: Any]?,
+    func handleLogin(result: Result<[String: Any], Error>,
                      statusCode: HTTPStatusCode,
-                     error: Error?,
                      completion: LogInResponseHandler) {
-        let result: (info: CustomerInfo?, cancelled: Bool, error: Error?) = {
-            if let error = error {
-                return (nil, false, ErrorUtils.networkError(withUnderlyingError: error))
+        let result: Result<(info: CustomerInfo, created: Bool), Error> = result
+            // TODO: move this to HTTPClient
+            .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
+            .flatMap { response in
+                do {
+                    let customerInfo = try CustomerInfo.from(json: response)
+                    let created = statusCode == .createdSuccess
+
+                    // TODO: move somewhere else
+                    Logger.user(Strings.identity.login_success)
+
+                    return .success((customerInfo, created))
+                } catch let customerInfoError {
+                    Logger.error(Strings.backendError.customer_info_instantiation_error(response: response))
+
+                    let extraContext = "statusCode: \(statusCode)"
+                    let subErrorCode = UnexpectedBackendResponseSubErrorCode
+                        .loginResponseDecoding
+                        .addingUnderlyingError(customerInfoError)
+                    let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
+                                                                             extraContext: extraContext)
+                    return .failure(responseError)
+                }
             }
 
-            guard let response = response else {
-                let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginMissingResponse
-                let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
-                return (nil, false, responseError)
-            }
+            // TODO: move to HTTPClient
+//            if !statusCode.isSuccessfulResponse {
+//                let backendCode = BackendErrorCode(code: response["code"])
+//                let backendMessage = response["message"] as? String
+//                let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
+//                return .failure(ErrorUtils.networkError(withUnderlyingError: responsError))
+//            }
 
-            if !statusCode.isSuccessfulResponse {
-                let backendCode = BackendErrorCode(code: response["code"])
-                let backendMessage = response["message"] as? String
-                let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
-                return (nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
-            }
-
-            do {
-                let customerInfo = try CustomerInfo.from(json: response)
-                let created = statusCode == .createdSuccess
-                Logger.user(Strings.identity.login_success)
-                return (customerInfo, created, nil)
-            } catch let customerInfoError {
-                Logger.error(Strings.backendError.customer_info_instantiation_error(response: response))
-                let extraContext = "statusCode: \(statusCode)"
-                let subErrorCode = UnexpectedBackendResponseSubErrorCode
-                    .loginResponseDecoding
-                    .addingUnderlyingError(customerInfoError)
-                let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
-                                                                         extraContext: extraContext)
-                return (nil, false, responseError)
-            }
-        }()
-
-        completion(result.info, result.cancelled, result.error)
+        completion(result)
     }
 }
 
