@@ -43,6 +43,8 @@ private extension Encodable {
             .prettyPrinted,
             .sortedKeys
         ]
+        // Note: formatting would be simpler with `.withoutEscapingSlashes`
+        // but that wouldn't be backwards compatible for running tests on iOS 12.0
 
         return try encoder.encode(self)
     }

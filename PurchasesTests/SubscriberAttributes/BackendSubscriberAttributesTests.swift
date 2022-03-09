@@ -71,12 +71,6 @@ class BackendSubscriberAttributesTests: XCTestCase {
                      completion: { (_: Error!) in })
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
-
-        let call = try XCTUnwrap(self.mockHTTPClient.calls.first)
-
-        expect(call.request.path) == .postSubscriberAttributes(appUserID: self.appUserID)
-        expect(call.request.methodType) == .post
-        expect(call.headers) == HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
     }
 
     func testPostSubscriberAttributesCallsCompletionInSuccessCase() {

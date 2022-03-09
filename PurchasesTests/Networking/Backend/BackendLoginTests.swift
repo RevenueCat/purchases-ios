@@ -35,13 +35,6 @@ class BackendLoginTests: BaseBackendTests {
         }
 
         expect(completionCalled).toEventually(beTrue())
-        expect(self.httpClient.calls).toNot(beEmpty())
-        expect(self.httpClient.calls.count) == 1
-
-        let receivedCall = self.httpClient.calls[0]
-        expect(receivedCall.request.path) == requestPath
-        expect(receivedCall.request.methodType) == .post
-        expect(receivedCall.headers) == HTTPClient.authorizationHeader(withAPIKey: Self.apiKey)
     }
 
     func testLoginPassesNetworkErrorIfCouldntCommunicate() throws {
