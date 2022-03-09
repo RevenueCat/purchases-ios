@@ -1,0 +1,15 @@
+{
+    "current_offering_id": "default",
+    "offerings": [
+        {
+            "description": "standard set of packages",
+            "identifier": "default",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                }
+            ]
+        }
+    ]
+}

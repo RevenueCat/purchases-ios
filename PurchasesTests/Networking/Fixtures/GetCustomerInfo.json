@@ -1,0 +1,25 @@
+{
+    "request_date": "2022-03-08T17:42:58Z",
+    "request_date_ms": 1646761378845,
+    "subscriber": {
+        "entitlements": {},
+        "first_seen": "2022-03-08T17:42:58Z",
+        "last_seen": "2022-03-08T17:42:58Z",
+        "management_url": null,
+        "non_subscriptions": {},
+        "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
+        "original_application_version": null,
+        "original_purchase_date": null,
+        "other_purchases": {},
+        "subscriptions": {
+            "product_a": {
+                "expires_date": "2018-05-27T06:24:50Z",
+                "period_type": "normal"
+            },
+            "product_b": {
+                "expires_date": "2018-05-27T05:24:50Z",
+                "period_type": "intro"
+            }
+        }
+    }
+}
