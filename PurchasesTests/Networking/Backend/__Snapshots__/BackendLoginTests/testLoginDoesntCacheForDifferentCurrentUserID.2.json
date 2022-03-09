@@ -8,6 +8,6 @@
       "new_app_user_id" : "new id"
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/subscribers/identify"
+    "url" : "https:\/\/api.revenuecat.com\/v1\/subscribers\/identify"
   }
 }

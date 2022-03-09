@@ -11,6 +11,6 @@
       "network" : 0
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/subscribers/user/attribution"
+    "url" : "https:\/\/api.revenuecat.com\/v1\/subscribers\/user\/attribution"
   }
 }

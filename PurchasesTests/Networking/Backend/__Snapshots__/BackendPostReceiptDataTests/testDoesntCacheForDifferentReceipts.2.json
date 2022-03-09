@@ -10,6 +10,6 @@
       "observer_mode" : true
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/receipts"
+    "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
   }
 }

@@ -20,6 +20,6 @@
       "product_id" : "product_id"
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/receipts"
+    "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
   }
 }

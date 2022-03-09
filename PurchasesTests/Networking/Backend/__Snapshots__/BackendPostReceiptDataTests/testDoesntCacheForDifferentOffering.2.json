@@ -11,6 +11,6 @@
       "presented_offering_identifier" : "offering_b"
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/receipts"
+    "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
   }
 }
