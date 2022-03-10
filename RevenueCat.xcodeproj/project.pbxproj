@@ -374,6 +374,7 @@
 		F5BE447B269E4A7500254A30 /* TrackingManagerProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */; };
 		F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE447C269E4ADB00254A30 /* ASIdManagerProxy.swift */; };
 		F5C0196926E880800005D61E /* StoreKitStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0196826E880800005D61E /* StoreKitStrings.swift */; };
+		F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -779,6 +780,7 @@
 		F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingManagerProxy.swift; sourceTree = "<group>"; };
 		F5BE447C269E4ADB00254A30 /* ASIdManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASIdManagerProxy.swift; sourceTree = "<group>"; };
 		F5C0196826E880800005D61E /* StoreKitStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitStrings.swift; sourceTree = "<group>"; };
+		F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterProvider.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1025,23 +1027,24 @@
 		2DDA3E4524DB0B4500EDFE5B /* Misc */ = {
 			isa = PBXGroup;
 			children = (
+				576C8A8A27CFCB150058FA6E /* AnyEncodable.swift */,
 				57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */,
+				352B7D7827BD919B002A47DD /* DangerousSettings.swift */,
 				37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */,
 				0313FD40268A506400168386 /* DateProvider.swift */,
+				5796A3A827D7C43500653165 /* Deprecations.swift */,
 				2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */,
 				B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */,
 				57EAE526274324C60060EB74 /* Lock.swift */,
 				F530E4FE275646EF001AF6BD /* MacDevice.swift */,
-				5796A3A827D7C43500653165 /* Deprecations.swift */,
 				57EAE52A274332830060EB74 /* Obsoletions.swift */,
 				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
+				2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */,
+				F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */,
 				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
 				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
 				57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */,
 				B3AA6237268B926F00894871 /* SystemInfo.swift */,
-				352B7D7827BD919B002A47DD /* DangerousSettings.swift */,
-				2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */,
-				576C8A8A27CFCB150058FA6E /* AnyEncodable.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -2012,6 +2015,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B3A36AAE26BC76340059EDEA /* CustomerInfoManager.swift in Sources */,
+				F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */,
 				B3083A132699334C007B5503 /* Offering.swift in Sources */,
 				2CD72942268A823900BFC976 /* Data+Extensions.swift in Sources */,
 				B3B5FBBC269D121B00104A0C /* Offerings.swift in Sources */,
