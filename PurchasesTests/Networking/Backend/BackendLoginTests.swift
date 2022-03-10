@@ -26,7 +26,7 @@ class BackendLoginTests: BaseBackendTests {
     func testLoginMakesRightCalls() {
         let newAppUserID = "new id"
         let currentAppUserID = "old id"
-        let requestPath = self.mockLoginRequest(appUserID: currentAppUserID)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID)
         var completionCalled = false
 
         backend.logIn(currentAppUserID: currentAppUserID,
