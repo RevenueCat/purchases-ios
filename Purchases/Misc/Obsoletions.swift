@@ -386,6 +386,15 @@ public extension Purchases {
         fatalError()
     }
 
+    @available(iOS, obsoleted: 1, renamed: "invalidateCustomerInfoCache")
+    @available(tvOS, obsoleted: 1, renamed: "invalidateCustomerInfoCache")
+    @available(watchOS, obsoleted: 1, renamed: "invalidateCustomerInfoCache")
+    @available(macOS, obsoleted: 1, renamed: "invalidateCustomerInfoCache")
+    @available(macCatalyst, obsoleted: 1, renamed: "invalidateCustomerInfoCache")
+    @objc func invalidatePurchaserInfoCache() {
+        fatalError()
+    }
+
     /**
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
      * You should use this method to determine whether or not you show the user the normal product price or
