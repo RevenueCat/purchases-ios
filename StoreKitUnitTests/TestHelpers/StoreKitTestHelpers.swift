@@ -11,8 +11,8 @@
 //
 //  Created by Nacho Soto on 1/24/22.
 
-@testable import RevenueCat
 import Nimble
+@testable import RevenueCat
 import StoreKit
 import XCTest
 
@@ -99,3 +99,41 @@ extension StoreKitConfigTestCase {
     static let lifetimeProductID = "lifetime"
 
 }
+
+extension ProductsFetcherSK1 {
+
+    func product(withIdentifier identifier: String) async throws -> StoreProduct {
+        let products = try await self.products(withIdentifiers: Set([identifier]))
+
+        switch products.count {
+        case 0: throw StoreKitTestError.noProductsFound
+        case 1: return StoreProduct.from(product: products.first!)
+        default: throw StoreKitTestError.multipleProductsFound
+        }
+    }
+
+}
+
+enum StoreKitTestError: Swift.Error {
+
+    case noProductsFound
+    case multipleProductsFound
+
+}
+
+@MainActor
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension ProductsFetcherSK2 {
+
+    func product(withIdentifier identifier: String) async throws -> StoreProduct {
+        let products = try await self.products(identifiers: Set([identifier]))
+
+        switch products.count {
+        case 0: throw StoreKitTestError.noProductsFound
+        case 1: return StoreProduct.from(product: products.first!)
+        default: throw StoreKitTestError.multipleProductsFound
+        }
+    }
+
+}
+
