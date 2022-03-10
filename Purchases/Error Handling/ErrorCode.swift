@@ -56,6 +56,7 @@ import Foundation
     @objc(RCBeginRefundRequestError)case beginRefundRequestError = 31
     @objc(RCProductRequestTimedOut) case productRequestTimedOut = 32
     @objc(RCAPIEndpointBlocked) case apiEndpointBlockedError = 33
+    @objc(RCInvalidPromotionalOfferError) case invalidPromotionalOfferError = 34
 
     // swiftlint:enable missing_docs
 }
@@ -151,6 +152,8 @@ extension ErrorCode: DescribableError {
             return "SKProductsRequest took too long to complete."
         case .apiEndpointBlockedError:
             return "Requests to RevenueCat are being blocked. See: https://rev.cat/dnsBlocking for more info."
+        case .invalidPromotionalOfferError:
+            return "The information associated with this PromotionalOffer is not valid. See TODO for more info."
         @unknown default:
             return "Something went wrong."
         }
@@ -245,6 +248,8 @@ extension ErrorCode {
             return "PRODUCT_REQUEST_TIMED_OUT_ERROR"
         case .apiEndpointBlockedError:
             return "API_ENDPOINT_BLOCKED_ERROR"
+        case .invalidPromotionalOfferError:
+            return "INVALID_PROMOTIONAL_OFFER_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }
