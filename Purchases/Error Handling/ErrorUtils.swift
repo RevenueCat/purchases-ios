@@ -266,14 +266,21 @@ enum ErrorUtils {
     }
 
     /**
-     * Maps a `StoreKitError` to an `Error` with a ``ErrorCode``.
+     * Maps a `StoreKitError` or `Product.PurchaseError`  to an `Error` with an ``ErrorCode``.
      * Adds a underlying error in the `NSError.userInfo` dictionary.
      *
-     * - Parameter skError: The originating `StoreKitError`.
+     * - Parameter storeKitError: The originating `StoreKitError` or `Product.PurchaseError`.
      */
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    static func purchasesError(withStoreKitError storeKitError: Error) -> Error {
-        return (storeKitError as? StoreKitError)?.toPurchasesError() ?? self.unknownError()
+    static func purchasesError(withStoreKitError error: Error) -> Error {
+        switch error {
+        case let storeKitError as StoreKitError:
+            return storeKitError.toPurchasesError()
+        case let purchasesError as Product.PurchaseError:
+            return purchasesError.toPurchasesError()
+        default:
+            return self.unknownError(error: error)
+        }
     }
 
     /**
@@ -302,6 +309,39 @@ enum ErrorUtils {
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         return ErrorUtils.error(with: .productNotAvailableForPurchaseError,
+                                underlyingError: error)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/purchaseNotAllowedError`` code.
+     */
+    static func purchaseNotAllowedError(
+        error: Error? = nil,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return ErrorUtils.error(with: .purchaseNotAllowedError,
+                                underlyingError: error)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/ineligibleError`` code.
+     */
+    static func ineligibleError(
+        error: Error? = nil,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return ErrorUtils.error(with: .ineligibleError,
+                                underlyingError: error)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/ineligibleError`` code.
+     */
+    static func invalidPromotionalOfferError(
+        error: Error? = nil,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return ErrorUtils.error(with: .invalidPromotionalOfferError,
                                 underlyingError: error)
     }
 
@@ -491,7 +531,8 @@ private extension ErrorUtils {
                 .customerInfoError,
                 .systemInfoError,
                 .beginRefundRequestError,
-                .apiEndpointBlockedError:
+                .apiEndpointBlockedError,
+                .invalidPromotionalOfferError:
             Logger.error(code.description)
 
         case .purchaseCancelledError,

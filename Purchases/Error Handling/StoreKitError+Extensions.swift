@@ -48,3 +48,34 @@ extension StoreKitError {
     }
 
 }
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension Product.PurchaseError {
+
+    func toPurchasesError() -> Error {
+        switch self {
+        case .invalidQuantity:
+            return ErrorUtils.storeProblemError(error: self)
+
+        case .productUnavailable:
+            return ErrorUtils.productNotAvailableForPurchaseError(error: self)
+
+        case .purchaseNotAllowed:
+            return ErrorUtils.purchaseNotAllowedError(error: self)
+
+        case .ineligibleForOffer:
+            return ErrorUtils.ineligibleError(error: self)
+
+        case
+                .invalidOfferIdentifier,
+                .invalidOfferPrice,
+                .invalidOfferSignature,
+                .missingOfferParameters:
+            return ErrorUtils.invalidPromotionalOfferError(error: self)
+
+        @unknown default:
+            return ErrorUtils.unknownError(error: self)
+        }
+    }
+
+}
