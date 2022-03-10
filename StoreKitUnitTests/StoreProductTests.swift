@@ -368,37 +368,6 @@ private extension StoreProductTests {
         }
     }
 
-    /// Updates `SKTestSession.storefront` and waits for `Storefront.current` to reflect the change
-    /// This is necessary because the change is aynchronous within `StoreKit`, and otherwise code that depends
-    /// on the change might not see it in time, resulting in race conditions and flaky tests.
-    func changeStorefront(_ new: String) async {
-        testSession.storefront = new
-
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            // Note: a better approach would be using `XCTestExpectation` and `self.wait(for:timeout:)`
-            // but it doesn't seem to play well with async-await.
-            // Also `toEventually` (Quick nor Nimble) don't support `async`.
-
-            var storefrontUpdateDetected: Bool {
-                get async { await Storefront.current?.countryCode == new }
-            }
-
-            var numberOfChecksLeft = 10
-
-            repeat {
-                if await !storefrontUpdateDetected {
-                    numberOfChecksLeft -= 1
-                    try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-                } else {
-                    break
-                }
-            } while numberOfChecksLeft > 0
-
-            let detected = await storefrontUpdateDetected
-            expect(detected).to(beTrue(), description: "Storefront change not detected")
-        }
-    }
-
 }
 
 private extension StoreProductTests {
