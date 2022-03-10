@@ -153,7 +153,10 @@ extension ErrorCode: DescribableError {
         case .apiEndpointBlockedError:
             return "Requests to RevenueCat are being blocked. See: https://rev.cat/dnsBlocking for more info."
         case .invalidPromotionalOfferError:
-            return "The information associated with this PromotionalOffer is not valid. See TODO for more info."
+            return """
+                   The information associated with this PromotionalOffer is not valid.
+                   See https://rev.cat/ios-subscription-offers for more info.
+                   """
         @unknown default:
             return "Something went wrong."
         }
