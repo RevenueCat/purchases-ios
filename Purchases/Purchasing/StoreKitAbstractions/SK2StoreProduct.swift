@@ -16,8 +16,12 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2StoreProduct: StoreProductType {
 
-    init(sk2Product: SK2Product) {
+    init(
+        sk2Product: SK2Product,
+        priceFormatterProvider: PriceFormatterProvider = .init()
+    ) {
         self._underlyingSK2Product = sk2Product
+        self.priceFormatterProvider = priceFormatterProvider
     }
 
     // We can't directly store instances of StoreKit.Product, since that causes
@@ -29,6 +33,8 @@ internal struct SK2StoreProduct: StoreProductType {
         // swiftlint:disable:next force_cast
         _underlyingSK2Product as! SK2Product
     }
+
+    private let priceFormatterProvider: PriceFormatterProvider
 
     var productCategory: StoreProduct.ProductCategory {
         return self.productType.productCategory
@@ -60,14 +66,10 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var priceFormatter: NumberFormatter? {
         guard let currencyCode = self.currencyCode else {
-          Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
-          return nil
-      }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
-        formatter.locale = .autoupdatingCurrent
-        return formatter
+            Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
+            return nil
+        }
+        return priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
     }
 
     var subscriptionGroupIdentifier: String? {

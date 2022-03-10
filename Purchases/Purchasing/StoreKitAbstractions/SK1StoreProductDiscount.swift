@@ -16,13 +16,17 @@ import StoreKit
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
 internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 
-    init?(sk1Discount: SK1ProductDiscount) {
+    init?(
+        sk1Discount: SK1ProductDiscount,
+        priceFormatterProvider: PriceFormatterProvider = .init()
+    ) {
         guard let paymentMode = StoreProductDiscount.PaymentMode(skProductDiscountPaymentMode: sk1Discount.paymentMode),
               let subscriptionPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod),
               let type = StoreProductDiscount.DiscountType.from(sk1Discount: sk1Discount)
         else { return nil }
 
         self.underlyingSK1Discount = sk1Discount
+        self.priceFormatterProvider = priceFormatterProvider
 
         if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
             self.offerIdentifier = sk1Discount.identifier
@@ -49,17 +53,10 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         return priceFormatter?.string(from: self.underlyingSK1Discount.price) ?? ""
     }
 
+    private let priceFormatterProvider: PriceFormatterProvider
+
     private var priceFormatter: NumberFormatter? {
-        guard let currencyCode = self.currencyCode else {
-          Logger.appleError("Can't initialize priceFormatter for SK2 product discount!" +
-                            " Could not find the currency code")
-          return nil
-      }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
-        formatter.locale = self.underlyingSK1Discount.priceLocale
-        return formatter
+        return priceFormatterProvider.priceFormatterForSK1(withLocale: self.underlyingSK1Discount.priceLocale)
     }
 
 }

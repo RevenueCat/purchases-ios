@@ -15,11 +15,16 @@ import StoreKit
 
 internal struct SK1StoreProduct: StoreProductType {
 
-    init(sk1Product: SK1Product) {
+    init(
+        sk1Product: SK1Product,
+        priceFormatterProvider: PriceFormatterProvider = .init()
+    ) {
         self.underlyingSK1Product = sk1Product
+        self.priceFormatterProvider = priceFormatterProvider
     }
 
     let underlyingSK1Product: SK1Product
+    private let priceFormatterProvider: PriceFormatterProvider
 
     var productCategory: StoreProduct.ProductCategory {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) else {
@@ -58,10 +63,7 @@ internal struct SK1StoreProduct: StoreProductType {
     var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     var priceFormatter: NumberFormatter? {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = underlyingSK1Product.priceLocale
-        return formatter
+        priceFormatterProvider.priceFormatterForSK1(withLocale: underlyingSK1Product.priceLocale)
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
