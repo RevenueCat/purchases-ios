@@ -15,7 +15,7 @@
 		5539DF302592A0C30073FB19 /* SplashScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF2F2592A0C30073FB19 /* SplashScreenViewController.swift */; };
 		5539DF362593E3210073FB19 /* Paywall.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5539DF352593E3210073FB19 /* Paywall.storyboard */; };
 		5575FD49258801DE001B2F0D /* UserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5575FD48258801DE001B2F0D /* UserViewController.swift */; };
-		5576344325A3C084.1.0486A /* PackageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5576344225A3C08400C0486A /* PackageCell.swift */; };
+		5576344325A3C08400C0486A /* PackageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5576344225A3C08400C0486A /* PackageCell.swift */; };
 		5582ECD72587EF8500ACB34B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582ECD62587EF8500ACB34B /* AppDelegate.swift */; };
 		5582ECD92587EF8500ACB34B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582ECD82587EF8500ACB34B /* SceneDelegate.swift */; };
 		5582ECDE2587EF8500ACB34B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5582ECDC2587EF8500ACB34B /* Main.storyboard */; };
@@ -35,7 +35,7 @@
 		5539DF352593E3210073FB19 /* Paywall.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Paywall.storyboard; sourceTree = "<group>"; };
 		5539DF392593E6D90073FB19 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		5575FD48258801DE001B2F0D /* UserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewController.swift; sourceTree = "<group>"; };
-		5576344225A3C084.1.0486A /* PackageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageCell.swift; sourceTree = "<group>"; };
+		5576344225A3C08400C0486A /* PackageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageCell.swift; sourceTree = "<group>"; };
 		5582ECD32587EF8500ACB34B /* MagicWeather.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MagicWeather.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5582ECD62587EF8500ACB34B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5582ECD82587EF8500ACB34B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -61,7 +61,7 @@
 		5576344125A3C06E00C0486A /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				5576344225A3C084.1.0486A /* PackageCell.swift */,
+				5576344225A3C08400C0486A /* PackageCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -240,7 +240,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5576344325A3C084.1.0486A /* PackageCell.swift in Sources */,
+				5576344325A3C08400C0486A /* PackageCell.swift in Sources */,
 				5575FD49258801DE001B2F0D /* UserViewController.swift in Sources */,
 				5539DF24258A9AA70073FB19 /* SampleData.swift in Sources */,
 				5582ECD72587EF8500ACB34B /* AppDelegate.swift in Sources */,
