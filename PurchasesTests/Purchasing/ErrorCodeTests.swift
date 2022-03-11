@@ -162,8 +162,13 @@ class ErrorCodeTests: XCTestCase {
                                               expectedRawValue: 33)
     }
 
+    func testInvalidPromotionalOffer() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .invalidPromotionalOfferError,
+                                              expectedRawValue: 34)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases.count).to(equal(34))
+        expect(ErrorCode.allCases).to(haveCount(35))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {

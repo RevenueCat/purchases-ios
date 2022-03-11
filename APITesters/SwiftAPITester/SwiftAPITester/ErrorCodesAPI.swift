@@ -50,7 +50,8 @@ func checkPurchasesErrorCodeEnums() {
          .systemInfoError,
          .beginRefundRequestError,
          .productRequestTimedOut,
-         .apiEndpointBlockedError:
+         .apiEndpointBlockedError,
+         .invalidPromotionalOfferError:
         print(errCode!)
     @unknown default:
         fatalError()
