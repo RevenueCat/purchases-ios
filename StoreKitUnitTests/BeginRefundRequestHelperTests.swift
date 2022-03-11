@@ -28,99 +28,11 @@ class BeginRefundRequestHelperTests: XCTestCase {
     private let mockEntitlementID = "1234"
     private let mockEntitlementID2 = "2345"
 
-    var mockCustomerInfoResponseWithMockEntitlementActive: [String: Any] {
-        return [
-            "request_date": "2018-10-19T02:40:36Z",
-            "subscriber": [
-                "original_app_user_id": "app_user_id",
-                "original_application_version": "2083",
-                "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
-                "subscriptions": [
-                    "onemonth_freetrial": [:]
-                ],
-                "entitlements": [
-                    "\(mockEntitlementID)": [
-                        "expires_date": "2100-08-30T02:40:36Z",
-                        "product_identifier": "onemonth_freetrial",
-                        "purchase_date": "2018-10-26T23:17:53Z"
-                    ]
-                ]
-            ]
-        ]
-    }
-
-    var mockCustomerInfoResponseWithMockEntitlementActiveMultiple: [String: Any] {
-        return [
-            "request_date": "2018-10-19T02:40:36Z",
-            "subscriber": [
-                "original_app_user_id": "app_user_id",
-                "original_application_version": "2083",
-                "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
-                "subscriptions": [
-                    "onemonth_freetrial": [:],
-                    "onemonth_freetrial2": [:]
-                ],
-                "entitlements": [
-                    "\(mockEntitlementID)": [
-                        "expires_date": "2100-08-30T02:40:36Z",
-                        "product_identifier": "onemonth_freetrial",
-                        "purchase_date": "2018-10-26T23:17:53Z"
-                    ],
-                    "\(mockEntitlementID2)": [
-                        "expires_date": "2100-08-30T02:40:36Z",
-                        "product_identifier": "onemonth_freetrial2",
-                        "purchase_date": "2018-10-26T23:17:53Z"
-                    ]
-                ]
-            ]
-        ]
-    }
-
-    var mockCustomerInfoResponseWithNoActiveEntitlement: [String: Any] {
-        return [
-            "request_date": "2018-10-19T02:40:36Z",
-            "subscriber": [
-                "original_app_user_id": "app_user_id",
-                "original_application_version": "2083",
-                "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
-                "subscriptions": [],
-                "entitlements": [
-                    "\(mockEntitlementID)": [
-                        "expires_date": "2000-08-30T02:40:36Z",
-                        "product_identifier": "onemonth_freetrial",
-                        "purchase_date": "2018-10-26T23:17:53Z"
-                    ]
-                ]
-            ]
-        ]
-    }
-
-    let mockCustomerInfoResponseWithoutMockEntitlement: [String: Any] = [
-        "request_date": "2018-10-19T02:40:36Z",
-        "subscriber": [
-            "original_app_user_id": "app_user_id",
-            "original_application_version": "2083",
-            "first_seen": "2019-06-17T16:05:33Z",
-            "non_subscriptions": [],
-            "subscriptions": [],
-            "entitlements": [
-                "pro": [
-                    "expires_date": "2100-08-30T02:40:36Z",
-                    "product_identifier": "onemonth_freetrial",
-                    "purchase_date": "2018-10-26T23:17:53Z"
-                ]
-            ]
-        ]
-    ]
-
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    private lazy var sk2Helper = MockSK2BeginRefundRequestHelper()
+    private lazy var sk2Helper: MockSK2BeginRefundRequestHelper! = nil
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -135,9 +47,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
                                           identityManager: identityManager)
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {
+            sk2Helper = MockSK2BeginRefundRequestHelper()
             helper.sk2Helper = sk2Helper
         }
-
     }
 
     func testBeginRefundRequestForProductFatalErrorIfNotIosOrCatalyst() throws {
@@ -331,5 +243,99 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
     }
 #endif
+
+}
+
+private extension BeginRefundRequestHelperTests {
+
+    var mockCustomerInfoResponseWithMockEntitlementActive: [String: Any] {
+        return [
+            "request_date": "2018-10-19T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [],
+                "subscriptions": [
+                    "onemonth_freetrial": [:]
+                ],
+                "entitlements": [
+                    "\(mockEntitlementID)": [
+                        "expires_date": "2100-08-30T02:40:36Z",
+                        "product_identifier": "onemonth_freetrial",
+                        "purchase_date": "2018-10-26T23:17:53Z"
+                    ]
+                ]
+            ]
+        ]
+    }
+
+    var mockCustomerInfoResponseWithMockEntitlementActiveMultiple: [String: Any] {
+        return [
+            "request_date": "2018-10-19T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [],
+                "subscriptions": [
+                    "onemonth_freetrial": [:],
+                    "onemonth_freetrial2": [:]
+                ],
+                "entitlements": [
+                    "\(mockEntitlementID)": [
+                        "expires_date": "2100-08-30T02:40:36Z",
+                        "product_identifier": "onemonth_freetrial",
+                        "purchase_date": "2018-10-26T23:17:53Z"
+                    ],
+                    "\(mockEntitlementID2)": [
+                        "expires_date": "2100-08-30T02:40:36Z",
+                        "product_identifier": "onemonth_freetrial2",
+                        "purchase_date": "2018-10-26T23:17:53Z"
+                    ]
+                ]
+            ]
+        ]
+    }
+
+    var mockCustomerInfoResponseWithNoActiveEntitlement: [String: Any] {
+        return [
+            "request_date": "2018-10-19T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [],
+                "subscriptions": [],
+                "entitlements": [
+                    "\(mockEntitlementID)": [
+                        "expires_date": "2000-08-30T02:40:36Z",
+                        "product_identifier": "onemonth_freetrial",
+                        "purchase_date": "2018-10-26T23:17:53Z"
+                    ]
+                ]
+            ]
+        ]
+    }
+
+    var mockCustomerInfoResponseWithoutMockEntitlement: [String: Any] {
+        return [
+            "request_date": "2018-10-19T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [],
+                "subscriptions": [],
+                "entitlements": [
+                    "pro": [
+                        "expires_date": "2100-08-30T02:40:36Z",
+                        "product_identifier": "onemonth_freetrial",
+                        "purchase_date": "2018-10-26T23:17:53Z"
+                    ]
+                ]
+            ]
+        ]
+    }
 
 }
