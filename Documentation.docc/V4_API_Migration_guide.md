@@ -36,6 +36,14 @@ references `RevenueCat`, and remove the reference to `Purchases` if it was still
 | :-: | :-: |
 | ![link binary with libraries before](link_binary_with_libraries_before_spm) | ![link binary with libraries after](link_binary_with_libraries_after_spm) |
 
+**Note:**
+
+Due to an Xcode bug, you might run into a Workspace Integrity error after upgrading, with a message that looks like 
+`"Couldn't load project PurchaseTester"`. 
+If this happens, you can fix it with the following steps:
+1. In Xcode, go to Product -> Clean Build Folder
+2. Quit and re-open Xcode
+
 #### 1.2 Update CocoaPods dependency (if needed)
 
 In your Podfile, update the reference to the Pod from `Purchases` to `RevenueCat`. 
