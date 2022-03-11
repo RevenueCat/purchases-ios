@@ -64,31 +64,29 @@ class IdentityManager {
         deviceCache.cleanupSubscriberAttributes()
     }
 
-    func logIn(appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
+    func logIn(appUserID: String, completion: @escaping LogInResponseHandler) {
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_empty_appuserid)
-            completion(nil, false, ErrorUtils.missingAppUserIDError())
+            completion(.failure(ErrorUtils.missingAppUserIDError()))
             return
         }
 
         guard newAppUserID != currentAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
-            customerInfoManager.customerInfo(appUserID: currentAppUserID) { customerInfo, error in
-                completion(customerInfo, false, error)
+            customerInfoManager.customerInfo(appUserID: currentAppUserID) { result in
+                completion(result.map { (info: $0, created: false) })
             }
             return
         }
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { customerInfo, created, error in
-            if error == nil,
-               let customerInfo = customerInfo {
+        backend.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
+            if let customerInfo = result.value?.info {
                 self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
             }
 
-            completion(customerInfo, created, error)
+            completion(result)
         }
     }
 

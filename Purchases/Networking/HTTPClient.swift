@@ -16,7 +16,7 @@ import Foundation
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
-    typealias Completion = ((_ statusCode: HTTPStatusCode, _ response: [String: Any]?, _ error: Error?) -> Void)
+    typealias Completion = ((_ statusCode: HTTPStatusCode, _ result: Result<[String: Any], Error>) -> Void)
 
     private let session: URLSession
     internal let systemInfo: SystemInfo
@@ -215,7 +215,7 @@ private extension HTTPClient {
         if let httpResponse = httpResponse,
            let completionHandler = request.completionHandler {
             let error = receivedJSONError ?? networkError
-            completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
+            completionHandler(httpResponse.statusCode, Result(jsonObject, error))
         }
 
         self.beginNextRequest()
@@ -243,9 +243,10 @@ private extension HTTPClient {
         guard let urlRequest = urlRequest else {
             Logger.error("Could not create request to \(request.path)")
 
-            request.completionHandler?(.invalidRequest,
-                                       nil,
-                                       ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            request.completionHandler?(
+                .invalidRequest,
+                .failure(ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            )
             return
         }
 

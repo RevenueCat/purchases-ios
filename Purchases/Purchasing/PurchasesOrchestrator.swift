@@ -95,11 +95,11 @@ class PurchasesOrchestrator {
         }
     }
 
-    func restorePurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
+    func restorePurchases(completion: ((Result<CustomerInfo, Error>) -> Void)?) {
         syncPurchases(receiptRefreshPolicy: .always, isRestore: true, completion: completion)
     }
 
-    func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+    func syncPurchases(completion: ((Result<CustomerInfo, Error>) -> Void)? = nil) {
         syncPurchases(receiptRefreshPolicy: .never,
                       isRestore: allowSharingAppStoreAccount,
                       completion: completion)
@@ -137,23 +137,23 @@ class PurchasesOrchestrator {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                           product: StoreProductType,
-                          completion: @escaping (PromotionalOffer?, Error?) -> Void) {
+                          completion: @escaping (Result<PromotionalOffer, Error>) -> Void) {
         guard let discountIdentifier = productDiscount.offerIdentifier else {
-            completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
+            completion(.failure(ErrorUtils.productDiscountMissingIdentifierError()))
             return
         }
 
         guard let subscriptionGroupIdentifier = product.subscriptionGroupIdentifier else {
-            completion(nil, ErrorUtils.productDiscountMissingSubscriptionGroupIdentifierError())
+            completion(.failure(ErrorUtils.productDiscountMissingSubscriptionGroupIdentifierError()))
             return
         }
 
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData in
             guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
-                      completion(nil, ErrorUtils.missingReceiptFileError())
-                      return
-                  }
+                completion(.failure(ErrorUtils.missingReceiptFileError()))
+                return
+            }
 
             self.backend.post(
                 offerIdForSigning: discountIdentifier,
@@ -161,34 +161,19 @@ class PurchasesOrchestrator {
                 subscriptionGroup: subscriptionGroupIdentifier,
                 receiptData: receiptData,
                 appUserID: self.appUserID
-            ) { signature, keyIdentifier, nonce, timestamp, error in
-                if let error = error {
-                    completion(nil, error)
-                    return
-                }
-                guard let keyIdentifier = keyIdentifier,
-                      let nonce = nonce,
-                      let signature = signature,
-                      let timestamp = timestamp else {
-                          completion(
-                            nil,
-                            ErrorUtils.unexpectedBackendResponseError(extraUserInfo: [
-                                "keyIdentifier": String(describing: keyIdentifier),
-                                "nonce": String(describing: nonce),
-                                "signature": String(describing: signature),
-                                "timestamp": String(describing: timestamp)
-                            ])
-                          )
-                          return
-                      }
+            ) { result in
+                let result: Result<PromotionalOffer, Error> = result
+                    .map { data in
+                        let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
+                                                                     keyIdentifier: data.keyIdentifier,
+                                                                     nonce: data.nonce,
+                                                                     signature: data.signature,
+                                                                     timestamp: data.timestamp)
 
-                let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
-                                                             keyIdentifier: keyIdentifier,
-                                                             nonce: nonce,
-                                                             signature: signature,
-                                                             timestamp: timestamp)
-                completion(.init(discount: productDiscount, signedData: signedData),
-                           nil)
+                        return .init(discount: productDiscount, signedData: signedData)
+                    }
+
+                completion(result)
             }
         }
     }
@@ -340,19 +325,15 @@ class PurchasesOrchestrator {
         let (userCancelled, transaction) = try await storeKit2Listener.handle(purchaseResult: result)
 
         return try await withCheckedThrowingContinuation { continuation in
-            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { customerInfo, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let customerInfo = customerInfo else {
-                    continuation.resume(throwing: ErrorUtils.unexpectedBackendResponseError())
-                    return
-                }
-
-                continuation.resume(returning: (transaction.map(StoreTransaction.init(sk2Transaction:)),
-                                                customerInfo,
-                                                userCancelled))
+            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { result in
+                continuation.resume(
+                    with: result
+                        .map { customerInfo in
+                            (transaction.map(StoreTransaction.init(sk2Transaction:)),
+                             customerInfo,
+                             userCancelled)
+                        }
+                )
             }
         }
     }
@@ -364,14 +345,8 @@ class PurchasesOrchestrator {
     ) async throws -> PromotionalOffer {
         return try await withCheckedThrowingContinuation { continuation in
             self.promotionalOffer(forProductDiscount: discount,
-                                  product: product) { offer, error in
-                if let offer = offer {
-                    continuation.resume(with: .success(offer))
-                } else if let error = error {
-                    continuation.resume(with: .failure(error))
-                } else {
-                    fatalError("Unexpectedly got no result or error")
-                }
+                                  product: product) { result in
+                continuation.resume(with: result)
             }
         }
     }
@@ -464,7 +439,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
         Logger.debug(Strings.purchase.entitlements_revoked_syncing_purchases(productIdentifiers: productIdentifiers))
-        syncPurchases { _, _ in
+        syncPurchases { _ in
             Logger.debug(Strings.purchase.purchases_synced)
         }
     }
@@ -481,9 +456,8 @@ private extension PurchasesOrchestrator {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction, receiptData: receiptData)
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
-                                       customerInfo: nil,
-                                       subscriberAttributes: nil,
-                                       error: ErrorUtils.missingReceiptFileError())
+                                       result: .failure(ErrorUtils.missingReceiptFileError()),
+                                       subscriberAttributes: nil)
             }
         }
     }
@@ -564,9 +538,8 @@ private extension PurchasesOrchestrator {
             }
         } else {
             self.handleReceiptPost(withTransaction: transaction,
-                                   customerInfo: nil,
-                                   subscriberAttributes: nil,
-                                   error: ErrorUtils.unknownError())
+                                   result: .failure(ErrorUtils.unknownError()),
+                                   subscriberAttributes: nil)
 
         }
     }
@@ -594,31 +567,30 @@ private extension PurchasesOrchestrator {
                      productData: productData,
                      presentedOfferingIdentifier: presentedOfferingID,
                      observerMode: !finishTransactions,
-                     subscriberAttributes: unsyncedAttributes) { customerInfo, error in
+                     subscriberAttributes: unsyncedAttributes) { result in
             self.handleReceiptPost(withTransaction: transaction,
-                                   customerInfo: customerInfo,
-                                   subscriberAttributes: unsyncedAttributes,
-                                   error: error)
+                                   result: result,
+                                   subscriberAttributes: unsyncedAttributes)
         }
     }
 
     func handleReceiptPost(withTransaction transaction: SKPaymentTransaction,
-                           customerInfo: CustomerInfo?,
-                           subscriberAttributes: SubscriberAttributeDict?,
-                           error: Error?) {
+                           result: Result<CustomerInfo, Error>,
+                           subscriberAttributes: SubscriberAttributeDict?) {
         operationDispatcher.dispatchOnMainThread {
             let appUserID = self.appUserID
             self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
                                     appUserID: appUserID,
-                                    error: error)
+                                    error: result.error)
 
             let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: transaction)
+            let error = result.error
             let nsError = error as NSError?
             let finishable = (nsError?.userInfo[ErrorDetails.finishableKey as String] as? NSNumber)?.boolValue ?? false
 
             let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
-            if let customerInfo = customerInfo {
+            if let customerInfo = result.value {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
                 completion?(storeTransaction, customerInfo, nil, false)
 
@@ -650,7 +622,7 @@ private extension PurchasesOrchestrator {
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
-                       completion: ((CustomerInfo?, Error?) -> Void)?) {
+                       completion: ((Result<CustomerInfo, Error>) -> Void)?) {
         if !self.allowSharingAppStoreAccount {
             Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
         }
@@ -658,9 +630,8 @@ private extension PurchasesOrchestrator {
         let currentAppUserID = appUserID
         let unsyncedAttributes = unsyncedAttributes
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
-        // swiftlint:disable line_length
+        // swiftlint:disable:next line_length
         // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-        // swiftlint:enable line_length
         receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData in
             guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
@@ -670,7 +641,7 @@ private extension PurchasesOrchestrator {
 
                       if let completion = completion {
                           self.operationDispatcher.dispatchOnMainThread {
-                              completion(nil, ErrorUtils.missingReceiptFileError())
+                              completion(.failure(ErrorUtils.missingReceiptFileError()))
                           }
                       }
                       return
@@ -683,7 +654,10 @@ private extension PurchasesOrchestrator {
                 if !hasTransactions && hasOriginalPurchaseDate {
                     if let completion = completion {
                         self.operationDispatcher.dispatchOnMainThread {
-                            completion(cachedCustomerInfo, nil)
+                            completion(
+                                Result(cachedCustomerInfo,
+                                       ErrorUtils.customerInfoError(withMessage: "No cached customer info"))
+                            )
                         }
                     }
                     return
@@ -695,9 +669,8 @@ private extension PurchasesOrchestrator {
                                   productData: nil,
                                   presentedOfferingIdentifier: nil,
                                   observerMode: !self.finishTransactions,
-                                  subscriberAttributes: unsyncedAttributes) { customerInfo, error in
-                    self.handleReceiptPost(withCustomerInfo: customerInfo,
-                                           error: error,
+                                  subscriberAttributes: unsyncedAttributes) { result in
+                    self.handleReceiptPost(result: result,
                                            subscriberAttributes: unsyncedAttributes,
                                            completion: completion)
                 }
@@ -705,22 +678,21 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handleReceiptPost(withCustomerInfo customerInfo: CustomerInfo?,
-                           error: Error?,
+    func handleReceiptPost(result: Result<CustomerInfo, Error>,
                            subscriberAttributes: SubscriberAttributeDict,
-                           completion: ((CustomerInfo?, Error?) -> Void)?) {
+                           completion: ((Result<CustomerInfo, Error>) -> Void)?) {
         operationDispatcher.dispatchOnMainThread {
-            if let customerInfo = customerInfo {
+            if let customerInfo = result.value {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
             }
 
             self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
                                     appUserID: self.appUserID,
-                                    error: error)
+                                    error: result.error)
 
             if let completion = completion {
                 self.operationDispatcher.dispatchOnMainThread {
-                    completion(customerInfo, error)
+                    completion(result)
                 }
             }
         }

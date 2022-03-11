@@ -27,7 +27,7 @@ class BackendCreateAliasTests: BaseBackendTests {
         var completionCalled = false
 
         let path: HTTPRequest.Path = .createAlias(appUserID: Self.userID)
-        let response = MockHTTPClient.Response(statusCode: .success, response: nil)
+        let response = MockHTTPClient.Response(statusCode: .success)
 
         self.httpClient.mock(requestPath: path, response: response)
 
@@ -42,7 +42,7 @@ class BackendCreateAliasTests: BaseBackendTests {
     func testCreateAliasCachesForSameUserIDs() {
         self.httpClient.mock(
             requestPath: .createAlias(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: nil)
+            response: .init(statusCode: .success)
         )
 
         backend.createAlias(appUserID: Self.userID, newAppUserID: "new_alias") { _ in }
@@ -54,7 +54,7 @@ class BackendCreateAliasTests: BaseBackendTests {
     func testCreateAliasDoesntCacheForDifferentNewUserID() {
         self.httpClient.mock(
             requestPath: .createAlias(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: nil)
+            response: .init(statusCode: .success)
         )
 
         backend.createAlias(appUserID: Self.userID, newAppUserID: "new_alias") { _ in }
@@ -66,7 +66,7 @@ class BackendCreateAliasTests: BaseBackendTests {
     func testCreateAliasCachesWhenCallbackNil() {
         self.httpClient.mock(
             requestPath: .createAlias(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: nil)
+            response: .init(statusCode: .success)
         )
 
         backend.createAlias(appUserID: Self.userID, newAppUserID: "new_alias") { _ in }
@@ -78,7 +78,7 @@ class BackendCreateAliasTests: BaseBackendTests {
     func testCreateAliasCallsAllCompletionBlocksInCache() {
         self.httpClient.mock(
             requestPath: .createAlias(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: nil)
+            response: .init(statusCode: .success)
         )
 
         var completion1Called = false
@@ -102,7 +102,7 @@ class BackendCreateAliasTests: BaseBackendTests {
         let currentAppUserID1 = Self.userID
         let currentAppUserID2 = Self.userID + "2"
 
-        let response = MockHTTPClient.Response(statusCode: .success, response: nil)
+        let response = MockHTTPClient.Response(statusCode: .success)
 
         httpClient.mock(requestPath: .createAlias(appUserID: currentAppUserID1), response: response)
         backend.createAlias(appUserID: currentAppUserID1, newAppUserID: newAppUserID) { _ in }
@@ -117,8 +117,7 @@ class BackendCreateAliasTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .createAlias(appUserID: Self.userID),
             response: .init(statusCode: .success,
-                            response: nil,
-                            error: NSError(domain: NSURLErrorDomain, code: -1009))
+                            response: .failure(NSError(domain: NSURLErrorDomain, code: -1009)))
         )
 
         var receivedError: NSError?
