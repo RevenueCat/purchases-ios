@@ -174,7 +174,7 @@ private extension HTTPClient {
             if let httpURLResponse = urlResponse as? HTTPURLResponse {
                 statusCode = .init(rawValue: httpURLResponse.statusCode)
                 Logger.debug(Strings.network.api_request_completed(httpMethod: request.method.httpMethod,
-                                                                   path: request.path,
+                                                                   path: request.httpRequest.path,
                                                                    httpCode: statusCode))
 
                 if statusCode == .notModified || data == nil {
@@ -251,8 +251,8 @@ private extension HTTPClient {
             return
         }
 
-        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod,
-                                                         path: urlRequest.url?.path))
+        Logger.debug(Strings.network.api_request_started(httpMethod: request.method.httpMethod,
+                                                         path: request.httpRequest.path))
 
         let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,
