@@ -160,7 +160,6 @@ private extension HTTPClient {
         self.start(request: request)
     }
 
-    // swiftlint:disable:next function_body_length
     func handle(urlResponse: URLResponse?,
                 request: Request,
                 urlRequest: URLRequest,
@@ -182,8 +181,7 @@ private extension HTTPClient {
                     jsonObject = [:]
                 } else if let data = data {
                     do {
-                        jsonObject = try JSONSerialization.jsonObject(with: data,
-                                                                      options: .mutableContainers) as? [String: Any]
+                        jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any]
                     } catch let jsonError {
                         Logger.error(Strings.network.parsing_json_error(error: jsonError))
 
