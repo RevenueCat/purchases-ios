@@ -15,16 +15,12 @@ import StoreKit
 
 internal struct SK1StoreProduct: StoreProductType {
 
-    init(
-        sk1Product: SK1Product,
-        priceFormatterProvider: PriceFormatterProvider = .init()
-    ) {
+    init(sk1Product: SK1Product) {
         self.underlyingSK1Product = sk1Product
-        self.priceFormatterProvider = priceFormatterProvider
     }
 
     let underlyingSK1Product: SK1Product
-    private let priceFormatterProvider: PriceFormatterProvider
+    private let priceFormatterProvider: PriceFormatterProvider = .init()
 
     var productCategory: StoreProduct.ProductCategory {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) else {

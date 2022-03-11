@@ -86,7 +86,7 @@ class ProductsFetcherSK1: NSObject {
                   completion: @escaping (Result<Set<SK1StoreProduct>, Error>) -> Void) {
         self.sk1Products(withIdentifiers: identifiers) { skProducts in
             let result = skProducts
-                .map { Set($0.map { SK1StoreProduct(sk1Product: $0) }) }
+                .map { Set($0.map(SK1StoreProduct.init)) }
 
             completion(result)
         }

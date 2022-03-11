@@ -16,12 +16,8 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2StoreProduct: StoreProductType {
 
-    init(
-        sk2Product: SK2Product,
-        priceFormatterProvider: PriceFormatterProvider = .init()
-    ) {
+    init(sk2Product: SK2Product) {
         self._underlyingSK2Product = sk2Product
-        self.priceFormatterProvider = priceFormatterProvider
     }
 
     // We can't directly store instances of StoreKit.Product, since that causes
@@ -34,7 +30,7 @@ internal struct SK2StoreProduct: StoreProductType {
         _underlyingSK2Product as! SK2Product
     }
 
-    private let priceFormatterProvider: PriceFormatterProvider
+    private let priceFormatterProvider: PriceFormatterProvider = .init()
 
     var productCategory: StoreProduct.ProductCategory {
         return self.productType.productCategory

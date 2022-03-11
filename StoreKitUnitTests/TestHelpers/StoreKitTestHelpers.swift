@@ -100,24 +100,28 @@ extension StoreKitConfigTestCase {
 
 }
 
+fileprivate extension StoreKitConfigTestCase {
+
+    enum Error: Swift.Error {
+
+        case noProductsFound
+        case multipleProductsFound
+
+    }
+
+}
+
 extension ProductsFetcherSK1 {
 
     func product(withIdentifier identifier: String) async throws -> StoreProduct {
         let products = try await self.products(withIdentifiers: Set([identifier]))
 
         switch products.count {
-        case 0: throw StoreKitTestError.noProductsFound
+        case 0: throw StoreKitConfigTestCase.Error.noProductsFound
         case 1: return StoreProduct.from(product: products.first!)
-        default: throw StoreKitTestError.multipleProductsFound
+        default: throw StoreKitConfigTestCase.Error.multipleProductsFound
         }
     }
-
-}
-
-enum StoreKitTestError: Swift.Error {
-
-    case noProductsFound
-    case multipleProductsFound
 
 }
 
@@ -129,11 +133,10 @@ extension ProductsFetcherSK2 {
         let products = try await self.products(identifiers: Set([identifier]))
 
         switch products.count {
-        case 0: throw StoreKitTestError.noProductsFound
+        case 0: throw StoreKitConfigTestCase.Error.noProductsFound
         case 1: return StoreProduct.from(product: products.first!)
-        default: throw StoreKitTestError.multipleProductsFound
+        default: throw StoreKitConfigTestCase.Error.multipleProductsFound
         }
     }
 
 }
-
