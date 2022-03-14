@@ -74,6 +74,7 @@ func checkProductCategory(_ category: StoreProduct.ProductCategory) {
     switch category {
     case .subscription: break
     case .nonSubscription: break
+    @unknown default: break
     }
 }
 
@@ -83,6 +84,7 @@ func checkProductType(_ type: StoreProduct.ProductType) {
     case .nonConsumable: break
     case .nonRenewableSubscription: break
     case .autoRenewableSubscription: break
+    @unknown default: break
     }
 }
 
