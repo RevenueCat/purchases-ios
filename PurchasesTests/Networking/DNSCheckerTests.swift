@@ -25,10 +25,10 @@ class DNSCheckerTests: XCTestCase {
     private let fakeOffersURL = URL(string: "https://0.0.0.0/offers")!
 
     func testResolvedHost() throws {
-        let host = try XCTUnwrap(
-            DNSChecker.resolvedHost(fromURL: apiURL),
-            "The host couldn't be resolved. Note that this test requires a working internet connection"
-        )
+        guard let host = DNSChecker.resolvedHost(fromURL: apiURL) else {
+            throw XCTSkip("The host couldn't be resolved. Note that this test requires a working internet connection")
+        }
+
         // swiftlint:disable:next line_length
         let validIPAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
 
