@@ -90,15 +90,21 @@ class ProductsFetcherSK1Tests: XCTestCase {
         failingRequest.fails = true
         productsRequestFactory.stubbedRequestResult = failingRequest
 
-        var receivedProducts: Result<Set<SK1Product>, Error>?
+        // This test checks errors, so no need to wait long for the retry mechanism
+        let timeout: DispatchTimeInterval = .milliseconds(10)
+
+        let fetcher = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
+                                         requestTimeout: timeout)
+
+        var receivedResult: Result<Set<SK1Product>, Error>?
         var completionCalled = false
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
+        fetcher.sk1Products(withIdentifiers: productIdentifiers) { result in
             completionCalled = true
-            receivedProducts = products
+            receivedResult = result
         }
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout + .seconds(1))
-        expect(receivedProducts?.error).toNot(beNil())
+        expect(completionCalled).toEventually(beTrue(), timeout: timeout + .seconds(1))
+        expect(receivedResult?.error).toNot(beNil())
     }
 
     func testCacheProductCachesCorrectly() {
@@ -124,8 +130,8 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
     func testProductsWithIdentifiersTimesOutIfMaxToleranceExceeded() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        let tolerance: DispatchTimeInterval = .seconds(1)
-        let productsRequestResponseTime: DispatchTimeInterval = tolerance + .seconds(1)
+        let tolerance: DispatchTimeInterval = .milliseconds(10)
+        let productsRequestResponseTime: DispatchTimeInterval = tolerance + .milliseconds(10)
         let request = MockProductsRequest(productIdentifiers: productIdentifiers,
                                           responseTime: productsRequestResponseTime)
         productsRequestFactory.stubbedRequestResult = request
@@ -134,25 +140,26 @@ class ProductsFetcherSK1Tests: XCTestCase {
                                                 requestTimeout: tolerance)
 
         var completionCallCount = 0
-        var receivedProducts: Result<Set<SKProduct>, Error>?
+        var receivedResult: Result<Set<SKProduct>, Error>?
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { result in
             completionCallCount += 1
-            receivedProducts = products
+            receivedResult = result
         }
 
         expect(completionCallCount).toEventually(equal(1),
-                                                 timeout: productsRequestResponseTime + .seconds(1))
+                                                 timeout: productsRequestResponseTime + .milliseconds(10))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
-        let error = try XCTUnwrap(receivedProducts?.error as? ErrorCode)
+
+        let error = try XCTUnwrap(receivedResult?.error as? ErrorCode)
         expect(error) == ErrorCode.productRequestTimedOut
         expect(request.cancelCalled) == true
     }
 
     func testProductsWithIdentifiersDoesntTimeOutIfRequestReturnsOnTime() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        let tolerance: DispatchTimeInterval = .seconds(2)
-        let productsRequestResponseTime: DispatchTimeInterval = .seconds(1)
+        let tolerance: DispatchTimeInterval = .milliseconds(50)
+        let productsRequestResponseTime: DispatchTimeInterval = .milliseconds(10)
         let request = MockProductsRequest(productIdentifiers: productIdentifiers,
                                           responseTime: productsRequestResponseTime)
         productsRequestFactory.stubbedRequestResult = request
@@ -161,16 +168,17 @@ class ProductsFetcherSK1Tests: XCTestCase {
                                                 requestTimeout: tolerance)
 
         var completionCallCount = 0
-        var receivedProducts: Result<Set<SKProduct>, Error>?
+        var receivedResult: Result<Set<SKProduct>, Error>?
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { result in
             completionCallCount += 1
-            receivedProducts = products
+            receivedResult = result
         }
 
-        expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
+        expect(completionCallCount).toEventually(equal(1), timeout: tolerance + .milliseconds(10))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
-        let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
+
+        let unwrappedProducts = try XCTUnwrap(receivedResult).get()
         expect(unwrappedProducts).toNot(beEmpty())
         expect(request.cancelCalled) == false
     }
