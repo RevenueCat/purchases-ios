@@ -2,7 +2,7 @@ import("../../../fastlane/Fastfile")
 
 desc "Update swift package commit"
 lane :update_swift_package_commit do
-  project_file_location = '../SPMIntegration.xcodeproj/project.pbxproj'
+  project_file_location = '../SPMInstallation.xcodeproj/project.pbxproj'
 
   old_kind_line = "kind = branch;"
   new_kind_line = "kind = revision;"

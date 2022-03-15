@@ -408,7 +408,7 @@ platform :ios do
   desc "Update swift package commit"
   lane :update_swift_package_commit do
     project_file_locations = [
-      '../IntegrationTests/SPMIntegration/SPMIntegration.xcodeproj/project.pbxproj',
+      '../IntegrationTests/SPMInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 

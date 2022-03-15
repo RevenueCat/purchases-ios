@@ -28,14 +28,14 @@
 			containerPortal = 2D6C01FC2549F5600039CB92 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2D6C02032549F5600039CB92;
-			remoteInfo = SPMIntegration;
+			remoteInfo = SPMInstallation;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2D1D5739278DC9B000359BB1 /* SPMIntegration.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SPMIntegration.entitlements; sourceTree = "<group>"; };
-		2D6C02042549F5600039CB92 /* SPMIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SPMIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SPMIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D1D5739278DC9B000359BB1 /* SPMInstallation.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SPMInstallation.entitlements; sourceTree = "<group>"; };
+		2D6C02042549F5600039CB92 /* SPMInstallation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SPMInstallation.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D6C021F2549F5620039CB92 /* SPMInstallationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SPMInstallationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C02252549F5620039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D6C02432549F5920039CB92 /* RCInstallationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCInstallationRunner.m; sourceTree = "<group>"; };
 		2D6C02442549F5920039CB92 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -50,9 +50,9 @@
 		2D6C024F2549F5920039CB92 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D6C02502549F5920039CB92 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		2D6C02512549F5920039CB92 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
-		2D6C02B82549F7E20039CB92 /* SPMIntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SPMIntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		2D6C02B82549F7E20039CB92 /* SPMInstallationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SPMInstallationTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C02B92549F7E20039CB92 /* InstallationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallationTests.swift; sourceTree = "<group>"; };
-		2D6C02D72549FD6D0039CB92 /* SPMIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SPMIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
+		2D6C02D72549FD6D0039CB92 /* SPMInstallation-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SPMInstallation-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C02D82549FD6D0039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
 		B384177426E2F8DE0082BBE2 /* RevenueCat-Swift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RevenueCat-Swift.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -79,31 +79,31 @@
 		2D6C01FB2549F5600039CB92 = {
 			isa = PBXGroup;
 			children = (
-				2D1D5739278DC9B000359BB1 /* SPMIntegration.entitlements */,
+				2D1D5739278DC9B000359BB1 /* SPMInstallation.entitlements */,
 				2D6C02422549F5920039CB92 /* CommonFiles */,
-				2D6C02222549F5620039CB92 /* SPMIntegrationTests */,
+				2D6C02222549F5620039CB92 /* SPMInstallationTests */,
 				2D6C02052549F5600039CB92 /* Products */,
 				2D6C02682549F5D40039CB92 /* Frameworks */,
-				2D6C02D72549FD6D0039CB92 /* SPMIntegration-Bridging-Header.h */,
+				2D6C02D72549FD6D0039CB92 /* SPMInstallation-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
 		2D6C02052549F5600039CB92 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2D6C02042549F5600039CB92 /* SPMIntegration.app */,
-				2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */,
+				2D6C02042549F5600039CB92 /* SPMInstallation.app */,
+				2D6C021F2549F5620039CB92 /* SPMInstallationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		2D6C02222549F5620039CB92 /* SPMIntegrationTests */ = {
+		2D6C02222549F5620039CB92 /* SPMInstallationTests */ = {
 			isa = PBXGroup;
 			children = (
 				2D6C02252549F5620039CB92 /* Info.plist */,
-				2D6C02B82549F7E20039CB92 /* SPMIntegrationTests-Bridging-Header.h */,
+				2D6C02B82549F7E20039CB92 /* SPMInstallationTests-Bridging-Header.h */,
 			);
-			path = SPMIntegrationTests;
+			path = SPMInstallationTests;
 			sourceTree = "<group>";
 		};
 		2D6C02422549F5920039CB92 /* CommonFiles */ = {
@@ -152,9 +152,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		2D6C02032549F5600039CB92 /* SPMIntegration */ = {
+		2D6C02032549F5600039CB92 /* SPMInstallation */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D6C02332549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMIntegration" */;
+			buildConfigurationList = 2D6C02332549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMInstallation" */;
 			buildPhases = (
 				2D6C02C12549F9840039CB92 /* Headers */,
 				2D6C02002549F5600039CB92 /* Sources */,
@@ -165,17 +165,17 @@
 			);
 			dependencies = (
 			);
-			name = SPMIntegration;
+			name = SPMInstallation;
 			packageProductDependencies = (
 				B3A9296026E2AAFB00C5E699 /* RevenueCat */,
 			);
-			productName = SPMIntegration;
-			productReference = 2D6C02042549F5600039CB92 /* SPMIntegration.app */;
+			productName = SPMInstallation;
+			productReference = 2D6C02042549F5600039CB92 /* SPMInstallation.app */;
 			productType = "com.apple.product-type.application";
 		};
-		2D6C021E2549F5620039CB92 /* SPMIntegrationTests */ = {
+		2D6C021E2549F5620039CB92 /* SPMInstallationTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D6C02362549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMIntegrationTests" */;
+			buildConfigurationList = 2D6C02362549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMInstallationTests" */;
 			buildPhases = (
 				2D6C021B2549F5620039CB92 /* Sources */,
 				2D6C021C2549F5620039CB92 /* Frameworks */,
@@ -186,9 +186,9 @@
 			dependencies = (
 				2D6C02212549F5620039CB92 /* PBXTargetDependency */,
 			);
-			name = SPMIntegrationTests;
-			productName = SPMIntegrationTests;
-			productReference = 2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */;
+			name = SPMInstallationTests;
+			productName = SPMInstallationTests;
+			productReference = 2D6C021F2549F5620039CB92 /* SPMInstallationTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -210,7 +210,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2D6C01FF2549F5600039CB92 /* Build configuration list for PBXProject "SPMIntegration" */;
+			buildConfigurationList = 2D6C01FF2549F5600039CB92 /* Build configuration list for PBXProject "SPMInstallation" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -226,8 +226,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2D6C02032549F5600039CB92 /* SPMIntegration */,
-				2D6C021E2549F5620039CB92 /* SPMIntegrationTests */,
+				2D6C02032549F5600039CB92 /* SPMInstallation */,
+				2D6C021E2549F5620039CB92 /* SPMInstallationTests */,
 			);
 		};
 /* End PBXProject section */
@@ -279,7 +279,7 @@
 /* Begin PBXTargetDependency section */
 		2D6C02212549F5620039CB92 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2D6C02032549F5600039CB92 /* SPMIntegration */;
+			target = 2D6C02032549F5600039CB92 /* SPMInstallation */;
 			targetProxy = 2D6C02202549F5620039CB92 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -423,7 +423,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = SPMIntegration.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SPMInstallation.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -435,15 +435,15 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegration;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMInstallation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMIntegration";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=appletvos*]" = "match AppStore com.revenuecat.SPMIntegration tvos";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.SPMIntegration catalyst";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMInstallation";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=appletvos*]" = "match AppStore com.revenuecat.SPMInstallation tvos";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.SPMInstallation catalyst";
 				SDKROOT = "";
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegration-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "SPMInstallation-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
@@ -459,7 +459,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = SPMIntegration.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SPMInstallation.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
@@ -471,15 +471,15 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegration;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMInstallation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMIntegration";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=appletvos*]" = "match AppStore com.revenuecat.SPMIntegration tvos";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.SPMIntegration catalyst";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMInstallation";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=appletvos*]" = "match AppStore com.revenuecat.SPMInstallation tvos";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.SPMInstallation catalyst";
 				SDKROOT = "";
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegration-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "SPMInstallation-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				TVOS_DEPLOYMENT_TARGET = 11.0;
@@ -495,7 +495,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = SPMIntegrationTests/Info.plist;
+				INFOPLIST_FILE = SPMInstallationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -503,14 +503,14 @@
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.2;
-				OTHER_SWIFT_FLAGS = "-DSPM_INTEGRATION";
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationTests;
+				OTHER_SWIFT_FLAGS = "-DSPM_INSTALLATION";
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMInstallationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegrationTests/SPMIntegrationTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "SPMInstallationTests/SPMInstallationTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SPMIntegration.app/SPMIntegration";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SPMInstallation.app/SPMInstallation";
 			};
 			name = Debug;
 		};
@@ -522,7 +522,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = SPMIntegrationTests/Info.plist;
+				INFOPLIST_FILE = SPMInstallationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -530,20 +530,20 @@
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.2;
-				OTHER_SWIFT_FLAGS = "-DSPM_INTEGRATION";
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationTests;
+				OTHER_SWIFT_FLAGS = "-DSPM_INSTALLATION";
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMInstallationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegrationTests/SPMIntegrationTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "SPMInstallationTests/SPMInstallationTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SPMIntegration.app/SPMIntegration";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SPMInstallation.app/SPMInstallation";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2D6C01FF2549F5600039CB92 /* Build configuration list for PBXProject "SPMIntegration" */ = {
+		2D6C01FF2549F5600039CB92 /* Build configuration list for PBXProject "SPMInstallation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D6C02312549F5620039CB92 /* Debug */,
@@ -552,7 +552,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2D6C02332549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMIntegration" */ = {
+		2D6C02332549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMInstallation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D6C02342549F5620039CB92 /* Debug */,
@@ -561,7 +561,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2D6C02362549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMIntegrationTests" */ = {
+		2D6C02362549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMInstallationTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D6C02372549F5620039CB92 /* Debug */,

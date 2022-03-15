@@ -4,5 +4,5 @@ storage_mode("git")
 
 type("development")
 
-app_identifier(["com.revenuecat.SPMIntegration"])
+app_identifier(["com.revenuecat.SPMInstallation"])
 username(ENV["FASTLANE_USER"])

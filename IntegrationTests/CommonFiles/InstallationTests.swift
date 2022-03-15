@@ -7,8 +7,8 @@
 
 import XCTest
 
-#if SPM_INTEGRATION
-@testable import SPMIntegration
+#if SPM_INSTALLATION
+@testable import SPMInstallation
 #elseif CARTHAGE_INSTALLATION
 @testable import CarthageInstallation
 #elseif COCOAPODS_INSTALLATION

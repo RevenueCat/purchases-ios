@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2D6C02032549F5600039CB92"
-               BuildableName = "SPMIntegration.app"
-               BlueprintName = "SPMIntegration"
-               ReferencedContainer = "container:SPMIntegration.xcodeproj">
+               BuildableName = "SPMInstallation.app"
+               BlueprintName = "SPMInstallation"
+               ReferencedContainer = "container:SPMInstallation.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2D6C021E2549F5620039CB92"
-               BuildableName = "SPMIntegrationTests.xctest"
-               BlueprintName = "SPMIntegrationTests"
-               ReferencedContainer = "container:SPMIntegration.xcodeproj">
+               BuildableName = "SPMInstallationTests.xctest"
+               BlueprintName = "SPMInstallationTests"
+               ReferencedContainer = "container:SPMInstallation.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2D6C02032549F5600039CB92"
-            BuildableName = "SPMIntegration.app"
-            BlueprintName = "SPMIntegration"
-            ReferencedContainer = "container:SPMIntegration.xcodeproj">
+            BuildableName = "SPMInstallation.app"
+            BlueprintName = "SPMInstallation"
+            ReferencedContainer = "container:SPMInstallation.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2D6C02032549F5600039CB92"
-            BuildableName = "SPMIntegration.app"
-            BlueprintName = "SPMIntegration"
-            ReferencedContainer = "container:SPMIntegration.xcodeproj">
+            BuildableName = "SPMInstallation.app"
+            BlueprintName = "SPMInstallation"
+            ReferencedContainer = "container:SPMInstallation.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
