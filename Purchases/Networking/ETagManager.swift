@@ -39,13 +39,12 @@ class ETagManager {
     }
 
     func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                      jsonObject: [String: Any]?,
-                                      error: Error?,
+                                      jsonObject: [String: Any],
                                       request: URLRequest,
                                       retried: Bool) -> HTTPResponse? {
         let statusCode: HTTPStatusCode = .init(rawValue: response.statusCode)
         let resultFromBackend = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
-        guard error == nil else { return resultFromBackend }
+
         let headersInResponse = response.allHeaderFields
 
         let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??

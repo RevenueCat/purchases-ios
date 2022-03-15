@@ -13,9 +13,11 @@
 
 import Foundation
 
-class UserInfoAttributeParser {
+// TODO: remove in favor of ErrorResponse
 
-    func attributesUserInfoFromResponse(response: [String: Any], statusCode: HTTPStatusCode) -> [String: Any] {
+enum UserInfoAttributeParser {
+
+    static func attributesUserInfoFromResponse(response: [String: Any], statusCode: HTTPStatusCode) -> [String: Any] {
         var resultDict: [String: Any] = [:]
         let isServerError = statusCode.isServerError
         let isNotFoundError = statusCode == .notFoundError

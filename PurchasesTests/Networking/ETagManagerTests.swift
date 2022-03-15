@@ -8,7 +8,7 @@ class ETagManagerTests: XCTestCase {
 
     private var mockUserDefaults: MockUserDefaults! = nil
     private var eTagManager: ETagManager!
-    private var baseURL: URL = URL(string: "https://api.revenuecat.com")!
+    private let baseURL = URL(string: "https://api.revenuecat.com")!
 
     override func setUp() {
         super.setUp()
@@ -56,7 +56,6 @@ class ETagManagerTests: XCTestCase {
         }
         let response = eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                 jsonObject: [:],
-                                                                error: nil,
                                                                 request: request,
                                                                 retried: false)
         expect(response).toNot(beNil())
@@ -72,28 +71,9 @@ class ETagManagerTests: XCTestCase {
         let responseObject = ["a": "response"]
         let httpURLResponse = httpURLResponseForTest(url: url, eTag: eTag, statusCode: .success)
         let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)
+            with: httpURLResponse, jsonObject: responseObject, request: request, retried: false)
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .success
-        expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
-    }
-
-    func testBackendResponseIsReturnedIfThereIsAnError() {
-        let eTag = "an_etag"
-        let url = urlForTest()
-        let request = URLRequest(url: url)
-        _ = mockStoredETagAndResponse(for: url, statusCode: .success, eTag: eTag)
-        let responseObject = ["a": "response"]
-        let error = NSError(domain: NSCocoaErrorDomain, code: 123, userInfo: [:])
-        let httpURLResponse = httpURLResponseForTest(
-            url: url,
-            eTag: eTag,
-            statusCode: .notModified
-        )
-        let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, jsonObject: responseObject, error: error, request: request, retried: false)
-        expect(response).toNot(beNil())
-        expect(response?.statusCode) == .notModified
         expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
     }
 
@@ -108,7 +88,7 @@ class ETagManagerTests: XCTestCase {
             statusCode: .notModified
         )
         let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: true)
+            with: httpURLResponse, jsonObject: responseObject, request: request, retried: true)
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .notModified
         expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
@@ -125,7 +105,7 @@ class ETagManagerTests: XCTestCase {
             statusCode: .notModified
         )
         let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)
+            with: httpURLResponse, jsonObject: responseObject, request: request, retried: false)
         expect(response).to(beNil())
     }
 
@@ -140,7 +120,7 @@ class ETagManagerTests: XCTestCase {
             statusCode: .success
         )
         let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)
+            with: httpURLResponse, jsonObject: responseObject, request: request, retried: false)
 
         expect(response).toNot(beNil())
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
@@ -171,7 +151,7 @@ class ETagManagerTests: XCTestCase {
             statusCode: .internalServerError
         )
         let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)
+            with: httpURLResponse, jsonObject: responseObject, request: request, retried: false)
 
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .internalServerError
@@ -195,8 +175,11 @@ class ETagManagerTests: XCTestCase {
 
         expect(self.mockUserDefaults.mockValues.count) == 0
     }
+}
 
-    private func getHeaders(eTag: String) -> [String: String] {
+private extension ETagManagerTests {
+
+    func getHeaders(eTag: String) -> [String: String] {
         return [
             "Content-Type": "application/json",
             "X-Platform": "android",
@@ -211,7 +194,7 @@ class ETagManagerTests: XCTestCase {
             .merging(HTTPClient.authorizationHeader(withAPIKey: "apikey"))
     }
 
-    private func mockStoredETagAndResponse(for url: URL,
+    func mockStoredETagAndResponse(for url: URL,
                                            statusCode: HTTPStatusCode = .success,
                                            eTag: String = "an_etag") -> [String: String] {
         let jsonObject = ["arg": "value"]
@@ -224,14 +207,14 @@ class ETagManagerTests: XCTestCase {
         return jsonObject
     }
 
-    private func urlForTest() -> URL {
+    func urlForTest() -> URL {
         guard let url: URL = URL(string: "/v1/subscribers/appUserID", relativeTo: baseURL) else {
             fatalError("Error initializing URL")
         }
         return url
     }
 
-    private func httpURLResponseForTest(url: URL, eTag: String, statusCode: HTTPStatusCode) -> HTTPURLResponse {
+    func httpURLResponseForTest(url: URL, eTag: String, statusCode: HTTPStatusCode) -> HTTPURLResponse {
         guard let httpURLResponse = HTTPURLResponse(
             url: url,
             statusCode: statusCode.rawValue,

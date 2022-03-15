@@ -83,4 +83,9 @@ extension HTTPStatusCode {
         return 500...599 ~= self.rawValue
     }
 
+    // TODO: test
+    var successfullySynced: Bool {
+        return !(self.isServerError || self == .notFoundError)
+    }
+
 }

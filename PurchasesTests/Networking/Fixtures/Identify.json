@@ -1,0 +1,16 @@
+{
+    "request_date": "2022-03-08T17:42:22Z",
+    "request_date_ms": 1646761342158,
+    "subscriber": {
+        "entitlements": {},
+        "first_seen": "2022-03-08T17:42:22Z",
+        "last_seen": "2022-03-08T17:42:22Z",
+        "management_url": null,
+        "non_subscriptions": {},
+        "original_app_user_id": "E5DAE0E7-5BC9-496F-A4AD-6F925C890A48",
+        "original_application_version": null,
+        "original_purchase_date": null,
+        "other_purchases": {},
+        "subscriptions": {}
+    }
+}
