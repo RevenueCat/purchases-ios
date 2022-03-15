@@ -173,9 +173,7 @@ private extension HTTPClient {
         if networkError == nil {
             if let httpURLResponse = urlResponse as? HTTPURLResponse {
                 statusCode = .init(rawValue: httpURLResponse.statusCode)
-                Logger.debug(Strings.network.api_request_completed(httpMethod: request.method.httpMethod,
-                                                                   path: request.path,
-                                                                   httpCode: statusCode))
+                Logger.debug(Strings.network.api_request_completed(request.httpRequest, httpCode: statusCode))
 
                 if statusCode == .notModified || data == nil {
                     jsonObject = [:]
@@ -251,8 +249,7 @@ private extension HTTPClient {
             return
         }
 
-        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod,
-                                                         path: urlRequest.url?.path))
+        Logger.debug(Strings.network.api_request_started(request.httpRequest))
 
         let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,
