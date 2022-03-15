@@ -10,7 +10,7 @@ import XCTest
 #if SPM_INTEGRATION
 @testable import SPMIntegration
 #elseif CARTHAGE_INTEGRATION
-@testable import CarthageIntegration
+@testable import CarthageInstallation
 #elseif COCOAPODS_INTEGRATION
 @testable import CocoapodsIntegration
 #elseif XCODE_INTEGRATION

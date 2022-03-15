@@ -164,12 +164,12 @@ commands:
           command: |
               bundle exec fastlane update_swift_package_commit
 
-  update-carthage-integration-commit:
+  update-carthage-installation-commit:
     steps:
       - install-dependencies
       - run:
-          name: Update git commit in Carthage Integration tests
-          working_directory: IntegrationTests/CarthageIntegration/
+          name: Update git commit in Carthage Installation tests
+          working_directory: IntegrationTests/CarthageInstallation/
           command: |
               bundle exec fastlane update_carthage_commit
 
@@ -351,16 +351,16 @@ jobs:
       - scan-and-archive-all-platforms:
           directory: IntegrationTests/SPMIntegration/
 
-  integration-tests-carthage:
+  installation-tests-carthage:
     <<: *base-job
     steps:
       - checkout
       - trust-github-key
-      - update-carthage-integration-commit
+      - update-carthage-installation-commit
       # Carthage
       - run:
           name: Carthage Update
-          working_directory: IntegrationTests/CarthageIntegration/
+          working_directory: IntegrationTests/CarthageInstallation/
           # install without building, then remove the tests and build, so that carthage
           # doesn't try to build the other integration tests
           command: |
@@ -369,7 +369,7 @@ jobs:
               ./carthage.sh build --use-xcframeworks
       
       - install-dependencies-scan-and-archive:
-          directory: IntegrationTests/CarthageIntegration/
+          directory: IntegrationTests/CarthageInstallation/
 
   integration-tests-xcode-direct-integration:
     <<: *base-job
@@ -432,7 +432,7 @@ workflows:
       - integration-tests-swift-package-manager:
           xcode_version: '13.2.1'
           # <<: *release-tags-and-branches
-      - integration-tests-carthage:
+      - installation-tests-carthage:
           xcode_version: '13.2.1'
           # <<: *release-tags-and-branches
       - integration-tests-xcode-direct-integration:

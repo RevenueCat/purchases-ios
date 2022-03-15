@@ -34,7 +34,7 @@ CarthageUploads
 **/fastlane/test_output/
 builds/
 Pods/
-IntegrationTests/CarthageIntegration/Cartfile.resolved
+IntegrationTests/CarthageInstallation/Cartfile.resolved
 scan_derived_data/
 generated_docs/
 RevenueCat.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

@@ -4,5 +4,5 @@ storage_mode("git")
 
 type("development")
 
-app_identifier(["com.revenuecat.CarthageIntegration"])
+app_identifier(["com.revenuecat.CarthageInstallation"])
 username(ENV["FASTLANE_USER"])
