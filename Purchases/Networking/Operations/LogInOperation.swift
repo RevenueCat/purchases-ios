@@ -71,9 +71,9 @@ private extension LogInOperation {
                 if !statusCode.isSuccessfulResponse {
                     let backendCode = BackendErrorCode(code: response["code"])
                     let backendMessage = response["message"] as? String
-                    let responsError = ErrorUtils.backendError(withBackendCode: backendCode,
-                                                               backendMessage: backendMessage)
-                    return .failure(ErrorUtils.networkError(withUnderlyingError: responsError))
+                    let responseError = ErrorUtils.backendError(withBackendCode: backendCode,
+                                                                backendMessage: backendMessage)
+                    return .failure(ErrorUtils.networkError(withUnderlyingError: responseError))
                 }
 
                 do {

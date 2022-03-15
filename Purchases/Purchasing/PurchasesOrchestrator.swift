@@ -630,8 +630,7 @@ private extension PurchasesOrchestrator {
         let currentAppUserID = appUserID
         let unsyncedAttributes = unsyncedAttributes
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
-        // swiftlint:disable:next line_length
-        // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
+        // https://rev.cat/apple-restoring-purchased-products
         receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData in
             guard let receiptData = receiptData,
                   !receiptData.isEmpty else {

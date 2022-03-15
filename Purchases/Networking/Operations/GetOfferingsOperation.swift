@@ -54,14 +54,12 @@ private extension GetOfferingsOperation {
             let parsedResponse: Result<[String: Any], Error> = result
                 .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
                 .flatMap { response in
-                    if statusCode.isSuccessfulResponse {
-                        return .success(response)
-                    } else {
-                        return .failure(
-                            ErrorUtils.backendError(withBackendCode: BackendErrorCode(code: response["code"]),
-                                                    backendMessage: response["message"] as? String)
-                        )
-                    }
+                    return statusCode.isSuccessfulResponse
+                    ? .success(response)
+                    : .failure(
+                        ErrorUtils.backendError(withBackendCode: BackendErrorCode(code: response["code"]),
+                                                backendMessage: response["message"] as? String)
+                    )
                 }
 
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in

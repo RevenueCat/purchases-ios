@@ -181,7 +181,7 @@ class HTTPClientTests: XCTestCase {
     func testHandlesRealErrorConditions() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let successFailed: Atomic<Bool> = .init(false)
+        let correctResult: Atomic<Bool?> = .init(nil)
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath(request.path)) { _ in
@@ -191,22 +191,23 @@ class HTTPClientTests: XCTestCase {
         }
         self.client.perform(request, authHeaders: [:]) { (status, result) in
             if let responseNSError = result.error as NSError? {
-                successFailed.value = (status.isServerError
+                correctResult.value = (status.isServerError
                                        && error.domain == responseNSError.domain
                                        && error.code == responseNSError.code)
             } else {
-                successFailed.value = false
+                correctResult.value = false
             }
         }
 
-        expect(successFailed.value).toEventually(equal(true))
+        expect(correctResult.value).toEventuallyNot(beNil())
+        expect(correctResult.value) == true
     }
 
     func testServerSide400s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int(arc4random() % 50)
-        let correctResponse: Atomic<Bool> = .init(false)
+        let isResponseCorrect: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
@@ -219,20 +220,20 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(request, authHeaders: [:]) { (status, result) in
-            correctResponse.value = (status.rawValue == errorCode) && (result.value != nil)
-
+            isResponseCorrect.value = (status.rawValue == errorCode) && (result.value != nil)
             message.value = result.value?["message"] as? String
         }
 
-        expect(message.value).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
-        expect(correctResponse.value).toEventually(beTrue(), timeout: .seconds(1))
+        expect(message.value).toEventuallyNot(beNil(), timeout: .seconds(1))
+        expect(message.value) == "something is broken up in the cloud"
+        expect(isResponseCorrect.value) == true
     }
 
     func testServerSide500s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = Int32(500 + arc4random() % 50)
-        let correctResponse: Atomic<Bool> = .init(false)
+        let isResponseCorrect: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
@@ -245,12 +246,12 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(request, authHeaders: [:]) { (status, result) in
-            correctResponse.value = (status.rawValue == errorCode) && (result.value != nil)
+            isResponseCorrect.value = (status.rawValue == errorCode) && (result.value != nil)
             message.value = result.value?["message"] as? String
         }
 
         expect(message.value).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
-        expect(correctResponse.value).toEventually(beTrue(), timeout: .seconds(1))
+        expect(isResponseCorrect.value) == true
     }
 
     func testParseError() {
@@ -278,7 +279,7 @@ class HTTPClientTests: XCTestCase {
     func testServerSide200s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let successIsTrue: Atomic<Bool> = .init(false)
+        let isResponseCorrect: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
@@ -289,12 +290,12 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(request, authHeaders: [:]) { (status, result) in
-            successIsTrue.value = (status == .success) && (result.error == nil)
+            isResponseCorrect.value = (status == .success) && (result.error == nil)
             message.value = result.value?["message"] as? String
         }
 
         expect(message.value).toEventually(equal("something is great up in the cloud"), timeout: .seconds(1))
-        expect(successIsTrue.value).toEventually(beTrue(), timeout: .seconds(1))
+        expect(isResponseCorrect.value) == true
     }
 
     func testAlwaysPassesClientVersion() {
