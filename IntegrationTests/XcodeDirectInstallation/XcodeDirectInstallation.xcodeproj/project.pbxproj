@@ -28,7 +28,7 @@
 			containerPortal = 2D6C03D7254A0A460039CB92 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2D6C03DE254A0A460039CB92;
-			remoteInfo = XcodeDirectIntegration;
+			remoteInfo = XcodeDirectInstallation;
 		};
 		B3EAF56A26E29DCC00E0728D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -75,8 +75,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2D6C03DF254A0A460039CB92 /* XcodeDirectIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeDirectIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		2D6C03FA254A0A470039CB92 /* XcodeDirectIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XcodeDirectIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D6C03DF254A0A460039CB92 /* XcodeDirectInstallation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeDirectInstallation.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D6C03FA254A0A470039CB92 /* XcodeDirectInstallationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XcodeDirectInstallationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C0400254A0A470039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D6C041F254A0A550039CB92 /* RCInstallationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCInstallationRunner.m; sourceTree = "<group>"; };
 		2D6C0420254A0A550039CB92 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -91,10 +91,10 @@
 		2D6C042C254A0A550039CB92 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D6C042D254A0A550039CB92 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		2D6C042E254A0A550039CB92 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
-		2D6C0442254A0A760039CB92 /* XcodeDirectIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
+		2D6C0442254A0A760039CB92 /* XcodeDirectInstallation-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectInstallation-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C0443254A0A760039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
 		2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RevenueCat.xcodeproj; path = ../../RevenueCat.xcodeproj; sourceTree = "<group>"; };
-		2D6C047B254A0C230039CB92 /* XcodeDirectIntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectIntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		2D6C047B254A0C230039CB92 /* XcodeDirectInstallationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectInstallationTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		2DC19142255F1AFE0039389A /* InstallationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstallationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -122,8 +122,8 @@
 			children = (
 				2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */,
 				2D6C041D254A0A550039CB92 /* CommonFiles */,
-				2D6C03E1254A0A460039CB92 /* XcodeDirectIntegration */,
-				2D6C03FD254A0A470039CB92 /* XcodeDirectIntegrationTests */,
+				2D6C03E1254A0A460039CB92 /* XcodeDirectInstallation */,
+				2D6C03FD254A0A470039CB92 /* XcodeDirectInstallationTests */,
 				2D6C03E0254A0A460039CB92 /* Products */,
 				2D6C046A254A0B290039CB92 /* Frameworks */,
 			);
@@ -132,27 +132,27 @@
 		2D6C03E0254A0A460039CB92 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2D6C03DF254A0A460039CB92 /* XcodeDirectIntegration.app */,
-				2D6C03FA254A0A470039CB92 /* XcodeDirectIntegrationTests.xctest */,
+				2D6C03DF254A0A460039CB92 /* XcodeDirectInstallation.app */,
+				2D6C03FA254A0A470039CB92 /* XcodeDirectInstallationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		2D6C03E1254A0A460039CB92 /* XcodeDirectIntegration */ = {
+		2D6C03E1254A0A460039CB92 /* XcodeDirectInstallation */ = {
 			isa = PBXGroup;
 			children = (
-				2D6C0442254A0A760039CB92 /* XcodeDirectIntegration-Bridging-Header.h */,
-				2D6C047B254A0C230039CB92 /* XcodeDirectIntegrationTests-Bridging-Header.h */,
+				2D6C0442254A0A760039CB92 /* XcodeDirectInstallation-Bridging-Header.h */,
+				2D6C047B254A0C230039CB92 /* XcodeDirectInstallationTests-Bridging-Header.h */,
 			);
-			path = XcodeDirectIntegration;
+			path = XcodeDirectInstallation;
 			sourceTree = "<group>";
 		};
-		2D6C03FD254A0A470039CB92 /* XcodeDirectIntegrationTests */ = {
+		2D6C03FD254A0A470039CB92 /* XcodeDirectInstallationTests */ = {
 			isa = PBXGroup;
 			children = (
 				2D6C0400254A0A470039CB92 /* Info.plist */,
 			);
-			path = XcodeDirectIntegrationTests;
+			path = XcodeDirectInstallationTests;
 			sourceTree = "<group>";
 		};
 		2D6C041D254A0A550039CB92 /* CommonFiles */ = {
@@ -211,9 +211,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		2D6C03DE254A0A460039CB92 /* XcodeDirectIntegration */ = {
+		2D6C03DE254A0A460039CB92 /* XcodeDirectInstallation */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D6C040E254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectIntegration" */;
+			buildConfigurationList = 2D6C040E254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectInstallation" */;
 			buildPhases = (
 				2D6C0486254A0CED0039CB92 /* Headers */,
 				2D6C03DB254A0A460039CB92 /* Sources */,
@@ -225,14 +225,14 @@
 			);
 			dependencies = (
 			);
-			name = XcodeDirectIntegration;
-			productName = XcodeDirectIntegration;
-			productReference = 2D6C03DF254A0A460039CB92 /* XcodeDirectIntegration.app */;
+			name = XcodeDirectInstallation;
+			productName = XcodeDirectInstallation;
+			productReference = 2D6C03DF254A0A460039CB92 /* XcodeDirectInstallation.app */;
 			productType = "com.apple.product-type.application";
 		};
-		2D6C03F9254A0A470039CB92 /* XcodeDirectIntegrationTests */ = {
+		2D6C03F9254A0A470039CB92 /* XcodeDirectInstallationTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D6C0411254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectIntegrationTests" */;
+			buildConfigurationList = 2D6C0411254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectInstallationTests" */;
 			buildPhases = (
 				2D6C03F6254A0A470039CB92 /* Sources */,
 				2D6C03F7254A0A470039CB92 /* Frameworks */,
@@ -243,9 +243,9 @@
 			dependencies = (
 				2D6C03FC254A0A470039CB92 /* PBXTargetDependency */,
 			);
-			name = XcodeDirectIntegrationTests;
-			productName = XcodeDirectIntegrationTests;
-			productReference = 2D6C03FA254A0A470039CB92 /* XcodeDirectIntegrationTests.xctest */;
+			name = XcodeDirectInstallationTests;
+			productName = XcodeDirectInstallationTests;
+			productReference = 2D6C03FA254A0A470039CB92 /* XcodeDirectInstallationTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -267,7 +267,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2D6C03DA254A0A460039CB92 /* Build configuration list for PBXProject "XcodeDirectIntegration" */;
+			buildConfigurationList = 2D6C03DA254A0A460039CB92 /* Build configuration list for PBXProject "XcodeDirectInstallation" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -286,8 +286,8 @@
 			);
 			projectRoot = "";
 			targets = (
-				2D6C03DE254A0A460039CB92 /* XcodeDirectIntegration */,
-				2D6C03F9254A0A470039CB92 /* XcodeDirectIntegrationTests */,
+				2D6C03DE254A0A460039CB92 /* XcodeDirectInstallation */,
+				2D6C03F9254A0A470039CB92 /* XcodeDirectInstallationTests */,
 			);
 		};
 /* End PBXProject section */
@@ -370,7 +370,7 @@
 /* Begin PBXTargetDependency section */
 		2D6C03FC254A0A470039CB92 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2D6C03DE254A0A460039CB92 /* XcodeDirectIntegration */;
+			target = 2D6C03DE254A0A460039CB92 /* XcodeDirectInstallation */;
 			targetProxy = 2D6C03FB254A0A470039CB92 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -522,10 +522,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegration;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectInstallation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.XcodeDirectIntegration";
-				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegration-Bridging-Header.h";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.XcodeDirectInstallation";
+				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectInstallation/XcodeDirectInstallation-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -547,10 +547,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegration;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectInstallation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.XcodeDirectIntegration";
-				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegration-Bridging-Header.h";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.XcodeDirectInstallation";
+				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectInstallation/XcodeDirectInstallation-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -564,7 +564,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = XcodeDirectIntegrationTests/Info.plist;
+				INFOPLIST_FILE = XcodeDirectInstallationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -572,13 +572,13 @@
 					"@loader_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "-DXCODE_INTEGRATION";
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegrationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectInstallationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegrationTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectInstallation/XcodeDirectInstallationTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/XcodeDirectIntegration.app/XcodeDirectIntegration";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/XcodeDirectInstallation.app/XcodeDirectInstallation";
 			};
 			name = Debug;
 		};
@@ -590,7 +590,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = XcodeDirectIntegrationTests/Info.plist;
+				INFOPLIST_FILE = XcodeDirectInstallationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -598,19 +598,19 @@
 					"@loader_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "-DXCODE_INTEGRATION";
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegrationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectInstallationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegrationTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectInstallation/XcodeDirectInstallationTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/XcodeDirectIntegration.app/XcodeDirectIntegration";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/XcodeDirectInstallation.app/XcodeDirectInstallation";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2D6C03DA254A0A460039CB92 /* Build configuration list for PBXProject "XcodeDirectIntegration" */ = {
+		2D6C03DA254A0A460039CB92 /* Build configuration list for PBXProject "XcodeDirectInstallation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D6C040C254A0A470039CB92 /* Debug */,
@@ -619,7 +619,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2D6C040E254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectIntegration" */ = {
+		2D6C040E254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectInstallation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D6C040F254A0A470039CB92 /* Debug */,
@@ -628,7 +628,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2D6C0411254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectIntegrationTests" */ = {
+		2D6C0411254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectInstallationTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D6C0412254A0A470039CB92 /* Debug */,

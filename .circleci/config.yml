@@ -379,7 +379,7 @@ jobs:
       - checkout
 
       - install-dependencies-scan-and-archive:
-          directory: IntegrationTests/XcodeDirectIntegration/
+          directory: IntegrationTests/XcodeDirectInstallation/
 
   lint:
     <<: *base-job

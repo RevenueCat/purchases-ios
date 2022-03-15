@@ -14,7 +14,7 @@ import XCTest
 #elseif COCOAPODS_INSTALLATION
 @testable import CocoapodsInstallation
 #elseif XCODE_INTEGRATION
-@testable import XcodeDirectIntegration
+@testable import XcodeDirectInstallation
 #endif
 
 import RevenueCat
