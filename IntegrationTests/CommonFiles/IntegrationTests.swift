@@ -9,9 +9,9 @@ import XCTest
 
 #if SPM_INTEGRATION
 @testable import SPMIntegration
-#elseif CARTHAGE_INTEGRATION
+#elseif CARTHAGE_INSTALLATION
 @testable import CarthageInstallation
-#elseif COCOAPODS_INTEGRATION
+#elseif COCOAPODS_INSTALLATION
 @testable import CocoapodsInstallation
 #elseif XCODE_INTEGRATION
 @testable import XcodeDirectIntegration

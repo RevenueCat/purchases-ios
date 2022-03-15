@@ -490,7 +490,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				OTHER_SWIFT_FLAGS = "-DCARTHAGE_INTEGRATION";
+				OTHER_SWIFT_FLAGS = "-DCARTHAGE_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageInstallationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageInstallationTests/CarthageInstallationTests-Bridging-Header.h";
@@ -516,7 +516,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				OTHER_SWIFT_FLAGS = "-DCARTHAGE_INTEGRATION";
+				OTHER_SWIFT_FLAGS = "-DCARTHAGE_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageInstallationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageInstallationTests/CarthageInstallationTests-Bridging-Header.h";
