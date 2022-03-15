@@ -26,7 +26,7 @@ class BackendPostAttributionDataTests: BaseBackendTests {
     func testPostAttributesPutsDataInDataKey() throws {
         self.httpClient.mock(
             requestPath: .postAttributionData(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: nil)
+            response: .init(statusCode: .success)
         )
 
         let data: [String: AnyObject] = ["a": "b" as NSString, "c": "d" as NSString]

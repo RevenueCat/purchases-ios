@@ -15,17 +15,11 @@ import Foundation
 
 enum UnexpectedBackendResponseSubErrorCode: Int, Error {
 
-    /// Login call returned with no response.
-    case loginMissingResponse = 0
-
     /// Login call failed due to a problem with the response.
-    case loginResponseDecoding
-
-    /// Received an empty response after posting an offer.
-    case postOfferEmptyResponse
+    case loginResponseDecoding = 1
 
     /// Received a bad response after posting an offer- "offers" couldn't be read from response.
-    case postOfferIdBadResponse
+    case postOfferIdBadResponse = 3
 
     /// Received a bad response after posting an offer- "offers" was totally missing.
     case postOfferIdMissingOffersInResponse
@@ -48,12 +42,8 @@ extension UnexpectedBackendResponseSubErrorCode: DescribableError {
 
     var description: String {
         switch self {
-        case .loginMissingResponse:
-            return "Login returned with a missing response."
         case .loginResponseDecoding:
             return "Unable to decode response returned from login."
-        case .postOfferEmptyResponse:
-            return "posting offer for signing failed, received an empty response."
         case .postOfferIdBadResponse:
             return "Unable to decode response returned from posting offer for signing."
         case .postOfferIdMissingOffersInResponse:
