@@ -12,7 +12,7 @@ import XCTest
 #elseif CARTHAGE_INTEGRATION
 @testable import CarthageInstallation
 #elseif COCOAPODS_INTEGRATION
-@testable import CocoapodsIntegration
+@testable import CocoapodsInstallation
 #elseif XCODE_INTEGRATION
 @testable import XcodeDirectIntegration
 #endif

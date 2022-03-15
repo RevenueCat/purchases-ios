@@ -1,6 +1,6 @@
 //
 //  SceneDelegate.h
-//  CocoapodsIntegration
+//  CocoapodsInstallation
 //
 //  Created by Andrés Boedo on 10/27/20.
 //

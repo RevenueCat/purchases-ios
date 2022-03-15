@@ -325,20 +325,20 @@ jobs:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
 
-  integration-tests-cocoapods:
+  installation-tests-cocoapods:
     <<: *base-job
     steps:
       - checkout
       - install-dependencies
       - install-dependencies:
-          directory: IntegrationTests/CocoapodsIntegration
+          directory: IntegrationTests/CocoapodsInstallation
       - run:
           name: Install Pods
-          working_directory: IntegrationTests/CocoapodsIntegration/
+          working_directory: IntegrationTests/CocoapodsInstallation/
           command: |
               pod install
       - scan-and-archive:
-          directory: IntegrationTests/CocoapodsIntegration
+          directory: IntegrationTests/CocoapodsInstallation
       
   integration-tests-swift-package-manager:
     <<: *base-job
@@ -362,7 +362,7 @@ jobs:
           name: Carthage Update
           working_directory: IntegrationTests/CarthageInstallation/
           # install without building, then remove the tests and build, so that carthage
-          # doesn't try to build the other integration tests
+          # doesn't try to build the other installation tests
           command: |
               ./carthage.sh update --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
@@ -426,7 +426,7 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
-      - integration-tests-cocoapods:
+      - installation-tests-cocoapods:
           xcode_version: '13.2.1'
           # <<: *release-tags-and-branches
       - integration-tests-swift-package-manager:

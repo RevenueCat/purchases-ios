@@ -1,8 +1,8 @@
 //
 //  IntegrationTests-Bridging-Header.h
-//  CocoapodsIntegrationTests
+//  CocoapodsInstallationTests
 //
 //  Created by Andrés Boedo on 10/27/20.
 //
 
-#include <CocoapodsIntegration/RCIntegrationRunner.h>
+#include <CocoapodsInstallation/RCIntegrationRunner.h>

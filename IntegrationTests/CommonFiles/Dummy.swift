@@ -1,6 +1,6 @@
 //
 //  Dummy.swift
-//  CocoapodsIntegration
+//  CocoapodsInstallation
 //
 //  Created by Andrés Boedo on 10/28/20.
 //

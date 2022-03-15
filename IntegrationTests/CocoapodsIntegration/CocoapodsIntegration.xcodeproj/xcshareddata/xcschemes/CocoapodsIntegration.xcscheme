@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DC6CF0B2548A88F009C7F3A"
-               BuildableName = "CocoapodsIntegration.app"
-               BlueprintName = "CocoapodsIntegration"
-               ReferencedContainer = "container:CocoapodsIntegration.xcodeproj">
+               BuildableName = "CocoapodsInstallation.app"
+               BlueprintName = "CocoapodsInstallation"
+               ReferencedContainer = "container:CocoapodsInstallation.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DC6CF572548CDA8009C7F3A"
-               BuildableName = "CocoapodsIntegrationTests.xctest"
-               BlueprintName = "CocoapodsIntegrationTests"
-               ReferencedContainer = "container:CocoapodsIntegration.xcodeproj">
+               BuildableName = "CocoapodsInstallationTests.xctest"
+               BlueprintName = "CocoapodsInstallationTests"
+               ReferencedContainer = "container:CocoapodsInstallation.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2DC6CF0B2548A88F009C7F3A"
-            BuildableName = "CocoapodsIntegration.app"
-            BlueprintName = "CocoapodsIntegration"
-            ReferencedContainer = "container:CocoapodsIntegration.xcodeproj">
+            BuildableName = "CocoapodsInstallation.app"
+            BlueprintName = "CocoapodsInstallation"
+            ReferencedContainer = "container:CocoapodsInstallation.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2DC6CF0B2548A88F009C7F3A"
-            BuildableName = "CocoapodsIntegration.app"
-            BlueprintName = "CocoapodsIntegration"
-            ReferencedContainer = "container:CocoapodsIntegration.xcodeproj">
+            BuildableName = "CocoapodsInstallation.app"
+            BlueprintName = "CocoapodsInstallation"
+            ReferencedContainer = "container:CocoapodsInstallation.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
