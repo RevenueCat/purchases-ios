@@ -16,8 +16,8 @@
 		2DC6CF1C2548A890009C7F3A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF1B2548A890009C7F3A /* Assets.xcassets */; };
 		2DC6CF1F2548A890009C7F3A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF1D2548A890009C7F3A /* LaunchScreen.storyboard */; };
 		2DC6CF222548A890009C7F3A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF212548A890009C7F3A /* main.m */; };
-		2DC6CF392548ACA5009C7F3A /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */; };
-		2DC6CF792548D0B8009C7F3A /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2DC6CF392548ACA5009C7F3A /* RCInstallationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF382548ACA5009C7F3A /* RCInstallationRunner.m */; };
+		2DC6CF792548D0B8009C7F3A /* RCInstallationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC6CF372548ACA5009C7F3A /* RCInstallationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		510A1C991E467ADAB13389C7 /* Pods_CocoapodsInstallation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41C9DD9203D6C4C5C23D9DD2 /* Pods_CocoapodsInstallation.framework */; };
 		CAA41E24B747D737E520464C /* Pods_CocoapodsInstallationTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A222C9A1BCB909725832EFC7 /* Pods_CocoapodsInstallationTests.framework */; };
 /* End PBXBuildFile section */
@@ -48,8 +48,8 @@
 		2DC6CF1E2548A890009C7F3A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2DC6CF202548A890009C7F3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DC6CF212548A890009C7F3A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntegrationRunner.h; sourceTree = "<group>"; };
-		2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
+		2DC6CF372548ACA5009C7F3A /* RCInstallationRunner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCInstallationRunner.h; sourceTree = "<group>"; };
+		2DC6CF382548ACA5009C7F3A /* RCInstallationRunner.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCInstallationRunner.m; sourceTree = "<group>"; };
 		2DC6CF582548CDA8009C7F3A /* CocoapodsInstallationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CocoapodsInstallationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC6CF5C2548CDA8009C7F3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DC6CF6C2548CF9C009C7F3A /* InstallationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "InstallationTests-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -136,8 +136,8 @@
 				2DC6CF1D2548A890009C7F3A /* LaunchScreen.storyboard */,
 				2DC6CF202548A890009C7F3A /* Info.plist */,
 				2DC6CF212548A890009C7F3A /* main.m */,
-				2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */,
-				2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */,
+				2DC6CF372548ACA5009C7F3A /* RCInstallationRunner.h */,
+				2DC6CF382548ACA5009C7F3A /* RCInstallationRunner.m */,
 				2D6C03AA254A05580039CB92 /* Dummy.swift */,
 			);
 			name = CommonFiles;
@@ -169,7 +169,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DC6CF792548D0B8009C7F3A /* RCIntegrationRunner.h in Headers */,
+				2DC6CF792548D0B8009C7F3A /* RCInstallationRunner.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,7 +343,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2DC6CF172548A88F009C7F3A /* ViewController.m in Sources */,
-				2DC6CF392548ACA5009C7F3A /* RCIntegrationRunner.m in Sources */,
+				2DC6CF392548ACA5009C7F3A /* RCInstallationRunner.m in Sources */,
 				2DC6CF112548A88F009C7F3A /* AppDelegate.m in Sources */,
 				2DC6CF222548A890009C7F3A /* main.m in Sources */,
 				2D6C03AB254A05580039CB92 /* Dummy.swift in Sources */,

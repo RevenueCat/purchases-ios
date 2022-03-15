@@ -22,11 +22,11 @@ import RevenueCat
 class IntegrationTests: XCTestCase {
 
     func testCanConfigureTheSDK() throws {
-        RCIntegrationRunner().start()
+        RCInstallationRunner().start()
     }
 
     func testCanFetchCustomerInfo() throws {
-        let integrationRunner = RCIntegrationRunner()
+        let integrationRunner = RCInstallationRunner()
         integrationRunner.start()
         let expectation = XCTestExpectation(description: "get purchaserInfo")
 

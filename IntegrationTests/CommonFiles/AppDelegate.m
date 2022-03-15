@@ -6,7 +6,7 @@
 //
 
 #import "AppDelegate.h"
-#import "RCIntegrationRunner.h"
+#import "RCInstallationRunner.h"
 
 @interface AppDelegate ()
 
@@ -16,7 +16,7 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    RCIntegrationRunner *integration = [[RCIntegrationRunner alloc] init];
+    RCInstallationRunner *integration = [[RCInstallationRunner alloc] init];
     [integration start];
     // Override point for customization after application launch.
     return YES;

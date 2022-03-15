@@ -2,4 +2,4 @@
 //  Use this file to import your target's public headers that you would like to expose to Swift.
 //
 
-#include <CarthageInstallation/RCIntegrationRunner.h>
+#include <CarthageInstallation/RCInstallationRunner.h>

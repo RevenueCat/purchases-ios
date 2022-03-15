@@ -1,5 +1,5 @@
 //
-//  RCIntegrationRunner.h
+//  RCInstallationRunner.h
 //  CocoapodsInstallation
 //
 //  Created by Andrés Boedo on 10/27/20.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCIntegrationRunner : NSObject
+@interface RCInstallationRunner : NSObject
 
 - (void)start;
 

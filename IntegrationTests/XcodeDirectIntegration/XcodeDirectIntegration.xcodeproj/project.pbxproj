@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D6C042F254A0A550039CB92 /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C041F254A0A550039CB92 /* RCIntegrationRunner.m */; };
+		2D6C042F254A0A550039CB92 /* RCInstallationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C041F254A0A550039CB92 /* RCInstallationRunner.m */; };
 		2D6C0430254A0A550039CB92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C0421254A0A550039CB92 /* Assets.xcassets */; };
 		2D6C0431254A0A550039CB92 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0422254A0A550039CB92 /* ViewController.m */; };
 		2D6C0432254A0A550039CB92 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0423254A0A550039CB92 /* SceneDelegate.m */; };
@@ -16,7 +16,7 @@
 		2D6C0435254A0A550039CB92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0429254A0A550039CB92 /* main.m */; };
 		2D6C0436254A0A550039CB92 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C042A254A0A550039CB92 /* AppDelegate.m */; };
 		2D6C0444254A0A760039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0443254A0A760039CB92 /* Dummy.swift */; };
-		2D6C0487254A0CF20039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C0428254A0A550039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2D6C0487254A0CF20039CB92 /* RCInstallationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C0428254A0A550039CB92 /* RCInstallationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2DC19147255F1AFE0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19142255F1AFE0039389A /* IntegrationTests.swift */; };
 		B35EE57326E29E06008F27D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */; };
 		B35EE57426E29E40008F27D8 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -78,14 +78,14 @@
 		2D6C03DF254A0A460039CB92 /* XcodeDirectIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeDirectIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C03FA254A0A470039CB92 /* XcodeDirectIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XcodeDirectIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C0400254A0A470039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2D6C041F254A0A550039CB92 /* RCIntegrationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
+		2D6C041F254A0A550039CB92 /* RCInstallationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCInstallationRunner.m; sourceTree = "<group>"; };
 		2D6C0420254A0A550039CB92 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2D6C0421254A0A550039CB92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2D6C0422254A0A550039CB92 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		2D6C0423254A0A550039CB92 /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		2D6C0425254A0A550039CB92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2D6C0427254A0A550039CB92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		2D6C0428254A0A550039CB92 /* RCIntegrationRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIntegrationRunner.h; sourceTree = "<group>"; };
+		2D6C0428254A0A550039CB92 /* RCInstallationRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCInstallationRunner.h; sourceTree = "<group>"; };
 		2D6C0429254A0A550039CB92 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2D6C042A254A0A550039CB92 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		2D6C042C254A0A550039CB92 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -160,14 +160,14 @@
 			children = (
 				2DC19142255F1AFE0039389A /* IntegrationTests.swift */,
 				2D6C0443254A0A760039CB92 /* Dummy.swift */,
-				2D6C041F254A0A550039CB92 /* RCIntegrationRunner.m */,
+				2D6C041F254A0A550039CB92 /* RCInstallationRunner.m */,
 				2D6C0420254A0A550039CB92 /* AppDelegate.h */,
 				2D6C0421254A0A550039CB92 /* Assets.xcassets */,
 				2D6C0422254A0A550039CB92 /* ViewController.m */,
 				2D6C0423254A0A550039CB92 /* SceneDelegate.m */,
 				2D6C0424254A0A550039CB92 /* LaunchScreen.storyboard */,
 				2D6C0426254A0A550039CB92 /* Main.storyboard */,
-				2D6C0428254A0A550039CB92 /* RCIntegrationRunner.h */,
+				2D6C0428254A0A550039CB92 /* RCInstallationRunner.h */,
 				2D6C0429254A0A550039CB92 /* main.m */,
 				2D6C042A254A0A550039CB92 /* AppDelegate.m */,
 				2D6C042C254A0A550039CB92 /* Info.plist */,
@@ -204,7 +204,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C0487254A0CF20039CB92 /* RCIntegrationRunner.h in Headers */,
+				2D6C0487254A0CF20039CB92 /* RCInstallationRunner.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -351,7 +351,7 @@
 				2D6C0431254A0A550039CB92 /* ViewController.m in Sources */,
 				2D6C0432254A0A550039CB92 /* SceneDelegate.m in Sources */,
 				2D6C0435254A0A550039CB92 /* main.m in Sources */,
-				2D6C042F254A0A550039CB92 /* RCIntegrationRunner.m in Sources */,
+				2D6C042F254A0A550039CB92 /* RCInstallationRunner.m in Sources */,
 				2D6C0444254A0A760039CB92 /* Dummy.swift in Sources */,
 				2D6C0436254A0A550039CB92 /* AppDelegate.m in Sources */,
 			);

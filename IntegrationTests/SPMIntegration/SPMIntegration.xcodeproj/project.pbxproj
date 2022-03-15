@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D6C02522549F5920039CB92 /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */; };
+		2D6C02522549F5920039CB92 /* RCInstallationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02432549F5920039CB92 /* RCInstallationRunner.m */; };
 		2D6C02532549F5920039CB92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C02452549F5920039CB92 /* Assets.xcassets */; };
 		2D6C02542549F5920039CB92 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02462549F5920039CB92 /* ViewController.m */; };
 		2D6C02552549F5920039CB92 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02472549F5920039CB92 /* SceneDelegate.m */; };
@@ -15,7 +15,7 @@
 		2D6C02572549F5920039CB92 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C024A2549F5920039CB92 /* Main.storyboard */; platformFilters = (ios, maccatalyst, macos, watchos, ); };
 		2D6C02582549F5920039CB92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C024D2549F5920039CB92 /* main.m */; };
 		2D6C02592549F5920039CB92 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C024E2549F5920039CB92 /* AppDelegate.m */; };
-		2D6C02C22549F98C0039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C024C2549F5920039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2D6C02C22549F98C0039CB92 /* RCInstallationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C024C2549F5920039CB92 /* RCInstallationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D6C02D92549FD6D0039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02D82549FD6D0039CB92 /* Dummy.swift */; };
 		2DC19130255F195B0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */; };
 		B30AAE6126FB95C900B4B003 /* RevenueCat-Swift.h in Headers */ = {isa = PBXBuildFile; fileRef = B384177426E2F8DE0082BBE2 /* RevenueCat-Swift.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -37,14 +37,14 @@
 		2D6C02042549F5600039CB92 /* SPMIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SPMIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SPMIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C02252549F5620039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
+		2D6C02432549F5920039CB92 /* RCInstallationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCInstallationRunner.m; sourceTree = "<group>"; };
 		2D6C02442549F5920039CB92 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2D6C02452549F5920039CB92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2D6C02462549F5920039CB92 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		2D6C02472549F5920039CB92 /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		2D6C02492549F5920039CB92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2D6C024B2549F5920039CB92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		2D6C024C2549F5920039CB92 /* RCIntegrationRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIntegrationRunner.h; sourceTree = "<group>"; };
+		2D6C024C2549F5920039CB92 /* RCInstallationRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCInstallationRunner.h; sourceTree = "<group>"; };
 		2D6C024D2549F5920039CB92 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2D6C024E2549F5920039CB92 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		2D6C024F2549F5920039CB92 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -112,14 +112,14 @@
 				B384177426E2F8DE0082BBE2 /* RevenueCat-Swift.h */,
 				2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */,
 				2D6C02D82549FD6D0039CB92 /* Dummy.swift */,
-				2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */,
+				2D6C02432549F5920039CB92 /* RCInstallationRunner.m */,
 				2D6C02442549F5920039CB92 /* AppDelegate.h */,
 				2D6C02452549F5920039CB92 /* Assets.xcassets */,
 				2D6C02462549F5920039CB92 /* ViewController.m */,
 				2D6C02472549F5920039CB92 /* SceneDelegate.m */,
 				2D6C02482549F5920039CB92 /* LaunchScreen.storyboard */,
 				2D6C024A2549F5920039CB92 /* Main.storyboard */,
-				2D6C024C2549F5920039CB92 /* RCIntegrationRunner.h */,
+				2D6C024C2549F5920039CB92 /* RCInstallationRunner.h */,
 				2D6C024D2549F5920039CB92 /* main.m */,
 				2D6C024E2549F5920039CB92 /* AppDelegate.m */,
 				2D6C024F2549F5920039CB92 /* Info.plist */,
@@ -144,7 +144,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C02C22549F98C0039CB92 /* RCIntegrationRunner.h in Headers */,
+				2D6C02C22549F98C0039CB92 /* RCInstallationRunner.h in Headers */,
 				B30AAE6126FB95C900B4B003 /* RevenueCat-Swift.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -260,7 +260,7 @@
 				2D6C02542549F5920039CB92 /* ViewController.m in Sources */,
 				2D6C02552549F5920039CB92 /* SceneDelegate.m in Sources */,
 				2D6C02582549F5920039CB92 /* main.m in Sources */,
-				2D6C02522549F5920039CB92 /* RCIntegrationRunner.m in Sources */,
+				2D6C02522549F5920039CB92 /* RCInstallationRunner.m in Sources */,
 				2D6C02D92549FD6D0039CB92 /* Dummy.swift in Sources */,
 				2D6C02592549F5920039CB92 /* AppDelegate.m in Sources */,
 			);

@@ -1,16 +1,16 @@
 //
-//  RCIntegrationRunner.m
+//  RCInstallationRunner.m
 //  CocoapodsInstallation
 //
 //  Created by Andrés Boedo on 10/27/20.
 //
 
-#import "RCIntegrationRunner.h"
+#import "RCInstallationRunner.h"
 @import RevenueCat;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation RCIntegrationRunner
+@implementation RCInstallationRunner
 
 - (void)start {
     [RCPurchases setDebugLogsEnabled:true];

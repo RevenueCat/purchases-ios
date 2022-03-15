@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D6C02F72549FE2C0039CB92 /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02E72549FE2C0039CB92 /* RCIntegrationRunner.m */; };
+		2D6C02F72549FE2C0039CB92 /* RCInstallationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02E72549FE2C0039CB92 /* RCInstallationRunner.m */; };
 		2D6C02F82549FE2C0039CB92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C02E92549FE2C0039CB92 /* Assets.xcassets */; };
 		2D6C02F92549FE2C0039CB92 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02EA2549FE2C0039CB92 /* ViewController.m */; };
 		2D6C02FA2549FE2C0039CB92 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02EB2549FE2C0039CB92 /* SceneDelegate.m */; };
@@ -15,7 +15,7 @@
 		2D6C02FC2549FE2C0039CB92 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C02EE2549FE2C0039CB92 /* Main.storyboard */; };
 		2D6C02FD2549FE2C0039CB92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02F12549FE2C0039CB92 /* main.m */; };
 		2D6C02FE2549FE2C0039CB92 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02F22549FE2C0039CB92 /* AppDelegate.m */; };
-		2D6C03212549FF4F0039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C02F02549FE2C0039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2D6C03212549FF4F0039CB92 /* RCInstallationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C02F02549FE2C0039CB92 /* RCInstallationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D6C0393254A04300039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0392254A04300039CB92 /* Dummy.swift */; };
 		2DC19168255F1D100039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19167255F1D0F0039389A /* IntegrationTests.swift */; };
 		B33EDF7326E2D53F00F379EA /* RevenueCat.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B33EDF7226E2D53F00F379EA /* RevenueCat.xcframework */; };
@@ -35,14 +35,14 @@
 		2D6C027D2549F76E0039CB92 /* CarthageInstallation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CarthageInstallation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C02982549F7700039CB92 /* CarthageInstallationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CarthageInstallationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C029E2549F7700039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2D6C02E72549FE2C0039CB92 /* RCIntegrationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
+		2D6C02E72549FE2C0039CB92 /* RCInstallationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCInstallationRunner.m; sourceTree = "<group>"; };
 		2D6C02E82549FE2C0039CB92 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2D6C02E92549FE2C0039CB92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2D6C02EA2549FE2C0039CB92 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		2D6C02EB2549FE2C0039CB92 /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		2D6C02ED2549FE2C0039CB92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2D6C02EF2549FE2C0039CB92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		2D6C02F02549FE2C0039CB92 /* RCIntegrationRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIntegrationRunner.h; sourceTree = "<group>"; };
+		2D6C02F02549FE2C0039CB92 /* RCInstallationRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCInstallationRunner.h; sourceTree = "<group>"; };
 		2D6C02F12549FE2C0039CB92 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2D6C02F22549FE2C0039CB92 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		2D6C02F42549FE2C0039CB92 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -117,14 +117,14 @@
 			children = (
 				2DC19167255F1D0F0039389A /* IntegrationTests.swift */,
 				2D6C0392254A04300039CB92 /* Dummy.swift */,
-				2D6C02E72549FE2C0039CB92 /* RCIntegrationRunner.m */,
+				2D6C02E72549FE2C0039CB92 /* RCInstallationRunner.m */,
 				2D6C02E82549FE2C0039CB92 /* AppDelegate.h */,
 				2D6C02E92549FE2C0039CB92 /* Assets.xcassets */,
 				2D6C02EA2549FE2C0039CB92 /* ViewController.m */,
 				2D6C02EB2549FE2C0039CB92 /* SceneDelegate.m */,
 				2D6C02EC2549FE2C0039CB92 /* LaunchScreen.storyboard */,
 				2D6C02EE2549FE2C0039CB92 /* Main.storyboard */,
-				2D6C02F02549FE2C0039CB92 /* RCIntegrationRunner.h */,
+				2D6C02F02549FE2C0039CB92 /* RCInstallationRunner.h */,
 				2D6C02F12549FE2C0039CB92 /* main.m */,
 				2D6C02F22549FE2C0039CB92 /* AppDelegate.m */,
 				2D6C02F42549FE2C0039CB92 /* Info.plist */,
@@ -151,7 +151,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C03212549FF4F0039CB92 /* RCIntegrationRunner.h in Headers */,
+				2D6C03212549FF4F0039CB92 /* RCInstallationRunner.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,7 +260,7 @@
 				2D6C02F92549FE2C0039CB92 /* ViewController.m in Sources */,
 				2D6C02FA2549FE2C0039CB92 /* SceneDelegate.m in Sources */,
 				2D6C02FD2549FE2C0039CB92 /* main.m in Sources */,
-				2D6C02F72549FE2C0039CB92 /* RCIntegrationRunner.m in Sources */,
+				2D6C02F72549FE2C0039CB92 /* RCInstallationRunner.m in Sources */,
 				2D6C0393254A04300039CB92 /* Dummy.swift in Sources */,
 				2D6C02FE2549FE2C0039CB92 /* AppDelegate.m in Sources */,
 			);
