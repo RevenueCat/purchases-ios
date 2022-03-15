@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2D6C03AB254A05580039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C03AA254A05580039CB92 /* Dummy.swift */; };
-		2DC19159255F1B9F0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19153255F1B9D0039389A /* IntegrationTests.swift */; };
+		2DC19159255F1B9F0039389A /* InstallationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19153255F1B9D0039389A /* InstallationTests.swift */; };
 		2DC6CF112548A88F009C7F3A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF102548A88F009C7F3A /* AppDelegate.m */; };
 		2DC6CF142548A88F009C7F3A /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF132548A88F009C7F3A /* SceneDelegate.m */; };
 		2DC6CF172548A88F009C7F3A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF162548A88F009C7F3A /* ViewController.m */; };
@@ -35,7 +35,7 @@
 /* Begin PBXFileReference section */
 		2D6C03A9254A05570039CB92 /* CocoapodsInstallation-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CocoapodsInstallation-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C03AA254A05580039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
-		2DC19153255F1B9D0039389A /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
+		2DC19153255F1B9D0039389A /* InstallationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstallationTests.swift; sourceTree = "<group>"; };
 		2DC6CF0C2548A88F009C7F3A /* CocoapodsInstallation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CocoapodsInstallation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC6CF0F2548A88F009C7F3A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2DC6CF102548A88F009C7F3A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -124,7 +124,7 @@
 		2DC6CF292548A9B0009C7F3A /* CommonFiles */ = {
 			isa = PBXGroup;
 			children = (
-				2DC19153255F1B9D0039389A /* IntegrationTests.swift */,
+				2DC19153255F1B9D0039389A /* InstallationTests.swift */,
 				2DC6CF0F2548A88F009C7F3A /* AppDelegate.h */,
 				2DC6CF102548A88F009C7F3A /* AppDelegate.m */,
 				2DC6CF122548A88F009C7F3A /* SceneDelegate.h */,
@@ -355,7 +355,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DC19159255F1B9F0039389A /* IntegrationTests.swift in Sources */,
+				2DC19159255F1B9F0039389A /* InstallationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

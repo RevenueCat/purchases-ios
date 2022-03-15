@@ -1,6 +1,6 @@
 //
-//  IntegrationTests.swift
-//  IntegrationTests
+//  InstallationTests.swift
+//  InstallationTests
 //
 //  Created by Andrés Boedo on 10/28/20.
 //
@@ -19,7 +19,7 @@ import XCTest
 
 import RevenueCat
 
-class IntegrationTests: XCTestCase {
+class InstallationTests: XCTestCase {
 
     func testCanConfigureTheSDK() throws {
         RCInstallationRunner().start()
