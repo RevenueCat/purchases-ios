@@ -4,5 +4,5 @@ storage_mode("git")
 
 type("development")
 
-app_identifier(["com.revenuecat.XcodeDirectInstallation"])
+app_identifier(["com.revenuecat.XcodeDirectIntegration"])
 username(ENV["FASTLANE_USER"])
