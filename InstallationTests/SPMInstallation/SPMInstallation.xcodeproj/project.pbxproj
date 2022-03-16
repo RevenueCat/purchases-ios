@@ -435,11 +435,11 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMInstallation;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMInstallation";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=appletvos*]" = "match AppStore com.revenuecat.SPMInstallation tvos";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.SPMInstallation catalyst";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMIntegration";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=appletvos*]" = "match AppStore com.revenuecat.SPMIntegration tvos";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.SPMIntegration catalyst";
 				SDKROOT = "";
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
@@ -471,11 +471,11 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMInstallation;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMInstallation";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=appletvos*]" = "match AppStore com.revenuecat.SPMInstallation tvos";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.SPMInstallation catalyst";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.SPMIntegration";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=appletvos*]" = "match AppStore com.revenuecat.SPMIntegration tvos";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.SPMIntegration catalyst";
 				SDKROOT = "";
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
@@ -504,7 +504,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.2;
 				OTHER_SWIFT_FLAGS = "-DSPM_INSTALLATION";
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMInstallationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SPMInstallationTests/SPMInstallationTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -531,7 +531,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.2;
 				OTHER_SWIFT_FLAGS = "-DSPM_INSTALLATION";
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMInstallationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SPMInstallationTests/SPMInstallationTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
