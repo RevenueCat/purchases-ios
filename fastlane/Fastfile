@@ -295,7 +295,7 @@ platform :ios do
       
       FileUtils.cp(
         "#{dir}/Build/Intermediates.noindex/RevenueCat.build/Release/RevenueCat.build/Objects-normal/#{arch}/RevenueCat-Swift.h",
-        File.absolute_path("../IntegrationTests/CommonFiles/RevenueCat-Swift.h")
+        File.absolute_path("../InstallationTests/CommonFiles/RevenueCat-Swift.h")
       )
     }
   end
@@ -408,7 +408,7 @@ platform :ios do
   desc "Update swift package commit"
   lane :update_swift_package_commit do
     project_file_locations = [
-      '../IntegrationTests/SPMInstallation/SPMInstallation.xcodeproj/project.pbxproj',
+      '../InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 
