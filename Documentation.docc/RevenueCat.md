@@ -144,3 +144,4 @@ Or browse our iOS sample apps:
 - ``Purchases/setMparticleID(_:)``
 - ``Purchases/setOnesignalID(_:)``
 - ``Purchases/setFBAnonymousID(_:)``
+- ``Purchases/setMixpanelDistinctID(_:)``

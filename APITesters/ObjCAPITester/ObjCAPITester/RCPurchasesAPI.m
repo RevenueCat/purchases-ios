@@ -125,6 +125,8 @@ BOOL isAnonymous;
     [p setOnesignalID: @""];
     [p setCleverTapID: nil];
     [p setCleverTapID: @""];
+    [p setMixpanelDistinctID: nil];
+    [p setMixpanelDistinctID: @""];
     [p setMediaSource: nil];
     [p setMediaSource: @""];
     [p setCampaign: nil];
