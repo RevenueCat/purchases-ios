@@ -211,17 +211,19 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     }
 
     func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() {
-        mockBackend.stubbedGetSubscriberDataCustomerInfo = CustomerInfo(testData: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": "1.0",
-                "original_purchase_date": "2018-10-26T23:17:53Z"
-            ]
-        ])
+        mockBackend.stubbedGetCustomerInfoResult = .success(
+            CustomerInfo(testData: [
+                "request_date": "2019-08-16T10:30:42Z",
+                "subscriber": [
+                    "first_seen": "2019-07-17T00:05:54Z",
+                    "original_app_user_id": "app_user_id",
+                    "subscriptions": [:],
+                    "other_purchases": [:],
+                    "original_application_version": "1.0",
+                    "original_purchase_date": "2018-10-26T23:17:53Z"
+                ]
+            ])!
+        )
 
         setupPurchases()
 
@@ -605,7 +607,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        self.mockBackend.stubbedPostReceiptCustomerInfo = CustomerInfo(testData: emptyCustomerInfoData)
+        self.mockBackend.stubbedPostReceiptResult = .success(CustomerInfo(testData: emptyCustomerInfoData)!)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
@@ -632,10 +634,12 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
         let extraUserInfo = [Backend.RCSuccessfullySyncedKey: true]
-        self.mockBackend.stubbedPostReceiptPurchaserError = ErrorUtils.backendError(
-            withBackendCode: .invalidAPIKey,
-            backendMessage: "Invalid credentials",
-            extraUserInfo: extraUserInfo
+        self.mockBackend.stubbedPostReceiptResult = .failure(
+            ErrorUtils.backendError(
+                withBackendCode: .invalidAPIKey,
+                backendMessage: "Invalid credentials",
+                extraUserInfo: extraUserInfo
+            )
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
@@ -662,10 +666,12 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
         let extraUserInfo = [Backend.RCSuccessfullySyncedKey as NSError.UserInfoKey: false]
-        self.mockBackend.stubbedPostReceiptPurchaserError = ErrorUtils.backendError(
-            withBackendCode: .invalidAPIKey,
-            backendMessage: "Invalid credentials",
-            extraUserInfo: extraUserInfo
+        self.mockBackend.stubbedPostReceiptResult = .failure(
+            ErrorUtils.backendError(
+                withBackendCode: .invalidAPIKey,
+                backendMessage: "Invalid credentials",
+                extraUserInfo: extraUserInfo
+            )
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
@@ -674,4 +680,5 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockBackend.invokedPostReceiptData).to(beTrue())
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == false
     }
+
 }

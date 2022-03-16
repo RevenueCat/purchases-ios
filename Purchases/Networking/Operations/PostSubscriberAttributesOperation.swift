@@ -55,7 +55,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)),
                                   path: .postSubscriberAttributes(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
+        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, result in
             defer {
                 completion()
             }
@@ -65,8 +65,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
             }
 
             self.subscriberAttributeHandler.handleSubscriberAttributesResult(statusCode: statusCode,
-                                                                             response: response,
-                                                                             error: error,
+                                                                             response: result,
                                                                              completion: responseHandler)
         }
     }

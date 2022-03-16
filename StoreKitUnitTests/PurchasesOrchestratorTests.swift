@@ -109,7 +109,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     func testPurchaseSK1PackageSendsReceiptToBackendIfSuccessful() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await fetchSk1Product()
         let storeProduct = try await fetchSk1StoreProduct()
@@ -133,8 +133,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     func testPurchaseSK1PromotionalOffer() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
-        backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+        backend.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
 
         let product = try await fetchSk1Product()
 
@@ -146,10 +146,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                             subscriptionPeriod: .init(value: 1, unit: .month),
                                                             type: .promotional)
 
-        _ = await withCheckedContinuation { continuation in
+        _ = try await withCheckedThrowingContinuation { continuation in
             orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
-                                          product: StoreProduct(sk1Product: product)) { paymentDiscount, error in
-                continuation.resume(returning: (paymentDiscount, error))
+                                          product: StoreProduct(sk1Product: product)) { result in
+                continuation.resume(with: result)
             }
         }
 
@@ -159,8 +159,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     func testPurchaseSK1PackageWithDiscountSendsReceiptToBackendIfSuccessful() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
-        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        backend.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await fetchSk1Product()
         let storeProduct = StoreProduct(sk1Product: product)
@@ -201,7 +201,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let mockTransaction = try await createTransactionWithPurchase()
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction)
 
         let product = try await self.fetchSk2Product()
@@ -228,7 +228,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let storeProduct = StoreProduct.from(product: try await fetchSk2StoreProduct())
         let package = Package(identifier: "package",
@@ -252,7 +252,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await fetchSk2Product()
 
@@ -267,7 +267,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         testSession.failTransactionsEnabled = true
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await fetchSk2Product()
         let storeProduct = StoreProduct(sk2Product: product)
@@ -347,8 +347,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
-        backend.stubbedPostOfferCompetionResult = ("signature", "identifier", UUID(), 12345, nil)
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+        backend.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
 
         let storeProduct = try await self.fetchSk2StoreProduct()
 

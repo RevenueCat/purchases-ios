@@ -14,12 +14,12 @@
 import Foundation
 
 typealias SubscriberAttributeDict = [String: SubscriberAttribute]
-typealias BackendCustomerInfoResponseHandler = (CustomerInfo?, Error?) -> Void
+typealias BackendCustomerInfoResponseHandler = (Result<CustomerInfo, Error>) -> Void
 typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
-typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
-typealias OfferSigningResponseHandler = (String?, String?, UUID?, Int?, Error?) -> Void
+typealias OfferingsResponseHandler = (Result<[String: Any], Error>) -> Void
+typealias OfferSigningResponseHandler = (Result<PostOfferForSigningOperation.SigningData, Error>) -> Void
 typealias SimpleResponseHandler = (Error?) -> Void
-typealias LogInResponseHandler = (CustomerInfo?, Bool, Error?) -> Void
+typealias LogInResponseHandler = (Result<(info: CustomerInfo, created: Bool), Error>) -> Void
 
 class Backend {
 

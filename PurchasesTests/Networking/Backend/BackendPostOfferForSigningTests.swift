@@ -55,7 +55,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, _ in
+                     appUserID: Self.userID) { _ in
             completionCalled = true
         }
 
@@ -67,8 +67,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .postOfferForSigning,
             response: .init(statusCode: .success,
-                            response: nil,
-                            error: NSError(domain: NSURLErrorDomain, code: -1009))
+                            response: .failure(NSError(domain: NSURLErrorDomain, code: -1009)))
         )
 
         let productIdentifier = "a_great_product"
@@ -82,8 +81,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
@@ -117,8 +116,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
@@ -163,8 +162,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
@@ -208,8 +207,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
@@ -221,7 +220,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
             equal(UnexpectedBackendResponseSubErrorCode.postOfferIdSignature.rawValue))
     }
 
-    func testOfferForSigning501Response() {
+    func testOfferForSigning501Response() throws {
         self.httpClient.mock(
             requestPath: .postOfferForSigning,
             response: .init(statusCode: 501, response: Self.serverErrorResponse)
@@ -233,21 +232,20 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
         var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
         backend.post(offerIdForSigning: offerIdentifier,
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { _, _, _, _, error in
-            receivedError = error as NSError?
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+                     appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(equal(ErrorCode.invalidCredentialsError.rawValue))
+        expect(receivedError?.code) == ErrorCode.invalidCredentialsError.rawValue
 
-        expect(receivedUnderlyingError).toEventuallyNot(beNil())
-        expect(receivedUnderlyingError?.localizedDescription) == Self.serverErrorResponse["message"]
+        let receivedUnderlyingError = try XCTUnwrap(receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError)
+
+        expect(receivedUnderlyingError.localizedDescription) == Self.serverErrorResponse["message"]
     }
 
 }
