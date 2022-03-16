@@ -614,6 +614,19 @@ extension Purchases {
     }
 
     /**
+     * Subscriber attribute associated with the Mixpanel Distinct ID for the user.
+     * Optional for the RevenueCat Mixpanel integration.
+     *
+     * #### Related Articles
+     * - [Mixpanel RevenueCat Integration](https://docs.revenuecat.com/docs/mixpanel)
+     *
+     *- Parameter mixpanelDistinctID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc public func setMixpanelDistinctID(_ mixpanelDistinctID: String?) {
+        subscriberAttributesManager.setMixpanelDistinctID(mixpanelDistinctID, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the install media source for the user.
      *
      * #### Related Articles
