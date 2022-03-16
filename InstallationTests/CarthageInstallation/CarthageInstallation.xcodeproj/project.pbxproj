@@ -436,9 +436,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageInstallation;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.CarthageInstallation";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.CarthageIntegration";
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageInstallation/CarthageInstallation-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -466,9 +466,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageInstallation;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.CarthageInstallation";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.CarthageIntegration";
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageInstallation/CarthageInstallation-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -491,7 +491,7 @@
 					"@loader_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "-DCARTHAGE_INSTALLATION";
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageInstallationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageInstallationTests/CarthageInstallationTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -517,7 +517,7 @@
 					"@loader_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "-DCARTHAGE_INSTALLATION";
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageInstallationTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageInstallationTests/CarthageInstallationTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
