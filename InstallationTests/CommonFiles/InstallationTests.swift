@@ -26,11 +26,11 @@ class InstallationTests: XCTestCase {
     }
 
     func testCanFetchCustomerInfo() throws {
-        let integrationRunner = RCInstallationRunner()
-        integrationRunner.start()
+        let installationRunner = RCInstallationRunner()
+        installationRunner.start()
         let expectation = XCTestExpectation(description: "get purchaserInfo")
 
-        integrationRunner.getCustomerInfo { (customerInfo, error) in
+        installationRunner.getCustomerInfo { (customerInfo, error) in
             XCTAssert(error == nil)
             XCTAssert(customerInfo != nil)
             expectation.fulfill()
