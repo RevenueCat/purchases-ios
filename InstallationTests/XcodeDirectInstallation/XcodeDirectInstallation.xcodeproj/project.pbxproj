@@ -571,7 +571,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				OTHER_SWIFT_FLAGS = "-DXCODE_INTEGRATION";
+				OTHER_SWIFT_FLAGS = "-DXCODE_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectInstallation/XcodeDirectInstallationTests-Bridging-Header.h";
@@ -597,7 +597,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				OTHER_SWIFT_FLAGS = "-DXCODE_INTEGRATION";
+				OTHER_SWIFT_FLAGS = "-DXCODE_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectInstallation/XcodeDirectInstallationTests-Bridging-Header.h";

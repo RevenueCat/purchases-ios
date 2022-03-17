@@ -13,7 +13,7 @@ import XCTest
 @testable import CarthageInstallation
 #elseif COCOAPODS_INSTALLATION
 @testable import CocoapodsInstallation
-#elseif XCODE_INTEGRATION
+#elseif XCODE_INSTALLATION
 @testable import XcodeDirectInstallation
 #endif
 
