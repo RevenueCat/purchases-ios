@@ -79,11 +79,16 @@ extension KeyedDecodingContainer {
     ///   - defaultValue: The default value returned if decoding fails.
     /// - Returns: A value of the requested type, or the given default value
     /// if decoding fails.
-    func decode<T: Decodable>(_ type: T.Type, forKey key: Self.Key, defaultValue: T) -> T {
+    func decode<T: Decodable>(_ type: T.Type,
+                              forKey key: Self.Key,
+                              defaultValue: T,
+                              logDecodingError: Bool = true) -> T {
         do {
             return try decode(type, forKey: key)
         } catch {
-            ErrorUtils.logDecodingError(error)
+            if logDecodingError {
+                ErrorUtils.logDecodingError(error)
+            }
             return defaultValue
         }
     }

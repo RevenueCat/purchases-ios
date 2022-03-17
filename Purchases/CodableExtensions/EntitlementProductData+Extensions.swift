@@ -32,7 +32,8 @@ extension EntitlementInfo.ProductData {
         self.store = container.decode(Store.self, forKey: .store, defaultValue: .unknownStore)
         self.ownershipType = container.decode(PurchaseOwnershipType.self,
                                               forKey: .ownershipType,
-                                              defaultValue: .purchased)
+                                              defaultValue: .purchased,
+                                              logDecodingError: false)
     }
 
 }
