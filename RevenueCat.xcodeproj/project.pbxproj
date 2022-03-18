@@ -2662,7 +2662,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"BackendIntegrationTestApp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Tests/BackendIntegrationTestApp/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Tests/BackendIntegrationTestApp/Info.plist;
