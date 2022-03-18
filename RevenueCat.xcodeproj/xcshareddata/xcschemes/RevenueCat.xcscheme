@@ -85,17 +85,17 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:TestPlans/RevenueCat.xctestplan">
+            reference = "container:Tests/TestPlans/RevenueCat.xctestplan">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:TestPlans/UnitTests.xctestplan">
+            reference = "container:Tests/TestPlans/UnitTests.xctestplan">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:TestPlans/AllTests.xctestplan"
+            reference = "container:Tests/TestPlans/AllTests.xctestplan"
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:TestPlans/Coverage.xctestplan">
+            reference = "container:Tests/TestPlans/Coverage.xctestplan">
          </TestPlanReference>
       </TestPlans>
       <Testables>
