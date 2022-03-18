@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1330"
+   LastUpgradeVersion = "1220"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -8,16 +8,16 @@
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DE20B6B264087FB004C597D"
-               BuildableName = "BackendIntegrationTests.xctest"
-               BlueprintName = "BackendIntegrationTests"
-               ReferencedContainer = "container:RevenueCat.xcodeproj">
+               BlueprintIdentifier = "2D6C02032549F5600039CB92"
+               BuildableName = "SPMInstallation.app"
+               BlueprintName = "SPMInstallation"
+               ReferencedContainer = "container:SPMInstallation.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,14 +29,13 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO"
-            testExecutionOrdering = "random">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DE20B6B264087FB004C597D"
-               BuildableName = "BackendIntegrationTests.xctest"
-               BlueprintName = "BackendIntegrationTests"
-               ReferencedContainer = "container:RevenueCat.xcodeproj">
+               BlueprintIdentifier = "2D6C021E2549F5620039CB92"
+               BuildableName = "SPMInstallationTests.xctest"
+               BlueprintName = "SPMInstallationTests"
+               ReferencedContainer = "container:SPMInstallation.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,15 +54,12 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
-            BuildableName = "BackendIntegrationTestsHostApp.app"
-            BlueprintName = "BackendIntegrationTestsHostApp"
-            ReferencedContainer = "container:RevenueCat.xcodeproj">
+            BlueprintIdentifier = "2D6C02032549F5600039CB92"
+            BuildableName = "SPMInstallation.app"
+            BlueprintName = "SPMInstallation"
+            ReferencedContainer = "container:SPMInstallation.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <StoreKitConfigurationFileReference
-         identifier = "../../TestingApps/PurchaseTester/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit">
-      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -71,15 +67,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
-            BuildableName = "BackendIntegrationTestsHostApp.app"
-            BlueprintName = "BackendIntegrationTestsHostApp"
-            ReferencedContainer = "container:RevenueCat.xcodeproj">
+            BlueprintIdentifier = "2D6C02032549F5600039CB92"
+            BuildableName = "SPMInstallation.app"
+            BlueprintName = "SPMInstallation"
+            ReferencedContainer = "container:SPMInstallation.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

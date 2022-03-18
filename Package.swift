@@ -22,7 +22,7 @@ func resolveTargets() -> [Target] {
                     "fastlane",
                     "Gemfile",
                     "Gemfile.lock",
-                    "IntegrationTests",
+                    "InstallationTests",
                     "LatestTagDocs",
                     "LICENSE",
                     "Purchases/Info.plist",
@@ -33,6 +33,7 @@ func resolveTargets() -> [Target] {
                     "scripts",
                     "StoreKitUnitTests",
                     "SwiftStyleGuide.swift",
+                    "TestingApps",
                     "TestPlans",
                     "UnitTestsHostApp"
                     ],
