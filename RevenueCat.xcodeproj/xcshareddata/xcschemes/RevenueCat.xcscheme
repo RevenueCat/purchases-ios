@@ -58,7 +58,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DC5621D24EC63430031F69B"
                BuildableName = "RevenueCatTests.xctest"
-               BlueprintName = "RevenueCatTests"
+               BlueprintName = "UnitTests"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -106,7 +106,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DC5621D24EC63430031F69B"
                BuildableName = "RevenueCatTests.xctest"
-               BlueprintName = "RevenueCatTests"
+               BlueprintName = "UnitTests"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </TestableReference>
