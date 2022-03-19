@@ -17,33 +17,54 @@ import Foundation
 /// This provider caches the formatter to improve the performance.
 class PriceFormatterProvider {
 
-    private lazy var cachedPriceFormatterForSK1: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        return formatter
-    }()
+    private var cachedPriceFormatterForSK1: NumberFormatter?
 
     func priceFormatterForSK1(withLocale locale: Locale) -> NumberFormatter {
-        if cachedPriceFormatterForSK1.locale != locale {
-            cachedPriceFormatterForSK1.locale = locale
+
+        func makePriceFormatterForSK1() -> NumberFormatter {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            return formatter
         }
-        return cachedPriceFormatterForSK1
+
+        if cachedPriceFormatterForSK1 == nil {
+            cachedPriceFormatterForSK1 = makePriceFormatterForSK1()
+        }
+
+        if cachedPriceFormatterForSK1?.locale != locale {
+            // If the currency code is different, we store and return a copy, so as not to modify
+            // the previously returned formatters.
+            cachedPriceFormatterForSK1 = cachedPriceFormatterForSK1?.copy() as? NumberFormatter
+            cachedPriceFormatterForSK1?.locale = locale
+        }
+
+        return cachedPriceFormatterForSK1!
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private lazy var cachedPriceFormatterForSK2: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = .autoupdatingCurrent
-        return formatter
-    }()
+    private var cachedPriceFormatterForSK2: NumberFormatter?
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func priceFormatterForSK2(withCurrencyCode currencyCode: String) -> NumberFormatter {
-        if cachedPriceFormatterForSK2.currencyCode != currencyCode {
-            cachedPriceFormatterForSK2.currencyCode = currencyCode
+
+        func makePriceFormatterForSK2() -> NumberFormatter {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = .autoupdatingCurrent
+            return formatter
         }
-        return cachedPriceFormatterForSK2
+
+        if cachedPriceFormatterForSK2 == nil {
+            cachedPriceFormatterForSK2 = makePriceFormatterForSK2()
+        }
+
+        if cachedPriceFormatterForSK2?.currencyCode != currencyCode {
+            // If the currency code is different, we store and return a copy, so as not to modify
+            // the previously returned formatters.
+            cachedPriceFormatterForSK2 = cachedPriceFormatterForSK2?.copy() as? NumberFormatter
+            cachedPriceFormatterForSK2?.currencyCode = currencyCode
+        }
+
+        return cachedPriceFormatterForSK2!
     }
 
 }
