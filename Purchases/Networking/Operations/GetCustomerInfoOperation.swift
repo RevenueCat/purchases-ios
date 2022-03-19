@@ -51,7 +51,7 @@ private extension GetCustomerInfoOperation {
     func getCustomerInfo(completion: @escaping () -> Void) {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(nil, ErrorUtils.missingAppUserIDError())
+                callback.completion(.failure(ErrorUtils.missingAppUserIDError()))
             }
             completion()
 
@@ -60,11 +60,10 @@ private extension GetCustomerInfoOperation {
 
         let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, response, error in
+        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, result in
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                self.customerInfoResponseHandler.handle(customerInfoResponse: response,
+                self.customerInfoResponseHandler.handle(customerInfoResponse: result,
                                                         statusCode: statusCode,
-                                                        error: error,
                                                         completion: callback.completion)
             }
 

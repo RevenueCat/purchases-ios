@@ -162,6 +162,7 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setMparticleID("")
     purchases.setOnesignalID("")
     purchases.setCleverTapID("")
+    purchases.setMixpanelDistinctID("")
     purchases.setMediaSource("")
     purchases.setCampaign("")
     purchases.setAdGroup("")

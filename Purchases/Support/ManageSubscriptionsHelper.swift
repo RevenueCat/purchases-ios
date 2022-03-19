@@ -33,36 +33,38 @@ class ManageSubscriptionsHelper {
     @available(tvOS, unavailable)
     func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
         let currentAppUserID = identityManager.currentAppUserID
-        customerInfoManager.customerInfo(appUserID: currentAppUserID) { customerInfo, error in
-            if let error = error {
-                let message = Strings.failed_to_get_management_url_error_unknown(error: error)
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message.description, error: error)))
-                return
-            }
-
-            guard let customerInfo = customerInfo else {
-                let message = Strings.failed_to_get_management_url_nil_customer_info
-                completion(.failure(ErrorUtils.customerInfoError(withMessage: message.description)))
-                return
-            }
-
-            guard let managementURL = customerInfo.managementURL else {
-                Logger.debug(Strings.management_url_nil_opening_default)
-                guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
-                    let message = Strings.cant_form_apple_subscriptions_url
-                    completion(.failure(ErrorUtils.systemInfoError(withMessage: message.description)))
-                    return
+        customerInfoManager.customerInfo(appUserID: currentAppUserID) { result in
+            let result: Result<URL, Error> = result
+                .mapError { error in
+                    let message = Strings.failed_to_get_management_url_error_unknown(error: error)
+                    return ErrorUtils.customerInfoError(withMessage: message.description, error: error)
                 }
-                self.showAppleManageSubscriptions(managementURL: appleSubscriptionsURL, completion: completion)
-                return
-            }
+                .flatMap { customerInfo in
+                    guard let managementURL = customerInfo.managementURL else {
+                        Logger.debug(Strings.management_url_nil_opening_default)
 
-            if self.systemInfo.isAppleSubscription(managementURL: managementURL) {
-                self.showAppleManageSubscriptions(managementURL: managementURL, completion: completion)
-                return
-            }
+                        guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
+                            let message = Strings.cant_form_apple_subscriptions_url
+                            return .failure(ErrorUtils.systemInfoError(withMessage: message.description))
+                        }
 
-            self.openURL(managementURL, completion: completion)
+                        return .success(appleSubscriptionsURL)
+                    }
+
+                    return .success(managementURL)
+                }
+
+            switch result {
+            case let .success(url):
+                if self.systemInfo.isAppleSubscription(managementURL: url) {
+                    self.showAppleManageSubscriptions(managementURL: url, completion: completion)
+                } else {
+                    self.openURL(url, completion: completion)
+                }
+
+            case let .failure(error):
+                completion(.failure(error))
+            }
         }
     }
 

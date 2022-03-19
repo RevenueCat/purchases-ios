@@ -89,54 +89,40 @@ private extension BeginRefundRequestHelper {
      * if no ID passed in.
      */
     func getEntitlement(entitlementID: String?) async throws -> EntitlementInfo {
-        let currentAppUserID = identityManager.currentAppUserID
-        return try await withCheckedThrowingContinuation { continuation in
-            customerInfoManager.customerInfo(appUserID: currentAppUserID) { customerInfo, error in
-                if let error = error {
-                    let message = Strings.purchase.begin_refund_customer_info_error(
-                        entitlementID: entitlementID).description
-                    continuation.resume(
-                        throwing: ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
-                    Logger.error(message)
-                    return
-                }
+        let customerInfo: CustomerInfo
 
-                guard let customerInfo = customerInfo else {
-                    let message = Strings.purchase.begin_refund_for_entitlement_nil_customer_info(
-                        entitlementID: entitlementID).description
-                    continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
-                    Logger.error(message)
-                    return
-                }
-
-                if let entitlementID = entitlementID {
-                    guard let entitlement = customerInfo.entitlements[entitlementID] else {
-                        let message = Strings.purchase.begin_refund_no_entitlement_found(
-                            entitlementID: entitlementID).description
-                        continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
-                        Logger.error(message)
-                        return
-                    }
-                    continuation.resume(returning: entitlement)
-                    return
-                }
-
-                guard customerInfo.entitlements.active.count < 2 else {
-                    let message = Strings.purchase.begin_refund_multiple_active_entitlements.description
-                    continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
-                    return
-                }
-
-                guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
-                    let message = Strings.purchase.begin_refund_no_active_entitlement.description
-                    continuation.resume(throwing: ErrorUtils.beginRefundRequestError(withMessage: message))
-                    Logger.error(message)
-                    return
-                }
-
-                continuation.resume(returning: activeEntitlement)
-            }
+        do {
+            customerInfo = try await self.customerInfoManager.customerInfo(
+                appUserID: self.identityManager.currentAppUserID
+            )
+        } catch {
+            let message = Strings.purchase.begin_refund_customer_info_error(entitlementID: entitlementID)
+                .description
+            throw ErrorUtils.beginRefundRequestError(withMessage: message, error: error)
         }
+
+        if let entitlementID = entitlementID {
+            guard let entitlement = customerInfo.entitlements[entitlementID] else {
+                let message = Strings.purchase
+                    .begin_refund_no_entitlement_found(entitlementID: entitlementID)
+                    .description
+                throw ErrorUtils.beginRefundRequestError(withMessage: message)
+            }
+
+            return entitlement
+        }
+
+        guard customerInfo.entitlements.active.count < 2 else {
+            let message = Strings.purchase.begin_refund_multiple_active_entitlements.description
+            throw ErrorUtils.beginRefundRequestError(withMessage: message)
+        }
+
+        guard let activeEntitlement = customerInfo.entitlements.active.first?.value else {
+            let message = Strings.purchase.begin_refund_no_active_entitlement.description
+            throw ErrorUtils.beginRefundRequestError(withMessage: message)
+        }
+
+        return activeEntitlement
     }
 
 }

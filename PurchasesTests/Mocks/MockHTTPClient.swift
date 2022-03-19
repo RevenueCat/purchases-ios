@@ -16,13 +16,21 @@ class MockHTTPClient: HTTPClient {
     struct Response {
 
         let statusCode: HTTPStatusCode
-        let response: [String: Any]?
-        let error: Error?
+        let response: Result<[String: Any], Error>
 
-        init(statusCode: HTTPStatusCode, response: [String: Any]?, error: Error? = nil) {
+        init(statusCode: HTTPStatusCode, response: Result<[String: Any], Error>) {
             self.statusCode = statusCode
             self.response = response
-            self.error = error
+        }
+
+        init(statusCode: HTTPStatusCode, response: [String: Any] = [:]) {
+            self.init(statusCode: statusCode,
+                      response: .success(response))
+        }
+
+        init(statusCode: HTTPStatusCode, error: Error) {
+            self.init(statusCode: statusCode,
+                      response: .failure(error))
         }
 
     }
@@ -61,8 +69,7 @@ class MockHTTPClient: HTTPClient {
             let response = self.mocks[request.path]
 
             completionHandler?(response?.statusCode ?? .success,
-                               response?.response ?? [:],
-                               response?.error)
+                               response?.response ?? .success([:]))
         }
     }
 

@@ -87,6 +87,10 @@ class SubscriberAttributesManager {
         setAttributionID(cleverTapID, forNetworkID: .cleverTapID, appUserID: appUserID)
     }
 
+    func setMixpanelDistinctID(_ mixpanelDistinctID: String?, appUserID: String) {
+        setReservedAttribute(.mixpanelDistinctID, value: mixpanelDistinctID, appUserID: appUserID)
+    }
+
     func setMediaSource(_ mediaSource: String?, appUserID: String) {
         setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
     }

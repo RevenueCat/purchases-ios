@@ -166,6 +166,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetCleverTapIDParametersList.append((cleverTapID, appUserID))
     }
 
+    var invokedSetMixpanelDistinctID = false
+    var invokedSetMixpanelDistinctIDCount = 0
+    var invokedSetMixpanelDistinctIDParameters: (mixpanelDistinctID: String?, appUserID: String?)?
+    var invokedSetMixpanelDistinctIDParametersList = [(mixpanelDistinctID: String?, appUserID: String?)]()
+
+    override func setMixpanelDistinctID(_ mixpanelDistinctID: String?, appUserID: String) {
+        invokedSetMixpanelDistinctID = true
+        invokedSetMixpanelDistinctIDCount += 1
+        invokedSetMixpanelDistinctIDParameters = (mixpanelDistinctID, appUserID)
+        invokedSetMixpanelDistinctIDParametersList.append((mixpanelDistinctID, appUserID))
+    }
+
     var invokedSetMediaSource = false
     var invokedSetMediaSourceCount = 0
     var invokedSetMediaSourceParameters: (mediaSource: String?, appUserID: String?)?

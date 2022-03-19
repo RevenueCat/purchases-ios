@@ -17,13 +17,16 @@ enum CodableError: Error, CustomStringConvertible {
 
     case unexpectedValue(Any.Type)
     case valueNotFound(value: Any.Type, context: DecodingError.Context)
+    case invalidJSONObject(value: [String: Any])
 
     var description: String {
         switch self {
-        case .unexpectedValue(let type):
+        case let .unexpectedValue(type):
             return Strings.codable.unexpectedValueError(type: type).description
-        case .valueNotFound(let value, let context):
+        case let .valueNotFound(value, context):
             return Strings.codable.valueNotFoundError(value: value, context: context).description
+        case let .invalidJSONObject(value):
+            return Strings.codable.invalid_json_error(jsonData: value).description
         }
     }
 }
@@ -40,31 +43,28 @@ extension JSONDecoder {
     ///   - dateDecodingStrategy: The strategy to use for decoding `Date` values. The default is `deferredToDate`.
     ///   - dataDecodingStrategy: The strategy to use for decoding `Data` values. The default is `deferredToData`.
     /// - Returns: A value of the requested type.
-    /// - throws: An error if it throws an error during initializating the data.
-    /// - throws: An error if any value throws an error during decoding.
+    /// - throws: `CodableError` or `DecodableError` if the data is invalid or can't be deserialized.
     func decode<T: Decodable>(
         _ type: T.Type = T.self,
         dictionary: [String: Any],
         keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys,
         dateDecodingStrategy: DateDecodingStrategy = .deferredToDate,
         dataDecodingStrategy: DataDecodingStrategy = .deferredToData
-    ) throws -> T? {
-
+    ) throws -> T {
         self.keyDecodingStrategy = keyDecodingStrategy
         self.dateDecodingStrategy = dateDecodingStrategy
         self.dataDecodingStrategy = dataDecodingStrategy
 
-        if JSONSerialization.isValidJSONObject(dictionary) {
-            let jsonData = try JSONSerialization.data(withJSONObject: dictionary)
-            do {
+        do {
+            if JSONSerialization.isValidJSONObject(dictionary) {
+                let jsonData = try JSONSerialization.data(withJSONObject: dictionary)
                 return try decode(type, from: jsonData)
-            } catch {
-                ErrorUtils.logDecodingError(error)
-                return nil
+            } else {
+                throw CodableError.invalidJSONObject(value: dictionary)
             }
-        } else {
-            Logger.error(Strings.codable.invalid_json_error(jsonData: dictionary))
-            return nil
+        } catch {
+            ErrorUtils.logDecodingError(error)
+            throw error
         }
     }
 
@@ -83,7 +83,6 @@ extension KeyedDecodingContainer {
         do {
             return try decode(type, forKey: key)
         } catch {
-            ErrorUtils.logDecodingError(error)
             return defaultValue
         }
     }

@@ -614,6 +614,19 @@ extension Purchases {
     }
 
     /**
+     * Subscriber attribute associated with the Mixpanel Distinct ID for the user.
+     * Optional for the RevenueCat Mixpanel integration.
+     *
+     * #### Related Articles
+     * - [Mixpanel RevenueCat Integration](https://docs.revenuecat.com/docs/mixpanel)
+     *
+     *- Parameter mixpanelDistinctID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc public func setMixpanelDistinctID(_ mixpanelDistinctID: String?) {
+        subscriberAttributesManager.setMixpanelDistinctID(mixpanelDistinctID, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the install media source for the user.
      *
      * #### Related Articles
@@ -748,12 +761,12 @@ public extension Purchases {
      */
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
-        identityManager.logIn(appUserID: appUserID) { customerInfo, created, error in
+        identityManager.logIn(appUserID: appUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
-                completion(customerInfo, created, error)
+                completion(result.value?.info, result.value?.created ?? false, result.error)
             }
 
-            guard error == nil else {
+            guard case .success = result else {
                 return
             }
 
@@ -818,7 +831,9 @@ public extension Purchases {
                 return
             }
 
-            self.updateAllCaches(completion: completion)
+            self.updateAllCaches {
+                completion?($0.value, $0.error)
+            }
         }
     }
 
@@ -887,7 +902,9 @@ public extension Purchases {
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil if an error occurred.
      */
     @objc func getCustomerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
-        customerInfoManager.customerInfo(appUserID: appUserID, completion: completion)
+        customerInfoManager.customerInfo(appUserID: appUserID) { result in
+            completion(result.value, result.error)
+        }
     }
 
     /**
@@ -1195,7 +1212,9 @@ public extension Purchases {
      * won't be able to restore them. Use ``restorePurchases(completion:)`` to cover those cases.
      */
     @objc func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
-        purchasesOrchestrator.syncPurchases(completion: completion)
+        purchasesOrchestrator.syncPurchases {
+            completion?($0.value, $0.error)
+        }
     }
 
     /**
@@ -1231,7 +1250,9 @@ public extension Purchases {
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
     @objc func restorePurchases(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
-        purchasesOrchestrator.restorePurchases(completion: completion)
+        purchasesOrchestrator.restorePurchases {
+            completion?($0.value, $0.error)
+        }
     }
 
     /**
@@ -1408,8 +1429,8 @@ public extension Purchases {
                              product: StoreProduct,
                              completion: @escaping (PromotionalOffer?, Error?) -> Void) {
         purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
-                                               product: product) { promotionalOffer, error in
-            completion(promotionalOffer, error)
+                                               product: product) { result in
+            completion(result.value, result.error)
         }
     }
 
@@ -1885,7 +1906,7 @@ private extension Purchases {
         }
     }
 
-    func updateAllCaches(completion: ((CustomerInfo?, Error?) -> Void)?) {
+    func updateAllCaches(completion: ((Result<CustomerInfo, Error>) -> Void)?) {
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
                                                                isAppBackgrounded: isAppBackgrounded,

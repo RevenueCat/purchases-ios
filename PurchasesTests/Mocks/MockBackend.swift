@@ -12,8 +12,7 @@ class MockBackend: Backend {
 
     var invokedPostReceiptData = false
     var invokedPostReceiptDataCount = 0
-    var stubbedPostReceiptCustomerInfo: CustomerInfo?
-    var stubbedPostReceiptPurchaserError: Error?
+    var stubbedPostReceiptResult: Result<CustomerInfo, Error>?
     var invokedPostReceiptDataParameters: (data: Data?,
                                            appUserID: String?,
                                            isRestore: Bool,
@@ -65,7 +64,7 @@ class MockBackend: Backend {
                                                      observerMode,
                                                      subscriberAttributesByKey,
                                                      completion))
-        completion(stubbedPostReceiptCustomerInfo, stubbedPostReceiptPurchaserError)
+        completion(stubbedPostReceiptResult ?? .failure(ErrorCode.unknownError))
     }
 
     var invokedGetSubscriberData = false
@@ -74,15 +73,15 @@ class MockBackend: Backend {
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
         completion: BackendCustomerInfoResponseHandler?)]()
 
-    var stubbedGetSubscriberDataCustomerInfo: CustomerInfo?
-    var stubbedGetSubscriberDataError: Error?
+    var stubbedGetCustomerInfoResult: Result<CustomerInfo, Error> = .failure(ErrorCode.unknownError)
 
     override func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
         invokedGetSubscriberDataParameters = (appUserID, completion)
         invokedGetSubscriberDataParametersList.append((appUserID, completion))
-        completion(stubbedGetSubscriberDataCustomerInfo, stubbedGetSubscriberDataError)
+
+        completion(self.stubbedGetCustomerInfoResult)
     }
 
     var invokedGetIntroEligibility = false
@@ -109,7 +108,7 @@ class MockBackend: Backend {
     var invokedGetOfferingsForAppUserIDCount = 0
     var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: OfferingsResponseHandler?)?
     var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, completion: OfferingsResponseHandler?)]()
-    var stubbedGetOfferingsCompletionResult: (data: [String: Any]?, error: Error?)?
+    var stubbedGetOfferingsCompletionResult: Result<[String: Any], Error>?
 
     override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
         invokedGetOfferingsForAppUserID = true
@@ -117,7 +116,7 @@ class MockBackend: Backend {
         invokedGetOfferingsForAppUserIDParameters = (appUserID, completion)
         invokedGetOfferingsForAppUserIDParametersList.append((appUserID, completion))
 
-        completion(stubbedGetOfferingsCompletionResult?.data, stubbedGetOfferingsCompletionResult?.error)
+        completion(stubbedGetOfferingsCompletionResult!)
     }
 
     var invokedPostAttributionData = false
@@ -166,7 +165,7 @@ class MockBackend: Backend {
         data: Data?,
         applicationUsername: String?,
         completion: OfferSigningResponseHandler?)]()
-    var stubbedPostOfferCompetionResult: (String?, String?, UUID?, Int?, Error?)?
+    var stubbedPostOfferCompletionResult: Result<PostOfferForSigningOperation.SigningData, Error>?
 
     override func post(offerIdForSigning offerIdentifier: String,
                        productIdentifier: String,
@@ -188,11 +187,8 @@ class MockBackend: Backend {
                                                   receiptData,
                                                   appUserID,
                                                   completion))
-        if let result = stubbedPostOfferCompetionResult {
-            completion(result.0, result.1, result.2, result.3, result.4)
-        } else {
-            completion(nil, nil, nil, nil, nil)
-        }
+
+        completion(stubbedPostOfferCompletionResult ?? .failure(ErrorUtils.unknownError()))
     }
 
     var invokedPostSubscriberAttributes = false
@@ -226,17 +222,17 @@ class MockBackend: Backend {
     var invokedLogInCount = 0
     var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
     var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
-    var stubbedLogInCompletionResult: (CustomerInfo?, Bool, Error?)?
+    var stubbedLogInCompletionResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
     override func logIn(currentAppUserID: String,
                         newAppUserID: String,
-                        completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
+                        completion: @escaping LogInResponseHandler) {
         invokedLogIn = true
         invokedLogInCount += 1
         invokedLogInParameters = (currentAppUserID, newAppUserID)
         invokedLogInParametersList.append((currentAppUserID, newAppUserID))
         if let result = stubbedLogInCompletionResult {
-            completion(result.0, result.1, result.2)
+            completion(result)
         }
     }
 }

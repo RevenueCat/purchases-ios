@@ -22,7 +22,6 @@ extension ManageSubscriptionsHelper {
         case cant_form_apple_subscriptions_url
         case error_from_appstore_show_manage_subscription(error: Error)
         case failed_to_get_management_url_error_unknown(error: Error)
-        case failed_to_get_management_url_nil_customer_info
         case failed_to_get_window_scene
         case management_url_nil_opening_default
         case show_manage_subscriptions_called_in_unsupported_platform
@@ -42,8 +41,6 @@ extension ManageSubscriptionsHelper.Strings: CustomStringConvertible {
             return "Error when trying to show manage subscription: \(error.localizedDescription)"
         case .failed_to_get_management_url_error_unknown(let error):
             return "Failed to get managementURL from CustomerInfo. Details: \(error.localizedDescription)"
-        case .failed_to_get_management_url_nil_customer_info:
-            return "Failed to get managementURL from CustomerInfo. Details: customerInfo is nil."
         case .failed_to_get_window_scene:
             return "Failed to get UIWindowScene"
         case .management_url_nil_opening_default:

@@ -29,14 +29,14 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
         )
 
-        var offeringsData: [String: Any]?
+        var result: Result<[String: Any], Error>?
 
-        backend.getOfferings(appUserID: Self.userID, completion: { (responseFromBackend, _) in
-            offeringsData = responseFromBackend
-        })
+        backend.getOfferings(appUserID: Self.userID) {
+            result = $0
+        }
 
         expect(self.httpClient.calls.count).toEventuallyNot(equal(0))
-        expect(offeringsData).toEventuallyNot(beNil())
+        expect(result).toEventuallyNot(beNil())
     }
 
     func testGetOfferingsCachesForSameUserID() {
@@ -44,8 +44,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
         )
-        backend.getOfferings(appUserID: Self.userID) { (_, _) in }
-        backend.getOfferings(appUserID: Self.userID) { (_, _) in }
+        backend.getOfferings(appUserID: Self.userID) { _ in }
+        backend.getOfferings(appUserID: Self.userID) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -58,40 +58,39 @@ class BackendGetOfferingsTests: BaseBackendTests {
         self.httpClient.mock(requestPath: .getOfferings(appUserID: Self.userID), response: response)
         self.httpClient.mock(requestPath: .getOfferings(appUserID: userID2), response: response)
 
-        backend.getOfferings(appUserID: Self.userID, completion: { (_, _) in })
-        backend.getOfferings(appUserID: userID2, completion: { (_, _) in })
+        backend.getOfferings(appUserID: Self.userID, completion: { _ in })
+        backend.getOfferings(appUserID: userID2, completion: { _ in })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
 
-    func testGetOfferingsOneOffering() {
+    func testGetOfferingsOneOffering() throws {
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.oneOfferingResponse)
         )
 
-        var responseReceived: [String: Any]?
-        var offerings: [[String: Any]]?
-        var offeringA: [String: Any]?
-        var packageA: [String: String]?
-        var packageB: [String: String]?
-        backend.getOfferings(appUserID: Self.userID, completion: { (response, _) in
-            offerings = response?["offerings"] as? [[String: Any]]
-            offeringA = offerings?[0]
-            let packages = offeringA?["packages"] as? [[String: String]]
-            packageA = packages?[0]
-            packageB = packages?[1]
-            responseReceived = response
-        })
+        var result: Result<[String: Any], Error>?
+        backend.getOfferings(appUserID: Self.userID) {
+            result = $0
+        }
 
-        expect(offerings?.count).toEventually(equal(1))
-        expect(offeringA?["identifier"] as? String).toEventually(equal("offering_a"))
-        expect(offeringA?["description"] as? String).toEventually(equal("This is the base offering"))
-        expect(packageA?["identifier"]).toEventually(equal("$rc_monthly"))
-        expect(packageA?["platform_product_identifier"]).toEventually(equal("monthly_freetrial"))
-        expect(packageB?["identifier"]).toEventually(equal("$rc_annual"))
-        expect(packageB?["platform_product_identifier"]).toEventually(equal("annual_freetrial"))
-        expect(responseReceived?["current_offering_id"] as? String).toEventually(equal("offering_a"))
+        expect(result).toEventuallyNot(beNil())
+
+        let offerings = try XCTUnwrap(result?.value?["offerings"] as? [[String: Any]])
+        let offeringA = try XCTUnwrap(offerings[0])
+        let packages = try XCTUnwrap(offeringA["packages"] as? [[String: String]])
+        let packageA = packages[0]
+        let packageB = packages[1]
+
+        expect(offerings).to(haveCount(1))
+        expect(offeringA["identifier"] as? String) == "offering_a"
+        expect(offeringA["description"] as? String) == "This is the base offering"
+        expect(packageA["identifier"]) == "$rc_monthly"
+        expect(packageA["platform_product_identifier"]) == "monthly_freetrial"
+        expect(packageB["identifier"]) == "$rc_annual"
+        expect(packageB["platform_product_identifier"]) == "annual_freetrial"
+        expect(result?.value?["current_offering_id"] as? String) == "offering_a"
     }
 
     func testGetOfferingsFailSendsNil() {
@@ -102,9 +101,9 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         var offerings: [String: Any]? = [:]
 
-        backend.getOfferings(appUserID: Self.userID, completion: { (newOfferings, _) in
-            offerings = newOfferings
-        })
+        backend.getOfferings(appUserID: Self.userID) { result in
+            offerings = result.value
+        }
 
         expect(offerings).toEventually(beNil())
     }
@@ -113,16 +112,15 @@ class BackendGetOfferingsTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success,
-                            response: nil,
-                            error: NSError(domain: NSURLErrorDomain, code: -1009))
+                            response: .failure(NSError(domain: NSURLErrorDomain, code: -1009)))
         )
 
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
-        backend.getOfferings(appUserID: Self.userID, completion: { (_, error) in
-            receivedError = error as NSError?
+        backend.getOfferings(appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
-        })
+        }
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(ErrorCode._nsErrorDomain))
@@ -140,10 +138,10 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
-        backend.getOfferings(appUserID: Self.userID, completion: { (_, error) in
-            receivedError = error as NSError?
+        backend.getOfferings(appUserID: Self.userID) { result in
+            receivedError = result.error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
-        })
+        }
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.code) == ErrorCode.invalidCredentialsError.rawValue
@@ -155,9 +153,9 @@ class BackendGetOfferingsTests: BaseBackendTests {
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
         var completionCalled = false
 
-        backend.getOfferings(appUserID: "", completion: { (_, _) in
+        backend.getOfferings(appUserID: "") { _ in
             completionCalled = true
-        })
+        }
 
         expect(completionCalled).toEventually(beTrue())
         expect(self.httpClient.calls).to(beEmpty())
@@ -167,10 +165,10 @@ class BackendGetOfferingsTests: BaseBackendTests {
         var completionCalled = false
         var receivedError: Error?
 
-        backend.getOfferings(appUserID: "", completion: { (_, error) in
+        backend.getOfferings(appUserID: "") { result in
             completionCalled = true
-            receivedError = error
-        })
+            receivedError = result.error
+        }
 
         expect(completionCalled).toEventually(beTrue())
         expect((receivedError! as NSError).code) == ErrorCode.invalidAppUserIdError.rawValue

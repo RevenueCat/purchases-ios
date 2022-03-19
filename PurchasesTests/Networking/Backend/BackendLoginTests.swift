@@ -26,11 +26,11 @@ class BackendLoginTests: BaseBackendTests {
     func testLoginMakesRightCalls() {
         let newAppUserID = "new id"
         let currentAppUserID = "old id"
-        let requestPath = self.mockLoginRequest(appUserID: currentAppUserID)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID)
         var completionCalled = false
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _, _, _ in
+                      newAppUserID: newAppUserID) { _ in
             completionCalled = true
         }
 
@@ -43,27 +43,19 @@ class BackendLoginTests: BaseBackendTests {
         let errorCode = 123465
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
+        _ = mockLoginRequest(appUserID: currentAppUserID, response: .failure(stubbedError))
 
-        var completionCalled = false
-        var receivedError: Error?
-        var receivedCustomerInfo: CustomerInfo?
-        var receivedCreated: Bool?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { customerInfo, created, error in
-            completionCalled = true
-            receivedError = error
-            receivedCustomerInfo = customerInfo
-            receivedCreated = created
+                      newAppUserID: newAppUserID) { result in
+            receivedResult = result
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedCreated) == false
-        expect(receivedCustomerInfo).to(beNil())
+        expect(receivedResult).toEventuallyNot(beNil())
+        expect(receivedResult?.value).to(beNil())
 
-        expect(receivedError).toNot(beNil())
-        let receivedNSError = receivedError! as NSError
+        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
         expect(receivedNSError.code) == ErrorCode.networkError.rawValue
         let expectedUserInfoError = try XCTUnwrap(receivedNSError.userInfo[NSUnderlyingErrorKey] as? NSError)
         expect(expectedUserInfoError) == stubbedError
@@ -77,60 +69,44 @@ class BackendLoginTests: BaseBackendTests {
                                    code: errorCode,
                                    userInfo: [:])
         let currentAppUserID = "old id"
-        _ = self.mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, response: .failure(stubbedError))
 
-        var completionCalled = false
-        var receivedError: Error?
-        var receivedCustomerInfo: CustomerInfo?
-        var receivedCreated: Bool?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { customerInfo, created, error in
-            completionCalled = true
-            receivedError = error
-            receivedCustomerInfo = customerInfo
-            receivedCreated = created
+                      newAppUserID: newAppUserID) { result in
+            receivedResult = result
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedCreated) == false
-        expect(receivedCustomerInfo).to(beNil())
+        expect(receivedResult).toEventuallyNot(beNil())
+        expect(receivedResult?.value).to(beNil())
 
-        expect(receivedError).toNot(beNil())
-        let receivedNSError = receivedError! as NSError
+        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
         expect(receivedNSError.code) == ErrorCode.networkError.rawValue
         let expectedUserInfoError = try XCTUnwrap(receivedNSError.userInfo[NSUnderlyingErrorKey] as? NSError)
         expect(expectedUserInfoError) == stubbedError
     }
 
-    func testLoginConsidersErrorStatusCodesAsErrors() {
+    func testLoginConsidersErrorStatusCodesAsErrors() throws {
         let newAppUserID = "new id"
         let currentAppUserID = "old id"
         let underlyingErrorMessage = "header fields too large"
         let underlyingErrorCode = BackendErrorCode.cannotTransferPurchase.rawValue
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: 431,
-                                  response: ["code": underlyingErrorCode, "message": underlyingErrorMessage])
+                                  response: .success(["code": underlyingErrorCode, "message": underlyingErrorMessage]))
 
-        var completionCalled = false
-        var receivedError: Error?
-        var receivedCustomerInfo: CustomerInfo?
-        var receivedCreated: Bool?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { customerInfo, created, error in
-            completionCalled = true
-            receivedError = error
-            receivedCustomerInfo = customerInfo
-            receivedCreated = created
+                      newAppUserID: newAppUserID) { result in
+            receivedResult = result
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedCreated) == false
-        expect(receivedCustomerInfo).to(beNil())
+        expect(receivedResult).toEventuallyNot(beNil())
+        expect(receivedResult?.value).to(beNil())
 
-        expect(receivedError).toNot(beNil())
-        let receivedNSError = receivedError! as NSError
+        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
         expect(receivedNSError.code) == ErrorCode.networkError.rawValue
 
         // custom errors get wrapped in a backendError
@@ -141,87 +117,65 @@ class BackendLoginTests: BaseBackendTests {
         expect(underlyingError?.localizedDescription) == underlyingErrorMessage
     }
 
-    func testLoginCallsCompletionWithErrorIfCustomerInfoNil() {
+    func testLoginCallsCompletionWithErrorIfCustomerInfoNil() throws {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: .createdSuccess, response: [:])
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: .createdSuccess)
 
-        var completionCalled = false
-        var receivedError: Error?
-        var receivedCustomerInfo: CustomerInfo?
-        var receivedCreated: Bool?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { customerInfo, created, error in
-            completionCalled = true
-            receivedError = error
-            receivedCustomerInfo = customerInfo
-            receivedCreated = created
+                      newAppUserID: newAppUserID) { result in
+            receivedResult = result
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedCreated) == false
-        expect(receivedCustomerInfo).to(beNil())
+        expect(receivedResult).toEventuallyNot(beNil())
+        expect(receivedResult?.value).to(beNil())
 
-        expect(receivedError).toNot(beNil())
-        let receivedNSError = receivedError! as NSError
+        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
         expect(receivedNSError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
     }
 
-    func testLoginCallsCompletionWithCustomerInfoAndCreatedFalseIf201() {
+    func testLoginCallsCompletionWithCustomerInfoAndCreatedFalseIf201() throws {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: Self.mockCustomerInfoData)
+                                  response: .success(Self.mockCustomerInfoData))
 
-        var completionCalled = false
-        var receivedError: Error?
-        var receivedCustomerInfo: CustomerInfo?
-        var receivedCreated: Bool?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { customerInfo, created, error in
-            completionCalled = true
-            receivedError = error
-            receivedCustomerInfo = customerInfo
-            receivedCreated = created
+                      newAppUserID: newAppUserID) { result in
+            receivedResult = result
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedCreated) == true
-        expect(receivedCustomerInfo) == CustomerInfo(testData: Self.mockCustomerInfoData)
-        expect(receivedError).to(beNil())
+        expect(receivedResult).toEventuallyNot(beNil())
+        expect(receivedResult?.value?.created) == true
+        expect(receivedResult?.value?.info) == CustomerInfo(testData: Self.mockCustomerInfoData)
     }
 
-    func testLoginCallsCompletionWithCustomerInfoAndCreatedFalseIf200() {
+    func testLoginCallsCompletionWithCustomerInfoAndCreatedFalseIf200() throws {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .success,
-                                  response: Self.mockCustomerInfoData)
+                                  response: .success(Self.mockCustomerInfoData))
 
-        var completionCalled = false
-        var receivedError: Error?
-        var receivedCustomerInfo: CustomerInfo?
-        var receivedCreated: Bool?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { customerInfo, created, error in
-            completionCalled = true
-            receivedError = error
-            receivedCustomerInfo = customerInfo
-            receivedCreated = created
+                      newAppUserID: newAppUserID) { result in
+            receivedResult = result
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(receivedResult).toEventuallyNot(beNil())
 
-        expect(receivedCreated) == false
-        expect(receivedCustomerInfo) == CustomerInfo(testData: Self.mockCustomerInfoData)
-        expect(receivedError).to(beNil())
+        expect(receivedResult?.value?.created) == false
+        expect(receivedResult?.value?.info) == CustomerInfo(testData: Self.mockCustomerInfoData)
     }
 
     func testLoginCachesForSameUserIDs() {
@@ -230,12 +184,12 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: Self.mockCustomerInfoData)
+                                  response: .success(Self.mockCustomerInfoData))
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _, _, _  in }
+                      newAppUserID: newAppUserID) { _  in }
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _, _, _  in }
+                      newAppUserID: newAppUserID) { _  in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -247,12 +201,12 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: Self.mockCustomerInfoData)
+                                  response: .success(Self.mockCustomerInfoData))
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _, _, _  in }
+                      newAppUserID: newAppUserID) { _ in }
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: secondNewAppUserID) { _, _, _  in }
+                      newAppUserID: secondNewAppUserID) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -264,12 +218,12 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID2 = "old id 2"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: Self.mockCustomerInfoData)
+                                  response: .success(Self.mockCustomerInfoData))
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _, _, _  in }
+                      newAppUserID: newAppUserID) { _ in }
         backend.logIn(currentAppUserID: currentAppUserID2,
-                      newAppUserID: newAppUserID) { _, _, _  in }
+                      newAppUserID: newAppUserID) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -280,17 +234,17 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: Self.mockCustomerInfoData)
+                                  response: .success(Self.mockCustomerInfoData))
 
         var completion1Called = false
         var completion2Called = false
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _, _, _  in
+                      newAppUserID: newAppUserID) { _ in
             completion1Called = true
         }
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _, _, _  in
+                      newAppUserID: newAppUserID) { _ in
             completion2Called = true
         }
 
@@ -305,10 +259,9 @@ private extension BackendLoginTests {
 
     func mockLoginRequest(appUserID: String,
                           statusCode: HTTPStatusCode = .success,
-                          response: [String: Any]? = [:],
-                          error: Error? = nil) -> HTTPRequest.Path {
+                          response: Result<[String: Any], Error> = .success([:])) -> HTTPRequest.Path {
         let path: HTTPRequest.Path = .logIn
-        let response = MockHTTPClient.Response(statusCode: statusCode, response: response, error: error)
+        let response = MockHTTPClient.Response(statusCode: statusCode, response: response)
 
         self.httpClient.mock(requestPath: path, response: response)
 

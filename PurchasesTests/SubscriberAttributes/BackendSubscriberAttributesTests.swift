@@ -96,8 +96,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         self.mockHTTPClient.mock(
             requestPath: .postSubscriberAttributes(appUserID: appUserID),
             response: .init(statusCode: .invalidRequest,
-                            response: nil,
-                            error: ErrorUtils.networkError(withUnderlyingError: underlyingError))
+                            response: .failure(ErrorUtils.networkError(withUnderlyingError: underlyingError)))
         )
 
         var receivedError: Error?
@@ -199,7 +198,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ],
                      appUserID: appUserID,
-                     completion: { (error: Error!) in
+                     completion: { error in
             completionCallCount += 1
             receivedError = error
         })
@@ -279,7 +278,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      subscriberAttributes: subscriberAttributesByKey,
-                     completion: { (_, _) in
+                     completion: { _ in
             completionCallCount += 1
         })
 
@@ -292,27 +291,25 @@ class BackendSubscriberAttributesTests: XCTestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        var receivedError: Error?
-        var receivedCustomerInfo: CustomerInfo?
+        var receivedResult: Result<CustomerInfo, Error>?
+
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: false,
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
-                     subscriberAttributes: subscriberAttributesByKey,
-                     completion: { (customerInfo, error) in
-            receivedError = error
-            receivedCustomerInfo = customerInfo
-        })
+                     subscriberAttributes: subscriberAttributesByKey) {
+            receivedResult = $0
+        }
 
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedCustomerInfo).to(beNil())
+        expect(receivedResult).toEventuallyNot(beNil())
+        expect(receivedResult?.value).to(beNil())
 
-        let nsError = try XCTUnwrap(receivedError as NSError?)
+        let nsError = try XCTUnwrap(receivedResult?.error as NSError?)
 
-        expect(nsError.domain) == RevenueCat.ErrorCode._nsErrorDomain
-        expect(nsError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
+        expect(nsError.domain) == RCPurchasesErrorCodeDomain
+        expect(nsError.code) == ErrorCode.unknownBackendError.rawValue
 
         let underlyingError = try XCTUnwrap(nsError.userInfo[NSUnderlyingErrorKey] as? NSError)
 
@@ -334,10 +331,9 @@ class BackendSubscriberAttributesTests: XCTestCase {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
-                     subscriberAttributes: nil,
-                     completion: { (_, _) in
+                     subscriberAttributes: nil) { _ in
             completionCallCount += 1
-        })
+        }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -365,11 +361,10 @@ class BackendSubscriberAttributesTests: XCTestCase {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
-                     subscriberAttributes: subscriberAttributesByKey,
-                     completion: { (_, error) in
+                     subscriberAttributes: subscriberAttributesByKey) { result in
             completionCallCount += 1
-            receivedError = error as NSError?
-        })
+            receivedError = result.error as NSError?
+        }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
         expect(receivedError).toEventuallyNot(beNil())
@@ -405,10 +400,9 @@ class BackendSubscriberAttributesTests: XCTestCase {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
-                     subscriberAttributes: subscriberAttributesByKey,
-                     completion: { (_, error) in
-            receivedError = error as NSError?
-        })
+                     subscriberAttributes: subscriberAttributesByKey) { result in
+            receivedError = result.error as NSError?
+        }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
 

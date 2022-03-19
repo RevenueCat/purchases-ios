@@ -16,7 +16,7 @@ import Foundation
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
-    typealias Completion = ((_ statusCode: HTTPStatusCode, _ response: [String: Any]?, _ error: Error?) -> Void)
+    typealias Completion = ((_ statusCode: HTTPStatusCode, _ result: Result<[String: Any], Error>) -> Void)
 
     private let session: URLSession
     internal let systemInfo: SystemInfo
@@ -160,7 +160,6 @@ private extension HTTPClient {
         self.start(request: request)
     }
 
-    // swiftlint:disable:next function_body_length
     func handle(urlResponse: URLResponse?,
                 request: Request,
                 urlRequest: URLRequest,
@@ -174,16 +173,13 @@ private extension HTTPClient {
         if networkError == nil {
             if let httpURLResponse = urlResponse as? HTTPURLResponse {
                 statusCode = .init(rawValue: httpURLResponse.statusCode)
-                Logger.debug(Strings.network.api_request_completed(httpMethod: request.method.httpMethod,
-                                                                   path: request.path,
-                                                                   httpCode: statusCode))
+                Logger.debug(Strings.network.api_request_completed(request.httpRequest, httpCode: statusCode))
 
                 if statusCode == .notModified || data == nil {
                     jsonObject = [:]
                 } else if let data = data {
                     do {
-                        jsonObject = try JSONSerialization.jsonObject(with: data,
-                                                                      options: .mutableContainers) as? [String: Any]
+                        jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any]
                     } catch let jsonError {
                         Logger.error(Strings.network.parsing_json_error(error: jsonError))
 
@@ -219,7 +215,7 @@ private extension HTTPClient {
         if let httpResponse = httpResponse,
            let completionHandler = request.completionHandler {
             let error = receivedJSONError ?? networkError
-            completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
+            completionHandler(httpResponse.statusCode, Result(jsonObject, error))
         }
 
         self.beginNextRequest()
@@ -247,14 +243,14 @@ private extension HTTPClient {
         guard let urlRequest = urlRequest else {
             Logger.error("Could not create request to \(request.path)")
 
-            request.completionHandler?(.invalidRequest,
-                                       nil,
-                                       ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            request.completionHandler?(
+                .invalidRequest,
+                .failure(ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            )
             return
         }
 
-        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod,
-                                                         path: urlRequest.url?.path))
+        Logger.debug(Strings.network.api_request_started(request.httpRequest))
 
         let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,

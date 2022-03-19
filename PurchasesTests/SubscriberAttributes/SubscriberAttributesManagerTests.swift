@@ -1064,6 +1064,69 @@ class SubscriberAttributesManagerTests: XCTestCase {
         checkDeviceIdentifiersAreSet()
     }
     // endregion
+    // region MixpanelDistinctID
+    func testSetMixpanelDistinctID() throws {
+        let mixpanelDistinctID = "mixpanelDistinctID"
+
+        self.subscriberAttributesManager.setMixpanelDistinctID(mixpanelDistinctID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$mixpanelDistinctId"
+        expect(receivedAttribute.value) == mixpanelDistinctID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetMixpanelDistinctIDSetsEmptyIfNil() throws {
+        let mixpanelDistinctID = "mixpanelDistinctID"
+
+        self.subscriberAttributesManager.setMixpanelDistinctID(mixpanelDistinctID, appUserID: "kratos")
+        self.subscriberAttributesManager.setMixpanelDistinctID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$mixpanelDistinctId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetMixpanelDistinctIDSkipsIfSameValue() {
+        let mixpanelDistinctID = "mixpanelDistinctID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$mixpanelDistinctId",
+                                                                                    value: mixpanelDistinctID)
+        self.subscriberAttributesManager.setMixpanelDistinctID(mixpanelDistinctID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetMixpanelDistinctIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let mixpanelDistinctID = "mixpanelDistinctID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$mixpanelDistinctId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setMixpanelDistinctID(mixpanelDistinctID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$mixpanelDistinctId"
+        expect(receivedAttribute.value) == mixpanelDistinctID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+    // endregion
     // region Media source
     func testSetMediaSource() {
         let mediaSource = "mediaSource"
