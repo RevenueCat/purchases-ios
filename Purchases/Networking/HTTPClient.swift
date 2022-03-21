@@ -215,7 +215,7 @@ private extension HTTPClient {
         if let httpResponse = httpResponse,
            let completionHandler = request.completionHandler {
             let error = receivedJSONError ?? networkError
-            completionHandler(httpResponse.statusCode, Result(jsonObject, error))
+            completionHandler(httpResponse.statusCode, Result(httpResponse.jsonObject, error))
         }
 
         self.beginNextRequest()

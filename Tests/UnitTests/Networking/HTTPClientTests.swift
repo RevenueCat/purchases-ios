@@ -637,6 +637,37 @@ class HTTPClientTests: XCTestCase {
         expect(completionCalled.value).toEventually(equal(true), timeout: .seconds(1))
     }
 
+    func testGetsResponseFromETagManagerWhenStatusCodeIsNotModified() {
+        let path: HTTPRequest.Path = .mockPath
+
+        let mockedCachedResponse: [String: String] = [
+            "test": "data"
+        ]
+
+        let response: Atomic<(code: HTTPStatusCode, result: Result<HTTPResponse.Body, Error>)?> = .init(nil)
+
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
+            statusCode: .success,
+            jsonObject: mockedCachedResponse
+        )
+
+        stub(condition: isPath(path)) { _ in
+            return .init(data: Data(),
+                         statusCode: .notModified,
+                         headers: nil)
+        }
+
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) {
+            response.value = ($0, $1)
+        }
+
+        expect(response.value).toEventuallyNot(beNil(), timeout: .seconds(1))
+
+        expect(response.value?.code) == .success
+        expect(response.value?.result.value as? [String: String]) == mockedCachedResponse
+    }
+
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
         let path: HTTPRequest.Path = .mockPath
 
