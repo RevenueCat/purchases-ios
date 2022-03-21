@@ -52,7 +52,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
     private let priceFormatterProvider: PriceFormatterProvider = .init()
 
     private var priceFormatter: NumberFormatter? {
-        return priceFormatterProvider.priceFormatterForSK1(withLocale: self.underlyingSK1Discount.priceLocale)
+        return priceFormatterProvider.priceFormatterForSK1(with: self.underlyingSK1Discount.priceLocale)
     }
 
 }

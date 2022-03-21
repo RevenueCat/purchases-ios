@@ -29,9 +29,9 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     func testReturnsCachedPriceFormatterForSK1() {
         let locale = Locale(identifier: "en_US")
-        let firstPriceFormatter = priceFormatterProvider.priceFormatterForSK1(withLocale: locale)
+        let firstPriceFormatter = priceFormatterProvider.priceFormatterForSK1(with: locale)
 
-        let secondPriceFormatter = priceFormatterProvider.priceFormatterForSK1(withLocale: locale)
+        let secondPriceFormatter = priceFormatterProvider.priceFormatterForSK1(with: locale)
 
         XCTAssertIdentical(firstPriceFormatter, secondPriceFormatter)
     }

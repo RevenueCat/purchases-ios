@@ -59,7 +59,7 @@ internal struct SK1StoreProduct: StoreProductType {
     var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     var priceFormatter: NumberFormatter? {
-        priceFormatterProvider.priceFormatterForSK1(withLocale: underlyingSK1Product.priceLocale)
+        priceFormatterProvider.priceFormatterForSK1(with: underlyingSK1Product.priceLocale)
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
