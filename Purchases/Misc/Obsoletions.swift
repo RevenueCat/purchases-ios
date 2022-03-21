@@ -396,6 +396,43 @@ public extension Purchases {
     }
 
     /**
+     * Use this method to find eligibility for this user for
+     * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
+     * - Note: If you're looking to use free trials or Introductory Offers instead,
+     * use ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``.
+     *
+     * - Parameter discount: The ``StoreProductDiscount`` to apply to the product.
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
+     */
+    @available(iOS, introduced: 13.0, unavailable, renamed: "promotionalOffer(forProductDiscount:product:)")
+    @available(tvOS, introduced: 13.0, unavailable, renamed: "promotionalOffer(forProductDiscount:product:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "promotionalOffer(forProductDiscount:product:)")
+    @available(macOS, introduced: 10.15, unavailable, renamed: "promotionalOffer(forProductDiscount:product:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "promotionalOffer(forProductDiscount:product:)")
+    func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
+                             product: StoreProduct) async throws -> PromotionalOffer {
+        fatalError()
+    }
+
+    /// Finds the subset of ``StoreProduct/discounts`` that's eligible for the current user.
+    ///
+    /// - Parameter product: the product to filter discounts from.
+    /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
+    ///   that discount will fail silently and be considered not eligible.
+    /// #### Related Symbols
+    /// - ``getPromotionalOffer(forProductDiscount:product:)``
+    /// - ``StoreProduct/getEligiblePromotionalOffers()``
+    /// - ``StoreProduct/discounts``
+    @available(iOS, introduced: 13.0, unavailable, renamed: "eligiblePromotionalOffers(forProduct:)")
+    @available(tvOS, introduced: 13.0, unavailable, renamed: "eligiblePromotionalOffers(forProduct:)")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "eligiblePromotionalOffers(forProduct:)")
+    @available(macOS, introduced: 10.15, unavailable, renamed: "eligiblePromotionalOffers(forProduct:)")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "eligiblePromotionalOffers(forProduct:)")
+    func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
+        fatalError()
+    }
+
+    /**
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
      * You should use this method to determine whether or not you show the user the normal product price or
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
@@ -556,6 +593,23 @@ public extension Package {
     @available(macOS, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
     @available(macCatalyst, obsoleted: 1, renamed: "storeProduct", message: "Use StoreProduct instead")
     @objc var product: SKProduct { fatalError() }
+}
+
+public extension StoreProduct {
+    /// Finds the subset of ``discounts`` that's eligible for the current user.
+    /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
+    ///   that discount will fail silently and be considered not eligible.
+    /// - Warning: this method implicitly relies on ``Purchases`` already being initialized.
+    /// #### Related Symbols
+    /// - ``discounts``
+    @available(iOS, introduced: 13.0, unavailable, renamed: "eligiblePromotionalOffers()")
+    @available(tvOS, introduced: 13.0, unavailable, renamed: "eligiblePromotionalOffers()")
+    @available(watchOS, introduced: 6.2, unavailable, renamed: "eligiblePromotionalOffers()")
+    @available(macOS, introduced: 10.15, unavailable, renamed: "eligiblePromotionalOffers()")
+    @available(macCatalyst, introduced: 13.0, unavailable, renamed: "eligiblePromotionalOffers()")
+    func getEligiblePromotionalOffers() async -> [PromotionalOffer] {
+        fatalError()
+    }
 }
 
 public extension StoreProductDiscount.PaymentMode {

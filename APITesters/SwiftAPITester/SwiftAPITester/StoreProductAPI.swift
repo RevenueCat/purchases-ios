@@ -89,5 +89,5 @@ func checkProductType(_ type: StoreProduct.ProductType) {
 }
 
 func checkStoreProductAsyncAPI() async {
-    let _: [PromotionalOffer] = await product.getEligiblePromotionalOffers()
+    let _: [PromotionalOffer] = await product.eligiblePromotionalOffers()
 }

@@ -1115,8 +1115,8 @@ public extension Purchases {
      *
      * #### Related Symbols
      * - ``StoreProduct/discounts``
-     * - ``StoreProduct/getEligiblePromotionalOffers()``
-     * - ``getPromotionalOffer(forProductDiscount:product:)``
+     * - ``StoreProduct/eligiblePromotionalOffers()``
+     * - ``promotionalOffer(forProductDiscount:product:)``
      */
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchaseProduct:withPromotionalOffer:completion:)
@@ -1444,9 +1444,9 @@ public extension Purchases {
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
+    func promotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct) async throws -> PromotionalOffer {
-        return try await getPromotionalOfferAsync(forProductDiscount: discount, product: product)
+        return try await promotionalOfferAsync(forProductDiscount: discount, product: product)
     }
 
     /// Finds the subset of ``StoreProduct/discounts`` that's eligible for the current user.
@@ -1455,12 +1455,12 @@ public extension Purchases {
     /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
     ///   that discount will fail silently and be considered not eligible.
     /// #### Related Symbols
-    /// - ``getPromotionalOffer(forProductDiscount:product:)``
-    /// - ``StoreProduct/getEligiblePromotionalOffers()``
+    /// - ``promotionalOffer(forProductDiscount:product:)``
+    /// - ``StoreProduct/eligiblePromotionalOffers()``
     /// - ``StoreProduct/discounts``
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
-        return await getEligiblePromotionalOffersAsync(forProduct: product)
+    func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
+        return await eligiblePromotionalOffersAsync(forProduct: product)
     }
 
 #if os(iOS) || os(macOS)
