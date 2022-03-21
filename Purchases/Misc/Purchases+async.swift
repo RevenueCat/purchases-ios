@@ -144,7 +144,7 @@ extension Purchases {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func promotionalOfferAsync(forProductDiscount discount: StoreProductDiscount,
-                                  product: StoreProduct) async throws -> PromotionalOffer {
+                               product: StoreProduct) async throws -> PromotionalOffer {
         return try await withCheckedThrowingContinuation { continuation in
             getPromotionalOffer(forProductDiscount: discount, product: product) { offer, error in
                 continuation.resume(with: Result(offer, error))

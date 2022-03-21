@@ -1445,7 +1445,7 @@ public extension Purchases {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func promotionalOffer(forProductDiscount discount: StoreProductDiscount,
-                             product: StoreProduct) async throws -> PromotionalOffer {
+                          product: StoreProduct) async throws -> PromotionalOffer {
         return try await promotionalOfferAsync(forProductDiscount: discount, product: product)
     }
 
