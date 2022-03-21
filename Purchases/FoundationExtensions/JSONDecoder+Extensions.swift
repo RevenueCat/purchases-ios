@@ -83,7 +83,6 @@ extension KeyedDecodingContainer {
         do {
             return try decode(type, forKey: key)
         } catch {
-            ErrorUtils.logDecodingError(error)
             return defaultValue
         }
     }

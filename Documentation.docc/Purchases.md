@@ -100,6 +100,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/setMparticleID(_:)``
 - ``Purchases/setOnesignalID(_:)``
 - ``Purchases/setFBAnonymousID(_:)``
+- ``Purchases/setMixpanelDistinctID(_:)``
 
 ### Advanced Configuration
 - ``Purchases/finishTransactions``

@@ -156,7 +156,7 @@ commands:
               ssh-keyscan $ip; \
               done 2>/dev/null >> ~/.ssh/known_hosts
 
-  update-spm-integration-commit:
+  update-spm-installation-commit:
     steps:
       - install-dependencies
       - run:
@@ -164,12 +164,12 @@ commands:
           command: |
               bundle exec fastlane update_swift_package_commit
 
-  update-carthage-integration-commit:
+  update-carthage-installation-commit:
     steps:
       - install-dependencies
       - run:
-          name: Update git commit in Carthage Integration tests
-          working_directory: IntegrationTests/CarthageIntegration/
+          name: Update git commit in Carthage Installation tests
+          working_directory: InstallationTests/CarthageInstallation/
           command: |
               bundle exec fastlane update_carthage_commit
 
@@ -284,7 +284,7 @@ jobs:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
-      - update-spm-integration-commit
+      - update-spm-installation-commit
       - run:
           name: Deployment checks
           command: bundle exec fastlane release_checks
@@ -310,7 +310,7 @@ jobs:
     steps:
       - checkout
       - trust-github-key
-      - update-spm-integration-commit
+      - update-spm-installation-commit
       - run:
           name: Deploy new version
           command: bundle exec fastlane release
@@ -325,51 +325,51 @@ jobs:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
 
-  integration-tests-cocoapods:
+  installation-tests-cocoapods:
     <<: *base-job
     steps:
       - checkout
       - install-dependencies
       - install-dependencies:
-          directory: IntegrationTests/CocoapodsIntegration
+          directory: InstallationTests/CocoapodsInstallation
       - run:
           name: Install Pods
-          working_directory: IntegrationTests/CocoapodsIntegration/
+          working_directory: InstallationTests/CocoapodsInstallation/
           command: |
               pod install
       - scan-and-archive:
-          directory: IntegrationTests/CocoapodsIntegration
+          directory: InstallationTests/CocoapodsInstallation
       
   integration-tests-swift-package-manager:
     <<: *base-job
     steps:
       - checkout
       - trust-github-key
-      - update-spm-integration-commit
+      - update-spm-installation-commit
       - install-dependencies:
-          directory: IntegrationTests/SPMIntegration/
+          directory: InstallationTests/SPMInstallation/
       - scan-and-archive-all-platforms:
-          directory: IntegrationTests/SPMIntegration/
+          directory: InstallationTests/SPMInstallation/
 
-  integration-tests-carthage:
+  installation-tests-carthage:
     <<: *base-job
     steps:
       - checkout
       - trust-github-key
-      - update-carthage-integration-commit
+      - update-carthage-installation-commit
       # Carthage
       - run:
           name: Carthage Update
-          working_directory: IntegrationTests/CarthageIntegration/
+          working_directory: InstallationTests/CarthageInstallation/
           # install without building, then remove the tests and build, so that carthage
-          # doesn't try to build the other integration tests
+          # doesn't try to build the other installation tests
           command: |
               ./carthage.sh update --no-build
-              rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
+              rm -rf Carthage/Checkouts/purchases-root/InstallationTests/
               ./carthage.sh build --use-xcframeworks
       
       - install-dependencies-scan-and-archive:
-          directory: IntegrationTests/CarthageIntegration/
+          directory: InstallationTests/CarthageInstallation/
 
   integration-tests-xcode-direct-integration:
     <<: *base-job
@@ -379,7 +379,7 @@ jobs:
       - checkout
 
       - install-dependencies-scan-and-archive:
-          directory: IntegrationTests/XcodeDirectIntegration/
+          directory: InstallationTests/XcodeDirectInstallation/
 
   lint:
     <<: *base-job
@@ -426,13 +426,13 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
-      - integration-tests-cocoapods:
+      - installation-tests-cocoapods:
           xcode_version: '13.2.1'
           <<: *release-tags-and-branches
       - integration-tests-swift-package-manager:
           xcode_version: '13.2.1'
           <<: *release-tags-and-branches
-      - integration-tests-carthage:
+      - installation-tests-carthage:
           xcode_version: '13.2.1'
           <<: *release-tags-and-branches
       - integration-tests-xcode-direct-integration:
