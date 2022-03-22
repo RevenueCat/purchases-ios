@@ -18,16 +18,16 @@ class ETagManager {
 
     static let eTagHeaderName = "X-RevenueCat-ETag"
 
-    private let queue = DispatchQueue(label: "ETagManager")
-    private let userDefaults: UserDefaults
-    private let lock = Lock()
+    private let userDefaults: SynchronizedUserDefaults
 
-    init() {
-        self.userDefaults = UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
+    convenience init() {
+        self.init(
+            userDefaults: UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
+        )
     }
 
     init(userDefaults: UserDefaults) {
-        self.userDefaults = userDefaults
+        self.userDefaults = .init(userDefaults: userDefaults)
     }
 
     func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
@@ -75,8 +75,8 @@ class ETagManager {
     }
 
     func clearCaches() {
-        lock.perform {
-            userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
+        self.userDefaults.write {
+            $0.removePersistentDomain(forName: ETagManager.suiteName)
         }
     }
 
@@ -89,9 +89,9 @@ private extension ETagManager {
     }
 
     func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
-        return lock.perform {
+        return self.userDefaults.read {
             if let cacheKey = eTagDefaultCacheKey(for: request),
-               let value = userDefaults.object(forKey: cacheKey),
+               let value = $0.object(forKey: cacheKey),
                let data = value as? Data {
                 return ETagAndResponseWrapper(with: data)
             }
@@ -120,8 +120,8 @@ private extension ETagManager {
            let cacheKey = eTagDefaultCacheKey(for: request) {
             let eTagAndResponse = ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, jsonObject: responseObject)
             if let dataToStore = eTagAndResponse.asData() {
-                lock.perform {
-                    userDefaults.set(dataToStore, forKey: cacheKey)
+                self.userDefaults.write {
+                    $0.set(dataToStore, forKey: cacheKey)
                 }
             }
         }
