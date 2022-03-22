@@ -18,10 +18,10 @@ import StoreKit
 /// is ready to be used for a purchase.
 ///
 /// #### Related Symbols
-/// - ``Purchases/getPromotionalOffer(forProductDiscount:product:)``
+/// - ``Purchases/promotionalOffer(forProductDiscount:product:)``
 /// - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
-/// - ``StoreProduct/getEligiblePromotionalOffers()``
-/// - ``Purchases/getEligiblePromotionalOffers(forProduct:)``
+/// - ``StoreProduct/eligiblePromotionalOffers()``
+/// - ``Purchases/eligiblePromotionalOffers(forProduct:)``
 /// - ``Purchases/purchase(package:promotionalOffer:)``
 /// - ``Purchases/purchase(package:promotionalOffer:completion:)``
 /// - ``Purchases/purchase(product:promotionalOffer:)``

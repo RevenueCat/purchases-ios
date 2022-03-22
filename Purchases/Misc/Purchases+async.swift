@@ -143,8 +143,8 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func getPromotionalOfferAsync(forProductDiscount discount: StoreProductDiscount,
-                                  product: StoreProduct) async throws -> PromotionalOffer {
+    func promotionalOfferAsync(forProductDiscount discount: StoreProductDiscount,
+                               product: StoreProduct) async throws -> PromotionalOffer {
         return try await withCheckedThrowingContinuation { continuation in
             getPromotionalOffer(forProductDiscount: discount, product: product) { offer, error in
                 continuation.resume(with: Result(offer, error))
@@ -153,14 +153,14 @@ extension Purchases {
      }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func getEligiblePromotionalOffersAsync(forProduct product: StoreProduct) async -> [PromotionalOffer] {
+    func eligiblePromotionalOffersAsync(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         let discounts = product.discounts
 
         return await withTaskGroup(of: Optional<PromotionalOffer>.self) { group in
             for discount in discounts {
                 group.addTask {
                     do {
-                        return try await self.getPromotionalOffer(
+                        return try await self.promotionalOffer(
                             forProductDiscount: discount,
                             product: product
                         )

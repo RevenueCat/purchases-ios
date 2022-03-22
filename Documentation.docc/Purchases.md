@@ -46,7 +46,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``
 - ``Purchases/checkTrialOrIntroDiscountEligibility(product:)``
 - ``Purchases/checkTrialOrIntroDiscountEligibility(product:completion:)``
-- ``Purchases/getPromotionalOffer(forProductDiscount:product:)``
+- ``Purchases/promotionalOffer(forProductDiscount:product:)``
 - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
 - ``Purchases/purchase(package:promotionalOffer:)``
 - ``Purchases/purchase(package:promotionalOffer:completion:)``

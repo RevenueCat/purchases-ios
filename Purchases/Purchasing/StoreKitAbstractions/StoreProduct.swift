@@ -181,10 +181,10 @@ internal protocol StoreProductType {
     /// An array of subscription offers available for the auto-renewable subscription.
     /// - Note: the current user may or may not be eligible for some of these.
     /// #### Related Symbols
-    /// - ``Purchases/getPromotionalOffer(forProductDiscount:product:)``
+    /// - ``Purchases/promotionalOffer(forProductDiscount:product:)``
     /// - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
-    /// - ``Purchases/getEligiblePromotionalOffers(forProduct:)``
-    /// - ``StoreProduct/getEligiblePromotionalOffers()``
+    /// - ``Purchases/eligiblePromotionalOffers(forProduct:)``
+    /// - ``StoreProduct/eligiblePromotionalOffers()``
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     var discounts: [StoreProductDiscount] { get }
 
@@ -230,8 +230,8 @@ public extension StoreProduct {
     /// - Warning: this method implicitly relies on ``Purchases`` already being initialized.
     /// #### Related Symbols
     /// - ``discounts``
-    func getEligiblePromotionalOffers() async -> [PromotionalOffer] {
-        return await Purchases.shared.getEligiblePromotionalOffers(forProduct: self)
+    func eligiblePromotionalOffers() async -> [PromotionalOffer] {
+        return await Purchases.shared.eligiblePromotionalOffers(forProduct: self)
     }
 }
 
