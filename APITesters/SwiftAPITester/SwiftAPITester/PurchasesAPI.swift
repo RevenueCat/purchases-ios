@@ -186,6 +186,11 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         // Deprecated
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility([String]())
+        // Deprecated
+        let _: PromotionalOffer = try await purchases.getPromotionalOffer(
+            forProductDiscount: discount,
+            product: stp
+        )
         let _: PromotionalOffer = try await purchases.promotionalOffer(
             forProductDiscount: discount,
             product: stp
@@ -212,6 +217,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
         let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
 
+        // Deprecated
+        let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
     } catch {}
