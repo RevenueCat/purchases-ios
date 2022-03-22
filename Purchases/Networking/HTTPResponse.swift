@@ -16,8 +16,10 @@ import Foundation
 
 struct HTTPResponse {
 
+    typealias Body = [String: Any]
+
     let statusCode: HTTPStatusCode
-    let jsonObject: [String: Any]?
+    let jsonObject: Body?
 
 }
 
