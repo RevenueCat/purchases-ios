@@ -37,4 +37,34 @@ public extension Purchases {
         return await self.checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers)
     }
 
+    @available(iOS, introduced: 13.0, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
+    @available(tvOS, introduced: 13.0, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
+    @available(watchOS, introduced: 6.2, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
+    @available(macOS, introduced: 10.15, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
+    @available(macCatalyst, introduced: 13.0, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
+    func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
+                             product: StoreProduct) async throws -> PromotionalOffer {
+        return try await self.promotionalOffer(forProductDiscount: discount, product: product)
+    }
+
+    @available(iOS, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
+    @available(tvOS, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
+    @available(watchOS, introduced: 6.2, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
+    @available(macOS, introduced: 10.15, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
+    @available(macCatalyst, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
+    func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
+        return await eligiblePromotionalOffers(forProduct: product)
+    }
+
+}
+
+public extension StoreProduct {
+    @available(iOS, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers()")
+    @available(tvOS, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers()")
+    @available(watchOS, introduced: 6.2, deprecated, renamed: "eligiblePromotionalOffers()")
+    @available(macOS, introduced: 10.15, deprecated, renamed: "eligiblePromotionalOffers()")
+    @available(macCatalyst, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers()")
+    func getEligiblePromotionalOffers() async -> [PromotionalOffer] {
+        return await self.eligiblePromotionalOffers()
+    }
 }
