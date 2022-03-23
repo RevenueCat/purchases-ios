@@ -86,6 +86,13 @@ class SubscribersAPI {
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
               completion: @escaping BackendCustomerInfoResponseHandler) {
+        let attributionStatus = self.attributionFetcher.authorizationStatus
+        var subscriberAttributesByKey = subscriberAttributesByKey ?? [:]
+        let consentStatus = SubscriberAttribute(withKey: ReservedSubscriberAttribute.consentStatus.rawValue,
+                                                value: attributionStatus.description,
+                                                dateProvider: self.dateProvider)
+        subscriberAttributesByKey[ReservedSubscriberAttribute.consentStatus.rawValue] = consentStatus
+
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
