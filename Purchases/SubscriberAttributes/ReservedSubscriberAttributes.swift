@@ -27,6 +27,7 @@ enum ReservedSubscriberAttribute: String {
     case idfa = "$idfa"
     case idfv = "$idfv"
     case gpsAdId = "$gpsAdId"
+    case consentStatus = "$attConsentStatus"
 
     case ip = "$ip"
 

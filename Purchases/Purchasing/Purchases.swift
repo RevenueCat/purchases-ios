@@ -261,9 +261,12 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
+        let attributionTypeFactory = AttributionTypeFactory()
+        let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let backend = Backend(apiKey: apiKey,
                               systemInfo: systemInfo,
-                              eTagManager: eTagManager)
+                              eTagManager: eTagManager,
+                              attributionFetcher: attributionFetcher)
         let storeKitWrapper = StoreKitWrapper()
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
@@ -278,8 +281,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               appUserID: appUserID)
-        let attributionTypeFactory = AttributionTypeFactory()
-        let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
                                                                       deviceCache: deviceCache,

@@ -20,17 +20,23 @@ class SubscribersAPI {
     private let authHeaders: [String: String]
     private let aliasCallbackCache: CallbackCache<AliasCallback>
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
+    private let attributionFetcher: AttributionFetcher
+    private let dateProvider: DateProvider
 
     init(httpClient: HTTPClient,
+         attributionFetcher: AttributionFetcher,
          authHeaders: [String: String],
          operationQueue: OperationQueue,
          aliasCallbackCache: CallbackCache<AliasCallback>,
-         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>) {
+         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
+         dateProvider: DateProvider) {
         self.httpClient = httpClient
+        self.attributionFetcher = attributionFetcher
         self.authHeaders = authHeaders
         self.operationQueue = operationQueue
         self.aliasCallbackCache = aliasCallbackCache
         self.customerInfoCallbackCache = customerInfoCallbackCache
+        self.dateProvider = dateProvider
     }
 
     func createAlias(appUserID: String, newAppUserID: String, completion: SimpleResponseHandler?) {
@@ -83,6 +89,7 @@ class SubscribersAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
+
         let postData = PostReceiptDataOperation.PostData(appUserID: appUserID,
                                                          receiptData: receiptData,
                                                          isRestore: isRestore,

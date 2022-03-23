@@ -39,12 +39,20 @@ class Backend {
 
     convenience init(apiKey: String,
                      systemInfo: SystemInfo,
-                     eTagManager: ETagManager) {
+                     eTagManager: ETagManager,
+                     attributionFetcher: AttributionFetcher,
+                     dateProvider: DateProvider = DateProvider()) {
         let httpClient = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-        self.init(httpClient: httpClient, apiKey: apiKey)
+        self.init(httpClient: httpClient,
+                  apiKey: apiKey,
+                  attributionFetcher: attributionFetcher,
+                  dateProvider: dateProvider)
     }
 
-    required init(httpClient: HTTPClient, apiKey: String) {
+    required init(httpClient: HTTPClient,
+                  apiKey: String,
+                  attributionFetcher: AttributionFetcher,
+                  dateProvider: DateProvider = DateProvider()) {
         self.operationQueue = OperationQueue()
         self.operationQueue.name = "Backend Queue"
         self.operationQueue.maxConcurrentOperationCount = 1
@@ -58,10 +66,12 @@ class Backend {
         let aliasCallbackCache = CallbackCache<AliasCallback>(callbackQueue: callbackQueue)
         let customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: callbackQueue)
         self.subscribersAPI = SubscribersAPI(httpClient: httpClient,
+                                             attributionFetcher: attributionFetcher,
                                              authHeaders: self.authHeaders,
                                              operationQueue: self.operationQueue,
                                              aliasCallbackCache: aliasCallbackCache,
-                                             customerInfoCallbackCache: customerInfoCallbackCache)
+                                             customerInfoCallbackCache: customerInfoCallbackCache,
+                                             dateProvider: dateProvider)
     }
 
     func createAlias(appUserID: String, newAppUserID: String, completion: SimpleResponseHandler?) {

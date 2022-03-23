@@ -41,8 +41,15 @@ class BackendSubscriberAttributesTests: XCTestCase {
     override func setUp() {
         mockETagManager = MockETagManager(userDefaults: MockUserDefaults())
         mockHTTPClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: mockETagManager)
-        self.backend = Backend(httpClient: mockHTTPClient, apiKey: Self.apiKey)
         dateProvider = MockDateProvider(stubbedNow: self.referenceDate)
+        let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: self.systemInfo)
+
+        self.backend = Backend(httpClient: mockHTTPClient,
+                               apiKey: Self.apiKey,
+                               attributionFetcher: attributionFetcher,
+                               dateProvider: dateProvider)
+
         subscriberAttribute1 = SubscriberAttribute(withKey: "a key",
                                                    value: "a value",
                                                    dateProvider: dateProvider)
