@@ -111,8 +111,9 @@ extension OfferingStrings: CustomStringConvertible {
             "if one is being used). \nMore information: https://rev.cat/why-are-offerings-empty"
 
         case .configuration_error_no_products_for_offering:
-            return "There's a problem with your configuration. There are no products registered in the RevenueCat " +
-            "dashboard for your offerings. To configure products, follow the instructions in " +
+            return "There are no products registered in the RevenueCat dashboard for your offerings. " +
+            "If you don't want to use the offerings system, you can safely ignore this message. " +
+            "To configure offerings and their products, follow the instructions in " +
             "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
 
         case .offering_empty(let offeringIdentifier):
