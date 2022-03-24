@@ -277,10 +277,10 @@ if let error = error as? RevenueCat.ErrorCode {
 
 ## New APIs
 - All applicable methods have an [async/await alternative](https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html).
-- `showManageSubcriptions(completion:)`: Use this method to show the subscription management for the current user. Depending on where they made the purchase and their OS version, this might take them to the `managementURL`, or open the iOS Subscription Management page. 
-- `beginRefundRequestForCurrentEntitlement`: Use this method to begin a refund request for the purchase that granted the current entitlement.
-- `beginRefundRequest(forProduct:)`: Use this method to begin a refund request for a purchase, specifying the product identifier.
-- `beginRefundRequest(forEntitlement:)`: Use this method to begin a refund request for a purchase, specifying the entitlement identifier.
+- ``Purchases/showManageSubscriptions(completion:)``: Use this method to show the subscription management for the current user. Depending on where they made the purchase and their OS version, this might take them to the `managementURL`, or open the iOS Subscription Management page. 
+- ``Purchases/beginRefundRequestForActiveEntitlement()``: Use this method to begin a refund request for the purchase that granted the current entitlement.
+- ``Purchases/beginRefundRequest(forProduct:)``: Use this method to begin a refund request for a purchase, specifying the product identifier.
+- ``Purchases/beginRefundRequest(forEntitlement:)``: Use this method to begin a refund request for a purchase, specifying the entitlement identifier.
 - You can now use ``Purchases/customerInfoStream`` to be notified whenever there's new ``CustomerInfo`` available, 
 as an alternative to ``PurchasesDelegate/purchases(_:receivedUpdated:)``.
 

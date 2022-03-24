@@ -32,7 +32,12 @@ class BaseBackendTests: XCTestCase {
 
         self.systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
         self.httpClient = self.createClient()
-        self.backend = Backend(httpClient: self.httpClient, apiKey: Self.apiKey)
+        let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: self.systemInfo)
+        self.backend = Backend(httpClient: self.httpClient,
+                               apiKey: Self.apiKey,
+                               attributionFetcher: attributionFetcher,
+                               dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
     }
 
     override class func setUp() {

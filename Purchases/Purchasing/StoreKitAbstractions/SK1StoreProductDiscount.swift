@@ -49,17 +49,10 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         return priceFormatter?.string(from: self.underlyingSK1Discount.price) ?? ""
     }
 
+    private let priceFormatterProvider: PriceFormatterProvider = .init()
+
     private var priceFormatter: NumberFormatter? {
-        guard let currencyCode = self.currencyCode else {
-          Logger.appleError("Can't initialize priceFormatter for SK2 product discount!" +
-                            " Could not find the currency code")
-          return nil
-      }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
-        formatter.locale = self.underlyingSK1Discount.priceLocale
-        return formatter
+        return priceFormatterProvider.priceFormatterForSK1(with: self.underlyingSK1Discount.priceLocale)
     }
 
 }

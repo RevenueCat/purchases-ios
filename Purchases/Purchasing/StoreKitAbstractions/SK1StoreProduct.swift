@@ -20,6 +20,7 @@ internal struct SK1StoreProduct: StoreProductType {
     }
 
     let underlyingSK1Product: SK1Product
+    private let priceFormatterProvider: PriceFormatterProvider = .init()
 
     var productCategory: StoreProduct.ProductCategory {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) else {
@@ -58,10 +59,7 @@ internal struct SK1StoreProduct: StoreProductType {
     var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     var priceFormatter: NumberFormatter? {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = underlyingSK1Product.priceLocale
-        return formatter
+        priceFormatterProvider.priceFormatterForSK1(with: underlyingSK1Product.priceLocale)
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)

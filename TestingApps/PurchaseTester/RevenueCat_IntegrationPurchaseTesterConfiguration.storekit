@@ -33,7 +33,13 @@
       "subscriptions" : [
         {
           "adHocOffers" : [
-
+            {
+              "internalID" : "EC7974C4",
+              "offerID" : "com.revenuecat.monthly_4.99.1_free_week",
+              "paymentMode" : "free",
+              "referenceName" : "com.revenuecat.monthly_4.99.1_free_week",
+              "subscriptionPeriod" : "P1W"
+            }
           ],
           "displayPrice" : "4.99",
           "familyShareable" : true,
@@ -87,10 +93,47 @@
           "referenceName" : "annual free trial",
           "subscriptionGroupID" : "7096FF06",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+            {
+              "internalID" : "F166E790",
+              "offerID" : "com.revenuecat.monthly_4.99.1_free_week",
+              "paymentMode" : "free",
+              "referenceName" : "com.revenuecat.monthly_4.99.1_free_week",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "8ECC132E",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly subscription",
+              "displayName" : "Monthly Subscription",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Subscripción mensual",
+              "displayName" : "Subscripción Mensual",
+              "locale" : "es_ES"
+            }
+          ],
+          "productID" : "com.revenuecat.monthly_4.99.no_intro",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "monthly no trial",
+          "subscriptionGroupID" : "7096FF06",
+          "type" : "RecurringSubscription"
         }
       ]
     }
   ],
+  "subscriptionOffersKeyPair" : {
+    "id" : "C815358F",
+    "privateKey" : "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgMpw0LScUC+8o+WsEAM20KOMzZOMSWKFjUixtwDidPMugCgYIKoZIzj0DAQehRANCAAQIMw4YEVZrDPrk/1dx5WV3hpkuy8enQs+yDAuJRtsrOnzRH6EFgTyiydprKlgUOHW6xBocrRNTMZXioCBQtchg"
+  },
   "version" : {
     "major" : 1,
     "minor" : 1

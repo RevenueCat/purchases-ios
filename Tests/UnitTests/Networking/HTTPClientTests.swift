@@ -206,7 +206,7 @@ class HTTPClientTests: XCTestCase {
     func testServerSide400s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int(arc4random() % 50)
+        let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int.random(in: 0..<50)
         let isResponseCorrect: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
@@ -232,7 +232,7 @@ class HTTPClientTests: XCTestCase {
     func testServerSide500s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let errorCode = Int32(500 + arc4random() % 50)
+        let errorCode = Int32(500 + Int.random(in: 0..<50))
         let isResponseCorrect: Atomic<Bool> = .init(false)
         let message: Atomic<String?> = .init(nil)
 
@@ -257,7 +257,7 @@ class HTTPClientTests: XCTestCase {
     func testParseError() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let errorCode = HTTPStatusCode.success.rawValue + Int(arc4random() % 300)
+        let errorCode = HTTPStatusCode.success.rawValue + Int.random(in: 0..<300)
         let correctResponse: Atomic<Bool> = .init(false)
 
         stub(condition: isPath(request.path)) { _ in

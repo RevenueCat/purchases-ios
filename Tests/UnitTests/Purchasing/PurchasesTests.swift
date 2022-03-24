@@ -49,7 +49,8 @@ class PurchasesTests: XCTestCase {
                                                     systemInfo: systemInfoAttribution)
         backend = MockBackend(httpClient: MockHTTPClient(systemInfo: systemInfo,
                                                          eTagManager: MockETagManager()),
-                              apiKey: "mockAPIKey")
+                              apiKey: "mockAPIKey",
+                              attributionFetcher: attributionFetcher)
         subscriberAttributesManager =
         MockSubscriberAttributesManager(backend: self.backend,
                                         deviceCache: self.deviceCache,
