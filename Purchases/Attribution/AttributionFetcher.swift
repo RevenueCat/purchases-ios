@@ -96,22 +96,23 @@ class AttributionFetcher {
         return true
     }
 
+    var authorizationStatus: FakeTrackingManagerAuthorizationStatus {
+        // should match OS availability here: https://rev.cat/app-tracking-transparency
+        guard #available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, *) else {
+            return .notDetermined
+        }
+        return self.fetchAuthorizationStatus
+    }
+
 }
 
 private extension AttributionFetcher {
 
     @available(iOS 14.0.0, tvOS 14.0.0, *)
     private var isAuthorizedToPostSearchAdsInATTRequiredOS: Bool {
-        let minimumOSVersionRequiringAuthorization = OperatingSystemVersion(majorVersion: 14,
-                                                                            minorVersion: 5,
-                                                                            patchVersion: 0)
-        let needsTrackingAuthorization = systemInfo
-            .isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
+        let needsTrackingAuthorization = self.needsTrackingAuthorization
 
-        guard let trackingManagerProxy = attributionFactory.atFollowingProxy() else {
-            if needsTrackingAuthorization {
-                Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_att_framework)
-            }
+        guard let trackingManagerProxy = self.trackingProxy else {
             return !needsTrackingAuthorization
         }
 
@@ -121,12 +122,7 @@ private extension AttributionFetcher {
             return false
         }
 
-        // we use unsafeBitCast to prevent direct references to tracking frameworks, which cause issues for
-        // kids apps when going through app review, even if they don't actually use them at all.
-        typealias ClosureType = @convention(c) (AnyObject, Selector) -> FakeTrackingManagerAuthorizationStatus
-        let authStatusMethodImplementation = trackingManagerProxy.method(for: authStatusSelector)
-        let authStatusMethod: ClosureType = unsafeBitCast(authStatusMethodImplementation, to: ClosureType.self)
-        let authStatus = authStatusMethod(trackingManagerProxy, authStatusSelector)
+        let authStatus = callAuthStatusSelector(authStatusSelector, trackingManagerProxy: trackingManagerProxy)
 
         switch authStatus {
         case .restricted, .denied:
@@ -136,6 +132,56 @@ private extension AttributionFetcher {
         case .authorized:
             return true
         }
+    }
+
+    @available(iOS 14.0.0, tvOS 14.0.0, *)
+    private var fetchAuthorizationStatus: FakeTrackingManagerAuthorizationStatus {
+        let needsTrackingAuthorization = self.needsTrackingAuthorization
+
+        guard let trackingManagerProxy = self.trackingProxy else {
+            if needsTrackingAuthorization {
+                return .denied
+            } else {
+                return .notDetermined
+            }
+        }
+
+        let authStatusSelector = NSSelectorFromString(trackingManagerProxy.authorizationStatusPropertyName)
+        guard trackingManagerProxy.responds(to: authStatusSelector) else {
+            Logger.warn(Strings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status)
+            return .denied
+        }
+
+        let authStatus = callAuthStatusSelector(authStatusSelector, trackingManagerProxy: trackingManagerProxy)
+        return authStatus
+    }
+
+    private var trackingProxy: TrackingManagerProxy? {
+        let trackingManagerProxy = attributionFactory.atFollowingProxy()
+        if trackingManagerProxy == nil && needsTrackingAuthorization {
+            Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_att_framework)
+        }
+        return trackingManagerProxy
+    }
+
+    private var needsTrackingAuthorization: Bool {
+        let minimumOSVersionRequiringAuthorization = OperatingSystemVersion(majorVersion: 14,
+                                                                            minorVersion: 5,
+                                                                            patchVersion: 0)
+        return systemInfo.isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
+    }
+
+    private func callAuthStatusSelector(
+        _ authStatusSelector: Selector,
+        trackingManagerProxy: TrackingManagerProxy
+    ) -> FakeTrackingManagerAuthorizationStatus {
+        // we use unsafeBitCast to prevent direct references to tracking frameworks, which cause issues for
+        // kids apps when going through app review, even if they don't actually use them at all.
+        typealias ClosureType = @convention(c) (AnyObject, Selector) -> FakeTrackingManagerAuthorizationStatus
+        let authStatusMethodImplementation = trackingManagerProxy.method(for: authStatusSelector)
+        let authStatusMethod: ClosureType = unsafeBitCast(authStatusMethodImplementation, to: ClosureType.self)
+        let authStatus = authStatusMethod(trackingManagerProxy, authStatusSelector)
+        return authStatus
     }
 
 }
