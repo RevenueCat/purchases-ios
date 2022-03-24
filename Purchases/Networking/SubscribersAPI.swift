@@ -91,7 +91,7 @@ class SubscribersAPI {
         let consentStatus = SubscriberAttribute(withKey: ReservedSubscriberAttribute.consentStatus.rawValue,
                                                 value: attributionStatus.description,
                                                 dateProvider: self.dateProvider)
-        subscriberAttributesByKey[ReservedSubscriberAttribute.consentStatus.rawValue] = consentStatus
+        subscriberAttributesByKey[ReservedSubscriberAttribute.consentStatus.key] = consentStatus
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
