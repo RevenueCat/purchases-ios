@@ -30,6 +30,8 @@ internal struct SK2StoreProduct: StoreProductType {
         _underlyingSK2Product as! SK2Product
     }
 
+    private let priceFormatterProvider: PriceFormatterProvider = .init()
+
     var productCategory: StoreProduct.ProductCategory {
         return self.productType.productCategory
     }
@@ -60,14 +62,10 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var priceFormatter: NumberFormatter? {
         guard let currencyCode = self.currencyCode else {
-          Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
-          return nil
-      }
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
-        formatter.locale = .autoupdatingCurrent
-        return formatter
+            Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
+            return nil
+        }
+        return priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
     }
 
     var subscriptionGroupIdentifier: String? {
