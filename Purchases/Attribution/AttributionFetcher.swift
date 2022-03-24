@@ -98,7 +98,7 @@ class AttributionFetcher {
 
     var authorizationStatus: FakeTrackingManagerAuthorizationStatus {
         // should match OS availability here: https://rev.cat/app-tracking-transparency
-        guard #available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, *)  else {
+        guard #available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, *) else {
             return .notDetermined
         }
         return self.fetchAuthorizationStatus
@@ -168,9 +168,7 @@ private extension AttributionFetcher {
         let minimumOSVersionRequiringAuthorization = OperatingSystemVersion(majorVersion: 14,
                                                                             minorVersion: 5,
                                                                             patchVersion: 0)
-        let needsTrackingAuthorization = systemInfo
-            .isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
-        return needsTrackingAuthorization
+        return systemInfo.isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
     }
 
     private func callAuthStatusSelector(
