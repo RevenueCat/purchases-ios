@@ -31,11 +31,13 @@ class MockBackend: Backend {
         completion: BackendCustomerInfoResponseHandler?)]()
 
     public convenience init() {
-        self.init(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformInfo: nil,
-                                                                             finishTransactions: false,
-                                                                             dangerousSettings: nil),
-                                             eTagManager: MockETagManager()),
-                  apiKey: "mockAPIKey")
+        let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
+        let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: systemInfo)
+        self.init(httpClient: MockHTTPClient(systemInfo: systemInfo, eTagManager: MockETagManager()),
+                  apiKey: "mockAPIKey",
+                  attributionFetcher: attributionFetcher,
+                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
     }
 
     override func post(receiptData: Data,
@@ -235,4 +237,7 @@ class MockBackend: Backend {
             completion(result)
         }
     }
+
+    static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
+
 }
