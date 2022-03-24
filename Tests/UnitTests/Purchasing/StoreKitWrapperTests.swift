@@ -115,7 +115,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         let product = SK1Product()
         let payment = SKPayment.init(product: product)
 
-        shouldAddPromo = (arc4random() % 2 == 0) as Bool
+        shouldAddPromo = Bool.random()
 
         let result = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
 
