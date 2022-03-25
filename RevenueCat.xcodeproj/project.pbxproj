@@ -380,6 +380,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		2D2CF15727EE0DA100673CE1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DD778F5270E235B0079CBD4;
+			remoteInfo = ObjCAPITester;
+		};
+		2D2CF15C27EE0DA700673CE1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
+			remoteInfo = SwiftAPITester;
+		};
 		2D803F6A26F150190069D717 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -421,20 +435,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 2DEAC2D926EFE46E006914ED;
 			remoteInfo = UnitTestsHostApp;
-		};
-		570896BB27596E8800296F1C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
-			remoteInfo = SwiftAPITester;
-		};
-		570896C127596E8800296F1C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2DD778F5270E235B0079CBD4;
-			remoteInfo = ObjCAPITester;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -623,8 +623,8 @@
 		570896B327595C8100296F1C /* RevenueCat.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat.xctestplan; path = Tests/TestPlans/RevenueCat.xctestplan; sourceTree = "<group>"; };
 		570896B427595C8100296F1C /* Coverage.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = Coverage.xctestplan; path = Tests/TestPlans/Coverage.xctestplan; sourceTree = "<group>"; };
 		570896B527595C8100296F1C /* UnitTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = UnitTests.xctestplan; path = Tests/TestPlans/UnitTests.xctestplan; sourceTree = "<group>"; };
-		570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftAPITester.xcodeproj; path = APITesters/SwiftAPITester/SwiftAPITester.xcodeproj; sourceTree = "<group>"; };
-		570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ObjCAPITester.xcodeproj; path = APITesters/ObjCAPITester/ObjCAPITester.xcodeproj; sourceTree = "<group>"; };
+		570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftAPITester.xcodeproj; path = Tests/APITesters/SwiftAPITester/SwiftAPITester.xcodeproj; sourceTree = "<group>"; };
+		570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ObjCAPITester.xcodeproj; path = Tests/APITesters/ObjCAPITester/ObjCAPITester.xcodeproj; sourceTree = "<group>"; };
 		571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitTestHelpers.swift; sourceTree = "<group>"; };
 		572247D027BEC28E00C524A7 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtensionsTests.swift; sourceTree = "<group>"; };
@@ -950,6 +950,22 @@
 				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
 			);
 			path = StoreKit1;
+			sourceTree = "<group>";
+		};
+		2D2CF15427EE0DA100673CE1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2D2CF15827EE0DA100673CE1 /* ObjCAPITester.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2D2CF15927EE0DA700673CE1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2D2CF15D27EE0DA700673CE1 /* SwiftAPITester.app */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */ = {
@@ -1460,22 +1476,6 @@
 			path = ..;
 			sourceTree = "<group>";
 		};
-		570896B827596E8800296F1C /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				570896BC27596E8800296F1C /* SwiftAPITester.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		570896BE27596E8800296F1C /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				570896C227596E8800296F1C /* ObjCAPITester.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		571E7AD0279F2CE9003B3606 /* TestHelpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -1854,11 +1854,11 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 570896BE27596E8800296F1C /* Products */;
+					ProductGroup = 2D2CF15427EE0DA100673CE1 /* Products */;
 					ProjectRef = 570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */;
 				},
 				{
-					ProductGroup = 570896B827596E8800296F1C /* Products */;
+					ProductGroup = 2D2CF15927EE0DA700673CE1 /* Products */;
 					ProjectRef = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
 				},
 			);
@@ -1875,18 +1875,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		570896BC27596E8800296F1C /* SwiftAPITester.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = SwiftAPITester.app;
-			remoteRef = 570896BB27596E8800296F1C /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		570896C227596E8800296F1C /* ObjCAPITester.app */ = {
+		2D2CF15827EE0DA100673CE1 /* ObjCAPITester.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;
 			path = ObjCAPITester.app;
-			remoteRef = 570896C127596E8800296F1C /* PBXContainerItemProxy */;
+			remoteRef = 2D2CF15727EE0DA100673CE1 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D2CF15D27EE0DA700673CE1 /* SwiftAPITester.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = SwiftAPITester.app;
+			remoteRef = 2D2CF15C27EE0DA700673CE1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
