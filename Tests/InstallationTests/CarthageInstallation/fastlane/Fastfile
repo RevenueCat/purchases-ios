@@ -1,4 +1,4 @@
-import("../../../fastlane/Fastfile")
+import("../../../../fastlane/Fastfile")
 
 desc "Update carthage commit"
   lane :update_carthage_commit do
