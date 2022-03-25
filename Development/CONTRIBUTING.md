@@ -10,7 +10,7 @@ If you decide you want to help, that [you can do this!](https://github.com/Reven
 - Find an issue that speaks to you, and comment in it "I've got this" or something like that 😄.
 - If the issue isn't clear enough, feel free to tag in sdk team `@RevenueCat/sdk` asking for clarification.
 - Work on the issue! 
-- Use our [Swift Style Guide](SwiftStyleGuide.swift) to ensure that the style is consistent with the rest of the codebase.
+- Use our [Swift Style Guide](./SwiftStyleGuide.swift) to ensure that the style is consistent with the rest of the codebase.
 - Once you think you're done, build the `APITester` target. That target compiles a file that contains references to all public api for the `Purchases` framework. This is how we ensure our changes don't impact the public api.
 - If that builds, then follow [the final steps (Create a pull request to RevenueCat/main)](#7-create-a-pull-request-to-revenuecatmain-and-request-review)
 - Done!
@@ -61,7 +61,7 @@ This installs [Homebrew](https://brew.sh/), and then [SwiftLint](https://github.
 
 #### 5. Build something!
 
-Use our [Swift Style Guide](SwiftStyleGuide.swift) to ensure that the style is consistent with the rest of the codebase. This is pretty subjective, so don't get too stressed about it. If there's any issue, we'll suggest a change.
+Use our [Swift Style Guide](./SwiftStyleGuide.swift) to ensure that the style is consistent with the rest of the codebase. This is pretty subjective, so don't get too stressed about it. If there's any issue, we'll suggest a change.
 
 #### 6. Write tests for your fix/new functionality.
 

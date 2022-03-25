@@ -15,7 +15,7 @@ import StoreKit
 
 // All these methods are `obsoleted`, which means they can't be called by users of the SDK,
 // and therefore the `fatalError`s are unreachable.
-// See also: docs/Deprecations.md
+// See also: Development/Deprecations.md
 
 // swiftlint:disable file_length missing_docs
 

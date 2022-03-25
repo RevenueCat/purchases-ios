@@ -12,9 +12,8 @@ func resolveTargets() -> [Target] {
                     "CHANGELOG.latest.md",
                     "CHANGELOG.md",
                     "CODE_OF_CONDUCT.md",
-                    "CONTRIBUTING.md",
+                    "Development",
                     "Documentation.docc",
-                    "docs",
                     "Examples",
                     "fastlane",
                     "Gemfile",
@@ -24,10 +23,8 @@ func resolveTargets() -> [Target] {
                     "LICENSE",
                     "Purchases/Info.plist",
                     "README.md",
-                    "RELEASING.md",
                     "RevenueCat.podspec",
                     "scripts",
-                    "SwiftStyleGuide.swift",
                     "Tests"
                     ],
                 sources: ["Sources"]
