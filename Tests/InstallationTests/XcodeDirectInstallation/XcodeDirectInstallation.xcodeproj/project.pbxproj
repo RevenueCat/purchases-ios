@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D4DC0CD27EE1B1400CE47C3 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4DC0C227EE1A4D00CE47C3 /* RevenueCat.framework */; };
+		2D4DC0CE27EE1B2A00CE47C3 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4DC0C227EE1A4D00CE47C3 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2D6C042F254A0A550039CB92 /* RCInstallationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C041F254A0A550039CB92 /* RCInstallationRunner.m */; };
 		2D6C0430254A0A550039CB92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C0421254A0A550039CB92 /* Assets.xcassets */; };
 		2D6C0431254A0A550039CB92 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0422254A0A550039CB92 /* ViewController.m */; };
@@ -18,45 +20,57 @@
 		2D6C0444254A0A760039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0443254A0A760039CB92 /* Dummy.swift */; };
 		2D6C0487254A0CF20039CB92 /* RCInstallationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C0428254A0A550039CB92 /* RCInstallationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2DC19147255F1AFE0039389A /* InstallationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19142255F1AFE0039389A /* InstallationTests.swift */; };
-		B35EE57326E29E06008F27D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */; };
-		B35EE57426E29E40008F27D8 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		2D6C03FB254A0A470039CB92 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C03D7254A0A460039CB92 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2D6C03DE254A0A460039CB92;
-			remoteInfo = XcodeDirectInstallation;
-		};
-		B3EAF56A26E29DCC00E0728D /* PBXContainerItemProxy */ = {
+		2D4DC0C127EE1A4D00CE47C3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DC5621624EC63420031F69B;
 			remoteInfo = RevenueCat;
 		};
-		B3EAF56C26E29DCC00E0728D /* PBXContainerItemProxy */ = {
+		2D4DC0C327EE1A4D00CE47C3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DC5621E24EC63430031F69B;
-			remoteInfo = RevenueCatTests;
+			remoteInfo = UnitTests;
 		};
-		B3EAF56E26E29DCC00E0728D /* PBXContainerItemProxy */ = {
+		2D4DC0C527EE1A4D00CE47C3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DE20B7F26409EB7004C597D;
-			remoteInfo = StoreKitTestApp;
+			remoteInfo = BackendIntegrationTestsHostApp;
 		};
-		B3EAF57026E29DCC00E0728D /* PBXContainerItemProxy */ = {
+		2D4DC0C727EE1A4D00CE47C3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DE20B6C264087FB004C597D;
 			remoteInfo = BackendIntegrationTests;
+		};
+		2D4DC0C927EE1A4D00CE47C3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DEAC2DA26EFE46E006914ED;
+			remoteInfo = UnitTestsHostApp;
+		};
+		2D4DC0CB27EE1A4D00CE47C3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DAC5F7226F13C9800C5258F;
+			remoteInfo = StoreKitUnitTests;
+		};
+		2D6C03FB254A0A470039CB92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D6C03D7254A0A460039CB92 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2D6C03DE254A0A460039CB92;
+			remoteInfo = XcodeDirectInstallation;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -67,7 +81,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B35EE57426E29E40008F27D8 /* RevenueCat.framework in Embed Frameworks */,
+				2D4DC0CE27EE1B2A00CE47C3 /* RevenueCat.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -93,7 +107,7 @@
 		2D6C042E254A0A550039CB92 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		2D6C0442254A0A760039CB92 /* XcodeDirectInstallation-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectInstallation-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C0443254A0A760039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
-		2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RevenueCat.xcodeproj; path = ../../RevenueCat.xcodeproj; sourceTree = "<group>"; };
+		2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RevenueCat.xcodeproj; path = ../../../RevenueCat.xcodeproj; sourceTree = "<group>"; };
 		2D6C047B254A0C230039CB92 /* XcodeDirectInstallationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectInstallationTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		2DC19142255F1AFE0039389A /* InstallationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstallationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -103,7 +117,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B35EE57326E29E06008F27D8 /* RevenueCat.framework in Frameworks */,
+				2D4DC0CD27EE1B1400CE47C3 /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,6 +131,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2D4DC0B927EE1A4D00CE47C3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2D4DC0C227EE1A4D00CE47C3 /* RevenueCat.framework */,
+				2D4DC0C427EE1A4D00CE47C3 /* UnitTests.xctest */,
+				2D4DC0C627EE1A4D00CE47C3 /* BackendIntegrationTestsHostApp.app */,
+				2D4DC0C827EE1A4D00CE47C3 /* BackendIntegrationTests.xctest */,
+				2D4DC0CA27EE1A4D00CE47C3 /* UnitTestsHostApp.app */,
+				2D4DC0CC27EE1A4D00CE47C3 /* StoreKitUnitTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		2D6C03D6254A0A460039CB92 = {
 			isa = PBXGroup;
 			children = (
@@ -176,18 +203,6 @@
 			);
 			name = CommonFiles;
 			path = ../CommonFiles;
-			sourceTree = "<group>";
-		};
-		2D6C0455254A0AF10039CB92 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */,
-				B3EAF56D26E29DCC00E0728D /* RevenueCatTests.xctest */,
-				B3EAF56F26E29DCC00E0728D /* StoreKitTestApp.app */,
-				B3EAF57126E29DCC00E0728D /* BackendIntegrationTests.xctest */,
-				B3EAF57326E29DCC00E0728D /* APITester */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		2D6C046A254A0B290039CB92 /* Frameworks */ = {
@@ -280,7 +295,7 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 2D6C0455254A0AF10039CB92 /* Products */;
+					ProductGroup = 2D4DC0B927EE1A4D00CE47C3 /* Products */;
 					ProjectRef = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 				},
 			);
@@ -293,32 +308,46 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */ = {
+		2D4DC0C227EE1A4D00CE47C3 /* RevenueCat.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = RevenueCat.framework;
-			remoteRef = B3EAF56A26E29DCC00E0728D /* PBXContainerItemProxy */;
+			remoteRef = 2D4DC0C127EE1A4D00CE47C3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		B3EAF56D26E29DCC00E0728D /* RevenueCatTests.xctest */ = {
+		2D4DC0C427EE1A4D00CE47C3 /* UnitTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = RevenueCatTests.xctest;
-			remoteRef = B3EAF56C26E29DCC00E0728D /* PBXContainerItemProxy */;
+			path = UnitTests.xctest;
+			remoteRef = 2D4DC0C327EE1A4D00CE47C3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		B3EAF56F26E29DCC00E0728D /* StoreKitTestApp.app */ = {
+		2D4DC0C627EE1A4D00CE47C3 /* BackendIntegrationTestsHostApp.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;
-			path = StoreKitTestApp.app;
-			remoteRef = B3EAF56E26E29DCC00E0728D /* PBXContainerItemProxy */;
+			path = BackendIntegrationTestsHostApp.app;
+			remoteRef = 2D4DC0C527EE1A4D00CE47C3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		B3EAF57126E29DCC00E0728D /* BackendIntegrationTests.xctest */ = {
+		2D4DC0C827EE1A4D00CE47C3 /* BackendIntegrationTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = BackendIntegrationTests.xctest;
-			remoteRef = B3EAF57026E29DCC00E0728D /* PBXContainerItemProxy */;
+			remoteRef = 2D4DC0C727EE1A4D00CE47C3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4DC0CA27EE1A4D00CE47C3 /* UnitTestsHostApp.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = UnitTestsHostApp.app;
+			remoteRef = 2D4DC0C927EE1A4D00CE47C3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4DC0CC27EE1A4D00CE47C3 /* StoreKitUnitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = StoreKitUnitTests.xctest;
+			remoteRef = 2D4DC0CB27EE1A4D00CE47C3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
