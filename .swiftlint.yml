@@ -2,7 +2,7 @@ excluded:
   - Carthage
   - Examples
   - InstallationTests
-  - TestingApps
+  - Tests/TestingApps
   - vendor
   - scan_derived_data
 
