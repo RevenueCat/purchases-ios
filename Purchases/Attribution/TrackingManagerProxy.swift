@@ -23,6 +23,19 @@ import Foundation
 
 }
 
+extension FakeTrackingManagerAuthorizationStatus: CustomStringConvertible {
+
+    var description: String {
+        switch self {
+        case .notDetermined: return "notDetermined"
+        case .restricted: return "restricted"
+        case .denied: return "denied"
+        case .authorized: return "authorized"
+        }
+    }
+
+}
+
 // We need this class to avoid Kid apps being rejected for getting idfa. It seems like App
 // Review uses some grep to find the class names, so we ended up creating a fake class that
 // exposes the same methods we're looking for in ATTrackingManager to call the same methods and mangling

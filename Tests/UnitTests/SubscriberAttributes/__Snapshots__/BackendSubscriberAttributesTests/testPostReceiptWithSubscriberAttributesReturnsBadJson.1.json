@@ -6,6 +6,10 @@
     "body" : {
       "app_user_id" : "abc123",
       "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "authorized"
+        },
         "a key" : {
           "updated_at_ms" : 1678307200000,
           "value" : "a value"
