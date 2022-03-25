@@ -414,7 +414,7 @@ workflows:
           xcode_version: '13.2.1'
       - run-test-ios-12:
           xcode_version: '13.2.1'
-          # <<: *release-branches-and-main
+          <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '13.2.1'
       - release-checks:
@@ -428,16 +428,16 @@ workflows:
                 ignore: /pull\/[0-9]+/
       - installation-tests-cocoapods:
           xcode_version: '13.2.1'
-          # <<: *release-tags-and-branches
+          <<: *release-tags-and-branches
       - installation-tests-swift-package-manager:
           xcode_version: '13.2.1'
-          # <<: *release-tags-and-branches
+          <<: *release-tags-and-branches
       - installation-tests-carthage:
           xcode_version: '13.2.1'
-          # <<: *release-tags-and-branches
+          <<: *release-tags-and-branches
       - installation-tests-xcode-direct-integration:
           xcode_version: '13.2.1'
-          # <<: *release-tags-and-branches
+          <<: *release-tags-and-branches
   deploy:
     jobs:
       - make-release:
