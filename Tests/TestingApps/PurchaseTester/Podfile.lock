@@ -1,0 +1,16 @@
+PODS:
+  - RevenueCat (4.2.0-SNAPSHOT)
+
+DEPENDENCIES:
+  - RevenueCat (from `../../../`)
+
+EXTERNAL SOURCES:
+  RevenueCat:
+    :path: "../../../"
+
+SPEC CHECKSUMS:
+  RevenueCat: 0043d66c3aa68e164da86c48d30d8f9f08dd34c2
+
+PODFILE CHECKSUM: 58651ec60bbf1f1471959a643ec6dec8dd88d5f6
+
+COCOAPODS: 1.11.2

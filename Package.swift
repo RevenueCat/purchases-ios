@@ -28,7 +28,6 @@ func resolveTargets() -> [Target] {
                     "RevenueCat.podspec",
                     "scripts",
                     "SwiftStyleGuide.swift",
-                    "TestingApps",
                     "Tests"
                     ],
                 sources: ["Purchases"]
