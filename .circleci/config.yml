@@ -340,7 +340,7 @@ jobs:
       - scan-and-archive:
           directory: Tests/InstallationTests/CocoapodsInstallation
       
-  integration-tests-swift-package-manager:
+  installation-tests-swift-package-manager:
     <<: *base-job
     steps:
       - checkout
@@ -371,7 +371,7 @@ jobs:
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
 
-  integration-tests-xcode-direct-integration:
+  installation-tests-xcode-direct-integration:
     <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
@@ -429,13 +429,13 @@ workflows:
       - installation-tests-cocoapods:
           xcode_version: '13.2.1'
           <<: *release-tags-and-branches
-      - integration-tests-swift-package-manager:
+      - installation-tests-swift-package-manager:
           xcode_version: '13.2.1'
           <<: *release-tags-and-branches
       - installation-tests-carthage:
           xcode_version: '13.2.1'
           <<: *release-tags-and-branches
-      - integration-tests-xcode-direct-integration:
+      - installation-tests-xcode-direct-integration:
           xcode_version: '13.2.1'
           <<: *release-tags-and-branches
   deploy:
