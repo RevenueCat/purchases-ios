@@ -169,7 +169,7 @@ commands:
       - install-dependencies
       - run:
           name: Update git commit in Carthage Installation tests
-          working_directory: InstallationTests/CarthageInstallation/
+          working_directory: Tests/InstallationTests/CarthageInstallation/
           command: |
               bundle exec fastlane update_carthage_commit
 
@@ -331,14 +331,14 @@ jobs:
       - checkout
       - install-dependencies
       - install-dependencies:
-          directory: InstallationTests/CocoapodsInstallation
+          directory: Tests/InstallationTests/CocoapodsInstallation
       - run:
           name: Install Pods
-          working_directory: InstallationTests/CocoapodsInstallation/
+          working_directory: Tests/InstallationTests/CocoapodsInstallation/
           command: |
               pod install
       - scan-and-archive:
-          directory: InstallationTests/CocoapodsInstallation
+          directory: Tests/InstallationTests/CocoapodsInstallation
       
   integration-tests-swift-package-manager:
     <<: *base-job
@@ -347,9 +347,9 @@ jobs:
       - trust-github-key
       - update-spm-installation-commit
       - install-dependencies:
-          directory: InstallationTests/SPMInstallation/
+          directory: Tests/InstallationTests/SPMInstallation/
       - scan-and-archive-all-platforms:
-          directory: InstallationTests/SPMInstallation/
+          directory: Tests/InstallationTests/SPMInstallation/
 
   installation-tests-carthage:
     <<: *base-job
@@ -360,16 +360,16 @@ jobs:
       # Carthage
       - run:
           name: Carthage Update
-          working_directory: InstallationTests/CarthageInstallation/
+          working_directory: Tests/InstallationTests/CarthageInstallation/
           # install without building, then remove the tests and build, so that carthage
           # doesn't try to build the other installation tests
           command: |
               ./carthage.sh update --no-build
-              rm -rf Carthage/Checkouts/purchases-root/InstallationTests/
+              rm -rf Carthage/Checkouts/purchases-root/Tests/InstallationTests/
               ./carthage.sh build --use-xcframeworks
       
       - install-dependencies-scan-and-archive:
-          directory: InstallationTests/CarthageInstallation/
+          directory: Tests/InstallationTests/CarthageInstallation/
 
   integration-tests-xcode-direct-integration:
     <<: *base-job
@@ -379,7 +379,7 @@ jobs:
       - checkout
 
       - install-dependencies-scan-and-archive:
-          directory: InstallationTests/XcodeDirectInstallation/
+          directory: Tests/InstallationTests/XcodeDirectInstallation/
 
   lint:
     <<: *base-job
