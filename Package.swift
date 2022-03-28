@@ -33,7 +33,6 @@ func resolveTargets() -> [Target] {
     return baseTargets
 }
 
-
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin
 let environmentVariables = ProcessInfo.processInfo.environment
