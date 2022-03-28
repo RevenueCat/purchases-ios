@@ -37,7 +37,7 @@ Pods/
 IntegrationTests/CarthageInstallation/Cartfile.resolved
 scan_derived_data/
 generated_docs/
-RevenueCat.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+**/Package.resolved
 
 # fastlane
 fastlane/.env
