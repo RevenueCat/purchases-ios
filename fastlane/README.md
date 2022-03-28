@@ -144,7 +144,7 @@ build ObjC API tester
 [bundle exec] fastlane ios replace_api_key_integration_tests
 ```
 
-replace API KEY for integration tests
+replace API KEY for installation and integration tests
 
 ### ios release
 
@@ -209,6 +209,22 @@ Run BackendIntegrationTests
 ```
 
 Update swift package commit
+
+### ios preview_docs
+
+```sh
+[bundle exec] fastlane ios preview_docs
+```
+
+Preview docs
+
+### ios generate_docs
+
+```sh
+[bundle exec] fastlane ios generate_docs
+```
+
+Generate docs
 
 ### ios sandbox_testers
 

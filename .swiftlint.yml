@@ -6,6 +6,7 @@ excluded:
   - vendor
   - scan_derived_data
   - .git
+  - .build
 
 opt_in_rules:
   - sorted_imports
