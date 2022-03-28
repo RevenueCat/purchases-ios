@@ -447,7 +447,7 @@ platform :ios do
     ENV["INCLUDE_DOCC_PLUGIN"] = "true"
     version_number = current_version_number
     docs_folder = "docs/#{version_number}"
-    hosting_base_path = "purchases-ios"
+    hosting_base_path = "purchases-ios/#{version_number}"
 
     Dir.chdir("..") do
       sh("swift",
