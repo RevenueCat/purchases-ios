@@ -33,6 +33,17 @@ func resolveTargets() -> [Target] {
     return baseTargets
 }
 
+
+// Only add DocC Plugin when building docs, so that clients of this library won't
+// unnecessarily also get the DocC Plugin
+let environmentVariables = ProcessInfo.processInfo.environment
+let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
+
+var dependencies: [Package.Dependency] = []
+if shouldIncludeDocCPlugin {
+    dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
+}
+
 let package = Package(
     name: "RevenueCat",
     platforms: [
@@ -45,8 +56,6 @@ let package = Package(
         .library(name: "RevenueCat",
                  targets: ["RevenueCat"])
     ],
-    dependencies: [
-        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
-    ],
+    dependencies: dependencies,
     targets: resolveTargets()
 )

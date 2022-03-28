@@ -427,6 +427,7 @@ platform :ios do
 
   desc "Preview docs"
   lane :preview_docs do
+    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
     Dir.chdir("..") do
       sh("swift",
          "package",
@@ -440,6 +441,7 @@ platform :ios do
 
   desc "Generate docs"
   lane :generate_docs do
+    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
     Dir.chdir("..") do
       hosting_base_path = "purchases-ios"
       docs_folder = "docs"
