@@ -30,7 +30,7 @@ func resolveTargets() -> [Target] {
                     "SwiftStyleGuide.swift",
                     "Tests"
                     ],
-                sources: ["Purchases"]
+                sources: ["Sources"]
         )
     ]
 
