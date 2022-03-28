@@ -45,6 +45,8 @@ let package = Package(
         .library(name: "RevenueCat",
                  targets: ["RevenueCat"])
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
+    ],
     targets: resolveTargets()
 )
