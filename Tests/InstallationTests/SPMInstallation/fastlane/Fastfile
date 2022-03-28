@@ -1,4 +1,4 @@
-import("../../../fastlane/Fastfile")
+import("../../../../fastlane/Fastfile")
 
 desc "Update swift package commit"
 lane :update_swift_package_commit do

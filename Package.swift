@@ -18,7 +18,6 @@ func resolveTargets() -> [Target] {
                     "fastlane",
                     "Gemfile",
                     "Gemfile.lock",
-                    "InstallationTests",
                     "LatestTagDocs",
                     "LICENSE",
                     "Purchases/Info.plist",
