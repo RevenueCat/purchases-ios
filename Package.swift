@@ -20,7 +20,7 @@ func resolveTargets() -> [Target] {
                     "Gemfile.lock",
                     "LatestTagDocs",
                     "LICENSE",
-                    "Purchases/Info.plist",
+                    "Sources/Info.plist",
                     "README.md",
                     "RevenueCat.podspec",
                     "scripts",

@@ -5,6 +5,7 @@ excluded:
   - Tests/TestingApps
   - vendor
   - scan_derived_data
+  - .git
 
 opt_in_rules:
   - sorted_imports
