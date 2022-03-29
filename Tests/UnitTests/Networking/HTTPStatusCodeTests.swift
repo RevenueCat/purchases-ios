@@ -81,6 +81,24 @@ class HTTPStatusCodeTests: XCTestCase {
         expect(status(600).isServerError) == false
     }
 
+    func testIsSuccessfullySynced() {
+        expect(HTTPStatusCode.success.isSuccessfullySynced) == true
+        expect(HTTPStatusCode.createdSuccess.isSuccessfullySynced) == true
+        expect(HTTPStatusCode.redirect.isSuccessfullySynced) == true
+        expect(HTTPStatusCode.notModified.isSuccessfullySynced) == true
+        expect(HTTPStatusCode.invalidRequest.isSuccessfullySynced) == true
+        expect(status(100).isSuccessfullySynced) == true
+        expect(status(202).isSuccessfullySynced) == true
+        expect(status(226).isSuccessfullySynced) == true
+        expect(status(299).isSuccessfullySynced) == true
+    }
+
+    func testIsNotSuccessfullySynced() {
+        expect(HTTPStatusCode.internalServerError.isSuccessfullySynced) == false
+        expect(HTTPStatusCode.networkConnectTimeoutError.isSuccessfullySynced) == false
+        expect(HTTPStatusCode.notFoundError.isSuccessfullySynced) == false
+    }
+
 }
 
 private func status(_ code: Int) -> HTTPStatusCode {
