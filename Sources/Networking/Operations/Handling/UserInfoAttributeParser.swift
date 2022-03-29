@@ -13,9 +13,9 @@
 
 import Foundation
 
-class UserInfoAttributeParser {
+enum UserInfoAttributeParser {
 
-    func attributesUserInfoFromResponse(response: [String: Any], statusCode: HTTPStatusCode) -> [String: Any] {
+    static func attributesUserInfoFromResponse(response: [String: Any], statusCode: HTTPStatusCode) -> [String: Any] {
         var resultDict: [String: Any] = [:]
         let isServerError = statusCode.isServerError
         let isNotFoundError = statusCode == .notFoundError

@@ -111,8 +111,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
     func testGetOfferingsNetworkErrorSendsNilAndError() {
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
-            response: .init(statusCode: .success,
-                            response: .failure(NSError(domain: NSURLErrorDomain, code: -1009)))
+            response: .init(error: NSError(domain: NSURLErrorDomain, code: -1009))
         )
 
         var receivedError: NSError?

@@ -267,8 +267,7 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
 
         self.mockHTTPClient.mock(
             requestPath: .postSubscriberAttributes(appUserID: appUserID),
-            response: .init(statusCode: .invalidRequest,
-                            response: .failure(ErrorUtils.networkError(withUnderlyingError: underlyingError)))
+            response: .init(error: ErrorUtils.networkError(withUnderlyingError: underlyingError))
         )
 
         var receivedError: Error?

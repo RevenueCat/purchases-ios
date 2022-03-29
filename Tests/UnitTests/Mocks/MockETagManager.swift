@@ -31,8 +31,7 @@ class MockETagManager: ETagManager {
 
     private struct InvokedHTTPResultFromCacheOrBackendParams {
         let response: HTTPURLResponse
-        let responseObject: [String: Any]?
-        let error: Error?
+        let responseObject: [String: Any]
         let request: URLRequest
         let retried: Bool
     }
@@ -45,8 +44,7 @@ class MockETagManager: ETagManager {
     var shouldReturnResultFromBackend = true
 
     override func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                               jsonObject: [String: Any]?,
-                                               error: Error?,
+                                               jsonObject: [String: Any],
                                                request: URLRequest,
                                                retried: Bool) -> HTTPResponse? {
         return lock.perform {
@@ -55,7 +53,6 @@ class MockETagManager: ETagManager {
             let params = InvokedHTTPResultFromCacheOrBackendParams(
                 response: response,
                 responseObject: jsonObject,
-                error: error,
                 request: request,
                 retried: retried
             )

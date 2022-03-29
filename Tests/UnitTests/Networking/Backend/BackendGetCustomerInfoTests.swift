@@ -80,8 +80,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodedUserID), response: response)
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodeableUserID),
-                        response: .init(statusCode: .notFoundError,
-                                        error: ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError())))
+                        response: .init(error: ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError())))
 
         var customerInfo: Result<CustomerInfo, Error>?
 

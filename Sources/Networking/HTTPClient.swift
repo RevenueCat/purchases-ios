@@ -16,7 +16,7 @@ import Foundation
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
-    typealias Completion = ((_ statusCode: HTTPStatusCode, _ result: Result<[String: Any], Error>) -> Void)
+    typealias Completion = (Result<HTTPResponse, Error>) -> Void
 
     private let session: URLSession
     internal let systemInfo: SystemInfo
@@ -60,6 +60,7 @@ extension HTTPClient {
 }
 
 private extension HTTPClient {
+
     struct State {
         var queuedRequests: [Request]
         var currentSerialRequest: Request?
@@ -67,6 +68,7 @@ private extension HTTPClient {
         static let initial: Self = .init(queuedRequests: [],
                                          currentSerialRequest: nil)
     }
+
 }
 
 private extension HTTPClient {
@@ -160,62 +162,112 @@ private extension HTTPClient {
         self.start(request: request)
     }
 
+    // swiftlint:disable:next function_body_length
+    func parse(urlResponse: URLResponse?,
+               request: Request,
+               urlRequest: URLRequest,
+               data: Data?,
+               error networkError: Error?
+    ) -> (result: Result<HTTPResponse, Error>, shouldRetry: Bool) {
+        if let networkError = networkError {
+            return (
+                result: .failure(networkError)
+                    .mapError { error in
+                        if self.dnsChecker.isBlockedAPIError(networkError),
+                           let blockedError = self.dnsChecker.errorWithBlockedHostFromError(networkError) {
+                            Logger.error(blockedError.description)
+                            return blockedError
+                        } else {
+                            return error
+                        }
+                    },
+                shouldRetry: false
+            )
+        }
+
+        guard let httpURLResponse = urlResponse as? HTTPURLResponse else {
+            return (.failure(ErrorUtils.unexpectedBackendResponseError()), false)
+        }
+
+        func extractBody(_ response: HTTPURLResponse, _ statusCode: HTTPStatusCode) throws -> [String: Any] {
+            if let data = data, statusCode != .notModified {
+                let result: [String: Any]?
+
+                do {
+                    result = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                } catch let jsonError {
+                    Logger.error(Strings.network.parsing_json_error(error: jsonError))
+
+                    let dataAsString = String(data: data, encoding: .utf8) ?? ""
+                    Logger.error(Strings.network.json_data_received(dataString: dataAsString))
+
+                    throw jsonError
+                }
+
+                guard let result = result else {
+                    throw ErrorUtils.unexpectedBackendResponseError()
+                }
+
+                return result
+            } else {
+                return [:]
+            }
+        }
+
+        let statusCode = HTTPStatusCode(rawValue: httpURLResponse.statusCode)
+
+        Logger.debug(Strings.network.api_request_completed(request.httpRequest,
+                                                           httpCode: statusCode))
+
+        let result: Result<HTTPResponse?, Error> = Result { try extractBody(httpURLResponse, statusCode) }
+            .map { HTTPResponse(statusCode: statusCode, jsonObject: $0) }
+            .map {
+                return self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
+                                                                     jsonObject: $0.jsonObject,
+                                                                     request: urlRequest,
+                                                                     retried: request.retried)
+            }
+
+        let shouldRetry: Bool = {
+            if case .success(.none) = result {
+                return true
+            } else {
+                return false
+            }
+        }()
+
+        return (
+            result: result
+                .flatMap {
+                    $0.map(Result.success)
+                        ?? .failure(ErrorUtils.unexpectedBackendResponseError())
+                },
+            shouldRetry: shouldRetry
+        )
+    }
+
     func handle(urlResponse: URLResponse?,
                 request: Request,
                 urlRequest: URLRequest,
                 data: Data?,
                 error networkError: Error?) {
-        var statusCode: HTTPStatusCode = .networkConnectTimeoutError
-        var jsonObject: [String: Any]?
-        var httpResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
-        var receivedJSONError: Error?
+        let (response, shouldRetry) = self.parse(
+            urlResponse: urlResponse,
+            request: request,
+            urlRequest: urlRequest,
+            data: data,
+            error: networkError
+        )
 
-        if networkError == nil {
-            if let httpURLResponse = urlResponse as? HTTPURLResponse {
-                statusCode = .init(rawValue: httpURLResponse.statusCode)
-                Logger.debug(Strings.network.api_request_completed(request.httpRequest, httpCode: statusCode))
+        if shouldRetry {
+            Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod,
+                                                          path: request.path))
 
-                if statusCode == .notModified || data == nil {
-                    jsonObject = [:]
-                } else if let data = data {
-                    do {
-                        jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-                    } catch let jsonError {
-                        Logger.error(Strings.network.parsing_json_error(error: jsonError))
-
-                        let dataAsString = String(data: data, encoding: .utf8) ?? ""
-                        Logger.error(Strings.network.json_data_received(dataString: dataAsString))
-
-                        receivedJSONError = jsonError
-                    }
-                }
-
-                httpResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
-                                                                             jsonObject: jsonObject,
-                                                                             error: receivedJSONError,
-                                                                             request: urlRequest,
-                                                                             retried: request.retried)
-                if httpResponse == nil {
-                    Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod,
-                                                                  path: request.path))
-                    self.state.modify {
-                        $0.queuedRequests.insert(request.retriedRequest(), at: 0)
-                    }
-                }
+            self.state.modify {
+                $0.queuedRequests.insert(request.retriedRequest(), at: 0)
             }
-        }
-
-        var networkError = networkError
-        if dnsChecker.isBlockedAPIError(networkError),
-           let blockedError = dnsChecker.errorWithBlockedHostFromError(networkError) {
-            Logger.error(blockedError.description)
-            networkError = blockedError
-        }
-
-        if let httpResponse = httpResponse,
-           let completionHandler = request.completionHandler {
-            let error = receivedJSONError ?? networkError
-            completionHandler(httpResponse.statusCode, Result(httpResponse.jsonObject, error))
+        } else {
+            request.completionHandler?(response)
         }
 
         self.beginNextRequest()
@@ -244,7 +296,6 @@ private extension HTTPClient {
             Logger.error("Could not create request to \(request.path)")
 
             request.completionHandler?(
-                .invalidRequest,
                 .failure(ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
             )
             return
@@ -304,14 +355,7 @@ extension HTTPRequest.Path {
 private extension Encodable {
 
     func asData() throws -> Data {
-        return try jsonEncoder.encode(self)
+        return try defaultJsonEncoder.encode(self)
     }
 
 }
-
-private let jsonEncoder: JSONEncoder = {
-    let encoder = JSONEncoder()
-    encoder.keyEncodingStrategy = .convertToSnakeCase
-
-    return encoder
-}()

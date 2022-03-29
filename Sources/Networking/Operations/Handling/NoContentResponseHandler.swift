@@ -15,14 +15,13 @@ import Foundation
 
 class NoContentResponseHandler {
 
-    func handle(statusCode: HTTPStatusCode,
-                result: Result<[String: Any], Error>,
+    func handle(_ response: Result<HTTPResponse, Error>,
                 completion: SimpleResponseHandler) {
-        switch result {
+        switch response {
         case let .success(response):
-            guard statusCode.isSuccessfulResponse else {
-                let backendErrorCode = BackendErrorCode(code: response["code"])
-                let message = response["message"] as? String
+            guard response.statusCode.isSuccessfulResponse else {
+                let backendErrorCode = BackendErrorCode(code: response.jsonObject["code"])
+                let message = response.jsonObject["message"] as? String
                 let responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode, backendMessage: message)
                 completion(responseError)
 

@@ -51,23 +51,22 @@ private extension LogInOperation {
                                                      newAppUserID: newAppUserID)),
                                   path: .logIn)
 
-        self.httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, result in
+        self.httpClient.perform(request, authHeaders: self.authHeaders) { response in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                self.handleLogin(result: result,
-                                 statusCode: statusCode,
-                                 completion: callbackObject.completion)
+                self.handleLogin(response, completion: callbackObject.completion)
             }
 
             completion()
         }
     }
 
-    func handleLogin(result: Result<[String: Any], Error>,
-                     statusCode: HTTPStatusCode,
+    func handleLogin(_ result: Result<HTTPResponse, Error>,
                      completion: LogInResponseHandler) {
         let result: Result<(info: CustomerInfo, created: Bool), Error> = result
             .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
             .flatMap { response in
+                let (statusCode, response) = (response.statusCode, response.jsonObject)
+
                 if !statusCode.isSuccessfulResponse {
                     let backendCode = BackendErrorCode(code: response["code"])
                     let backendMessage = response["message"] as? String

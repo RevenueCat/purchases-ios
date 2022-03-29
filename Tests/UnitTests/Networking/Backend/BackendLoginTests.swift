@@ -43,7 +43,7 @@ class BackendLoginTests: BaseBackendTests {
         let errorCode = 123465
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
         let currentAppUserID = "old id"
-        _ = mockLoginRequest(appUserID: currentAppUserID, response: .failure(stubbedError))
+        _ = mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
@@ -69,7 +69,7 @@ class BackendLoginTests: BaseBackendTests {
                                    code: errorCode,
                                    userInfo: [:])
         let currentAppUserID = "old id"
-        _ = self.mockLoginRequest(appUserID: currentAppUserID, response: .failure(stubbedError))
+        _ = self.mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
@@ -94,7 +94,7 @@ class BackendLoginTests: BaseBackendTests {
         let underlyingErrorCode = BackendErrorCode.cannotTransferPurchase.rawValue
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: 431,
-                                  response: .success(["code": underlyingErrorCode, "message": underlyingErrorMessage]))
+                                  response: ["code": underlyingErrorCode, "message": underlyingErrorMessage])
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
@@ -143,7 +143,7 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: .success(Self.mockCustomerInfoData))
+                                  response: Self.mockCustomerInfoData)
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
@@ -163,7 +163,7 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .success,
-                                  response: .success(Self.mockCustomerInfoData))
+                                  response: Self.mockCustomerInfoData)
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
 
@@ -184,7 +184,7 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: .success(Self.mockCustomerInfoData))
+                                  response: Self.mockCustomerInfoData)
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { _  in }
@@ -201,7 +201,7 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: .success(Self.mockCustomerInfoData))
+                                  response: Self.mockCustomerInfoData)
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { _ in }
@@ -218,7 +218,7 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID2 = "old id 2"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: .success(Self.mockCustomerInfoData))
+                                  response: Self.mockCustomerInfoData)
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { _ in }
@@ -234,7 +234,7 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
-                                  response: .success(Self.mockCustomerInfoData))
+                                  response: Self.mockCustomerInfoData)
 
         var completion1Called = false
         var completion2Called = false
@@ -259,9 +259,19 @@ private extension BackendLoginTests {
 
     func mockLoginRequest(appUserID: String,
                           statusCode: HTTPStatusCode = .success,
-                          response: Result<[String: Any], Error> = .success([:])) -> HTTPRequest.Path {
+                          response: [String: Any] = [:]) -> HTTPRequest.Path {
         let path: HTTPRequest.Path = .logIn
-        let response = MockHTTPClient.Response(statusCode: statusCode, response: response)
+        let response =  MockHTTPClient.Response(statusCode: statusCode, response: response)
+
+        self.httpClient.mock(requestPath: path, response: response)
+
+        return path
+    }
+
+    func mockLoginRequest(appUserID: String,
+                          error: Error) -> HTTPRequest.Path {
+        let path: HTTPRequest.Path = .logIn
+        let response =  MockHTTPClient.Response(error: error)
 
         self.httpClient.mock(requestPath: path, response: response)
 

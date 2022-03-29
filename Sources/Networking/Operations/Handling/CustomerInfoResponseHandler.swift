@@ -15,15 +15,10 @@ import Foundation
 
 class CustomerInfoResponseHandler {
 
-    let userInfoAttributeParser: UserInfoAttributeParser
-
-    init(userInfoAttributeParser: UserInfoAttributeParser = UserInfoAttributeParser()) {
-        self.userInfoAttributeParser = userInfoAttributeParser
-    }
+    init() { }
 
     // swiftlint:disable:next function_body_length
-    func handle(customerInfoResponse response: Result<[String: Any], Error>,
-                statusCode: HTTPStatusCode,
+    func handle(customerInfoResponse response: Result<HTTPResponse, Error>,
                 file: String = #fileID,
                 function: String = #function,
                 line: UInt = #line,
@@ -36,6 +31,7 @@ class CustomerInfoResponseHandler {
             ))
 
         case let .success(response):
+            let (statusCode, response) = (response.statusCode, response.jsonObject)
             let isErrorStatusCode = !statusCode.isSuccessfulResponse
 
             var result: Result<CustomerInfo, Error> = {
@@ -57,7 +53,7 @@ class CustomerInfoResponseHandler {
                 }
             }()
 
-            let subscriberAttributesErrorInfo = self.userInfoAttributeParser
+            let subscriberAttributesErrorInfo = UserInfoAttributeParser
                 .attributesUserInfoFromResponse(response: response, statusCode: statusCode)
 
             let hasError = (isErrorStatusCode
