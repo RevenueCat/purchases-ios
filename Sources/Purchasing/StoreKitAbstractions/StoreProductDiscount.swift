@@ -74,6 +74,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc public var localizedPriceString: String { self.discount.localizedPriceString }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
+    @objc public var numberOfPeriods: Int { self.discount.numberOfPeriods }
     @objc public var type: DiscountType { self.discount.type }
 
     // swiftlint:enable missing_docs
@@ -117,6 +118,7 @@ extension StoreProductDiscount {
         private var localizedPriceString: String
         private var paymentMode: StoreProductDiscount.PaymentMode
         private var subscriptionPeriod: SubscriptionPeriod
+        private var numberOfPeriods: Int
         private var type: StoreProductDiscount.DiscountType
 
         fileprivate init(discount: StoreProductDiscountType) {
@@ -126,6 +128,7 @@ extension StoreProductDiscount {
             self.localizedPriceString = discount.localizedPriceString
             self.paymentMode = discount.paymentMode
             self.subscriptionPeriod = discount.subscriptionPeriod
+            self.numberOfPeriods = discount.numberOfPeriods
             self.type = discount.type
         }
     }
@@ -154,6 +157,15 @@ internal protocol StoreProductDiscountType {
 
     /// The period for the product discount.
     var subscriptionPeriod: SubscriptionPeriod { get }
+
+    /// The number of periods the product discount is available.
+    /// - Note:
+    /// A product discount may be available for one or more periods.
+    /// The period, defined in `subscriptionPeriod`, is a set number of days, weeks, months, or years.
+    /// The total length of time that a product discount is available is calculated by
+    /// multiplying the `numberOfPeriods` by the period.
+    /// Note that the discount period is independent of the product subscription period.
+    var numberOfPeriods: Int { get }
 
     /// The type of product discount.
     var type: StoreProductDiscount.DiscountType { get }

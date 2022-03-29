@@ -117,13 +117,14 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(offers[0].paymentMode) == .payUpFront
         expect(offers[0].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.year_discount"
         expect(offers[0].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+        expect(offers[0].numberOfPeriods) == 1
 
         expect(offers[1].price) == 20.15
         expect(offers[1].priceDecimalNumber).to(beCloseTo(20.15))
         expect(offers[1].paymentMode) == .payAsYouGo
         expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
-
         expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
+        expect(offers[1].numberOfPeriods) == 2
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -171,14 +172,15 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(offers[0].type) == .promotional
         expect(offers[0].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.year_discount"
         expect(offers[0].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+        expect(offers[0].numberOfPeriods) == 1
 
         expect(offers[1].price) == 20.15
         expect(offers[1].priceDecimalNumber).to(beCloseTo(20.15))
         expect(offers[1].paymentMode) == .payAsYouGo
-        expect(offers[0].type) == .promotional
+        expect(offers[1].type) == .promotional
         expect(offers[1].offerIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go"
-
         expect(offers[1].subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .month)
+        expect(offers[1].numberOfPeriods) == 2
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
