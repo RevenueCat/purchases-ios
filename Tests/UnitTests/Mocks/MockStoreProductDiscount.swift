@@ -14,11 +14,14 @@
 @testable import RevenueCat
 
 struct MockStoreProductDiscount: StoreProductDiscountType {
+
     let offerIdentifier: String?
     let currencyCode: String?
     let price: Decimal
     let localizedPriceString: String
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
+    let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
+
 }

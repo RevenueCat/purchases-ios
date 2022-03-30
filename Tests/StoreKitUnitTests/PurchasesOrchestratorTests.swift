@@ -144,6 +144,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                             localizedPriceString: "$11.10",
                                                             paymentMode: .payAsYouGo,
                                                             subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            numberOfPeriods: 2,
                                                             type: .promotional)
 
         _ = try await withCheckedThrowingContinuation { continuation in
@@ -175,6 +176,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                 localizedPriceString: "$11.10",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .month),
+                                                numberOfPeriods: 2,
                                                 type: .promotional)
         let offer = PromotionalOffer(discount: discount,
                                      signedData: .init(identifier: "",
@@ -277,6 +279,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                 localizedPriceString: "$11.10",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .month),
+                                                numberOfPeriods: 4,
                                                 type: .promotional)
         let offer = PromotionalOffer(discount: discount,
                                      signedData: .init(identifier: "",
@@ -358,6 +361,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                             localizedPriceString: "$11.10",
                                                             paymentMode: .payAsYouGo,
                                                             subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            numberOfPeriods: 3,
                                                             type: .promotional)
 
         _ = try await orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,

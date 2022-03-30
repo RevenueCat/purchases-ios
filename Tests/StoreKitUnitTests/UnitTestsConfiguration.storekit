@@ -73,7 +73,7 @@
             {
               "displayPrice" : "20.15",
               "internalID" : "DE6B065C",
-              "numberOfPeriods" : 1,
+              "numberOfPeriods" : 2,
               "offerID" : "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go",
               "paymentMode" : "payAsYouGo",
               "referenceName" : "pay as you go",

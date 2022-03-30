@@ -29,6 +29,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
         self.price = sk2Discount.price
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
+        self.numberOfPeriods = sk2Discount.periodCount
         self.type = type
     }
 
@@ -39,6 +40,7 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
     let price: Decimal
     let paymentMode: StoreProductDiscount.PaymentMode
     let subscriptionPeriod: SubscriptionPeriod
+    let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
 
     var localizedPriceString: String { underlyingSK2Discount.displayPrice }

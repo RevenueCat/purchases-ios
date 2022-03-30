@@ -101,6 +101,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$11.10",
                                                  paymentMode: .payAsYouGo,
                                                  subscriptionPeriod: .init(value: 1, unit: .month),
+                                                 numberOfPeriods: 1,
                                                  type: .promotional)
 
         let discount2 = MockStoreProductDiscount(offerIdentifier: "offerid2",
@@ -109,6 +110,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$12.20",
                                                  paymentMode: .payUpFront,
                                                  subscriptionPeriod: .init(value: 5, unit: .week),
+                                                 numberOfPeriods: 2,
                                                  type: .promotional)
 
         let discount3 = MockStoreProductDiscount(offerIdentifier: "offerid3",
@@ -117,6 +119,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$13.30",
                                                  paymentMode: .freeTrial,
                                                  subscriptionPeriod: .init(value: 3, unit: .month),
+                                                 numberOfPeriods: 3,
                                                  type: .promotional)
 
         let productData: ProductRequestData = .createMockProductData(discounts: [discount1, discount2, discount3])
@@ -131,6 +134,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$11.20",
                                                  paymentMode: .payAsYouGo,
                                                  subscriptionPeriod: .init(value: 1, unit: .month),
+                                                 numberOfPeriods: 1,
                                                  type: .promotional)
 
         let discount2 = MockStoreProductDiscount(offerIdentifier: "offerid2",
@@ -139,6 +143,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$12.20",
                                                  paymentMode: .payUpFront,
                                                  subscriptionPeriod: .init(value: 2, unit: .year),
+                                                 numberOfPeriods: 2,
                                                  type: .promotional)
 
         let discount3 = MockStoreProductDiscount(offerIdentifier: "offerid3",
@@ -147,6 +152,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$13.30",
                                                  paymentMode: .freeTrial,
                                                  subscriptionPeriod: .init(value: 3, unit: .day),
+                                                 numberOfPeriods: 3,
                                                  type: .promotional)
 
         let productData: ProductRequestData = .createMockProductData(productIdentifier: "cool_product",
@@ -163,8 +169,10 @@ class ProductRequestDataTests: XCTestCase {
         assertSnapshot(matching: productData, as: .formattedJson)
     }
 
-    func testCacheKey() {
-        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
+    func testCacheKey() throws {
+        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else {
+            throw XCTSkip()
+        }
 
         let discount1 = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                  currencyCode: "USD",
@@ -172,6 +180,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$11.00",
                                                  paymentMode: .payAsYouGo,
                                                  subscriptionPeriod: .init(value: 1, unit: .month),
+                                                 numberOfPeriods: 1,
                                                  type: .promotional)
 
         let discount2 = MockStoreProductDiscount(offerIdentifier: "offerid2",
@@ -180,6 +189,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$12.00",
                                                  paymentMode: .payUpFront,
                                                  subscriptionPeriod: .init(value: 2, unit: .year),
+                                                 numberOfPeriods: 2,
                                                  type: .promotional)
 
         let discount3 = MockStoreProductDiscount(offerIdentifier: "offerid3",
@@ -188,6 +198,7 @@ class ProductRequestDataTests: XCTestCase {
                                                  localizedPriceString: "$13.0",
                                                  paymentMode: .freeTrial,
                                                  subscriptionPeriod: .init(value: 3, unit: .day),
+                                                 numberOfPeriods: 3,
                                                  type: .promotional)
 
         let productData: ProductRequestData = .createMockProductData(productIdentifier: "cool_product",

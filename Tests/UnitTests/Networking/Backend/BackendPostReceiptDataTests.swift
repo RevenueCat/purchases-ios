@@ -545,6 +545,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                                                 localizedPriceString: "$12.00",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 10, unit: .month),
+                                                numberOfPeriods: 1,
                                                 type: .promotional)
         let productData: ProductRequestData = .createMockProductData(discounts: [discount])
         backend.post(receiptData: Self.receiptData,
@@ -581,6 +582,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                                                 localizedPriceString: "$12.10",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .year),
+                                                numberOfPeriods: 2,
                                                 type: .promotional)
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
                                                                      paymentMode: paymentMode,
