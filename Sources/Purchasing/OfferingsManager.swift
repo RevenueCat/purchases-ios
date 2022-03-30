@@ -146,16 +146,13 @@ private extension OfferingsManager {
     }
 
     func extractProductIdentifiers(fromOfferingsData offeringsData: [String: Any]) -> Set<String> {
-        guard let offerings = offeringsData["offerings"] as? [[String: Any]] else {
+        // Fixme: parse Data directly instead of converting from Data to Dictionary back to Data
+        guard let data = try? JSONSerialization.data(withJSONObject: offeringsData),
+              let response: OfferingsResponse = try? JSONDecoder.default.decode(jsonData: data) else {
             return []
         }
 
-        let productIdenfitiersArray = offerings
-            .compactMap { $0["packages"] as? [[String: Any]] }
-            .flatMap { $0 }
-            .compactMap { $0["platform_product_identifier"] as? String }
-
-        return Set(productIdenfitiersArray)
+        return Set(response.productIdentifiers)
     }
 
     func dispatchCompletionOnMainThreadIfPossible(_ completion: ((Offerings?, Error?) -> Void)?,
@@ -169,3 +166,42 @@ private extension OfferingsManager {
     }
 
 }
+
+// swiftlint:disable nesting
+
+private struct OfferingsResponse {
+
+    struct Offering {
+
+        struct Package {
+
+            let identifier: String
+            let platformProductIdentifier: String
+
+        }
+
+        let description: String
+        let identifier: String
+        let packages: [Package]
+
+    }
+
+    let currentOfferingId: String
+    let offerings: [Offering]
+
+}
+
+extension OfferingsResponse {
+
+    var productIdentifiers: [String] {
+        return self.offerings
+            .lazy
+            .flatMap { $0.packages }
+            .map { $0.platformProductIdentifier }
+    }
+
+}
+
+extension OfferingsResponse.Offering.Package: Decodable {}
+extension OfferingsResponse.Offering: Decodable {}
+extension OfferingsResponse: Decodable {}
