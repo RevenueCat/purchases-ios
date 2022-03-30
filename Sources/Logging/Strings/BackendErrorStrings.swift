@@ -16,9 +16,6 @@ import Foundation
 // swiftlint:disable identifier_name
 enum BackendErrorStrings {
 
-    // A backend response came back after the Backend object was deallocated.
-    case backend_deallocated
-
     // Backend tried to instantiate a CustomerInfo but for some reason it couldn't.
     case customer_info_instantiation_error(response: [String: Any]?)
 
@@ -40,8 +37,6 @@ extension BackendErrorStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .backend_deallocated:
-            return "Received response from getOfferings but Backend was already deallocated, response will be ignored."
         case .customer_info_instantiation_error(let response):
             var message = "Login failed, unable to instantiate \(CustomerInfo.self)"
             if let response = response {
