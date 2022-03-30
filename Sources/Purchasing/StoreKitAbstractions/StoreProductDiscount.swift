@@ -159,6 +159,10 @@ internal protocol StoreProductDiscountType {
     var subscriptionPeriod: SubscriptionPeriod { get }
 
     /// The number of periods the product discount is available.
+    /// This is `1` for ``StoreProductDiscount/PaymentMode-swift.enum/payUpFront``
+    /// and ``StoreProductDiscount/PaymentMode-swift.enum/freeTrial``, but can be
+    /// more than 1 for ``StoreProductDiscount/PaymentMode-swift.enum/payAsYouGo``.
+    ///
     /// - Note:
     /// A product discount may be available for one or more periods.
     /// The period, defined in `subscriptionPeriod`, is a set number of days, weeks, months, or years.
