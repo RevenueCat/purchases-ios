@@ -210,6 +210,8 @@ private extension HTTPClient {
 
                 return result
             } else {
+                // No data if the body was empty, or if status is `.notModified`
+                // since the body will be fetched from the eTag.
                 return [:]
             }
         }
