@@ -20,10 +20,11 @@ class NoContentResponseHandler {
         switch response {
         case let .success(response):
             guard response.statusCode.isSuccessfulResponse else {
-                let backendErrorCode = BackendErrorCode(code: response.jsonObject["code"])
-                let message = response.jsonObject["message"] as? String
-                let responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode, backendMessage: message)
-                completion(responseError)
+                completion(
+                    ErrorResponse
+                        .from(response.jsonObject)
+                        .asBackendError(with: response.statusCode)
+                )
 
                 return
             }

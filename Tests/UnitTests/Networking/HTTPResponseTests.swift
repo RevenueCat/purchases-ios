@@ -56,6 +56,15 @@ class ErrorResponseTests: XCTestCase {
         expect(result.attributeErrors).to(beEmpty())
     }
 
+    func testErrorResponseWithAttributeErrorsInContainerKey() throws {
+        let result = try self.decodeSupportingContainer(Self.attributeErrorsWithContainerKey)
+        expect(result.code) == .invalidSubscriberAttributes
+        expect(result.message) == "Some subscriber attributes keys were unable to be saved."
+        expect(result.attributeErrors) == [
+            "$email": "Email address is not a valid email."
+        ]
+    }
+
     func testUnknownErrorCreatesBackendError() throws {
         let error = try self.decode(Self.unknownError)
             .asBackendError(with: .internalServerError) as NSError
@@ -88,6 +97,23 @@ class ErrorResponseTests: XCTestCase {
 
     func testErrorWithAttributeErrorsCreatesBackendError() throws {
         let error = try self.decode(Self.withAttributeErrors)
+            .asBackendError(with: .invalidRequest) as NSError
+
+        expect(error.domain) == ErrorCode.errorDomain
+        expect(error.code) == ErrorCode.invalidSubscriberAttributesError.rawValue
+        expect(error.userInfo[ErrorDetails.finishableKey as String] as? Bool) == true
+        expect(error.userInfo[Backend.RCAttributeErrorsKey] as? [String: String]) == [
+            "$email": "Email address is not a valid email."
+        ]
+
+        let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
+
+        expect(underlyingError.domain) == "RevenueCat.BackendErrorCode"
+        expect(underlyingError.code) == BackendErrorCode.invalidSubscriberAttributes.rawValue
+    }
+
+    func testErrorWithAttributeErrorsInContainerKeyCreatesBackendError() throws {
+        let error = try self.decodeSupportingContainer(Self.attributeErrorsWithContainerKey)
             .asBackendError(with: .invalidRequest) as NSError
 
         expect(error.domain) == ErrorCode.errorDomain
@@ -187,6 +213,21 @@ private extension ErrorResponseTests {
         }
         """
 
+    static let attributeErrorsWithContainerKey = """
+        {
+        "attributes_error_response": {
+            "attribute_errors": [
+                {
+                    "key_name": "$email",
+                    "message": "Email address is not a valid email."
+                }
+            ],
+            "code": "7263",
+            "message": "Some subscriber attributes keys were unable to be saved."
+            }
+        }
+        """
+
     static let withoutAttributeErrors = """
         {
         "code": "7224",
@@ -222,6 +263,16 @@ private extension ErrorResponseTests {
         }
 
         return try JSONDecoder.default.decode(ErrorResponse.self, from: data)
+    }
+
+    func decodeSupportingContainer(_ response: String) throws -> ErrorResponse {
+        guard let data = response.data(using: .utf8) else {
+            throw Error.unableToEncodeString
+        }
+
+        return ErrorResponse.from(
+            try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
+        )
     }
 
 }
