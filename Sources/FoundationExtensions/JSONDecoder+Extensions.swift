@@ -130,16 +130,24 @@ extension Encodable {
 
 }
 
-let defaultJsonEncoder: JSONEncoder = {
-    let encoder = JSONEncoder()
-    encoder.keyEncodingStrategy = .convertToSnakeCase
+extension JSONEncoder {
 
-    return encoder
-}()
+    static let `default`: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
 
-let defaultJsonDecoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return encoder
+    }()
 
-    return decoder
-}()
+}
+
+extension JSONDecoder {
+
+    static let `default`: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        return decoder
+    }()
+
+}
