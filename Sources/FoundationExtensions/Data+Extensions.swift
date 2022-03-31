@@ -18,14 +18,17 @@ import Foundation
 extension NSData {
 
     func asString() -> String {
-        var deviceTokenString = ""
+        // 2 characters per byte
+        let deviceTokenString = NSMutableString(capacity: self.length * 2)
+
         self.enumerateBytes { bytes, byteRange, _ in
             for index in stride(from: 0, to: byteRange.length, by: 1) {
                 let byte = bytes.load(fromByteOffset: index, as: UInt8.self)
-                deviceTokenString = deviceTokenString.appendingFormat("%02x", byte)
+                deviceTokenString.appendFormat("%02x", byte)
             }
         }
-        return deviceTokenString
+
+        return deviceTokenString as String
     }
 
     var uuid: UUID? {
