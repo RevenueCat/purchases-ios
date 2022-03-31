@@ -51,7 +51,8 @@ private extension LogInOperation {
                                                      newAppUserID: newAppUserID)),
                                   path: .logIn)
 
-        self.httpClient.perform(request, authHeaders: self.authHeaders) { response in
+        self.httpClient.perform(request,
+                                authHeaders: self.authHeaders) { (response: HTTPResponse<CustomerInfo>.Result) in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(response, completion: callbackObject.completion)
             }
@@ -60,28 +61,11 @@ private extension LogInOperation {
         }
     }
 
-    func handleLogin(_ result: Result<HTTPResponse, Error>,
+    func handleLogin(_ result: HTTPResponse<CustomerInfo>.Result,
                      completion: LogInResponseHandler) {
         let result: Result<(info: CustomerInfo, created: Bool), Error> = result
             .flatMap { response in
-                let (statusCode, response) = (response.statusCode, response.jsonObject)
-
-                do {
-                    let customerInfo = try CustomerInfo.from(json: response)
-                    let created = statusCode == .createdSuccess
-
-                    return .success((customerInfo, created))
-                } catch let customerInfoError {
-                    Logger.error(Strings.backendError.customer_info_instantiation_error(response: response))
-
-                    let extraContext = "statusCode: \(statusCode)"
-                    let subErrorCode = UnexpectedBackendResponseSubErrorCode
-                        .loginResponseDecoding
-                        .addingUnderlyingError(customerInfoError)
-                    let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
-                                                                             extraContext: extraContext)
-                    return .failure(responseError)
-                }
+                return .success((response.body, created: response.statusCode == .createdSuccess))
             }
 
         if case .success = result {

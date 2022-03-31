@@ -46,13 +46,13 @@ private extension GetOfferingsOperation {
 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { response in
+        httpClient.perform(request, authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
             defer {
                 completion()
             }
 
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.completion(response.map { $0.jsonObject })
+                callbackObject.completion(response.map { $0.body })
             }
         }
     }

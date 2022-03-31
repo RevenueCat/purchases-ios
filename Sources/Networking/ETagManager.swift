@@ -39,16 +39,17 @@ class ETagManager {
     }
 
     func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                      jsonObject: [String: Any],
+                                      data: Data?,
                                       request: URLRequest,
-                                      retried: Bool) -> HTTPResponse? {
+                                      retried: Bool) -> HTTPResponse<Data>? {
         let statusCode: HTTPStatusCode = .init(rawValue: response.statusCode)
-        let resultFromBackend = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
+        let resultFromBackend = HTTPResponse(statusCode: statusCode, body: data)
+            .asOptionalResponse
 
         let headersInResponse = response.allHeaderFields
 
         let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
-                headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
+        headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
 
         guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
         if shouldUseCachedVersion(responseCode: statusCode) {
@@ -58,7 +59,7 @@ class ETagManager {
             if retried {
                 Logger.warn(
                     Strings.network.could_not_find_cached_response_in_already_retried(
-                        response: resultFromBackend.description
+                        response: resultFromBackend?.description ?? ""
                     )
                 )
                 return resultFromBackend
@@ -68,8 +69,9 @@ class ETagManager {
         storeStatusCodeAndResponseIfNoError(
                 for: request,
                 statusCode: statusCode,
-                responseObject: jsonObject,
-                eTag: eTagInResponse)
+                data: data,
+                eTag: eTagInResponse
+        )
         return resultFromBackend
     }
 
@@ -87,37 +89,29 @@ private extension ETagManager {
         responseCode == .notModified
     }
 
-    func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
+    func storedETagAndResponse(for request: URLRequest) -> Response? {
         return self.userDefaults.read {
             if let cacheKey = eTagDefaultCacheKey(for: request),
                let value = $0.object(forKey: cacheKey),
                let data = value as? Data {
-                return ETagAndResponseWrapper(with: data)
+                return try? JSONDecoder.default.decode(Response.self, jsonData: data)
             }
 
             return nil
         }
     }
 
-    func storedHTTPResponse(for request: URLRequest) -> HTTPResponse? {
-        if let storedETagAndResponse = storedETagAndResponse(for: request) {
-            return HTTPResponse(
-                    statusCode: storedETagAndResponse.statusCode,
-                    jsonObject: storedETagAndResponse.jsonObject
-            )
-        }
-
-        return nil
+    func storedHTTPResponse(for request: URLRequest) -> HTTPResponse<Data>? {
+        return storedETagAndResponse(for: request)?.asResponse
     }
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
                                              statusCode: HTTPStatusCode,
-                                             responseObject: [String: Any]?,
+                                             data: Data?,
                                              eTag: String) {
-        if statusCode != .notModified && !statusCode.isServerError,
-           let responseObject = responseObject,
+        if let data = data, statusCode != .notModified && !statusCode.isServerError,
            let cacheKey = eTagDefaultCacheKey(for: request) {
-            let eTagAndResponse = ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, jsonObject: responseObject)
+            let eTagAndResponse = Response(eTag: eTag, statusCode: statusCode, data: data)
             if let dataToStore = eTagAndResponse.asData() {
                 self.userDefaults.write {
                     $0.set(dataToStore, forKey: cacheKey)
@@ -130,6 +124,8 @@ private extension ETagManager {
         return request.url?.absoluteString
     }
 
+    // TODO: delete old data since this isn't backwards compatible
+
     static let suiteNameBase: String  = "revenuecat.etags"
     static var suiteName: String {
         guard let bundleID = Bundle.main.bundleIdentifier else {
@@ -138,4 +134,32 @@ private extension ETagManager {
         return bundleID + ".\(suiteNameBase)"
     }
 
+}
+
+extension ETagManager {
+
+    struct Response {
+
+        let eTag: String
+        let statusCode: HTTPStatusCode
+        let data: Data
+
+    }
+
+}
+
+extension ETagManager.Response: Codable {}
+
+extension ETagManager.Response {
+
+    func asData() -> Data? {
+        return try? JSONEncoder.default.encode(self)
+    }
+
+    fileprivate var asResponse: HTTPResponse<Data> {
+        return HTTPResponse(
+            statusCode: self.statusCode,
+            body: self.data
+        )
+    }
 }

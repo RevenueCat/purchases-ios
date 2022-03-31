@@ -118,7 +118,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(error: mockedError)
         )
 
-        var result: Result<HTTPResponse.Body, Error>?
+        var result: Result<[String: Any], Error>?
         backend.getOfferings(appUserID: Self.userID) {
             result = $0
         }

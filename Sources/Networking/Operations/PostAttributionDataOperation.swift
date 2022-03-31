@@ -47,11 +47,14 @@ class PostAttributionDataOperation: NetworkOperation {
         let request = HTTPRequest(method: .post(Body(network: self.network, attributionData: self.attributionData)),
                                   path: .postAttributionData(appUserID: appUserID))
 
-        self.httpClient.perform(request, authHeaders: self.authHeaders) { response in
+        self.httpClient.perform(
+            request,
+            authHeaders: self.authHeaders
+        ) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
                 completion()
             }
-
+            
             self.responseHandler?(response.error)
         }
     }

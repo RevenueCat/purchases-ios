@@ -98,6 +98,20 @@ extension KeyedDecodingContainer {
 
 }
 
+extension JSONSerialization {
+
+    static func dictionary(withData data: Data) throws -> [String: Any] {
+        let object = try JSONSerialization.jsonObject(with: data)
+
+        guard let object = object as? [String: Any] else {
+            throw CodableError.unexpectedValue(type(of: object))
+        }
+
+        return object
+    }
+
+}
+
 // MARK: Decoding Error handling
 private extension ErrorUtils {
 
