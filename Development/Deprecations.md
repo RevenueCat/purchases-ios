@@ -2,7 +2,7 @@
 
 ## Deprecated vs Obsoleted:
 
-As the framework evolves, some APIs change. For Version 4 there's a [general document](https://github.com/RevenueCat/purchases-ios/blob/main/Documentation.docc/V4_API_Migration_guide.md) listing all the changes. For code, APIs can be marked as `deprecated` or `obsoleted`. These annotations can also provide information about the API that it's being replaced with.
+As the framework evolves, some APIs change. For Version 4 there's a [general document](https://revenuecat-docs.netlify.app/documentation/revenuecat/v4_api_migration_guide) listing all the changes. For code, APIs can be marked as `deprecated` or `obsoleted`. These annotations can also provide information about the API that it's being replaced with.
 
 ### Deprecated ⚠️
 APIs marked as `deprecated` mean that a method or type can continue to be used, but it provides a warning to the developer letting them know that it will go away in a future version.

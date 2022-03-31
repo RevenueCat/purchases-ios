@@ -24,7 +24,7 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 *RevenueCat* is the client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It's 100% `Swift` and compatible with `Objective-C`.
 
 ## Migrating from Purchases v3
-- See our [Migration guide](Documentation.docc/V4_API_Migration_guide.md)
+- See our [Migration guide](https://revenuecat-docs.netlify.app/documentation/revenuecat/v4_api_migration_guide)
 
 ## RevenueCat SDK Features
 |   | RevenueCat |

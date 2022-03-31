@@ -7,27 +7,8 @@ import class Foundation.ProcessInfo
 func resolveTargets() -> [Target] {
     let baseTargets: [Target] = [
         .target(name: "RevenueCat",
-                path: ".",
-                exclude: [
-                    "CHANGELOG.latest.md",
-                    "CHANGELOG.md",
-                    "CODE_OF_CONDUCT.md",
-                    "Development",
-                    "Documentation.docc",
-                    "Examples",
-                    "fastlane",
-                    "Gemfile",
-                    "Gemfile.lock",
-                    "LatestTagDocs",
-                    "LICENSE",
-                    "Sources/Info.plist",
-                    "README.md",
-                    "RevenueCat.podspec",
-                    "scripts",
-                    "Tests"
-                    ],
-                sources: ["Sources"]
-        )
+                path: "Sources",
+                exclude: ["Info.plist"])
     ]
 
     return baseTargets
