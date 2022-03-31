@@ -57,10 +57,10 @@ class BackendLoginTests: BaseBackendTests {
         expect(receivedResult?.error as NSError?) == stubbedError
     }
 
-    func testLoginCallsCompletionWithErrorIfCustomerInfoNil() throws {
+    func testLoginCallsCompletionWithErrorIfCustomerInfoIsEmpty() throws {
         let newAppUserID = "new id"
-
         let currentAppUserID = "old id"
+
         _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: .createdSuccess)
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
@@ -74,6 +74,8 @@ class BackendLoginTests: BaseBackendTests {
         expect(receivedResult?.value).to(beNil())
 
         let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
+
+        expect(receivedNSError.domain) == RCPurchasesErrorCodeDomain
         expect(receivedNSError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
     }
 

@@ -19,7 +19,7 @@ import Foundation
  A container for the most recent customer info returned from `Purchases`.
  These objects are non-mutable and do not update automatically.
  */
-@objc(RCCustomerInfo) public class CustomerInfo: NSObject {
+@objc(RCCustomerInfo) public final class CustomerInfo: NSObject {
 
     /// ``EntitlementInfos`` attached to this customer info.
     @objc public let entitlements: EntitlementInfos
@@ -421,3 +421,12 @@ private extension CustomerInfo {
     }
 
 }
+
+// Fixme: delete when `CustomerInfo` is `Decodable`
+ extension CustomerInfo: HTTPResponseBody {
+
+     static func create(with data: Data) throws -> Self {
+         return try self.init(data: try JSONSerialization.dictionary(withData: data))
+     }
+
+ }

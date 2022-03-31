@@ -15,14 +15,17 @@ class MockHTTPClient: HTTPClient {
 
     struct Response {
 
-        let response: Result<HTTPResponse, Error>
+        let response: HTTPResponse<Data>.Result
 
-        private init(response: Result<HTTPResponse, Error>) {
+        private init(response: Result<HTTPResponse<Data>, Error>) {
             self.response = response
         }
 
         init(statusCode: HTTPStatusCode, response: [String: Any] = [:]) {
-            self.init(response: .success(.init(statusCode: statusCode, jsonObject: response)))
+            // swiftlint:disable:next force_try
+            let data = try! JSONSerialization.data(withJSONObject: response)
+
+            self.init(response: .success(.init(statusCode: statusCode, body: data)))
         }
 
         init(error: Error) {
@@ -49,9 +52,9 @@ class MockHTTPClient: HTTPClient {
 
     private let sourceTestFile: StaticString
 
-    override func perform(_ request: HTTPRequest,
-                          authHeaders: RequestHeaders,
-                          completionHandler: Completion?) {
+    override func perform<Value: HTTPResponseBody>(_ request: HTTPRequest,
+                                                   authHeaders: RequestHeaders,
+                                                   completionHandler: Completion<Value>?) {
         let call = Call(request: request, headers: authHeaders)
 
         DispatchQueue.main.async {
@@ -62,9 +65,13 @@ class MockHTTPClient: HTTPClient {
                            file: self.sourceTestFile,
                            testName: CurrentTestCaseTracker.sanitizedTestName)
 
-            let response = self.mocks[request.path]
+            let mock = self.mocks[request.path] ?? .init(statusCode: .success)
 
-            completionHandler?(response?.response ?? .success(.init(statusCode: .success, jsonObject: [:])))
+            if let completionHandler = completionHandler {
+                completionHandler(
+                    mock.response.parseResponse()
+                )
+            }
         }
     }
 

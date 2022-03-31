@@ -17,33 +17,34 @@ class CustomerInfoResponseHandler {
 
     init() { }
 
-    func handle(customerInfoResponse response: Result<HTTPResponse, Error>,
+    func handle(customerInfoResponse response: HTTPResponse<Response>.Result,
                 completion: BackendCustomerInfoResponseHandler) {
-        let errorResponse = ErrorResponse.from(response.value?.jsonObject ?? [:])
-
         let result: Result<CustomerInfo, Error> = response
-            .flatMap { response in
-                Result {
-                    (
-                        response: response,
-                        info: try CustomerInfo.from(json: response.jsonObject)
-                    )
-                }
-                .mapError {
-                    errorResponse
-                        .asBackendError(with: response.statusCode)
-                        .addingUnderlyingError($0)
-                }
-            }
-            .flatMap { response, info in
-                if !errorResponse.attributeErrors.isEmpty {
-                    return .failure(errorResponse.asBackendError(with: response.statusCode))
+            .flatMap {
+                if $0.body.errorResponse.attributeErrors.isEmpty {
+                    return .success($0.body.customerInfo)
                 } else {
-                    return .success(info)
+                    return .failure($0.body.errorResponse.asBackendError(with: $0.statusCode))
                 }
             }
 
         completion(result)
+    }
+
+}
+
+extension CustomerInfoResponseHandler {
+
+    struct Response: HTTPResponseBody {
+
+        let customerInfo: CustomerInfo
+        let errorResponse: ErrorResponse
+
+        static func create(with data: Data) throws -> Self {
+            return .init(customerInfo: try CustomerInfo.create(with: data),
+                         errorResponse: ErrorResponse.from(data))
+        }
+
     }
 
 }

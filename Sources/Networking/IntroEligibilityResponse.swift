@@ -16,7 +16,7 @@ import Foundation
 // All parameters that are required to process the reponse from a GetIntroEligibility API call.
 struct IntroEligibilityResponse {
 
-    let result: Result<HTTPResponse, Error>
+    let result: Result<HTTPResponse<[String: Any]>, Error>
     let productIdentifiers: [String]
     let unknownEligibilityClosure: () -> [String: IntroEligibility]
     let completion: IntroEligibilityResponseHandler

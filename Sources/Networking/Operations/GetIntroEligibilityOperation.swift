@@ -86,7 +86,7 @@ private extension GetIntroEligibilityOperation {
                                                      fetchToken: self.receiptData.asFetchToken)),
                                   path: .getIntroEligibility(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { response in
+        httpClient.perform(request, authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
             let eligibilityResponse = IntroEligibilityResponse(result: response,
                                                                productIdentifiers: self.productIdentifiers,
                                                                unknownEligibilityClosure: unknownEligibilityClosure,
@@ -98,7 +98,7 @@ private extension GetIntroEligibilityOperation {
 
     func handleIntroEligibility(response: IntroEligibilityResponse) {
         let result: [String: IntroEligibility] = {
-            var eligibilitiesByProductIdentifier = response.result.value?.jsonObject
+            var eligibilitiesByProductIdentifier = response.result.value?.body
 
             if response.result.value?.statusCode.isSuccessfulResponse != true {
                 eligibilitiesByProductIdentifier = [:]

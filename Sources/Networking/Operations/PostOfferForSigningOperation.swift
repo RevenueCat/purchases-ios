@@ -50,10 +50,11 @@ class PostOfferForSigningOperation: NetworkOperation {
             path: .postOfferForSigning
         )
 
-        self.httpClient.perform(request, authHeaders: self.authHeaders) { response in
+        self.httpClient.perform(request,
+                                authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
             let result: Result<PostOfferForSigningOperation.SigningData, Error> = response
                 .flatMap { response in
-                    let (statusCode, response) = (response.statusCode, response.jsonObject)
+                    let (statusCode, response) = (response.statusCode, response.body)
 
                     guard let offers = response["offers"] as? [[String: Any]] else {
                         let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdBadResponse
