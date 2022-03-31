@@ -18,13 +18,13 @@ import XCTest
 
 final class BackendPostReceiptDataTestsiOS14AndAbove: BaseBackendPostReceiptDataTestClass {
 
-    override func invokeTest() {
-        if #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) {
-            return super.invokeTest()
-        } else {
+    override func setUpWithError() throws {
+        guard #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) else {
             print("Skipping test because it's iOS 14+ only.")
-            return
+            throw XCTSkip("Skipping test because it's iOS 14+ only.")
         }
+
+        try super.setUpWithError()
     }
 
     override func createClient() -> MockHTTPClient {
