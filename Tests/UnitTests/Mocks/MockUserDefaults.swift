@@ -57,6 +57,12 @@ class MockUserDefaults: UserDefaults {
 
     override func dictionaryRepresentation() -> [String: Any] { mockValues }
 
+    override func synchronize() -> Bool {
+        // Nothing to do
+
+        return false
+    }
+
     override func removePersistentDomain(forName domainName: String) {
         mockValues = [:]
     }
