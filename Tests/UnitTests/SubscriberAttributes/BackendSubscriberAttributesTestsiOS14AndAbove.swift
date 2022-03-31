@@ -9,11 +9,10 @@ import XCTest
 @testable import RevenueCat
 
 // swiftlint:disable:next type_name
-final class BackendSubscriberAttributesTestsiOS14AndAbove: BaseBackendSubscriberAttributesTestClass {
+final class BackendSubscriberAttributesTestsiOS14AndAbove: BackendSubscriberAttributesTestBase {
 
     override func setUpWithError() throws {
         guard #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) else {
-            print("Skipping test because it's iOS 14+ only.")
             throw XCTSkip("Skipping test because it's iOS 14+ only.")
         }
 

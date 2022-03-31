@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-final class BackendPostReceiptDataTestsiOS13AndBelow: BaseBackendPostReceiptDataTestClass {
+final class BackendPostReceiptDataTestsiOS13AndBelow: BackendPostReceiptDataTestBase {
 
     override func setUpWithError() throws {
         if #available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, watchOS 7.0, *) {

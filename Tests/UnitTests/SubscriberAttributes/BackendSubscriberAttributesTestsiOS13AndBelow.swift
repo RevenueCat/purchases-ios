@@ -9,7 +9,7 @@ import XCTest
 @testable import RevenueCat
 
 // swiftlint:disable:next type_name
-final class BackendSubscriberAttributesTestsiOS13AndBelow: BaseBackendSubscriberAttributesTestClass {
+final class BackendSubscriberAttributesTestsiOS13AndBelow: BackendSubscriberAttributesTestBase {
 
     override func setUpWithError() throws {
         if #available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, watchOS 7.0, *) {

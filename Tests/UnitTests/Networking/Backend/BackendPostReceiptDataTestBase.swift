@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  BaseBackendPostReceiptDataTestClass.swift
+//  BackendPostReceiptDataTestBase.swift
 //
 //  Created by Nacho Soto on 3/7/22.
 
@@ -17,15 +17,14 @@ import XCTest
 
 @testable import RevenueCat
 
-class BaseBackendPostReceiptDataTestClass: BaseBackendTests {
+class BackendPostReceiptDataTestBase: BaseBackendTests {
 
-    override func invokeTest() {
-        guard Self.self != BaseBackendPostReceiptDataTestClass.self else {
-            print("Ignoring base class \(Self.self)")
-            return
+    override func setUpWithError() throws {
+        guard Self.self != BackendPostReceiptDataTestBase.self else {
+            throw XCTSkip("Ignoring base class \(Self.self)")
         }
 
-        super.invokeTest()
+        try super.setUpWithError()
     }
 
     func testPostsReceiptDataCorrectly() throws {
@@ -649,7 +648,7 @@ class BaseBackendPostReceiptDataTestClass: BaseBackendTests {
 
 }
 
-private extension BaseBackendPostReceiptDataTestClass {
+private extension BackendPostReceiptDataTestBase {
 
     static let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
     static let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!

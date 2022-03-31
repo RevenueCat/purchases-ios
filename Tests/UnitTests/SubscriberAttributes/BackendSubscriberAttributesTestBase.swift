@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  BaseBackendSubscriberAttributesTestClass.swift
+//  BackendSubscriberAttributesTestBase.swift
 //
 //  Created by Joshua Liebowitz on 3/28/22.
 
@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class BaseBackendSubscriberAttributesTestClass: XCTestCase {
+class BackendSubscriberAttributesTestBase: XCTestCase {
 
     let appUserID = "abc123"
     let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
@@ -49,16 +49,11 @@ class BaseBackendSubscriberAttributesTestClass: XCTestCase {
     // swiftlint:disable:next force_try
     let systemInfo = try! SystemInfo(platformInfo: .init(flavor: "Unity", version: "2.3.3"), finishTransactions: true)
 
-    override func invokeTest() {
-        guard Self.self != BaseBackendSubscriberAttributesTestClass.self else {
-            print("Ignoring base class \(Self.self)")
-            return
+    override func setUpWithError() throws {
+        guard Self.self != BackendSubscriberAttributesTestBase.self else {
+            throw XCTSkip("Ignoring base class \(Self.self)")
         }
 
-        super.invokeTest()
-    }
-
-    override func setUp() {
         mockHTTPClient = self.createClient()
         dateProvider = MockDateProvider(stubbedNow: self.referenceDate)
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
@@ -76,6 +71,8 @@ class BaseBackendSubscriberAttributesTestClass: XCTestCase {
         subscriberAttribute2 = SubscriberAttribute(withKey: "another key",
                                                    value: "another value",
                                                    dateProvider: dateProvider)
+
+        try super.setUpWithError()
     }
 
     override class func setUp() {
