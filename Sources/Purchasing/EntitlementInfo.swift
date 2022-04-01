@@ -253,7 +253,6 @@ extension PeriodType: CaseIterable {}
                   entitlementData: entitlementData,
                   productData: productData,
                   requestDate: requestDate,
-                  dateDecodingStrategy: .iso8601,
                   jsonDecoder: JSONDecoder.default)
     }
 
@@ -261,21 +260,16 @@ extension PeriodType: CaseIterable {}
           entitlementData entitlementDataDict: [String: Any],
           productData productDataDict: [String: Any],
           requestDate: Date?,
-          dateDecodingStrategy: JSONDecoder.DateDecodingStrategy,
           jsonDecoder: JSONDecoder) {
         // Entitlement data
         guard let entitlementData: EntitlementData = try? jsonDecoder.decode(
-            dictionary: entitlementDataDict,
-            dateDecodingStrategy: dateDecodingStrategy
+            dictionary: entitlementDataDict
         ) else {
             return nil
         }
 
         // Product data
-        guard let productData: ProductData = try? jsonDecoder.decode(
-            dictionary: productDataDict,
-            dateDecodingStrategy: dateDecodingStrategy
-        ) else {
+        guard let productData: ProductData = try? jsonDecoder.decode(dictionary: productDataDict) else {
             return nil
         }
 

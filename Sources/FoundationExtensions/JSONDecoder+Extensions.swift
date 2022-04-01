@@ -38,20 +38,13 @@ extension JSONDecoder {
     /// - Parameters:
     ///   - type: The type of the value to decode. The default is `T.self`.
     ///   - data: The data to decode from.
-    ///   - dateDecodingStrategy: The strategy to use for decoding `Date` values. The default is `deferredToDate`.
-    ///   - dataDecodingStrategy: The strategy to use for decoding `Data` values. The default is `deferredToData`.
     /// - Returns: A value of the requested type.
     /// - throws: `CodableError` or `DecodableError` if the data is invalid or can't be deserialized.
     func decode<T: Decodable>(
         _ type: T.Type = T.self,
         jsonData: Data,
-        dateDecodingStrategy: DateDecodingStrategy = .deferredToDate,
-        dataDecodingStrategy: DataDecodingStrategy = .deferredToData,
         logErrors: Bool = true
     ) throws -> T {
-        self.dateDecodingStrategy = dateDecodingStrategy
-        self.dataDecodingStrategy = dataDecodingStrategy
-
         do {
             return try self.decode(type, from: jsonData)
         } catch {
@@ -67,23 +60,17 @@ extension JSONDecoder {
     /// - Parameters:
     ///   - type: The type of the value to decode. The default is `T.self`.
     ///   - dictionary: The dictionary to decode from.
-    ///   - dateDecodingStrategy: The strategy to use for decoding `Date` values. The default is `deferredToDate`.
-    ///   - dataDecodingStrategy: The strategy to use for decoding `Data` values. The default is `deferredToData`.
     /// - Returns: A value of the requested type.
     /// - Throws: `CodableError` or `DecodableError` if the data is invalid or can't be deserialized.
     /// - Note: this method logs the error before throwing, so it's "safe" to use with `try?`
     func decode<T: Decodable>(
         _ type: T.Type = T.self,
         dictionary: [String: Any],
-        dateDecodingStrategy: DateDecodingStrategy = .deferredToDate,
-        dataDecodingStrategy: DataDecodingStrategy = .deferredToData,
         logErrors: Bool = true
     ) throws -> T {
         if JSONSerialization.isValidJSONObject(dictionary) {
             return try self.decode(type,
                                    jsonData: try JSONSerialization.data(withJSONObject: dictionary),
-                                   dateDecodingStrategy: dateDecodingStrategy,
-                                   dataDecodingStrategy: dataDecodingStrategy,
                                    logErrors: logErrors)
         } else {
             throw CodableError.invalidJSONObject(value: dictionary)
@@ -157,6 +144,7 @@ extension JSONEncoder {
     static let `default`: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.dateEncodingStrategy = .iso8601
 
         return encoder
     }()
@@ -168,6 +156,7 @@ extension JSONDecoder {
     static let `default`: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .iso8601
 
         return decoder
     }()
