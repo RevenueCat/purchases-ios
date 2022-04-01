@@ -17,11 +17,8 @@ enum UserInfoAttributeParser {
 
     static func attributesUserInfoFromResponse(response: [String: Any], statusCode: HTTPStatusCode) -> [String: Any] {
         var resultDict: [String: Any] = [:]
-        let isServerError = statusCode.isServerError
-        let isNotFoundError = statusCode == .notFoundError
 
-        let successfullySynced = !(isServerError || isNotFoundError)
-        resultDict[Backend.RCSuccessfullySyncedKey as String] = successfullySynced
+        resultDict[Backend.RCSuccessfullySyncedKey as String] = statusCode.isSuccessfullySynced
 
         let hasAttributesResponseContainerKey = (response[Backend.RCAttributeErrorsResponseKey] != nil)
         let attributesResponseDict = hasAttributesResponseContainerKey
