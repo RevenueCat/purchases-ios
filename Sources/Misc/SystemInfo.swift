@@ -41,6 +41,7 @@ class SystemInfo {
 
     let useStoreKit2IfAvailable: Bool
     var finishTransactions: Bool
+    let operationDispatcher: OperationDispatcher
     let platformFlavor: String
     let platformFlavorVersion: String?
     let bundle: Bundle
@@ -113,6 +114,7 @@ class SystemInfo {
 
     init(platformInfo: Purchases.PlatformInfo?,
          finishTransactions: Bool,
+         operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
          useStoreKit2IfAvailable: Bool = false,
          dangerousSettings: DangerousSettings? = nil) throws {
@@ -121,12 +123,13 @@ class SystemInfo {
         self.bundle = bundle
 
         self.finishTransactions = finishTransactions
+        self.operationDispatcher = operationDispatcher
         self.useStoreKit2IfAvailable = useStoreKit2IfAvailable
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
     }
 
     func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
-        DispatchQueue.main.async {
+        self.operationDispatcher.dispatchOnMainThread {
             completion(self.isApplicationBackgrounded)
         }
     }

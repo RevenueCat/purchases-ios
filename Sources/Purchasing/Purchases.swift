@@ -245,7 +245,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      useStoreKit2IfAvailable: Bool = false,
                      dangerousSettings: DangerousSettings? = nil) {
-        let operationDispatcher = OperationDispatcher()
+        let operationDispatcher: OperationDispatcher = .default
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
@@ -253,6 +253,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         do {
             systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: !observerMode,
+                                        operationDispatcher: operationDispatcher,
                                         useStoreKit2IfAvailable: useStoreKit2IfAvailable,
                                         dangerousSettings: dangerousSettings)
         } catch {
