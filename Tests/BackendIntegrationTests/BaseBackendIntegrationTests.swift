@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 4/1/22.
 
-import RevenueCat
+@testable import RevenueCat
 import XCTest
 
 final class TestPurchaseDelegate: NSObject, PurchasesDelegate {
@@ -49,6 +49,12 @@ class BaseBackendIntegrationTests: XCTestCase {
         }
 
         configurePurchases()
+    }
+
+    override func tearDown() {
+        Purchases.clearSingleton()
+
+        super.tearDown()
     }
 
 }

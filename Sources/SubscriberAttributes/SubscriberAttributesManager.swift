@@ -125,16 +125,37 @@ class SubscriberAttributesManager {
         setReservedAttribute(.ip, value: "true", appUserID: appUserID)
     }
 
-    func syncAttributesForAllUsers(currentAppUserID: String) {
+    /// - Parameter syncedAttribute: will be called for every attribute that is updated
+    /// - Parameter completion: will be called once all attributes have completed syncing
+    /// - Returns: the number of attributes that will be synced
+    @discardableResult
+    func syncAttributesForAllUsers(currentAppUserID: String,
+                                   syncedAttribute: ((Error?) -> Void)? = nil,
+                                   completion: (() -> Void)? = nil) -> Int {
         let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
+        let total = unsyncedAttributesForAllUsers.count
+        let completed: Atomic<Int> = .init(0)
 
         for (syncingAppUserId, attributes) in unsyncedAttributesForAllUsers {
             syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error in
                 self.handleAttributesSynced(syncingAppUserId: syncingAppUserId,
                                             currentAppUserId: currentAppUserID,
                                             error: error)
+
+                syncedAttribute?(error)
+                let completedSoFar: Int = completed.modify { $0 += 1; return $0 }
+
+                if completedSoFar == total {
+                    completion?()
+                }
             }
         }
+
+        if total == 0 {
+            completion?()
+        }
+
+        return total
     }
 
     func handleAttributesSynced(syncingAppUserId: String, currentAppUserId: String, error: Error?) {
