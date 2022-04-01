@@ -40,7 +40,7 @@ extension NetworkStrings: CustomStringConvertible {
 
         case let .api_request_completed(request, httpCode):
             return "API request completed: \(request.method.httpMethod) \(request.path.url?.path ?? "")" +
-            "\(httpCode.rawValue)"
+            " \(httpCode.rawValue)"
 
         case let .api_request_started(request):
             return "API request started: \(request.method.httpMethod) \(request.path.url?.path ?? "")"
