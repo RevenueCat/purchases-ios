@@ -110,7 +110,7 @@ extension AttributionStrings: CustomStringConvertible {
 
         case .attribute_set_locally(let attribute):
             return "Attribute set locally: \(attribute). It will be synced to the backend" +
-            "when the app backgrounds/foregrounds or when a purchase is made."
+            " when the app backgrounds/foregrounds or when a purchase is made."
 
         case .missing_advertiser_identifiers:
             return "Attribution error: identifierForAdvertisers is missing"
