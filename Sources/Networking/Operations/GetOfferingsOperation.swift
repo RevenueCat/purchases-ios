@@ -46,14 +46,16 @@ private extension GetOfferingsOperation {
 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, result in
+        httpClient.perform(request, authHeaders: self.authHeaders) { response in
             defer {
                 completion()
             }
 
-            let parsedResponse: Result<[String: Any], Error> = result
+            let parsedResponse: Result<[String: Any], Error> = response
                 .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
                 .flatMap { response in
+                    let (statusCode, response) = (response.statusCode, response.jsonObject)
+
                     return statusCode.isSuccessfulResponse
                     ? .success(response)
                     : .failure(

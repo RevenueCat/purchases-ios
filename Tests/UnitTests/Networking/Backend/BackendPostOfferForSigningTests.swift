@@ -66,8 +66,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
     func testOfferForSigningNetworkError() {
         self.httpClient.mock(
             requestPath: .postOfferForSigning,
-            response: .init(statusCode: .success,
-                            response: .failure(NSError(domain: NSURLErrorDomain, code: -1009)))
+            response: .init(error: NSError(domain: NSURLErrorDomain, code: -1009))
         )
 
         let productIdentifier = "a_great_product"

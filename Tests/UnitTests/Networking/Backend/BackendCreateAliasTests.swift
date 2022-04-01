@@ -24,18 +24,19 @@ class BackendCreateAliasTests: BaseBackendTests {
     }
 
     func testAliasCallsBackendProperly() throws {
-        var completionCalled = false
+        let completionCalled: Atomic<Bool?> = .init(nil)
 
         let path: HTTPRequest.Path = .createAlias(appUserID: Self.userID)
         let response = MockHTTPClient.Response(statusCode: .success)
 
         self.httpClient.mock(requestPath: path, response: response)
 
-        backend.createAlias(appUserID: Self.userID, newAppUserID: "new_alias", completion: { (_) in
-            completionCalled = true
-        })
+        backend.createAlias(appUserID: Self.userID, newAppUserID: "new_alias") { _ in
+            completionCalled.value = true
+        }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(completionCalled.value).toEventuallyNot(beNil())
+        expect(completionCalled.value) == true
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
@@ -116,8 +117,7 @@ class BackendCreateAliasTests: BaseBackendTests {
     func testNetworkErrorIsForwarded() {
         self.httpClient.mock(
             requestPath: .createAlias(appUserID: Self.userID),
-            response: .init(statusCode: .success,
-                            response: .failure(NSError(domain: NSURLErrorDomain, code: -1009)))
+            response: .init(error: NSError(domain: NSURLErrorDomain, code: -1009))
         )
 
         var receivedError: NSError?

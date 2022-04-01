@@ -19,14 +19,14 @@ struct HTTPResponse {
     typealias Body = [String: Any]
 
     let statusCode: HTTPStatusCode
-    let jsonObject: Body?
+    let jsonObject: Body
 
 }
 
 extension HTTPResponse: CustomStringConvertible {
 
     var description: String {
-        "HTTPResponse(statusCode: \(self.statusCode.rawValue), jsonObject: \(self.jsonObject?.description ?? ""))"
+        "HTTPResponse(statusCode: \(self.statusCode.rawValue), jsonObject: \(self.jsonObject.description))"
     }
 
 }

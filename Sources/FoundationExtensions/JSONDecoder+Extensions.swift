@@ -129,3 +129,25 @@ extension Encodable {
     }
 
 }
+
+extension JSONEncoder {
+
+    static let `default`: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+
+        return encoder
+    }()
+
+}
+
+extension JSONDecoder {
+
+    static let `default`: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        return decoder
+    }()
+
+}

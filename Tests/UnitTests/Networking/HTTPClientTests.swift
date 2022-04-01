@@ -171,7 +171,7 @@ class HTTPClientTests: XCTestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(request, authHeaders: [:]) { _, _ in
+        self.client.perform(request, authHeaders: [:]) { _ in
             completionCalled.value = true
         }
 
@@ -189,10 +189,9 @@ class HTTPClientTests: XCTestCase {
             response.error = error
             return response
         }
-        self.client.perform(request, authHeaders: [:]) { (status, result) in
+        self.client.perform(request, authHeaders: [:]) { result in
             if let responseNSError = result.error as NSError? {
-                correctResult.value = (status.isServerError
-                                       && error.domain == responseNSError.domain
+                correctResult.value = (error.domain == responseNSError.domain
                                        && error.code == responseNSError.code)
             } else {
                 correctResult.value = false
@@ -207,8 +206,7 @@ class HTTPClientTests: XCTestCase {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int.random(in: 0..<50)
-        let isResponseCorrect: Atomic<Bool> = .init(false)
-        let message: Atomic<String?> = .init(nil)
+        let result: Atomic<Result<HTTPResponse, Error>?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
@@ -219,46 +217,44 @@ class HTTPClientTests: XCTestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (status, result) in
-            isResponseCorrect.value = (status.rawValue == errorCode) && (result.value != nil)
-            message.value = result.value?["message"] as? String
+        self.client.perform(request, authHeaders: [:]) {
+            result.value = $0
         }
 
-        expect(message.value).toEventuallyNot(beNil(), timeout: .seconds(1))
-        expect(message.value) == "something is broken up in the cloud"
-        expect(isResponseCorrect.value) == true
+        expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
+        expect(result.value?.value?.statusCode.rawValue) == errorCode
+        expect(result.value?.value?.jsonObject["message"] as? String) == "something is broken up in the cloud"
     }
 
     func testServerSide500s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let errorCode = Int32(500 + Int.random(in: 0..<50))
-        let isResponseCorrect: Atomic<Bool> = .init(false)
-        let message: Atomic<String?> = .init(nil)
+        let errorCode = 500 + Int.random(in: 0..<50)
+        let result: Atomic<Result<HTTPResponse, Error>?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
             return HTTPStubsResponse(
                 data: json.data(using: String.Encoding.utf8)!,
-                statusCode: errorCode,
+                statusCode: Int32(errorCode),
                 headers: nil
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (status, result) in
-            isResponseCorrect.value = (status.rawValue == errorCode) && (result.value != nil)
-            message.value = result.value?["message"] as? String
+        self.client.perform(request, authHeaders: [:]) {
+            result.value = $0
         }
 
-        expect(message.value).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
-        expect(isResponseCorrect.value) == true
+        expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
+        expect(result.value?.value?.statusCode.rawValue) == errorCode
+        expect(result.value?.value?.jsonObject["message"] as? String) == "something is broken up in the cloud"
     }
 
     func testParseError() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let errorCode = HTTPStatusCode.success.rawValue + Int.random(in: 0..<300)
-        let correctResponse: Atomic<Bool> = .init(false)
+        let errorCode = HTTPStatusCode.success.rawValue
+        let result: Atomic<Result<HTTPResponse, Error>?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{this is not JSON.csdsd"
@@ -269,18 +265,18 @@ class HTTPClientTests: XCTestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (status, result) in
-            correctResponse.value = (status.rawValue == errorCode) && (result.error != nil)
+        self.client.perform(request, authHeaders: [:]) {
+            result.value = $0
         }
 
-        expect(correctResponse.value).toEventually(beTrue(), timeout: .seconds(1))
+        expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
+        expect(result.value).to(beFailure())
     }
 
     func testServerSide200s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let isResponseCorrect: Atomic<Bool> = .init(false)
-        let message: Atomic<String?> = .init(nil)
+        let result: Atomic<Result<HTTPResponse, Error>?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is great up in the cloud\"}"
@@ -289,13 +285,13 @@ class HTTPClientTests: XCTestCase {
                                      headers: nil)
         }
 
-        self.client.perform(request, authHeaders: [:]) { (status, result) in
-            isResponseCorrect.value = (status == .success) && (result.error == nil)
-            message.value = result.value?["message"] as? String
+        self.client.perform(request, authHeaders: [:]) {
+            result.value = $0
         }
 
-        expect(message.value).toEventually(equal("something is great up in the cloud"), timeout: .seconds(1))
-        expect(isResponseCorrect.value) == true
+        expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
+        expect(result.value).to(beSuccess())
+        expect(result.value?.value?.jsonObject["message"] as? String) == "something is great up in the cloud"
     }
 
     func testAlwaysPassesClientVersion() {
@@ -359,9 +355,8 @@ class HTTPClientTests: XCTestCase {
         expect(obtainedIdentifierForVendor).to(beNil())
     }
 
-    #endif
+    #else
 
-    #if !os(macOS) && !targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifier() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
@@ -486,7 +481,7 @@ class HTTPClientTests: XCTestCase {
         let serialRequests = 10
         for requestNumber in 0..<serialRequests {
             client.perform(.init(method: .requestNumber(requestNumber), path: path),
-                           authHeaders: [:]) { (_, _) in
+                           authHeaders: [:]) { _ in
                 completionCallCount.value += 1
             }
         }
@@ -514,12 +509,12 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(.init(method: .requestNumber(1), path: path),
-                            authHeaders: [:]) { (_, _) in
+                            authHeaders: [:]) { _ in
             firstRequestFinished.value = true
         }
 
         self.client.perform(.init(method: .requestNumber(2), path: path),
-                            authHeaders: [:]) { (_, _) in
+                            authHeaders: [:]) { _ in
             secondRequestFinished.value = true
         }
 
@@ -558,17 +553,17 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(.init(method: .requestNumber(1), path: path),
-                            authHeaders: [:]) { (_, _) in
+                            authHeaders: [:]) { _ in
             firstRequestFinished.value = true
         }
 
         self.client.perform(.init(method: .requestNumber(2), path: path),
-                            authHeaders: [:]) { (_, _) in
+                            authHeaders: [:]) { _ in
             secondRequestFinished.value = true
         }
 
         self.client.perform(.init(method: .requestNumber(3), path: path),
-                            authHeaders: [:]) { (_, _) in
+                            authHeaders: [:]) { _ in
             thirdRequestFinished.value = true
         }
 
@@ -578,26 +573,23 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() throws {
-        var receivedStatus: HTTPStatusCode?
-        var receivedResult: Result<[String: Any], Error>?
+        let response: Atomic<Result<HTTPResponse, Error>?> = .init(nil)
 
         self.client.perform(.init(method: .invalidBody(), path: .mockPath),
-                            authHeaders: [:]) { (status, result) in
-            receivedStatus = status
-            receivedResult = result
+                            authHeaders: [:]) {
+            response.value = $0
         }
 
-        expect(receivedResult).toEventuallyNot(beNil())
+        expect(response).toEventuallyNot(beNil())
 
-        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
+        let receivedNSError = try XCTUnwrap(response.value?.error as NSError?)
         expect(receivedNSError.code) == ErrorCode.networkError.rawValue
-        expect(receivedStatus) == .invalidRequest
     }
 
     func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
         let path: HTTPRequest.Path = .mockPath
 
-        var completionCalled = false
+        let completionCalled: Atomic<Bool> = .init(false)
         let httpCallMade: Atomic<Bool> = .init(false)
 
         stub(condition: isPath(path)) { _ in
@@ -606,11 +598,11 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(.init(method: .invalidBody(), path: path),
-                            authHeaders: [:]) { (_, _) in
-            completionCalled = true
+                            authHeaders: [:]) { _ in
+            completionCalled.value = true
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(completionCalled.value).toEventually(beTrue())
         expect(httpCallMade.value).toEventually(beFalse())
     }
 
@@ -630,7 +622,7 @@ class HTTPClientTests: XCTestCase {
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_, _) in
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { _ in
             completionCalled.value = true
         }
 
@@ -644,7 +636,7 @@ class HTTPClientTests: XCTestCase {
             "test": "data"
         ]
 
-        let response: Atomic<(code: HTTPStatusCode, result: Result<HTTPResponse.Body, Error>)?> = .init(nil)
+        let response: Atomic<Result<HTTPResponse, Error>?> = .init(nil)
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
@@ -659,13 +651,13 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.perform(.init(method: .get, path: path), authHeaders: [:]) {
-            response.value = ($0, $1)
+            response.value = $0
         }
 
         expect(response.value).toEventuallyNot(beNil(), timeout: .seconds(1))
 
-        expect(response.value?.code) == .success
-        expect(response.value?.result.value as? [String: String]) == mockedCachedResponse
+        expect(response.value?.value?.statusCode) == .success
+        expect(response.value?.value?.jsonObject as? [String: String]) == mockedCachedResponse
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
@@ -774,7 +766,7 @@ class HTTPClientTests: XCTestCase {
         }
 
         let obtainedError: Atomic<DNSError?> = .init(nil)
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:] ) { _, result in
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:] ) { result in
             obtainedError.value = result.error as? DNSError
         }
 

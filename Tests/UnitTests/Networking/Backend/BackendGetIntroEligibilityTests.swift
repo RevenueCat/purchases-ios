@@ -91,8 +91,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         // Set us up for a 404 because if the input sanitizing code fails, it will execute and we'd get a 404.
         self.httpClient.mock(
             requestPath: .getIntroEligibility(appUserID: ""),
-            response: .init(statusCode: .notFoundError,
-                            error: ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            response: .init(error: ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
         )
 
         var eligibility: [String: IntroEligibility]?
@@ -139,7 +138,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         let error = NSError(domain: "myhouse", code: 12, userInfo: nil) as Error
         self.httpClient.mock(
             requestPath: .getIntroEligibility(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: .failure(error))
+            response: .init(error: error)
         )
 
         var eligibility: [String: IntroEligibility]?

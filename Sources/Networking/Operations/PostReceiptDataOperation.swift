@@ -60,10 +60,9 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
         let request = HTTPRequest(method: .post(self.postData),
                                   path: .postReceiptData)
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { statusCode, result in
+        httpClient.perform(request, authHeaders: self.authHeaders) { response in
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                self.customerInfoResponseHandler.handle(customerInfoResponse: result,
-                                                        statusCode: statusCode,
+                self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         completion: callbackObject.completion)
             }
 

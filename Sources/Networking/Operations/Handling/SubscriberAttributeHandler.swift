@@ -15,22 +15,19 @@ import Foundation
 
 class SubscriberAttributeHandler {
 
-    let userInfoAttributeParser: UserInfoAttributeParser
+    init() { }
 
-    init(userInfoAttributeParser: UserInfoAttributeParser = UserInfoAttributeParser()) {
-        self.userInfoAttributeParser = userInfoAttributeParser
-    }
-
-    func handleSubscriberAttributesResult(statusCode: HTTPStatusCode,
-                                          response: Result<[String: Any], Error>,
+    func handleSubscriberAttributesResult(_ response: Result<HTTPResponse, Error>,
                                           completion: SimpleResponseHandler) {
         let result: Result<[String: Any], Error> = response
             .mapError {
                 ErrorUtils.networkError(withUnderlyingError: $0)
             }
             .flatMap { response in
+                let (statusCode, response) = (response.statusCode, response.jsonObject)
+
                 if !statusCode.isSuccessfulResponse {
-                    let extraUserInfo = self.userInfoAttributeParser
+                    let extraUserInfo = UserInfoAttributeParser
                         .attributesUserInfoFromResponse(response: response, statusCode: statusCode)
                     let backendErrorCode = BackendErrorCode(code: response["code"])
                     return .failure(
