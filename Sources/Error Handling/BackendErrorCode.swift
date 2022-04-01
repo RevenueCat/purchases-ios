@@ -39,6 +39,7 @@ enum BackendErrorCode: Int, Error {
     case playStoreGenericError = 7231
     case userIneligibleForPromoOffer = 7232
     case invalidAppleSubscriptionKey = 7234
+    case subscriptionNotFoundForCustomer = 7259
     case invalidSubscriberAttributes = 7263
     case invalidSubscriberAttributesBody = 7264
 
@@ -103,6 +104,7 @@ extension BackendErrorCode {
              .playStoreQuotaExceeded,
              .playStoreGenericError,
              .invalidPlayStoreCredentials,
+             .subscriptionNotFoundForCustomer,
              .badRequest,
              .internalServerError:
             return .unknownBackendError
