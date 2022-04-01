@@ -115,6 +115,8 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
 
         var receivedResult: Result<CustomerInfo, Error>?
 
+        // No mocked response, the default response is an empty 200.
+
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: false,
@@ -126,10 +128,9 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
         }
 
         expect(receivedResult).toEventuallyNot(beNil())
-        expect(receivedResult?.value).to(beNil())
+        expect(receivedResult).to(beFailure())
 
         let nsError = try XCTUnwrap(receivedResult?.error as NSError?)
-
         expect(nsError.domain) == RCPurchasesErrorCodeDomain
         expect(nsError.code) == ErrorCode.unknownBackendError.rawValue
 
@@ -158,51 +159,6 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
         }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
-    }
-
-    func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsError() throws {
-        var completionCallCount = 0
-
-        let attributeErrors = [
-            Backend.RCAttributeErrorsKey: [
-                [
-                    "key_name": "$email",
-                    "message": "email is not in valid format"
-                ]
-            ]
-        ]
-
-        self.mockHTTPClient.mock(requestPath: .postReceiptData,
-                                 response: .init(statusCode: .invalidRequest, response: [
-                                    Backend.RCAttributeErrorsResponseKey: attributeErrors
-                                 ]))
-
-        let subscriberAttributesByKey: [String: SubscriberAttribute] = [
-            subscriberAttribute1.key: subscriberAttribute1,
-            subscriberAttribute2.key: subscriberAttribute2
-        ]
-        var receivedError: NSError?
-        backend.post(receiptData: receiptData,
-                     appUserID: appUserID,
-                     isRestore: false,
-                     productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     subscriberAttributes: subscriberAttributesByKey) { result in
-            completionCallCount += 1
-            receivedError = result.error as NSError?
-        }
-
-        expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
-        expect(receivedError).toEventuallyNot(beNil())
-        let nonNilReceivedError = try XCTUnwrap(receivedError)
-
-        expect(nonNilReceivedError.successfullySynced) == true
-        expect(nonNilReceivedError.subscriberAttributesErrors) == ["$email": "email is not in valid format"]
-
-        let underlyingError = try XCTUnwrap((nonNilReceivedError as NSError).userInfo[NSUnderlyingErrorKey] as? NSError)
-
-        expect(underlyingError.userInfo[NSUnderlyingErrorKey]).to(beNil())
     }
 
     func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsSuccess() throws {
@@ -240,7 +196,9 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
 
         expect(receivedError).toNot(beNil())
         expect(receivedError?.successfullySynced) == true
-        expect(receivedError?.subscriberAttributesErrors) == ["$email": "email is not in valid format"]
+        expect(receivedError?.subscriberAttributesErrors) == [
+            "$email": "email is not in valid format"
+        ]
     }
 
     // MARK: PostSubscriberAttributes
@@ -299,51 +257,23 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
         expect(receivedNSError.successfullySynced) == false
     }
 
-    func testPostSubscriberAttributesCallsCompletionWithErrorInBackendErrorCase() throws {
-        var completionCallCount = 0
-
-        self.mockHTTPClient.mock(
-            requestPath: .postSubscriberAttributes(appUserID: appUserID),
-            response: .init(statusCode: 503, response: [:])
-        )
-
-        var receivedError: Error?
-        backend.post(subscriberAttributes: [
-            subscriberAttribute1.key: subscriberAttribute1,
-            subscriberAttribute2.key: subscriberAttribute2
-        ],
-                     appUserID: appUserID,
-                     completion: { (error: Error!) in
-            completionCallCount += 1
-            receivedError = error
-        })
-
-        expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
-        expect(completionCallCount).toEventually(equal(1))
-
-        let receivedNSError = try XCTUnwrap(receivedError as NSError?)
-        expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.successfullySynced) == false
-        let successfulSyncedKey = try XCTUnwrap(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String])
-        let successfulSyncedKeyBoolValue = try XCTUnwrap((successfulSyncedKey as? NSNumber)?.boolValue)
-
-        expect(successfulSyncedKeyBoolValue) == false
-    }
-
     func testPostSubscriberAttributesSendsAttributesErrorsIfAny() throws {
         var completionCallCount = 0
 
         self.mockHTTPClient.mock(
             requestPath: .postSubscriberAttributes(appUserID: appUserID),
-            response: .init(statusCode: 503,
-                            response: [
-                                Backend.RCAttributeErrorsKey: [
-                                    [
-                                        "key_name": "$some_attribute",
-                                        "message": "wasn't valid"
-                                    ]
-                                ]
-                            ])
+            response: .init(
+                error: ErrorResponse
+                    .from([
+                        Backend.RCAttributeErrorsKey: [
+                            [
+                                "key_name": "$some_attribute",
+                                "message": "wasn't valid"
+                            ]
+                        ]
+                    ])
+                    .asBackendError(with: 503)
+            )
         )
 
         var receivedError: Error?
@@ -375,8 +305,10 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
     func testPostSubscriberAttributesCallsCompletionWithErrorInBadRequestCase() throws {
         var completionCallCount = 0
 
+        let mockedError = ErrorCode.invalidSubscriberAttributesError as NSError
+
         mockHTTPClient.mock(requestPath: .postSubscriberAttributes(appUserID: appUserID),
-                            response: .init(statusCode: .invalidRequest, response: [:]))
+                            response: .init(error: mockedError))
 
         var receivedError: Error?
         backend.post(subscriberAttributes: [
@@ -392,16 +324,9 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
         expect(completionCallCount).toEventually(equal(1))
         expect(receivedError).toNot(beNil())
-        expect(receivedError).to(beAKindOf(Error.self))
 
-        let receivedNSError = receivedError! as NSError
-        expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.successfullySynced) == true
-
-        let successfulSyncedKey = try XCTUnwrap(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String])
-        let successfulSyncedKeyBoolValue = try XCTUnwrap((successfulSyncedKey as? NSNumber)?.boolValue)
-
-        expect(successfulSyncedKeyBoolValue) == true
+        let receivedNSError = try XCTUnwrap(receivedError as NSError?)
+        expect(receivedNSError) == mockedError
     }
 
     func testPostSubscriberAttributesNoOpIfAttributesAreEmpty() {
@@ -413,38 +338,6 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
 
         })
         expect(self.mockHTTPClient.calls).to(beEmpty())
-    }
-
-    func testPostSubscriberAttributesCallsCompletionWithErrorInNotFoundCase() throws {
-        var completionCallCount = 0
-
-        self.mockHTTPClient.mock(
-            requestPath: .postSubscriberAttributes(appUserID: appUserID),
-            response: .init(statusCode: .notFoundError, response: [:])
-        )
-
-        var receivedError: Error?
-        backend.post(subscriberAttributes: [
-            subscriberAttribute1.key: subscriberAttribute1,
-            subscriberAttribute2.key: subscriberAttribute2
-        ],
-                     appUserID: appUserID,
-                     completion: { error in
-            completionCallCount += 1
-            receivedError = error
-        })
-
-        expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
-        expect(completionCallCount).toEventually(equal(1))
-
-        let receivedNSError = try XCTUnwrap(receivedError as NSError?)
-        expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.successfullySynced) == false
-
-        let successfulSyncedKey = try XCTUnwrap(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String])
-        let successfulSyncedKeyBoolValue = try XCTUnwrap((successfulSyncedKey as? NSNumber)?.boolValue)
-
-        expect(successfulSyncedKeyBoolValue) == false
     }
 
     func createClient() -> MockHTTPClient {

@@ -15,19 +15,16 @@ import Foundation
 
 class PostSubscriberAttributesOperation: NetworkOperation {
 
-    private let subscriberAttributeHandler: SubscriberAttributeHandler
     private let configuration: UserSpecificConfiguration
     private let subscriberAttributes: SubscriberAttributeDict
     private let responseHandler: SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          subscriberAttributes: SubscriberAttributeDict,
-         completion: SimpleResponseHandler?,
-         subscriberAttributeHandler: SubscriberAttributeHandler = SubscriberAttributeHandler()) {
+         completion: SimpleResponseHandler?) {
         self.configuration = configuration
         self.subscriberAttributes = subscriberAttributes
         self.responseHandler = completion
-        self.subscriberAttributeHandler = subscriberAttributeHandler
 
         super.init(configuration: configuration)
     }
@@ -60,12 +57,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
                 completion()
             }
 
-            guard let responseHandler = self.responseHandler else {
-                return
-            }
-
-            self.subscriberAttributeHandler.handleSubscriberAttributesResult(response,
-                                                                             completion: responseHandler)
+            self.responseHandler?(response.error)
         }
     }
 

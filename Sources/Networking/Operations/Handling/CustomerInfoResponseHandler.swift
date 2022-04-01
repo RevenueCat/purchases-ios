@@ -18,51 +18,32 @@ class CustomerInfoResponseHandler {
     init() { }
 
     func handle(customerInfoResponse response: Result<HTTPResponse, Error>,
-                file: String = #fileID,
-                function: String = #function,
-                line: UInt = #line,
                 completion: BackendCustomerInfoResponseHandler) {
-        switch response {
-        case let .failure(error):
-            completion(.failure(
-                ErrorUtils.networkError(withUnderlyingError: error,
-                                        fileName: file, functionName: function, line: line)
-            ))
+        let errorResponse = ErrorResponse.from(response.value?.jsonObject ?? [:])
 
-        case let .success(response):
-            let (statusCode, response) = (response.statusCode, response.jsonObject)
-            let isErrorStatusCode = !statusCode.isSuccessfulResponse
-
-            let errorResponse = ErrorResponse.from(response)
-
-            var result: Result<CustomerInfo, Error> = {
-                // Only attempt to parse a response if we don't have an error status code from the backend.
-                if !isErrorStatusCode {
-                    return Result { try CustomerInfo.from(json: response) }
-                } else {
-                    return .failure(errorResponse.asBackendError(with: statusCode))
+        let result: Result<CustomerInfo, Error> = response
+            .flatMap { response in
+                Result {
+                    (
+                        response: response,
+                        info: try CustomerInfo.from(json: response.jsonObject)
+                    )
                 }
-            }()
-
-            let hasError = (isErrorStatusCode
-                            || !errorResponse.attributeErrors.isEmpty
-                            || result.error != nil)
-
-            if hasError {
-                result = .failure({
-                    let responseError = errorResponse.asBackendError(with: statusCode)
-
-                    if !isErrorStatusCode {
-                        return responseError
-                            .addingUnderlyingError(result.error, extraContext: response.stringRepresentation)
-                    } else {
-                        return responseError
-                    }
-                }())
+                .mapError {
+                    errorResponse
+                        .asBackendError(with: response.statusCode)
+                        .addingUnderlyingError($0)
+                }
+            }
+            .flatMap { response, info in
+                if !errorResponse.attributeErrors.isEmpty {
+                    return .failure(errorResponse.asBackendError(with: response.statusCode))
+                } else {
+                    return .success(info)
+                }
             }
 
-            completion(result)
-        }
+        completion(result)
     }
 
 }

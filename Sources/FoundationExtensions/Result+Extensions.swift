@@ -40,3 +40,21 @@ extension Result {
     }
 
 }
+
+extension Result where Success: OptionalType {
+
+    /// Converts a `Result<Success?, Error>` into `Result<Success, Error>?`
+    var asOptionalResult: Result<Success.Wrapped, Failure>? {
+        switch self {
+        case let .success(optional):
+            if let value = optional.asOptional {
+                return .success(value)
+            } else {
+                return nil
+            }
+        case let .failure(error):
+            return .failure(error)
+        }
+    }
+
+}

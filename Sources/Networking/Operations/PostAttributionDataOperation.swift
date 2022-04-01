@@ -16,7 +16,6 @@ import Foundation
 class PostAttributionDataOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
-    private let postAttributionDataResponseHandler: NoContentResponseHandler
     private let attributionData: [String: Any]
     private let network: AttributionNetwork
     private let responseHandler: SimpleResponseHandler?
@@ -24,9 +23,7 @@ class PostAttributionDataOperation: NetworkOperation {
     init(configuration: UserSpecificConfiguration,
          attributionData: [String: Any],
          network: AttributionNetwork,
-         responseHandler: SimpleResponseHandler?,
-         postAttributionDataResponseHandler: NoContentResponseHandler = NoContentResponseHandler()) {
-        self.postAttributionDataResponseHandler = postAttributionDataResponseHandler
+         responseHandler: SimpleResponseHandler?) {
         self.attributionData = attributionData
         self.network = network
         self.configuration = configuration
@@ -55,11 +52,7 @@ class PostAttributionDataOperation: NetworkOperation {
                 completion()
             }
 
-            guard let responseHandler = self.responseHandler else {
-                return
-            }
-
-            self.postAttributionDataResponseHandler.handle(response, completion: responseHandler)
+            self.responseHandler?(response.error)
         }
     }
 

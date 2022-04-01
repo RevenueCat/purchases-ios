@@ -162,31 +162,29 @@ private extension HTTPClient {
         self.start(request: request)
     }
 
+    // - Returns: `nil` if the request must be retried
     // swiftlint:disable:next function_body_length
     func parse(urlResponse: URLResponse?,
                request: Request,
                urlRequest: URLRequest,
                data: Data?,
                error networkError: Error?
-    ) -> (result: Result<HTTPResponse, Error>, shouldRetry: Bool) {
+    ) -> Result<HTTPResponse, Error>? {
         if let networkError = networkError {
-            return (
-                result: .failure(networkError)
-                    .mapError { error in
-                        if self.dnsChecker.isBlockedAPIError(networkError),
-                           let blockedError = self.dnsChecker.errorWithBlockedHostFromError(networkError) {
-                            Logger.error(blockedError.description)
-                            return blockedError
-                        } else {
-                            return error
-                        }
-                    },
-                shouldRetry: false
-            )
+            return .failure(networkError)
+                .mapError { error in
+                    if self.dnsChecker.isBlockedAPIError(networkError),
+                       let blockedError = self.dnsChecker.errorWithBlockedHostFromError(networkError) {
+                        Logger.error(blockedError.description)
+                        return blockedError
+                    } else {
+                        return error
+                    }
+                }
         }
 
         guard let httpURLResponse = urlResponse as? HTTPURLResponse else {
-            return (.failure(ErrorUtils.unexpectedBackendResponseError()), false)
+            return .failure(ErrorUtils.unexpectedBackendResponseError())
         }
 
         func extractBody(_ response: HTTPURLResponse, _ statusCode: HTTPStatusCode) throws -> [String: Any] {
@@ -221,7 +219,7 @@ private extension HTTPClient {
         Logger.debug(Strings.network.api_request_completed(request.httpRequest,
                                                            httpCode: statusCode))
 
-        let result: Result<HTTPResponse?, Error> = Result { try extractBody(httpURLResponse, statusCode) }
+        return Result { try extractBody(httpURLResponse, statusCode) }
             .map { HTTPResponse(statusCode: statusCode, jsonObject: $0) }
             .map {
                 return self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
@@ -229,23 +227,19 @@ private extension HTTPClient {
                                                                      request: urlRequest,
                                                                      retried: request.retried)
             }
+            .asOptionalResult?
+            .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
+            .flatMap { response in
+                guard response.statusCode.isSuccessfulResponse else {
+                    return .failure(
+                        ErrorResponse
+                            .from(response.jsonObject)
+                            .asBackendError(with: statusCode)
+                    )
+                }
 
-        let shouldRetry: Bool = {
-            if case .success(.none) = result {
-                return true
-            } else {
-                return false
+                return .success(response)
             }
-        }()
-
-        return (
-            result: result
-                .flatMap {
-                    $0.map(Result.success)
-                        ?? .failure(ErrorUtils.unexpectedBackendResponseError())
-                },
-            shouldRetry: shouldRetry
-        )
     }
 
     func handle(urlResponse: URLResponse?,
@@ -253,7 +247,7 @@ private extension HTTPClient {
                 urlRequest: URLRequest,
                 data: Data?,
                 error networkError: Error?) {
-        let (response, shouldRetry) = self.parse(
+        let response = self.parse(
             urlResponse: urlResponse,
             request: request,
             urlRequest: urlRequest,
@@ -261,15 +255,15 @@ private extension HTTPClient {
             error: networkError
         )
 
-        if shouldRetry {
+        if let response = response {
+            request.completionHandler?(response)
+        } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod,
                                                           path: request.path))
 
             self.state.modify {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
             }
-        } else {
-            request.completionHandler?(response)
         }
 
         self.beginNextRequest()

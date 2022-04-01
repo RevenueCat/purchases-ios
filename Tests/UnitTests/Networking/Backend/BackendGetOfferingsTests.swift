@@ -94,9 +94,11 @@ class BackendGetOfferingsTests: BaseBackendTests {
     }
 
     func testGetOfferingsFailSendsNil() {
+        let mockedError = ErrorCode.unknownBackendError as NSError
+
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
-            response: .init(statusCode: .internalServerError, response: Self.oneOfferingResponse)
+            response: .init(error: mockedError)
         )
 
         var offerings: [String: Any]? = [:]
@@ -108,45 +110,22 @@ class BackendGetOfferingsTests: BaseBackendTests {
         expect(offerings).toEventually(beNil())
     }
 
-    func testGetOfferingsNetworkErrorSendsNilAndError() {
+    func testGetOfferingsNetworkErrorSendsError() {
+        let mockedError = NSError(domain: NSURLErrorDomain, code: -1009)
+
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
-            response: .init(error: NSError(domain: NSURLErrorDomain, code: -1009))
+            response: .init(error: mockedError)
         )
 
-        var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
-        backend.getOfferings(appUserID: Self.userID) { result in
-            receivedError = result.error as NSError?
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+        var result: Result<HTTPResponse.Body, Error>?
+        backend.getOfferings(appUserID: Self.userID) {
+            result = $0
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(ErrorCode._nsErrorDomain))
-        expect(receivedError?.code).toEventually(equal(ErrorCode.networkError.rawValue))
-        expect(receivedUnderlyingError).toEventuallyNot(beNil())
-        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
-        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
-    }
-
-    func test500GetOfferingsUnexpectedResponse() {
-        self.httpClient.mock(
-            requestPath: .getOfferings(appUserID: Self.userID),
-            response: .init(statusCode: .internalServerError, response: Self.serverErrorResponse)
-        )
-
-        var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
-        backend.getOfferings(appUserID: Self.userID) { result in
-            receivedError = result.error as NSError?
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
-        }
-
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code) == ErrorCode.invalidCredentialsError.rawValue
-
-        expect(receivedUnderlyingError).toEventuallyNot(beNil())
-        expect(receivedUnderlyingError?.localizedDescription) == Self.serverErrorResponse["message"]
+        expect(result).toEventuallyNot(beNil())
+        expect(result).to(beFailure())
+        expect(result?.error as NSError?) == mockedError
     }
 
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
