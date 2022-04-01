@@ -57,11 +57,10 @@ class PostOfferForSigningOperation: NetworkOperation {
                     let (statusCode, response) = (response.statusCode, response.jsonObject)
 
                     guard statusCode.isSuccessfulResponse else {
-                        let backendCode = BackendErrorCode(code: response["code"])
-                        let backendMessage = response["message"] as? String
-
                         return .failure(
-                            ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
+                            ErrorResponse
+                                .from(response)
+                                .asBackendError(with: statusCode)
                         )
                     }
 
@@ -82,7 +81,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                         return .failure(error)
                     }
 
-                    return Self.handleOffer(offers[0])
+                    return Self.handleOffer(offers[0], statusCode: statusCode)
                 }
 
             self.responseHandler(result)
@@ -90,13 +89,16 @@ class PostOfferForSigningOperation: NetworkOperation {
         }
     }
 
-    private static func handleOffer(_ offer: [String: Any]) -> Result<PostOfferForSigningOperation.SigningData, Error> {
+    private static func handleOffer(
+        _ offer: [String: Any],
+        statusCode: HTTPStatusCode
+    ) -> Result<PostOfferForSigningOperation.SigningData, Error> {
         if let signatureError = offer["signature_error"] as? [String: Any] {
-            let backendCode = BackendErrorCode(code: signatureError["code"])
-            let backendMessage = signatureError["message"] as? String
-            let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
-
-            return .failure(error)
+            return .failure(
+                ErrorResponse
+                    .from(signatureError)
+                    .asBackendError(with: statusCode)
+            )
         } else if let signatureData = offer["signature_data"] as? [String: Any],
                   let signature = signatureData["signature"] as? String,
                   let keyIdentifier = offer["key_id"] as? String,

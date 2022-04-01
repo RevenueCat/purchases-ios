@@ -17,7 +17,6 @@ class CustomerInfoResponseHandler {
 
     init() { }
 
-    // swiftlint:disable:next function_body_length
     func handle(customerInfoResponse response: Result<HTTPResponse, Error>,
                 file: String = #fileID,
                 function: String = #function,
@@ -34,45 +33,24 @@ class CustomerInfoResponseHandler {
             let (statusCode, response) = (response.statusCode, response.jsonObject)
             let isErrorStatusCode = !statusCode.isSuccessfulResponse
 
+            let errorResponse = ErrorResponse.from(response)
+
             var result: Result<CustomerInfo, Error> = {
                 // Only attempt to parse a response if we don't have an error status code from the backend.
                 if !isErrorStatusCode {
                     return Result { try CustomerInfo.from(json: response) }
                 } else {
-                    let finishable = !statusCode.isServerError
-                    let backendErrorCode = BackendErrorCode(code: response["code"])
-                    let message = response["message"] as? String
-
-                    return .failure(
-                        ErrorUtils.backendError(withBackendCode: backendErrorCode,
-                                                backendMessage: message,
-                                                extraUserInfo: [
-                                                    ErrorDetails.finishableKey: finishable
-                                                ])
-                    )
+                    return .failure(errorResponse.asBackendError(with: statusCode))
                 }
             }()
 
-            let subscriberAttributesErrorInfo = UserInfoAttributeParser
-                .attributesUserInfoFromResponse(response: response, statusCode: statusCode)
-
             let hasError = (isErrorStatusCode
-                            || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil
+                            || !errorResponse.attributeErrors.isEmpty
                             || result.error != nil)
 
             if hasError {
                 result = .failure({
-                    let finishable = !statusCode.isServerError
-                    let extraUserInfo: [String: Any] = subscriberAttributesErrorInfo + [
-                        ErrorDetails.finishableKey as String: finishable
-                    ]
-                    let backendErrorCode = BackendErrorCode(code: response["code"])
-                    let message = response["message"] as? String
-                    let responseError = ErrorUtils.backendError(
-                        withBackendCode: backendErrorCode,
-                        backendMessage: message,
-                        extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any]
-                    )
+                    let responseError = errorResponse.asBackendError(with: statusCode)
 
                     if !isErrorStatusCode {
                         return responseError

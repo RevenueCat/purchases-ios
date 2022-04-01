@@ -27,13 +27,10 @@ class SubscriberAttributeHandler {
                 let (statusCode, response) = (response.statusCode, response.jsonObject)
 
                 if !statusCode.isSuccessfulResponse {
-                    let extraUserInfo = UserInfoAttributeParser
-                        .attributesUserInfoFromResponse(response: response, statusCode: statusCode)
-                    let backendErrorCode = BackendErrorCode(code: response["code"])
                     return .failure(
-                        ErrorUtils.backendError(withBackendCode: backendErrorCode,
-                                                backendMessage: response["message"] as? String,
-                                                extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
+                        ErrorResponse
+                            .from(response)
+                            .asBackendError(with: statusCode)
                     )
                 } else {
                     return .success(response)

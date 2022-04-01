@@ -59,8 +59,9 @@ private extension GetOfferingsOperation {
                     return statusCode.isSuccessfulResponse
                     ? .success(response)
                     : .failure(
-                        ErrorUtils.backendError(withBackendCode: BackendErrorCode(code: response["code"]),
-                                                backendMessage: response["message"] as? String)
+                        ErrorResponse
+                            .from(response)
+                            .asBackendError(with: statusCode)
                     )
                 }
 
