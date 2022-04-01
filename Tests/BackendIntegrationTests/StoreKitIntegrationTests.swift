@@ -1,6 +1,6 @@
 //
-//  BackendIntegrationTests.swift
-//  BackendIntegrationTests
+//  StoreKitIntegrationTests.swift
+//  StoreKitIntegrationTests
 //
 //  Created by Andrés Boedo on 5/3/21.
 //  Copyright © 2021 Purchases. All rights reserved.
@@ -11,55 +11,25 @@ import RevenueCat
 import StoreKitTest
 import XCTest
 
-class TestPurchaseDelegate: NSObject, PurchasesDelegate {
-
-    var customerInfo: CustomerInfo?
-    var customerInfoUpdateCount = 0
-
-    func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
-        self.customerInfo = customerInfo
-        customerInfoUpdateCount += 1
-    }
-
-}
-
-class BackendIntegrationSK2Tests: BackendIntegrationSK1Tests {
+class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     override class var sk2Enabled: Bool { return true }
 
 }
 
-class BackendIntegrationSK1Tests: XCTestCase {
+class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     private var testSession: SKTestSession!
-    private var userDefaults: UserDefaults!
-    // swiftlint:disable:next weak_delegate
-    private var purchasesDelegate: TestPurchaseDelegate!
-
-    class var sk2Enabled: Bool { return false }
 
     private static let timeout: DispatchTimeInterval = .seconds(10)
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        guard Constants.apiKey != "REVENUECAT_API_KEY", Constants.proxyURL != "REVENUECAT_PROXY_URL" else {
-            XCTFail("Must set configuration in `Constants.swift`")
-            throw ErrorCode.configurationError
-        }
-
         testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
         testSession.resetToDefaultState()
         testSession.disableDialogs = true
         testSession.clearTransactions()
-
-        userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
-        userDefaults?.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
-        if !Constants.proxyURL.isEmpty {
-            Purchases.proxyURL = URL(string: Constants.proxyURL)
-        }
-
-        configurePurchases()
     }
 
     func testCanGetOfferings() async throws {
@@ -324,7 +294,7 @@ class BackendIntegrationSK1Tests: XCTestCase {
 
 }
 
-private extension BackendIntegrationSK1Tests {
+private extension StoreKit1IntegrationTests {
 
     static let entitlementIdentifier = "premium"
 
@@ -338,17 +308,6 @@ private extension BackendIntegrationSK1Tests {
     @discardableResult
     func purchaseMonthlyOffering() async throws -> PurchaseResultData {
         return try await Purchases.shared.purchase(package: self.monthlyPackage)
-    }
-
-    func configurePurchases() {
-        purchasesDelegate = TestPurchaseDelegate()
-        Purchases.configure(withAPIKey: Constants.apiKey,
-                            appUserID: nil,
-                            observerMode: false,
-                            userDefaults: userDefaults,
-                            useStoreKit2IfAvailable: Self.sk2Enabled)
-        Purchases.logLevel = .debug
-        Purchases.shared.delegate = purchasesDelegate
     }
 
     @discardableResult
