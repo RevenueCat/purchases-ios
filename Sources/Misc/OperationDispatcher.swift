@@ -20,6 +20,8 @@ class OperationDispatcher {
     private let workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
     private let maxJitterInSeconds: Double = 5
 
+    static let `default`: OperationDispatcher = .init()
+
     func dispatchOnMainThread(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
