@@ -45,7 +45,8 @@ class AppleReceiptBuilder {
             throw ReceiptReadingError.receiptParsingError
         }
         let receiptContainer = try containerBuilder.build(fromPayload: internalContainer.internalPayload)
-        for receiptAttribute in receiptContainer.internalContainers {
+        let internalReceiptContainer = try containerBuilder.build(fromPayload: receiptContainer.internalPayload)
+        for receiptAttribute in internalReceiptContainer.internalContainers {
             guard receiptAttribute.internalContainers.count == expectedInternalContainersCount else {
                 throw ReceiptReadingError.receiptParsingError
             }
@@ -85,7 +86,6 @@ class AppleReceiptBuilder {
 
         guard let nonOptionalBundleId = bundleId,
             let nonOptionalApplicationVersion = applicationVersion,
-            let nonOptionalOriginalApplicationVersion = originalApplicationVersion,
             let nonOptionalOpaqueValue = opaqueValue,
             let nonOptionalSha1Hash = sha1Hash,
             let nonOptionalCreationDate = creationDate else {
@@ -94,7 +94,7 @@ class AppleReceiptBuilder {
 
         let receipt = AppleReceipt(bundleId: nonOptionalBundleId,
                                    applicationVersion: nonOptionalApplicationVersion,
-                                   originalApplicationVersion: nonOptionalOriginalApplicationVersion,
+                                   originalApplicationVersion: originalApplicationVersion,
                                    opaqueValue: nonOptionalOpaqueValue,
                                    sha1Hash: nonOptionalSha1Hash,
                                    creationDate: nonOptionalCreationDate,

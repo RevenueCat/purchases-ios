@@ -32,7 +32,8 @@ class ASN1ContainerBuilder {
             throw ReceiptReadingError.asn1ParsingError(description: "payload is shorter than length value")
         }
 
-        let internalPayload = payload.dropFirst(bytesUsedForMetadata).prefix(length.value)
+        let internalPayload = length.value == 0 ? payload.dropFirst(bytesUsedForMetadata)
+                                                : payload.dropFirst(bytesUsedForMetadata).prefix(length.value)
         var internalContainers: [ASN1Container] = []
         if encodingType == .constructed {
             internalContainers = try buildInternalContainers(payload: internalPayload)

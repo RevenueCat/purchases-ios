@@ -51,7 +51,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
 
         expect(completionCalled).toEventually(beTrue())
         let receipt = try XCTUnwrap(maybeReceipt)
-        expect(receipt.applicationVersion) == "version"
+        expect(receipt.applicationVersion) == "1"
     }
 
 }
