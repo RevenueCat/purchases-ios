@@ -47,4 +47,17 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         expect(receipt.applicationVersion) == "1"
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testReceiptParserParsesReceiptWithSingleIAP() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try await simulateAnyPurchase()
+
+        let optionalData = await receiptFetcher.receiptData(refreshPolicy: .always)
+        let data = try XCTUnwrap(optionalData)
+
+        let receipt = try self.parser.parse(from: data)
+
+        expect(receipt.inAppPurchases.count) == 1
+    }
+
 }

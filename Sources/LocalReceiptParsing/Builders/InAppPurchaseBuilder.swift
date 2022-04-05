@@ -78,26 +78,22 @@ class InAppPurchaseBuilder {
         guard let nonOptionalQuantity = quantity,
             let nonOptionalProductId = productId,
             let nonOptionalTransactionId = transactionId,
-            let nonOptionalOriginalTransactionId = originalTransactionId,
-            let nonOptionalPurchaseDate = purchaseDate,
-            let nonOptionalOriginalPurchaseDate = originalPurchaseDate,
-            let nonOptionalIsInIntroOfferPeriod = isInIntroOfferPeriod,
-            let nonOptionalWebOrderLineItemId = webOrderLineItemId else {
+            let nonOptionalPurchaseDate = purchaseDate else {
             throw ReceiptReadingError.inAppPurchaseParsingError
         }
 
         return InAppPurchase(quantity: nonOptionalQuantity,
                              productId: nonOptionalProductId,
                              transactionId: nonOptionalTransactionId,
-                             originalTransactionId: nonOptionalOriginalTransactionId,
+                             originalTransactionId: originalTransactionId,
                              productType: productType,
                              purchaseDate: nonOptionalPurchaseDate,
-                             originalPurchaseDate: nonOptionalOriginalPurchaseDate,
+                             originalPurchaseDate: originalPurchaseDate,
                              expiresDate: expiresDate,
                              cancellationDate: cancellationDate,
                              isInTrialPeriod: isInTrialPeriod,
-                             isInIntroOfferPeriod: nonOptionalIsInIntroOfferPeriod,
-                             webOrderLineItemId: nonOptionalWebOrderLineItemId,
+                             isInIntroOfferPeriod: isInIntroOfferPeriod,
+                             webOrderLineItemId: webOrderLineItemId,
                              promotionalOfferIdentifier: promotionalOfferIdentifier)
     }
 }

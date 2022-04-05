@@ -48,15 +48,15 @@ struct InAppPurchase: Equatable {
     let quantity: Int
     let productId: String
     let transactionId: String
-    let originalTransactionId: String
+    let originalTransactionId: String?
     let productType: InAppPurchaseProductType?
     let purchaseDate: Date
-    let originalPurchaseDate: Date
+    let originalPurchaseDate: Date?
     let expiresDate: Date?
     let cancellationDate: Date?
     let isInTrialPeriod: Bool?
-    let isInIntroOfferPeriod: Bool
-    let webOrderLineItemId: Int64
+    let isInIntroOfferPeriod: Bool?
+    let webOrderLineItemId: Int64?
     let promotionalOfferIdentifier: String?
 
     var asDict: [String: Any] {
