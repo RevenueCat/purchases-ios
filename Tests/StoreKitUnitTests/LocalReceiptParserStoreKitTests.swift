@@ -18,33 +18,32 @@ import XCTest
 
 class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
 
-    func testReceiptParserParsesEmptyReceipt() throws {
+    let operationDispatcher: OperationDispatcher = .default
+    let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
+    var requestFetcher: StoreKitRequestFetcher!
+    var systemInfo: SystemInfo!
+    var receiptFetcher: ReceiptFetcher!
+    var parser: ReceiptParser!
 
-        let operationDispatcher: OperationDispatcher = .default
-        let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
-        let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
-                                             operationDispatcher: operationDispatcher)
-        let systemInfo = try SystemInfo(platformInfo: Purchases.platformInfo,
-                                        finishTransactions: true,
-                                        operationDispatcher: operationDispatcher,
-                                        useStoreKit2IfAvailable: false)
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        requestFetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
+                                                operationDispatcher: operationDispatcher)
 
-        let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
-        let parser = ReceiptParser()
-        var maybeReceipt: AppleReceipt?
-        var completionCalled = false
-        receiptFetcher.receiptData(refreshPolicy: .always) { data in
-            guard let data = data else { return }
-            do {
-                maybeReceipt = try parser.parse(from: data)
-            } catch {
-                print("failed to parse. Error: \(error)")
-            }
-            completionCalled = true
-        }
+        systemInfo = try SystemInfo(platformInfo: Purchases.platformInfo,
+                                    finishTransactions: true,
+                                    operationDispatcher: operationDispatcher,
+                                    useStoreKit2IfAvailable: false)
+        receiptFetcher = ReceiptFetcher(requestFetcher: requestFetcher, systemInfo: systemInfo)
+        parser = ReceiptParser()
+    }
 
-        expect(completionCalled).toEventually(beTrue())
-        let receipt = try XCTUnwrap(maybeReceipt)
+    func testReceiptParserParsesEmptyReceipt() async throws {
+        let optionalData = await receiptFetcher.receiptData(refreshPolicy: .always)
+        let data = try XCTUnwrap(optionalData)
+
+        let receipt = try self.parser.parse(from: data)
+
         expect(receipt.applicationVersion) == "1"
     }
 
