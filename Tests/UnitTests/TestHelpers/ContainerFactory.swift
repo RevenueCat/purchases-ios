@@ -14,7 +14,7 @@ class ContainerFactory {
         return ASN1Container(containerClass: .application,
                              containerIdentifier: .octetString,
                              encodingType: .primitive,
-                             length: ASN1Length(value: length, bytesUsedForLength: 1),
+                             length: ASN1Length(value: length, bytesUsedForLength: 1, definition: .definite),
                              internalPayload: ArraySlice(Array(repeating: UInt8(0b1), count: length)),
                              internalContainers: [])
     }
@@ -25,7 +25,9 @@ class ContainerFactory {
         return ASN1Container(containerClass: .application,
                              containerIdentifier: .octetString,
                              encodingType: .primitive,
-                             length: ASN1Length(value: stringAsBytes.count, bytesUsedForLength: 1),
+                             length: ASN1Length(value: stringAsBytes.count,
+                                                bytesUsedForLength: 1,
+                                                definition: .definite),
                              internalPayload: ArraySlice(Array(stringAsBytes)),
                              internalContainers: [])
     }
@@ -42,7 +44,9 @@ class ContainerFactory {
         return ASN1Container(containerClass: .application,
                              containerIdentifier: .octetString,
                              encodingType: .primitive,
-                             length: ASN1Length(value: stringAsBytes.count, bytesUsedForLength: 1),
+                             length: ASN1Length(value: stringAsBytes.count,
+                                                bytesUsedForLength: 1,
+                                                definition: .definite),
                              internalPayload: ArraySlice(stringAsBytes),
                              internalContainers: [])
     }
@@ -51,7 +55,7 @@ class ContainerFactory {
         return ASN1Container(containerClass: .application,
                              containerIdentifier: .octetString,
                              encodingType: .primitive,
-                             length: ASN1Length(value: 1, bytesUsedForLength: 1),
+                             length: ASN1Length(value: 1, bytesUsedForLength: 1, definition: .definite),
                              internalPayload: ArraySlice([UInt8(booleanLiteral: bool)]),
                              internalContainers: [])
     }
@@ -63,7 +67,9 @@ class ContainerFactory {
         return ASN1Container(containerClass: .application,
                              containerIdentifier: .octetString,
                              encodingType: .primitive,
-                             length: ASN1Length(value: intAsBytes.count, bytesUsedForLength: bytesUsedForLength),
+                             length: ASN1Length(value: intAsBytes.count,
+                                                bytesUsedForLength: bytesUsedForLength,
+                                                definition: .definite),
                              internalPayload: ArraySlice(intAsBytes),
                              internalContainers: [])
     }
@@ -75,7 +81,9 @@ class ContainerFactory {
         return ASN1Container(containerClass: .application,
                              containerIdentifier: .octetString,
                              encodingType: .primitive,
-                             length: ASN1Length(value: intAsBytes.count, bytesUsedForLength: bytesUsedForLength),
+                             length: ASN1Length(value: intAsBytes.count,
+                                                bytesUsedForLength: bytesUsedForLength,
+                                                definition: .definite),
                              internalPayload: ArraySlice(intAsBytes),
                              internalContainers: [])
     }
@@ -87,7 +95,9 @@ class ContainerFactory {
         return ASN1Container(containerClass: .application,
                              containerIdentifier: .octetString,
                              encodingType: encodingType,
-                             length: ASN1Length(value: payload.count, bytesUsedForLength: bytesUsedForLength),
+                             length: ASN1Length(value: payload.count,
+                                                bytesUsedForLength: bytesUsedForLength,
+                                                definition: .definite),
                              internalPayload: ArraySlice(payload),
                              internalContainers: containers)
     }
@@ -162,7 +172,9 @@ class ContainerFactory {
         return ASN1Container(containerClass: .application,
                              containerIdentifier: .objectIdentifier,
                              encodingType: .primitive,
-                             length: ASN1Length(value: payload.count, bytesUsedForLength: bytesUsedForLength),
+                             length: ASN1Length(value: payload.count,
+                                                bytesUsedForLength: bytesUsedForLength,
+                                                definition: .definite),
                              internalPayload: payload,
                              internalContainers: [])
     }
