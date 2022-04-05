@@ -16,7 +16,7 @@ import StoreKit
 
 extension SKError {
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func toPurchasesError() -> Error {
         switch self.code {
         case .cloudServiceNetworkConnectionFailed,
@@ -61,6 +61,21 @@ extension SKError {
             return ErrorUtils.storeProblemError(error: self)
 
         @unknown default:
+            switch self.code.rawValue {
+            case 907: // "Unhandled exception"
+                if let error = self.userInfo[NSUnderlyingErrorKey] as? NSError {
+                    switch (error.domain, error.code) {
+                    case ("AMSErrorDomain", 6): // "Payment Sheet Failed"
+                        // See https://github.com/RevenueCat/purchases-ios/issues/1445
+                        return .purchaseCancelledError
+
+                    default: break
+                    }
+                }
+
+            default: break
+            }
+
             return ErrorUtils.unknownError(error: self)
         }
     }

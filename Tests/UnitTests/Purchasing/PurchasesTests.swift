@@ -2029,6 +2029,40 @@ class PurchasesTests: XCTestCase {
         expect(receivedUnderlyingError?.code).toEventually(equal(unknownError.code))
     }
 
+    func testPaymentSheetCancelledErrorIsParsedCorrectly() {
+        setupPurchases()
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+        var receivedUserCancelled: Bool?
+        var receivedError: NSError?
+
+        let unknownError = NSError(
+            domain: SKErrorDomain,
+            code: 907,
+            userInfo: [
+                NSUnderlyingErrorKey: NSError(
+                    domain: "AMSErrorDomain",
+                    code: 6,
+                    userInfo: [:]
+                )
+            ]
+        )
+
+        self.purchases.purchase(product: product) { (_, _, error, userCancelled) in
+            receivedError = error as NSError?
+            receivedUserCancelled = userCancelled
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockState = .failed
+        transaction.mockError = unknownError
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(receivedUserCancelled).toEventuallyNot(beNil())
+        expect(receivedUserCancelled) == true
+        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
+    }
+
     func testUserCancelledTrueIfPurchaseCancelled() {
         setupPurchases()
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
@@ -2049,12 +2083,14 @@ class PurchasesTests: XCTestCase {
         transaction.mockError = NSError.init(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        expect(receivedUserCancelled).toEventually(beTrue())
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(ErrorCode.purchaseCancelledError.rawValue))
-        expect(receivedUnderlyingError?.domain).toEventually(equal(SKErrorDomain))
-        expect(receivedUnderlyingError?.code).toEventually(equal(SKError.Code.paymentCancelled.rawValue))
+        expect(receivedUserCancelled).toEventuallyNot(beNil())
+
+        expect(receivedUserCancelled) == true
+        expect(receivedError).toNot(beNil())
+        expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
+        expect(receivedError?.code) == ErrorCode.purchaseCancelledError.rawValue
+        expect(receivedUnderlyingError?.domain) == SKErrorDomain
+        expect(receivedUnderlyingError?.code) == SKError.Code.paymentCancelled.rawValue
     }
 
     func testDoNotSendEmptyReceiptWhenMakingPurchase() {
