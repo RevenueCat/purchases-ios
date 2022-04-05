@@ -32,8 +32,8 @@ class ASN1ContainerBuilder {
             throw ReceiptReadingError.asn1ParsingError(description: "payload is shorter than length value")
         }
 
-        let internalPayload = length.value == 0 ? payload.dropFirst(bytesUsedForMetadata)
-                                                : payload.dropFirst(bytesUsedForMetadata).prefix(length.value)
+        let internalPayload = payload.dropFirst(bytesUsedForMetadata).prefix(length.value)
+
         var internalContainers: [ASN1Container] = []
         if encodingType == .constructed {
             internalContainers = try buildInternalContainers(payload: internalPayload)
@@ -95,15 +95,23 @@ private extension ASN1ContainerBuilder {
         let firstByteValue = Int(try firstByte.valueInRange(from: 1, to: 7))
 
         var bytesUsedForLength = 1
+
+        var lengthValue: Int
         if isShortLength {
-            return ASN1Length(value: firstByteValue, bytesUsedForLength: bytesUsedForLength)
+            lengthValue = firstByteValue
         } else {
             let totalLengthBytes = firstByteValue
             bytesUsedForLength += totalLengthBytes
             let lengthBytes = data.dropFirst().prefix(totalLengthBytes)
-            let lengthValue = lengthBytes.toInt()
-            return ASN1Length(value: lengthValue, bytesUsedForLength: bytesUsedForLength)
+            lengthValue = lengthBytes.toInt()
         }
+        // StoreKitTest receipts report a length of zero for Constructed elements.
+        // When length == 0, the element's size is the entire container
+        // minus the bytesUsedForLength, minus the header (which isn't passed to this method)
+        if lengthValue == 0 {
+            lengthValue = data.count - bytesUsedForLength
+        }
+        return ASN1Length(value: lengthValue, bytesUsedForLength: bytesUsedForLength)
     }
 
 }
