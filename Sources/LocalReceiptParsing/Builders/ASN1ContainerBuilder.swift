@@ -24,8 +24,9 @@ class ASN1ContainerBuilder {
         let containerClass = try extractClass(byte: firstByte)
         let encodingType = try extractEncodingType(byte: firstByte)
         let containerIdentifier = try extractIdentifier(byte: firstByte)
+        let isConstructed = encodingType == .constructed
         let (length, internalContainers) = try extractLengthAndInternalContainers(data: payload.dropFirst(),
-                                                                                  isConstructed: encodingType == .constructed)
+                                                                                  isConstructed: isConstructed)
         let bytesUsedForIdentifier = 1
         let bytesUsedForMetadata = bytesUsedForIdentifier + length.bytesUsedForLength
 
