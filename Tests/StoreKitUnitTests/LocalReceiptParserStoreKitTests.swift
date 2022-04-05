@@ -12,8 +12,8 @@
 //  Created by Andrés Boedo on 4/4/22.
 
 import Foundation
-@testable import RevenueCat
 import Nimble
+@testable import RevenueCat
 import XCTest
 
 class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
