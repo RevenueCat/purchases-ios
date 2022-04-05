@@ -45,6 +45,18 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(entitlements?[Self.entitlementIdentifier]?.isActive) == true
     }
 
+    func testPurchaseFailuresAreReportedCorrectly() async throws {
+        self.testSession.failTransactionsEnabled = true
+        self.testSession.failureError = .invalidSignature
+
+        do {
+            try await self.purchaseMonthlyOffering()
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
+        }
+    }
+
     func testPurchaseMadeBeforeLogInIsRetainedAfter() async throws {
         let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
         expect(customerInfo.entitlements.all.count) == 1
