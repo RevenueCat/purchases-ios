@@ -127,7 +127,7 @@ class AppleReceiptBuilderTests: XCTestCase {
         expect { try self.appleReceiptBuilder.build(fromContainer: receiptContainer) }.to(throwError())
     }
 
-    func testBuildThrowsIfOriginalAppVersionIsMissing() {
+    func testBuildDoesntThrowIfOriginalAppVersionIsMissing() {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [
             bundleIdContainer(),
             appVersionContainer(),
@@ -135,7 +135,7 @@ class AppleReceiptBuilderTests: XCTestCase {
             sha1HashContainer(),
             creationDateContainer()
         ])
-        expect { try self.appleReceiptBuilder.build(fromContainer: receiptContainer) }.to(throwError())
+        expect { try self.appleReceiptBuilder.build(fromContainer: receiptContainer) }.notTo(throwError())
     }
 
     func testBuildThrowsIfOpaqueValueIsMissing() {
