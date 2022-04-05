@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable file_length multiline_parameters
+// swiftlint:disable file_length multiline_parameters type_body_length
 
 enum ErrorUtils {
 
@@ -252,17 +252,24 @@ enum ErrorUtils {
     }
 
     /**
-     * Maps an `SKError` to a Error with a ``ErrorCode``. Adds a underlying error in the `NSError.userInfo` dictionary.
+     * Maps an `SKError` to a Error with an ``ErrorCode``. Adds a underlying error in the `NSError.userInfo` dictionary.
      *
      * - Parameter skError: The originating `SKError`.
      */
     static func purchasesError(
-        withSKError skError: Error,
+        withSKError error: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        let errorCode = (skError as? SKError)?.toPurchasesErrorCode() ?? .unknownError
-        return error(with: errorCode, message: errorCode.description, underlyingError: skError,
-                     fileName: fileName, functionName: functionName, line: line)
+        switch error {
+        case let skError as SKError:
+            return skError.toPurchasesError()
+
+        default:
+            return ErrorUtils.unknownError(
+                error: error,
+                fileName: fileName, functionName: functionName, line: line
+            )
+        }
     }
 
     /**
@@ -272,14 +279,20 @@ enum ErrorUtils {
      * - Parameter storeKitError: The originating `StoreKitError` or `Product.PurchaseError`.
      */
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    static func purchasesError(withStoreKitError error: Error) -> Error {
+    static func purchasesError(
+        withStoreKitError error: Error,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
         switch error {
         case let storeKitError as StoreKitError:
             return storeKitError.toPurchasesError()
         case let purchasesError as Product.PurchaseError:
             return purchasesError.toPurchasesError()
         default:
-            return self.unknownError(error: error)
+            return ErrorUtils.unknownError(
+                error: error,
+                fileName: fileName, functionName: functionName, line: line
+            )
         }
     }
 
@@ -289,12 +302,13 @@ enum ErrorUtils {
      * - Note: This error is used when  a purchase is cancelled by the user.
      */
     static func purchaseCancelledError(
+        error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         let errorCode = ErrorCode.purchaseCancelledError
         return ErrorUtils.error(with: errorCode,
                                 message: errorCode.description,
-                                underlyingError: nil,
+                                underlyingError: error,
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -313,6 +327,17 @@ enum ErrorUtils {
     }
 
     /**
+     * Constructs an Error with the ``ErrorCode/productAlreadyPurchasedError`` code.
+     */
+    static func productAlreadyPurchasedError(
+        error: Error? = nil,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return ErrorUtils.error(with: .productAlreadyPurchasedError,
+                                underlyingError: error)
+    }
+
+    /**
      * Constructs an Error with the ``ErrorCode/purchaseNotAllowedError`` code.
      */
     static func purchaseNotAllowedError(
@@ -320,6 +345,17 @@ enum ErrorUtils {
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         return ErrorUtils.error(with: .purchaseNotAllowedError,
+                                underlyingError: error)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/purchaseInvalidError`` code.
+     */
+    static func purchaseInvalidError(
+        error: Error? = nil,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return ErrorUtils.error(with: .purchaseInvalidError,
                                 underlyingError: error)
     }
 

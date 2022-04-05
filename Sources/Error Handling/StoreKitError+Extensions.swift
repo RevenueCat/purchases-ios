@@ -20,7 +20,7 @@ extension StoreKitError {
     func toPurchasesError() -> Error {
         switch self {
         case .userCancelled:
-            return ErrorUtils.purchaseCancelledError()
+            return ErrorUtils.purchaseCancelledError(error: self)
 
         case let .networkError(error):
             return ErrorUtils.networkError(withUnderlyingError: error)
