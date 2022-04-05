@@ -44,9 +44,18 @@ class AppleReceiptBuilder {
         guard let internalContainer = container.internalContainers.first else {
             throw ReceiptReadingError.receiptParsingError
         }
-        let receiptContainer = try containerBuilder.build(fromPayload: internalContainer.internalPayload)
-        let internalReceiptContainer = try containerBuilder.build(fromPayload: receiptContainer.internalPayload)
-        for receiptAttribute in internalReceiptContainer.internalContainers {
+        var receiptContainer = try containerBuilder.build(fromPayload: internalContainer.internalPayload)
+
+        // StoreKitTest receipts have their data embedded into 2 levels of octetString containers,
+        // Regular receipts have it in only one. At this point we've already unwrapped the upper level
+        // so we check whether we need to go one deeper.
+        let isStoreKitTestReceipt = receiptContainer.encodingType == .primitive
+                                    && receiptContainer.containerIdentifier == .octetString
+        if isStoreKitTestReceipt {
+            receiptContainer = try containerBuilder.build(fromPayload: receiptContainer.internalPayload)
+        }
+
+        for receiptAttribute in receiptContainer.internalContainers {
             guard receiptAttribute.internalContainers.count == expectedInternalContainersCount else {
                 throw ReceiptReadingError.receiptParsingError
             }
