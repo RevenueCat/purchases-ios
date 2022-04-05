@@ -64,16 +64,16 @@ struct InAppPurchase: Equatable {
             "quantity": quantity,
             "productId": productId,
             "transactionId": transactionId,
-            "originalTransactionId": originalTransactionId,
+            "originalTransactionId": originalTransactionId ?? "<unknown>",
             "promotionalOfferIdentifier": promotionalOfferIdentifier ?? "",
             "purchaseDate": purchaseDate,
             "productType": productType?.rawValue ?? "",
-            "originalPurchaseDate": originalPurchaseDate,
+            "originalPurchaseDate": originalPurchaseDate ?? "<unknown>",
             "expiresDate": expiresDate ?? "",
             "cancellationDate": cancellationDate ?? "",
             "isInTrialPeriod": isInTrialPeriod ?? "",
-            "isInIntroOfferPeriod": isInIntroOfferPeriod,
-            "webOrderLineItemId": webOrderLineItemId
+            "isInIntroOfferPeriod": isInIntroOfferPeriod ?? "<unknown>",
+            "webOrderLineItemId": webOrderLineItemId ?? "<unknown>"
         ]
     }
 
