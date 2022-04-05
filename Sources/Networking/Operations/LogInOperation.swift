@@ -63,18 +63,8 @@ private extension LogInOperation {
     func handleLogin(_ result: Result<HTTPResponse, Error>,
                      completion: LogInResponseHandler) {
         let result: Result<(info: CustomerInfo, created: Bool), Error> = result
-            .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
             .flatMap { response in
                 let (statusCode, response) = (response.statusCode, response.jsonObject)
-
-                if !statusCode.isSuccessfulResponse {
-                    return .failure(
-                        ErrorUtils.networkError(withUnderlyingError: ErrorResponse
-                            .from(response)
-                            .asBackendError(with: statusCode)
-                        )
-                    )
-                }
 
                 do {
                     let customerInfo = try CustomerInfo.from(json: response)

@@ -93,9 +93,11 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
     }
 
     func testHandlesGetCustomerInfoErrors() throws {
+        let mockedError = BackendErrorCode.badRequest as NSError
+
         self.httpClient.mock(
             requestPath: .getCustomerInfo(appUserID: Self.userID),
-            response: .init(statusCode: .notFoundError, response: [:])
+            response: .init(error: mockedError)
         )
 
         var result: Result<CustomerInfo, NSError>?
@@ -105,13 +107,8 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         }
 
         expect(result).toEventuallyNot(beNil())
-
-        let error = try XCTUnwrap(result?.error)
-        expect(error.domain) == RCPurchasesErrorCodeDomain
-        expect(error.userInfo["finishable"] as? Bool) == true
-
-        let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
-        expect(underlyingError.domain) == "RevenueCat.BackendErrorCode"
+        expect(result).to(beFailure())
+        expect(result?.error) == mockedError
     }
 
     func testHandlesInvalidJSON() {

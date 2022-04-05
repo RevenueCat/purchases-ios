@@ -202,14 +202,14 @@ class HTTPClientTests: XCTestCase {
         expect(correctResult.value) == true
     }
 
-    func testServerSide400s() {
+    func testServerSide400s() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int.random(in: 0..<50)
         let result: Atomic<Result<HTTPResponse, Error>?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
-            let json = "{\"message\": \"something is broken up in the cloud\"}"
+            let json = "{\"code\": 7101, \"message\": \"something is broken up in the cloud\"}"
             return HTTPStubsResponse(
                 data: json.data(using: String.Encoding.utf8)!,
                 statusCode: Int32(errorCode),
@@ -222,11 +222,19 @@ class HTTPClientTests: XCTestCase {
         }
 
         expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
-        expect(result.value?.value?.statusCode.rawValue) == errorCode
-        expect(result.value?.value?.jsonObject["message"] as? String) == "something is broken up in the cloud"
+        expect(result.value).to(beFailure())
+
+        let error = try XCTUnwrap(result.value?.error as NSError?)
+        expect(error.domain) == RCPurchasesErrorCodeDomain
+        expect(error.code) == ErrorCode.storeProblemError.rawValue
+
+        let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
+        expect(underlyingError.domain) == "RevenueCat.BackendErrorCode"
+        expect(underlyingError.code) == BackendErrorCode.storeProblem.rawValue
+        expect(underlyingError.localizedDescription) == "something is broken up in the cloud"
     }
 
-    func testServerSide500s() {
+    func testServerSide500s() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = 500 + Int.random(in: 0..<50)
@@ -246,8 +254,16 @@ class HTTPClientTests: XCTestCase {
         }
 
         expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
-        expect(result.value?.value?.statusCode.rawValue) == errorCode
-        expect(result.value?.value?.jsonObject["message"] as? String) == "something is broken up in the cloud"
+        expect(result.value).to(beFailure())
+
+        let error = try XCTUnwrap(result.value?.error as NSError?)
+        expect(error.domain) == RCPurchasesErrorCodeDomain
+        expect(error.code) == ErrorCode.unknownBackendError.rawValue
+
+        let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
+        expect(underlyingError.domain) == "RevenueCat.BackendErrorCode"
+        expect(underlyingError.code) == BackendErrorCode.unknownBackendError.rawValue
+        expect(underlyingError.localizedDescription) == "something is broken up in the cloud"
     }
 
     func testParseError() {

@@ -64,33 +64,31 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
     }
 
     func testOfferForSigningNetworkError() {
+        let mockedError = NSError(domain: NSURLErrorDomain, code: -1009)
+
         self.httpClient.mock(
             requestPath: .postOfferForSigning,
-            response: .init(error: NSError(domain: NSURLErrorDomain, code: -1009))
+            response: .init(error: mockedError)
         )
 
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
-        var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
+
+        var result: Result<PostOfferForSigningOperation.SigningData, Error>?
 
         backend.post(offerIdForSigning: offerIdentifier,
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
-                     appUserID: Self.userID) { result in
-            receivedError = result.error as NSError?
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+                     appUserID: Self.userID) {
+            result = $0
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(ErrorCode.networkError.rawValue))
-        expect(receivedUnderlyingError).toEventuallyNot(beNil())
-        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
-        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
+        expect(result).toEventuallyNot(beNil())
+        expect(result).to(beFailure())
+        expect(result?.error as NSError?) == mockedError
     }
 
     func testOfferForSigningEmptyOffersResponse() {
@@ -217,34 +215,6 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
             equal(ErrorCode.unexpectedBackendResponseError.rawValue))
         expect(receivedUnderlyingError?.code).toEventually(
             equal(UnexpectedBackendResponseSubErrorCode.postOfferIdSignature.rawValue))
-    }
-
-    func testOfferForSigning501Response() throws {
-        self.httpClient.mock(
-            requestPath: .postOfferForSigning,
-            response: .init(statusCode: 501, response: Self.serverErrorResponse)
-        )
-
-        let productIdentifier = "a_great_product"
-        let group = "sub_group"
-        let offerIdentifier = "offerid"
-        let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
-
-        var receivedError: NSError?
-        backend.post(offerIdForSigning: offerIdentifier,
-                     productIdentifier: productIdentifier,
-                     subscriptionGroup: group,
-                     receiptData: discountData,
-                     appUserID: Self.userID) { result in
-            receivedError = result.error as NSError?
-        }
-
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code) == ErrorCode.invalidCredentialsError.rawValue
-
-        let receivedUnderlyingError = try XCTUnwrap(receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError)
-
-        expect(receivedUnderlyingError.localizedDescription) == Self.serverErrorResponse["message"]
     }
 
 }

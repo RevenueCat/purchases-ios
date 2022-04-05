@@ -51,22 +51,8 @@ private extension GetOfferingsOperation {
                 completion()
             }
 
-            let parsedResponse: Result<[String: Any], Error> = response
-                .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
-                .flatMap { response in
-                    let (statusCode, response) = (response.statusCode, response.jsonObject)
-
-                    return statusCode.isSuccessfulResponse
-                    ? .success(response)
-                    : .failure(
-                        ErrorResponse
-                            .from(response)
-                            .asBackendError(with: statusCode)
-                    )
-                }
-
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.completion(parsedResponse)
+                callbackObject.completion(response.map { $0.jsonObject })
             }
         }
     }

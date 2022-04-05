@@ -53,68 +53,8 @@ class BackendLoginTests: BaseBackendTests {
         }
 
         expect(receivedResult).toEventuallyNot(beNil())
-        expect(receivedResult?.value).to(beNil())
-
-        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
-        expect(receivedNSError.code) == ErrorCode.networkError.rawValue
-        let expectedUserInfoError = try XCTUnwrap(receivedNSError.userInfo[NSUnderlyingErrorKey] as? NSError)
-        expect(expectedUserInfoError) == stubbedError
-    }
-
-    func testLoginPassesErrors() throws {
-        let newAppUserID = "new id"
-
-        let errorCode = 123465
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
-                                   code: errorCode,
-                                   userInfo: [:])
-        let currentAppUserID = "old id"
-        _ = self.mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
-
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
-
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { result in
-            receivedResult = result
-        }
-
-        expect(receivedResult).toEventuallyNot(beNil())
-        expect(receivedResult?.value).to(beNil())
-
-        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
-        expect(receivedNSError.code) == ErrorCode.networkError.rawValue
-        let expectedUserInfoError = try XCTUnwrap(receivedNSError.userInfo[NSUnderlyingErrorKey] as? NSError)
-        expect(expectedUserInfoError) == stubbedError
-    }
-
-    func testLoginConsidersErrorStatusCodesAsErrors() throws {
-        let newAppUserID = "new id"
-        let currentAppUserID = "old id"
-        let underlyingErrorMessage = "header fields too large"
-        let underlyingErrorCode = BackendErrorCode.cannotTransferPurchase.rawValue
-        _ = self.mockLoginRequest(appUserID: currentAppUserID,
-                                  statusCode: 431,
-                                  response: ["code": underlyingErrorCode, "message": underlyingErrorMessage])
-
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
-
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { result in
-            receivedResult = result
-        }
-
-        expect(receivedResult).toEventuallyNot(beNil())
-        expect(receivedResult?.value).to(beNil())
-
-        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
-        expect(receivedNSError.code) == ErrorCode.networkError.rawValue
-
-        // custom errors get wrapped in a backendError
-        let backendUnderlyingError = receivedNSError.userInfo[NSUnderlyingErrorKey] as? NSError
-        expect(backendUnderlyingError).toNot(beNil())
-        let underlyingError = backendUnderlyingError?.userInfo[NSUnderlyingErrorKey] as? NSError
-        expect(underlyingError?.code) == underlyingErrorCode
-        expect(underlyingError?.localizedDescription) == underlyingErrorMessage
+        expect(receivedResult).to(beFailure())
+        expect(receivedResult?.error as NSError?) == stubbedError
     }
 
     func testLoginCallsCompletionWithErrorIfCustomerInfoNil() throws {

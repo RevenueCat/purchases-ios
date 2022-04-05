@@ -16,15 +16,12 @@ import Foundation
 class CreateAliasOperation: CacheableNetworkOperation {
 
     private let aliasCallbackCache: CallbackCache<AliasCallback>
-    private let createAliasResponseHandler: NoContentResponseHandler
     private let newAppUserID: String
     private let configuration: UserSpecificConfiguration
 
     init(configuration: UserSpecificConfiguration,
          newAppUserID: String,
-         aliasCallbackCache: CallbackCache<AliasCallback>,
-         createAliasResponseHandler: NoContentResponseHandler = NoContentResponseHandler()) {
-        self.createAliasResponseHandler = createAliasResponseHandler
+         aliasCallbackCache: CallbackCache<AliasCallback>) {
         self.aliasCallbackCache = aliasCallbackCache
         self.newAppUserID = newAppUserID
         self.configuration = configuration
@@ -57,11 +54,7 @@ private extension CreateAliasOperation {
         httpClient.perform(request, authHeaders: self.authHeaders) { response in
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { aliasCallback in
 
-                guard let completion = aliasCallback.completion else {
-                    return
-                }
-
-                self.createAliasResponseHandler.handle(response, completion: completion)
+                aliasCallback.completion?(response.error)
             }
 
             completion()
