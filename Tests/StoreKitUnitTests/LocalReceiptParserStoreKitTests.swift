@@ -24,15 +24,10 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
-        let systemInfo: SystemInfo
-        do {
-            systemInfo = try SystemInfo(platformInfo: Purchases.platformInfo,
+        let systemInfo = try SystemInfo(platformInfo: Purchases.platformInfo,
                                         finishTransactions: true,
                                         operationDispatcher: operationDispatcher,
                                         useStoreKit2IfAvailable: false)
-        } catch {
-            fatalError(error.localizedDescription)
-        }
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let parser = ReceiptParser()
@@ -42,11 +37,10 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
             guard let data = data else { return }
             do {
                 maybeReceipt = try parser.parse(from: data)
-                completionCalled = true
             } catch {
                 print("failed to parse. Error: \(error)")
-                completionCalled = true
             }
+            completionCalled = true
         }
 
         expect(completionCalled).toEventually(beTrue())
