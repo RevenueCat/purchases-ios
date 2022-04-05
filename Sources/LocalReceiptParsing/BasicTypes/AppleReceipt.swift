@@ -40,7 +40,7 @@ struct AppleReceipt: Equatable {
 
     let bundleId: String
     let applicationVersion: String
-    let originalApplicationVersion: String
+    let originalApplicationVersion: String?
     let opaqueValue: Data
     let sha1Hash: Data
     let creationDate: Date
@@ -58,7 +58,7 @@ struct AppleReceipt: Equatable {
         return [
             "bundleId": bundleId,
             "applicationVersion": applicationVersion,
-            "originalApplicationVersion": originalApplicationVersion,
+            "originalApplicationVersion": originalApplicationVersion ?? "<unknown>",
             "opaqueValue": opaqueValue,
             "sha1Hash": sha1Hash,
             "creationDate": creationDate,

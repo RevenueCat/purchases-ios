@@ -33,6 +33,7 @@ class ASN1ContainerBuilder {
         }
 
         let internalPayload = payload.dropFirst(bytesUsedForMetadata).prefix(length.value)
+
         var internalContainers: [ASN1Container] = []
         if encodingType == .constructed {
             internalContainers = try buildInternalContainers(payload: internalPayload)
@@ -94,15 +95,26 @@ private extension ASN1ContainerBuilder {
         let firstByteValue = Int(try firstByte.valueInRange(from: 1, to: 7))
 
         var bytesUsedForLength = 1
+
+        var lengthValue: Int
         if isShortLength {
-            return ASN1Length(value: firstByteValue, bytesUsedForLength: bytesUsedForLength)
+            lengthValue = firstByteValue
         } else {
             let totalLengthBytes = firstByteValue
             bytesUsedForLength += totalLengthBytes
             let lengthBytes = data.dropFirst().prefix(totalLengthBytes)
-            let lengthValue = lengthBytes.toInt()
-            return ASN1Length(value: lengthValue, bytesUsedForLength: bytesUsedForLength)
+            lengthValue = lengthBytes.toInt()
         }
+        // StoreKitTest receipts report a length of zero for Constructed elements.
+        // This is called indefinite-length in ASN1 containers.
+        // When length == 0, the element's contents end when there are two subsequent 0x00 octets.
+        // This (naive) implementation just assumes that the end of content octets are at the end of the
+        // sequence, which is incorrect but works in practice.
+        // This code should be refactored to find the end of content octets, though. 
+        if lengthValue == 0 {
+            lengthValue = data.count - bytesUsedForLength
+        }
+        return ASN1Length(value: lengthValue, bytesUsedForLength: bytesUsedForLength)
     }
 
 }

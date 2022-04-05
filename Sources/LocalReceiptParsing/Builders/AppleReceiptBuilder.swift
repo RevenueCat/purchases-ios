@@ -44,7 +44,17 @@ class AppleReceiptBuilder {
         guard let internalContainer = container.internalContainers.first else {
             throw ReceiptReadingError.receiptParsingError
         }
-        let receiptContainer = try containerBuilder.build(fromPayload: internalContainer.internalPayload)
+        var receiptContainer = try containerBuilder.build(fromPayload: internalContainer.internalPayload)
+
+        // StoreKitTest receipts have their data embedded into 2 levels of octetString containers,
+        // Regular receipts have it in only one. At this point we've already unwrapped the upper level
+        // so we check whether we need to go one deeper.
+        let isStoreKitTestReceipt = receiptContainer.encodingType == .primitive
+                                    && receiptContainer.containerIdentifier == .octetString
+        if isStoreKitTestReceipt {
+            receiptContainer = try containerBuilder.build(fromPayload: receiptContainer.internalPayload)
+        }
+
         for receiptAttribute in receiptContainer.internalContainers {
             guard receiptAttribute.internalContainers.count == expectedInternalContainersCount else {
                 throw ReceiptReadingError.receiptParsingError
@@ -85,7 +95,6 @@ class AppleReceiptBuilder {
 
         guard let nonOptionalBundleId = bundleId,
             let nonOptionalApplicationVersion = applicationVersion,
-            let nonOptionalOriginalApplicationVersion = originalApplicationVersion,
             let nonOptionalOpaqueValue = opaqueValue,
             let nonOptionalSha1Hash = sha1Hash,
             let nonOptionalCreationDate = creationDate else {
@@ -94,7 +103,7 @@ class AppleReceiptBuilder {
 
         let receipt = AppleReceipt(bundleId: nonOptionalBundleId,
                                    applicationVersion: nonOptionalApplicationVersion,
-                                   originalApplicationVersion: nonOptionalOriginalApplicationVersion,
+                                   originalApplicationVersion: originalApplicationVersion,
                                    opaqueValue: nonOptionalOpaqueValue,
                                    sha1Hash: nonOptionalSha1Hash,
                                    creationDate: nonOptionalCreationDate,
