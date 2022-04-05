@@ -1862,18 +1862,36 @@ public extension Purchases {
 
 }
 
+// MARK: Internal
+internal extension Purchases {
+
+    /// - Parameter syncedAttribute: will be called for every attribute that is updated
+    /// - Parameter completion: will be called once all attributes have completed syncing
+    /// - Returns: the number of attributes that will be synced
+    @discardableResult
+    func syncSubscriberAttributesIfNeeded(
+        syncedAttribute: ((Error?) -> Void)? = nil,
+        completion: (() -> Void)? = nil
+    ) -> Int {
+        return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
+                                                                          syncedAttribute: syncedAttribute,
+                                                                          completion: completion)
+    }
+
+}
+
 // MARK: Private
 private extension Purchases {
 
     @objc func applicationDidBecomeActive(notification: Notification) {
         Logger.debug(Strings.configure.application_active)
         updateAllCachesIfNeeded()
-        syncSubscriberAttributesIfNeeded()
+        dispatchSyncSubscriberAttributesIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
     }
 
     @objc func applicationWillResignActive(notification: Notification) {
-        syncSubscriberAttributesIfNeeded()
+        dispatchSyncSubscriberAttributesIfNeeded()
     }
 
     func subscribeToAppStateNotifications() {
@@ -1886,9 +1904,9 @@ private extension Purchases {
                                        name: SystemInfo.applicationWillResignActiveNotification, object: nil)
     }
 
-    func syncSubscriberAttributesIfNeeded() {
+    func dispatchSyncSubscriberAttributesIfNeeded() {
         operationDispatcher.dispatchOnWorkerThread {
-            self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID)
+            self.syncSubscriberAttributesIfNeeded()
         }
     }
 

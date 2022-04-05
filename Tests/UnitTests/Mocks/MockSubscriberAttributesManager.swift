@@ -282,11 +282,17 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     var invokedSyncAttributesForAllUsersParameters: (currentAppUserID: String?, Void)?
     var invokedSyncAttributesForAllUsersParametersList = [(currentAppUserID: String?, Void)]()
 
-    override func syncAttributesForAllUsers(currentAppUserID: String) {
+    override func syncAttributesForAllUsers(
+        currentAppUserID: String,
+        syncedAttribute: ((Error?) -> Void)? = nil,
+        completion: (() -> Void)? = nil
+    ) -> Int {
         invokedSyncAttributesForAllUsers = true
         invokedSyncAttributesForAllUsersCount += 1
         invokedSyncAttributesForAllUsersParameters = (currentAppUserID, ())
         invokedSyncAttributesForAllUsersParametersList.append((currentAppUserID, ()))
+
+        return -1
     }
 
     var invokedCollectDeviceIdentifiers = false
