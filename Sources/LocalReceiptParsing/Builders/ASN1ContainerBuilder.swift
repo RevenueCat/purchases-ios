@@ -106,8 +106,11 @@ private extension ASN1ContainerBuilder {
             lengthValue = lengthBytes.toInt()
         }
         // StoreKitTest receipts report a length of zero for Constructed elements.
-        // When length == 0, the element's size is the entire container
-        // minus the bytesUsedForLength, minus the header (which isn't passed to this method)
+        // This is called indefinite-length in ASN1 containers.
+        // When length == 0, the element's contents end when there are two subsequent 0x00 octets.
+        // This (naive) implementation just assumes that the end of content octets are at the end of the
+        // sequence, which is incorrect but works in practice.
+        // This code should be refactored to find the end of content octets, though. 
         if lengthValue == 0 {
             lengthValue = data.count - bytesUsedForLength
         }
