@@ -39,7 +39,6 @@ class ReceiptParser {
     }
 
     func parse(from receiptData: Data) throws -> AppleReceipt {
-        guard !receiptData.isEmpty else { throw ReceiptReadingError.dataObjectIdentifierMissing }
         let intData = [UInt8](receiptData)
 
         let asn1Container = try containerBuilder.build(fromPayload: ArraySlice(intData))
