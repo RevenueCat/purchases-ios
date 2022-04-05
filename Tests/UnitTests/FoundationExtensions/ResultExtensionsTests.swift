@@ -48,6 +48,25 @@ class ResultExtensionsTests: XCTestCase {
 
 }
 
+class ResultAsOptionalResultTest: XCTestCase {
+
+    private typealias Data = Result<String?, ResultExtensionsTests.Error>
+    private typealias OptionalData = Result<String, ResultExtensionsTests.Error>?
+
+    func testWithData() {
+        expect(Data.success("test").asOptionalResult) == OptionalData.some(.success("test"))
+    }
+
+    func testWithNoData() {
+        expect(Data.success(.none).asOptionalResult).to(beNil())
+    }
+
+    func testWithError() {
+        expect(Data.failure(.error1).asOptionalResult) == OptionalData.some(.failure(.error1))
+    }
+
+}
+
 private extension ResultExtensionsTests {
 
     enum Error: Swift.Error {
