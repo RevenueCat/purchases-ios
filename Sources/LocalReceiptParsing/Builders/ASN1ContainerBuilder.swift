@@ -24,20 +24,16 @@ class ASN1ContainerBuilder {
         let containerClass = try extractClass(byte: firstByte)
         let encodingType = try extractEncodingType(byte: firstByte)
         let containerIdentifier = try extractIdentifier(byte: firstByte)
-        let length = try extractLength(data: payload.dropFirst(), isConstructed: encodingType == .constructed)
+        let (length, internalContainers) = try extractLengthAndInternalContainers(data: payload.dropFirst(),
+                                                                                  isConstructed: encodingType == .constructed)
         let bytesUsedForIdentifier = 1
         let bytesUsedForMetadata = bytesUsedForIdentifier + length.bytesUsedForLength
 
         guard payload.count - bytesUsedForMetadata >= length.value else {
             throw ReceiptReadingError.asn1ParsingError(description: "payload is shorter than length value")
         }
-
         let internalPayload = payload.dropFirst(bytesUsedForMetadata).prefix(length.value)
 
-        var internalContainers: [ASN1Container] = []
-        if encodingType == .constructed {
-            internalContainers = try buildInternalContainers(payload: internalPayload)
-        }
         return ASN1Container(containerClass: containerClass,
                              containerIdentifier: containerIdentifier,
                              encodingType: encodingType,
@@ -87,7 +83,8 @@ private extension ASN1ContainerBuilder {
         return asn1Identifier
     }
 
-    func extractLength(data: ArraySlice<UInt8>, isConstructed: Bool) throws -> ASN1Length {
+    func extractLengthAndInternalContainers(data: ArraySlice<UInt8>,
+                                            isConstructed: Bool) throws -> (ASN1Length, [ASN1Container]) {
         guard let firstByte = data.first else {
             throw ReceiptReadingError.asn1ParsingError(description: "length needs to be at least one byte")
         }
@@ -108,19 +105,28 @@ private extension ASN1ContainerBuilder {
             let lengthBytes = data.dropFirst().prefix(totalLengthBytes)
             lengthValue = lengthBytes.toInt()
         }
+
+        var innerContainers: [ASN1Container] = []
         // StoreKitTest receipts report a length of zero for Constructed elements.
         // This is called indefinite-length in ASN1 containers.
         // When length == 0, the element's contents end when there's a container with .endOfContent identifier
-        // To get the length, we build the internal containers until we run into .endOfContent
+        // To get the length, we build the internal containers until we run into .endOfContent and sum up the bytes used
         let lengthDefinition: ASN1Length.LengthDefinition = (isConstructed && lengthValue == 0)
                                                             ? .indefinite : .definite
 
         if lengthDefinition == .indefinite {
-            let innerContainers = try buildInternalContainers(payload: data.dropFirst(bytesUsedForLength))
+            innerContainers = try buildInternalContainers(payload: data.dropFirst(bytesUsedForLength))
             let innerContainersOverallLength = innerContainers.map { $0.totalBytesUsed }.reduce(0, +)
             lengthValue = innerContainersOverallLength
+        } else if isConstructed {
+            let innerContainerData = data.dropFirst(bytesUsedForLength).prefix(lengthValue)
+            innerContainers = try buildInternalContainers(payload: innerContainerData)
         }
-        return ASN1Length(value: lengthValue, bytesUsedForLength: bytesUsedForLength, definition: lengthDefinition)
+        let length = ASN1Length(value: lengthValue,
+                                bytesUsedForLength: bytesUsedForLength,
+                                definition: lengthDefinition)
+
+        return (length, innerContainers)
     }
 
 }
