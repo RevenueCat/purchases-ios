@@ -17,49 +17,51 @@ import StoreKit
 extension SKError {
 
     // swiftlint:disable:next cyclomatic_complexity
-    func toPurchasesErrorCode() -> ErrorCode {
+    func toPurchasesError() -> Error {
         switch self.code {
         case .cloudServiceNetworkConnectionFailed,
              .cloudServiceRevoked,
              .overlayTimeout,
              .overlayPresentedInBackgroundScene:
-            return .storeProblemError
+            return ErrorUtils.storeProblemError(error: self)
         case .clientInvalid,
              .paymentNotAllowed,
              .cloudServicePermissionDenied,
              .privacyAcknowledgementRequired:
-            return .purchaseNotAllowedError
+            return ErrorUtils.purchaseNotAllowedError(error: self)
         case .paymentCancelled,
              .overlayCancelled:
-            return .purchaseCancelledError
+            return ErrorUtils.purchaseCancelledError(error: self)
         case .paymentInvalid,
-             .unauthorizedRequestData,
-             .missingOfferParams,
-             .invalidOfferPrice,
-             .invalidSignature,
-             .invalidOfferIdentifier:
-            return .purchaseInvalidError
+            .unauthorizedRequestData:
+            return ErrorUtils.purchaseInvalidError(error: self)
         case .storeProductNotAvailable:
-            return .productNotAvailableForPurchaseError
-        case .ineligibleForOffer,
-             .overlayInvalidConfiguration,
+            return ErrorUtils.productNotAvailableForPurchaseError(error: self)
+        case .overlayInvalidConfiguration,
              .unsupportedPlatform:
-            return .purchaseNotAllowedError
+            return ErrorUtils.purchaseNotAllowedError(error: self)
+        case .ineligibleForOffer:
+            return ErrorUtils.ineligibleError(error: self)
+        case .missingOfferParams,
+            .invalidOfferPrice,
+            .invalidSignature,
+            .invalidOfferIdentifier:
+            return ErrorUtils.invalidPromotionalOfferError(error: self)
         case .unknown:
             if let error = self.userInfo[NSUnderlyingErrorKey] as? NSError {
                 switch (error.domain, error.code) {
                 case ("ASDServerErrorDomain", 3532): // "You’re currently subscribed to this"
                     // See https://github.com/RevenueCat/purchases-ios/issues/392
-                    return .productAlreadyPurchasedError
+                    return ErrorUtils.productAlreadyPurchasedError(error: self)
 
                 default: break
                 }
             }
 
-            return .storeProblemError
+            return ErrorUtils.storeProblemError(error: self)
 
         @unknown default:
-            return .unknownError
+            return ErrorUtils.unknownError(error: self)
         }
     }
 
