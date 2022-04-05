@@ -16,7 +16,7 @@ import StoreKit
 
 extension SKError {
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func toPurchasesError() -> Error {
         switch self.code {
         case .cloudServiceNetworkConnectionFailed,
@@ -49,10 +49,14 @@ extension SKError {
             return ErrorUtils.invalidPromotionalOfferError(error: self)
         case .unknown:
             if let error = self.userInfo[NSUnderlyingErrorKey] as? NSError {
-                switch (error.domain, error.code) {
-                case ("ASDServerErrorDomain", 3532): // "You’re currently subscribed to this"
-                    // See https://github.com/RevenueCat/purchases-ios/issues/392
-                    return ErrorUtils.productAlreadyPurchasedError(error: self)
+                switch error.domain {
+                case ASDServerError.domain:
+                    switch ASDServerError.Code(rawValue: error.code) {
+                    case .currentlySubscribed:
+                        return ErrorUtils.productAlreadyPurchasedError(error: self)
+
+                    default: break
+                    }
 
                 default: break
                 }
@@ -61,8 +65,66 @@ extension SKError {
             return ErrorUtils.storeProblemError(error: self)
 
         @unknown default:
+            switch SKError.UndocumentedCode(rawValue: self.code.rawValue) {
+            case .unhandledException:
+                if let error = self.userInfo[NSUnderlyingErrorKey] as? NSError {
+                    switch error.domain {
+                    case AMSError.domain:
+                        switch AMSError.Code(rawValue: error.code) {
+                            // See https://github.com/RevenueCat/purchases-ios/issues/1445
+                            // Cancellations sometimes show up as undocumented errors instead of regular cancellations
+                        case .paymentSheetFailed:
+                            return ErrorUtils.purchaseCancelledError(error: self)
+
+                        default: break
+                        }
+
+                    default: break
+                    }
+                }
+
+            default: break
+            }
+
             return ErrorUtils.unknownError(error: self)
         }
+    }
+
+}
+
+private extension SKError {
+
+    enum UndocumentedCode: Int {
+
+        // See https://github.com/RevenueCat/purchases-ios/issues/1445
+        case unhandledException = 907
+
+    }
+
+}
+
+private enum ASDServerError {
+
+    static let domain = "ASDServerErrorDomain"
+
+    enum Code: Int {
+
+        // See https://github.com/RevenueCat/purchases-ios/issues/392
+        case currentlySubscribed = 3532
+
+    }
+
+}
+
+private enum AMSError {
+
+    static let domain = "AMSErrorDomain"
+
+    enum Code: Int {
+
+        // See https://github.com/RevenueCat/purchases-ios/issues/1445
+        case paymentSheetFailed = 6
+
     }
 
 }

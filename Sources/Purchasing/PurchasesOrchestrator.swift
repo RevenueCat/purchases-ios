@@ -465,13 +465,12 @@ private extension PurchasesOrchestrator {
     func handleFailedTransaction(_ transaction: SKPaymentTransaction) {
         if let error = transaction.error,
            let completion = getAndRemovePurchaseCompletedCallback(forTransaction: transaction) {
-            let nsError = error as NSError
-            let userCancelled = nsError.domain == SKErrorDomain && nsError.code == SKError.paymentCancelled.rawValue
+            let purchasesError = ErrorUtils.purchasesError(withSKError: error)
             operationDispatcher.dispatchOnMainThread {
                 completion(StoreTransaction(sk1Transaction: transaction),
                            nil,
-                           ErrorUtils.purchasesError(withSKError: error),
-                           userCancelled)
+                           purchasesError,
+                           purchasesError.isCancelledError)
             }
         }
 
@@ -708,6 +707,14 @@ private extension PurchasesOrchestrator {
                  payment: payment,
                  package: package,
                  completion: completion)
+    }
+
+}
+
+private extension Error {
+
+    var isCancelledError: Bool {
+        return (self as? ErrorCode) == .purchaseCancelledError
     }
 
 }
