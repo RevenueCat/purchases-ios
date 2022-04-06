@@ -6,6 +6,7 @@ import XCTest
 class ASN1ContainerBuilderTests: XCTestCase {
     var containerBuilder: ASN1ContainerBuilder!
     let mockContainerPayload: [UInt8] = [0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01]
+    let lengthByteForIndefiniteLengthContainers = 0b10000000
 
     override func setUp() {
         super.setUp()
@@ -204,4 +205,51 @@ class ASN1ContainerBuilderTests: XCTestCase {
 
         expect { try self.containerBuilder.build(fromPayload: payload) }.to(throwError())
     }
+
+    func testBuildFromContainerExtractsLengthCorrectlyForIndefiniteLength() throws {
+        let constructedEncodingByte: UInt8 = 0b00100000
+
+        let subContainer1InternalPayload = Array(repeating: UInt8(0b1), count: 4)
+        let subContainer2InternalPayload = Array(repeating: UInt8(0b1), count: 6)
+        let subContainer1Payload: [UInt8] = [UInt8(0b1),
+                                             UInt8(subContainer1InternalPayload.count)]
+                                             + subContainer1InternalPayload
+        let subContainer2Payload: [UInt8] = [UInt8(0b1),
+                                             UInt8(subContainer2InternalPayload.count)]
+                                             + subContainer2InternalPayload
+
+        let containerPayload: [UInt8] = [constructedEncodingByte, // id byte
+                                         UInt8(lengthByteForIndefiniteLengthContainers)] // length byte
+                                         + subContainer1Payload + subContainer2Payload // payload
+
+        let payload = ArraySlice(containerPayload)
+        let container = try self.containerBuilder.build(fromPayload: payload)
+
+        expect(container.length.value) == 14
+        expect(container.length.bytesUsedForLength) == 1
+        expect(container.length.definition) == .indefinite
+    }
+
+    func testBuildFromContainerExtractsInnerContainersCorrectlyForIndefiniteLength() throws {
+        let constructedEncodingByte: UInt8 = 0b00100000
+
+        let subContainer1InternalPayload = Array(repeating: UInt8(0b1), count: 4)
+        let subContainer2InternalPayload = Array(repeating: UInt8(0b1), count: 6)
+        let subContainer1Payload: [UInt8] = [UInt8(0b1),
+                                             UInt8(subContainer1InternalPayload.count)]
+                                             + subContainer1InternalPayload
+        let subContainer2Payload: [UInt8] = [UInt8(0b1),
+                                             UInt8(subContainer2InternalPayload.count)]
+                                             + subContainer2InternalPayload
+
+        let containerPayload: [UInt8] = [constructedEncodingByte, // id byte
+                                         UInt8(lengthByteForIndefiniteLengthContainers)] // length byte
+                                         + subContainer1Payload + subContainer2Payload // payload
+
+        let payload = ArraySlice(containerPayload)
+        let container = try self.containerBuilder.build(fromPayload: payload)
+
+        expect(container.internalContainers.count) == 2
+    }
+
 }
