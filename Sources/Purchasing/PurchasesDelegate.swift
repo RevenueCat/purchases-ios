@@ -47,13 +47,24 @@ import Foundation
     /**
      * Called when a user initiates a promotional in-app purchase from the App Store.
      * If your app is able to handle a purchase at the current time, run the deferment block in this method.
-     * If the app is not in a state to make a purchase: cache the defermentBlock,
-     * then call the defermentBlock when the app is ready to make the promotional purchase.
-     * If the purchase should never be made, you don't need to ever call the defermentBlock and
-     * ``Purchases`` will not proceed with promotional purchases.
-
+     * If the app is not in a state to make a purchase: cache the `startPurchase` block,
+     * then call the `startPurchase` block when the app is ready to make the promotional purchase.
+     *
+     * If the purchase should never be made, you don't need to ever call the block and
+     * ``Purchases`` will not proceed with the promotional purchase.
+     *
      * - Parameter product: `StoreProduct` the product that was selected from the app store
      */
+    @objc optional func purchases(_ purchases: Purchases,
+                                  isReadyForPromotedProduct product: StoreProduct,
+                                  purchase startPurchase: @escaping DeferredPromotionalPurchaseBlock)
+
+    @available(iOS, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
+    @available(tvOS, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
+    @available(watchOS, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
+    @available(macOS, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
+    @available(macCatalyst, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
+    // swiftlint:disable:next missing_docs
     @objc optional func purchases(_ purchases: Purchases,
                                   shouldPurchasePromoProduct product: StoreProduct,
                                   defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock)
