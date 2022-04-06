@@ -64,6 +64,14 @@ struct ASN1Length: Equatable {
 
     let value: Int
     let bytesUsedForLength: Int
+    let definition: LengthDefinition
+
+    enum LengthDefinition: Int {
+
+        case definite
+        case indefinite
+
+    }
 
 }
 
