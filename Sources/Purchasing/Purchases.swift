@@ -220,7 +220,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let identityManager: IdentityManager
-    private let introEligibilityCalculator: IntroEligibilityCalculator
     private let notificationCenter: NotificationCenter
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
@@ -340,7 +339,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                   identityManager: identityManager,
                   subscriberAttributesManager: subscriberAttributesManager,
                   operationDispatcher: operationDispatcher,
-                  introEligibilityCalculator: introCalculator,
                   customerInfoManager: customerInfoManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
@@ -362,7 +360,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
          identityManager: IdentityManager,
          subscriberAttributesManager: SubscriberAttributesManager,
          operationDispatcher: OperationDispatcher,
-         introEligibilityCalculator: IntroEligibilityCalculator,
          customerInfoManager: CustomerInfoManager,
          productsManager: ProductsManager,
          offeringsManager: OfferingsManager,
@@ -390,7 +387,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         self.systemInfo = systemInfo
         self.subscriberAttributesManager = subscriberAttributesManager
         self.operationDispatcher = operationDispatcher
-        self.introEligibilityCalculator = introEligibilityCalculator
         self.customerInfoManager = customerInfoManager
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
