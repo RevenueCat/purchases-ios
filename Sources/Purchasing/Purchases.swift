@@ -1771,21 +1771,22 @@ public extension Purchases {
 extension Purchases: PurchasesOrchestratorDelegate {
 
     /**
-     * Called when a user initiates a promotional in-app purchase from the App Store.
+     * Called when a user initiates a promoted in-app purchase from the App Store.
      *
      * If your app is able to handle a purchase at the current time, run the `startPurchase` block.
      *
      * If the app is not in a state to make a purchase: cache the `startPurchase` block, then call it
-     * when the app is ready to make the promotional purchase.
+     * when the app is ready to make the promoted purchase.
      *
      * If the purchase should never be made, you don't need to ever call the `startPurchase` block
-     * and ``Purchases`` will not proceed with promotional purchases.
+     * and ``Purchases`` will not proceed with promoted purchases.
      *
      * - Parameter product: ``StoreProduct`` the product that was selected from the app store.
      * - Parameter startPurchase: Method that begins the purchase flow for the promoted purchase.
      * If the app is ready to start the purchase flow when this delegate method is called, then this method
      * should be called right away. Otherwise, the method should be stored as a property in memory, and then called
-     * once the app is ready to start the purchase flow. 
+     * once the app is ready to start the purchase flow.
+     * When the purchase completes, the result will be part of the callback parameters.
      */
     @objc
     internal func promotedPurchaseReadyToStart(for product: StoreProduct,

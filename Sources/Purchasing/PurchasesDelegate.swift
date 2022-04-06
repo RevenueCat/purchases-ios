@@ -53,7 +53,13 @@ import Foundation
      * If the purchase should never be made, you don't need to ever call the block and
      * ``Purchases`` will not proceed with the promotional purchase.
      *
+     * This can be tested by opening a link like:
+     * itms-services://?action=purchaseIntent&bundleId=<BUNDLE_ID>&productIdentifier=<SKPRODUCT_ID>
+     *
      * - Parameter product: `StoreProduct` the product that was selected from the app store
+     *
+     * ### Related Articles:
+     * - [Apple Documentation](https://developer.apple.com/documentation/storekit/original_api_for_in-app_purchase/testing_promoted_in-app_purchases)
      */
     @objc optional func purchases(_ purchases: Purchases,
                                   isReadyForPromotedProduct product: StoreProduct,
