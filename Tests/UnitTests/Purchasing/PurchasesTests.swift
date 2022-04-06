@@ -353,7 +353,6 @@ class PurchasesTests: XCTestCase {
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
                               operationDispatcher: mockOperationDispatcher,
-                              introEligibilityCalculator: mockIntroEligibilityCalculator,
                               customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,

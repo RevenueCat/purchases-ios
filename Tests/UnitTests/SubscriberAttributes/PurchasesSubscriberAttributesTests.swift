@@ -161,7 +161,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               identityManager: mockIdentityManager,
                               subscriberAttributesManager: mockSubscriberAttributesManager,
                               operationDispatcher: mockOperationDispatcher,
-                              introEligibilityCalculator: mockIntroEligibilityCalculator,
                               customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
