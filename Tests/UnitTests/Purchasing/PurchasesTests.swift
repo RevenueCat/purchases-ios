@@ -78,7 +78,8 @@ class PurchasesTests: XCTestCase {
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                     customerInfoManager: customerInfoManager,
                                                                     currentUserProvider: identityManager)
-        mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
+        mockTransactionsManager = MockTransactionsManager(storeKit2Setting: systemInfo.storeKit2Setting,
+                                                          receiptParser: mockReceiptParser)
     }
 
     override func tearDown() {
@@ -333,6 +334,7 @@ class PurchasesTests: XCTestCase {
                                                       manageSubscriptionsHelper: mockManageSubsHelper,
                                                       beginRefundRequestHelper: mockBeginRefundRequestHelper)
         trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
+            systemInfo: systemInfo,
             receiptFetcher: receiptFetcher,
             introEligibilityCalculator: mockIntroEligibilityCalculator,
             backend: backend,

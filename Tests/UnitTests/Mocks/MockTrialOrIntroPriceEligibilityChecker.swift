@@ -13,16 +13,15 @@
 
 @testable import RevenueCat
 
-// swiftlint:disable identifier_name
-// swiftlint:disable line_length
-// swiftlint:disable force_try
+// swiftlint:disable identifier_name line_length force_try
 class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker {
 
     convenience init() {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         let systemInfo = try! MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
         let productsManager = MockProductsManager(systemInfo: systemInfo)
-        self.init(receiptFetcher: MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo),
+        self.init(systemInfo: systemInfo,
+                  receiptFetcher: MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo),
                   introEligibilityCalculator: MockIntroEligibilityCalculator(productsManager: productsManager,
                                                                              receiptParser: MockReceiptParser()),
                   backend: MockBackend(),

@@ -124,7 +124,7 @@ private extension HTTPClient {
             "X-Platform-Flavor": systemInfo.platformFlavor,
             "X-Client-Version": SystemInfo.appVersion,
             "X-Client-Build-Version": SystemInfo.buildVersion,
-            "X-StoreKit2-Enabled": "\(self.systemInfo.useStoreKit2IfAvailable)",
+            "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting == .enabledIfAvailable)",
             "X-Observer-Mode-Enabled": observerMode
         ]
 

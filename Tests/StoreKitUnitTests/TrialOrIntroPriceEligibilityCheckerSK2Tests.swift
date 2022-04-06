@@ -30,7 +30,8 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         try super.setUpWithError()
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         mockSystemInfo = try MockSystemInfo(platformInfo: platformInfo,
-                                            finishTransactions: true)
+                                            finishTransactions: true,
+                                            storeKit2Setting: .enabledIfAvailable)
 
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
         mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
@@ -41,6 +42,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
 
         trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
+            systemInfo: mockSystemInfo,
             receiptFetcher: receiptFetcher,
             introEligibilityCalculator: mockIntroEligibilityCalculator,
             backend: mockBackend,

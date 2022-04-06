@@ -34,7 +34,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         systemInfo = try SystemInfo(platformInfo: Purchases.platformInfo,
                                     finishTransactions: true,
                                     operationDispatcher: operationDispatcher,
-                                    useStoreKit2IfAvailable: false)
+                                    storeKit2Setting: .disabled)
         receiptFetcher = ReceiptFetcher(requestFetcher: requestFetcher, systemInfo: systemInfo)
         parser = ReceiptParser()
     }
@@ -54,7 +54,6 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         expect(receipt.expirationDate).toNot(beNil())
         expect(receipt.expirationDate).toNot(beCloseTo(Date(), within: 1))
         expect(receipt.inAppPurchases).to(beEmpty())
-
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

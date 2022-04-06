@@ -15,16 +15,18 @@ import StoreKit
 
 class TransactionsManager {
 
+    private let storeKit2Setting: StoreKit2Setting
     private let receiptParser: ReceiptParser
 
-    init(receiptParser: ReceiptParser) {
+    init(storeKit2Setting: StoreKit2Setting,
+         receiptParser: ReceiptParser) {
+        self.storeKit2Setting = storeKit2Setting
         self.receiptParser = receiptParser
     }
 
     func customerHasTransactions(receiptData: Data, completion: @escaping (Bool) -> Void) {
-        // Note: this uses SK2 regardless of the value of `SystemInfo.useStoreKit2IfAvailable`
-        // because its implementation is more accurate.
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+        // Note: this uses SK2 (unless it's explicitly disabled) because its implementation is more accurate.
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *), self.storeKit2Setting != .disabled {
             _ = Task<Void, Never> {
                 completion(await sk2CheckCustomerHasTransactions())
             }

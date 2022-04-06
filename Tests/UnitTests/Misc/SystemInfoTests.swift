@@ -4,6 +4,7 @@ import XCTest
 @testable import RevenueCat
 
 class SystemInfoTests: XCTestCase {
+
     func testproxyURL() {
         let defaultURL = URL(string: "https://api.revenuecat.com")
         expect(SystemInfo.serverHostURL) == defaultURL
@@ -66,20 +67,6 @@ class SystemInfoTests: XCTestCase {
         expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
     }
 
-    func testUseStoreKit2IfAvailable() throws {
-        var useSK2 = false
-        var systemInfo = try SystemInfo(platformInfo: nil,
-                                        finishTransactions: true,
-                                        useStoreKit2IfAvailable: useSK2)
-        expect(systemInfo.useStoreKit2IfAvailable) == useSK2
-
-        useSK2 = true
-
-        systemInfo = try SystemInfo(platformInfo: nil,
-                                    finishTransactions: true,
-                                    useStoreKit2IfAvailable: useSK2)
-        expect(systemInfo.useStoreKit2IfAvailable) == useSK2
-    }
 }
 
 private extension SystemInfo {
