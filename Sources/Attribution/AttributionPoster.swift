@@ -15,21 +15,21 @@ import Foundation
 
 class AttributionPoster {
 
-    let deviceCache: DeviceCache
-    let identityManager: IdentityManager
-    let backend: Backend
-    let attributionFetcher: AttributionFetcher
-    let subscriberAttributesManager: SubscriberAttributesManager
+    private let deviceCache: DeviceCache
+    private let currentUserProvider: CurrentUserProvider
+    private let backend: Backend
+    private let attributionFetcher: AttributionFetcher
+    private let subscriberAttributesManager: SubscriberAttributesManager
 
     private static var postponedAttributionData: [AttributionData]?
 
     init(deviceCache: DeviceCache,
-         identityManager: IdentityManager,
+         currentUserProvider: CurrentUserProvider,
          backend: Backend,
          attributionFetcher: AttributionFetcher,
          subscriberAttributesManager: SubscriberAttributesManager) {
         self.deviceCache = deviceCache
-        self.identityManager = identityManager
+        self.currentUserProvider = currentUserProvider
         self.backend = backend
         self.attributionFetcher = attributionFetcher
         self.subscriberAttributesManager = subscriberAttributesManager
@@ -53,7 +53,7 @@ class AttributionPoster {
             Logger.warn(Strings.attribution.missing_advertiser_identifiers)
         }
 
-        let currentAppUserID = identityManager.currentAppUserID
+        let currentAppUserID = self.currentUserProvider.currentAppUserID
         let networkKey = String(network.rawValue)
         let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
             deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
@@ -156,7 +156,9 @@ class AttributionPoster {
 
     private func latestNetworkIdAndAdvertisingIdentifierSent(network: AttributionNetwork) -> String? {
         let networkID = String(network.rawValue)
-        let cachedDict = deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: identityManager.currentAppUserID)
+        let cachedDict = deviceCache.latestNetworkAndAdvertisingIdsSent(
+            appUserID: self.currentUserProvider.currentAppUserID
+        )
         return cachedDict[networkID]
     }
 

@@ -17,14 +17,14 @@ class ManageSubscriptionsHelper {
 
     private let systemInfo: SystemInfo
     private let customerInfoManager: CustomerInfoManager
-    private let identityManager: IdentityManager
+    private let currentUserProvider: CurrentUserProvider
 
     init(systemInfo: SystemInfo,
          customerInfoManager: CustomerInfoManager,
-         identityManager: IdentityManager) {
+         currentUserProvider: CurrentUserProvider) {
         self.systemInfo = systemInfo
         self.customerInfoManager = customerInfoManager
-        self.identityManager = identityManager
+        self.currentUserProvider = currentUserProvider
     }
 
 #if os(iOS) || os(macOS)
@@ -32,7 +32,7 @@ class ManageSubscriptionsHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
-        let currentAppUserID = identityManager.currentAppUserID
+        let currentAppUserID = self.currentUserProvider.currentAppUserID
         customerInfoManager.customerInfo(appUserID: currentAppUserID) { result in
             let result: Result<URL, Error> = result
                 .mapError { error in

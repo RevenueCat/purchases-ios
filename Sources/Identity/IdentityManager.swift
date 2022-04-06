@@ -13,25 +13,14 @@
 
 import Foundation
 
-class IdentityManager {
+protocol CurrentUserProvider {
 
-    var currentAppUserID: String {
-        guard let appUserID = deviceCache.cachedAppUserID else {
-            fatalError(Strings.identity.null_currentappuserid.description)
-        }
+    var currentAppUserID: String { get }
+    var currentUserIsAnonymous: Bool { get }
 
-        return appUserID
-    }
+}
 
-    var currentUserIsAnonymous: Bool {
-
-        let anonymousFoundRange = currentAppUserID.range(of: IdentityManager.anonymousRegex,
-                                                         options: .regularExpression)
-        let currentAppUserIDLooksAnonymous = anonymousFoundRange != nil
-        let isLegacyAnonymousAppUserID = currentAppUserID == deviceCache.cachedLegacyAppUserID
-
-        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
-    }
+class IdentityManager: CurrentUserProvider {
 
     private let deviceCache: DeviceCache
     private let backend: Backend
@@ -62,6 +51,24 @@ class IdentityManager {
 
         deviceCache.cache(appUserID: appUserID)
         deviceCache.cleanupSubscriberAttributes()
+    }
+
+    var currentAppUserID: String {
+        guard let appUserID = deviceCache.cachedAppUserID else {
+            fatalError(Strings.identity.null_currentappuserid.description)
+        }
+
+        return appUserID
+    }
+
+    var currentUserIsAnonymous: Bool {
+
+        let anonymousFoundRange = currentAppUserID.range(of: IdentityManager.anonymousRegex,
+                                                         options: .regularExpression)
+        let currentAppUserIDLooksAnonymous = anonymousFoundRange != nil
+        let isLegacyAnonymousAppUserID = currentAppUserID == deviceCache.cachedLegacyAppUserID
+
+        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
 
     func logIn(appUserID: String, completion: @escaping LogInResponseHandler) {
@@ -103,13 +110,17 @@ class IdentityManager {
         completion(nil)
     }
 
-    private func resetUserIDCache() {
+    static func generateRandomID() -> String {
+        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
+    }
+}
+
+private extension IdentityManager {
+
+    func resetUserIDCache() {
         deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: Self.generateRandomID())
         deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         backend.clearHTTPClientCaches()
     }
 
-    static func generateRandomID() -> String {
-        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
-    }
 }

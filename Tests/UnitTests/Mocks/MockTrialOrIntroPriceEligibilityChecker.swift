@@ -26,7 +26,7 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
                   introEligibilityCalculator: MockIntroEligibilityCalculator(productsManager: productsManager,
                                                                              receiptParser: MockReceiptParser()),
                   backend: MockBackend(),
-                  identityManager: MockIdentityManager(mockAppUserID: "app_user"),
+                  currentUserProvider: MockCurrentUserProvider(mockAppUserID: "app_user"),
                   operationDispatcher: MockOperationDispatcher(),
                   productsManager: MockProductsManager(systemInfo: systemInfo))
     }

@@ -37,14 +37,15 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
         let mockOperationDispatcher = MockOperationDispatcher()
-        let identityManager = MockIdentityManager(mockAppUserID: "app_user")
-        trialOrIntroPriceEligibilityChecker =
-        TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
-                                            introEligibilityCalculator: mockIntroEligibilityCalculator,
-                                            backend: mockBackend,
-                                            identityManager: identityManager,
-                                            operationDispatcher: mockOperationDispatcher,
-                                            productsManager: mockProductsManager)
+        let userProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
+        trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
+            receiptFetcher: receiptFetcher,
+            introEligibilityCalculator: mockIntroEligibilityCalculator,
+            backend: mockBackend,
+            currentUserProvider: userProvider,
+            operationDispatcher: mockOperationDispatcher,
+            productsManager: mockProductsManager
+        )
     }
 
     func testSK1CheckTrialOrIntroPriceEligibilityDoesntCrash() throws {

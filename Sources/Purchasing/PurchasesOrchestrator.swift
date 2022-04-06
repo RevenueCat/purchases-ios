@@ -27,7 +27,7 @@ class PurchasesOrchestrator {
     var finishTransactions: Bool { systemInfo.finishTransactions }
     var allowSharingAppStoreAccount: Bool {
         get {
-            return _allowSharingAppStoreAccount ?? identityManager.currentUserIsAnonymous
+            return _allowSharingAppStoreAccount ?? self.currentUserProvider.currentUserIsAnonymous
         }
         set {
             _allowSharingAppStoreAccount = newValue
@@ -40,7 +40,7 @@ class PurchasesOrchestrator {
     private var presentedOfferingIDsByProductID: [String: String] = [:]
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
 
-    private var appUserID: String { identityManager.currentAppUserID }
+    private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttributeDict {
         subscriberAttributesManager.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
@@ -53,7 +53,7 @@ class PurchasesOrchestrator {
     private let receiptFetcher: ReceiptFetcher
     private let customerInfoManager: CustomerInfoManager
     private let backend: Backend
-    private let identityManager: IdentityManager
+    private let currentUserProvider: CurrentUserProvider
     private let transactionsManager: TransactionsManager
     private let deviceCache: DeviceCache
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
@@ -71,7 +71,7 @@ class PurchasesOrchestrator {
          receiptFetcher: ReceiptFetcher,
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
-         identityManager: IdentityManager,
+         currentUserProvider: CurrentUserProvider,
          transactionsManager: TransactionsManager,
          deviceCache: DeviceCache,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
@@ -84,7 +84,7 @@ class PurchasesOrchestrator {
         self.receiptFetcher = receiptFetcher
         self.customerInfoManager = customerInfoManager
         self.backend = backend
-        self.identityManager = identityManager
+        self.currentUserProvider = currentUserProvider
         self.transactionsManager = transactionsManager
         self.deviceCache = deviceCache
         self.manageSubscriptionsHelper = manageSubscriptionsHelper

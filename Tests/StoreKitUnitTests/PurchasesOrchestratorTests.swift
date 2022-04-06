@@ -27,7 +27,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     var receiptFetcher: MockReceiptFetcher!
     var customerInfoManager: MockCustomerInfoManager!
     var backend: MockBackend!
-    var identityManager: MockIdentityManager!
+    var currentUserProvider: MockCurrentUserProvider!
     var transactionsManager: MockTransactionsManager!
     var deviceCache: MockDeviceCache!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
@@ -47,7 +47,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                       deviceCache: deviceCache,
                                                       backend: backend,
                                                       systemInfo: systemInfo)
-        identityManager = MockIdentityManager(mockAppUserID: "appUserID")
+        currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
         transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser())
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                         systemInfo: systemInfo)
@@ -58,10 +58,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             attributionDataMigrator: MockAttributionDataMigrator())
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                              customerInfoManager: customerInfoManager,
-                                                             identityManager: identityManager)
+                                                             currentUserProvider: currentUserProvider)
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                     customerInfoManager: customerInfoManager,
-                                                                    identityManager: identityManager)
+                                                                    currentUserProvider: currentUserProvider)
         setupStoreKitWrapper()
         setUpOrchestrator()
         setUpStoreKit2Listener()
@@ -99,7 +99,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              receiptFetcher: receiptFetcher,
                                              customerInfoManager: customerInfoManager,
                                              backend: backend,
-                                             identityManager: identityManager,
+                                             currentUserProvider: currentUserProvider,
                                              transactionsManager: transactionsManager,
                                              deviceCache: deviceCache,
                                              manageSubscriptionsHelper: mockManageSubsHelper,

@@ -91,7 +91,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             attributionDataMigrator: AttributionDataMigrator())
         self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user")
         self.mockAttributionPoster = AttributionPoster(deviceCache: mockDeviceCache,
-                                                       identityManager: mockIdentityManager,
+                                                       currentUserProvider: mockIdentityManager,
                                                        backend: mockBackend,
                                                        attributionFetcher: mockAttributionFetcher,
                                                        subscriberAttributesManager: mockSubscriberAttributesManager)
@@ -111,10 +111,10 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         )
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                   customerInfoManager: customerInfoManager,
-                                                                  identityManager: mockIdentityManager)
+                                                                  currentUserProvider: mockIdentityManager)
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                          customerInfoManager: customerInfoManager,
-                                                                         identityManager: mockIdentityManager)
+                                                                         currentUserProvider: mockIdentityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
     }
 
@@ -135,18 +135,19 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           receiptFetcher: mockReceiptFetcher,
                                                           customerInfoManager: customerInfoManager,
                                                           backend: mockBackend,
-                                                          identityManager: mockIdentityManager,
+                                                          currentUserProvider: mockIdentityManager,
                                                           transactionsManager: mockTransactionsManager,
                                                           deviceCache: mockDeviceCache,
                                                           manageSubscriptionsHelper: mockManageSubsHelper,
                                                           beginRefundRequestHelper: mockBeginRefundRequestHelper)
-        let trialOrIntroductoryPriceEligibilityChecker =
-        TrialOrIntroPriceEligibilityChecker(receiptFetcher: mockReceiptFetcher,
-                                            introEligibilityCalculator: mockIntroEligibilityCalculator,
-                                            backend: mockBackend,
-                                            identityManager: mockIdentityManager,
-                                            operationDispatcher: mockOperationDispatcher,
-                                            productsManager: mockProductsManager)
+        let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
+            receiptFetcher: mockReceiptFetcher,
+            introEligibilityCalculator: mockIntroEligibilityCalculator,
+            backend: mockBackend,
+            currentUserProvider: mockIdentityManager,
+            operationDispatcher: mockOperationDispatcher,
+            productsManager: mockProductsManager
+        )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
