@@ -13,7 +13,9 @@ import RevenueCat
  */
 
 class PurchasesDelegateHandler: NSObject, ObservableObject {
+
     static let shared = PurchasesDelegateHandler()
+
 }
 
 extension PurchasesDelegateHandler: PurchasesDelegate {
@@ -30,4 +32,19 @@ extension PurchasesDelegateHandler: PurchasesDelegate {
         /// - Update our published customerInfo object
         UserViewModel.shared.customerInfo = customerInfo
     }
+
+    /**
+     - Note: this can be tested by opening a link like:
+     itms-services://?action=purchaseIntent&bundleId=<BUNDLE_ID>&productIdentifier=<SKPRODUCT_ID>
+     */
+    func purchases(_ purchases: Purchases,
+                   shouldPurchasePromoProduct product: StoreProduct,
+                   defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock) {
+        makeDeferredPurchase { (transaction, info, error, cancelled) in
+            if let info = info, error == nil, !cancelled {
+                UserViewModel.shared.customerInfo = info
+            }
+        }
+    }
+
 }
