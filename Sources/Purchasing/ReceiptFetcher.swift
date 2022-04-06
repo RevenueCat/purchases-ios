@@ -42,6 +42,15 @@ class ReceiptFetcher {
         }
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func receiptData(refreshPolicy: ReceiptRefreshPolicy) async -> Data? {
+        return await withCheckedContinuation { continuation in
+            receiptData(refreshPolicy: refreshPolicy) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
 }
 
 private extension ReceiptFetcher {
