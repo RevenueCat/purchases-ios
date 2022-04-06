@@ -26,6 +26,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/configure(withAPIKey:appUserID:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:)``
+- ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)``
 
 ### Displaying Products
 - ``Purchases/offerings()``

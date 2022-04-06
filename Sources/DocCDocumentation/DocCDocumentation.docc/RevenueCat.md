@@ -58,6 +58,7 @@ Or browse our iOS sample apps:
 - ``Purchases/configure(withAPIKey:appUserID:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:)``
+- ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)``
 
 ### Displaying Products
 - ``Offerings``
