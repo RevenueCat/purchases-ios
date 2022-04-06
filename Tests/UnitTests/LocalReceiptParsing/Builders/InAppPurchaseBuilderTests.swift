@@ -182,7 +182,7 @@ class InAppPurchaseBuilderTests: XCTestCase {
         expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
     }
 
-    func testBuildThrowsIfOriginalTransactionIdIsMissing() {
+    func testBuildDoesntThrowIfOriginalTransactionIdIsMissing() {
         let inAppPurchaseContainer = containerFactory.inAppPurchaseContainerFromContainers(containers: [
             quantityContainer(),
             productIdContainer(),
@@ -192,7 +192,7 @@ class InAppPurchaseBuilderTests: XCTestCase {
             isInIntroOfferPeriodContainer(),
             webOrderLineItemIdContainer()
         ])
-        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
+        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.notTo(throwError())
     }
 
     func testBuildThrowsIfPurchaseDateIsMissing() {
@@ -208,7 +208,7 @@ class InAppPurchaseBuilderTests: XCTestCase {
         expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
     }
 
-    func testBuildThrowsIfOriginalPurchaseDateIsMissing() {
+    func testBuildDoesntThrowIfOriginalPurchaseDateIsMissing() {
         let inAppPurchaseContainer = containerFactory.inAppPurchaseContainerFromContainers(containers: [
             quantityContainer(),
             productIdContainer(),
@@ -218,10 +218,10 @@ class InAppPurchaseBuilderTests: XCTestCase {
             isInIntroOfferPeriodContainer(),
             webOrderLineItemIdContainer()
         ])
-        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
+        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.notTo(throwError())
     }
 
-    func testBuildThrowsIfIsInIntroOfferPeriodIsMissing() {
+    func testBuildDoesntThrowIfIsInIntroOfferPeriodIsMissing() {
         let inAppPurchaseContainer = containerFactory.inAppPurchaseContainerFromContainers(containers: [
             quantityContainer(),
             productIdContainer(),
@@ -231,10 +231,10 @@ class InAppPurchaseBuilderTests: XCTestCase {
             originalPurchaseDateContainer(),
             webOrderLineItemIdContainer()
         ])
-        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
+        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.notTo(throwError())
     }
 
-    func testBuildThrowsIfWebOrderLineItemIdIsMissing() {
+    func testBuildDoesntThrowIfWebOrderLineItemIdIsMissing() {
         let inAppPurchaseContainer = containerFactory.inAppPurchaseContainerFromContainers(containers: [
             quantityContainer(),
             productIdContainer(),
@@ -244,7 +244,7 @@ class InAppPurchaseBuilderTests: XCTestCase {
             originalPurchaseDateContainer(),
             isInIntroOfferPeriodContainer()
         ])
-        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
+        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.notTo(throwError())
     }
 }
 

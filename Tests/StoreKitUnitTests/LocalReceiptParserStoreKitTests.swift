@@ -14,6 +14,7 @@
 import Foundation
 import Nimble
 @testable import RevenueCat
+import StoreKit
 import XCTest
 
 class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
@@ -44,7 +45,51 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
 
         let receipt = try self.parser.parse(from: data)
 
+        expect(receipt.bundleId) == "com.revenuecat.StoreKitUnitTestsHostApp"
         expect(receipt.applicationVersion) == "1"
+        expect(receipt.originalApplicationVersion).to(beNil())
+        expect(receipt.opaqueValue).toNot(beNil())
+        expect(receipt.sha1Hash).toNot(beNil())
+        expect(receipt.creationDate).to(beCloseTo(Date(), within: 1))
+        expect(receipt.expirationDate).toNot(beNil())
+        expect(receipt.expirationDate).toNot(beCloseTo(Date(), within: 1))
+        expect(receipt.inAppPurchases).to(beEmpty())
+
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testReceiptParserParsesReceiptWithSingleIAP() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let product = try await fetchSk2Product()
+        _ = try await product.purchase()
+
+        let optionalData = await receiptFetcher.receiptData(refreshPolicy: .always)
+        let data = try XCTUnwrap(optionalData)
+
+        let receipt = try self.parser.parse(from: data)
+
+        expect(receipt.inAppPurchases.count) == 1
+
+        let firstPurchase = try XCTUnwrap(receipt.inAppPurchases.first)
+
+        expect(firstPurchase.quantity) == 1
+        expect(firstPurchase.productId) == product.id
+        expect(firstPurchase.transactionId).toNot(beNil())
+        expect(firstPurchase.originalTransactionId).to(beNil())
+        expect(firstPurchase.productType).to(beNil())
+
+        expect(firstPurchase.purchaseDate).to(beCloseTo(Date(), within: 1))
+        expect(firstPurchase.originalPurchaseDate).to(beNil())
+
+        expect(firstPurchase.expiresDate).toNot(beNil())
+        expect(firstPurchase.expiresDate).toNot(beCloseTo(Date(), within: 1))
+
+        expect(firstPurchase.cancellationDate).to(beNil())
+        expect(firstPurchase.isInTrialPeriod).to(beNil())
+        expect(firstPurchase.isInIntroOfferPeriod) == true
+        expect(firstPurchase.webOrderLineItemId).to(beNil())
+        expect(firstPurchase.promotionalOfferIdentifier).to(beNil())
+
     }
 
 }
