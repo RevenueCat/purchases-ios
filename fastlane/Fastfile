@@ -229,12 +229,15 @@ platform :ios do
     new_version_number = UI.input("New version number: ")
 
     changelog_path = edit_changelog
-
+    changelog = File.read(changelog_path)
+    
     create_new_release_branch(version: new_version_number)
     replace_version_number(version: new_version_number)
-    commit_updated_files_and_push(version: new_version_number)
 
-    changelog = File.read(changelog_path)
+    attach_changelog_to_master(version)
+
+    commit_updated_files_and_push(version: new_version_number)    
+    
     create_pull_request(
       title: "Release/#{new_version_number}",
       base: "main",
