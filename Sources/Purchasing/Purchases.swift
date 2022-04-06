@@ -32,7 +32,7 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
 public typealias PurchaseCompletedBlock = (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void
 
 /**
- Deferred block for ``Purchases/shouldPurchasePromoProduct(_:defermentBlock:)``
+ Deferred block for ``PurchasesDelegate/purchases(_:isReadyForPromotedProduct:purchase:)``
  */
 public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
@@ -1773,24 +1773,24 @@ extension Purchases: PurchasesOrchestratorDelegate {
     /**
      * Called when a user initiates a promotional in-app purchase from the App Store.
      *
-     * If your app is able to handle a purchase at the current time, run the deferment block in this method.
+     * If your app is able to handle a purchase at the current time, run the `startPurchase` block.
      *
-     * If the app is not in a state to make a purchase: cache the defermentBlock, then call the defermentBlock
+     * If the app is not in a state to make a purchase: cache the `startPurchase` block, then call it
      * when the app is ready to make the promotional purchase.
      *
-     * If the purchase should never be made, you don't need to ever call the defermentBlock and ``Purchases``
-     * will not proceed with promotional purchases.
+     * If the purchase should never be made, you don't need to ever call the `startPurchase` block
+     * and ``Purchases`` will not proceed with promotional purchases.
      *
      * - Parameter product: ``StoreProduct`` the product that was selected from the app store.
+     * - Parameter startPurchase: Method that begins the purchase flow for the promoted purchase.
+     * If the app is ready to start the purchase flow when this delegate method is called, then this method
+     * should be called right away. Otherwise, the method should be stored as a property in memory, and then called
+     * once the app is ready to start the purchase flow. 
      */
     @objc
-    public func shouldPurchasePromoProduct(_ product: StoreProduct,
-                                           defermentBlock: @escaping DeferredPromotionalPurchaseBlock) {
-        guard let delegate = delegate else {
-            return
-        }
-
-        delegate.purchases?(self, shouldPurchasePromoProduct: product, defermentBlock: defermentBlock)
+    internal func promotedPurchaseReadyToStart(for product: StoreProduct,
+                                               startPurchase: @escaping DeferredPromotionalPurchaseBlock) {
+        self.delegate?.purchases?(self, isReadyForPromotedProduct: product, purchase: startPurchase)
     }
 
 }

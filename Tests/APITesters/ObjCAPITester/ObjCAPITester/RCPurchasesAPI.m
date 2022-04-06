@@ -163,11 +163,13 @@ BOOL isAnonymous;
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p
-shouldPurchasePromoProduct:storeProduct
-           defermentBlock:^(void (^ _Nonnull completion)(RCStoreTransaction * _Nullable transaction,
+isReadyForPromotedProduct:storeProduct
+                 purchase:^(void (^ _Nonnull completion)(RCStoreTransaction * _Nullable transaction,
                                                          RCCustomerInfo * _Nullable info,
                                                          NSError * _Nullable error,
-                                                         BOOL cancelled)) {}];
+                                                         BOOL cancelled)) {
+
+    }];
 
 #if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV
     [p beginRefundRequestForProduct:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];

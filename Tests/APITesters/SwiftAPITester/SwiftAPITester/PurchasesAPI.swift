@@ -136,7 +136,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)
 
     let defermentBlock = { (_: (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void) in }
-    purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: storeProduct, defermentBlock: defermentBlock)
+    purchases.delegate?.purchases?(purchases, isReadyForPromotedProduct: storeProduct, purchase: defermentBlock)
 }
 
 private func checkIdentity(purchases: Purchases) {
