@@ -448,7 +448,7 @@ platform :ios do
     ENV["INCLUDE_DOCC_PLUGIN"] = "true"
     version_number = current_version_number
     docs_folder = "docs/#{version_number}"
-    hosting_base_path = "purchases-ios/#{version_number}"
+    hosting_base_path = "purchases-ios-docs/#{version_number}"
 
     Dir.chdir("..") do
       sh("swift",
@@ -466,9 +466,35 @@ platform :ios do
          "#{hosting_base_path}",
          "--transform-for-static-hosting")
     end
-    git_add(path: docs_folder)
-    git_commit(path: docs_folder, message: "Update documentation")
-    push_to_git_remote
+
+    Dir.chdir("..") do
+      sh("swift",
+         "package",
+         "--disable-sandbox",
+         "--allow-writing-to-directory",
+         docs_folder,
+         "generate-documentation",
+         "--target",
+         "RevenueCat",
+         "--disable-indexing",
+         "--output-path",
+         docs_folder,
+         "--hosting-base-path",
+         "#{hosting_base_path}",
+         "--transform-for-static-hosting")
+    end
+
+    docs_repo_base_url = "https://github.com/revenuecat/"
+    docs_repo_name = "purchases-ios-docs"
+    docs_repo_url = docs_repo_base_url + docs_repo_name
+    Dir.chdir("..") do
+      sh("git", "clone", docs_repo_url)
+      Dir.chdir(docs_repo_name) do
+        git_add(path: docs_folder)
+        git_commit(path: docs_folder, message: "Update documentation")
+        # push_to_git_remote
+      end
+    end
   end
 
   desc "Create or delete sandbox testers"
