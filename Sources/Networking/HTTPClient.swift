@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
@@ -242,26 +244,16 @@ private extension HTTPClient {
                                                            httpCode: statusCode))
 
         return Result { try dataIfAvailable(statusCode) }
-            .map { HTTPResponse(statusCode: statusCode, body: $0) }
+            .mapSuccessToOptionalHTTPResult(statusCode)
             .map {
-                return self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
-                                                                     data: $0.body,
-                                                                     request: urlRequest,
-                                                                     retried: request.retried)
+                self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
+                                                              data: $0.body,
+                                                              request: urlRequest,
+                                                              retried: request.retried)
             }
             .asOptionalResult?
             .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
-            .flatMap { response in
-                guard response.statusCode.isSuccessfulResponse else {
-                    return .failure(
-                        ErrorResponse
-                            .from(response.body)
-                            .asBackendError(with: statusCode)
-                    )
-                }
-
-                return .success(response)
-            }
+            .convertUnsuccessfulResponseToError()
     }
 
     func handle(urlResponse: URLResponse?,
@@ -380,15 +372,37 @@ private extension Encodable {
 
 extension Result where Success == HTTPResponse<Data>, Failure == Error {
 
+    // Converts an unsuccessful response into a `Result.failure`
+    fileprivate func convertUnsuccessfulResponseToError() -> Self {
+        return self.flatMap { response in
+            response.statusCode.isSuccessfulResponse
+            ? .success(response)
+            : .failure(
+                ErrorResponse
+                    .from(response.body)
+                    .asBackendError(with: response.statusCode)
+            )
+        }
+    }
+
     // Parses a `Result<HTTPResponse<Data>>` to `Result<HTTPResponse<Value>>`
     func parseResponse<Value: HTTPResponseBody>() -> HTTPResponse<Value>.Result {
-        return self.flatMap { response in
-            HTTPResponse<Value>.Result {
-                try response.mapBody { data in
-                    try Value.create(with: data)
+        return self.flatMap { response in          // Convert the `Result` type
+            HTTPResponse<Value>.Result {           // Create a new `HTTPResponse<Value>`
+                try response.mapBody { data in     // Convert the body of `HTTPResponse<Data>` from `Data` -> `Value`
+                    try Value.create(with: data)   // Decode `Data` into `Value`
                 }
             }
         }
+    }
+
+}
+
+private extension Result where Success == Data? {
+
+    /// Converts a `Result<Data?, Error>` into `Result<HTTPResponse<Data?>, Failure>`
+    func mapSuccessToOptionalHTTPResult(_ statusCode: HTTPStatusCode) -> Result<HTTPResponse<Data?>, Failure> {
+        return self.map { HTTPResponse(statusCode: statusCode, body: $0) }
     }
 
 }
