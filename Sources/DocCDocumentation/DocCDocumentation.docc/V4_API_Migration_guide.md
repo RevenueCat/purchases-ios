@@ -215,7 +215,7 @@ These types replace native StoreKit types in all public API methods that used th
 | Package.product | ``Package/storeProduct`` |
 | Package.product.price: NSDecimalNumber | ``StoreProduct/price``: Decimal |
 | Package.localizedIntroductoryPriceString: String | ``Package/localizedIntroductoryPriceString``: String? |
-| RCDeferredPromotionalPurchaseBlock | ``DeferredPromotionalPurchaseBlock`` |
+| RCDeferredPromotionalPurchaseBlock | ``StartPurchaseBlock`` |
 | Purchases.PurchaseCompletedBlock | ``PurchaseCompletedBlock`` |
 | Purchases.ReceivePurchaserInfoBlock | <i>REMOVED</i> |
 | Purchases.ReceiveOfferingsBlock | <i>REMOVED</i> |
