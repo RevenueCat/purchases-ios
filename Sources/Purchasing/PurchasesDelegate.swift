@@ -62,17 +62,17 @@ import Foundation
      * - [Apple Documentation](https://developer.apple.com/documentation/storekit/original_api_for_in-app_purchase/testing_promoted_in-app_purchases)
      */
     @objc optional func purchases(_ purchases: Purchases,
-                                  isReadyForPromotedProduct product: StoreProduct,
-                                  purchase startPurchase: @escaping DeferredPromotionalPurchaseBlock)
+                                  readyForPromotedProduct product: StoreProduct,
+                                  purchase startPurchase: @escaping StartPurchaseBlock)
 
-    @available(iOS, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
-    @available(tvOS, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
-    @available(watchOS, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
-    @available(macOS, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
-    @available(macCatalyst, obsoleted: 1, renamed: "purchases(_:isReadyForPromotedProduct:purchase:)")
+    @available(iOS, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    @available(tvOS, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    @available(watchOS, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    @available(macOS, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    @available(macCatalyst, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
     // swiftlint:disable:next missing_docs
     @objc optional func purchases(_ purchases: Purchases,
                                   shouldPurchasePromoProduct product: StoreProduct,
-                                  defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock)
+                                  defermentBlock makeDeferredPurchase: @escaping StartPurchaseBlock)
 
 }

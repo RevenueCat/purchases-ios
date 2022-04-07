@@ -470,13 +470,13 @@ public extension Purchases {
         fatalError()
     }
 
-    @available(iOS, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:isReadyForPromotedProduct:purchase:)")
-    @available(tvOS, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:isReadyForPromotedProduct:purchase:)")
-    @available(watchOS, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:isReadyForPromotedProduct:purchase:)")
-    @available(macOS, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:isReadyForPromotedProduct:purchase:)")
-    @available(macCatalyst, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:isReadyForPromotedProduct:purchase:)")
+    @available(iOS, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)")
+    @available(tvOS, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)")
+    @available(watchOS, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)")
+    @available(macOS, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)")
+    @available(macCatalyst, obsoleted: 1, message: "Use PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)")
     @objc func shouldPurchasePromoProduct(_ product: StoreProduct,
-                                          defermentBlock: @escaping DeferredPromotionalPurchaseBlock) {
+                                          defermentBlock: @escaping StartPurchaseBlock) {
         fatalError()
     }
 

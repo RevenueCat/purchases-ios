@@ -32,9 +32,9 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
 public typealias PurchaseCompletedBlock = (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void
 
 /**
- Deferred block for ``PurchasesDelegate/purchases(_:isReadyForPromotedProduct:purchase:)``
+ Block for starting purchases in ``PurchasesDelegate/purchases(_:readyForPromotedProduct:purchase:)``
  */
-public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
+public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
 /**
  * ``Purchases`` is the entry point for RevenueCat.framework. It should be instantiated as soon as your app has a unique
@@ -1790,8 +1790,8 @@ extension Purchases: PurchasesOrchestratorDelegate {
      */
     @objc
     internal func promotedPurchaseReadyToStart(for product: StoreProduct,
-                                               startPurchase: @escaping DeferredPromotionalPurchaseBlock) {
-        self.delegate?.purchases?(self, isReadyForPromotedProduct: product, purchase: startPurchase)
+                                               startPurchase: @escaping StartPurchaseBlock) {
+        self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
     }
 
 }

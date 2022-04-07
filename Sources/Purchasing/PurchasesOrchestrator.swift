@@ -17,7 +17,7 @@ import StoreKit
 @objc protocol PurchasesOrchestratorDelegate {
 
     func promotedPurchaseReadyToStart(for product: StoreProduct,
-                                      startPurchase: @escaping DeferredPromotionalPurchaseBlock)
+                                      startPurchase: @escaping StartPurchaseBlock)
 
 }
 

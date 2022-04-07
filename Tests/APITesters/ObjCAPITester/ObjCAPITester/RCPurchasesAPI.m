@@ -163,7 +163,7 @@ BOOL isAnonymous;
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p
-isReadyForPromotedProduct:storeProduct
+  readyForPromotedProduct:storeProduct
                  purchase:^(void (^ _Nonnull completion)(RCStoreTransaction * _Nullable transaction,
                                                          RCCustomerInfo * _Nullable info,
                                                          NSError * _Nullable error,
