@@ -59,7 +59,7 @@ import Foundation
      * - Parameter product: `StoreProduct` the product that was selected from the app store
      *
      * ### Related Articles:
-     * - [Apple Documentation](https://developer.apple.com/documentation/storekit/original_api_for_in-app_purchase/testing_promoted_in-app_purchases)
+     * - [Apple Documentation](https://rev.cat/testing-promoted-in-app-purchases)
      */
     @objc optional func purchases(_ purchases: Purchases,
                                   readyForPromotedProduct product: StoreProduct,
