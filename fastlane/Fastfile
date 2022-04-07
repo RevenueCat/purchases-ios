@@ -447,25 +447,8 @@ platform :ios do
   lane :generate_docs do
     ENV["INCLUDE_DOCC_PLUGIN"] = "true"
     version_number = current_version_number
-    docs_folder = "docs/#{version_number}"
+    docs_folder = "tmp/#{version_number}"
     hosting_base_path = "purchases-ios-docs/#{version_number}"
-
-    Dir.chdir("..") do
-      sh("swift",
-         "package",
-         "--disable-sandbox",
-         "--allow-writing-to-directory",
-         docs_folder,
-         "generate-documentation",
-         "--target",
-         "RevenueCat",
-         "--disable-indexing",
-         "--output-path",
-         docs_folder,
-         "--hosting-base-path",
-         "#{hosting_base_path}",
-         "--transform-for-static-hosting")
-    end
 
     Dir.chdir("..") do
       sh("swift",
@@ -487,12 +470,13 @@ platform :ios do
     docs_repo_base_url = "https://github.com/revenuecat/"
     docs_repo_name = "purchases-ios-docs"
     docs_repo_url = docs_repo_base_url + docs_repo_name
-    Dir.chdir("..") do
+    Dir.chdir("../..") do
       sh("git", "clone", docs_repo_url)
       Dir.chdir(docs_repo_name) do
-        git_add(path: docs_folder)
-        git_commit(path: docs_folder, message: "Update documentation")
-        # push_to_git_remote
+        FileUtils.mv "../purchases-ios/tmp/#{version_number}", "docs/#{version_number}", force: true
+        sh("git", "add", "docs/#{version_number}")
+        sh("git", "commit", "docs/#{version_number}","-m", '"Update documentation')
+        sh("git", "push")
       end
     end
   end
