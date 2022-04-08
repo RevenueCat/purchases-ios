@@ -19,6 +19,6 @@ struct IntroEligibilityResponse {
     let result: Result<HTTPResponse<[String: Any]>, Error>
     let productIdentifiers: [String]
     let unknownEligibilityClosure: () -> [String: IntroEligibility]
-    let completion: IntroEligibilityResponseHandler
+    let completion: Backend.IntroEligibilityResponseHandler
 
 }

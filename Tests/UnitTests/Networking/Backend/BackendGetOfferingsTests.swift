@@ -29,7 +29,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
         )
 
-        var result: Result<[String: Any], Error>?
+        var result: Result<[String: Any], BackendError>?
 
         backend.getOfferings(appUserID: Self.userID) {
             result = $0
@@ -70,7 +70,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.oneOfferingResponse)
         )
 
-        var result: Result<[String: Any], Error>?
+        var result: Result<[String: Any], BackendError>?
         backend.getOfferings(appUserID: Self.userID) {
             result = $0
         }
@@ -94,11 +94,9 @@ class BackendGetOfferingsTests: BaseBackendTests {
     }
 
     func testGetOfferingsFailSendsNil() {
-        let mockedError = ErrorCode.unknownBackendError as NSError
-
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
-            response: .init(error: mockedError)
+            response: .init(error: .unexpectedResponse(nil))
         )
 
         var offerings: [String: Any]? = [:]
@@ -111,21 +109,21 @@ class BackendGetOfferingsTests: BaseBackendTests {
     }
 
     func testGetOfferingsNetworkErrorSendsError() {
-        let mockedError = NSError(domain: NSURLErrorDomain, code: -1009)
+        let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(error: mockedError)
         )
 
-        var result: Result<[String: Any], Error>?
+        var result: Result<[String: Any], BackendError>?
         backend.getOfferings(appUserID: Self.userID) {
             result = $0
         }
 
         expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
-        expect(result?.error as NSError?) == mockedError
+        expect(result?.error) == .networkError(mockedError)
     }
 
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
@@ -141,7 +139,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
     func testGetOfferingsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
         var completionCalled = false
-        var receivedError: Error?
+        var receivedError: BackendError?
 
         backend.getOfferings(appUserID: "") { result in
             completionCalled = true
@@ -149,7 +147,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         }
 
         expect(completionCalled).toEventually(beTrue())
-        expect((receivedError! as NSError).code) == ErrorCode.invalidAppUserIdError.rawValue
+        expect(receivedError) == .missingAppUserID()
     }
 
 }

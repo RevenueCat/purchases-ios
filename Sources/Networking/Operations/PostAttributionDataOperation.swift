@@ -18,12 +18,12 @@ class PostAttributionDataOperation: NetworkOperation {
     private let configuration: UserSpecificConfiguration
     private let attributionData: [String: Any]
     private let network: AttributionNetwork
-    private let responseHandler: SimpleResponseHandler?
+    private let responseHandler: Backend.SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          attributionData: [String: Any],
          network: AttributionNetwork,
-         responseHandler: SimpleResponseHandler?) {
+         responseHandler: Backend.SimpleResponseHandler?) {
         self.attributionData = attributionData
         self.network = network
         self.configuration = configuration
@@ -38,7 +38,7 @@ class PostAttributionDataOperation: NetworkOperation {
 
     private func post(completion: @escaping () -> Void) {
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
-            self.responseHandler?(ErrorUtils.missingAppUserIDError())
+            self.responseHandler?(.missingAppUserID())
             completion()
 
             return
@@ -54,8 +54,8 @@ class PostAttributionDataOperation: NetworkOperation {
             defer {
                 completion()
             }
-            
-            self.responseHandler?(response.error)
+
+            self.responseHandler?(response.error.map(BackendError.networkError))
         }
     }
 

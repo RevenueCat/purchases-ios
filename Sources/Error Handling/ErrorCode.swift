@@ -259,3 +259,23 @@ extension ErrorCode {
     }
 
 }
+
+/// An `Error` that can be converted into an ``ErrorCode``
+/// - Note: the return value is ``Error`` since that allows errors
+/// to be encoded into `NSError` to include additional context.
+protocol ErrorCodeConvertible: Swift.Error {
+
+    /// Convert the receiver into an `ErrorCode` with all the necessary context
+    /// ### Related symbols:
+    /// - ``ErrorUtils``
+    var asPurchasesError: Error { get }
+
+}
+
+extension ErrorCodeConvertible {
+
+    var description: String {
+        return self.asPurchasesError.localizedDescription
+    }
+
+}

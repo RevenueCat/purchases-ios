@@ -110,7 +110,7 @@ extension OfferingsManagerTests {
         // when
         var obtainedOfferings: Offerings?
         var completionCalled = false
-        var obtainedError: Error?
+        var obtainedError: OfferingsManager.Error?
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, error in
             obtainedOfferings = offerings
             completionCalled = true
@@ -121,7 +121,7 @@ extension OfferingsManagerTests {
         expect(completionCalled).toEventually(beTrue())
         expect(obtainedOfferings).to(beNil())
         let error = try XCTUnwrap(obtainedError)
-        expect((error as NSError).code) == ErrorCode.configurationError.rawValue
+        expect(error) == .configurationError(Strings.offering.configuration_error_no_products_for_offering.description)
     }
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
@@ -132,7 +132,7 @@ extension OfferingsManagerTests {
         // when
         var obtainedOfferings: Offerings?
         var completionCalled = false
-        var obtainedError: Error?
+        var obtainedError: OfferingsManager.Error?
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, error in
             obtainedOfferings = offerings
             completionCalled = true
@@ -143,7 +143,7 @@ extension OfferingsManagerTests {
         expect(completionCalled).toEventually(beTrue())
         expect(obtainedOfferings).to(beNil())
         let error = try XCTUnwrap(obtainedError)
-        expect((error as NSError).code) == ErrorCode.configurationError.rawValue
+        expect(error) == .configurationError(Strings.offering.configuration_error_skproducts_not_found.description)
     }
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendResponseIfOfferingsFactoryCantCreateOfferings() throws {
@@ -154,7 +154,7 @@ extension OfferingsManagerTests {
         // when
         var obtainedOfferings: Offerings?
         var completionCalled = false
-        var obtainedError: Error?
+        var obtainedError: OfferingsManager.Error?
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, error in
             obtainedOfferings = offerings
             completionCalled = true
@@ -164,8 +164,9 @@ extension OfferingsManagerTests {
         // then
         expect(completionCalled).toEventually(beTrue())
         expect(obtainedOfferings).to(beNil())
+
         let error = try XCTUnwrap(obtainedError)
-        expect((error as NSError).code) == ErrorCode.unexpectedBackendResponseError.rawValue
+        expect(error) == .noOfferingsFound()
     }
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() throws {
@@ -174,18 +175,17 @@ extension OfferingsManagerTests {
         mockOfferingsFactory.nilOfferings = true
 
         // when
-        var receivedError: NSError?
+        var receivedError: OfferingsManager.Error?
         var completionCalled = false
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { _, error in
-            receivedError = error as NSError?
+            receivedError = error
             completionCalled = true
         }
 
         // then
         expect(completionCalled).toEventually(beTrue())
         let unwrappedError = try XCTUnwrap(receivedError)
-        expect(unwrappedError.domain) == RCPurchasesErrorCodeDomain
-        expect(unwrappedError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
+        expect(unwrappedError) == .backendError(MockData.unexpectedBackendResponseError)
     }
 
     func testFailBackendDeviceCacheClearsOfferingsCache() {
@@ -248,9 +248,9 @@ private extension OfferingsManagerTests {
             ],
             "current_offering_id": "base"
         ]
-        static let unexpectedBackendResponseError = NSError(domain: RCPurchasesErrorCodeDomain,
-                                                            code: ErrorCode.unexpectedBackendResponseError.rawValue,
-                                                            userInfo: nil)
+        static let unexpectedBackendResponseError: BackendError = .unexpectedBackendResponse(
+            .customerInfoNil
+        )
     }
 
 }

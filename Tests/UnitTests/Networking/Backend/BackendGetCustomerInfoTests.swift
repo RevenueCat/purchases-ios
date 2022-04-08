@@ -63,7 +63,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var customerInfo: Result<CustomerInfo, Error>?
+        var customerInfo: Result<CustomerInfo, BackendError>?
 
         backend.getCustomerInfo(appUserID: Self.userID) { result in
             customerInfo = result
@@ -80,9 +80,9 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodedUserID), response: response)
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodeableUserID),
-                        response: .init(error: ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError())))
+                        response: .init(error: .unexpectedResponse(nil)))
 
-        var customerInfo: Result<CustomerInfo, Error>?
+        var customerInfo: Result<CustomerInfo, BackendError>?
 
         backend.getCustomerInfo(appUserID: encodeableUserID) { result in
             customerInfo = result
@@ -93,22 +93,22 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
     }
 
     func testHandlesGetCustomerInfoErrors() throws {
-        let mockedError = BackendErrorCode.badRequest as NSError
+        let mockedError = NetworkError.unexpectedResponse(nil)
 
         self.httpClient.mock(
             requestPath: .getCustomerInfo(appUserID: Self.userID),
             response: .init(error: mockedError)
         )
 
-        var result: Result<CustomerInfo, NSError>?
+        var result: Result<CustomerInfo, BackendError>?
 
         backend.getCustomerInfo(appUserID: Self.userID) {
-            result = $0.mapError { $0 as NSError }
+            result = $0
         }
 
         expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
-        expect(result?.error) == mockedError
+        expect(result?.error) == .networkError(mockedError)
     }
 
     func testHandlesInvalidJSON() {
@@ -117,15 +117,22 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: ["sjkaljdklsjadkjs": ""])
         )
 
-        var result: Result<CustomerInfo, NSError>?
+        var result: Result<CustomerInfo, BackendError>?
 
         backend.getCustomerInfo(appUserID: Self.userID) {
-            result = $0.mapError { $0 as NSError }
+            result = $0
         }
 
         expect(result).toEventuallyNot(beNil())
-        expect(result?.error?.domain) == RCPurchasesErrorCodeDomain
-        expect(result?.error?.code) == ErrorCode.unknownBackendError.rawValue
+
+        switch result {
+        case .failure(.networkError(.decoding)):
+            // Correct result
+            break
+
+        default:
+            fail("Unexpected result: \(result!)")
+        }
     }
 
     func testGetCustomerInfoDoesNotMakeTwoRequests() {
@@ -141,8 +148,8 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         let customerInfoResponse = MockHTTPClient.Response(statusCode: .success, response: customerResponse)
         httpClient.mock(requestPath: path, response: customerInfoResponse)
 
-        var firstResult: Result<CustomerInfo, Error>?
-        var secondResult: Result<CustomerInfo, Error>?
+        var firstResult: Result<CustomerInfo, BackendError>?
+        var secondResult: Result<CustomerInfo, BackendError>?
 
         backend.getCustomerInfo(appUserID: Self.userID) {
             firstResult = $0

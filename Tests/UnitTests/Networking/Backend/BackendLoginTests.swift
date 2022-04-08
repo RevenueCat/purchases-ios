@@ -40,12 +40,11 @@ class BackendLoginTests: BaseBackendTests {
     func testLoginPassesNetworkErrorIfCouldntCommunicate() throws {
         let newAppUserID = "new id"
 
-        let errorCode = 123465
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
+        let stubbedError: NetworkError = .unexpectedResponse(nil)
         let currentAppUserID = "old id"
         _ = mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { result in
@@ -54,7 +53,7 @@ class BackendLoginTests: BaseBackendTests {
 
         expect(receivedResult).toEventuallyNot(beNil())
         expect(receivedResult).to(beFailure())
-        expect(receivedResult?.error as NSError?) == stubbedError
+        expect(receivedResult?.error) == .networkError(stubbedError)
     }
 
     func testLoginCallsCompletionWithErrorIfCustomerInfoIsEmpty() throws {
@@ -63,7 +62,7 @@ class BackendLoginTests: BaseBackendTests {
 
         _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: .createdSuccess)
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { result in
@@ -73,10 +72,12 @@ class BackendLoginTests: BaseBackendTests {
         expect(receivedResult).toEventuallyNot(beNil())
         expect(receivedResult?.value).to(beNil())
 
-        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
+        let receivedError = try XCTUnwrap(receivedResult?.error)
 
-        expect(receivedNSError.domain) == RCPurchasesErrorCodeDomain
-        expect(receivedNSError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
+        switch receivedError {
+        case .networkError(.decoding): break // correct error
+        default: fail("Unexpectede error: \(receivedError)")
+        }
     }
 
     func testLoginCallsCompletionWithCustomerInfoAndCreatedFalseIf201() throws {
@@ -87,7 +88,7 @@ class BackendLoginTests: BaseBackendTests {
                                   statusCode: .createdSuccess,
                                   response: Self.mockCustomerInfoData)
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { result in
@@ -107,7 +108,7 @@ class BackendLoginTests: BaseBackendTests {
                                   statusCode: .success,
                                   response: Self.mockCustomerInfoData)
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
         backend.logIn(currentAppUserID: currentAppUserID,
                       newAppUserID: newAppUserID) { result in
@@ -211,7 +212,7 @@ private extension BackendLoginTests {
     }
 
     func mockLoginRequest(appUserID: String,
-                          error: Error) -> HTTPRequest.Path {
+                          error: NetworkError) -> HTTPRequest.Path {
         let path: HTTPRequest.Path = .logIn
         let response =  MockHTTPClient.Response(error: error)
 

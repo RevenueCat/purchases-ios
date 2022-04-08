@@ -115,20 +115,20 @@ class BackendCreateAliasTests: BaseBackendTests {
     }
 
     func testNetworkErrorIsForwarded() {
-        let mockedError = NSError(domain: NSURLErrorDomain, code: -1009)
+        let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
             requestPath: .createAlias(appUserID: Self.userID),
             response: .init(error: mockedError)
         )
 
-        var receivedError: NSError?
+        var receivedError: BackendError?
         backend.createAlias(appUserID: Self.userID, newAppUserID: "new") { error in
-            receivedError = error as NSError?
+            receivedError = error
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError) == mockedError
+        expect(receivedError) == .networkError(mockedError)
     }
 
 }

@@ -222,16 +222,16 @@ import Foundation
 
     static func from(json: [String: Any]?) throws -> CustomerInfo {
         guard let customerJSON = json else {
-            throw UnexpectedBackendResponseSubErrorCode.customerInfoNil
+            throw BackendError.UnexpectedBackendResponseError.customerInfoNil
         }
 
         do {
             return try CustomerInfo(data: customerJSON)
         } catch {
-            let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
-            let subError = parsingError.addingUnderlyingError(error,
-                                                              extraContext: customerJSON.stringRepresentation)
-            throw subError
+            throw BackendError.UnexpectedBackendResponseError.customerInfoResponseParsing(
+                error: error as NSError,
+                json: customerJSON.stringRepresentation
+            )
         }
     }
 

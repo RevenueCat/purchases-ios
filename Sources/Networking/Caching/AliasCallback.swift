@@ -16,6 +16,6 @@ import Foundation
 struct AliasCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: ((Error?) -> Void)?
+    let completion: ((BackendError?) -> Void)?
 
 }

@@ -13,8 +13,6 @@
 
 import Foundation
 
-// swiftlint:disable file_length
-
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
@@ -185,57 +183,33 @@ private extension HTTPClient {
                urlRequest: URLRequest,
                data: Data?,
                error networkError: Error?
-    ) -> Result<HTTPResponse<Data>, Error>? {
+    ) -> HTTPResponse<Data>.Result? {
         if let networkError = networkError {
-            return .failure(networkError)
+            return Result
+                .failure(networkError)
                 .mapError { error in
                     if self.dnsChecker.isBlockedAPIError(networkError),
                        let blockedError = self.dnsChecker.errorWithBlockedHostFromError(networkError) {
                         Logger.error(blockedError.description)
                         return blockedError
                     } else {
-                        return error
+                        return .networkError(error)
                     }
                 }
         }
 
         guard let httpURLResponse = urlResponse as? HTTPURLResponse else {
-            return .failure(ErrorUtils.unexpectedBackendResponseError())
+            return .failure(.unexpectedResponse(urlResponse))
         }
 
         /// - Returns `nil` if status code is 304, since the response will be empty
         /// and fetched from the eTag.
-        func dataIfAvailable(_ statusCode: HTTPStatusCode) throws -> Data? {
+        func dataIfAvailable(_ statusCode: HTTPStatusCode) -> Data? {
             if statusCode == .notModified {
                 return nil
             } else {
                 return data
             }
-
-//            if let data = data, statusCode != .notModified {
-//                let result: [String: Any]?
-//
-//                do {
-//                    result = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-//                } catch let jsonError {
-//                    Logger.error(Strings.network.parsing_json_error(error: jsonError))
-//
-//                    let dataAsString = String(data: data, encoding: .utf8) ?? ""
-//                    Logger.error(Strings.network.json_data_received(dataString: dataAsString))
-//
-//                    throw jsonError
-//                }
-//
-//                guard let data = data else {
-//                    throw ErrorUtils.unexpectedBackendResponseError()
-//                }
-//
-//                return data
-//            } else {
-//                // No data if the body was empty, or if status is `.notModified`
-//                // since the body will be fetched from the eTag.
-//                return nil
-//            }
         }
 
         let statusCode = HTTPStatusCode(rawValue: httpURLResponse.statusCode)
@@ -243,7 +217,8 @@ private extension HTTPClient {
         Logger.debug(Strings.network.api_request_completed(request.httpRequest,
                                                            httpCode: statusCode))
 
-        return Result { try dataIfAvailable(statusCode) }
+        return Result
+            .success(dataIfAvailable(statusCode))
             .mapSuccessToOptionalHTTPResult(statusCode)
             .map {
                 self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
@@ -252,7 +227,6 @@ private extension HTTPClient {
                                                               retried: request.retried)
             }
             .asOptionalResult?
-            .mapError { ErrorUtils.networkError(withUnderlyingError: $0) }
             .convertUnsuccessfulResponseToError()
     }
 
@@ -306,7 +280,7 @@ private extension HTTPClient {
             Logger.error("Could not create request to \(request.path)")
 
             request.completionHandler?(
-                .failure(ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+                .failure(.unableToCreateRequest(request.httpRequest.path))
             )
             return
         }
@@ -370,7 +344,7 @@ private extension Encodable {
 
 }
 
-extension Result where Success == HTTPResponse<Data>, Failure == Error {
+extension Result where Success == HTTPResponse<Data>, Failure == NetworkError {
 
     // Converts an unsuccessful response into a `Result.failure`
     fileprivate func convertUnsuccessfulResponseToError() -> Self {
@@ -378,9 +352,10 @@ extension Result where Success == HTTPResponse<Data>, Failure == Error {
             response.statusCode.isSuccessfulResponse
             ? .success(response)
             : .failure(
-                ErrorResponse
-                    .from(response.body)
-                    .asBackendError(with: response.statusCode)
+                .errorResponse(
+                    ErrorResponse.from(response.body),
+                    response.statusCode
+                )
             )
         }
     }
@@ -388,11 +363,13 @@ extension Result where Success == HTTPResponse<Data>, Failure == Error {
     // Parses a `Result<HTTPResponse<Data>>` to `Result<HTTPResponse<Value>>`
     func parseResponse<Value: HTTPResponseBody>() -> HTTPResponse<Value>.Result {
         return self.flatMap { response in          // Convert the `Result` type
-            HTTPResponse<Value>.Result {           // Create a new `HTTPResponse<Value>`
+            Result<HTTPResponse<Value>, Error> {   // Create a new `Result<Value>`
                 try response.mapBody { data in     // Convert the body of `HTTPResponse<Data>` from `Data` -> `Value`
                     try Value.create(with: data)   // Decode `Data` into `Value`
                 }
             }
+            // Convert decoding errors into `NetworkError.decoding`
+            .mapError { NetworkError.decoding($0, response.body) }
         }
     }
 

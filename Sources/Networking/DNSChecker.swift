@@ -16,21 +16,10 @@ import Foundation
 protocol DNSCheckerType {
 
     static func isBlockedAPIError(_ error: Error?) -> Bool
-    static func errorWithBlockedHostFromError(_ error: Error?) -> DNSError?
+    static func errorWithBlockedHostFromError(_ error: Error?) -> NetworkError?
     static func isBlockedURL(_ url: URL) -> Bool
     static func resolvedHost(fromURL url: URL) -> String?
 
-}
-
-enum DNSError: Error, DescribableError, Equatable {
-    case blocked(failedURL: URL, resolvedHost: String?)
-
-    var description: String {
-        switch self {
-        case .blocked(let failedURL, let resolvedHost):
-            return NetworkStrings.blocked_network(url: failedURL, newHost: resolvedHost).description
-        }
-    }
 }
 
 enum DNSChecker: DNSCheckerType {
@@ -55,7 +44,7 @@ enum DNSChecker: DNSCheckerType {
         return isBlockedURL(failedURL)
     }
 
-    static func errorWithBlockedHostFromError(_ error: Error?) -> DNSError? {
+    static func errorWithBlockedHostFromError(_ error: Error?) -> NetworkError? {
         guard isBlockedAPIError(error),
               let nsError = error as NSError?,
               let failedURL = nsError.userInfo[NSURLErrorFailingURLErrorKey] as? URL else {
@@ -63,8 +52,7 @@ enum DNSChecker: DNSCheckerType {
         }
 
         let host = resolvedHost(fromURL: failedURL)
-        let blockedError = DNSError.blocked(failedURL: failedURL, resolvedHost: host)
-        return blockedError
+        return .dnsError(failedURL: failedURL, resolvedHost: host)
     }
 
     static func isBlockedURL(_ url: URL) -> Bool {

@@ -31,7 +31,6 @@ class ErrorResponseTests: XCTestCase {
 
         expect(error.domain) == ErrorCode.errorDomain
         expect(error.code) == ErrorCode.invalidCredentialsError.rawValue
-        expect(error.userInfo[ErrorDetails.finishableKey as String] as? Bool) == false
         expect(error.userInfo[Backend.RCAttributeErrorsKey]).to(beNil())
 
         let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
@@ -71,7 +70,6 @@ class ErrorResponseTests: XCTestCase {
 
         expect(error.domain) == ErrorCode.errorDomain
         expect(error.code) == ErrorCode.unknownBackendError.rawValue
-        expect(error.userInfo[ErrorDetails.finishableKey as String] as? Bool) == false
         expect(error.userInfo[Backend.RCAttributeErrorsKey]).to(beNil())
 
         let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
@@ -86,7 +84,6 @@ class ErrorResponseTests: XCTestCase {
 
         expect(error.domain) == ErrorCode.errorDomain
         expect(error.code) == ErrorCode.unknownBackendError.rawValue
-        expect(error.userInfo[ErrorDetails.finishableKey as String] as? Bool) == true
         expect(error.userInfo[Backend.RCAttributeErrorsKey]).to(beNil())
 
         let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
@@ -101,7 +98,6 @@ class ErrorResponseTests: XCTestCase {
 
         expect(error.domain) == ErrorCode.errorDomain
         expect(error.code) == ErrorCode.invalidSubscriberAttributesError.rawValue
-        expect(error.userInfo[ErrorDetails.finishableKey as String] as? Bool) == true
         expect(error.userInfo[Backend.RCAttributeErrorsKey] as? [String: String]) == [
             "$email": "Email address is not a valid email."
         ]
@@ -118,7 +114,6 @@ class ErrorResponseTests: XCTestCase {
 
         expect(error.domain) == ErrorCode.errorDomain
         expect(error.code) == ErrorCode.invalidSubscriberAttributesError.rawValue
-        expect(error.userInfo[ErrorDetails.finishableKey as String] as? Bool) == true
         expect(error.userInfo[Backend.RCAttributeErrorsKey] as? [String: String]) == [
             "$email": "Email address is not a valid email."
         ]
@@ -140,7 +135,6 @@ class ErrorResponseTests: XCTestCase {
 
         expect(error.domain) == ErrorCode.errorDomain
         expect(error.code) == ErrorCode.unknownBackendError.rawValue
-        expect(error.userInfo[ErrorDetails.finishableKey as String] as? Bool) == true
         expect(error.userInfo[Backend.RCAttributeErrorsKey]).to(beNil())
 
         let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)

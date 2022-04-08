@@ -149,7 +149,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
     func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        customerInfoManager.stubbedCustomerInfoResult = .failure(ErrorUtils.customerInfoError(withMessage: ""))
+        customerInfoManager.stubbedCustomerInfoResult = .failure(.missingAppUserID())
 
         let expectedError = ErrorUtils.beginRefundRequestError(
             withMessage: Strings.purchase.begin_refund_customer_info_error(
@@ -168,7 +168,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
     func testBeginRefundForActiveEntitlementFailsOnCustomerInfoFetchFail() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        customerInfoManager.stubbedCustomerInfoResult = .failure(ErrorUtils.customerInfoError(withMessage: ""))
+        customerInfoManager.stubbedCustomerInfoResult = .failure(.missingAppUserID())
 
         let expectedError = ErrorUtils.beginRefundRequestError(
             withMessage: Strings.purchase.begin_refund_customer_info_error(entitlementID: nil).description)

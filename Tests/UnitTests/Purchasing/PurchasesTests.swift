@@ -87,6 +87,8 @@ class PurchasesTests: XCTestCase {
         deviceCache = nil
         purchases = nil
         UserDefaults().removePersistentDomain(forName: "TestDefaults")
+
+        super.tearDown()
     }
 
     class MockBackend: Backend {
@@ -95,7 +97,7 @@ class PurchasesTests: XCTestCase {
         var originalPurchaseDate: Date?
         var timeout = false
         var getSubscriberCallCount = 0
-        var overrideCustomerInfoResult: Result<CustomerInfo, Error> = .success(
+        var overrideCustomerInfoResult: Result<CustomerInfo, BackendError> = .success(
             CustomerInfo(testData: [
                 "request_date": "2019-08-16T10:30:42Z",
                 "subscriber": [
@@ -106,7 +108,7 @@ class PurchasesTests: XCTestCase {
                 ]])!
         )
 
-        override func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
+        override func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
             getSubscriberCallCount += 1
             userID = appUserID
 
@@ -131,8 +133,8 @@ class PurchasesTests: XCTestCase {
         var postedOfferingIdentifier: String?
         var postedObserverMode: Bool?
 
-        var postReceiptResult: Result<CustomerInfo, Error>?
-        var aliasError: Error?
+        var postReceiptResult: Result<CustomerInfo, BackendError>?
+        var aliasError: BackendError?
         var aliasCalled = false
 
         override func post(receiptData: Data,
@@ -142,7 +144,7 @@ class PurchasesTests: XCTestCase {
                            presentedOfferingIdentifier: String?,
                            observerMode: Bool,
                            subscriberAttributes: [String: SubscriberAttribute]?,
-                           completion: @escaping BackendCustomerInfoResponseHandler) {
+                           completion: @escaping Backend.CustomerInfoResponseHandler) {
             postReceiptDataCalled = true
             postedReceiptData = receiptData
             postedIsRestore = isRestore
@@ -161,7 +163,7 @@ class PurchasesTests: XCTestCase {
 
             postedOfferingIdentifier = presentedOfferingIdentifier
             postedObserverMode = observerMode
-            completion(postReceiptResult ?? .failure(ErrorCode.unknownError))
+            completion(postReceiptResult ?? .failure(.missingAppUserID()))
         }
 
         var postedProductIdentifiers: [String]?
@@ -187,8 +189,7 @@ class PurchasesTests: XCTestCase {
         override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
             gotOfferings += 1
             if failOfferings {
-                let subError = UnexpectedBackendResponseSubErrorCode.getOfferUnexpectedResponse
-                completion(.failure(ErrorUtils.unexpectedBackendResponse(withSubError: subError)))
+                completion(.failure(.unexpectedBackendResponse(.getOfferUnexpectedResponse)))
                 return
             }
             if badOfferingsResponse {
@@ -213,7 +214,7 @@ class PurchasesTests: XCTestCase {
             completion(.success(offeringsData))
         }
 
-        override func createAlias(appUserID: String, newAppUserID: String, completion: ((Error?) -> Void)?) {
+        override func createAlias(appUserID: String, newAppUserID: String, completion: ((BackendError?) -> Void)?) {
             aliasCalled = true
             if aliasError != nil {
                 completion!(aliasError)
@@ -234,12 +235,12 @@ class PurchasesTests: XCTestCase {
         var invokedPostAttributionDataParametersList = [(data: [String: Any]?,
                                                          network: AttributionNetwork,
                                                          appUserID: String?)]()
-        var stubbedPostAttributionDataCompletionResult: (Error?, Void)?
+        var stubbedPostAttributionDataCompletionResult: (BackendError?, Void)?
 
         override func post(attributionData: [String: Any],
                            network: AttributionNetwork,
                            appUserID: String,
-                           completion: ((Error?) -> Void)? = nil) {
+                           completion: ((BackendError?) -> Void)? = nil) {
             invokedPostAttributionData = true
             invokedPostAttributionDataCount += 1
             invokedPostAttributionDataParameters = (attributionData, network, appUserID)
@@ -250,7 +251,7 @@ class PurchasesTests: XCTestCase {
         }
 
         var postOfferForSigningCalled = false
-        var postOfferForSigningPaymentDiscountResponse: Result<[String: Any], Error> = .success([:])
+        var postOfferForSigningPaymentDiscountResponse: Result<[String: Any], BackendError> = .success([:])
 
         override func post(offerIdForSigning offerIdentifier: String,
                            productIdentifier: String,
@@ -885,10 +886,6 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    enum BackendError: Error {
-        case unknown
-    }
-
     func testAfterSendingDoesntFinishTransactionIfBackendError() {
         setupPurchases()
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
@@ -899,9 +896,10 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
         self.backend.postReceiptResult = .failure(
-            ErrorUtils.backendError(withBackendCode: .invalidAPIKey,
-                                    backendMessage: "Invalid credentials",
-                                    finishable: false)
+            .networkError(.errorResponse(
+                .init(code: .unknownBackendError, message: nil),
+                .internalServerError
+            ))
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
@@ -922,9 +920,10 @@ class PurchasesTests: XCTestCase {
         transaction.mockPayment = self.storeKitWrapper.payment!
 
         self.backend.postReceiptResult = .failure(
-            ErrorUtils.backendError(withBackendCode: .invalidAPIKey,
-                                    backendMessage: "Invalid credentials",
-                                    finishable: true)
+            .networkError(.errorResponse(
+                .init(code: .unknownBackendError, message: nil),
+                .invalidRequest
+            ))
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
@@ -944,11 +943,11 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        let backendErrorCode = BackendErrorCode(code: ErrorCode.invalidCredentialsError.rawValue)
         self.backend.postReceiptResult = .failure(
-            ErrorUtils.backendError(withBackendCode: backendErrorCode,
-                                    backendMessage: "Invalid credentials",
-                                    finishable: false)
+            .networkError(.errorResponse(
+                .init(code: .unknownBackendError, message: nil),
+                .internalServerError
+            ))
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
@@ -970,7 +969,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockError = NSError.init(domain: SKErrorDomain, code: 2, userInfo: nil)
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptResult = .failure(BackendError.unknown)
+        self.backend.postReceiptResult = .failure(.missingTransactionProductIdentifier())
 
         transaction.mockState = SKPaymentTransactionState.failed
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -1287,9 +1286,7 @@ class PurchasesTests: XCTestCase {
     func testRestorePurchasesPassesErrorOnFailure() {
         setupPurchases()
 
-        let error = ErrorUtils.backendError(withBackendCode: .invalidAPIKey,
-                                            backendMessage: "Invalid credentials",
-                                            finishable: true)
+        let error: BackendError = .missingAppUserID()
 
         self.backend.postReceiptResult = .failure(error)
         self.purchasesDelegate.customerInfo = nil
@@ -1301,6 +1298,7 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError).to(matchError(error.asPurchasesError))
     }
 
     func testSyncPurchasesPostsTheReceipt() {
@@ -1449,9 +1447,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesPassesErrorOnFailure() {
         setupPurchases()
 
-        let error = ErrorUtils.backendError(withBackendCode: .invalidAPIKey,
-                                            backendMessage: "Invalid credentials",
-                                            finishable: true)
+        let error: BackendError = .missingAppUserID()
 
         self.backend.postReceiptResult = .failure(error)
         self.purchasesDelegate.customerInfo = nil
@@ -1463,6 +1459,7 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError).to(matchError(error.asPurchasesError))
     }
 
     func testCallsShouldAddPromoPaymentDelegateMethod() {
@@ -2114,8 +2111,11 @@ class PurchasesTests: XCTestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventually(beFalse())
-        expect(receivedError?.code).toEventually(equal(ErrorCode.missingReceiptFileError.rawValue))
+        expect(receivedError).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
+
+        expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
+        expect(receivedError?.code) == ErrorCode.missingReceiptFileError.rawValue
     }
 
     func testDeferBlockCallsCompletionBlockAfterPurchaseCompletes() {
@@ -2608,13 +2608,12 @@ class PurchasesTests: XCTestCase {
     }
 
     func testGetCustomerInfoAfterInvalidatingCallsCompletionWithErrorIfBackendError() {
-        let backendError = ErrorUtils.backendError(withBackendCode: .invalidAPIKey,
-                                                   backendMessage: "Invalid credentials",
-                                                   finishable: true)
+        let backendError: BackendError = .networkError(
+            .unexpectedResponse(nil)
+        )
         self.backend.overrideCustomerInfoResult = .failure(backendError)
 
         setupPurchases()
-        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
         expect(self.purchasesDelegate.customerInfoReceivedCount) == 0
 
         let appUserID = identityManager.currentAppUserID
@@ -2624,13 +2623,13 @@ class PurchasesTests: XCTestCase {
         var receivedCustomerInfo: CustomerInfo?
         var completionCallCount = 0
         var receivedError: Error?
-        nonOptionalPurchases.getCustomerInfo { (customerInfo, error) in
+        purchases.getCustomerInfo { (customerInfo, error) in
             completionCallCount += 1
             receivedError = error
             receivedCustomerInfo = customerInfo
         }
 
-        nonOptionalPurchases.invalidateCustomerInfoCache()
+        purchases.invalidateCustomerInfoCache()
 
         expect(completionCallCount).toEventually(equal(1))
         expect(receivedError).toNot(beNil())

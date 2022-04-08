@@ -28,7 +28,6 @@ enum ReceiptStrings {
     case parsing_receipt
     case refreshing_empty_receipt
     case unable_to_load_receipt
-    case unknown_backend_error
 
 }
 
@@ -74,10 +73,6 @@ extension ReceiptStrings: CustomStringConvertible {
 
         case .unable_to_load_receipt:
             return "Unable to load receipt, ensure you are logged in to a valid Apple account."
-
-        case .unknown_backend_error:
-            return "Unexpected backend error when posting receipt. Make sure you " +
-            "are on latest SDK version and let us know if problem persists."
 
         }
     }

@@ -73,11 +73,11 @@ class CustomerInfoManagerTests: XCTestCase {
 
     func testFetchAndCacheCustomerInfoPassesBackendErrors() throws {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
-        let mockError = NSError(domain: "revenuecat", code: 123)
+        let mockError: BackendError = .missingAppUserID()
         mockBackend.stubbedGetCustomerInfoResult = .failure(mockError)
 
         var completionCalled = false
-        var receivedError: Error?
+        var receivedError: BackendError?
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
                                                       isAppBackgrounded: false) { result in
             completionCalled = true
@@ -86,13 +86,12 @@ class CustomerInfoManagerTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue())
 
-        let receivedNSError = try XCTUnwrap(receivedError as NSError?)
-        expect(receivedNSError) == mockError
+        expect(receivedError) == mockError
     }
 
     func testFetchAndCacheCustomerInfoClearsCustomerInfoTimestampIfBackendError() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
-        mockBackend.stubbedGetCustomerInfoResult = .failure(NSError(domain: "revenuecat", code: 123))
+        mockBackend.stubbedGetCustomerInfoResult = .failure(.missingAppUserID())
 
         var completionCalled = false
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",

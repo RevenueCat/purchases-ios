@@ -16,7 +16,7 @@ import Foundation
 
 struct HTTPResponse<Body: HTTPResponseBody> {
 
-    typealias Result = Swift.Result<Self, Error>
+    typealias Result = Swift.Result<Self, NetworkError>
 
     let statusCode: HTTPStatusCode
     let body: Body
@@ -59,22 +59,24 @@ extension HTTPResponse {
 // MARK: -
 
 /// The response content of a failed request.
-struct ErrorResponse {
+struct ErrorResponse: Equatable {
 
-    let code: BackendErrorCode
-    let message: String?
-    let attributeErrors: [String: String]
+    var code: BackendErrorCode
+    var message: String?
+    var attributeErrors: [String: String] = [:]
 
 }
 
 extension ErrorResponse {
 
     /// Converts this `ErrorResponse` into an `ErrorCode` backed by the corresponding `BackendErrorCode`.
-    func asBackendError(with statusCode: HTTPStatusCode) -> Error {
-        var userInfo: [NSError.UserInfoKey: Any] = [
-            ErrorDetails.finishableKey: !statusCode.isServerError,
-            Backend.RCSuccessfullySyncedKey: statusCode.isSuccessfullySynced
-        ]
+    func asBackendError(
+        with statusCode: HTTPStatusCode,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) -> Error {
+        var userInfo: [NSError.UserInfoKey: Any] = [:]
 
         if !self.attributeErrors.isEmpty {
             userInfo[Backend.RCAttributeErrorsKey as NSError.UserInfoKey] = self.attributeErrors
@@ -83,7 +85,8 @@ extension ErrorResponse {
         return ErrorUtils.backendError(
             withBackendCode: self.code,
             backendMessage: self.message,
-            extraUserInfo: userInfo
+            extraUserInfo: userInfo,
+            fileName: file, functionName: function, line: line
         )
     }
 
@@ -170,7 +173,6 @@ extension ErrorResponse {
     }
 
     private static let defaultResponse: Self = .init(code: .unknownError,
-                                                     message: nil,
-                                                     attributeErrors: [:])
+                                                     message: nil)
 
 }

@@ -58,7 +58,7 @@ extension HTTPRequest.Method {
 
 extension HTTPRequest {
 
-    enum Path {
+    enum Path: Equatable {
 
         case getCustomerInfo(appUserID: String)
         case getOfferings(appUserID: String)

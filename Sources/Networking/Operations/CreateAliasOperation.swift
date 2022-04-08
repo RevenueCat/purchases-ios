@@ -40,7 +40,7 @@ private extension CreateAliasOperation {
     func createAlias(completion: @escaping () -> Void) {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion?(ErrorUtils.missingAppUserIDError())
+                callback.completion?(.missingAppUserID())
             }
 
             completion()
@@ -54,10 +54,10 @@ private extension CreateAliasOperation {
         httpClient.perform(request,
                            authHeaders: self.authHeaders) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
             self.aliasCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { aliasCallback in
-                
-                aliasCallback.completion?(response.error)
+
+                aliasCallback.completion?(response.error.map(BackendError.networkError))
             }
-            
+
             completion()
         }
     }

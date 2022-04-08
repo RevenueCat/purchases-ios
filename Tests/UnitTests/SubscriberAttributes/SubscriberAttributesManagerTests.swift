@@ -524,7 +524,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         ]
         mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
-        let mockError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: [:])
+        let mockError: BackendError = .missingAppUserID()
         mockBackend.stubbedPostSubscriberAttributesCompletionResult = (mockError, ())
 
         self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: currentUserID)

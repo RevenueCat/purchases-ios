@@ -64,7 +64,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
     }
 
     func testOfferForSigningNetworkError() {
-        let mockedError = NSError(domain: NSURLErrorDomain, code: -1009)
+        let mockedError = NetworkError.unexpectedResponse(nil)
 
         self.httpClient.mock(
             requestPath: .postOfferForSigning,
@@ -76,7 +76,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        var result: Result<PostOfferForSigningOperation.SigningData, Error>?
+        var result: Result<PostOfferForSigningOperation.SigningData, BackendError>?
 
         backend.post(offerIdForSigning: offerIdentifier,
                      productIdentifier: productIdentifier,
@@ -88,7 +88,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
 
         expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
-        expect(result?.error as NSError?) == mockedError
+        expect(result?.error) == .networkError(mockedError)
     }
 
     func testOfferForSigningEmptyOffersResponse() {
@@ -106,27 +106,24 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
+        var receivedError: BackendError?
 
         backend.post(offerIdForSigning: offerIdentifier,
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
                      appUserID: Self.userID) { result in
-            receivedError = result.error as NSError?
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedError = result.error
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(
-            equal(ErrorCode.unexpectedBackendResponseError.rawValue))
-        expect(receivedUnderlyingError?.code).toEventually(
-            equal(UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse.rawValue))
+
+        expect(receivedError) == .unexpectedBackendResponse(.postOfferIdMissingOffersInResponse)
     }
 
     func testOfferForSigningSignatureErrorResponse() {
+        let errorResponse = ErrorResponse(code: 7234, message: "Ineligible for some reason")
+
         let validSigningResponse: [String: Any] = [
             "offers": [
                 [
@@ -135,8 +132,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                     "key_id": "STEAKANDEGGS",
                     "signature_data": nil,
                     "signature_error": [
-                        "message": "Ineligible for some reason",
-                        "code": 7234
+                        "message": errorResponse.message!,
+                        "code": errorResponse.code.rawValue
                     ]
                 ]
             ]
@@ -152,26 +149,18 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
+        var receivedError: BackendError?
 
         backend.post(offerIdForSigning: offerIdentifier,
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
                      appUserID: Self.userID) { result in
-            receivedError = result.error as NSError?
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedError = result.error
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(
-            equal(ErrorCode.invalidAppleSubscriptionKeyError.rawValue))
-        expect(receivedUnderlyingError).toEventuallyNot(beNil())
-        expect(receivedUnderlyingError?.code).toEventually(equal(7234))
-        expect(receivedUnderlyingError?.domain).toEventually(equal("RevenueCat.BackendErrorCode"))
-        expect(receivedUnderlyingError?.localizedDescription).toEventually(equal("Ineligible for some reason"))
+        expect(receivedError) == .networkError(.errorResponse(errorResponse, .success))
     }
 
     func testOfferForSigningNoDataAndNoSignatureErrorResponse() {
@@ -197,24 +186,25 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
+        var receivedError: BackendError?
 
         backend.post(offerIdForSigning: offerIdentifier,
                      productIdentifier: productIdentifier,
                      subscriptionGroup: group,
                      receiptData: discountData,
                      appUserID: Self.userID) { result in
-            receivedError = result.error as NSError?
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
+            receivedError = result.error
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(
-            equal(ErrorCode.unexpectedBackendResponseError.rawValue))
-        expect(receivedUnderlyingError?.code).toEventually(
-            equal(UnexpectedBackendResponseSubErrorCode.postOfferIdSignature.rawValue))
+        switch receivedError {
+        case .unexpectedBackendResponse(.postOfferIdSignature, _, _):
+            // Correct error
+            break
+
+        default:
+            fail("Invalid error: \(String(describing: receivedError))")
+        }
     }
 
 }

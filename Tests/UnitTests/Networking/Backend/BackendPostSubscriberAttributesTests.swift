@@ -24,12 +24,13 @@ class BackendPostSubscriberAttributesTests: BaseBackendTests {
     }
 
     func testPostingWithNoSubscriberAttributesProducesAnError() {
-        var eventuallyError: ErrorCode?
-        backend.post(subscriberAttributes: [:], appUserID: "testUserID", completion: { error in
-            eventuallyError = error as? ErrorCode
-        })
+        var eventuallyError: BackendError?
+        backend.post(subscriberAttributes: [:], appUserID: "testUserID") { error in
+            eventuallyError = error
+        }
 
-        expect(eventuallyError?.codeName).toEventually(equal(ErrorCode.emptySubscriberAttributes.codeName))
+        expect(eventuallyError).toEventuallyNot(beNil())
+        expect(eventuallyError) == .emptySubscriberAttributes()
     }
 
 }
