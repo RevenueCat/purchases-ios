@@ -24,7 +24,7 @@ class AttributionPosterTests: XCTestCase {
     var attributionFetcher: AttributionFetcher!
     var attributionPoster: AttributionPoster!
     var deviceCache: MockDeviceCache!
-    var identityManager: MockIdentityManager!
+    var currentUserProvider: MockCurrentUserProvider!
     var backend: MockBackend!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
@@ -50,9 +50,9 @@ class AttributionPosterTests: XCTestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
-        identityManager = MockIdentityManager(mockAppUserID: userID)
+        currentUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
         attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                              identityManager: identityManager,
+                                              currentUserProvider: currentUserProvider,
                                               backend: backend,
                                               attributionFetcher: attributionFetcher,
                                               subscriberAttributesManager: subscriberAttributesManager)

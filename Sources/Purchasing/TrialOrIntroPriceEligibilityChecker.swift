@@ -18,24 +18,24 @@ class TrialOrIntroPriceEligibilityChecker {
 
     typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
 
-    private var appUserID: String { identityManager.currentAppUserID }
+    private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private let receiptFetcher: ReceiptFetcher
     private let introEligibilityCalculator: IntroEligibilityCalculator
     private let backend: Backend
-    private let identityManager: IdentityManager
+    private let currentUserProvider: CurrentUserProvider
     private let operationDispatcher: OperationDispatcher
     private let productsManager: ProductsManager
 
     init(receiptFetcher: ReceiptFetcher,
          introEligibilityCalculator: IntroEligibilityCalculator,
          backend: Backend,
-         identityManager: IdentityManager,
+         currentUserProvider: CurrentUserProvider,
          operationDispatcher: OperationDispatcher,
          productsManager: ProductsManager) {
         self.receiptFetcher = receiptFetcher
         self.introEligibilityCalculator = introEligibilityCalculator
         self.backend = backend
-        self.identityManager = identityManager
+        self.currentUserProvider = currentUserProvider
         self.operationDispatcher = operationDispatcher
         self.productsManager = productsManager
     }

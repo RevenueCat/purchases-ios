@@ -23,7 +23,7 @@ class ManageSubscriptionsHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
     private var customerInfoManager: MockCustomerInfoManager!
-    private var identityManager: MockIdentityManager!
+    private var currentUserProvider: CurrentUserProvider!
     private var helper: ManageSubscriptionsHelper!
     private let mockCustomerInfoData: [String: Any] = [
         "request_date": "2018-12-21T02:40:36Z",
@@ -44,10 +44,10 @@ class ManageSubscriptionsHelperTests: XCTestCase {
                                                       deviceCache: MockDeviceCache(systemInfo: systemInfo),
                                                       backend: MockBackend(),
                                                       systemInfo: systemInfo)
-        identityManager = MockIdentityManager(mockAppUserID: "appUserID")
+        currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
         helper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                            customerInfoManager: customerInfoManager,
-                                           identityManager: identityManager)
+                                           currentUserProvider: currentUserProvider)
     }
 
     func testShowManageSubscriptionsMakesRightCalls() throws {

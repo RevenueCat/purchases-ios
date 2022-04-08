@@ -58,7 +58,7 @@ class PurchasesTests: XCTestCase {
                                         attributionFetcher: self.attributionFetcher,
                                         attributionDataMigrator: AttributionDataMigrator())
         attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                              identityManager: identityManager,
+                                              currentUserProvider: identityManager,
                                               backend: backend,
                                               attributionFetcher: attributionFetcher,
                                               subscriberAttributesManager: subscriberAttributesManager)
@@ -74,10 +74,10 @@ class PurchasesTests: XCTestCase {
                                                     productsManager: mockProductsManager)
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                              customerInfoManager: customerInfoManager,
-                                                             identityManager: identityManager)
+                                                             currentUserProvider: identityManager)
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                     customerInfoManager: customerInfoManager,
-                                                                    identityManager: identityManager)
+                                                                    currentUserProvider: identityManager)
         mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
     }
 
@@ -327,7 +327,7 @@ class PurchasesTests: XCTestCase {
                                                       receiptFetcher: receiptFetcher,
                                                       customerInfoManager: customerInfoManager,
                                                       backend: backend,
-                                                      identityManager: identityManager,
+                                                      currentUserProvider: identityManager,
                                                       transactionsManager: mockTransactionsManager,
                                                       deviceCache: deviceCache,
                                                       manageSubscriptionsHelper: mockManageSubsHelper,
@@ -336,7 +336,7 @@ class PurchasesTests: XCTestCase {
             receiptFetcher: receiptFetcher,
             introEligibilityCalculator: mockIntroEligibilityCalculator,
             backend: backend,
-            identityManager: identityManager,
+            currentUserProvider: identityManager,
             operationDispatcher: mockOperationDispatcher,
             productsManager: mockProductsManager
         )

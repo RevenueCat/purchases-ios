@@ -21,7 +21,7 @@ class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
     private let customerInfoManager: CustomerInfoManager
-    private let identityManager: IdentityManager
+    private let currentUserProvider: CurrentUserProvider
 
 #if os(iOS)
     @available(iOS 15.0, *)
@@ -31,10 +31,10 @@ class BeginRefundRequestHelper {
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
 #endif
 
-    init(systemInfo: SystemInfo, customerInfoManager: CustomerInfoManager, identityManager: IdentityManager) {
+    init(systemInfo: SystemInfo, customerInfoManager: CustomerInfoManager, currentUserProvider: CurrentUserProvider) {
         self.systemInfo = systemInfo
         self.customerInfoManager = customerInfoManager
-        self.identityManager = identityManager
+        self.currentUserProvider = currentUserProvider
     }
 
 #if os(iOS)
@@ -93,7 +93,7 @@ private extension BeginRefundRequestHelper {
 
         do {
             customerInfo = try await self.customerInfoManager.customerInfo(
-                appUserID: self.identityManager.currentAppUserID
+                appUserID: self.currentUserProvider.currentAppUserID
             )
         } catch {
             let message = Strings.purchase.begin_refund_customer_info_error(entitlementID: entitlementID)

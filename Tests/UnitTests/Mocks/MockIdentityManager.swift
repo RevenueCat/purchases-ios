@@ -45,4 +45,12 @@ class MockIdentityManager: IdentityManager {
         return mockIsAnonymous
     }
 
+    override func logIn(appUserID: String, completion: @escaping LogInResponseHandler) {
+        fatalError("Logging in not supported on mock")
+    }
+
+    override func logOut(completion: (Error?) -> Void) {
+        fatalError("Logging out not supported on mock")
+    }
+
 }

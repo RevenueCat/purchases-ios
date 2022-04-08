@@ -22,7 +22,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
     private var customerInfoManager: MockCustomerInfoManager!
-    private var identityManager: MockIdentityManager!
+    private var currentUserProvider: MockCurrentUserProvider!
     private var helper: BeginRefundRequestHelper!
     private let mockProductID = "1234"
     private let mockEntitlementID = "1234"
@@ -41,10 +41,10 @@ class BeginRefundRequestHelperTests: XCTestCase {
                                                       deviceCache: MockDeviceCache(systemInfo: systemInfo),
                                                       backend: MockBackend(),
                                                       systemInfo: systemInfo)
-        identityManager = MockIdentityManager(mockAppUserID: "appUserID")
+        currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
         helper = BeginRefundRequestHelper(systemInfo: systemInfo,
                                           customerInfoManager: customerInfoManager,
-                                          identityManager: identityManager)
+                                          currentUserProvider: currentUserProvider)
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {
             sk2Helper = MockSK2BeginRefundRequestHelper()

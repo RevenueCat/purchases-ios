@@ -38,14 +38,16 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
         let mockOperationDispatcher = MockOperationDispatcher()
-        let identityManager = MockIdentityManager(mockAppUserID: "app_user")
-        trialOrIntroPriceEligibilityChecker =
-        TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
-                                            introEligibilityCalculator: mockIntroEligibilityCalculator,
-                                            backend: mockBackend,
-                                            identityManager: identityManager,
-                                            operationDispatcher: mockOperationDispatcher,
-                                            productsManager: mockProductsManager)
+        let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
+
+        trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
+            receiptFetcher: receiptFetcher,
+            introEligibilityCalculator: mockIntroEligibilityCalculator,
+            backend: mockBackend,
+            currentUserProvider: currentUserProvider,
+            operationDispatcher: mockOperationDispatcher,
+            productsManager: mockProductsManager
+        )
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
