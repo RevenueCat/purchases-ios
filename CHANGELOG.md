@@ -1,3 +1,7 @@
+## 4.2.1
+
+- Fixed a potential race condition when syncing user attributes #1479
+
 ## 4.2.0
 #### API updates:
 
