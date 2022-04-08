@@ -26,6 +26,7 @@ class Backend {
 
     static let RCAttributeErrorsKey = "attribute_errors"
     static let RCAttributeErrorsResponseKey = "attributes_error_response"
+    static let RCStatusCodeErrorKey = "rc_response_status_code"
 
     private let apiKey: String
     private let authHeaders: [String: String]
