@@ -284,6 +284,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
                                                                       deviceCache: deviceCache,
+                                                                      operationDispatcher: operationDispatcher,
                                                                       attributionFetcher: attributionFetcher,
                                                                       attributionDataMigrator: attributionDataMigrator)
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,

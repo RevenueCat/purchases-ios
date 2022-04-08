@@ -47,6 +47,7 @@ class AttributionPosterTests: XCTestCase {
         subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
+            operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
         identityManager = MockIdentityManager(mockAppUserID: userID)

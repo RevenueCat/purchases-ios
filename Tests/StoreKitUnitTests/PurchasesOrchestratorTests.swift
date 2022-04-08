@@ -54,6 +54,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: backend,
             deviceCache: deviceCache,
+            operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
