@@ -448,7 +448,8 @@ platform :ios do
     ENV["INCLUDE_DOCC_PLUGIN"] = "true"
     version_number = current_version_number
     hosting_base_path = "purchases-ios-docs/#{version_number}"
-    docs_repo_base_url = "https://github.com/revenuecat/"
+    docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
+    docs_repo_name = ENV["DOCS_REPO_NAME"]
     docs_repo_name = "purchases-ios-docs"
     docs_repo_url = docs_repo_base_url + docs_repo_name
     
