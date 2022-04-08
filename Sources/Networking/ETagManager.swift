@@ -124,8 +124,6 @@ private extension ETagManager {
         return request.url?.absoluteString
     }
 
-    // TODO: delete old data since this isn't backwards compatible
-
     static let suiteNameBase: String  = "revenuecat.etags"
     static var suiteName: String {
         guard let bundleID = Bundle.main.bundleIdentifier else {

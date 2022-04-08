@@ -182,6 +182,49 @@ class ETagManagerTests: XCTestCase {
 
         expect(self.mockUserDefaults.mockValues.count) == 0
     }
+
+    func testReadingETagWithInvalidBodyFormatFails() {
+        /// The data that `ETagManager` serialized up until version 4.1.
+        struct OldWrapper: Encodable {
+
+            let eTag: String
+            let statusCode: Int
+            let responseObject: [String: AnyEncodable]
+
+            var asData: Data? {
+                return try? JSONSerialization.data(withJSONObject: self.asDictionary(),
+                                                   options: .prettyPrinted)
+            }
+
+        }
+
+        let eTag = "the_etag"
+        let url = urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".data(using: .utf8)!
+
+        let wrapper = OldWrapper(eTag: eTag,
+                                 statusCode: HTTPStatusCode.success.rawValue,
+                                 responseObject: [
+                                    "response": AnyEncodable("cached")
+                                 ])
+        self.mockUserDefaults.mockValues[cacheKey] = wrapper.asData
+
+        let httpURLResponse = self.httpURLResponseForTest(url: url,
+                                                          eTag: eTag,
+                                                          statusCode: .notModified)
+
+        let response = eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
+                                                                data: actualResponse,
+                                                                request: request,
+                                                                retried: true)
+        expect(response).toNot(beNil())
+        expect(response?.statusCode) == .notModified
+        expect(response?.body) == actualResponse
+    }
+
 }
 
 private extension ETagManagerTests {
