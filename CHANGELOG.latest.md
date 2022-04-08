@@ -1,3 +1,9 @@
+### Version 4.2.1 changes:
+
+- Fixed a potential race condition when syncing user attributes #1479
+
+### Version 4.2.0 changes:
+
 #### API updates:
 
 - Added new method `setMixpanelDistinctID` as a convenience method for setting the required attribute for the Mixpanel integration #1397
