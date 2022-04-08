@@ -25,7 +25,7 @@ class BaseErrorTests: XCTestCase {
         _ error: ErrorCodeConvertible,
         expectedCode: ErrorCode,
         underlyingError: Error? = nil,
-        userInfoKeys: [String]? = nil,
+        userInfoKeys: [NSError.UserInfoKey]? = nil,
         file: FileString = #file, line: UInt = #line
     ) {
         let nsError = error.asPurchasesError as NSError
@@ -53,7 +53,7 @@ class BaseErrorTests: XCTestCase {
         }
 
         if let userInfoKeys = userInfoKeys {
-            expect(nsError.userInfo.keys).to(contain(userInfoKeys))
+            expect(nsError.userInfo.keys).to(contain(userInfoKeys as [String]))
         }
     }
 

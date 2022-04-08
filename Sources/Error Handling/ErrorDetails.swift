@@ -14,7 +14,11 @@
 
 import Foundation
 
-class ErrorDetails: NSObject {
+enum ErrorDetails {
+
+    static let attributeErrorsKey: NSError.UserInfoKey = "attribute_errors"
+    static let attributeErrorsResponseKey: NSError.UserInfoKey = "attributes_error_response"
+    static let statusCodeErrorKey: NSError.UserInfoKey = "rc_response_status_code"
 
     static let readableErrorCodeKey: NSError.UserInfoKey = "readable_error_code"
     static let extraContextKey: NSError.UserInfoKey = "extra_context"

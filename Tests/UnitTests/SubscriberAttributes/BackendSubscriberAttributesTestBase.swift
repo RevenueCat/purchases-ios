@@ -155,7 +155,7 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
 
     func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsSuccess() throws {
         let attributeErrors = [
-            Backend.RCAttributeErrorsKey: [
+            ErrorDetails.attributeErrorsKey: [
                 [
                     "key_name": "$email",
                     "message": "email is not in valid format"
@@ -165,8 +165,10 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
 
         self.mockHTTPClient.mock(
             requestPath: .postReceiptData,
-            response: .init(statusCode: .success,
-                            response: validSubscriberResponse + [Backend.RCAttributeErrorsResponseKey: attributeErrors])
+            response: .init(
+                statusCode: .success,
+                response: validSubscriberResponse + [ErrorDetails.attributeErrorsResponseKey as String: attributeErrors]
+            )
         )
 
         let subscriberAttributesByKey: [String: SubscriberAttribute] = [
@@ -253,7 +255,7 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
 
         let error: NetworkError = .errorResponse(
             ErrorResponse.from([
-                Backend.RCAttributeErrorsKey: [
+                ErrorDetails.attributeErrorsKey as String: [
                     [
                         "key_name": "$some_attribute",
                         "message": "wasn't valid"

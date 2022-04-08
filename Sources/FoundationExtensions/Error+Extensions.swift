@@ -41,7 +41,7 @@ extension Error {
 extension NSError {
 
     var subscriberAttributesErrors: [String: String]? {
-        return userInfo[Backend.RCAttributeErrorsKey as String] as? [String: String]
+        return self.userInfo[ErrorDetails.attributeErrorsKey as String] as? [String: String]
     }
 
 }
