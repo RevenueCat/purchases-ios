@@ -2,9 +2,9 @@
 
 - Added new method `setMixpanelDistinctID` as a convenience method for setting the required attribute for the Mixpanel integration #1397
 
-- Async promotional offer methods no longer include the `get` prefix #1405
-  - `getPromotionalOffer` has been deprecated in favor of `promotionalOffer`
-  - `getEligiblePromotionalOffers` has been deprecated in favor of `eligiblePromotionalOffers`
+- `getPromotionalOffer` has been deprecated in favor of `promotionalOffer` #1405
+
+- `getEligiblePromotionalOffers` has been deprecated in favor of `eligiblePromotionalOffers` #1405
 
 - `StoreProductDiscount` now includes the `numberOfPeriods` property #1428
 
