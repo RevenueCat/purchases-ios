@@ -17,11 +17,12 @@ enum StoreKit2Setting {
     /// Never use SK2
     case disabled
 
-    /// Use SK2 if available for certain APIs that provide a better implementation
+    /// Use SK2 (if available in the current device) only for certain APIs that provide a better implementation
+    /// For example: intro eligibility, determining if a receipt has purchases, managing subscriptions.
     case enabledOnlyForOptimizations
 
-    /// Enable SK2 in all APIs if available
-    case enabledIfAvailable
+    /// Enable SK2 in all APIs if available in the current device
+    case enabledForCompatibleDevices
 
 }
 
@@ -29,10 +30,22 @@ extension StoreKit2Setting {
 
     init(useStoreKit2IfAvailable: Bool) {
         self = useStoreKit2IfAvailable
-            ? .enabledIfAvailable
+            ? .enabledForCompatibleDevices
             : .enabledOnlyForOptimizations
     }
 
     static let `default`: Self = .enabledOnlyForOptimizations
+
+}
+
+extension StoreKit2Setting: CustomDebugStringConvertible {
+
+    var debugDescription: String {
+        switch self {
+        case .disabled: return "disabled"
+        case .enabledOnlyForOptimizations: return "optimizations-only"
+        case .enabledForCompatibleDevices: return "enabled"
+        }
+    }
 
 }

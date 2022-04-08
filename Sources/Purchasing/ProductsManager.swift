@@ -37,7 +37,7 @@ class ProductsManager: NSObject {
     func products(withIdentifiers identifiers: Set<String>,
                   completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           self.systemInfo.storeKit2Setting == .enabledIfAvailable {
+           self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             self.sk2Products(withIdentifiers: identifiers) { result in
                 completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }

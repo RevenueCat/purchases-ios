@@ -46,7 +46,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        let manager = try createManager(storeKit2Setting: .enabledIfAvailable)
+        let manager = try createManager(storeKit2Setting: .enabledForCompatibleDevices)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false

@@ -25,7 +25,7 @@ class TransactionsManagerSK2Tests: StoreKitConfigTestCase {
         try super.setUpWithError()
 
         mockReceiptParser = MockReceiptParser()
-        transactionsManager = TransactionsManager(storeKit2Setting: .enabledIfAvailable,
+        transactionsManager = TransactionsManager(storeKit2Setting: .enabledForCompatibleDevices,
                                                   receiptParser: mockReceiptParser)
     }
 

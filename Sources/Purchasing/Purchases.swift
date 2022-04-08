@@ -371,7 +371,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     ) {
 
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
-        if systemInfo.storeKit2Setting == .enabledIfAvailable {
+        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
         }
         Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion), fileName: nil)
