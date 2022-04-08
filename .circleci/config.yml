@@ -303,7 +303,7 @@ jobs:
       - install-dependencies
       - run:
           name: Build docs
-          command: bundle exec fastlane deploy_docs
+          command: bundle exec fastlane generate_docs
   
   make-release:
     <<: *base-job
