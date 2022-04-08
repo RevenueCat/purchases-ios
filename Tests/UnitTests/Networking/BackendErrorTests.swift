@@ -51,4 +51,20 @@ class BackendErrorTests: BaseErrorTests {
                              underlyingError: underlyingError as NSError)
     }
 
+    func testSubscriptionNotFoundErrorsArentSuccessfullySynced() {
+        // See https://github.com/RevenueCat/purchases-ios/pull/1479
+        // This test ensures that if that race condition does happen
+        // at least the attributes won't be marked as synced
+
+        let response = ErrorResponse(
+            code: .subscriptionNotFoundForCustomer,
+            message: "Subscription not found for subscriber",
+            attributeErrors: [:]
+        )
+
+        let error: BackendError = .networkError(.errorResponse(response, .notFoundError))
+
+        expect(error.successfullySynced) == false
+    }
+
 }
