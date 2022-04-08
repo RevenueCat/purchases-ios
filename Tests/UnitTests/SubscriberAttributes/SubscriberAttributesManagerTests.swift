@@ -41,6 +41,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.subscriberAttributesManager = SubscriberAttributesManager(
             backend: mockBackend,
             deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator
         )

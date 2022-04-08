@@ -54,6 +54,7 @@ class PurchasesTests: XCTestCase {
         subscriberAttributesManager =
         MockSubscriberAttributesManager(backend: self.backend,
                                         deviceCache: self.deviceCache,
+                                        operationDispatcher: self.mockOperationDispatcher,
                                         attributionFetcher: self.attributionFetcher,
                                         attributionDataMigrator: AttributionDataMigrator())
         attributionPoster = AttributionPoster(deviceCache: deviceCache,

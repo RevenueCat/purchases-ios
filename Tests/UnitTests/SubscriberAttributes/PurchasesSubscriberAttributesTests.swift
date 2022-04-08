@@ -87,6 +87,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockSubscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.mockBackend,
             deviceCache: self.mockDeviceCache,
+            operationDispatcher: self.mockOperationDispatcher,
             attributionFetcher: self.mockAttributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
         self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user")

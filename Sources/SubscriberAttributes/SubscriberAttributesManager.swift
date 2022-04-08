@@ -17,16 +17,19 @@ class SubscriberAttributesManager {
 
     private let backend: Backend
     private let deviceCache: DeviceCache
+    private let operationDispatcher: OperationDispatcher
     private let attributionFetcher: AttributionFetcher
     private let attributionDataMigrator: AttributionDataMigrator
     private let lock = Lock()
 
     init(backend: Backend,
          deviceCache: DeviceCache,
+         operationDispatcher: OperationDispatcher,
          attributionFetcher: AttributionFetcher,
          attributionDataMigrator: AttributionDataMigrator) {
         self.backend = backend
         self.deviceCache = deviceCache
+        self.operationDispatcher = operationDispatcher
         self.attributionFetcher = attributionFetcher
         self.attributionDataMigrator = attributionDataMigrator
     }
@@ -134,25 +137,28 @@ class SubscriberAttributesManager {
                                    completion: (() -> Void)? = nil) -> Int {
         let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
         let total = unsyncedAttributesForAllUsers.count
-        let completed: Atomic<Int> = .init(0)
 
-        for (syncingAppUserId, attributes) in unsyncedAttributesForAllUsers {
-            syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error in
-                self.handleAttributesSynced(syncingAppUserId: syncingAppUserId,
-                                            currentAppUserId: currentAppUserID,
-                                            error: error)
+        operationDispatcher.dispatchOnWorkerThread {
+            let completed: Atomic<Int> = .init(0)
 
-                syncedAttribute?(error)
-                let completedSoFar: Int = completed.modify { $0 += 1; return $0 }
+            for (syncingAppUserId, attributes) in unsyncedAttributesForAllUsers {
+                self.syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error in
+                    self.handleAttributesSynced(syncingAppUserId: syncingAppUserId,
+                                                currentAppUserId: currentAppUserID,
+                                                error: error)
 
-                if completedSoFar == total {
-                    completion?()
+                    syncedAttribute?(error)
+                    let completedSoFar: Int = completed.modify { $0 += 1; return $0 }
+
+                    if completedSoFar == total {
+                        completion?()
+                    }
                 }
             }
-        }
 
-        if total == 0 {
-            completion?()
+            if total == 0 {
+                completion?()
+            }
         }
 
         return total
