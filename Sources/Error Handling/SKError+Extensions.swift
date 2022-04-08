@@ -14,10 +14,9 @@
 import Foundation
 import StoreKit
 
-extension SKError {
+extension SKError: ErrorCodeConvertible {
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
-    func toPurchasesError() -> Error {
+    var asPurchasesError: Error {
         switch self.code {
         case .cloudServiceNetworkConnectionFailed,
              .cloudServiceRevoked,

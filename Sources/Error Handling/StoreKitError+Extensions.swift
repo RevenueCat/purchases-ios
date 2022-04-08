@@ -15,9 +15,9 @@ import StoreKit
 
 /// - SeeAlso: SKError+Extensions
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension StoreKitError {
+extension StoreKitError: ErrorCodeConvertible {
 
-    func toPurchasesError() -> Error {
+    var asPurchasesError: Error {
         switch self {
         case .userCancelled:
             return ErrorUtils.purchaseCancelledError(error: self)
@@ -50,9 +50,9 @@ extension StoreKitError {
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension Product.PurchaseError {
+extension Product.PurchaseError: ErrorCodeConvertible {
 
-    func toPurchasesError() -> Error {
+    var asPurchasesError: Error {
         switch self {
         case .invalidQuantity:
             return ErrorUtils.storeProblemError(error: self)
