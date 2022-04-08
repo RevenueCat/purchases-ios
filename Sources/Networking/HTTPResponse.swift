@@ -143,7 +143,7 @@ extension ErrorResponse {
     /// Creates an `ErrorResponse` with the content of an `HTTPResponse`.
     /// This method supports extracting error information from the root, or from inside `"attributes_error_response"`
     /// - Note: if the error couldn't be decoded, a default error is created.
-    @available(*, deprecated)
+    /// - Warning: this is "deprecated". Ideally in the future all `ErrorResponses` are created from `Data`.
     static func from(_ dictionary: [String: Any]) -> Self {
         guard let data = try? JSONSerialization.data(withJSONObject: dictionary) else {
             return .defaultResponse
