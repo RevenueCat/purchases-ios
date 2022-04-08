@@ -235,7 +235,7 @@ platform :ios do
     create_new_release_branch(version: new_version_number)
     replace_version_number(version: new_version_number)
 
-    attach_changelog_to_master(version)
+    attach_changelog_to_master(new_version_number)
 
     commit_updated_files_and_push(version: new_version_number)    
     
