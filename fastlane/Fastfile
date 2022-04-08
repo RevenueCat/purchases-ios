@@ -447,11 +447,10 @@ platform :ios do
   lane :generate_docs do
     ENV["INCLUDE_DOCC_PLUGIN"] = "true"
     version_number = current_version_number
-    hosting_base_path = "purchases-ios-docs/#{version_number}"
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
     docs_repo_name = ENV["DOCS_REPO_NAME"]
-    docs_repo_name = "purchases-ios-docs"
-    docs_repo_url = docs_repo_base_url + docs_repo_name
+    docs_repo_url = File.join(docs_repo_base_url, docs_repo_name)
+    hosting_base_path = File.join(docs_repo_name, version_number)
     
     Dir.mktmpdir do |docs_generation_folder|
       # swift package must be run from the dir that contains the Package.swift
@@ -469,9 +468,9 @@ platform :ios do
            "--output-path",
            docs_generation_folder,
            "--hosting-base-path",
-           "#{hosting_base_path}",
+           hosting_base_path,
            "--transform-for-static-hosting")
-        docs_index_path = "#{Dir.pwd}/scripts/docs/index.html"
+        docs_index_path = File.join(Dir.pwd, "scripts/docs/index.html")
         # clone docs repo
         Dir.mktmpdir do |docs_repo_clone_dir|
           Dir.chdir(docs_repo_clone_dir) do
@@ -488,7 +487,7 @@ platform :ios do
               # from the repo root
               sh("git", "add", docs_destination_folder)
               sh("git", "add", index_destination_path)
-              sh("git", "commit", "-m", 'Update documentation')
+              sh("git", "commit", "-m", "Update documentation for #{version_number}")
               sh("git", "push")
             end
           end
