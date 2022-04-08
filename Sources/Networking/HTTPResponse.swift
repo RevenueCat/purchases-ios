@@ -77,11 +77,11 @@ extension ErrorResponse {
         line: UInt = #line
     ) -> Error {
         var userInfo: [NSError.UserInfoKey: Any] = [
-            ErrorDetails.statusCodeErrorKey: statusCode.rawValue
+            .statusCodeError: statusCode.rawValue
         ]
 
         if !self.attributeErrors.isEmpty {
-            userInfo[ErrorDetails.attributeErrorsKey] = self.attributeErrors
+            userInfo[.attributeErrors] = self.attributeErrors
         }
 
         return ErrorUtils.backendError(

@@ -167,7 +167,7 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
             requestPath: .postReceiptData,
             response: .init(
                 statusCode: .success,
-                response: validSubscriberResponse + [ErrorDetails.attributeErrorsResponseKey as String: attributeErrors]
+                response: validSubscriberResponse + [ErrorDetails.attributeErrorsResponseKey: attributeErrors]
             )
         )
 
@@ -255,7 +255,7 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
 
         let error: NetworkError = .errorResponse(
             ErrorResponse.from([
-                ErrorDetails.attributeErrorsKey as String: [
+                ErrorDetails.attributeErrorsKey: [
                     [
                         "key_name": "$some_attribute",
                         "message": "wasn't valid"

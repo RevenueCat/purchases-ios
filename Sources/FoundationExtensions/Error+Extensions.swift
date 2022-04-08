@@ -29,7 +29,7 @@ extension Error {
         let asNSError = self as NSError
         var userInfo = asNSError.userInfo as [NSError.UserInfoKey: Any]
         userInfo[NSUnderlyingErrorKey as NSString] = underlyingNSError
-        userInfo[ErrorDetails.extraContextKey] = extraContext ?? underlyingNSError.localizedDescription
+        userInfo[.extraContext] = extraContext ?? underlyingNSError.localizedDescription
         let nsErrorWithUserInfo = NSError(domain: asNSError.domain,
                                           code: asNSError.code,
                                           userInfo: userInfo as [String: Any])
@@ -41,7 +41,7 @@ extension Error {
 extension NSError {
 
     var subscriberAttributesErrors: [String: String]? {
-        return self.userInfo[ErrorDetails.attributeErrorsKey as String] as? [String: String]
+        return self.userInfo[ErrorDetails.attributeErrorsKey] as? [String: String]
     }
 
 }

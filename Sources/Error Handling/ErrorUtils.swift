@@ -468,9 +468,9 @@ private extension ErrorUtils {
         if let underlyingError = underlyingError {
             userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = underlyingError
         }
-        userInfo[ErrorDetails.readableErrorCodeKey] = code.codeName
-        userInfo[ErrorDetails.fileKey] = "\(fileName):\(line)"
-        userInfo[ErrorDetails.functionKey] = functionName
+        userInfo[.readableErrorCode] = code.codeName
+        userInfo[.file] = "\(fileName):\(line)"
+        userInfo[.function] = functionName
 
         Self.logErrorIfNeeded(code,
                               fileName: fileName, functionName: functionName, line: line)
@@ -492,10 +492,10 @@ private extension ErrorUtils {
         let errorDescription = describableSubError?.description ?? ErrorCode.unexpectedBackendResponseError.description
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = errorDescription
         userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = subError
-        userInfo[ErrorDetails.readableErrorCodeKey] = ErrorCode.unexpectedBackendResponseError.codeName
-        userInfo[ErrorDetails.extraContextKey] = extraContext
-        userInfo[ErrorDetails.fileKey] = "\(fileName):\(line)"
-        userInfo[ErrorDetails.functionKey] = functionName
+        userInfo[.readableErrorCode] = ErrorCode.unexpectedBackendResponseError.codeName
+        userInfo[.extraContext] = extraContext
+        userInfo[.file] = "\(fileName):\(line)"
+        userInfo[.function] = functionName
 
         let nsError = ErrorCode.unexpectedBackendResponseError as NSError
         let nsErrorWithUserInfo = NSError(domain: nsError.domain,
