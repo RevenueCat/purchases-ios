@@ -77,7 +77,7 @@ extension ErrorResponse {
         line: UInt = #line
     ) -> Error {
         var userInfo: [NSError.UserInfoKey: Any] = [
-            .statusCodeError: statusCode.rawValue
+            .statusCode: statusCode.rawValue
         ]
 
         if !self.attributeErrors.isEmpty {
