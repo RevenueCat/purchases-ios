@@ -47,15 +47,33 @@ import Foundation
     /**
      * Called when a user initiates a promotional in-app purchase from the App Store.
      * If your app is able to handle a purchase at the current time, run the deferment block in this method.
-     * If the app is not in a state to make a purchase: cache the defermentBlock,
-     * then call the defermentBlock when the app is ready to make the promotional purchase.
-     * If the purchase should never be made, you don't need to ever call the defermentBlock and
-     * ``Purchases`` will not proceed with promotional purchases.
-
+     * If the app is not in a state to make a purchase: cache the `startPurchase` block,
+     * then call the `startPurchase` block when the app is ready to make the promotional purchase.
+     *
+     * If the purchase should never be made, you don't need to ever call the block and
+     * ``Purchases`` will not proceed with the promotional purchase.
+     *
+     * This can be tested by opening a link like:
+     * itms-services://?action=purchaseIntent&bundleId=<BUNDLE_ID>&productIdentifier=<SKPRODUCT_ID>
+     *
      * - Parameter product: `StoreProduct` the product that was selected from the app store
+     * - Parameter startPurchase: call this block when the app is ready to handle the purchase
+     *
+     * ### Related Articles:
+     * - [Apple Documentation](https://rev.cat/testing-promoted-in-app-purchases)
      */
     @objc optional func purchases(_ purchases: Purchases,
+                                  readyForPromotedProduct product: StoreProduct,
+                                  purchase startPurchase: @escaping StartPurchaseBlock)
+
+    @available(iOS, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    @available(tvOS, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    @available(watchOS, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    @available(macOS, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    @available(macCatalyst, obsoleted: 1, renamed: "purchases(_:readyForPromotedProduct:purchase:)")
+    // swiftlint:disable:next missing_docs
+    @objc optional func purchases(_ purchases: Purchases,
                                   shouldPurchasePromoProduct product: StoreProduct,
-                                  defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock)
+                                  defermentBlock makeDeferredPurchase: @escaping StartPurchaseBlock)
 
 }

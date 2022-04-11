@@ -16,8 +16,8 @@ import StoreKit
 
 @objc protocol PurchasesOrchestratorDelegate {
 
-    func shouldPurchasePromoProduct(_ product: StoreProduct,
-                                    defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
+    func readyForPromotedProduct(_ product: StoreProduct,
+                                 purchase startPurchase: @escaping StartPurchaseBlock)
 
 }
 
@@ -428,7 +428,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
         let storeProduct = StoreProduct(sk1Product: product)
         lock.lock()
-        delegate.shouldPurchasePromoProduct(storeProduct) { completion in
+        delegate.readyForPromotedProduct(storeProduct) { completion in
             self.purchaseCompleteCallbacksByProductID[product.productIdentifier] = completion
             storeKitWrapper.add(payment)
         }

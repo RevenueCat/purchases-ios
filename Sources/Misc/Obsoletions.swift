@@ -17,7 +17,7 @@ import StoreKit
 // and therefore the `fatalError`s are unreachable.
 // See also: Development/Deprecations.md
 
-// swiftlint:disable file_length missing_docs
+// swiftlint:disable file_length missing_docs line_length
 
 public extension Purchases {
 
@@ -467,6 +467,16 @@ public extension Purchases {
                message: "Check eligibility for a discount using getPromotionalOffer:")
     func paymentDiscount(for discount: SKProductDiscount,
                          product: SKProduct) async throws -> SKPaymentDiscount {
+        fatalError()
+    }
+
+    @available(iOS, obsoleted: 1, message: "This was never meant to be public. Use `PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)`")
+    @available(tvOS, obsoleted: 1, message: "This was never meant to be public. Use `PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)`")
+    @available(watchOS, obsoleted: 1, message: "This was never meant to be public. Use `PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)`")
+    @available(macOS, obsoleted: 1, message: "This was never meant to be public. Use `PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)`")
+    @available(macCatalyst, obsoleted: 1, message: "This was never meant to be public. Use `PurchasesDelegate.purchases(_:readyForPromotedProduct:purchase:)`")
+    @objc func shouldPurchasePromoProduct(_ product: StoreProduct,
+                                          defermentBlock: @escaping StartPurchaseBlock) {
         fatalError()
     }
 
