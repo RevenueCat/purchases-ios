@@ -118,7 +118,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         // `SKTestSession` ignores the override done by `Purchases.simulatesAskToBuyInSandbox = true`
         self.testSession.askToBuyEnabled = true
 
-        try await Purchases.shared.logIn(UUID().uuidString)
+        _ = try await Purchases.shared.logIn(UUID().uuidString)
 
         do {
             try await self.purchaseMonthlyOffering()
