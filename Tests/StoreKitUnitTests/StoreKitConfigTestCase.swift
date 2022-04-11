@@ -21,6 +21,7 @@ import XCTest
 class StoreKitConfigTestCase: XCTestCase {
 
     static var requestTimeout: DispatchTimeInterval = .seconds(60)
+    var storeKitConfigFileName: String { "UnitTestsConfiguration" }
 
     private static var hasWaited = false
     private static let waitLock = Lock()
@@ -33,7 +34,7 @@ class StoreKitConfigTestCase: XCTestCase {
     var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
-        testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
+        testSession = try SKTestSession(configurationFileNamed: storeKitConfigFileName)
         testSession.resetToDefaultState()
         testSession.disableDialogs = true
         testSession.clearTransactions()

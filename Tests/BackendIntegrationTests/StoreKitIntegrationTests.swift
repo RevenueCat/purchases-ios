@@ -21,9 +21,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
 class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
-    private var testSession: SKTestSession!
-
     private static let timeout: DispatchTimeInterval = .seconds(10)
+    override var storeKitConfigFileName: String { Constants.storeKitConfigFileName }
 
     override func setUp() async throws {
         try await super.setUp()
