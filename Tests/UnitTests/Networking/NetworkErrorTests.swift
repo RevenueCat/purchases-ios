@@ -161,6 +161,7 @@ class NetworkErrorTests: XCTestCase {
 
     // MARK: - Helpers
 
+    /// Stores the file/line information so expectation failures can point to the line creating the error.
     private func error(
         _ error: NetworkError,
         file: FileString = #file, line: UInt = #line

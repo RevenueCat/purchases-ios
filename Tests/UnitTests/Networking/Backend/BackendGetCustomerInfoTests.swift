@@ -125,13 +125,9 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         expect(result).toEventuallyNot(beNil())
 
-        switch result {
-        case .failure(.networkError(.decoding)):
-            // Correct result
-            break
-
-        default:
+        guard case .failure(.networkError(.decoding)) = result else {
             fail("Unexpected result: \(result!)")
+            return
         }
     }
 

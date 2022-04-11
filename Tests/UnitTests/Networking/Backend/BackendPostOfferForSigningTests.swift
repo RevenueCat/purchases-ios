@@ -197,13 +197,10 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        switch receivedError {
-        case .unexpectedBackendResponse(.postOfferIdSignature, _, _):
-            // Correct error
-            break
 
-        default:
+        guard case .unexpectedBackendResponse(.postOfferIdSignature, _, _) = receivedError else {
             fail("Invalid error: \(String(describing: receivedError))")
+            return
         }
     }
 

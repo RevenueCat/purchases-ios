@@ -131,11 +131,9 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
         expect(receivedResult).to(beFailure())
 
         let error = try XCTUnwrap(receivedResult?.error)
-        switch error {
-        case .networkError(.decoding):
-            break // expected error
-        default:
+        guard case .networkError(.decoding) = error else {
             fail("Unexpected error: \(error)")
+            return
         }
     }
 
