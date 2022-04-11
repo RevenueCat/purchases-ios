@@ -242,7 +242,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                      userDefaults: UserDefaults? = nil,
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
-                     useStoreKit2IfAvailable: Bool = false,
+                     storeKit2Setting: StoreKit2Setting = .default,
                      dangerousSettings: DangerousSettings? = nil) {
         let operationDispatcher: OperationDispatcher = .default
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
@@ -253,7 +253,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: !observerMode,
                                         operationDispatcher: operationDispatcher,
-                                        useStoreKit2IfAvailable: useStoreKit2IfAvailable,
+                                        storeKit2Setting: storeKit2Setting,
                                         dangerousSettings: dangerousSettings)
         } catch {
             fatalError(error.localizedDescription)
@@ -272,7 +272,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let userDefaults = userDefaults ?? UserDefaults.standard
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
         let receiptParser = ReceiptParser()
-        let transactionsManager = TransactionsManager(receiptParser: receiptParser)
+        let transactionsManager = TransactionsManager(storeKit2Setting: systemInfo.storeKit2Setting,
+                                                      receiptParser: receiptParser)
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,
                                                       backend: backend,
@@ -320,7 +321,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           deviceCache: deviceCache,
                                                           manageSubscriptionsHelper: manageSubsHelper,
                                                           beginRefundRequestHelper: beginRefundRequestHelper)
-        let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
+        let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
+                                                                           receiptFetcher: receiptFetcher,
                                                                            introEligibilityCalculator: introCalculator,
                                                                            backend: backend,
                                                                            currentUserProvider: identityManager,
@@ -369,7 +371,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     ) {
 
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
-        if systemInfo.useStoreKit2IfAvailable {
+        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
         }
         Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion), fileName: nil)
@@ -1754,16 +1756,34 @@ public extension Purchases {
                                              userDefaults: UserDefaults?,
                                              useStoreKit2IfAvailable: Bool,
                                              dangerousSettings: DangerousSettings?) -> Purchases {
+        return Self.configure(
+            withAPIKey: apiKey,
+            appUserID: appUserID,
+            observerMode: observerMode,
+            userDefaults: userDefaults,
+            storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
+            dangerousSettings: dangerousSettings
+        )
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    @discardableResult internal static func configure(withAPIKey apiKey: String,
+                                                      appUserID: String?,
+                                                      observerMode: Bool,
+                                                      userDefaults: UserDefaults?,
+                                                      storeKit2Setting: StoreKit2Setting,
+                                                      dangerousSettings: DangerousSettings?) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                   appUserID: appUserID,
                                   userDefaults: userDefaults,
                                   observerMode: observerMode,
                                   platformInfo: nil,
-                                  useStoreKit2IfAvailable: useStoreKit2IfAvailable,
+                                  storeKit2Setting: storeKit2Setting,
                                   dangerousSettings: dangerousSettings)
         setDefaultInstance(purchases)
         return purchases
     }
+
 }
 
 // MARK: Delegate implementation

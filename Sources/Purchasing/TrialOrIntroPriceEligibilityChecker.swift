@@ -19,6 +19,8 @@ class TrialOrIntroPriceEligibilityChecker {
     typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
+
+    private let systemInfo: SystemInfo
     private let receiptFetcher: ReceiptFetcher
     private let introEligibilityCalculator: IntroEligibilityCalculator
     private let backend: Backend
@@ -26,12 +28,16 @@ class TrialOrIntroPriceEligibilityChecker {
     private let operationDispatcher: OperationDispatcher
     private let productsManager: ProductsManager
 
-    init(receiptFetcher: ReceiptFetcher,
-         introEligibilityCalculator: IntroEligibilityCalculator,
-         backend: Backend,
-         currentUserProvider: CurrentUserProvider,
-         operationDispatcher: OperationDispatcher,
-         productsManager: ProductsManager) {
+    init(
+        systemInfo: SystemInfo,
+        receiptFetcher: ReceiptFetcher,
+        introEligibilityCalculator: IntroEligibilityCalculator,
+        backend: Backend,
+        currentUserProvider: CurrentUserProvider,
+        operationDispatcher: OperationDispatcher,
+        productsManager: ProductsManager
+    ) {
+        self.systemInfo = systemInfo
         self.receiptFetcher = receiptFetcher
         self.introEligibilityCalculator = introEligibilityCalculator
         self.backend = backend
@@ -48,7 +54,8 @@ class TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+        // Note: this uses SK2 (unless it's explicitly disabled) because its implementation is more accurate.
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *), self.systemInfo.storeKit2Setting != .disabled {
             _ = Task<Void, Never> {
                 do {
                     completion(try await sk2CheckEligibility(productIdentifiers))

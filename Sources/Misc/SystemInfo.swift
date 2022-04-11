@@ -25,21 +25,9 @@ import AppKit
 
 class SystemInfo {
 
-    #if targetEnvironment(macCatalyst)
-    static let platformHeaderConstant = "uikitformac"
-    #elseif os(iOS)
-    static let platformHeaderConstant = "iOS"
-    #elseif os(watchOS)
-    static let platformHeaderConstant = "watchOS"
-    #elseif os(tvOS)
-    static let platformHeaderConstant = "tvOS"
-    #elseif os(macOS)
-    static let platformHeaderConstant = "macOS"
-    #endif
-
     let appleSubscriptionsURL = URL(string: "https://rev.cat/manage-apple-subscription")
 
-    let useStoreKit2IfAvailable: Bool
+    let storeKit2Setting: StoreKit2Setting
     var finishTransactions: Bool
     let operationDispatcher: OperationDispatcher
     let platformFlavor: String
@@ -116,7 +104,7 @@ class SystemInfo {
          finishTransactions: Bool,
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
-         useStoreKit2IfAvailable: Bool = false,
+         storeKit2Setting: StoreKit2Setting = .default,
          dangerousSettings: DangerousSettings? = nil) throws {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
@@ -124,7 +112,7 @@ class SystemInfo {
 
         self.finishTransactions = finishTransactions
         self.operationDispatcher = operationDispatcher
-        self.useStoreKit2IfAvailable = useStoreKit2IfAvailable
+        self.storeKit2Setting = storeKit2Setting
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
     }
 
@@ -148,6 +136,22 @@ class SystemInfo {
         guard let host = managementURL.host else { return false }
         return host.contains("apple.com")
     }
+
+}
+
+extension SystemInfo {
+
+    #if targetEnvironment(macCatalyst)
+    static let platformHeaderConstant = "uikitformac"
+    #elseif os(iOS)
+    static let platformHeaderConstant = "iOS"
+    #elseif os(watchOS)
+    static let platformHeaderConstant = "watchOS"
+    #elseif os(tvOS)
+    static let platformHeaderConstant = "tvOS"
+    #elseif os(macOS)
+    static let platformHeaderConstant = "macOS"
+    #endif
 
 }
 

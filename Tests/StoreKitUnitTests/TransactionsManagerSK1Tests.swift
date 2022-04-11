@@ -24,7 +24,8 @@ class TransactionsManagerSK1Tests: StoreKitConfigTestCase {
         try super.setUpWithError()
         mockReceiptParser = MockReceiptParser()
 
-        transactionsManager = TransactionsManager(receiptParser: mockReceiptParser)
+        transactionsManager = TransactionsManager(storeKit2Setting: .disabled,
+                                                  receiptParser: mockReceiptParser)
     }
 
     func testSK1CheckCustomerHasTransactionsParserIsCalled() {

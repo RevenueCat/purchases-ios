@@ -20,7 +20,7 @@ import XCTest
 class ProductsManagerTests: StoreKitConfigTestCase {
 
     func testFetchProductsWithIdentifiersSK1() throws {
-        let manager = try createManager(useStoreKit2IfAvailable: false)
+        let manager = try createManager(storeKit2Setting: .disabled)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
@@ -46,7 +46,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        let manager = try createManager(useStoreKit2IfAvailable: true)
+        let manager = try createManager(storeKit2Setting: .enabledForCompatibleDevices)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
@@ -67,13 +67,13 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(product.productIdentifier) == identifier
     }
 
-    private func createManager(useStoreKit2IfAvailable: Bool) throws -> ProductsManager {
+    private func createManager(storeKit2Setting: StoreKit2Setting) throws -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         return ProductsManager(
             systemInfo: try MockSystemInfo(
                 platformInfo: platformInfo,
                 finishTransactions: true,
-                useStoreKit2IfAvailable: useStoreKit2IfAvailable
+                storeKit2Setting: storeKit2Setting
             ),
             requestTimeout: Self.requestTimeout
         )

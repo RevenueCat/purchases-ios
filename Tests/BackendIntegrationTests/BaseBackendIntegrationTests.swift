@@ -32,7 +32,9 @@ class BaseBackendIntegrationTests: XCTestCase {
     // swiftlint:disable:next weak_delegate
     private(set) var purchasesDelegate: TestPurchaseDelegate!
 
-    class var sk2Enabled: Bool { return false }
+    class var storeKit2Setting: StoreKit2Setting {
+        return .default
+    }
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -70,7 +72,8 @@ private extension BaseBackendIntegrationTests {
                             appUserID: nil,
                             observerMode: false,
                             userDefaults: userDefaults,
-                            useStoreKit2IfAvailable: Self.sk2Enabled)
+                            storeKit2Setting: Self.storeKit2Setting,
+                            dangerousSettings: nil)
         Purchases.logLevel = .debug
         Purchases.shared.delegate = purchasesDelegate
     }
