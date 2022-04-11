@@ -871,8 +871,8 @@ public extension Purchases {
      * -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
      */
     @objc func getOfferings(completion: @escaping (Offerings?, Error?) -> Void) {
-        offeringsManager.offerings(appUserID: appUserID) { offerings, error in
-            completion(offerings, error?.asPurchasesError)
+        offeringsManager.offerings(appUserID: appUserID) { result in
+            completion(result.value, result.error?.asPurchasesError)
         }
     }
 
