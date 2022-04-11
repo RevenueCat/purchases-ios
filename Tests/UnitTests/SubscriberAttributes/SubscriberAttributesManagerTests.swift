@@ -849,7 +849,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetOnesignalID() {
         let onesignalID = "onesignalID"
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -865,7 +865,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
         self.subscriberAttributesManager.setOnesignalID(nil, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 8
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -883,7 +883,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 3
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
     func testSetOnesignalIDOverwritesIfNewValue() {
@@ -897,7 +897,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -908,14 +908,14 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.setTime) > oldSyncTime
     }
 
-    func testSetOnesignalIDSetsDeviceIdentifiers() {
+    func testSetOnesignalIDDoesNotSetDeviceIdentifiers() {
         let onesignalID = "onesignalID"
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
 
-        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
 
-        checkDeviceIdentifiersAreSet()
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region AirshipChannelID
@@ -923,7 +923,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let airshipChannelID = "airshipChannelID"
 
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
@@ -939,7 +939,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
         self.subscriberAttributesManager.setAirshipChannelID(nil, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 8
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
@@ -956,7 +956,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
                                                                                     value: airshipChannelID)
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 3
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
     func testSetAirshipChannelIDOverwritesIfNewValue() throws {
@@ -970,7 +970,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
@@ -981,14 +981,14 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.setTime) > oldSyncTime
     }
 
-    func testSetAirshipChannelIDSetsDeviceIdentifiers() {
+    func testSetAirshipChannelIDDoesNotSetDeviceIdentifiers() {
         let airshipChannelID = "airshipChannelID"
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
 
-        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
 
-        checkDeviceIdentifiersAreSet()
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region CleverTapID
@@ -996,7 +996,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let cleverTapID = "cleverTapID"
 
         self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
@@ -1012,7 +1012,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
         self.subscriberAttributesManager.setCleverTapID(nil, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 8
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
@@ -1029,7 +1029,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
                                                                                     value: cleverTapID)
         self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 3
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
     func testSetCleverTapIDOverwritesIfNewValue() throws {
@@ -1043,7 +1043,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
         self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
 
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
@@ -1054,14 +1054,14 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.setTime) > oldSyncTime
     }
 
-    func testSetCleverTapIDSetsDeviceIdentifiers() {
+    func testSetCleverTapIDDoesNotSetDeviceIdentifiers() {
         let cleverTapID = "cleverTapID"
         self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
 
-        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
 
-        checkDeviceIdentifiersAreSet()
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region MixpanelDistinctID
@@ -1125,6 +1125,16 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == mixpanelDistinctID
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetMixpanelDistinctIDDoesNotSetDeviceIdentifiers() {
+        let mixpanelDistinctID = "mixpanelDistinctID"
+        self.subscriberAttributesManager.setMixpanelDistinctID(mixpanelDistinctID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region Media source
@@ -1598,6 +1608,19 @@ private extension SubscriberAttributesManagerTests {
 
         expect(ipReceived.value) == "true"
         expect(ipReceived.isSynced) == false
+    }
+
+    func checkDeviceIdentifiersAreNotSet() {
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+
+        let idfvNilAttribute = invokedParams.first(where: { $0.attribute.key == "$idfv" })
+        expect(idfvNilAttribute) == nil
+
+        let idfvaNilAttribute = invokedParams.first(where: { $0.attribute.key == "$idfa" })
+        expect(idfvaNilAttribute) == nil
+
+        let ipNilAttribute = invokedParams.first(where: { $0.attribute.key == "$ip" })
+        expect(ipNilAttribute) == nil
     }
 
 }
