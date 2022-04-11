@@ -181,6 +181,8 @@ class PurchasesOrchestrator {
     func purchase(product: StoreProduct,
                   package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
+        Self.logPurchase(product: product, package: package)
+
         if let sk1Product = product.sk1Product {
             let payment = storeKitWrapper.payment(withProduct: sk1Product)
 
@@ -203,6 +205,8 @@ class PurchasesOrchestrator {
                   package: Package?,
                   promotionalOffer: PromotionalOffer,
                   completion: @escaping PurchaseCompletedBlock) {
+        Self.logPurchase(product: product, package: package)
+
         if let sk1Product = product.sk1Product {
             purchase(sk1Product: sk1Product,
                      promotionalOffer: promotionalOffer,
@@ -251,18 +255,10 @@ class PurchasesOrchestrator {
         preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
 
         if let presentedOfferingIdentifier = package?.offeringIdentifier {
-            Logger.purchase(
-                Strings.purchase.purchasing_product_from_package(
-                    productIdentifier: productIdentifier,
-                    offeringIdentifier: presentedOfferingIdentifier
-                )
-            )
             lock.lock()
             presentedOfferingIDsByProductID[productIdentifier] = presentedOfferingIdentifier
             lock.unlock()
 
-        } else {
-            Logger.purchase(Strings.purchase.purchasing_product(productIdentifier: productIdentifier))
         }
 
         productsManager.cacheProduct(sk1Product)
@@ -707,6 +703,23 @@ private extension PurchasesOrchestrator {
                  payment: payment,
                  package: package,
                  completion: completion)
+    }
+
+}
+
+private extension PurchasesOrchestrator {
+
+    static func logPurchase(product: StoreProduct, package: Package?) {
+        if let package = package {
+            Logger.purchase(
+                Strings.purchase.purchasing_product_from_package(
+                    productIdentifier: product.productIdentifier,
+                    offeringIdentifier: package.offeringIdentifier
+                )
+            )
+        } else {
+            Logger.purchase(Strings.purchase.purchasing_product(productIdentifier: product.productIdentifier))
+        }
     }
 
 }
