@@ -37,6 +37,9 @@ class BaseBackendIntegrationTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        // Avoid continuing with potentially bad data after a failed assertion
+        self.continueAfterFailure = false
+
         guard Constants.apiKey != "REVENUECAT_API_KEY", Constants.proxyURL != "REVENUECAT_PROXY_URL" else {
             XCTFail("Must set configuration in `Constants.swift`")
             throw ErrorCode.configurationError
