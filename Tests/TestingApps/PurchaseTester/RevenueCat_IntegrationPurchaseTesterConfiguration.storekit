@@ -41,6 +41,9 @@
               "subscriptionPeriod" : "P1W"
             }
           ],
+          "codeOffers" : [
+
+          ],
           "displayPrice" : "4.99",
           "familyShareable" : true,
           "groupNumber" : 1,
@@ -70,32 +73,6 @@
         },
         {
           "adHocOffers" : [
-
-          ],
-          "displayPrice" : "39.99",
-          "familyShareable" : true,
-          "groupNumber" : 1,
-          "internalID" : "F04B58DC",
-          "introductoryOffer" : {
-            "internalID" : "0539C216",
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P2W"
-          },
-          "localizations" : [
-            {
-              "description" : "",
-              "displayName" : "",
-              "locale" : "en_US"
-            }
-          ],
-          "productID" : "com.revenuecat.annual_39.99.2_week_intro",
-          "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "annual free trial",
-          "subscriptionGroupID" : "7096FF06",
-          "type" : "RecurringSubscription"
-        },
-        {
-          "adHocOffers" : [
             {
               "internalID" : "F166E790",
               "offerID" : "com.revenuecat.monthly_4.99.1_free_week",
@@ -103,6 +80,9 @@
               "referenceName" : "com.revenuecat.monthly_4.99.1_free_week",
               "subscriptionPeriod" : "P1W"
             }
+          ],
+          "codeOffers" : [
+
           ],
           "displayPrice" : "0.99",
           "familyShareable" : false,
@@ -128,6 +108,44 @@
           "type" : "RecurringSubscription"
         }
       ]
+    },
+    {
+      "id" : "727DE911",
+      "localizations" : [
+
+      ],
+      "name" : "subscription_group_2",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "B6A3232F",
+          "introductoryOffer" : {
+            "internalID" : "7C6C2EE3",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P2W"
+          },
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.annual_39.99.2_week_intro",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "annual free trial",
+          "subscriptionGroupID" : "727DE911",
+          "type" : "RecurringSubscription"
+        }
+      ]
     }
   ],
   "subscriptionOffersKeyPair" : {
@@ -136,6 +154,6 @@
   },
   "version" : {
     "major" : 1,
-    "minor" : 1
+    "minor" : 2
   }
 }

@@ -11,7 +11,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable file_length
+// swiftlint:disable type_body_length file_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
@@ -191,32 +191,84 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         self.assertNoPurchases(loggedOutCustomerInfo)
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testEligibleForIntroBeforePurchaseAndIneligibleAfter() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    // MARK: - Trial or Intro Eligibility tests
 
-        let offerings = try await Purchases.shared.offerings()
-        let product = try XCTUnwrap(offerings.current?.monthly?.storeProduct)
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    func testEligibleForIntroBeforePurchase() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        var eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        let product = try await self.monthlyPackage.storeProduct
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .eligible
+    }
 
-        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    func testIneligibleForIntroAfterPurchase() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        expect(customerInfo.entitlements.all.count) == 1
-        let entitlements = self.purchasesDelegate.customerInfo?.entitlements
-        expect(entitlements?[Self.entitlementIdentifier]?.isActive) == true
+        let product = try await self.monthlyPackage.storeProduct
 
-        let anonUserID = Purchases.shared.appUserID
-        let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
+        try await self.purchaseMonthlyOffering()
+        try self.verifyEntitlementWentThrough()
 
-        let (identifiedCustomerInfo, created) = try await Purchases.shared.logIn(identifiedUserID)
-        expect(created) == true
-        expect(identifiedCustomerInfo.entitlements[Self.entitlementIdentifier]?.isActive) == true
-
-        eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .ineligible
     }
+
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    func testEligibleForIntroForDifferentProductAfterPurchase() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        try await self.purchaseMonthlyOffering()
+        try self.verifyEntitlementWentThrough()
+
+        let product2 = try await self.annualPackage.storeProduct
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product2)
+
+        expect(eligibility) == .eligible
+    }
+
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    func testIneligibleForIntroAfterPurchaseExpires() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let product = try await self.monthlyPackage.storeProduct
+
+        try await self.purchaseMonthlyOffering()
+        try self.verifyEntitlementWentThrough()
+
+        try self.testSession.expireSubscription(productIdentifier: product.productIdentifier)
+
+        let info = try await Purchases.shared.syncPurchases()
+        self.assertNoActiveSubscription(info)
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        expect(eligibility) == .ineligible
+    }
+
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    func testEligibleAfterPurchaseWithNoTrialExpires() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let products = await Purchases.shared.products(["com.revenuecat.monthly_4.99.no_intro"])
+        let productWithNoIntro = try XCTUnwrap(products.first)
+        let productWithIntro = try await self.monthlyPackage.storeProduct
+
+        _ = try await Purchases.shared.purchase(product: productWithNoIntro)
+        try self.verifyEntitlementWentThrough()
+
+        try self.testSession.expireSubscription(productIdentifier: productWithNoIntro.productIdentifier)
+
+        let info = try await Purchases.shared.syncPurchases()
+        self.assertNoActiveSubscription(info)
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: productWithIntro)
+        expect(eligibility) == .eligible
+    }
+
+    // MARK: -
 
     func testExpireSubscription() async throws {
         let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
@@ -317,10 +369,24 @@ private extension StoreKit1IntegrationTests {
 
     static let entitlementIdentifier = "premium"
 
-    private var monthlyPackage: Package {
+    private var currentOffering: Offering {
         get async throws {
             let offerings = try await Purchases.shared.offerings()
-            return try XCTUnwrap(offerings.current?.monthly)
+            return try XCTUnwrap(offerings.current)
+        }
+    }
+
+    var monthlyPackage: Package {
+        get async throws {
+            let offering = try await self.currentOffering
+            return try XCTUnwrap(offering.monthly)
+        }
+    }
+
+    var annualPackage: Package {
+        get async throws {
+            let offering = try await self.currentOffering
+            return try XCTUnwrap(offering.annual)
         }
     }
 
