@@ -323,27 +323,64 @@ private extension StoreKit1IntegrationTests {
     }
 
     @discardableResult
-    func verifyEntitlementWentThrough() throws -> EntitlementInfo {
+    func verifyEntitlementWentThrough(
+        file: FileString = #file, line: UInt = #line
+    ) throws -> EntitlementInfo {
         let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
         let activeEntitlements = customerInfo.entitlements.active
 
-        expect(activeEntitlements.count) == 1
+        expect(
+            file: file, line: line,
+            activeEntitlements.count
+        ).to(
+            equal(1),
+            description: "Expected 1 active entitlement"
+        )
 
         return try XCTUnwrap(activeEntitlements[Self.entitlementIdentifier])
     }
 
-    func assertNoActiveSubscription(_ customerInfo: CustomerInfo) {
-        expect(customerInfo.entitlements.active).to(beEmpty())
+    func assertNoActiveSubscription(
+        _ customerInfo: CustomerInfo,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        expect(
+            file: file, line: line,
+            customerInfo.entitlements.active
+        ).to(
+            beEmpty(),
+            description: "Expected no active entitlements"
+        )
     }
 
-    func assertNoPurchases(_ customerInfo: CustomerInfo) {
-        expect(customerInfo.entitlements.all).to(beEmpty())
+    func assertNoPurchases(
+        _ customerInfo: CustomerInfo,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        expect(
+            file: file, line: line,
+            customerInfo.entitlements.all
+        )
+        .to(
+            beEmpty(),
+            description: "Expected no entitlements"
+        )
     }
 
     @discardableResult
-    func waitUntilCustomerInfoIsUpdated() async throws -> CustomerInfo {
+    func waitUntilCustomerInfoIsUpdated(
+        file: FileString = #file, line: UInt = #line
+    ) async throws -> CustomerInfo {
         let customerInfo = try await Purchases.shared.customerInfo()
-        expect(self.purchasesDelegate.customerInfoUpdateCount) == 1
+        expect(
+            file: file, line: line,
+            self.purchasesDelegate.customerInfoUpdateCount
+        ).to(
+            equal(1),
+            description: "Customer info was not updated"
+        )
 
         return customerInfo
     }
