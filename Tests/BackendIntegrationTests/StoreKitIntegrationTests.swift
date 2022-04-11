@@ -67,8 +67,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
         expect(customerInfo.entitlements.all.count) == 1
 
-        let entitlements = self.purchasesDelegate.customerInfo?.entitlements
-        expect(entitlements?[Self.entitlementIdentifier]?.isActive) == true
+        try verifyEntitlementWentThrough()
 
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
@@ -80,7 +79,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() async throws {
         let existingUserID = "\(#function)\(UUID().uuidString)"
-        try await self.waitUntilCustomerInfoIsUpdated()
 
         // log in to create the user, then log out
         _ = try await Purchases.shared.logIn(existingUserID)
@@ -101,7 +99,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() async throws {
         let existingUserID = UUID().uuidString
-        try await self.waitUntilCustomerInfoIsUpdated()
 
         _ = try await Purchases.shared.logIn(existingUserID)
         try await self.purchaseMonthlyOffering()
@@ -117,8 +114,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testPurchaseWithAskToBuyPostsReceipt() async throws {
-        try await self.waitUntilCustomerInfoIsUpdated()
-
         // `SKTestSession` ignores the override done by `Purchases.simulatesAskToBuyInSandbox = true`
         self.testSession.askToBuyEnabled = true
 
@@ -404,9 +399,9 @@ private extension StoreKit1IntegrationTests {
 
         expect(
             file: file, line: line,
-            activeEntitlements.count
+            activeEntitlements
         ).to(
-            equal(1),
+            haveCount(1),
             description: "Expected 1 active entitlement"
         )
 
@@ -440,22 +435,6 @@ private extension StoreKit1IntegrationTests {
             beEmpty(),
             description: "Expected no entitlements"
         )
-    }
-
-    @discardableResult
-    func waitUntilCustomerInfoIsUpdated(
-        file: FileString = #file, line: UInt = #line
-    ) async throws -> CustomerInfo {
-        let customerInfo = try await Purchases.shared.customerInfo()
-        expect(
-            file: file, line: line,
-            self.purchasesDelegate.customerInfoUpdateCount
-        ).to(
-            equal(1),
-            description: "Customer info was not updated"
-        )
-
-        return customerInfo
     }
 
 }
