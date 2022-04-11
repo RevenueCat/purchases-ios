@@ -57,6 +57,7 @@ import Foundation
      * itms-services://?action=purchaseIntent&bundleId=<BUNDLE_ID>&productIdentifier=<SKPRODUCT_ID>
      *
      * - Parameter product: `StoreProduct` the product that was selected from the app store
+     * - Parameter startPurchase: call this block when the app is ready to handle the purchase
      *
      * ### Related Articles:
      * - [Apple Documentation](https://rev.cat/testing-promoted-in-app-purchases)

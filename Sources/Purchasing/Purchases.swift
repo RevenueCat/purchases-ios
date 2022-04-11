@@ -1789,8 +1789,8 @@ extension Purchases: PurchasesOrchestratorDelegate {
      * When the purchase completes, the result will be part of the callback parameters.
      */
     @objc
-    internal func promotedPurchaseReadyToStart(for product: StoreProduct,
-                                               startPurchase: @escaping StartPurchaseBlock) {
+    internal func readyForPromotedProduct(_ product: StoreProduct,
+                                          purchase startPurchase: @escaping StartPurchaseBlock) {
         self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
     }
 
