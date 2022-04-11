@@ -11,6 +11,8 @@ import Nimble
 import StoreKitTest
 import XCTest
 
+// swiftlint:disable file_length
+
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
