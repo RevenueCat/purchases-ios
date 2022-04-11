@@ -78,8 +78,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() async throws {
-        self.testSession.timeRate = .realTime
-
         let existingUserID = "\(UUID().uuidString)"
 
         // log in to create the user, then log out
