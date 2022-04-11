@@ -239,7 +239,6 @@ class PurchasesOrchestrator {
                   payment: SKMutablePayment,
                   package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
-        Logger.debug(String(format: "Make purchase called: %@", #function))
         guard let productIdentifier = sk1Product.extractProductIdentifier(withPayment: payment) else {
             Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
@@ -272,7 +271,22 @@ class PurchasesOrchestrator {
             completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
             return
         }
-        purchaseCompleteCallbacksByProductID[productIdentifier] = completion
+        purchaseCompleteCallbacksByProductID[productIdentifier] = { transaction, customerInfo, error, cancelled in
+            if !cancelled {
+                if let error = error {
+                    Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
+                        productIdentifier: productIdentifier,
+                        error: error
+                    ))
+                } else {
+                    Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
+                        productIdentifier: productIdentifier
+                    ))
+                }
+            }
+
+            completion(transaction, customerInfo, error, cancelled)
+        }
         storeKitWrapper.add(payment)
     }
 
@@ -285,10 +299,19 @@ class PurchasesOrchestrator {
                 let result: PurchaseResultData = try await self.purchase(sk2Product: product,
                                                                          promotionalOffer: promotionalOffer)
 
+                Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
+                    productIdentifier: product.id
+                ))
+
                 DispatchQueue.main.async {
                     completion(result.0, result.1, nil, result.2)
                 }
             } catch let error {
+                Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
+                    productIdentifier: product.id,
+                    error: error
+                ))
+
                 DispatchQueue.main.async {
                     completion(nil, nil, error, false)
                 }

@@ -142,6 +142,14 @@ extension Logger {
             fileName: fileName, functionName: functionName, line: line)
     }
 
+    static func rcPurchaseError(_ message: CustomStringConvertible,
+                                fileName: String = #fileID,
+                                functionName: String = #function,
+                                line: UInt = #line) {
+        log(level: .error, intent: .purchase, message: message.description,
+            fileName: fileName, functionName: functionName, line: line)
+    }
+
     static func rcSuccess(_ message: CustomStringConvertible,
                           fileName: String = #fileID,
                           functionName: String = #function,
