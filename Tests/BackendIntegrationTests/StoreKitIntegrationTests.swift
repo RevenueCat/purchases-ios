@@ -11,7 +11,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable type_body_length file_length
+// swiftlint:disable file_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
@@ -45,10 +45,13 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     func testCanMakePurchase() async throws {
         try await self.purchaseMonthlyOffering()
+    }
 
-        try self.verifyEntitlementWentThrough()
-        let entitlements = self.purchasesDelegate.customerInfo?.entitlements
-        expect(entitlements?[Self.entitlementIdentifier]?.isActive) == true
+    func testPurchaseUpdatesCustomerInfoDelegate() async throws {
+        try await self.purchaseMonthlyOffering()
+
+        let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
+        try self.verifyEntitlementWentThrough(customerInfo)
     }
 
     func testPurchaseFailuresAreReportedCorrectly() async throws {
@@ -64,37 +67,40 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testPurchaseMadeBeforeLogInIsRetainedAfter() async throws {
-        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
-        expect(customerInfo.entitlements.all.count) == 1
-
-        try verifyEntitlementWentThrough()
+        try await self.purchaseMonthlyOffering()
 
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
 
         let (identifiedCustomerInfo, created) = try await Purchases.shared.logIn(identifiedUserID)
         expect(created) == true
-        expect(identifiedCustomerInfo.entitlements[Self.entitlementIdentifier]?.isActive) == true
+        try verifyEntitlementWentThrough(identifiedCustomerInfo)
     }
 
     func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() async throws {
-        let existingUserID = "\(#function)\(UUID().uuidString)"
+        self.testSession.timeRate = .realTime
+
+        let existingUserID = "\(UUID().uuidString)"
 
         // log in to create the user, then log out
-        _ = try await Purchases.shared.logIn(existingUserID)
-        _ = try await Purchases.shared.logOut()
+        let (originalCustomerInfo, createdInitialUser) = try await Purchases.shared.logIn(existingUserID)
+        self.assertNoPurchases(originalCustomerInfo)
+        expect(createdInitialUser) == true
+
+        let anonymousCustomerInfo = try await Purchases.shared.logOut()
+        self.assertNoPurchases(anonymousCustomerInfo)
 
         // purchase as anonymous user, then log in
         try await self.purchaseMonthlyOffering()
-        try self.verifyEntitlementWentThrough()
 
         let (customerInfo, created) = try await Purchases.shared.logIn(existingUserID)
-        self.assertNoPurchases(customerInfo)
         expect(created) == false
 
-        _ = try await Purchases.shared.restorePurchases()
+        self.assertNoPurchases(customerInfo)
 
-        try self.verifyEntitlementWentThrough()
+        let restoredCustomerInfo = try await Purchases.shared.restorePurchases()
+
+        try self.verifyEntitlementWentThrough(restoredCustomerInfo)
     }
 
     func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() async throws {
@@ -103,28 +109,25 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         _ = try await Purchases.shared.logIn(existingUserID)
         try await self.purchaseMonthlyOffering()
 
-        try self.verifyEntitlementWentThrough()
-
-        let customerInfo = try await Purchases.shared.logOut()
+        var customerInfo = try await Purchases.shared.logOut()
         self.assertNoPurchases(customerInfo)
 
-        _ = try await Purchases.shared.restorePurchases()
-
-        try self.verifyEntitlementWentThrough()
+        customerInfo = try await Purchases.shared.restorePurchases()
+        try self.verifyEntitlementWentThrough(customerInfo)
     }
 
     func testPurchaseWithAskToBuyPostsReceipt() async throws {
         // `SKTestSession` ignores the override done by `Purchases.simulatesAskToBuyInSandbox = true`
         self.testSession.askToBuyEnabled = true
 
-        let customerInfo = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+        try await Purchases.shared.logIn(UUID().uuidString)
 
         do {
             try await self.purchaseMonthlyOffering()
             XCTFail("Expected payment to be deferred")
         } catch ErrorCode.paymentPendingError { /* Expected error */ }
 
-        self.assertNoPurchases(customerInfo)
+        self.assertNoPurchases(try XCTUnwrap(self.purchasesDelegate.customerInfo))
 
         let transactions = self.testSession.allTransactions()
         expect(transactions).to(haveCount(1))
@@ -134,8 +137,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // This shouldn't throw error anymore
         try await self.purchaseMonthlyOffering()
-
-        try self.verifyEntitlementWentThrough()
     }
 
     func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() async throws {
@@ -158,8 +159,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         _ = try await Purchases.shared.logIn(userID1)
         try await self.purchaseMonthlyOffering()
 
-        try self.verifyEntitlementWentThrough()
-
         testSession.clearTransactions()
 
         let (identifiedCustomerInfo, _) = try await Purchases.shared.logIn(userID2)
@@ -179,8 +178,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(created) == true
 
         try await self.purchaseMonthlyOffering()
-
-        try self.verifyEntitlementWentThrough()
 
         let loggedOutCustomerInfo = try await Purchases.shared.logOut()
         self.assertNoPurchases(loggedOutCustomerInfo)
@@ -205,7 +202,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let product = try await self.monthlyPackage.storeProduct
 
         try await self.purchaseMonthlyOffering()
-        try self.verifyEntitlementWentThrough()
 
         let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .ineligible
@@ -216,7 +212,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         try await self.purchaseMonthlyOffering()
-        try self.verifyEntitlementWentThrough()
 
         let product2 = try await self.annualPackage.storeProduct
 
@@ -232,7 +227,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let product = try await self.monthlyPackage.storeProduct
 
         try await self.purchaseMonthlyOffering()
-        try self.verifyEntitlementWentThrough()
 
         try self.testSession.expireSubscription(productIdentifier: product.productIdentifier)
 
@@ -251,8 +245,8 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let productWithNoIntro = try XCTUnwrap(products.first)
         let productWithIntro = try await self.monthlyPackage.storeProduct
 
-        _ = try await Purchases.shared.purchase(product: productWithNoIntro)
-        try self.verifyEntitlementWentThrough()
+        let customerInfo = try await Purchases.shared.purchase(product: productWithNoIntro).customerInfo
+        try self.verifyEntitlementWentThrough(customerInfo)
 
         try self.testSession.expireSubscription(productIdentifier: productWithNoIntro.productIdentifier)
 
@@ -270,16 +264,16 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(created) == true
 
         try await self.purchaseMonthlyOffering()
-        _ = try await Purchases.shared.syncPurchases()
+        var customerInfo = try await Purchases.shared.syncPurchases()
 
-        try self.verifyEntitlementWentThrough()
+        try self.verifyEntitlementWentThrough(customerInfo)
 
         try await self.testSession.expireSubscription(
             productIdentifier: self.monthlyPackage.storeProduct.productIdentifier
         )
 
-        let info = try await Purchases.shared.syncPurchases()
-        self.assertNoActiveSubscription(info)
+        customerInfo = try await Purchases.shared.syncPurchases()
+        self.assertNoActiveSubscription(customerInfo)
     }
 
     func testUserHasNoEligibleOffersByDefault() async throws {
@@ -313,9 +307,9 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         // 1. Purchase subscription
 
         _ = try await Purchases.shared.purchase(product: product)
-        _ = try await Purchases.shared.syncPurchases()
+        var customerInfo = try await Purchases.shared.syncPurchases()
 
-        try self.verifyEntitlementWentThrough()
+        try self.verifyEntitlementWentThrough(customerInfo)
 
         // 2. Expire subscription
 
@@ -333,11 +327,11 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         // 4. Purchase with offer
 
         _ = try await Purchases.shared.purchase(product: product, promotionalOffer: offer)
-        _ = try await Purchases.shared.syncPurchases()
+        customerInfo = try await Purchases.shared.syncPurchases()
 
         // 5. Verify offer was applied
 
-        let entitlement = try self.verifyEntitlementWentThrough()
+        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
 
         let transactions: [Transaction] = await Transaction
             .currentEntitlements
@@ -386,26 +380,36 @@ private extension StoreKit1IntegrationTests {
     }
 
     @discardableResult
-    func purchaseMonthlyOffering() async throws -> PurchaseResultData {
-        return try await Purchases.shared.purchase(package: self.monthlyPackage)
+    func purchaseMonthlyOffering(
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let data = try await Purchases.shared.purchase(package: self.monthlyPackage)
+
+        try self.verifyEntitlementWentThrough(data.customerInfo,
+                                              file: file,
+                                              line: line)
+
+        return data
     }
 
     @discardableResult
     func verifyEntitlementWentThrough(
-        file: FileString = #file, line: UInt = #line
+        _ customerInfo: CustomerInfo,
+        file: FileString = #file,
+        line: UInt = #line
     ) throws -> EntitlementInfo {
-        let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
-        let activeEntitlements = customerInfo.entitlements.active
+        let entitlements = customerInfo.entitlements.all
 
         expect(
             file: file, line: line,
-            activeEntitlements
+            entitlements
         ).to(
             haveCount(1),
-            description: "Expected 1 active entitlement"
+            description: "Expected Entitlement. Got: \(entitlements)"
         )
 
-        return try XCTUnwrap(activeEntitlements[Self.entitlementIdentifier])
+        return try XCTUnwrap(entitlements[Self.entitlementIdentifier])
     }
 
     func assertNoActiveSubscription(
@@ -433,7 +437,7 @@ private extension StoreKit1IntegrationTests {
         )
         .to(
             beEmpty(),
-            description: "Expected no entitlements"
+            description: "Expected no entitlements. Got: \(customerInfo.entitlements.all)"
         )
     }
 
