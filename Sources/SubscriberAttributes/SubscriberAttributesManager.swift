@@ -79,15 +79,15 @@ class SubscriberAttributesManager {
     }
 
     func setOnesignalID(_ onesignalID: String?, appUserID: String) {
-        setAttributionID(onesignalID, forNetworkID: .oneSignalID, appUserID: appUserID)
+        setReservedAttribute(.oneSignalID, value: onesignalID, appUserID: appUserID)
     }
 
     func setAirshipChannelID(_ airshipChannelID: String?, appUserID: String) {
-        setAttributionID(airshipChannelID, forNetworkID: .airshipChannelID, appUserID: appUserID)
+        setReservedAttribute(.airshipChannelID, value: airshipChannelID, appUserID: appUserID)
     }
 
     func setCleverTapID(_ cleverTapID: String?, appUserID: String) {
-        setAttributionID(cleverTapID, forNetworkID: .cleverTapID, appUserID: appUserID)
+        setReservedAttribute(.cleverTapID, value: cleverTapID, appUserID: appUserID)
     }
 
     func setMixpanelDistinctID(_ mixpanelDistinctID: String?, appUserID: String) {

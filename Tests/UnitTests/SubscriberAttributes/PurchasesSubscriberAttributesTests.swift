@@ -375,6 +375,26 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearCleverTapID() {
+        setupPurchases()
+        purchases.setCleverTapID("clever")
+        purchases.setCleverTapID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetCleverTapIDParametersList[0])
+            .to(equal(("clever", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetCleverTapIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearMixpanelDistinctID() {
+        setupPurchases()
+        purchases.setMixpanelDistinctID("mixp")
+        purchases.setMixpanelDistinctID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetMixpanelDistinctIDParametersList[0])
+            .to(equal(("mixp", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetMixpanelDistinctIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearMediaSource() {
         setupPurchases()
         purchases.setMediaSource("media")
