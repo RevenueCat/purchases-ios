@@ -30,6 +30,8 @@ enum PurchaseStrings {
     case purchases_synced
     case purchasing_product_from_package(productIdentifier: String, offeringIdentifier: String)
     case purchasing_product(productIdentifier: String)
+    case purchased_product(productIdentifier: String)
+    case product_purchase_failed(productIdentifier: String, error: Error)
     case skpayment_missing_from_skpaymenttransaction
     case skpayment_missing_product_identifier
     case sktransaction_missing_transaction_date
@@ -117,10 +119,16 @@ extension PurchaseStrings: CustomStringConvertible {
             return "Purchases synced."
 
         case let .purchasing_product_from_package(productIdentifier, offeringIdentifier):
-            return "Purchasing product from package  - \(productIdentifier) in Offering \(offeringIdentifier)"
+            return "Purchasing product from package '\(productIdentifier)' in Offering '\(offeringIdentifier)'"
 
         case .purchasing_product(let productIdentifier):
-            return "Purchasing product - \(productIdentifier)"
+            return "Purchasing product '\(productIdentifier)'"
+
+        case let .purchased_product(productIdentifier):
+            return "Purchased product - '\(productIdentifier)'"
+
+        case let .product_purchase_failed(productIdentifier, error):
+            return "Product purchase for '\(productIdentifier)' failed with error: \(error)"
 
         case .skpayment_missing_from_skpaymenttransaction:
             return "There is a problem with the " +
