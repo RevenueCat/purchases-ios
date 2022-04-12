@@ -39,6 +39,14 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     static var simulatesAskToBuyInSandbox = false
 
+    var currentStorefront: String? {
+        guard #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) else {
+            return nil
+        }
+
+        return self.paymentQueue.storefront?.countryCode
+    }
+
     weak var delegate: StoreKitWrapperDelegate? {
         didSet {
             if delegate != nil {
