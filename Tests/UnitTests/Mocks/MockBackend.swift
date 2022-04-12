@@ -12,7 +12,7 @@ class MockBackend: Backend {
 
     var invokedPostReceiptData = false
     var invokedPostReceiptDataCount = 0
-    var stubbedPostReceiptResult: Result<CustomerInfo, Error>?
+    var stubbedPostReceiptResult: Result<CustomerInfo, BackendError>?
     var invokedPostReceiptDataParameters: (data: Data?,
                                            appUserID: String?,
                                            isRestore: Bool,
@@ -20,7 +20,7 @@ class MockBackend: Backend {
                                            offeringIdentifier: String?,
                                            observerMode: Bool,
                                            subscriberAttributesByKey: [String: SubscriberAttribute]?,
-                                           completion: BackendCustomerInfoResponseHandler?)?
+                                           completion: Backend.CustomerInfoResponseHandler?)?
     var invokedPostReceiptDataParametersList = [(data: Data?,
         appUserID: String?,
         isRestore: Bool,
@@ -28,7 +28,7 @@ class MockBackend: Backend {
         offeringIdentifier: String?,
         observerMode: Bool,
         subscriberAttributesByKey: [String: SubscriberAttribute]?,
-        completion: BackendCustomerInfoResponseHandler?)]()
+        completion: Backend.CustomerInfoResponseHandler?)]()
 
     public convenience init() {
         let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
@@ -47,7 +47,7 @@ class MockBackend: Backend {
                        presentedOfferingIdentifier offeringIdentifier: String?,
                        observerMode: Bool,
                        subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-                       completion: @escaping BackendCustomerInfoResponseHandler) {
+                       completion: @escaping Backend.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
         invokedPostReceiptDataParameters = (receiptData,
@@ -66,18 +66,18 @@ class MockBackend: Backend {
                                                      observerMode,
                                                      subscriberAttributesByKey,
                                                      completion))
-        completion(stubbedPostReceiptResult ?? .failure(ErrorCode.unknownError))
+        completion(stubbedPostReceiptResult ?? .failure(.missingAppUserID()))
     }
 
     var invokedGetSubscriberData = false
     var invokedGetSubscriberDataCount = 0
-    var invokedGetSubscriberDataParameters: (appUserID: String?, completion: BackendCustomerInfoResponseHandler?)?
+    var invokedGetSubscriberDataParameters: (appUserID: String?, completion: Backend.CustomerInfoResponseHandler?)?
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
-        completion: BackendCustomerInfoResponseHandler?)]()
+                                                   completion: Backend.CustomerInfoResponseHandler?)]()
 
-    var stubbedGetCustomerInfoResult: Result<CustomerInfo, Error> = .failure(ErrorCode.unknownError)
+    var stubbedGetCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
-    override func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
+    override func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
         invokedGetSubscriberDataParameters = (appUserID, completion)
@@ -93,7 +93,7 @@ class MockBackend: Backend {
         receiptData: Data?,
         productIdentifiers: [String]?,
         completion: IntroEligibilityResponseHandler?)]()
-    var stubbedGetIntroEligibilityCompletionResult: (eligibilities: [String: IntroEligibility], error: Error?)?
+    var stubbedGetIntroEligibilityCompletionResult: (eligibilities: [String: IntroEligibility], error: BackendError?)?
 
     override func getIntroEligibility(appUserID: String,
                                       receiptData: Data,
@@ -110,7 +110,7 @@ class MockBackend: Backend {
     var invokedGetOfferingsForAppUserIDCount = 0
     var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: OfferingsResponseHandler?)?
     var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, completion: OfferingsResponseHandler?)]()
-    var stubbedGetOfferingsCompletionResult: Result<[String: Any], Error>?
+    var stubbedGetOfferingsCompletionResult: Result<[String: Any], BackendError>?
 
     override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
         invokedGetOfferingsForAppUserID = true
@@ -127,12 +127,12 @@ class MockBackend: Backend {
     var invokedPostAttributionDataParametersList = [(data: [String: Any]?,
                                                      network: AttributionNetwork,
         appUserID: String?)]()
-    var stubbedPostAttributionDataCompletionResult: (Error?, Void)?
+    var stubbedPostAttributionDataCompletionResult: (BackendError?, Void)?
 
     override func post(attributionData: [String: Any],
                        network: AttributionNetwork,
                        appUserID: String,
-                       completion: ((Error?) -> Void)?) {
+                       completion: ((BackendError?) -> Void)?) {
         invokedPostAttributionData = true
         invokedPostAttributionDataCount += 1
         invokedPostAttributionDataParameters = (attributionData, network, appUserID)
@@ -146,9 +146,9 @@ class MockBackend: Backend {
     var invokedCreateAliasCount = 0
     var invokedCreateAliasParameters: (appUserID: String?, newAppUserID: String?)?
     var invokedCreateAliasParametersList = [(appUserID: String?, newAppUserID: String?)]()
-    var stubbedCreateAliasCompletionResult: (Error?, Void)?
+    var stubbedCreateAliasCompletionResult: (BackendError?, Void)?
 
-    override func createAlias(appUserID: String, newAppUserID: String, completion: ((Error?) -> Void)?) {
+    override func createAlias(appUserID: String, newAppUserID: String, completion: ((BackendError?) -> Void)?) {
         invokedCreateAlias = true
         invokedCreateAliasCount += 1
         invokedCreateAliasParameters = (appUserID, newAppUserID)
@@ -167,7 +167,7 @@ class MockBackend: Backend {
         data: Data?,
         applicationUsername: String?,
         completion: OfferSigningResponseHandler?)]()
-    var stubbedPostOfferCompletionResult: Result<PostOfferForSigningOperation.SigningData, Error>?
+    var stubbedPostOfferCompletionResult: Result<PostOfferForSigningOperation.SigningData, BackendError>?
 
     override func post(offerIdForSigning offerIdentifier: String,
                        productIdentifier: String,
@@ -190,18 +190,18 @@ class MockBackend: Backend {
                                                   appUserID,
                                                   completion))
 
-        completion(stubbedPostOfferCompletionResult ?? .failure(ErrorUtils.unknownError()))
+        completion(stubbedPostOfferCompletionResult ?? .failure(.missingAppUserID()))
     }
 
     var invokedPostSubscriberAttributes = false
     var invokedPostSubscriberAttributesCount = 0
     var invokedPostSubscriberAttributesParameters: (subscriberAttributes: [String: SubscriberAttribute]?, appUserID: String?)?
     var invokedPostSubscriberAttributesParametersList: [InvokedPostSubscriberAttributesParams] = []
-    var stubbedPostSubscriberAttributesCompletionResult: (Error?, Void)?
+    var stubbedPostSubscriberAttributesCompletionResult: (BackendError?, Void)?
 
     override func post(subscriberAttributes: SubscriberAttributeDict,
                        appUserID: String,
-                       completion: ((Error?) -> Void)?) {
+                       completion: ((BackendError?) -> Void)?) {
         invokedPostSubscriberAttributes = true
         invokedPostSubscriberAttributesCount += 1
         invokedPostSubscriberAttributesParameters = (subscriberAttributes, appUserID)
@@ -224,7 +224,7 @@ class MockBackend: Backend {
     var invokedLogInCount = 0
     var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
     var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
-    var stubbedLogInCompletionResult: Result<(info: CustomerInfo, created: Bool), Error>?
+    var stubbedLogInCompletionResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
     override func logIn(currentAppUserID: String,
                         newAppUserID: String,

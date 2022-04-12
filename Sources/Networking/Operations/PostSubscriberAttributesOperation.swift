@@ -17,11 +17,11 @@ class PostSubscriberAttributesOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let subscriberAttributes: SubscriberAttributeDict
-    private let responseHandler: SimpleResponseHandler?
+    private let responseHandler: Backend.SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          subscriberAttributes: SubscriberAttributeDict,
-         completion: SimpleResponseHandler?) {
+         completion: Backend.SimpleResponseHandler?) {
         self.configuration = configuration
         self.subscriberAttributes = subscriberAttributes
         self.responseHandler = completion
@@ -36,14 +36,13 @@ class PostSubscriberAttributesOperation: NetworkOperation {
     private func post(completion: @escaping () -> Void) {
         guard self.subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
-            self.responseHandler?(ErrorCode.emptySubscriberAttributes)
-            completion()
+            self.responseHandler?(.emptySubscriberAttributes())
 
             return
         }
 
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
-            self.responseHandler?(ErrorUtils.missingAppUserIDError())
+            self.responseHandler?(.missingAppUserID())
             completion()
 
             return
@@ -52,12 +51,13 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)),
                                   path: .postSubscriberAttributes(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { response in
+        httpClient.perform(request,
+                           authHeaders: self.authHeaders) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
                 completion()
             }
 
-            self.responseHandler?(response.error)
+            self.responseHandler?(response.error.map(BackendError.networkError))
         }
     }
 

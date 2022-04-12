@@ -15,7 +15,7 @@ import Foundation
 
 struct CustomerInfoCallback: CacheKeyProviding {
 
-    typealias Completion = (Result<CustomerInfo, Error>) -> Void
+    typealias Completion = (Result<CustomerInfo, BackendError>) -> Void
 
     let cacheKey: String
     let source: NetworkOperation.Type

@@ -171,9 +171,10 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         self.mockProductsManager.stubbedProductsCompletionResult = Set()
         let productId = "product_id"
 
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
-                                   code: ErrorCode.invalidAppUserIdError.rawValue,
-                                   userInfo: [:])
+        let stubbedError: BackendError = .networkError(
+            .errorResponse(.init(code: .invalidAPIKey, message: nil),
+                           400)
+        )
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
 
         mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)

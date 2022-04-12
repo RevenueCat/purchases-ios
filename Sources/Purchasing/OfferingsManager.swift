@@ -77,7 +77,7 @@ class OfferingsManager {
                     self.handleOfferingsBackendResult(with: data, completion: completion)
 
                 case let .failure(error):
-                    self.handleOfferingsUpdateError(error, completion: completion)
+                    self.handleOfferingsUpdateError(.backendError(error), completion: completion)
                 }
             }
         }
@@ -100,7 +100,7 @@ private extension OfferingsManager {
         let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
         guard !productIdentifiers.isEmpty else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
-            self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
+            self.handleOfferingsUpdateError(.configurationError(errorMessage),
                                             completion: completion)
             return
         }
@@ -110,7 +110,7 @@ private extension OfferingsManager {
 
             guard products.isEmpty == false else {
                 let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
-                self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
+                self.handleOfferingsUpdateError(.configurationError(errorMessage),
                                                 completion: completion)
                 return
             }
@@ -132,7 +132,7 @@ private extension OfferingsManager {
                                                               offerings: createdOfferings,
                                                               error: nil)
             } else {
-                self.handleOfferingsUpdateError(ErrorUtils.unexpectedBackendResponseError(), completion: completion)
+                self.handleOfferingsUpdateError(.noOfferingsFound(), completion: completion)
             }
         }
     }
@@ -163,6 +163,57 @@ private extension OfferingsManager {
                 completion(offerings, error)
             }
         }
+    }
+
+}
+
+extension OfferingsManager {
+
+    enum Error: Swift.Error, Equatable {
+
+        case backendError(BackendError)
+        case configurationError(String, ErrorSource)
+        case noOfferingsFound(ErrorSource)
+
+    }
+
+}
+
+extension OfferingsManager.Error: ErrorCodeConvertible {
+
+    var asPurchasesError: Error {
+        switch self {
+        case let .backendError(backendError):
+            return backendError.asPurchasesError
+
+        case let .configurationError(errorMessage, source):
+            return ErrorUtils.configurationError(message: errorMessage,
+                                                 fileName: source.file,
+                                                 functionName: source.function,
+                                                 line: source.line)
+
+        case let .noOfferingsFound(source):
+            return ErrorUtils.unexpectedBackendResponseError(fileName: source.file,
+                                                             functionName: source.function,
+                                                             line: source.line)
+        }
+    }
+
+    static func configurationError(
+        _ errorMessage: String,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) -> Self {
+        return .configurationError(errorMessage, .init(file: file, function: function, line: line))
+    }
+
+    static func noOfferingsFound(
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) -> Self {
+        return .noOfferingsFound(.init(file: file, function: function, line: line))
     }
 
 }

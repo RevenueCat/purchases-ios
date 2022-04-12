@@ -147,7 +147,7 @@ class SubscriberAttributesManager {
                                                 currentAppUserId: currentAppUserID,
                                                 error: error)
 
-                    syncedAttribute?(error)
+                    syncedAttribute?(error?.asPurchasesError)
                     let completedSoFar: Int = completed.modify { $0 += 1; return $0 }
 
                     if completedSoFar == total {
@@ -243,10 +243,9 @@ private extension SubscriberAttributesManager {
 
     func syncAttributes(attributes: SubscriberAttributeDict,
                         appUserID: String,
-                        completion: @escaping (Error?) -> Void) {
+                        completion: @escaping (BackendError?) -> Void) {
         backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
-            let receivedNSError = error as NSError?
-            let didBackendReceiveValues = receivedNSError?.successfullySynced ?? true
+            let didBackendReceiveValues = error?.successfullySynced ?? true
 
             if didBackendReceiveValues {
                 self.markAttributesAsSynced(attributes, appUserID: appUserID)

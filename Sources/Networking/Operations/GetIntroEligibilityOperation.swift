@@ -18,12 +18,12 @@ class GetIntroEligibilityOperation: NetworkOperation {
     private let configuration: UserSpecificConfiguration
     private let receiptData: Data
     private let productIdentifiers: [String]
-    private let responseHandler: IntroEligibilityResponseHandler
+    private let responseHandler: Backend.IntroEligibilityResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          receiptData: Data,
          productIdentifiers: [String],
-         responseHandler: @escaping IntroEligibilityResponseHandler) {
+         responseHandler: @escaping Backend.IntroEligibilityResponseHandler) {
         self.configuration = configuration
         self.receiptData = receiptData
         self.productIdentifiers = productIdentifiers
@@ -76,7 +76,7 @@ private extension GetIntroEligibilityOperation {
         }
 
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
-            self.responseHandler(unknownEligibilityClosure(), ErrorUtils.missingAppUserIDError())
+            self.responseHandler(unknownEligibilityClosure(), .missingAppUserID())
             completion()
 
             return
@@ -86,8 +86,8 @@ private extension GetIntroEligibilityOperation {
                                                      fetchToken: self.receiptData.asFetchToken)),
                                   path: .getIntroEligibility(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { response in
-            let eligibilityResponse = IntroEligibilityResponse(result: response,
+        httpClient.perform(request, authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
+            let eligibilityResponse = IntroEligibilityResponse(result: response.mapError { $0.asPurchasesError },
                                                                productIdentifiers: self.productIdentifiers,
                                                                unknownEligibilityClosure: unknownEligibilityClosure,
                                                                completion: self.responseHandler)
@@ -98,7 +98,7 @@ private extension GetIntroEligibilityOperation {
 
     func handleIntroEligibility(response: IntroEligibilityResponse) {
         let result: [String: IntroEligibility] = {
-            var eligibilitiesByProductIdentifier = response.result.value?.jsonObject
+            var eligibilitiesByProductIdentifier = response.result.value?.body
 
             if response.result.value?.statusCode.isSuccessfulResponse != true {
                 eligibilitiesByProductIdentifier = [:]

@@ -37,7 +37,7 @@ private extension GetOfferingsOperation {
     func getOfferings(completion: @escaping () -> Void) {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(.failure(ErrorUtils.missingAppUserIDError()))
+                callback.completion(.failure(.missingAppUserID()))
             }
             completion()
 
@@ -46,13 +46,16 @@ private extension GetOfferingsOperation {
 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { response in
+        httpClient.perform(request, authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
             defer {
                 completion()
             }
 
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.completion(response.map { $0.jsonObject })
+                callbackObject.completion(response
+                    .map { $0.body }
+                    .mapError(BackendError.networkError)
+                )
             }
         }
     }

@@ -73,6 +73,8 @@ extension HTTPStatusCode: ExpressibleByIntegerLiteral {
 
 extension HTTPStatusCode: Hashable {}
 
+extension HTTPStatusCode: Codable {}
+
 extension HTTPStatusCode {
 
     var isSuccessfulResponse: Bool {

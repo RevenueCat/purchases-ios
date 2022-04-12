@@ -17,33 +17,35 @@ class CustomerInfoResponseHandler {
 
     init() { }
 
-    func handle(customerInfoResponse response: Result<HTTPResponse, Error>,
-                completion: BackendCustomerInfoResponseHandler) {
-        let errorResponse = ErrorResponse.from(response.value?.jsonObject ?? [:])
-
-        let result: Result<CustomerInfo, Error> = response
-            .flatMap { response in
-                Result {
-                    (
-                        response: response,
-                        info: try CustomerInfo.from(json: response.jsonObject)
-                    )
-                }
-                .mapError {
-                    errorResponse
-                        .asBackendError(with: response.statusCode)
-                        .addingUnderlyingError($0)
-                }
-            }
-            .flatMap { response, info in
-                if !errorResponse.attributeErrors.isEmpty {
-                    return .failure(errorResponse.asBackendError(with: response.statusCode))
+    func handle(customerInfoResponse response: HTTPResponse<Response>.Result,
+                completion: Backend.CustomerInfoResponseHandler) {
+        let result: Result<CustomerInfo, BackendError> = response
+            .flatMap {
+                if $0.body.errorResponse.attributeErrors.isEmpty {
+                    return .success($0.body.customerInfo)
                 } else {
-                    return .success(info)
+                    return .failure(.errorResponse($0.body.errorResponse, $0.statusCode))
                 }
             }
+            .mapError(BackendError.networkError)
 
         completion(result)
+    }
+
+}
+
+extension CustomerInfoResponseHandler {
+
+    struct Response: HTTPResponseBody {
+
+        let customerInfo: CustomerInfo
+        let errorResponse: ErrorResponse
+
+        static func create(with data: Data) throws -> Self {
+            return .init(customerInfo: try CustomerInfo.create(with: data),
+                         errorResponse: ErrorResponse.from(data))
+        }
+
     }
 
 }

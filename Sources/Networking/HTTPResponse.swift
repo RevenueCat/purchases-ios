@@ -14,19 +14,44 @@
 
 import Foundation
 
-struct HTTPResponse {
+struct HTTPResponse<Body: HTTPResponseBody> {
 
-    typealias Body = [String: Any]
+    typealias Result = Swift.Result<Self, NetworkError>
 
     let statusCode: HTTPStatusCode
-    let jsonObject: Body
+    let body: Body
 
 }
 
 extension HTTPResponse: CustomStringConvertible {
 
     var description: String {
-        "HTTPResponse(statusCode: \(self.statusCode.rawValue), jsonObject: \(self.jsonObject.description))"
+        if let bodyDescription = (self.body as? CustomStringConvertible)?.description {
+            return "HTTPResponse(statusCode: \(self.statusCode.rawValue), body: \(bodyDescription))"
+        } else {
+            return "HTTPResponse(statusCode: \(self.statusCode.rawValue), body: \(type(of: self.body))"
+        }
+    }
+
+}
+
+extension HTTPResponse where Body: OptionalType, Body.Wrapped: HTTPResponseBody {
+
+    /// Converts a `HTTPResponse<Body?>` into a `HTTPResponse<Body>?`
+    var asOptionalResponse: HTTPResponse<Body.Wrapped>? {
+        guard let body = self.body.asOptional else {
+            return nil
+        }
+
+        return .init(statusCode: self.statusCode, body: body)
+    }
+
+}
+
+extension HTTPResponse {
+
+    func mapBody<NewBody>(_ mapping: (Body) throws -> NewBody) rethrows -> HTTPResponse<NewBody> {
+        return .init(statusCode: self.statusCode, body: try mapping(self.body))
     }
 
 }
@@ -34,22 +59,24 @@ extension HTTPResponse: CustomStringConvertible {
 // MARK: -
 
 /// The response content of a failed request.
-struct ErrorResponse {
+struct ErrorResponse: Equatable {
 
-    let code: BackendErrorCode
-    let message: String?
-    let attributeErrors: [String: String]
+    var code: BackendErrorCode
+    var message: String?
+    var attributeErrors: [String: String] = [:]
 
 }
 
 extension ErrorResponse {
 
     /// Converts this `ErrorResponse` into an `ErrorCode` backed by the corresponding `BackendErrorCode`.
-    func asBackendError(with statusCode: HTTPStatusCode) -> Error {
-        var userInfo: [NSError.UserInfoKey: Any] = [
-            ErrorDetails.finishableKey: !statusCode.isServerError,
-            Backend.RCSuccessfullySyncedKey: statusCode.isSuccessfullySynced
-        ]
+    func asBackendError(
+        with statusCode: HTTPStatusCode,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) -> Error {
+        var userInfo: [NSError.UserInfoKey: Any] = [:]
 
         if !self.attributeErrors.isEmpty {
             userInfo[Backend.RCAttributeErrorsKey as NSError.UserInfoKey] = self.attributeErrors
@@ -58,7 +85,8 @@ extension ErrorResponse {
         return ErrorUtils.backendError(
             withBackendCode: self.code,
             backendMessage: self.message,
-            extraUserInfo: userInfo
+            extraUserInfo: userInfo,
+            fileName: file, functionName: function, line: line
         )
     }
 
@@ -111,27 +139,40 @@ extension ErrorResponse {
 
     }
 
-    private static func parseWrapper(_ response: HTTPResponse.Body) -> Wrapper? {
-        return try? JSONDecoder.default.decode(dictionary: response, logErrors: false)
+    private static func parseWrapper(_ data: Data) -> Wrapper? {
+        return try? JSONDecoder.default.decode(jsonData: data, logErrors: false)
     }
 
     /// Creates an `ErrorResponse` with the content of an `HTTPResponse`.
     /// This method supports extracting error information from the root, or from inside `"attributes_error_response"`
     /// - Note: if the error couldn't be decoded, a default error is created.
-    static func from(_ response: HTTPResponse.Body) -> Self {
+    /// - Warning: this is "deprecated". Ideally in the future all `ErrorResponses` are created from `Data`.
+    static func from(_ dictionary: [String: Any]) -> Self {
+        guard let data = try? JSONSerialization.data(withJSONObject: dictionary) else {
+            return .defaultResponse
+        }
+
+        return Self.from(data)
+    }
+
+    /// Creates an `ErrorResponse` with the content of an `HTTPResponse`.
+    /// This method supports extracting error information from the root, or from inside `"attributes_error_response"`
+    /// - Note: if the error couldn't be decoded, a default error is created.
+    static func from(_ data: Data) -> Self {
         do {
-            if let wrapper = Self.parseWrapper(response) {
+            if let wrapper = Self.parseWrapper(data) {
                 return wrapper.attributesErrorResponse
             } else {
-                return try JSONDecoder.default.decode(dictionary: response)
+                return try JSONDecoder.default.decode(jsonData: data)
             }
         } catch {
             Logger.error(Strings.codable.decoding_error(error))
 
-            return .init(code: .unknownError,
-                         message: nil,
-                         attributeErrors: [:])
+            return Self.defaultResponse
         }
     }
+
+    private static let defaultResponse: Self = .init(code: .unknownError,
+                                                     message: nil)
 
 }

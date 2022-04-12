@@ -71,18 +71,20 @@ class IdentityManager: CurrentUserProvider {
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
 
-    func logIn(appUserID: String, completion: @escaping LogInResponseHandler) {
+    func logIn(appUserID: String, completion: @escaping Backend.LogInResponseHandler) {
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_empty_appuserid)
-            completion(.failure(ErrorUtils.missingAppUserIDError()))
+            completion(.failure(.missingAppUserID()))
             return
         }
 
         guard newAppUserID != currentAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
             customerInfoManager.customerInfo(appUserID: currentAppUserID) { result in
-                completion(result.map { (info: $0, created: false) })
+                completion(
+                    result.map { (info: $0, created: false) }
+                )
             }
             return
         }

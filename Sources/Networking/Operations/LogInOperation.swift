@@ -40,7 +40,7 @@ private extension LogInOperation {
     func logIn(completion: @escaping () -> Void) {
         guard let newAppUserID = try? self.newAppUserID.trimmedOrError() else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(.failure(ErrorUtils.missingAppUserIDError()))
+                callback.completion(.failure(.missingAppUserID()))
             }
             completion()
 
@@ -51,7 +51,8 @@ private extension LogInOperation {
                                                      newAppUserID: newAppUserID)),
                                   path: .logIn)
 
-        self.httpClient.perform(request, authHeaders: self.authHeaders) { response in
+        self.httpClient.perform(request,
+                                authHeaders: self.authHeaders) { (response: HTTPResponse<CustomerInfo>.Result) in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(response, completion: callbackObject.completion)
             }
@@ -60,29 +61,13 @@ private extension LogInOperation {
         }
     }
 
-    func handleLogin(_ result: Result<HTTPResponse, Error>,
-                     completion: LogInResponseHandler) {
-        let result: Result<(info: CustomerInfo, created: Bool), Error> = result
-            .flatMap { response in
-                let (statusCode, response) = (response.statusCode, response.jsonObject)
-
-                do {
-                    let customerInfo = try CustomerInfo.from(json: response)
-                    let created = statusCode == .createdSuccess
-
-                    return .success((customerInfo, created))
-                } catch let customerInfoError {
-                    Logger.error(Strings.backendError.customer_info_instantiation_error(response: response))
-
-                    let extraContext = "statusCode: \(statusCode)"
-                    let subErrorCode = UnexpectedBackendResponseSubErrorCode
-                        .loginResponseDecoding
-                        .addingUnderlyingError(customerInfoError)
-                    let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
-                                                                             extraContext: extraContext)
-                    return .failure(responseError)
-                }
+    func handleLogin(_ result: HTTPResponse<CustomerInfo>.Result,
+                     completion: Backend.LogInResponseHandler) {
+        let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
+            .map { response in
+                (response.body, created: response.statusCode == .createdSuccess)
             }
+            .mapError(BackendError.networkError)
 
         if case .success = result {
             Logger.user(Strings.identity.login_success)

@@ -98,7 +98,7 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testLogInFailsIfEmptyAppUserID() throws {
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
         let manager = create(appUserID: nil)
 
@@ -107,14 +107,12 @@ class IdentityManagerTests: XCTestCase {
         }
 
         expect(receivedResult).toEventuallyNot(beNil())
-
-        let receivedNSError = try XCTUnwrap(receivedResult?.error as NSError?)
-        expect(receivedNSError.code) == ErrorCode.invalidAppUserIdError.rawValue
+        expect(receivedResult?.error) == .missingAppUserID()
     }
 
     func testLogInWithSameAppUserIDFetchesCustomerInfo() {
         let appUserID = "myUser"
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
         let manager = create(appUserID: nil)
 
@@ -135,11 +133,9 @@ class IdentityManagerTests: XCTestCase {
         let manager = create(appUserID: nil)
 
         mockDeviceCache.stubbedAppUserID = appUserID
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
-                                   code: ErrorCode.invalidAppUserIdError.rawValue,
-                                   userInfo: [:])
+        let stubbedError: BackendError = .missingAppUserID()
 
         self.mockCustomerInfoManager.stubbedCustomerInfoResult = .failure(stubbedError)
         manager.logIn(appUserID: appUserID) { result in
@@ -148,7 +144,7 @@ class IdentityManagerTests: XCTestCase {
 
         expect(receivedResult).toEventuallyNot(beNil())
 
-        expect(receivedResult?.error as NSError?) == stubbedError
+        expect(receivedResult?.error) == stubbedError
 
         expect(self.mockBackend.invokedLogInCount) == 0
         expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 1
@@ -161,7 +157,7 @@ class IdentityManagerTests: XCTestCase {
         let manager = create(appUserID: nil)
 
         mockDeviceCache.stubbedAppUserID = oldAppUserID
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
         self.mockBackend.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
 
@@ -183,13 +179,11 @@ class IdentityManagerTests: XCTestCase {
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = oldAppUserID
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), Error>?
+        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
         let manager = create(appUserID: nil)
 
-        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
-                                   code: ErrorCode.invalidAppUserIdError.rawValue,
-                                   userInfo: [:])
+        let stubbedError: BackendError = .missingAppUserID()
         self.mockBackend.stubbedLogInCompletionResult = .failure(stubbedError)
 
         self.mockCustomerInfoManager.stubbedCustomerInfoResult = .failure(stubbedError)
@@ -200,7 +194,7 @@ class IdentityManagerTests: XCTestCase {
 
         expect(receivedResult).toEventuallyNot(beNil())
 
-        expect(receivedResult?.error as NSError?) == stubbedError
+        expect(receivedResult?.error) == stubbedError
 
         expect(self.mockBackend.invokedLogInCount) == 1
         expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 0

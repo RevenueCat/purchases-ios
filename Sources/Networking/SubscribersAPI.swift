@@ -39,7 +39,7 @@ class SubscribersAPI {
         self.dateProvider = dateProvider
     }
 
-    func createAlias(appUserID: String, newAppUserID: String, completion: SimpleResponseHandler?) {
+    func createAlias(appUserID: String, newAppUserID: String, completion: Backend.SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
@@ -52,7 +52,7 @@ class SubscribersAPI {
         operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
 
-    func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
+    func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
@@ -67,7 +67,7 @@ class SubscribersAPI {
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
-              completion: SimpleResponseHandler?) {
+              completion: Backend.SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
@@ -85,7 +85,7 @@ class SubscribersAPI {
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-              completion: @escaping BackendCustomerInfoResponseHandler) {
+              completion: @escaping Backend.CustomerInfoResponseHandler) {
         let attributionStatus = self.attributionFetcher.authorizationStatus
         var subscriberAttributesByKey = subscriberAttributesByKey ?? [:]
         let consentStatus = SubscriberAttribute(withKey: ReservedSubscriberAttribute.consentStatus.rawValue,

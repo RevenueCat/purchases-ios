@@ -31,7 +31,7 @@ class MockETagManager: ETagManager {
 
     private struct InvokedHTTPResultFromCacheOrBackendParams {
         let response: HTTPURLResponse
-        let responseObject: [String: Any]
+        let body: Data?
         let request: URLRequest
         let retried: Bool
     }
@@ -40,26 +40,27 @@ class MockETagManager: ETagManager {
     var invokedHTTPResultFromCacheOrBackendCount = 0
     private var invokedHTTPResultFromCacheOrBackendParameters: InvokedHTTPResultFromCacheOrBackendParams?
     private var invokedHTTPResultFromCacheOrBackendParametersList = [InvokedHTTPResultFromCacheOrBackendParams]()
-    var stubbedHTTPResultFromCacheOrBackendResult: HTTPResponse!
+    var stubbedHTTPResultFromCacheOrBackendResult: HTTPResponse<Data>!
     var shouldReturnResultFromBackend = true
 
     override func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                               jsonObject: [String: Any],
+                                               data: Data?,
                                                request: URLRequest,
-                                               retried: Bool) -> HTTPResponse? {
+                                               retried: Bool) -> HTTPResponse<Data>? {
         return lock.perform {
             invokedHTTPResultFromCacheOrBackend = true
             invokedHTTPResultFromCacheOrBackendCount += 1
             let params = InvokedHTTPResultFromCacheOrBackendParams(
                 response: response,
-                responseObject: jsonObject,
+                body: data,
                 request: request,
                 retried: retried
             )
             invokedHTTPResultFromCacheOrBackendParameters = params
             invokedHTTPResultFromCacheOrBackendParametersList.append(params)
             if shouldReturnResultFromBackend {
-                return HTTPResponse(statusCode: .init(rawValue: response.statusCode), jsonObject: jsonObject)
+                return HTTPResponse(statusCode: .init(rawValue: response.statusCode), body: data)
+                    .asOptionalResponse
             }
             return stubbedHTTPResultFromCacheOrBackendResult
         }
