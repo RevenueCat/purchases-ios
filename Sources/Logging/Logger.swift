@@ -130,7 +130,7 @@ extension Logger {
                          fileName: String = #fileID,
                          functionName: String = #function,
                          line: UInt = #line) {
-        log(level: .debug, intent: .purchase, message: message.description,
+        log(level: .info, intent: .purchase, message: message.description,
             fileName: fileName, functionName: functionName, line: line)
     }
 
