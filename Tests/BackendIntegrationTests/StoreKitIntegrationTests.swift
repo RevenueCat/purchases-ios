@@ -25,13 +25,19 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     private static let timeout: DispatchTimeInterval = .seconds(10)
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
 
         testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
         testSession.resetToDefaultState()
         testSession.disableDialogs = true
         testSession.clearTransactions()
+
+        // SDK initialization begins with an initial request to offerings
+        // Which results in a get-create of the initial anonymous user.
+        // To avoid race conditions with when this request finishes and make all tests deterministic
+        // this waits for that request to finish.
+        _ = try await Purchases.shared.offerings()
     }
 
     override class var storeKit2Setting: StoreKit2Setting {
@@ -93,11 +99,9 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         let (customerInfo, created) = try await Purchases.shared.logIn(existingUserID)
         expect(created) == false
-
         self.assertNoPurchases(customerInfo)
 
         let restoredCustomerInfo = try await Purchases.shared.restorePurchases()
-
         try self.verifyEntitlementWentThrough(restoredCustomerInfo)
     }
 
