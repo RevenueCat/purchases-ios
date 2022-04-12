@@ -25,7 +25,7 @@
       "localizations" : [
         {
           "description" : "",
-          "displayName" : "",
+          "displayName" : "Lifetime subscription",
           "locale" : "en_US"
         }
       ],
@@ -40,7 +40,7 @@
       "localizations" : [
         {
           "description" : "",
-          "displayName" : "",
+          "displayName" : "Consumable IAP",
           "locale" : "en_US"
         }
       ],
@@ -117,8 +117,8 @@
           },
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Annual Subscription with 2 weeks Free Trial",
+              "displayName" : "Annual Subscription",
               "locale" : "en_US"
             }
           ],
