@@ -531,9 +531,11 @@ private extension PurchasesOrchestrator {
     func fetchProductsAndPostReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data) {
         if let productIdentifier = transaction.productIdentifier {
             self.products(withIdentifiers: [productIdentifier]) { products in
+                let storefront = self.storeKitWrapper.currentStorefront
                 self.postReceipt(withTransaction: transaction,
                                  receiptData: receiptData,
-                                 products: Set(products))
+                                 products: Set(products),
+                                 storefront: storefront)
             }
         } else {
             self.handleReceiptPost(withTransaction: transaction,
@@ -545,20 +547,21 @@ private extension PurchasesOrchestrator {
 
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
-                     products: Set<StoreProduct>) {
+                     products: Set<StoreProduct>,
+                     storefront: String?) {
         var productData: ProductRequestData?
         var presentedOfferingID: String?
         if let product = products.first {
-            let receivedProductData = ProductRequestData(with: product)
+            let receivedProductData = ProductRequestData(with: product, storefront: storefront)
             productData = receivedProductData
 
             let productID = receivedProductData.productIdentifier
-            let foundPresentedOfferingID = presentedOfferingIDsByProductID[productID]
+            let foundPresentedOfferingID = self.presentedOfferingIDsByProductID[productID]
             presentedOfferingID = foundPresentedOfferingID
 
             presentedOfferingIDsByProductID.removeValue(forKey: productID)
         }
-        let unsyncedAttributes = unsyncedAttributes
+        let unsyncedAttributes = self.unsyncedAttributes
 
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
