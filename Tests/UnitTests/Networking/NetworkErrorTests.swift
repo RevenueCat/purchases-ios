@@ -78,7 +78,8 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
         verifyPurchasesError(error,
                              expectedCode: .invalidCredentialsError,
                              underlyingError: underlyingError,
-                             userInfoKeys: [Backend.RCAttributeErrorsKey])
+                             userInfoKeys: [.attributeErrors,
+                                            .statusCode])
 
         expect((error.asPurchasesError as NSError).subscriberAttributesErrors) == errorResponse.attributeErrors
     }

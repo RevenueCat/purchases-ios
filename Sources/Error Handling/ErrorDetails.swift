@@ -14,11 +14,28 @@
 
 import Foundation
 
-class ErrorDetails: NSObject {
+extension NSError.UserInfoKey {
 
-    static let readableErrorCodeKey: NSError.UserInfoKey = "readable_error_code"
-    static let extraContextKey: NSError.UserInfoKey = "extra_context"
-    static let fileKey: NSError.UserInfoKey = "source_file"
-    static let functionKey: NSError.UserInfoKey = "source_function"
+    static let attributeErrors: NSError.UserInfoKey = "attribute_errors"
+    static let attributeErrorsResponse: NSError.UserInfoKey = "attributes_error_response"
+    static let statusCode: NSError.UserInfoKey = "rc_response_status_code"
+
+    static let readableErrorCode: NSError.UserInfoKey = "readable_error_code"
+    static let extraContext: NSError.UserInfoKey = "extra_context"
+    static let file: NSError.UserInfoKey = "source_file"
+    static let function: NSError.UserInfoKey = "source_function"
+
+}
+
+enum ErrorDetails {
+
+    static let attributeErrorsKey = NSError.UserInfoKey.attributeErrors as String
+    static let attributeErrorsResponseKey = NSError.UserInfoKey.attributeErrorsResponse as String
+    static let statusCodeKey = NSError.UserInfoKey.statusCode as String
+
+    static let readableErrorCodeKey = NSError.UserInfoKey.readableErrorCode as String
+    static let extraContextKey = NSError.UserInfoKey.extraContext as String
+    static let fileKey = NSError.UserInfoKey.file as String
+    static let functionKey = NSError.UserInfoKey.function as String
 
 }

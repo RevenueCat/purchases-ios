@@ -27,7 +27,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
         let error = NSError(
             domain: RCPurchasesErrorCodeDomain,
             code: errorCode,
-            userInfo: [Backend.RCAttributeErrorsKey as String: attributeErrors]
+            userInfo: [ErrorDetails.attributeErrorsKey: attributeErrors]
         )
         expect(error.subscriberAttributesErrors).toNot(beNil())
         expect(error.subscriberAttributesErrors) == attributeErrors

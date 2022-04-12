@@ -76,10 +76,12 @@ extension ErrorResponse {
         function: String = #function,
         line: UInt = #line
     ) -> Error {
-        var userInfo: [NSError.UserInfoKey: Any] = [:]
+        var userInfo: [NSError.UserInfoKey: Any] = [
+            .statusCode: statusCode.rawValue
+        ]
 
         if !self.attributeErrors.isEmpty {
-            userInfo[Backend.RCAttributeErrorsKey as NSError.UserInfoKey] = self.attributeErrors
+            userInfo[.attributeErrors] = self.attributeErrors
         }
 
         return ErrorUtils.backendError(
