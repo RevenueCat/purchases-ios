@@ -134,8 +134,8 @@
           },
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Annual subscription with a 1 week free trial",
+              "displayName" : "Annual subscription",
               "locale" : "en_US"
             }
           ],
