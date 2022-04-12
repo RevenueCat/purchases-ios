@@ -186,7 +186,7 @@ class HTTPClientTests: XCTestCase {
     func testHandlesRealErrorConditions() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let correctResult: Atomic<Bool?> = .init(nil)
+        let receivedError: Atomic<NetworkError?> = .init(nil)
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath(request.path)) { _ in
@@ -195,23 +195,25 @@ class HTTPClientTests: XCTestCase {
             return response
         }
         self.client.perform(request, authHeaders: [:]) { (result: EmptyResponse) in
-            if let responseNSError = result.error as NSError? {
-                correctResult.value = (error.domain == responseNSError.domain
-                                       && error.code == responseNSError.code)
-            } else {
-                correctResult.value = false
-            }
+            receivedError.value = result.error
         }
 
-        expect(correctResult.value).toEventuallyNot(beNil())
-        expect(correctResult.value) == true
+        expect(receivedError.value).toEventuallyNot(beNil())
+
+        switch receivedError.value {
+        case let .networkError(actualError, _):
+            expect(actualError.domain) == error.domain
+            expect(actualError.code) == error.code
+        default:
+            fail("Unexpected error: \(String(describing: receivedError.value))")
+        }
     }
 
     func testServerSide400s() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int.random(in: 0..<50)
-        let result: Atomic<Result<HTTPResponse<Data>, Error>?> = .init(nil)
+        let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"code\": 7101, \"message\": \"something is broken up in the cloud\"}"
@@ -229,21 +231,18 @@ class HTTPClientTests: XCTestCase {
         expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
         expect(result.value).to(beFailure())
 
-        let error = try XCTUnwrap(result.value?.error as NSError?)
-        expect(error.domain) == RCPurchasesErrorCodeDomain
-        expect(error.code) == ErrorCode.storeProblemError.rawValue
-
-        let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
-        expect(underlyingError.domain) == "RevenueCat.BackendErrorCode"
-        expect(underlyingError.code) == BackendErrorCode.storeProblem.rawValue
-        expect(underlyingError.localizedDescription) == "something is broken up in the cloud"
+        let error = try XCTUnwrap(result.value?.error)
+        expect(error) == .errorResponse(
+            .init(code: .storeProblem, message: "something is broken up in the cloud"),
+            HTTPStatusCode(rawValue: errorCode)
+        )
     }
 
     func testServerSide500s() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = 500 + Int.random(in: 0..<50)
-        let result: Atomic<Result<HTTPResponse<Data>, Error>?> = .init(nil)
+        let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
@@ -261,14 +260,11 @@ class HTTPClientTests: XCTestCase {
         expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
         expect(result.value).to(beFailure())
 
-        let error = try XCTUnwrap(result.value?.error as NSError?)
-        expect(error.domain) == RCPurchasesErrorCodeDomain
-        expect(error.code) == ErrorCode.unknownBackendError.rawValue
-
-        let underlyingError = try XCTUnwrap(error.userInfo[NSUnderlyingErrorKey] as? NSError)
-        expect(underlyingError.domain) == "RevenueCat.BackendErrorCode"
-        expect(underlyingError.code) == BackendErrorCode.unknownBackendError.rawValue
-        expect(underlyingError.localizedDescription) == "something is broken up in the cloud"
+        let error = try XCTUnwrap(result.value?.error)
+        expect(error) == .errorResponse(
+            .init(code: .unknownBackendError, message: "something is broken up in the cloud"),
+            HTTPStatusCode(rawValue: errorCode)
+        )
     }
 
     func testInvalidJSONAsDataDoesNotFail() {
@@ -322,10 +318,14 @@ class HTTPClientTests: XCTestCase {
         expect(result.value).toEventuallyNot(beNil(), timeout: .seconds(1))
         expect(result.value).to(beFailure())
 
-        // TODO: custom error?
-        let error = try XCTUnwrap(result.value?.error as NSError?)
-        expect(error.domain) == RCPurchasesErrorCodeDomain
-        expect(error.code) == ErrorCode.apiEndpointBlockedError.rawValue
+        let error = try XCTUnwrap(result.value?.error)
+        switch error {
+        case .decoding:
+            break // correct error
+
+        default:
+            fail("Invalid error: \(error)")
+        }
     }
 
     func testServerSide200s() {
@@ -333,7 +333,7 @@ class HTTPClientTests: XCTestCase {
 
         let responseData = "{\"message\": \"something is great up in the cloud\"}".data(using: String.Encoding.utf8)!
 
-        let result: Atomic<Result<HTTPResponse<Data>, Error>?> = .init(nil)
+        let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
             return HTTPStubsResponse(data: responseData,
@@ -360,7 +360,7 @@ class HTTPClientTests: XCTestCase {
         let response = CustomResponse(message: "Something is great up in the cloud")
         let responseData = try JSONEncoder.default.encode(response)
 
-        let result: Atomic<Result<HTTPResponse<CustomResponse>, Error>?> = .init(nil)
+        let result: Atomic<HTTPResponse<CustomResponse>.Result?> = .init(nil)
 
         stub(condition: isPath(request.path)) { _ in
             return HTTPStubsResponse(data: responseData,
@@ -657,7 +657,7 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() throws {
-        let response: Atomic<Result<HTTPResponse<Data>, Error>?> = .init(nil)
+        let response: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
 
         self.client.perform(.init(method: .invalidBody(), path: .mockPath),
                             authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
@@ -666,8 +666,8 @@ class HTTPClientTests: XCTestCase {
 
         expect(response).toEventuallyNot(beNil())
 
-        let receivedNSError = try XCTUnwrap(response.value?.error as NSError?)
-        expect(receivedNSError.code) == ErrorCode.networkError.rawValue
+        let error = try XCTUnwrap(response.value?.error)
+        expect(error) == .unableToCreateRequest(.mockPath)
     }
 
     func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
@@ -720,7 +720,7 @@ class HTTPClientTests: XCTestCase {
             "test": "data"
         ])
 
-        let response: Atomic<Result<HTTPResponse<Data>, Error>?> = .init(nil)
+        let response: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
@@ -830,7 +830,7 @@ class HTTPClientTests: XCTestCase {
         let path: HTTPRequest.Path = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
-        let expectedDNSError = DNSError.blocked(
+        let expectedDNSError: NetworkError = .dnsError(
             failedURL: URL(string: "https://0.0.0.0/subscribers")!,
             resolvedHost: "0.0.0.0"
         )
@@ -851,9 +851,9 @@ class HTTPClientTests: XCTestCase {
             return response
         }
 
-        let obtainedError: Atomic<DNSError?> = .init(nil)
+        let obtainedError: Atomic<NetworkError?> = .init(nil)
         self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
-            obtainedError.value = result.error as? DNSError
+            obtainedError.value = result.error
         }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
@@ -866,7 +866,7 @@ class HTTPClientTests: XCTestCase {
         let path: HTTPRequest.Path = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
-        let unexpectedDNSError = DNSError.blocked(
+        let unexpectedDNSError: NetworkError = .dnsError(
             failedURL: URL(string: "https://0.0.0.0/subscribers")!,
             resolvedHost: "0.0.0.0"
         )

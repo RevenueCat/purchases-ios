@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable file_length multiline_parameters type_body_length
+// swiftlint:disable file_length multiline_parameters
 
 enum ErrorUtils {
 
@@ -29,19 +29,23 @@ enum ErrorUtils {
      * is an `NSJSONSerialization` error.
      */
     static func networkError(
-        withUnderlyingError underlyingError: Error,
+        message: String? = nil,
+        withUnderlyingError underlyingError: Error? = nil,
+        extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
 
         let errorCode: ErrorCode
-        if case DNSError.blocked(_, _) = underlyingError {
+        if case NetworkError.dnsError(_, _, _)? = underlyingError {
             errorCode = .apiEndpointBlockedError
         } else {
             errorCode = .networkError
         }
 
         return error(with: errorCode,
+                     message: message,
                      underlyingError: underlyingError,
+                     extraUserInfo: extraUserInfo,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -61,34 +65,6 @@ enum ErrorUtils {
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         return backendError(withBackendCode: backendCode, backendMessage: backendMessage, extraUserInfo: nil,
-                            fileName: fileName, functionName: functionName, line: line)
-    }
-
-    /**
-     * Maps a ``BackendErrorCode`` code to an ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
-     * `RCUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
-     * ``BackendErrorCode/toPurchasesErrorCode()``.
-     *
-     * - Parameter backendCode: The numerical value of the error.
-     * - Parameter backendMessage: The message of the errror contained under the `NSUnderlyingErrorKey` key in the
-     * UserInfo dictionary.
-     * - Parameter finishable: Will be added to the UserInfo dictionary under the ``ErrorDetails/finishableKey`` to
-     * indicate if the transaction should be finished after this error.
-     *
-     * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
-     * this internal error code.
-     */
-    static func backendError(
-        withBackendCode backendCode: BackendErrorCode,
-        backendMessage: String?,
-        finishable: Bool,
-        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
-        let extraUserInfo: [NSError.UserInfoKey: Any] = [
-            ErrorDetails.finishableKey: finishable
-        ]
-
-        return backendError(withBackendCode: backendCode, backendMessage: backendMessage, extraUserInfo: extraUserInfo,
                             fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -480,12 +456,6 @@ extension ErrorUtils {
 
 private extension ErrorUtils {
 
-    static func addUserInfo(userInfo: [String: String], error: Error) -> Error {
-        let nsError = error as NSError
-        let nsErrorWithUserInfo = NSError(domain: nsError.domain, code: nsError.code, userInfo: userInfo)
-        return nsErrorWithUserInfo as Error
-    }
-
     static func error(with code: ErrorCode,
                       message: String? = nil,
                       underlyingError: Error? = nil,
@@ -538,8 +508,8 @@ private extension ErrorUtils {
         let userInfo = [
             NSLocalizedDescriptionKey: backendMessage ?? ""
         ]
-        let errorWithUserInfo = addUserInfo(userInfo: userInfo, error: backendCode)
-        return errorWithUserInfo
+
+        return backendCode.addingUserInfo(userInfo)
     }
 
     private static func logErrorIfNeeded(_ code: ErrorCode,
@@ -590,4 +560,37 @@ private extension ErrorUtils {
             Logger.error(code.description)
         }
     }
+}
+
+extension Error {
+
+    func addingUserInfo(_ userInfo: [String: Any]) -> Error {
+        let nsError = self as NSError
+        let nsErrorWithUserInfo = NSError(domain: nsError.domain,
+                                          code: nsError.code,
+                                          userInfo: nsError.userInfo + userInfo)
+        return nsErrorWithUserInfo as Error
+    }
+
+}
+
+/// Represents where an `Error` was created
+struct ErrorSource {
+
+    let file: String
+    let function: String
+    let line: UInt
+
+}
+
+/// `Equatable` conformance allows `Error` types that contain source information
+/// to easily conform to `Equatable`.
+extension ErrorSource: Equatable {
+
+    /// However, for ease of testing, we don't actually care if the source of the errors matches
+    /// since expectations will be created in the test and therefore will never match.
+    static func == (lhs: ErrorSource, rhs: ErrorSource) -> Bool {
+        return true
+    }
+
 }

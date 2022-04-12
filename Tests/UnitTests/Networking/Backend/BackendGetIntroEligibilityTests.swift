@@ -88,54 +88,44 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
     }
 
     func testEligibilityUnknownIfMissingAppUserID() {
-        // Set us up for a 404 because if the input sanitizing code fails, it will execute and we'd get a 404.
         self.httpClient.mock(
             requestPath: .getIntroEligibility(appUserID: ""),
-            response: .init(error: ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
+            response: .init(error: .unexpectedResponse(nil))
         )
 
         var eligibility: [String: IntroEligibility]?
         let products = ["producta"]
-        var eventualError: NSError?
+        var eventualError: BackendError?
         backend.getIntroEligibility(appUserID: "",
                                     receiptData: Data.init(1...2),
                                     productIdentifiers: products,
                                     completion: {(productEligibility, error) in
-            eventualError = error as NSError?
+            eventualError = error
             eligibility = productEligibility
         })
 
         expect(eligibility).toEventuallyNot(beNil())
-        expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
-        expect(eventualError).toEventuallyNot(beNil())
-        expect(eventualError?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(eventualError?.localizedDescription).to(equal(ErrorUtils.missingAppUserIDError().localizedDescription))
+        expect(eligibility?["producta"]?.status) == IntroEligibilityStatus.unknown
+        expect(eventualError) == .missingAppUserID()
 
-        var errorComingFromBackend = (eventualError?.userInfo[NSUnderlyingErrorKey]) as? NSError
-        var wasRequestSent = errorComingFromBackend != nil
-        expect(wasRequestSent) == false
+        eligibility = nil
+        eventualError = nil
 
         backend.getIntroEligibility(appUserID: "   ",
                                     receiptData: Data.init(1...2),
                                     productIdentifiers: products,
                                     completion: {(productEligibility, error) in
-            eventualError = error as NSError?
+            eventualError = error
             eligibility = productEligibility
         })
 
-        expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
-        expect(eventualError).toEventuallyNot(beNil())
-        expect(eventualError?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(eventualError?.localizedDescription).to(equal(ErrorUtils.missingAppUserIDError().localizedDescription))
-
-        errorComingFromBackend = (eventualError?.userInfo[NSUnderlyingErrorKey]) as? NSError
-        wasRequestSent = errorComingFromBackend != nil
-        expect(wasRequestSent) == false
-
+        expect(eligibility).toEventuallyNot(beNil())
+        expect(eligibility?["producta"]?.status) == IntroEligibilityStatus.unknown
+        expect(eventualError) == .missingAppUserID()
     }
 
     func testEligibilityUnknownIfUnknownError() {
-        let error = NSError(domain: "myhouse", code: 12, userInfo: nil) as Error
+        let error: NetworkError = .networkError(NSError(domain: "myhouse", code: 12, userInfo: nil))
         self.httpClient.mock(
             requestPath: .getIntroEligibility(appUserID: Self.userID),
             response: .init(error: error)

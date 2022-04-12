@@ -17,7 +17,7 @@ class MockHTTPClient: HTTPClient {
 
         let response: HTTPResponse<Data>.Result
 
-        private init(response: Result<HTTPResponse<Data>, Error>) {
+        private init(response: HTTPResponse<Data>.Result) {
             self.response = response
         }
 
@@ -28,7 +28,7 @@ class MockHTTPClient: HTTPClient {
             self.init(response: .success(.init(statusCode: statusCode, body: data)))
         }
 
-        init(error: Error) {
+        init(error: NetworkError) {
             self.init(response: .failure(error))
         }
 

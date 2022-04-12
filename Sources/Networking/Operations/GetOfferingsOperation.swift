@@ -37,7 +37,7 @@ private extension GetOfferingsOperation {
     func getOfferings(completion: @escaping () -> Void) {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(.failure(ErrorUtils.missingAppUserIDError()))
+                callback.completion(.failure(.missingAppUserID()))
             }
             completion()
 
@@ -52,7 +52,10 @@ private extension GetOfferingsOperation {
             }
 
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.completion(response.map { $0.body })
+                callbackObject.completion(response
+                    .map { $0.body }
+                    .mapError(BackendError.networkError)
+                )
             }
         }
     }

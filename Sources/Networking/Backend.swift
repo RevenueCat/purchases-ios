@@ -14,16 +14,16 @@
 import Foundation
 
 typealias SubscriberAttributeDict = [String: SubscriberAttribute]
-typealias BackendCustomerInfoResponseHandler = (Result<CustomerInfo, Error>) -> Void
-typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
-typealias OfferingsResponseHandler = (Result<[String: Any], Error>) -> Void
-typealias OfferSigningResponseHandler = (Result<PostOfferForSigningOperation.SigningData, Error>) -> Void
-typealias SimpleResponseHandler = (Error?) -> Void
-typealias LogInResponseHandler = (Result<(info: CustomerInfo, created: Bool), Error>) -> Void
 
 class Backend {
 
-    static let RCSuccessfullySyncedKey: NSError.UserInfoKey = "rc_successfullySynced"
+    typealias CustomerInfoResponseHandler = (Result<CustomerInfo, BackendError>) -> Void
+    typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
+    typealias OfferingsResponseHandler = (Result<[String: Any], BackendError>) -> Void
+    typealias OfferSigningResponseHandler = (Result<PostOfferForSigningOperation.SigningData, BackendError>) -> Void
+    typealias SimpleResponseHandler = (BackendError?) -> Void
+    typealias LogInResponseHandler = (Result<(info: CustomerInfo, created: Bool), BackendError>) -> Void
+
     static let RCAttributeErrorsKey = "attribute_errors"
     static let RCAttributeErrorsResponseKey = "attributes_error_response"
 
@@ -82,7 +82,7 @@ class Backend {
         self.httpClient.clearCaches()
     }
 
-    func getCustomerInfo(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
+    func getCustomerInfo(appUserID: String, completion: @escaping CustomerInfoResponseHandler) {
         self.subscribersAPI.getCustomerInfo(appUserID: appUserID, completion: completion)
     }
 
@@ -94,7 +94,7 @@ class Backend {
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-              completion: @escaping BackendCustomerInfoResponseHandler) {
+              completion: @escaping CustomerInfoResponseHandler) {
         self.subscribersAPI.post(receiptData: receiptData,
                                  appUserID: appUserID,
                                  isRestore: isRestore,

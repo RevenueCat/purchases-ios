@@ -10,44 +10,12 @@ import XCTest
 
 class NSErrorRCExtensionsTests: XCTestCase {
 
-    func testSuccessfullySyncedFalseIfCodeIsNetworkError() {
-        let errorCode = ErrorCode.networkError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
-        expect(error.successfullySynced) == false
-    }
-
-    func testSuccessfullySyncedFalseIfNotShouldMarkSynced() {
-        let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(
-            domain: RCPurchasesErrorCodeDomain,
-            code: errorCode,
-            userInfo: [Backend.RCSuccessfullySyncedKey as String: false]
-        )
-        expect(error.successfullySynced) == false
-    }
-
-    func testSuccessfullySyncedFalseIfShouldMarkSyncedNotPresent() {
-        let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [:])
-        expect(error.successfullySynced) == false
-    }
-
-    func testSuccessfullySyncedTrueIfShouldMarkSynced() {
-        let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(
-            domain: RCPurchasesErrorCodeDomain,
-            code: errorCode,
-            userInfo: [Backend.RCSuccessfullySyncedKey as String: true]
-        )
-        expect(error.successfullySynced) == true
-    }
-
     func testSubscriberAttributesErrorsNilIfNoAttributesErrors() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(
             domain: RCPurchasesErrorCodeDomain,
             code: errorCode,
-            userInfo: [Backend.RCSuccessfullySyncedKey as String: true]
+            userInfo: [:]
         )
         expect(error.subscriberAttributesErrors).to(beNil())
     }

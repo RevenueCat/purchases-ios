@@ -439,14 +439,14 @@ class BackendPostReceiptDataTestBase: BaseBackendTests {
     }
 
     func testErrorIsForwardedForCustomerInfoCalls() throws {
-        let error = NSError(domain: NSURLErrorDomain, code: -1009)
+        let error: NetworkError = .networkError(NSError(domain: NSURLErrorDomain, code: -1009))
 
         self.httpClient.mock(
             requestPath: .postReceiptData,
             response: .init(error: error)
         )
 
-        var receivedError: NSError?
+        var receivedError: BackendError?
         backend.post(receiptData: Self.receiptData,
                      appUserID: Self.userID,
                      isRestore: true,
@@ -455,11 +455,11 @@ class BackendPostReceiptDataTestBase: BaseBackendTests {
                      observerMode: false,
                      subscriberAttributes: nil,
                      completion: { result in
-            receivedError = result.error as NSError?
+            receivedError = result.error
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError) == error
+        expect(receivedError) == .networkError(error)
     }
 
     @available(iOS 11.2, *)

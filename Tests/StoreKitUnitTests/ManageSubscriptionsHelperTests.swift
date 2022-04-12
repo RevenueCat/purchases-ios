@@ -114,7 +114,10 @@ class ManageSubscriptionsHelperTests: XCTestCase {
     }
 
     func testShowManageSubscriptionsFailsIfCouldntGetCustomerInfo() throws {
-let error = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
+        let error: BackendError = .networkError(.errorResponse(
+            .init(code: BackendErrorCode.badRequest, message: nil, attributeErrors: [:]),
+            400)
+        )
 
         // given
         var callbackCalled = false

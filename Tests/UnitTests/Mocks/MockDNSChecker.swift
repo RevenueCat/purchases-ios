@@ -24,8 +24,8 @@ enum MockDNSChecker: DNSCheckerType {
     }
 
     static let invokedErrorWithBlockedHostFromError: Atomic<Bool> = .init(false)
-    static let stubbedErrorWithBlockedHostFromErrorResult: Atomic<DNSError?> = .init(nil)
-    static func errorWithBlockedHostFromError(_ error: Error?) -> DNSError? {
+    static let stubbedErrorWithBlockedHostFromErrorResult: Atomic<NetworkError?> = .init(nil)
+    static func errorWithBlockedHostFromError(_ error: Error?) -> NetworkError? {
         Self.invokedErrorWithBlockedHostFromError.value = true
         return Self.stubbedErrorWithBlockedHostFromErrorResult.value
     }

@@ -14,14 +14,14 @@ class MockCustomerInfoManager: CustomerInfoManager {
 
     var invokedFetchAndCacheCustomerInfo = false
     var invokedFetchAndCacheCustomerInfoCount = 0
-    var invokedFetchAndCacheCustomerInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((Result<CustomerInfo, Error>) -> Void)?)?
+    var invokedFetchAndCacheCustomerInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((Result<CustomerInfo, BackendError>) -> Void)?)?
     var invokedFetchAndCacheCustomerInfoParametersList = [(appUserID: String,
                                                            isAppBackgrounded: Bool,
-                                                           completion: ((Result<CustomerInfo, Error>) -> Void)?)]()
+                                                           completion: ((Result<CustomerInfo, BackendError>) -> Void)?)]()
 
     override func fetchAndCacheCustomerInfo(appUserID: String,
                                             isAppBackgrounded: Bool,
-                                            completion: ((Result<CustomerInfo, Error>) -> Void)?) {
+                                            completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
         invokedFetchAndCacheCustomerInfo = true
         invokedFetchAndCacheCustomerInfoCount += 1
         invokedFetchAndCacheCustomerInfoParameters = (appUserID, isAppBackgrounded, completion)
@@ -30,14 +30,14 @@ class MockCustomerInfoManager: CustomerInfoManager {
 
     var invokedFetchAndCacheCustomerInfoIfStale = false
     var invokedFetchAndCacheCustomerInfoIfStaleCount = 0
-    var invokedFetchAndCacheCustomerInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((Result<CustomerInfo, Error>) -> Void)?)?
+    var invokedFetchAndCacheCustomerInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((Result<CustomerInfo, BackendError>) -> Void)?)?
     var invokedFetchAndCacheCustomerInfoIfStaleParametersList = [(appUserID: String,
                                                                   isAppBackgrounded: Bool,
-                                                                  completion: ((Result<CustomerInfo, Error>) -> Void)?)]()
+                                                                  completion: ((Result<CustomerInfo, BackendError>) -> Void)?)]()
 
     override func fetchAndCacheCustomerInfoIfStale(appUserID: String,
                                                    isAppBackgrounded: Bool,
-                                                   completion: ((Result<CustomerInfo, Error>) -> Void)?) {
+                                                   completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
         invokedFetchAndCacheCustomerInfoIfStale = true
         invokedFetchAndCacheCustomerInfoIfStaleCount += 1
         invokedFetchAndCacheCustomerInfoIfStaleParameters = (appUserID, isAppBackgrounded, completion)
@@ -58,13 +58,13 @@ class MockCustomerInfoManager: CustomerInfoManager {
 
     var invokedCustomerInfo = false
     var invokedCustomerInfoCount = 0
-    var invokedCustomerInfoParameters: (appUserID: String, completion: ((Result<CustomerInfo, Error>) -> Void)?)?
-    var invokedCustomerInfoParametersList = [(appUserID: String, completion: ((Result<CustomerInfo, Error>) -> Void)?)]()
+    var invokedCustomerInfoParameters: (appUserID: String, completion: ((Result<CustomerInfo, BackendError>) -> Void)?)?
+    var invokedCustomerInfoParametersList = [(appUserID: String, completion: ((Result<CustomerInfo, BackendError>) -> Void)?)]()
 
-    var stubbedCustomerInfoResult: Result<CustomerInfo, Error> = .failure(ErrorCode.unknownError)
+    var stubbedCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
     override func customerInfo(appUserID: String,
-                               completion: ((Result<CustomerInfo, Error>) -> Void)?) {
+                               completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
         invokedCustomerInfo = true
         invokedCustomerInfoCount += 1
         invokedCustomerInfoParameters = (appUserID, completion)

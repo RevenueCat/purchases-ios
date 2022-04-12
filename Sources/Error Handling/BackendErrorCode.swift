@@ -68,6 +68,14 @@ enum BackendErrorCode: Int, Error {
 
 }
 
+extension BackendErrorCode: ExpressibleByIntegerLiteral {
+
+    init(integerLiteral value: IntegerLiteralType) {
+        self = BackendErrorCode(rawValue: value) ?? .unknownBackendError
+    }
+
+}
+
 extension BackendErrorCode {
 
     // swiftlint:disable cyclomatic_complexity

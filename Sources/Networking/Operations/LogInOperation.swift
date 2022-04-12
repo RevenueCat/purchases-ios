@@ -40,7 +40,7 @@ private extension LogInOperation {
     func logIn(completion: @escaping () -> Void) {
         guard let newAppUserID = try? self.newAppUserID.trimmedOrError() else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(.failure(ErrorUtils.missingAppUserIDError()))
+                callback.completion(.failure(.missingAppUserID()))
             }
             completion()
 
@@ -62,11 +62,12 @@ private extension LogInOperation {
     }
 
     func handleLogin(_ result: HTTPResponse<CustomerInfo>.Result,
-                     completion: LogInResponseHandler) {
-        let result: Result<(info: CustomerInfo, created: Bool), Error> = result
-            .flatMap { response in
-                return .success((response.body, created: response.statusCode == .createdSuccess))
+                     completion: Backend.LogInResponseHandler) {
+        let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
+            .map { response in
+                (response.body, created: response.statusCode == .createdSuccess)
             }
+            .mapError(BackendError.networkError)
 
         if case .success = result {
             Logger.user(Strings.identity.login_success)

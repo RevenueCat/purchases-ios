@@ -51,7 +51,7 @@ private extension GetCustomerInfoOperation {
     func getCustomerInfo(completion: @escaping () -> Void) {
         guard let appUserID = try? configuration.appUserID.escapedOrError() else {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(.failure(ErrorUtils.missingAppUserIDError()))
+                callback.completion(.failure(.missingAppUserID()))
             }
             completion()
 
@@ -68,7 +68,7 @@ private extension GetCustomerInfoOperation {
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         completion: callback.completion)
             }
-            
+
             completion()
         }
     }

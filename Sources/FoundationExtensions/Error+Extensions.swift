@@ -40,18 +40,6 @@ extension Error {
 
 extension NSError {
 
-    var successfullySynced: Bool {
-        if self.domain == ErrorCode.errorDomain, self.code == ErrorCode.networkError.rawValue {
-            return false
-        }
-
-        if let successfullySyncedNumber = userInfo[Backend.RCSuccessfullySyncedKey as String] as? NSNumber {
-            return successfullySyncedNumber.boolValue
-        }
-
-        return false
-    }
-
     var subscriberAttributesErrors: [String: String]? {
         return userInfo[Backend.RCAttributeErrorsKey as String] as? [String: String]
     }

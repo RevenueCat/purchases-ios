@@ -28,11 +28,11 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let postOfferData: PostOfferForSigningData
-    private let responseHandler: OfferSigningResponseHandler
+    private let responseHandler: Backend.OfferSigningResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          postOfferForSigningData: PostOfferForSigningData,
-         responseHandler: @escaping OfferSigningResponseHandler) {
+         responseHandler: @escaping Backend.OfferSigningResponseHandler) {
         self.configuration = configuration
         self.postOfferData = postOfferForSigningData
         self.responseHandler = responseHandler
@@ -52,25 +52,22 @@ class PostOfferForSigningOperation: NetworkOperation {
 
         self.httpClient.perform(request,
                                 authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
-            let result: Result<PostOfferForSigningOperation.SigningData, Error> = response
+            let result: Result<PostOfferForSigningOperation.SigningData, BackendError> = response
+                .mapError(BackendError.networkError)
                 .flatMap { response in
                     let (statusCode, response) = (response.statusCode, response.body)
 
                     guard let offers = response["offers"] as? [[String: Any]] else {
-                        let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdBadResponse
-                        let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
-                                                                         extraContext: response.stringRepresentation)
                         Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
 
-                        return .failure(error)
+                        return .failure(.unexpectedBackendResponse(.postOfferIdBadResponse,
+                                                                   extraContext: response.stringRepresentation))
                     }
 
                     guard offers.count > 0 else {
-                        let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse
-                        let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                         Logger.debug(Strings.backendError.no_offerings_response_json(response: response))
 
-                        return .failure(error)
+                        return .failure(.unexpectedBackendResponse(.postOfferIdMissingOffersInResponse))
                     }
 
                     return Self.handleOffer(offers[0], statusCode: statusCode)
@@ -84,12 +81,10 @@ class PostOfferForSigningOperation: NetworkOperation {
     private static func handleOffer(
         _ offer: [String: Any],
         statusCode: HTTPStatusCode
-    ) -> Result<PostOfferForSigningOperation.SigningData, Error> {
+    ) -> Result<PostOfferForSigningOperation.SigningData, BackendError> {
         if let signatureError = offer["signature_error"] as? [String: Any] {
             return .failure(
-                ErrorResponse
-                    .from(signatureError)
-                    .asBackendError(with: statusCode)
+                .networkError(.errorResponse(ErrorResponse.from(signatureError), statusCode))
             )
         } else if let signatureData = offer["signature_data"] as? [String: Any],
                   let signature = signatureData["signature"] as? String,
@@ -98,14 +93,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                   let timestamp = signatureData["timestamp"] as? Int {
             return .success((signature, keyIdentifier, nonce, timestamp))
         } else {
-            Logger.error(Strings.backendError.signature_error(signatureDataString: offer["signature_data"]))
-            let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdSignature
-            let signatureError = ErrorUtils.unexpectedBackendResponseError(extraUserInfo: [
-                "response": offer
-            ])
-                .addingUnderlyingError(subErrorCode)
-
-            return .failure(signatureError)
+            return .failure(.unexpectedBackendResponse(.postOfferIdSignature, extraContext: offer.stringRepresentation))
         }
     }
 

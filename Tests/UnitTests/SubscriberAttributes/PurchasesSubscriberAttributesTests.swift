@@ -656,12 +656,10 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        let extraUserInfo = [Backend.RCSuccessfullySyncedKey: true]
         self.mockBackend.stubbedPostReceiptResult = .failure(
-            ErrorUtils.backendError(
-                withBackendCode: .invalidAPIKey,
-                backendMessage: "Invalid credentials",
-                extraUserInfo: extraUserInfo
+            .networkError(.errorResponse(
+                .init(code: .invalidAPIKey, message: "Invalid credentials"),
+                400)
             )
         )
 
@@ -670,8 +668,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
         expect(self.mockBackend.invokedPostReceiptData) == true
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
-        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
-        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) ==
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.syncedAttributes) == mockAttributes
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID
     }
 
@@ -688,12 +686,10 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        let extraUserInfo = [Backend.RCSuccessfullySyncedKey as NSError.UserInfoKey: false]
         self.mockBackend.stubbedPostReceiptResult = .failure(
-            ErrorUtils.backendError(
-                withBackendCode: .invalidAPIKey,
-                backendMessage: "Invalid credentials",
-                extraUserInfo: extraUserInfo
+            .networkError(.errorResponse(
+                .init(code: .internalServerError, message: "Error", attributeErrors: [:]),
+                .internalServerError)
             )
         )
 
