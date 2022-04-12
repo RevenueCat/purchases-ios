@@ -1613,14 +1613,11 @@ private extension SubscriberAttributesManagerTests {
     func checkDeviceIdentifiersAreNotSet() {
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
 
-        let idfvNilAttribute = invokedParams.first(where: { $0.attribute.key == "$idfv" })
-        expect(idfvNilAttribute) == nil
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$idfv" }))
 
-        let idfvaNilAttribute = invokedParams.first(where: { $0.attribute.key == "$idfa" })
-        expect(idfvaNilAttribute) == nil
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$idfa" }))
 
-        let ipNilAttribute = invokedParams.first(where: { $0.attribute.key == "$ip" })
-        expect(ipNilAttribute) == nil
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$ip" }))
     }
 
 }
