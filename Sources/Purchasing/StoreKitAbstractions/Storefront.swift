@@ -42,7 +42,7 @@ public class Storefront: NSObject, StorefrontType {
     // MARK: -
 
     /// Creates an instance from any `StorefrontType`.
-    /// If `discount` is already a wrapped `Storefront` then this returns it instead.
+    /// If `storefront` is already a wrapped `Storefront` then this returns it instead.
     static func from(storefront: StorefrontType) -> Storefront {
         return storefront as? Storefront
             ?? Storefront(storefront)

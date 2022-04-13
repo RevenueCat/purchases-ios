@@ -17,9 +17,9 @@
 #import "RCPurchasesErrorCodeAPI.h"
 #import "RCPackageAPI.h"
 #import "RCRefundRequestStatusAPI.h"
+#import "RCStorefrontAPI.h"
 #import "RCStoreProductAPI.h"
 #import "RCStoreProductDiscountAPI.h"
-#import "RCStorefrontAPI.h"
 #import "RCSubscriptionPeriodAPI.h"
 #import "RCTransactionAPI.h"
 
