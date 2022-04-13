@@ -40,7 +40,7 @@ extension OSVersionEquivalent {
                 // Note: this is either iOS/tvOS/macCatalyst
                 // They all share equivalent versions
 
-                let majorVersion = UIDevice.majorVersion
+                let majorVersion = ProcessInfo().operatingSystemVersion.majorVersion
 
                 if let equivalent = Self(rawValue: majorVersion) {
                     return equivalent
@@ -65,18 +65,6 @@ private extension OSVersionEquivalent {
             return .unknownOS(systemName: device.systemName, version: device.systemVersion)
         }
 
-    }
-
-}
-
-private extension UIDevice {
-
-    static var majorVersion: Int {
-        return Int(
-            (Self.current.systemVersion as NSString)
-                .floatValue
-                .rounded(.down)
-        )
     }
 
 }
