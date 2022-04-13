@@ -36,8 +36,8 @@ class BaseBackendIntegrationTests: XCTestCase {
         return .default
     }
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
 
         // Avoid continuing with potentially bad data after a failed assertion
         self.continueAfterFailure = false
