@@ -80,7 +80,12 @@ func XCTAsyncUnwrap<T>(
 ) async throws -> T {
     let value = try await expression()
 
-    return try XCTUnwrap(value)
+    return try XCTUnwrap(
+        value,
+        message(),
+        file: file,
+        line: line
+    )
 }
 
 private extension XCTestCase {
