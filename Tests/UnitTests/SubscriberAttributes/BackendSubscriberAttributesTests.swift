@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class BackendSubscriberAttributesTestBase: XCTestCase {
+class BackendSubscriberAttributesTests: XCTestCase {
 
     let appUserID = "abc123"
     let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
@@ -50,10 +50,6 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
     let systemInfo = try! SystemInfo(platformInfo: .init(flavor: "Unity", version: "2.3.3"), finishTransactions: true)
 
     override func setUpWithError() throws {
-        guard Self.self != BackendSubscriberAttributesTestBase.self else {
-            throw XCTSkip("Ignoring base class \(Self.self)")
-        }
-
         mockHTTPClient = self.createClient()
         dateProvider = MockDateProvider(stubbedNow: self.referenceDate)
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
@@ -326,7 +322,6 @@ class BackendSubscriberAttributesTestBase: XCTestCase {
     }
 
     func createClient() -> MockHTTPClient {
-        XCTFail("This method must be overriden by subclasses")
         return self.createClient(#file)
     }
 
