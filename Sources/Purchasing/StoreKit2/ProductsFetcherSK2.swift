@@ -91,10 +91,10 @@ private extension ProductsFetcherSK2 {
     }
 
     var currentStorefrontIdentifier: String? {
-        // Note: not using `Storefront.updates` because it's not currently possible
+        // Note: not using `StoreKit.Storefront.updates` because it's not currently possible
         // to avoid race conditions. Updates never arrive on time for tests to detect
         // changes and clear the cache.
-        get async { await StoreKit.Storefront.current?.id }
+        get async { await Storefront.currentStorefront?.identifier }
     }
 
 }
