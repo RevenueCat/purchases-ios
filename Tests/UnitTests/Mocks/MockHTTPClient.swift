@@ -60,10 +60,14 @@ class MockHTTPClient: HTTPClient {
         DispatchQueue.main.async {
             self.calls.append(call)
 
+            // swiftlint:disable:next force_try
+            let osVersionEquivalent = try! OSVersionEquivalent.current
+            let testName = "iOS\(osVersionEquivalent.rawValue)/\(CurrentTestCaseTracker.sanitizedTestName)"
+
             assertSnapshot(matching: call,
                            as: .formattedJson,
                            file: self.sourceTestFile,
-                           testName: CurrentTestCaseTracker.sanitizedTestName)
+                           testName: testName)
 
             let mock = self.mocks[request.path] ?? .init(statusCode: .success)
 

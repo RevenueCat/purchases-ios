@@ -1,0 +1,21 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer the api key"
+  },
+  "request" : {
+    "body" : {
+      "attributes" : {
+        "a key" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "a value"
+        },
+        "another key" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "another value"
+        }
+      }
+    },
+    "method" : "POST",
+    "url" : "https:\/\/api.revenuecat.com\/v1\/subscribers\/abc123\/attributes"
+  }
+}
