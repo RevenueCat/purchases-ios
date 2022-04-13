@@ -32,8 +32,7 @@ extension StoreKitConfigTestCase {
     func createTransactionWithPurchase() async throws -> Transaction {
         let product = try await self.simulateAnyPurchase()
 
-        let latestTransaction = await product.latestTransaction
-        let transaction = try XCTUnwrap(latestTransaction)
+        let transaction = try await XCTAsyncUnwrap(await product.latestTransaction)
 
         switch transaction {
         case let .verified(transaction):
@@ -46,8 +45,8 @@ extension StoreKitConfigTestCase {
 
     @MainActor
     func fetchSk2Product(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2Product {
-        let products: [Any] = try await StoreKit.Product.products(for: [productID])
-        return try XCTUnwrap(products.first as? SK2Product)
+        let products: [SK2Product] = try await StoreKit.Product.products(for: [productID])
+        return try XCTUnwrap(products.first)
     }
 
     @MainActor
