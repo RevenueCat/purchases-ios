@@ -71,7 +71,7 @@ extension StoreKitConfigTestCase {
             // Also `toEventually` (Quick nor Nimble) don't support `async`.
 
             var storefrontUpdateDetected: Bool {
-                get async { await Storefront.current?.countryCode == new }
+                get async { await Storefront.currentStorefront?.countryCode == new }
             }
 
             var numberOfChecksLeft = 10

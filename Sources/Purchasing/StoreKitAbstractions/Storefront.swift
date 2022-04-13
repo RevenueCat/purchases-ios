@@ -69,6 +69,32 @@ public class Storefront: NSObject, StorefrontType {
 
 }
 
+public extension Storefront {
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
+    private static var currentStorefrontType: StorefrontType? {
+        get async {
+            if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+                let sk2Storefront = await StoreKit.Storefront.current
+                return sk2Storefront.map(SK2Storefront.init)
+            } else {
+                return SKPaymentQueue.default().storefront.map(SK1Storefront.init)
+            }
+        }
+    }
+
+    /// The current App Store storefront for the device.
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
+    static var currentStorefront: Storefront? {
+        get async {
+            return await self.currentStorefrontType.map(Storefront.from(storefront: ))
+        }
+    }
+
+}
+
+// MARK: -
+
 /// A type containing the location and unique identifier of an Apple App Store storefront.
 internal protocol StorefrontType {
 
