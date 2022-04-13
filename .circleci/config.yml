@@ -219,6 +219,21 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+  run-test-ios-13:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          environment:
+            SCAN_DEVICE: iPhone 8 (13.7)
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
 
   run-test-ios-12:
     <<: *base-job
@@ -412,6 +427,9 @@ workflows:
           xcode_version: '13.3.0'
       - run-test-ios-14:
           xcode_version: '13.3.0'
+      - run-test-ios-13:
+          xcode_version: '13.3.0'
+          <<: *release-branches-and-main
       - run-test-ios-12:
           xcode_version: '13.3.0'
           <<: *release-branches-and-main
