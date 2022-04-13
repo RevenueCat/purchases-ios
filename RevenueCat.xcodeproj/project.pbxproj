@@ -280,6 +280,8 @@
 		57DE80AF28075D77008D6C6F /* OSVersionEquivalent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */; };
 		57DE80BE28077010008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
+		57DE80802807529F008D6C6F /* MockStorefront.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807F2807529F008D6C6F /* MockStorefront.swift */; };
+		57DE80812807529F008D6C6F /* MockStorefront.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807F2807529F008D6C6F /* MockStorefront.swift */; };
 		57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 57E0473A277260DE0082FE91 /* SnapshotTesting */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
 		57EAE527274324C60060EB74 /* Lock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE526274324C60060EB74 /* Lock.swift */; };
@@ -713,6 +715,7 @@
 		57DE807228074C76008D6C6F /* SK2Storefront.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SK2Storefront.swift; sourceTree = "<group>"; };
 		57DE80882807540D008D6C6F /* StorefrontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorefrontTests.swift; sourceTree = "<group>"; };
 		57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSVersionEquivalent.swift; sourceTree = "<group>"; };
+		57DE807F2807529F008D6C6F /* MockStorefront.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStorefront.swift; sourceTree = "<group>"; };
 		57E0474B27729A1E0082FE91 /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		57E2230627500BB1002DB06E /* AtomicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicTests.swift; sourceTree = "<group>"; };
 		57EAE526274324C60060EB74 /* Lock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lock.swift; sourceTree = "<group>"; };
@@ -1235,6 +1238,7 @@
 				F584742F278D00C0001B1CE6 /* MockDNSChecker.swift */,
 				57C381E1279627B7009E3940 /* MockStoreProductDiscount.swift */,
 				57CFB96B27FE0E79002A6730 /* MockCurrentUserProvider.swift */,
+				57DE807F2807529F008D6C6F /* MockStorefront.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -2068,6 +2072,7 @@
 				57DE80892807540D008D6C6F /* StorefrontTests.swift in Sources */,
 				2D90F8CC26FD2BA1009B9142 /* StoreKitConfigTestCase.swift in Sources */,
 				2D90F8BC26FD20C2009B9142 /* MockReceiptParser.swift in Sources */,
+				57DE80812807529F008D6C6F /* MockStorefront.swift in Sources */,
 				2D90F8C226FD20F7009B9142 /* MockETagManager.swift in Sources */,
 				2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */,
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
@@ -2332,6 +2337,7 @@
 				573A10D52800A7C800F976E5 /* SKErrorTests.swift in Sources */,
 				351B513D26D4491E00BD2BD7 /* MockDeviceCache.swift in Sources */,
 				351B515C26D44B7900BD2BD7 /* MockIntroEligibilityCalculator.swift in Sources */,
+				57DE80802807529F008D6C6F /* MockStorefront.swift in Sources */,
 				35D83312262FBD4200E60AC5 /* MockETagManager.swift in Sources */,
 				351B51C326D450F200BD2BD7 /* InMemoryCachedObjectTests.swift in Sources */,
 				576C8A8F27CFCD110058FA6E /* AnyEncodableTests.swift in Sources */,

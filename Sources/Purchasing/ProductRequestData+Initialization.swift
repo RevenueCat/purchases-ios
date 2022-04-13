@@ -18,7 +18,7 @@ import StoreKit
 extension ProductRequestData {
 
     /// Initializes a `ProductRequestData` from a `StoreProduct`
-    init(with product: StoreProduct, storefront: String?) {
+    init(with product: StoreProduct, storefront: StorefrontType?) {
         let paymentMode = Self.extractPaymentMode(for: product)
         let introPrice = Self.extractIntroPrice(for: product)
 

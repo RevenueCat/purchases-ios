@@ -581,7 +581,7 @@ private extension PurchasesOrchestrator {
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
                      products: Set<StoreProduct>,
-                     storefront: String?) {
+                     storefront: StorefrontType?) {
         var productData: ProductRequestData?
         var presentedOfferingID: String?
         if let product = products.first {
