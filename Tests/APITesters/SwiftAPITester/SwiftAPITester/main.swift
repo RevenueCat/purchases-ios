@@ -51,5 +51,7 @@ func main() -> Int {
     checkSubscriptionPeriodAPI()
     checkSubscriptionPeriodUnit()
 
+    checkStorefrontAPI()
+
     return 0
 }

@@ -17,6 +17,7 @@
 #import "RCPurchasesErrorCodeAPI.h"
 #import "RCPackageAPI.h"
 #import "RCRefundRequestStatusAPI.h"
+#import "RCStorefrontAPI.h"
 #import "RCStoreProductAPI.h"
 #import "RCStoreProductDiscountAPI.h"
 #import "RCSubscriptionPeriodAPI.h"
@@ -54,6 +55,8 @@ int main(int argc, const char * argv[]) {
         [RCRefundRequestStatusAPI checkEnums];
 
         [RCTransactionAPI checkAPI];
+
+        [RCStorefrontAPI checkAPI];
 
         [RCStoreProductAPI checkAPI];
         [RCStoreProductDiscountAPI checkAPI];
