@@ -65,11 +65,12 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
                         "lifetime": IntroEligibilityStatus.noIntroOfferExists]
 
-        let eligibilities = try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products)
-        let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == expected.count
+        let eligibilities = try await XCTAsyncUnwrap(
+            try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products)
+        )
+        expect(eligibilities.count) == expected.count
 
-        for (product, receivedEligibility) in receivedEligibilities {
+        for (product, receivedEligibility) in eligibilities {
             expect(receivedEligibility.status) == expected[product]
         }
     }

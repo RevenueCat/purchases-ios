@@ -362,22 +362,19 @@ private extension StoreKit1IntegrationTests {
 
     private var currentOffering: Offering {
         get async throws {
-            let offerings = try await Purchases.shared.offerings()
-            return try XCTUnwrap(offerings.current)
+            return try await XCTAsyncUnwrap(try await Purchases.shared.offerings().current)
         }
     }
 
     var monthlyPackage: Package {
         get async throws {
-            let offering = try await self.currentOffering
-            return try XCTUnwrap(offering.monthly)
+            return try await XCTAsyncUnwrap(try await self.currentOffering.monthly)
         }
     }
 
     var annualPackage: Package {
         get async throws {
-            let offering = try await self.currentOffering
-            return try XCTUnwrap(offering.annual)
+            return try await XCTAsyncUnwrap(try await self.currentOffering.annual)
         }
     }
 
