@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  BackendPostReceiptDataTest.swift
+//  BackendPostReceiptDataTests.swift
 //
 //  Created by Nacho Soto on 3/7/22.
 
