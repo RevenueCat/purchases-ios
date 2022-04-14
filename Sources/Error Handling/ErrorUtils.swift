@@ -484,6 +484,7 @@ private extension ErrorUtils {
 
         Self.logErrorIfNeeded(
             code,
+            underlyingError: underlyingError,
             fileName: fileName, functionName: functionName, line: line
         )
 
@@ -526,9 +527,10 @@ private extension ErrorUtils {
 
     // swiftlint:disable:next function_body_length
     private static func logErrorIfNeeded(_ code: ErrorCode,
-                                         fileName: String = #fileID,
-                                         functionName: String = #function,
-                                         line: UInt = #line) {
+                                         underlyingError: Error?,
+                                         fileName: String,
+                                         functionName: String,
+                                         line: UInt) {
         switch code {
         case .networkError,
                 .unknownError,
@@ -583,6 +585,16 @@ private extension ErrorUtils {
         @unknown default:
             Logger.error(
                 code.description,
+                fileName: fileName,
+                functionName: functionName,
+                line: line
+            )
+        }
+
+        // Also print underylying error if present
+        if let description = underlyingError?.localizedDescription, !description.isEmpty {
+            Logger.error(
+                description,
                 fileName: fileName,
                 functionName: functionName,
                 line: line

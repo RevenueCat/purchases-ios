@@ -104,7 +104,26 @@ extension BackendError: ErrorCodeConvertible {
 
 }
 
-extension BackendError: DescribableError { }
+extension BackendError: DescribableError {
+
+    var description: String {
+        switch self {
+        case let .networkError(error):
+            return error.description
+        case .missingAppUserID:
+            return ErrorCode.invalidAppUserIdError.description
+        case .emptySubscriberAttributes:
+            return ErrorCode.emptySubscriberAttributes.description
+        case .missingReceiptFile:
+            return ErrorCode.missingReceiptFileError.description
+        case .missingTransactionProductIdentifier:
+            return Strings.purchase.skpayment_missing_product_identifier.description
+        case let .unexpectedBackendResponse(error, _, _):
+            return error.description
+        }
+    }
+
+}
 
 extension BackendError {
 

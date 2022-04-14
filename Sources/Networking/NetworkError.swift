@@ -155,7 +155,28 @@ extension NetworkError: ErrorCodeConvertible {
 
 }
 
-extension NetworkError: DescribableError {}
+extension NetworkError: DescribableError {
+
+    var description: String {
+        switch self {
+        case let .decoding(error, _):
+            return error.localizedDescription
+        case .offlineConnection:
+            return ErrorCode.offlineConnectionError.description
+        case let .networkError(error, _):
+            return error.localizedDescription
+        case let .dnsError(failedURL, resolvedHost, _):
+            return NetworkStrings.blocked_network(url: failedURL, newHost: resolvedHost).description
+        case .unableToCreateRequest:
+            return ErrorCode.networkError.description
+        case .unexpectedResponse:
+            return ErrorCode.unexpectedBackendResponseError.description
+        case let .errorResponse(response, _, _):
+            return response.code.toPurchasesErrorCode().description
+        }
+    }
+
+}
 
 extension NetworkError {
 

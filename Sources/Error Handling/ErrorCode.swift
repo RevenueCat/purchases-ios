@@ -277,11 +277,3 @@ protocol ErrorCodeConvertible: Swift.Error {
     var asPurchasesError: Error { get }
 
 }
-
-extension ErrorCodeConvertible {
-
-    var description: String {
-        return self.asPurchasesError.localizedDescription
-    }
-
-}
