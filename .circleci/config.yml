@@ -224,6 +224,11 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - install-and-create-sim:
+          install-name: iOS 13.7 Simulator
+          sim-device-type: iPhone-8
+          sim-device-runtime: iOS-13-7
+          sim-name: iPhone 8 (13.7)
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
