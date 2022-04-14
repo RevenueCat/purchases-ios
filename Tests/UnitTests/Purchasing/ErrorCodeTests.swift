@@ -167,8 +167,13 @@ class ErrorCodeTests: XCTestCase {
                                               expectedRawValue: 34)
     }
 
+    func testOfflineConnectionError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .offlineConnectionError,
+                                              expectedRawValue: 35)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases).to(haveCount(35))
+        expect(ErrorCode.allCases).to(haveCount(36))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {
