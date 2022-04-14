@@ -57,6 +57,7 @@
         case RCBeginRefundRequestError:
         case RCAPIEndpointBlocked:
         case RCInvalidPromotionalOfferError:
+        case RCOfflineConnectionError:
             NSLog(@"%ld", (long)errCode);
     }
 }

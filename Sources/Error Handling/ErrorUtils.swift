@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable file_length multiline_parameters
+// swiftlint:disable file_length multiline_parameters type_body_length
 
 enum ErrorUtils {
 
@@ -46,6 +46,16 @@ enum ErrorUtils {
                      message: message,
                      underlyingError: underlyingError,
                      extraUserInfo: extraUserInfo,
+                     fileName: fileName, functionName: functionName, line: line)
+    }
+
+    /**
+     * Constructs an NSError with the ``ErrorCode/offlineConnection`` code.
+     */
+    static func offlineConnectionError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> Error {
+        return error(with: .offlineConnectionError,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -472,8 +482,10 @@ private extension ErrorUtils {
         userInfo[.file] = "\(fileName):\(line)"
         userInfo[.function] = functionName
 
-        Self.logErrorIfNeeded(code,
-                              fileName: fileName, functionName: functionName, line: line)
+        Self.logErrorIfNeeded(
+            code,
+            fileName: fileName, functionName: functionName, line: line
+        )
 
         let nsError = code as NSError
         let nsErrorWithUserInfo = NSError(domain: nsError.domain,
@@ -512,6 +524,7 @@ private extension ErrorUtils {
         return backendCode.addingUserInfo(userInfo)
     }
 
+    // swiftlint:disable:next function_body_length
     private static func logErrorIfNeeded(_ code: ErrorCode,
                                          fileName: String = #fileID,
                                          functionName: String = #function,
@@ -538,8 +551,14 @@ private extension ErrorUtils {
                 .systemInfoError,
                 .beginRefundRequestError,
                 .apiEndpointBlockedError,
-                .invalidPromotionalOfferError:
-            Logger.error(code.description)
+                .invalidPromotionalOfferError,
+                .offlineConnectionError:
+                Logger.error(
+                    code.description,
+                    fileName: fileName,
+                    functionName: functionName,
+                    line: line
+                )
 
         case .purchaseCancelledError,
                 .storeProblemError,
@@ -554,10 +573,20 @@ private extension ErrorUtils {
                 .insufficientPermissionsError,
                 .paymentPendingError,
                 .productRequestTimedOut:
-            Logger.appleError(code.description)
+                Logger.appleError(
+                    code.description,
+                    fileName: fileName,
+                    functionName: functionName,
+                    line: line
+                )
 
         @unknown default:
-            Logger.error(code.description)
+            Logger.error(
+                code.description,
+                fileName: fileName,
+                functionName: functionName,
+                line: line
+            )
         }
     }
 }

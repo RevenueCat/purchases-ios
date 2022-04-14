@@ -62,6 +62,13 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
                              userInfoKeys: ["response"])
     }
 
+    func testOfflineConnection() {
+        let error: NetworkError = .offlineConnection()
+
+        verifyPurchasesError(error,
+                             expectedCode: .offlineConnectionError)
+    }
+
     func testErrorResponse() throws {
         let errorResponse = ErrorResponse(code: .invalidAPIKey,
                                           message: "Invalid API key",
@@ -107,6 +114,7 @@ class NetworkErrorTests: XCTestCase {
     func testSuccessfullySyncedFalse() {
         let errors = [
             error(Self.decodingError),
+            error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
             error(Self.unableToCreateRequestError),
@@ -144,6 +152,7 @@ class NetworkErrorTests: XCTestCase {
     func testFinishableFalse() {
         let errors = [
             error(Self.decodingError),
+            error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
             error(Self.unableToCreateRequestError),
@@ -183,6 +192,7 @@ class NetworkErrorTests: XCTestCase {
         )
     }
 
+    private static let offlineError: NetworkError = .offlineConnection()
     private static let decodingError: NetworkError = .decoding(NSError(domain: "domain", code: 20), Data())
     private static let networkError: NetworkError = .networkError(NSError(domain: "domain", code: 30))
     private static let dnsError: NetworkError = .dnsError(failedURL: URL(string: "https://google.com")!,
