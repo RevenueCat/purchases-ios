@@ -18,6 +18,7 @@
       "presented_offering_identifier" : "a_offering",
       "price" : "10.98",
       "product_id" : "a_great_product",
+      "storefront" : "ESP",
       "subscription_group_id" : "sub_group"
     },
     "method" : "POST",

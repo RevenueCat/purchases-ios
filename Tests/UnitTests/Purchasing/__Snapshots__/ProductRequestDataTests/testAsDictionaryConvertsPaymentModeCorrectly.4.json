@@ -2,5 +2,6 @@
   "currency" : "UYU",
   "payment_mode" : 1,
   "price" : "15.99",
-  "product_id" : "product_id"
+  "product_id" : "product_id",
+  "storefront" : "ESP"
 }

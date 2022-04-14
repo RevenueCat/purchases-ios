@@ -1,5 +1,6 @@
 {
   "currency" : "UYU",
   "price" : "9.99",
-  "product_id" : "product_id"
+  "product_id" : "product_id",
+  "storefront" : "ESP"
 }
