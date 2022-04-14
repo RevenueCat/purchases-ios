@@ -329,6 +329,7 @@ jobs:
       - run:
           name: Deploy new version
           command: bundle exec fastlane release
+          no_output_timeout: 30m
 
   prepare-next-version:
     <<: *base-job
