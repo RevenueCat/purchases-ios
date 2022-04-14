@@ -8,10 +8,13 @@ import StoreKit
 // swiftlint:disable line_length
 class MockSK1Product: SK1Product {
     var mockProductIdentifier: String
+    var mockLocalizedTitle: String
 
     init(mockProductIdentifier: String, mockSubscriptionGroupIdentifier: String? = nil) {
         self.mockProductIdentifier = mockProductIdentifier
         self.mockSubscriptionGroupIdentifier = mockSubscriptionGroupIdentifier
+        self.mockLocalizedTitle = mockProductIdentifier
+
         super.init()
     }
 
@@ -32,6 +35,10 @@ class MockSK1Product: SK1Product {
     var mockPrice: Decimal?
     override var price: NSDecimalNumber {
         return (mockPrice ?? 2.99) as NSDecimalNumber
+    }
+
+    override var localizedTitle: String {
+        return self.mockLocalizedTitle
     }
 
     @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
