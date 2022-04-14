@@ -626,7 +626,6 @@ private extension PurchasesOrchestrator {
                         self.storeKitWrapper.finishTransaction(transaction)
                     }
                 } else {
-                    Logger.error(error)
                     completion?(storeTransaction, nil, purchasesError, false)
                 }
             }

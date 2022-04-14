@@ -22,12 +22,12 @@ class MockTransaction: SKPaymentTransaction {
         mockError
     }
 
-    var mockTransactionDate: Date?
+    var mockTransactionDate: Date? = Date()
     override var transactionDate: Date? {
         mockTransactionDate
     }
 
-    var mockTransactionIdentifier: String?
+    var mockTransactionIdentifier: String? = UUID().uuidString
     override var transactionIdentifier: String? {
         mockTransactionIdentifier
     }
