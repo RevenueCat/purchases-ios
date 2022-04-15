@@ -159,7 +159,7 @@ extension ErrorCode: DescribableError {
                    See https://rev.cat/ios-subscription-offers for more info.
                    """
         case .offlineConnectionError:
-            return "Error performing request because the Internet Connection appears to be offline."
+            return "Error performing request because the internet connection appears to be offline."
 
         @unknown default:
             return "Something went wrong."
