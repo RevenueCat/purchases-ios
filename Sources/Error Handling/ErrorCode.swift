@@ -57,6 +57,7 @@ import Foundation
     @objc(RCProductRequestTimedOut) case productRequestTimedOut = 32
     @objc(RCAPIEndpointBlocked) case apiEndpointBlockedError = 33
     @objc(RCInvalidPromotionalOfferError) case invalidPromotionalOfferError = 34
+    @objc(RCOfflineConnectionError) case offlineConnectionError = 35
 
     // swiftlint:enable missing_docs
 }
@@ -157,6 +158,9 @@ extension ErrorCode: DescribableError {
                    The information associated with this PromotionalOffer is not valid.
                    See https://rev.cat/ios-subscription-offers for more info.
                    """
+        case .offlineConnectionError:
+            return "Error performing request because the internet connection appears to be offline."
+
         @unknown default:
             return "Something went wrong."
         }
@@ -253,6 +257,8 @@ extension ErrorCode {
             return "API_ENDPOINT_BLOCKED_ERROR"
         case .invalidPromotionalOfferError:
             return "INVALID_PROMOTIONAL_OFFER_ERROR"
+        case .offlineConnectionError:
+            return "OFFLINE_CONNECTION_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

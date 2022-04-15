@@ -187,13 +187,20 @@ private extension HTTPClient {
         if let networkError = networkError {
             return Result
                 .failure(networkError)
-                .mapError { error in
+                .mapError { error -> NetworkError in
                     if self.dnsChecker.isBlockedAPIError(networkError),
                        let blockedError = self.dnsChecker.errorWithBlockedHostFromError(networkError) {
                         Logger.error(blockedError.description)
                         return blockedError
                     } else {
-                        return .networkError(error)
+                        let nsError = error as NSError
+
+                        switch (nsError.domain, nsError.code) {
+                        case (NSURLErrorDomain, NSURLErrorNotConnectedToInternet):
+                            return .offlineConnection()
+                        default:
+                            return .networkError(error)
+                        }
                     }
                 }
         }

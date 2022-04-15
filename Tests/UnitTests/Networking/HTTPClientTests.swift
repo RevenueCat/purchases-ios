@@ -826,6 +826,26 @@ class HTTPClientTests: XCTestCase {
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
     }
 
+    func testOfflineConnectionError() {
+        let path: HTTPRequest.Path = .mockPath
+
+        let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+
+        stub(condition: isPath(path)) { _ in
+            let response = HTTPStubsResponse.emptySuccessResponse
+            response.error = error
+            return response
+        }
+
+        let obtainedError: Atomic<NetworkError?> = .init(nil)
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
+            obtainedError.value = result.error
+        }
+
+        expect(obtainedError.value).toEventuallyNot(beNil())
+        expect(obtainedError.value) == .offlineConnection()
+    }
+
     func testErrorIsLoggedAndReturnsDNSErrorWhenGETRequestFailedWithDNSError() {
         let path: HTTPRequest.Path = .mockPath
 
