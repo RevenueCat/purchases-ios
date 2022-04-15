@@ -56,6 +56,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
 
     func testSk1TransactionDateBecomesAnInvalidDateIfNoDate() {
         let sk1Transaction = MockTransaction()
+        sk1Transaction.mockTransactionDate = nil
         sk1Transaction.mockPayment = SKPayment(product: MockSK1Product(mockProductIdentifier: ""))
 
         let transaction = StoreTransaction(sk1Transaction: sk1Transaction)
@@ -67,6 +68,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         let payment = SKPayment(product: product)
 
         let sk1Transaction = MockTransaction()
+        sk1Transaction.mockTransactionIdentifier = nil
         sk1Transaction.mockPayment = payment
 
         let transaction = StoreTransaction(sk1Transaction: sk1Transaction)
