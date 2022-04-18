@@ -1764,8 +1764,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2DC5622724EC63430031F69B /* Build configuration list for PBXNativeTarget "RevenueCat" */;
 			buildPhases = (
-				2DC5621124EC63420031F69B /* Headers */,
 				2DC5621224EC63420031F69B /* Sources */,
+				2DC5621124EC63420031F69B /* Headers */,
 				2DC5621324EC63420031F69B /* Frameworks */,
 				2DC5621424EC63420031F69B /* Resources */,
 				B3C302D926D8066F002B72D1 /* SwiftLint */,
