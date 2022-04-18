@@ -7,15 +7,16 @@
 
 #import <Foundation/Foundation.h>
 #import "RCAttributionNetworkAPI.h"
+#import "RCCustomerInfoAPI.h"
 #import "RCEntitlementInfoAPI.h"
 #import "RCEntitlementInfosAPI.h"
 #import "RCIntroEligibilityAPI.h"
 #import "RCOfferingAPI.h"
 #import "RCOfferingsAPI.h"
-#import "RCCustomerInfoAPI.h"
+#import "RCPackageAPI.h"
+#import "RCPromotionalOfferAPI.h"
 #import "RCPurchasesAPI.h"
 #import "RCPurchasesErrorCodeAPI.h"
-#import "RCPackageAPI.h"
 #import "RCRefundRequestStatusAPI.h"
 #import "RCStorefrontAPI.h"
 #import "RCStoreProductAPI.h"
@@ -29,6 +30,8 @@ int main(int argc, const char * argv[]) {
     @autoreleasepool {
         [RCAttributionNetworkAPI checkEnums];
 
+        [RCCustomerInfoAPI checkAPI];
+
         [RCEntitlementInfoAPI checkAPI];
         [RCEntitlementInfoAPI checkEnums];
 
@@ -38,32 +41,32 @@ int main(int argc, const char * argv[]) {
         [RCIntroEligibilityAPI checkEnums];
 
         [RCOfferingAPI checkAPI];
-
         [RCOfferingsAPI checkAPI];
 
         [RCPackageAPI checkAPI];
         [RCPackageAPI checkEnums];
 
-        [RCCustomerInfoAPI checkAPI];
+        [RCPromotionalOfferAPI checkAPI];
 
         [RCPurchasesAPI checkAPI];
-        [RCPurchasesAPI checkEnums];
         [RCPurchasesAPI checkConstants];
+        [RCPurchasesAPI checkEnums];
 
         [RCPurchasesErrorCodeAPI checkEnums];
 
         [RCRefundRequestStatusAPI checkEnums];
 
-        [RCTransactionAPI checkAPI];
-
         [RCStorefrontAPI checkAPI];
 
         [RCStoreProductAPI checkAPI];
+
         [RCStoreProductDiscountAPI checkAPI];
         [RCStoreProductDiscountAPI checkPaymentModeEnum];
 
         [RCSubscriptionPeriodAPI checkAPI];
         [RCSubscriptionPeriodAPI checkUnitEnum];
+
+        [RCTransactionAPI checkAPI];
     }
     return 0;
 }
