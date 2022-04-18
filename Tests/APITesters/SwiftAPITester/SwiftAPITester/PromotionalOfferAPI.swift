@@ -14,5 +14,6 @@ func checkPromotionalOfferAPI() {
     let discount: StoreProductDiscount = offer.discount
     let sk1Discount = offer.discount.sk1Discount
     let sk2Discount = offer.discount.sk2Discount
+    
     print(discount, sk1Discount!, sk2Discount!)
 }
