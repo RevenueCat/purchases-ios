@@ -20,6 +20,9 @@ func checkStoreProductDiscountAPI() {
     let priceFormatter: NumberFormatter? = product.priceFormatter
     let subscriptionPeriod: SubscriptionPeriod = discount.subscriptionPeriod
 
+    let sk1Discount: SK1ProductDiscount = discount.sk1Discount!
+    let sk2Discount: SK2ProductDiscount = discount.sk2Discount!
+
     print(
         offerIdentifier!,
         currentyCode!,
@@ -28,7 +31,9 @@ func checkStoreProductDiscountAPI() {
         localizedPriceString,
         paymentMode,
         priceFormatter!,
-        subscriptionPeriod
+        subscriptionPeriod,
+        sk1Discount,
+        sk2Discount
     )
 }
 

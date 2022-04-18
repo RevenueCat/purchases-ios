@@ -30,7 +30,7 @@ import StoreKit
 public final class PromotionalOffer: NSObject {
 
     /// The ``StoreProductDiscount`` in this offer.
-    public let discount: StoreProductDiscount
+    @objc public let discount: StoreProductDiscount
     let signedData: SignedData
 
     init(discount: StoreProductDiscountType, signedData: SignedData) {
