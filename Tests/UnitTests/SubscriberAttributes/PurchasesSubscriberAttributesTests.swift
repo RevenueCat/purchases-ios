@@ -395,6 +395,16 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearFirebaseAppInstanceID() {
+        setupPurchases()
+        purchases.setFirebaseAppInstanceID("fireb")
+        purchases.setFirebaseAppInstanceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDParametersList[0])
+            .to(equal(("fireb", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearMediaSource() {
         setupPurchases()
         purchases.setMediaSource("media")

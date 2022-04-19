@@ -628,6 +628,19 @@ extension Purchases {
     }
 
     /**
+     * Subscriber attribute associated with the Firebase App Instance ID for the user.
+     * Optional for the RevenueCat Firebase integration.
+     *
+     * #### Related Articles
+     * - [Firebase RevenueCat Integration](https://docs.revenuecat.com/docs/firebase-integration)
+     *
+     *- Parameter firebaseAppInstanceID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc public func setFirebaseAppInstanceID(_ firebaseAppInstanceID: String?) {
+        subscriberAttributesManager.setFirebaseAppInstanceID(firebaseAppInstanceID, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the install media source for the user.
      *
      * #### Related Articles

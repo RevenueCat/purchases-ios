@@ -178,6 +178,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetMixpanelDistinctIDParametersList.append((mixpanelDistinctID, appUserID))
     }
 
+    var invokedSetFirebaseAppInstanceID = false
+    var invokedSetFirebaseAppInstanceIDCount = 0
+    var invokedSetFirebaseAppInstanceIDParameters: (firebaseAppInstanceID: String?, appUserID: String?)?
+    var invokedSetFirebaseAppInstanceIDParametersList = [(firebaseAppInstanceID: String?, appUserID: String?)]()
+
+    override func setFirebaseAppInstanceID(_ firebaseAppInstanceID: String?, appUserID: String) {
+        invokedSetFirebaseAppInstanceID = true
+        invokedSetFirebaseAppInstanceIDCount += 1
+        invokedSetFirebaseAppInstanceIDParameters = (firebaseAppInstanceID, appUserID)
+        invokedSetFirebaseAppInstanceIDParametersList.append((firebaseAppInstanceID, appUserID))
+    }
+
     var invokedSetMediaSource = false
     var invokedSetMediaSourceCount = 0
     var invokedSetMediaSourceParameters: (mediaSource: String?, appUserID: String?)?
