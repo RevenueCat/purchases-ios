@@ -182,6 +182,7 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 12 (15.4)
       - store_test_results:
@@ -198,6 +199,7 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test_tvos
+          no_output_timeout: 30m
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -212,6 +214,7 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 8 (14.5)
       - store_test_results:
@@ -232,6 +235,7 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 8 (13.7)
       - store_test_results:
@@ -253,6 +257,7 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 6 (12.4)
       - store_test_results:
@@ -272,6 +277,7 @@ jobs:
       - run:
           name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
+          no_output_timeout: 30m
 
   backend-integration-tests:
     <<: *base-job
@@ -281,6 +287,7 @@ jobs:
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests
+          no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 11 Pro (15.4)
       - store_test_results:
