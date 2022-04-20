@@ -1932,7 +1932,7 @@ private extension Purchases {
         dispatchSyncSubscriberAttributesIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
 
-        if #available(iOSApplicationExtension 14.3, *) {
+        if #available(iOS 14.3, *) {
             postAdServicesTokenIfNeeded()
         }
     }
