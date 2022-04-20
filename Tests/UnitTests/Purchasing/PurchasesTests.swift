@@ -304,6 +304,9 @@ class PurchasesTests: XCTestCase {
 
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
+        if #available(iOS 14.3, *) {
+            Purchases.automaticAdServicesAttributionTokenCollection = automaticCollection
+        }
         self.identityManager.mockIsAnonymous = false
 
         initializePurchasesInstance(appUserId: identityManager.currentAppUserID)
@@ -2229,6 +2232,26 @@ class PurchasesTests: XCTestCase {
     func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
         setupPurchases(automaticCollection: false)
         expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
+    }
+
+    @available(iOS 14.3, *)
+    func testAdServicesAttributionTokenIsAutomaticallyCollected() throws {
+        guard #available(iOS 14.3, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
+        setupPurchases(automaticCollection: true)
+        expect(self.attributionFetcher.adServicesTokenCollected) == true
+    }
+
+    @available(iOS 14.3, *)
+    func testAdServicesAttributionTokenIsNotAutomaticallyCollectedIfDisabled() throws {
+        guard #available(iOS 14.3, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
+        setupPurchases(automaticCollection: false)
+        expect(self.attributionFetcher.adServicesTokenCollected) == false
     }
 
     func testAttributionDataPostponesMultiple() {

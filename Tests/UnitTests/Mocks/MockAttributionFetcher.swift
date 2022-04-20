@@ -7,6 +7,8 @@
 
 class MockAttributionFetcher: AttributionFetcher {
 
+    var adServicesTokenCollected = false
+
     override var identifierForAdvertisers: String? {
         return "rc_idfa"
     }
@@ -19,5 +21,10 @@ class MockAttributionFetcher: AttributionFetcher {
         completion completionHandler: @escaping ([String: NSObject]?, Error?) -> Void
     ) {
         completionHandler(["Version3.1": ["iad-campaign-id": 15292426, "iad-attribution": true] as NSObject], nil)
+    }
+
+    override func adServicesToken(completion: @escaping (String?, Error?) -> Void) {
+        adServicesTokenCollected = true
+        completion("test", nil)
     }
 }
