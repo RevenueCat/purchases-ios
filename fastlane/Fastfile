@@ -46,6 +46,7 @@ platform :ios do
       scheme: "RevenueCat",
       testplan: "AllTests",
       prelaunch_simulator: true,
+      output_style: 'raw',
       output_types: 'junit',
       number_of_retries: 5,
       output_directory: "fastlane/test_output/xctest/ios"
