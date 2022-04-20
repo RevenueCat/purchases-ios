@@ -19,6 +19,8 @@ import UIKit
 import WatchKit
 #endif
 
+import AdServices
+
 enum AttributionFetcherError: Error {
 
     case identifierForAdvertiserUnavailableForPlatform
@@ -81,6 +83,20 @@ class AttributionFetcher {
         completion(nil, AttributionFetcherError.identifierForAdvertiserUnavailableForPlatform)
 #endif
     }
+
+    @available(iOS 14.3, *)
+    func adServicesToken(completion: @escaping (String?, Error?) -> Void) {
+        // TODO check for library?
+        if let attributionToken = try? AAAttribution.attributionToken() {
+            completion(attributionToken, nil)
+        } else {
+            // todo make error
+//                completion(nil, )
+        }
+        // todo make error
+        completion(nil, nil)
+    }
+
 
     var isAuthorizedToPostSearchAds: Bool {
         // Should match platforms that require permissions detailed in

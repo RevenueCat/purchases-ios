@@ -20,6 +20,11 @@ import Foundation
 @objc(RCAttributionNetwork) public enum AttributionNetwork: Int {
 
     /**
+     AdServices token
+     */
+    case adServices
+
+    /**
      Apple's search ads
      */
     case appleSearchAds

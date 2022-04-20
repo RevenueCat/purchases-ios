@@ -735,7 +735,7 @@ extension Purchases {
         guard Self.automaticAdServicesAttributionTokenCollection else {
             return
         }
-//        attributionPoster.postAdServicesTokenIfNeeded()
+        attributionPoster.postAdServicesTokenIfNeeded()
     }
 
 }

@@ -274,11 +274,11 @@
 		57DE806D28074976008D6C6F /* Storefront.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE806C28074976008D6C6F /* Storefront.swift */; };
 		57DE807128074C23008D6C6F /* SK1Storefront.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807028074C23008D6C6F /* SK1Storefront.swift */; };
 		57DE807328074C76008D6C6F /* SK2Storefront.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807228074C76008D6C6F /* SK2Storefront.swift */; };
-		57DE80BE28077010008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
-		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57DE80892807540D008D6C6F /* StorefrontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE80882807540D008D6C6F /* StorefrontTests.swift */; };
 		57DE80AE28075D77008D6C6F /* OSVersionEquivalent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */; };
 		57DE80AF28075D77008D6C6F /* OSVersionEquivalent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */; };
+		57DE80BE28077010008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
+		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 57E0473A277260DE0082FE91 /* SnapshotTesting */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
 		57EAE527274324C60060EB74 /* Lock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE526274324C60060EB74 /* Lock.swift */; };
@@ -304,6 +304,8 @@
 		A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
+		A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B6CDD5280F3843007629D5 /* AdServices.framework */; };
+		A5B6CDDA28106018007629D5 /* PostAdServicesTokenOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B6CDD928106018007629D5 /* PostAdServicesTokenOperation.swift */; };
 		A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */; };
 		B300E4BF26D436F900B22262 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		B300E4C026D4371200B22262 /* SKPaymentTransactionExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */; };
@@ -734,6 +736,8 @@
 		A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBeginRefundRequestHelper.swift; sourceTree = "<group>"; };
 		A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelperTests.swift; sourceTree = "<group>"; };
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
+		A5B6CDD5280F3843007629D5 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/AdServices.framework; sourceTree = DEVELOPER_DIR; };
+		A5B6CDD928106018007629D5 /* PostAdServicesTokenOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAdServicesTokenOperation.swift; sourceTree = "<group>"; };
 		A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
 		B302206927271BCB008F1A0D /* Decoder+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Decoder+Extensions.swift"; sourceTree = "<group>"; };
 		B302206D2728B798008F1A0D /* BackendErrorStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendErrorStrings.swift; sourceTree = "<group>"; };
@@ -842,6 +846,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1326,6 +1331,7 @@
 		3530C18722653E8F00D6DF52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A5B6CDD5280F3843007629D5 /* AdServices.framework */,
 				B36824BD268FBC5B00957E4C /* XCTest.framework */,
 				2DE20B9126409ECF004C597D /* StoreKit.framework */,
 				2DE20B7526408806004C597D /* StoreKitTest.framework */,
@@ -1617,6 +1623,7 @@
 				B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */,
 				B34605B7279A6E380031CA74 /* LogInOperation.swift */,
 				B34605B8279A6E380031CA74 /* PostAttributionDataOperation.swift */,
+				A5B6CDD928106018007629D5 /* PostAdServicesTokenOperation.swift */,
 				B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */,
 				B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */,
 				B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */,
@@ -2110,6 +2117,7 @@
 				57DE806D28074976008D6C6F /* Storefront.swift in Sources */,
 				B3B5FBB6269CED6400104A0C /* ErrorDetails.swift in Sources */,
 				2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */,
+				A5B6CDDA28106018007629D5 /* PostAdServicesTokenOperation.swift in Sources */,
 				B3B5FBB4269CED4B00104A0C /* BackendErrorCode.swift in Sources */,
 				2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */,
 				35D832D2262E56DB00E60AC5 /* HTTPStatusCode.swift in Sources */,

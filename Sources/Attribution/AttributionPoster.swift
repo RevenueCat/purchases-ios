@@ -67,6 +67,13 @@ class AttributionPoster {
 
         var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
         newDictToCache[networkKey] = newValueForNetwork
+//        guard let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
+//                                               network: network,
+//                                               networkUserId: networkUserId,
+//                                                     identifierForAdvertisers: identifierForAdvertisers) else {
+//            
+//        }
+
         var newData = data
 
         if let identifierForAdvertisers = identifierForAdvertisers {
@@ -102,12 +109,54 @@ class AttributionPoster {
         }
     }
 
+    // note to maddie -- tried pulling this out for re-use, but subattrs handles latestSentToNetwork == newValueForNetwork differently than what we want for adservices. this is techncially OK from a functionality standpoint, because we already skip fetching a new token if previous != nil, so it shouldn't get to this point. but need to somehow pull the subattrs-specific log out of here
+//    func getNewDictToCache(currentAppUserID: String,
+//                           network: AttributionNetwork,
+//                           networkUserId: String?,
+//                           identifierForAdvertisers: String?) -> [String: String]? {
+//        let networkKey = String(network.rawValue)
+//        let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
+//            deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
+//        let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[networkKey]
+//
+//        let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
+//        guard latestSentToNetwork != newValueForNetwork else {
+//            Logger.debug(Strings.attribution.skip_same_attributes)
+//            return nil
+//        }
+//
+//        var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
+//        newDictToCache[networkKey] = newValueForNetwork
+//        return newDictToCache
+//    }
+
+    func post(adServicesToken: String) {
+        let currentAppUserID = self.currentUserProvider.currentAppUserID
+        backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
+            guard error == nil else {
+                return
+            }
+
+//            let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
+//                                                   network: .adServices,
+//                                                   networkUserId: nil,
+//                                                   identifierForAdvertisers: nil)
+
+            let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
+                self.deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
+            var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
+            newDictToCache[String(AttributionNetwork.adServices.rawValue)] = adServicesToken
+
+            self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
+        }
+    }
+
     func postAppleSearchAdsAttributionIfNeeded() {
         guard attributionFetcher.isAuthorizedToPostSearchAds else {
             return
         }
 
-        let latestIdsSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
+        let latestIdsSent =  latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
         guard latestIdsSent == nil else {
             return
         }
@@ -127,6 +176,23 @@ class AttributionPoster {
             }
 
             self.post(attributionData: attributionDetails, fromNetwork: .appleSearchAds, networkUserId: nil)
+        }
+    }
+
+    @available(iOS 14.3, *)
+    func postAdServicesTokenIfNeeded() {
+        let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
+        guard latestTokenSent == nil else {
+            return
+        }
+
+        attributionFetcher.adServicesToken { token, error in
+            guard let attributionToken = token,
+                  error == nil else {
+                return
+            }
+
+            self.post(adServicesToken: attributionToken)
         }
     }
 
@@ -160,7 +226,7 @@ class AttributionPoster {
             appUserID: self.currentUserProvider.currentAppUserID
         )
         return cachedDict[networkID]
-    }
+}
 
     private func postSearchAds(newData: [String: Any],
                                network: AttributionNetwork,

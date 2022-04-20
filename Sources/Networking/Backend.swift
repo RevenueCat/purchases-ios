@@ -145,6 +145,18 @@ class Backend {
         self.operationQueue.addOperation(postAttributionDataOperation)
     }
 
+    func post(adServicesToken: String,
+              appUserID: String,
+              completion: SimpleResponseHandler?) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
+                                                                authHeaders: self.authHeaders,
+                                                                appUserID: appUserID)
+        let postAttributionDataOperation = PostAdServicesTokenOperation(configuration: config,
+                                                                        token: adServicesToken,
+                                                                        responseHandler: completion)
+        self.operationQueue.addOperation(postAttributionDataOperation)
+    }
+
     func logIn(currentAppUserID: String,
                newAppUserID: String,
                completion: @escaping LogInResponseHandler) {
