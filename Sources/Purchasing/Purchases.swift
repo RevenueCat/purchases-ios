@@ -418,6 +418,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         attributionPoster.postPostponedAttributionDataIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
 
+        if #available(iOSApplicationExtension 14.3, *) {
+            postAdServicesTokenIfNeeded()
+        }
+
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
             self.delegate?.purchases?(self, receivedUpdated: customerInfo)
@@ -724,6 +728,14 @@ extension Purchases {
             return
         }
         attributionPoster.postAppleSearchAdsAttributionIfNeeded()
+    }
+
+    @available(iOS 14.3, *)
+    private func postAdServicesTokenIfNeeded() {
+        guard Self.automaticAdServicesAttributionTokenCollection else {
+            return
+        }
+//        attributionPoster.postAdServicesTokenIfNeeded()
     }
 
 }
@@ -1919,6 +1931,10 @@ private extension Purchases {
         updateAllCachesIfNeeded()
         dispatchSyncSubscriberAttributesIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        if #available(iOSApplicationExtension 14.3, *) {
+            postAdServicesTokenIfNeeded()
+        }
     }
 
     @objc func applicationWillResignActive(notification: Notification) {
