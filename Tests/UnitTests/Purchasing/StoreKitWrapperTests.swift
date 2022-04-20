@@ -14,6 +14,7 @@ import XCTest
 @testable import RevenueCat
 
 class MockPaymentQueue: SKPaymentQueue {
+
     var addedPayments: [SKPayment] = []
     override func add(_ payment: SKPayment) {
         addedPayments.append(payment)
@@ -33,6 +34,24 @@ class MockPaymentQueue: SKPaymentQueue {
     override func finishTransaction(_ transaction: SKPaymentTransaction) {
         finishedTransactions.append(transaction)
     }
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    func simulatePaymentQueueShouldShowPriceConsent() -> [Bool] {
+        var observersPriceConsentStatus: [Bool] = []
+        for observer in self.observers where observer is SKPaymentQueueDelegate {
+            if let consent = (observer as? SKPaymentQueueDelegate)?.paymentQueueShouldShowPriceConsent?(self) {
+                observersPriceConsentStatus.append(consent)
+            }
+
+        }
+        return observersPriceConsentStatus
+    }
+#endif
+
 }
 
 class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
@@ -67,6 +86,11 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         promoPayment = payment
         promoProduct = product
         return shouldAddPromo
+    }
+
+    var shouldShowPriceConsent = true
+    func storeKitWrapperShouldShowPriceConsent() -> Bool {
+        return shouldShowPriceConsent
     }
 
     var productIdentifiersWithRevokedEntitlements: [String]?
@@ -246,5 +270,20 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         let payment2 = wrapper.payment(withProduct: mockProduct)
         expect(payment2.simulatesAskToBuyInSandbox) == true
     }
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+    func testShouldShowPriceConsentWiredUp() throws {
+        guard #available(iOS 13.4, macCatalyst 13.4, *) else {
+            throw XCTSkip()
+        }
+        expect(self.shouldShowPriceConsent) == true
+
+        self.shouldShowPriceConsent = false
+
+        let consentStatuses = self.paymentQueue.simulatePaymentQueueShouldShowPriceConsent()
+        expect(consentStatuses.count) == 1
+        expect(consentStatuses.first) == false
+    }
+#endif
 
 }

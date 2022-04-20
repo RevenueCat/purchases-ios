@@ -1398,6 +1398,23 @@ public extension Purchases {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
     }
 
+#if os(iOS) || targetEnvironment(macCatalyst)
+    /**
+     * Displays price consent sheet if needed. You only need to call this manually if you implement
+     * ``PurchasesDelegate/shouldShowPriceConsent()`` and return false at some point.
+     *
+     * In most cases, you don't _*typically*_ implement ``PurchasesDelegate/shouldShowPriceConsent()``, therefore,
+     * you won't need to call this.
+     */
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @objc func showPriceConsentIfNeeded() {
+        self.storeKitWrapper.showPriceConsentIfNeeded()
+    }
+#endif
+
     /**
      * Invalidates the cache for customer information.
      *
@@ -1410,7 +1427,7 @@ public extension Purchases {
      * promotional subscription is granted through the RevenueCat dashboard.
      */
     @objc func invalidateCustomerInfoCache() {
-        customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
     }
 
 #if os(iOS)
@@ -1423,7 +1440,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     @objc func presentCodeRedemptionSheet() {
-        storeKitWrapper.presentCodeRedemptionSheet()
+        self.storeKitWrapper.presentCodeRedemptionSheet()
     }
 #endif
 
@@ -1828,6 +1845,17 @@ extension Purchases: PurchasesOrchestratorDelegate {
                                           purchase startPurchase: @escaping StartPurchaseBlock) {
         self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
     }
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @objc
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    internal func shouldShowPriceConsent() -> Bool {
+        self.delegate?.shouldShowPriceConsent?() ?? true
+    }
+    #endif
 
 }
 

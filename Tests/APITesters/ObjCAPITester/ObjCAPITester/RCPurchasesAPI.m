@@ -177,6 +177,7 @@ BOOL isAnonymous;
     [p beginRefundRequestForProduct:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
     [p beginRefundRequestForEntitlement:@"" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
     [p beginRefundRequestForActiveEntitlementWithCompletion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+    [p showPriceConsentIfNeeded];
 #endif
 
 #if TARGET_OS_IPHONE && !TARGET_OS_TV
