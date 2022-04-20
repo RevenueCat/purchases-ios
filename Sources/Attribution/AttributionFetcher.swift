@@ -19,7 +19,9 @@ import UIKit
 import WatchKit
 #endif
 
+#if os(iOS)
 import AdServices
+#endif
 
 enum AttributionFetcherError: Error {
 
@@ -87,16 +89,17 @@ class AttributionFetcher {
     @available(iOS 14.3, *)
     func adServicesToken(completion: @escaping (String?, Error?) -> Void) {
         // TODO check for library?
-        if let attributionToken = try? AAAttribution.attributionToken() {
+        #if os(iOS)
+        do {
+            let attributionToken = try AAAttribution.attributionToken()
             completion(attributionToken, nil)
-        } else {
-            // todo make error
-//                completion(nil, )
+        } catch let attributionTokenError {
+            completion(nil, attributionTokenError)
         }
+        #endif
         // todo make error
         completion(nil, nil)
     }
-
 
     var isAuthorizedToPostSearchAds: Bool {
         // Should match platforms that require permissions detailed in

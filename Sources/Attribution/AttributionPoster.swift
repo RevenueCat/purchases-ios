@@ -156,7 +156,7 @@ class AttributionPoster {
             return
         }
 
-        let latestIdsSent =  latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
+        let latestIdsSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
         guard latestIdsSent == nil else {
             return
         }

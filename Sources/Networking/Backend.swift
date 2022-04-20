@@ -151,10 +151,10 @@ class Backend {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
                                                                 authHeaders: self.authHeaders,
                                                                 appUserID: appUserID)
-        let postAttributionDataOperation = PostAdServicesTokenOperation(configuration: config,
+        let postAdServicesTokenOperation = PostAdServicesTokenOperation(configuration: config,
                                                                         token: adServicesToken,
                                                                         responseHandler: completion)
-        self.operationQueue.addOperation(postAttributionDataOperation)
+        self.operationQueue.addOperation(postAdServicesTokenOperation)
     }
 
     func logIn(currentAppUserID: String,

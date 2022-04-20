@@ -418,7 +418,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         attributionPoster.postPostponedAttributionDataIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
 
-        if #available(iOSApplicationExtension 14.3, *) {
+        if #available(iOS 14.3, *) {
             postAdServicesTokenIfNeeded()
         }
 
