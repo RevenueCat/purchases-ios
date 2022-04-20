@@ -30,6 +30,8 @@ func main() -> Int {
 
     checkCustomerInfoAPI()
 
+    checkPromotionalOfferAPI()
+
     checkPurchasesAPI()
 
     checkPurchasesEnums()
