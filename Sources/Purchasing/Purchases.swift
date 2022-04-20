@@ -91,9 +91,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let operationDispatcher: OperationDispatcher
 
     /**
-     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
+     * Enable automatic collection of AdServices attribution token. Defaults to `false`.
      */
-    @objc public static var automaticAppleSearchAdsAttributionCollection: Bool = false
+    @available(iOS 14.3, *)
+    @objc public static var automaticAdServicesAttributionTokenCollection: Bool = false
 
     /**
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
@@ -439,6 +440,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         customerInfoObservationDisposable?()
         privateDelegate = nil
         Self.automaticAppleSearchAdsAttributionCollection = false
+
+        if #available(iOS 14.3, *) {
+            Self.automaticAdServicesAttributionTokenCollection = false
+        }
         Self.proxyURL = nil
     }
 
@@ -1821,6 +1826,12 @@ extension Purchases: PurchasesOrchestratorDelegate {
 // MARK: Deprecated
 
 public extension Purchases {
+
+    /**
+     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
+     */
+    @available(*, deprecated, message: "use Purchases.automaticAdServicesAttributionTokenCollection for iOS 14.3+ instead")
+    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
 
     /**
      * Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
