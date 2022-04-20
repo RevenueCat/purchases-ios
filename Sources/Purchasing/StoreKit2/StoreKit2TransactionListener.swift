@@ -102,10 +102,13 @@ private extension StoreKit2TransactionListener {
         }
     }
 
+    /// - Returns `nil` only if the delegate isn't set.
     func finish(transaction: StoreKit.Transaction) async throws -> CustomerInfo? {
         await transaction.finish()
 
-        return try await delegate?.transactionsUpdated()
+        guard let delegate = self.delegate else { return nil }
+
+        return try await delegate.transactionsUpdated()
     }
 
 }
