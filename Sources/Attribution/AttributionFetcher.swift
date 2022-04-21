@@ -19,7 +19,7 @@ import UIKit
 import WatchKit
 #endif
 
-#if os(iOS)
+#if canImport(AdServices)
 import AdServices
 #endif
 
