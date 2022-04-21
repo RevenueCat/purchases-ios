@@ -14,6 +14,7 @@
 import Foundation
 import StoreKit
 
+
 // swiftlint:disable line_length missing_docs
 
 public extension Purchases {
@@ -55,6 +56,13 @@ public extension Purchases {
     func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffers(forProduct: product)
     }
+
+    /**
+     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
+     */
+    @available(*, deprecated, message: "Use Purchases.automaticAdServicesAttributionTokenCollection instead")
+    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
+
 
 }
 
