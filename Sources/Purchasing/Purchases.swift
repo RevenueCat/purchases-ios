@@ -629,7 +629,7 @@ extension Purchases {
 
     /**
      * Subscriber attribute associated with the Firebase App Instance ID for the user.
-     * Optional for the RevenueCat Firebase integration.
+     * Required for the RevenueCat Firebase integration.
      *
      * #### Related Articles
      * - [Firebase RevenueCat Integration](https://docs.revenuecat.com/docs/firebase-integration)
