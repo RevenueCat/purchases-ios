@@ -67,7 +67,6 @@ class AttributionPoster {
 
         var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
         newDictToCache[networkKey] = newValueForNetwork
-
         var newData = data
 
         if let identifierForAdvertisers = identifierForAdvertisers {
@@ -138,14 +137,11 @@ class AttributionPoster {
             return
         }
 
-        attributionFetcher.adServicesToken { token, error in
-            guard let attributionToken = token,
-                  error == nil else {
-                return
-            }
-
-            // TODO post
+        guard let attributionToken = attributionFetcher.adServicesToken() else {
+            return
         }
+
+        // post
     }
 
     func postPostponedAttributionDataIfNeeded() {

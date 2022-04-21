@@ -14,7 +14,6 @@
 import Foundation
 import StoreKit
 
-
 // swiftlint:disable line_length missing_docs
 
 public extension Purchases {
@@ -62,7 +61,6 @@ public extension Purchases {
      */
     @available(*, deprecated, message: "Use Purchases.automaticAdServicesAttributionTokenCollection instead")
     @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
-
 
 }
 
