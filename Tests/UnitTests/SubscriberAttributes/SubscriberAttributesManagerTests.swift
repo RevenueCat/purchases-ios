@@ -1154,9 +1154,9 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetFirebaseAppInstanceIDSetsEmptyIfNil() throws {
-        let mixpanelDistinctID = "firebaseAppInstanceID"
+        let firebaseAppInstanceID = "firebaseAppInstanceID"
 
-        self.subscriberAttributesManager.setFirebaseAppInstanceID(mixpanelDistinctID, appUserID: "kratos")
+        self.subscriberAttributesManager.setFirebaseAppInstanceID(firebaseAppInstanceID, appUserID: "kratos")
         self.subscriberAttributesManager.setFirebaseAppInstanceID(nil, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 2
