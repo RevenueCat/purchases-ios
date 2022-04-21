@@ -146,3 +146,4 @@ Or browse our iOS sample apps:
 - ``Purchases/setOnesignalID(_:)``
 - ``Purchases/setFBAnonymousID(_:)``
 - ``Purchases/setMixpanelDistinctID(_:)``
+- ``Purchases/setFirebaseAppInstanceID(_:)``

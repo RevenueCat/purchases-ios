@@ -127,6 +127,8 @@ BOOL isAnonymous;
     [p setCleverTapID: @""];
     [p setMixpanelDistinctID: nil];
     [p setMixpanelDistinctID: @""];
+    [p setFirebaseAppInstanceID: nil];
+    [p setFirebaseAppInstanceID: @""];
     [p setMediaSource: nil];
     [p setMediaSource: @""];
     [p setCampaign: nil];

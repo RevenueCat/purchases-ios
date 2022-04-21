@@ -39,6 +39,7 @@ enum ReservedSubscriberAttribute: String {
     case airshipChannelID = "$airshipChannelId"
     case cleverTapID = "$clevertapId"
     case mixpanelDistinctID = "$mixpanelDistinctId"
+    case firebaseAppInstanceID = "$firebaseAppInstanceId"
 
     case mediaSource = "$mediaSource"
     case campaign = "$campaign"

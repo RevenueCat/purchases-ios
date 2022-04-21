@@ -102,6 +102,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/setOnesignalID(_:)``
 - ``Purchases/setFBAnonymousID(_:)``
 - ``Purchases/setMixpanelDistinctID(_:)``
+- ``Purchases/setFirebaseAppInstanceID(_:)``
 
 ### Advanced Configuration
 - ``Purchases/finishTransactions``

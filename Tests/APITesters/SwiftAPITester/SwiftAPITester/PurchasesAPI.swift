@@ -163,6 +163,7 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setOnesignalID("")
     purchases.setCleverTapID("")
     purchases.setMixpanelDistinctID("")
+    purchases.setFirebaseAppInstanceID("")
     purchases.setMediaSource("")
     purchases.setCampaign("")
     purchases.setAdGroup("")
