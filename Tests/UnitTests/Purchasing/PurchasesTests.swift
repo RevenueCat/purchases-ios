@@ -304,7 +304,7 @@ class PurchasesTests: XCTestCase {
 
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
-        if #available(iOS 14.3, *) {
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             Purchases.automaticAdServicesAttributionTokenCollection = automaticCollection
         }
         self.identityManager.mockIsAnonymous = false
@@ -2234,9 +2234,9 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
     }
 
-    @available(iOS 14.3, *)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testAdServicesAttributionTokenIsAutomaticallyCollected() throws {
-        guard #available(iOS 14.3, *) else {
+        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 
@@ -2246,7 +2246,7 @@ class PurchasesTests: XCTestCase {
 
     @available(iOS 14.3, *)
     func testAdServicesAttributionTokenIsNotAutomaticallyCollectedIfDisabled() throws {
-        guard #available(iOS 14.3, *) else {
+        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 

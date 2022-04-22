@@ -67,13 +67,6 @@ class AttributionPoster {
 
         var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
         newDictToCache[networkKey] = newValueForNetwork
-//        guard let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
-//                                               network: network,
-//                                               networkUserId: networkUserId,
-//                                                     identifierForAdvertisers: identifierForAdvertisers) else {
-//            
-//        }
-
         var newData = data
 
         if let identifierForAdvertisers = identifierForAdvertisers {
@@ -179,18 +172,16 @@ class AttributionPoster {
         }
     }
 
-    @available(iOS 14.3, *)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func postAdServicesTokenIfNeeded() {
         let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
         guard latestTokenSent == nil else {
             return
         }
 
-        attributionFetcher.adServicesToken { token, error in
-            guard let attributionToken = token,
-                  error == nil else {
-                return
-            }
+        guard let _ = attributionFetcher.adServicesToken() else {
+            return
+        }
 
             self.post(adServicesToken: attributionToken)
         }

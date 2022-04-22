@@ -56,6 +56,12 @@ public extension Purchases {
         return await eligiblePromotionalOffers(forProduct: product)
     }
 
+    /**
+     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
+     */
+    @available(*, deprecated, message: "Use Purchases.automaticAdServicesAttributionTokenCollection instead")
+    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
+
 }
 
 public extension StoreProduct {

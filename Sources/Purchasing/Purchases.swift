@@ -93,14 +93,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /**
      * Enable automatic collection of AdServices attribution token. Defaults to `false`.
      */
-    @available(iOS 14.3, *)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     @objc public static var automaticAdServicesAttributionTokenCollection: Bool = false
 
     /**
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
      *
      * #### Related Symbols
-     * - ``logHandler``
+     * - ``logHandler``
      * - ``verboseLogHandler``
      */
     @objc public static var logLevel: LogLevel {
@@ -418,8 +418,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         attributionPoster.postPostponedAttributionDataIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
 
-        if #available(iOS 14.3, *) {
-            postAdServicesTokenIfNeeded()
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {            postAdServicesTokenIfNeeded()
         }
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
@@ -445,7 +444,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         privateDelegate = nil
         Self.automaticAppleSearchAdsAttributionCollection = false
 
-        if #available(iOS 14.3, *) {
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             Self.automaticAdServicesAttributionTokenCollection = false
         }
         Self.proxyURL = nil
@@ -730,7 +729,7 @@ extension Purchases {
         attributionPoster.postAppleSearchAdsAttributionIfNeeded()
     }
 
-    @available(iOS 14.3, *)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     private func postAdServicesTokenIfNeeded() {
         guard Self.automaticAdServicesAttributionTokenCollection else {
             return
@@ -1840,12 +1839,6 @@ extension Purchases: PurchasesOrchestratorDelegate {
 public extension Purchases {
 
     /**
-     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
-     */
-    @available(*, deprecated, message: "use Purchases.automaticAdServicesAttributionTokenCollection for iOS 14.3+ instead")
-    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
-
-    /**
      * Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
      */
     @available(*, deprecated, message: "use Purchases.logLevel instead")
@@ -1932,7 +1925,7 @@ private extension Purchases {
         dispatchSyncSubscriberAttributesIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
 
-        if #available(iOS 14.3, *) {
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             postAdServicesTokenIfNeeded()
         }
     }

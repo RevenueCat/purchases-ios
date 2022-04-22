@@ -19,7 +19,7 @@ import UIKit
 import WatchKit
 #endif
 
-#if os(iOS)
+#if canImport(AdServices)
 import AdServices
 #endif
 
@@ -27,6 +27,8 @@ enum AttributionFetcherError: Error {
 
     case identifierForAdvertiserUnavailableForPlatform
     case identifierForAdvertiserFrameworksUnavailable
+    case adServicesNotAvailable
+    case adServicesTokenFetchError
 
 }
 
@@ -86,19 +88,19 @@ class AttributionFetcher {
 #endif
     }
 
-    @available(iOS 14.3, *)
-    func adServicesToken(completion: @escaping (String?, Error?) -> Void) {
-        // TODO check for library?
-        #if os(iOS)
-        do {
-            let attributionToken = try AAAttribution.attributionToken()
-            completion(attributionToken, nil)
-        } catch let attributionTokenError {
-            completion(nil, attributionTokenError)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    func adServicesToken() -> String? {
+#if canImport(AdServices)
+        if let attributionToken = try? AAAttribution.attributionToken() {
+            return attributionToken
+        } else {
+            Logger.warn(Strings.attribution.adservices_token_fetch_failed)
+            return nil
         }
-        #endif
-        // todo make error
-        completion(nil, nil)
+#else
+        Logger.warn(Strings.attribution.adservices_not_supported)
+        return nil
+#endif
     }
 
     var isAuthorizedToPostSearchAds: Bool {

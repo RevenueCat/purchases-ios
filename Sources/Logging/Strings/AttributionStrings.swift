@@ -38,6 +38,8 @@ enum AttributionStrings {
     case unsynced_attributes(unsyncedAttributes: SubscriberAttributeDict)
     case attribute_set_locally(attribute: String)
     case missing_advertiser_identifiers
+    case adservices_not_supported
+    case adservices_token_fetch_failed
 
 }
 
@@ -113,6 +115,13 @@ extension AttributionStrings: CustomStringConvertible {
 
         case .missing_advertiser_identifiers:
             return "Attribution error: identifierForAdvertisers is missing"
+
+        case .adservices_not_supported:
+            return "Tried to fetch AdServices attribution token on device without " +
+                "AdServices support."
+
+        case .adservices_token_fetch_failed:
+            return "Error fetching AdServices attribution token."
         }
     }
 
