@@ -130,14 +130,14 @@ class AttributionPoster {
         }
     }
 
-    @available(iOS 14.3, *)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func postAdServicesTokenIfNeeded() {
         let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
         guard latestTokenSent == nil else {
             return
         }
 
-        guard let attributionToken = attributionFetcher.adServicesToken() else {
+        guard let _ = attributionFetcher.adServicesToken() else {
             return
         }
 
