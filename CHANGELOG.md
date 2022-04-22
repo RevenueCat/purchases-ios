@@ -6,6 +6,7 @@
 - Exposed `Storefront.currentStorefront`.
 - Added new `ErrorCode.offlineConnectionError` to differenciate offline errors versus the more generic `.networkError`.
 - Added `Purchases-setFirebaseAppInstanceID` to allow associating RevenueCat users with Firebase.
+- Renamed `PurchasesDelegate.purchases(_:shouldPurchasePromoProduct:defermentBlock:)` to `PurchasesDelegate.purchases(_ purchases: Purchases, readyForPromotedProduct product: StoreProduct, purchase:)` to clarify its usage (see #1460).
 
 #### Other:
 
