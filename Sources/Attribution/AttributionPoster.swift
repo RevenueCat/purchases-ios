@@ -130,7 +130,7 @@ class AttributionPoster {
         }
     }
 
-    @available(iOS 14.3, *)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func postAdServicesTokenIfNeeded() {
         let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
         guard latestTokenSent == nil else {
@@ -141,6 +141,7 @@ class AttributionPoster {
             return
         }
 
+        Logger.debug("Logging attribution token for now to avoid lint warning: \(attributionToken)")
         // post
     }
 
