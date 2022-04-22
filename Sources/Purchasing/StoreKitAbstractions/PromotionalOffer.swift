@@ -46,17 +46,18 @@ public final class PromotionalOffer: NSObject {
 @objc public extension PromotionalOffer {
 
     /// Contains the details of a promotional offer discount that you want to apply to a payment.
-    @objc class SignedData: NSObject {
+    @objc(RCPromotionalOfferSignedData)
+    class SignedData: NSObject {
         /// The subscription offer identifier.
-        @objc public var identifier: String
+        @objc public private(set) var identifier: String
         /// The key identifier of the subscription key.
-        @objc public var keyIdentifier: String
+        @objc public private(set) var keyIdentifier: String
         /// The nonce used in the signature.
-        @objc public var nonce: UUID
+        @objc public private(set) var nonce: UUID
         /// The cryptographic signature of the offer parameters, generated on RevenueCat's server.
-        @objc public var signature: String
+        @objc public private(set) var signature: String
         /// The UNIX time, in milliseconds, when the signature was generated.
-        @objc public var timestamp: Int
+        @objc public private(set) var timestamp: Int
 
         init(identifier: String, keyIdentifier: String, nonce: UUID, signature: String, timestamp: Int) {
             self.identifier = identifier
