@@ -29,7 +29,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
         )
 
-        var result: Result<[String: Any], BackendError>?
+        var result: Result<OfferingsResponse, BackendError>?
 
         backend.getOfferings(appUserID: Self.userID) {
             result = $0
@@ -70,27 +70,27 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.oneOfferingResponse)
         )
 
-        var result: Result<[String: Any], BackendError>?
+        var result: Result<OfferingsResponse, BackendError>?
         backend.getOfferings(appUserID: Self.userID) {
             result = $0
         }
 
         expect(result).toEventuallyNot(beNil())
 
-        let offerings = try XCTUnwrap(result?.value?["offerings"] as? [[String: Any]])
-        let offeringA = try XCTUnwrap(offerings[0])
-        let packages = try XCTUnwrap(offeringA["packages"] as? [[String: String]])
+        let offerings = try XCTUnwrap(result?.value?.offerings)
+        let offeringA = try XCTUnwrap(offerings.first)
+        let packages = try XCTUnwrap(offeringA.packages)
         let packageA = packages[0]
         let packageB = packages[1]
 
         expect(offerings).to(haveCount(1))
-        expect(offeringA["identifier"] as? String) == "offering_a"
-        expect(offeringA["description"] as? String) == "This is the base offering"
-        expect(packageA["identifier"]) == "$rc_monthly"
-        expect(packageA["platform_product_identifier"]) == "monthly_freetrial"
-        expect(packageB["identifier"]) == "$rc_annual"
-        expect(packageB["platform_product_identifier"]) == "annual_freetrial"
-        expect(result?.value?["current_offering_id"] as? String) == "offering_a"
+        expect(offeringA.identifier) == "offering_a"
+        expect(offeringA.description) == "This is the base offering"
+        expect(packageA.identifier) == "$rc_monthly"
+        expect(packageA.platformProductIdentifier) == "monthly_freetrial"
+        expect(packageB.identifier) == "$rc_annual"
+        expect(packageB.platformProductIdentifier) == "annual_freetrial"
+        expect(result?.value?.currentOfferingId) == "offering_a"
     }
 
     func testGetOfferingsFailSendsNil() {
@@ -99,13 +99,14 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(error: .unexpectedResponse(nil))
         )
 
-        var offerings: [String: Any]? = [:]
+        var result: Result<OfferingsResponse, BackendError>?
 
-        backend.getOfferings(appUserID: Self.userID) { result in
-            offerings = result.value
+        backend.getOfferings(appUserID: Self.userID) {
+            result = $0
         }
 
-        expect(offerings).toEventually(beNil())
+        expect(result).toEventuallyNot(beNil())
+        expect(result).to(beFailure())
     }
 
     func testGetOfferingsNetworkErrorSendsError() {
@@ -116,7 +117,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(error: mockedError)
         )
 
-        var result: Result<[String: Any], BackendError>?
+        var result: Result<OfferingsResponse, BackendError>?
         backend.getOfferings(appUserID: Self.userID) {
             result = $0
         }

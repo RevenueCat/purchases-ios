@@ -19,7 +19,7 @@ class Backend {
 
     typealias CustomerInfoResponseHandler = (Result<CustomerInfo, BackendError>) -> Void
     typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
-    typealias OfferingsResponseHandler = (Result<[String: Any], BackendError>) -> Void
+    typealias OfferingsResponseHandler = (Result<OfferingsResponse, BackendError>) -> Void
     typealias OfferSigningResponseHandler = (Result<PostOfferForSigningOperation.SigningData, BackendError>) -> Void
     typealias SimpleResponseHandler = (BackendError?) -> Void
     typealias LogInResponseHandler = (Result<(info: CustomerInfo, created: Bool), BackendError>) -> Void

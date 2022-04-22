@@ -15,15 +15,16 @@ import XCTest
 
 class OfferingsTests: XCTestCase {
 
-    let offeringsFactory = OfferingsFactory()
+    private let offeringsFactory = OfferingsFactory()
 
     func testPackageIsNotCreatedIfNoValidProducts() {
-        let package = offeringsFactory.createPackage(with: [
-            "identifier": "$rc_monthly",
-            "platform_product_identifier": "com.myproduct.monthly"
-        ], storeProductsByID: [
-            "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
-        ], offeringIdentifier: "offering")
+        let package = self.offeringsFactory.createPackage(
+            with: .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
+            productsByID: [
+                "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
+            ],
+            offeringIdentifier: "offering"
+        )
 
         expect(package).to(beNil())
     }
@@ -33,38 +34,39 @@ class OfferingsTests: XCTestCase {
         let product = MockSK1Product(mockProductIdentifier: productIdentifier)
         let packageIdentifier = "$rc_monthly"
         let package = try XCTUnwrap(
-            offeringsFactory.createPackage(with: [
-                "identifier": packageIdentifier,
-                "platform_product_identifier": productIdentifier
-            ], storeProductsByID: [
-                productIdentifier: StoreProduct(sk1Product: product)
-            ], offeringIdentifier: "offering")
+            self.offeringsFactory.createPackage(
+                with: .init(identifier: packageIdentifier, platformProductIdentifier: productIdentifier),
+                productsByID: [
+                    productIdentifier: StoreProduct(sk1Product: product)
+                ],
+                offeringIdentifier: "offering"
+            )
         )
 
         expect(package.storeProduct.product).to(beAnInstanceOf(SK1StoreProduct.self))
         let sk1StoreProduct = try XCTUnwrap(package.storeProduct.product as? SK1StoreProduct)
         expect(sk1StoreProduct.underlyingSK1Product).to(equal(product))
-        expect(package.identifier).to(equal(packageIdentifier))
-        expect(package.packageType).to(equal(PackageType.monthly))
+        expect(package.identifier) == packageIdentifier
+        expect(package.packageType) == PackageType.monthly
     }
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
         let products = ["com.myproduct.bad": StoreProduct(sk1Product: SK1Product())]
-        let offering = offeringsFactory.createOffering(from: products, offeringData: [
-            "identifier": "offering_a",
-            "description": "This is the base offering",
-            "packages": [
-                ["identifier": "$rc_monthly",
-                 "platform_product_identifier": "com.myproduct.monthly"],
-                ["identifier": "$rc_annual",
-                 "platform_product_identifier": "com.myproduct.annual"]
-            ]
-        ])
+        let offering = self.offeringsFactory.createOffering(
+            from: products,
+            offering: .init(
+                identifier: "offering_a",
+                description: "This is the base offering",
+                packages: [
+                    .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
+                    .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual")
+                ])
+        )
 
         expect(offering).to(beNil())
     }
 
-    func testOfferingIsCreatedIfValidPackages() {
+    func testOfferingIsCreatedIfValidPackages() throws {
         let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
         let products = [
@@ -73,49 +75,47 @@ class OfferingsTests: XCTestCase {
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
-        let offering = offeringsFactory.createOffering(from: products, offeringData: [
-            "identifier": offeringIdentifier,
-            "description": serverDescription,
-            "packages": [
-                ["identifier": "$rc_monthly",
-                 "platform_product_identifier": "com.myproduct.monthly"],
-                ["identifier": "$rc_annual",
-                 "platform_product_identifier": "com.myproduct.annual"],
-                ["identifier": "$rc_six_month",
-                 "platform_product_identifier": "com.myproduct.sixMonth"]
-            ]
-        ])
-        expect(offering).toNot(beNil())
-        expect(offering?.identifier).to(equal(offeringIdentifier))
-        expect(offering?.serverDescription).to(equal(serverDescription))
-        expect(offering?.availablePackages).to(haveCount(2))
-        expect(offering?.monthly).toNot(beNil())
-        expect(offering?.annual).toNot(beNil())
-        expect(offering?.sixMonth).to(beNil())
+        let offering = try XCTUnwrap(
+            self.offeringsFactory.createOffering(
+                from: products,
+                offering: .init(
+                    identifier: offeringIdentifier,
+                    description: serverDescription,
+                    packages: [
+                        .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
+                        .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual"),
+                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
+                    ])
+            )
+        )
+
+        expect(offering.identifier) == offeringIdentifier
+        expect(offering.serverDescription) == serverDescription
+        expect(offering.availablePackages).to(haveCount(2))
+        expect(offering.monthly).toNot(beNil())
+        expect(offering.annual).toNot(beNil())
+        expect(offering.sixMonth).to(beNil())
     }
 
     func testListOfOfferingsIsNilIfNoValidOffering() {
-        let offerings = offeringsFactory.createOfferings(from: [:], data: [
-            "offerings": [
-                [
-                    "identifier": "offering_a",
-                    "description": "This is the base offering",
-                    "packages": [
-                        ["identifier": "$rc_six_month",
-                         "platform_product_identifier": "com.myproduct.sixMonth"]
-                    ]
-                ],
-                [
-                    "identifier": "offering_b",
-                    "description": "This is the base offering b",
-                    "packages": [
-                        ["identifier": "$rc_monthly",
-                         "platform_product_identifier": "com.myproduct.monthly"]
-                    ]
+        let offerings = self.offeringsFactory.createOfferings(
+            from: [:],
+            data: .init(
+                currentOfferingId: "offering_a",
+                offerings: [
+                    .init(identifier: "offering_a",
+                          description: "This is the base offering",
+                          packages: [
+                            .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
+                          ]),
+                    .init(identifier: "offering_b",
+                          description: "This is the base offering b",
+                          packages: [
+                            .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
+                          ])
                 ]
-            ],
-            "current_offering_id": "offering_a"
-        ])
+            )
+        )
 
         expect(offerings).to(beNil())
     }
@@ -128,32 +128,29 @@ class OfferingsTests: XCTestCase {
             "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
         ]
         let offerings = try XCTUnwrap(
-            offeringsFactory.createOfferings(from: products, data: [
-                "offerings": [
-                    [
-                        "identifier": "offering_a",
-                        "description": "This is the base offering",
-                        "packages": [
-                            ["identifier": "$rc_six_month",
-                             "platform_product_identifier": "com.myproduct.annual"]
-                        ]
-                    ],
-                    [
-                        "identifier": "offering_b",
-                        "description": "This is the base offering b",
-                        "packages": [
-                            ["identifier": "$rc_monthly",
-                             "platform_product_identifier": "com.myproduct.monthly"]
-                        ]
+            self.offeringsFactory.createOfferings(
+                from: products,
+                data: .init(
+                    currentOfferingId: "offering_a",
+                    offerings: [
+                        .init(identifier: "offering_a",
+                              description: "This is the base offering",
+                              packages: [
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                              ]),
+                        .init(identifier: "offering_b",
+                              description: "This is the base offering b",
+                              packages: [
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
+                              ])
                     ]
-                ],
-                "current_offering_id": "offering_a"
-            ])
+                )
+            )
         )
 
         expect(offerings["offering_a"]).toNot(beNil())
         expect(offerings["offering_b"]).toNot(beNil())
-        expect(offerings.current).to(be(offerings["offering_a"]))
+        expect(offerings.current) == offerings["offering_a"]
     }
 
     func testLifetimePackage() throws {
@@ -202,11 +199,15 @@ class OfferingsTests: XCTestCase {
     }
 
     func testOfferingsIsNilIfNoOfferingCanBeCreated() throws {
-        let data = [
+        let json = """
+        {
             "offerings": [],
-            "current_offering_id": nil
-        ]
-        let offerings = offeringsFactory.createOfferings(from: [:], data: data as [String: Any])
+            "current_offering_id": null
+        }
+        """.data(using: .utf8)!
+
+        let offeringsResponse: OfferingsResponse = try JSONDecoder.default.decode(jsonData: json)
+        let offerings = self.offeringsFactory.createOfferings(from: [:], data: offeringsResponse)
 
         expect(offerings).to(beNil())
     }
@@ -218,63 +219,56 @@ class OfferingsTests: XCTestCase {
             )
         ]
 
-        let data: [String: Any] = [
-            "offerings": [
-                [
-                    "identifier": "offering_a",
-                    "description": "This is the base offering",
-                    "packages": [
-                        ["identifier": "$rc_six_month",
-                         "platform_product_identifier": "com.myproduct.annual"]
-                    ]
-                ]
-            ],
-            "current_offering_id": "offering_with_broken_product"
-        ]
-        let offerings = offeringsFactory.createOfferings(from: storeProductsByID, data: data)
+        let response: OfferingsResponse = .init(
+            currentOfferingId: "offering_with_broken_product",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                      ])
+            ]
+        )
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(from: storeProductsByID, data: response)
+        )
 
-        let unwrappedOfferings = try XCTUnwrap(offerings)
-        expect(unwrappedOfferings.current).to(beNil())
-    }
-
-    func testBadOfferingsDataReturnsNil() {
-        let data = [:] as [String: Any]
-        let offerings = offeringsFactory.createOfferings(from: [:], data: data as [String: Any])
-
-        expect(offerings).to(beNil())
+        expect(offerings.current).to(beNil())
     }
 
 }
 
 private extension OfferingsTests {
+
     func testPackageType(packageType: PackageType, product: StoreProduct? = nil) throws {
-        var identifier = Package.string(from: packageType)
-        if identifier == nil {
+        let defaultIdentifier: String = {
             if packageType == PackageType.unknown {
-                identifier = "$rc_unknown_id_from_the_future"
+                return "$rc_unknown_id_from_the_future"
             } else {
-                identifier = "custom"
+                return "custom"
             }
-        }
+        }()
+
+        let identifier = Package.string(from: packageType) ?? defaultIdentifier
         let productIdentifier = product?.productIdentifier ?? "com.myproduct"
         let products = [
             productIdentifier: product
             ?? StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
         ]
         let offerings = try XCTUnwrap(
-            offeringsFactory.createOfferings(from: products, data: [
-                "offerings": [
-                    [
-                        "identifier": "offering_a",
-                        "description": "This is the base offering",
-                        "packages": [
-                            ["identifier": identifier,
-                             "platform_product_identifier": productIdentifier]
-                        ]
+            offeringsFactory.createOfferings(
+                from: products,
+                data: .init(
+                    currentOfferingId: "offering_a",
+                    offerings: [
+                        .init(identifier: "offering_a",
+                              description: "This is the base offering",
+                              packages: [
+                                .init(identifier: identifier, platformProductIdentifier: productIdentifier)
+                              ])
                     ]
-                ],
-                "current_offering_id": "offering_a"
-            ])
+                )
+            )
         )
 
         expect(offerings.current).toNot(beNil())
