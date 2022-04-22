@@ -2,8 +2,9 @@
 
 #### API updates:
 
-- Introduced new `Storefront` type to abstract SK1's `SKStorefront` and SK2's `StoreKit.Storefront`
-- Exposed `Storefront.currentStorefront`
+- Introduced new `Storefront` type to abstract SK1's `SKStorefront` and SK2's `StoreKit.Storefront`.
+- Exposed `Storefront.currentStorefront`.
+- Added new `ErrorCode.offlineConnectionError` to differenciate offline errors versus the more generic `.networkError`.
 - Added `Purchases-setFirebaseAppInstanceID` to allow associating RevenueCat users with Firebase.
 
 #### Other:
