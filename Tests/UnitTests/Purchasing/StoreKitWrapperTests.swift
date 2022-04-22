@@ -37,18 +37,10 @@ class MockPaymentQueue: SKPaymentQueue {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
-    @available(macOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
     func simulatePaymentQueueShouldShowPriceConsent() -> [Bool] {
-        var observersPriceConsentStatus: [Bool] = []
-        for observer in self.observers where observer is SKPaymentQueueDelegate {
-            if let consent = (observer as? SKPaymentQueueDelegate)?.paymentQueueShouldShowPriceConsent?(self) {
-                observersPriceConsentStatus.append(consent)
-            }
-
-        }
-        return observersPriceConsentStatus
+        return self.observers
+            .compactMap { $0 as? SKPaymentQueueDelegate }
+            .compactMap { $0.paymentQueueShouldShowPriceConsent?(self) }
     }
 #endif
 
@@ -281,8 +273,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         self.shouldShowPriceConsent = false
 
         let consentStatuses = self.paymentQueue.simulatePaymentQueueShouldShowPriceConsent()
-        expect(consentStatuses.count) == 1
-        expect(consentStatuses.first) == false
+        expect(consentStatuses) == [false]
     }
 #endif
 

@@ -80,7 +80,7 @@ import Foundation
      * The default return value for this optional method is true. By default, the system displays the price consent
      * sheet when you increase the subscription price in App Store Connect and the subscriber hasn’t yet taken action.
      *
-     * The system calls your delegate’s method, if appropriate, when RevenueCat starts observing the SKPaymentQueue,
+     * The system calls your delegate’s method, if appropriate, when RevenueCat starts observing the `SKPaymentQueue`,
      * and any time the app comes to foreground.
      *
      * If you return false, the system won’t show the price consent sheet. You can choose to display it later by

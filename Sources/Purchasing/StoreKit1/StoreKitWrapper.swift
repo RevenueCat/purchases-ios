@@ -29,9 +29,6 @@ protocol StoreKitWrapperDelegate: AnyObject {
 
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
-    @available(macOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
     func storeKitWrapperShouldShowPriceConsent() -> Bool
     #endif
 
@@ -111,9 +108,6 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
-    @available(macOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
     func showPriceConsentIfNeeded() {
         paymentQueue.showPriceConsentIfNeeded()
     }
@@ -160,9 +154,6 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
 
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
-    @available(macOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
     func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
         return delegate?.storeKitWrapperShouldShowPriceConsent() ?? true
     }

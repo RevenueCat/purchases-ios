@@ -150,6 +150,7 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     #endif
     #if os(iOS) || targetEnvironment(macCatalyst)
     purchases.showPriceConsentIfNeeded()
+    _ = purchases.delegate?.shouldShowPriceConsent?()
     #endif
 }
 
