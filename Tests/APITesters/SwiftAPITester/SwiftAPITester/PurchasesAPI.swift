@@ -156,6 +156,8 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setPhoneNumber("")
     purchases.setDisplayName("")
     purchases.setPushToken("".data(using: String.Encoding.utf8)!)
+    purchases.setPushToken("")
+    purchases.setPushToken(nil)
     purchases.setAdjustID("")
     purchases.setAppsflyerID("")
     purchases.setFBAnonymousID("")

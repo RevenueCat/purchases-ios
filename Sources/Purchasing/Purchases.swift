@@ -524,6 +524,18 @@ extension Purchases {
     }
 
     /**
+     * Subscriber attribute associated with the push token for the user.
+     *
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     *
+     * - Parameter pushToken: `nil` will delete the subscriber attribute.
+     */
+    @objc public func setPushTokenString(_ pushToken: String?) {
+        subscriberAttributesManager.setPushTokenString(pushToken, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the Adjust Id for the user.
      * Required for the RevenueCat Adjust integration.
      *
