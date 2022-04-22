@@ -65,13 +65,13 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
 
     override func handle(
         purchaseResult: StoreKit.Product.PurchaseResult
-    ) async throws -> (userCancelled: Bool, transaction: SK2Transaction?) {
+    ) async throws -> ResultData {
         invokedHandle = true
         invokedHandleCount += 1
         invokedHandleParameters = (.init(purchaseResult), ())
         invokedHandleParametersList.append((.init(purchaseResult), ()))
 
-        return (false, mockTransaction.value)
+        return (false, nil, mockTransaction.value)
     }
 }
 
