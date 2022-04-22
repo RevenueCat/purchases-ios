@@ -67,6 +67,13 @@ class AttributionPoster {
 
         var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
         newDictToCache[networkKey] = newValueForNetwork
+//        guard let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
+//                                               network: network,
+//                                               networkUserId: networkUserId,
+//                                                     identifierForAdvertisers: identifierForAdvertisers) else {
+//            
+//        }
+
         var newData = data
 
         if let identifierForAdvertisers = identifierForAdvertisers {
