@@ -526,9 +526,27 @@ extension Purchases {
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
      * - Parameter pushToken: `nil` will delete the subscriber attribute.
+     *
+     * #### Related Symbols
+     * - ``Purchases/setPushTokenString(_:)``
      */
     @objc public func setPushToken(_ pushToken: Data?) {
         subscriberAttributesManager.setPushToken(pushToken, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the push token for the user.
+     *
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     *
+     * - Parameter pushToken: `nil` will delete the subscriber attribute.
+     *
+     * #### Related Symbols
+     * - ``Purchases/setPushToken(_:)``
+     */
+    @objc public func setPushTokenString(_ pushToken: String?) {
+        subscriberAttributesManager.setPushTokenString(pushToken, appUserID: appUserID)
     }
 
     /**
@@ -633,6 +651,19 @@ extension Purchases {
      */
     @objc public func setMixpanelDistinctID(_ mixpanelDistinctID: String?) {
         subscriberAttributesManager.setMixpanelDistinctID(mixpanelDistinctID, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Firebase App Instance ID for the user.
+     * Required for the RevenueCat Firebase integration.
+     *
+     * #### Related Articles
+     * - [Firebase RevenueCat Integration](https://docs.revenuecat.com/docs/firebase-integration)
+     *
+     *- Parameter firebaseAppInstanceID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc public func setFirebaseAppInstanceID(_ firebaseAppInstanceID: String?) {
+        subscriberAttributesManager.setFirebaseAppInstanceID(firebaseAppInstanceID, appUserID: appUserID)
     }
 
     /**
@@ -887,8 +918,8 @@ public extension Purchases {
      * -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
      */
     @objc func getOfferings(completion: @escaping (Offerings?, Error?) -> Void) {
-        offeringsManager.offerings(appUserID: appUserID) { offerings, error in
-            completion(offerings, error?.asPurchasesError)
+        offeringsManager.offerings(appUserID: appUserID) { result in
+            completion(result.value, result.error?.asPurchasesError)
         }
     }
 

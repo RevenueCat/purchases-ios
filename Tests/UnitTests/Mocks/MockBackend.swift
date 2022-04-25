@@ -110,7 +110,7 @@ class MockBackend: Backend {
     var invokedGetOfferingsForAppUserIDCount = 0
     var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: OfferingsResponseHandler?)?
     var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, completion: OfferingsResponseHandler?)]()
-    var stubbedGetOfferingsCompletionResult: Result<[String: Any], BackendError>?
+    var stubbedGetOfferingsCompletionResult: Result<OfferingsResponse, BackendError>?
 
     override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
         invokedGetOfferingsForAppUserID = true

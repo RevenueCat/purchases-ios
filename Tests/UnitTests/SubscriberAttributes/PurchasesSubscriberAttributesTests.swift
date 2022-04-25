@@ -315,6 +315,16 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearPushTokenString() {
+        setupPurchases()
+        purchases.setPushTokenString("atoken")
+        purchases.setPushTokenString(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenStringParametersList[0])
+            .to(equal(("atoken", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenStringParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearAdjustID() {
         setupPurchases()
         purchases.setAdjustID("adjustIt")
@@ -393,6 +403,16 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .to(equal(("mixp", purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetMixpanelDistinctIDParametersList[1])
             .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearFirebaseAppInstanceID() {
+        setupPurchases()
+        purchases.setFirebaseAppInstanceID("fireb")
+        purchases.setFirebaseAppInstanceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDParametersList[0]) ==
+        ("fireb", purchases.appUserID)
+        expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDParametersList[1]) ==
+        (nil, purchases.appUserID)
     }
 
     func testSetAndClearMediaSource() {
@@ -544,6 +564,38 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParameters?.onesignalID) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParameters?.appUserID) == mockIdentityManager
             .currentAppUserID
+    }
+
+    func testSetAirshipChannelIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setAirshipChannelID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAirshipChannelIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAirshipChannelIDParameters?.airshipChannelID) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAirshipChannelIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
+    }
+
+    func testSetMixpanelDistinctIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setMixpanelDistinctID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetMixpanelDistinctIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetMixpanelDistinctIDParameters?.mixpanelDistinctID) ==
+        "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetMixpanelDistinctIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
+    }
+
+    func testSetFirebaseAppInstanceIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setFirebaseAppInstanceID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDParameters?.firebaseAppInstanceID) ==
+        "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
     }
 
     func testSetMediaSourceMakesRightCalls() {

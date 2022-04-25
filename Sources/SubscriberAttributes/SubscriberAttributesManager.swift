@@ -94,6 +94,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.mixpanelDistinctID, value: mixpanelDistinctID, appUserID: appUserID)
     }
 
+    func setFirebaseAppInstanceID(_ firebaseAppInstanceID: String?, appUserID: String) {
+        setReservedAttribute(.firebaseAppInstanceID, value: firebaseAppInstanceID, appUserID: appUserID)
+    }
+
     func setMediaSource(_ mediaSource: String?, appUserID: String) {
         setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
     }

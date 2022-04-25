@@ -1138,6 +1138,79 @@ class SubscriberAttributesManagerTests: XCTestCase {
         checkDeviceIdentifiersAreNotSet()
     }
     // endregion
+    // region FirebaseAppInstanceID
+    func testSetFirebaseAppInstanceID() throws {
+        let firebaseAppInstanceID = "firebaseAppInstanceID"
+
+        self.subscriberAttributesManager.setFirebaseAppInstanceID(firebaseAppInstanceID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$firebaseAppInstanceId"
+        expect(receivedAttribute.value) == firebaseAppInstanceID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetFirebaseAppInstanceIDSetsEmptyIfNil() throws {
+        let firebaseAppInstanceID = "firebaseAppInstanceID"
+
+        self.subscriberAttributesManager.setFirebaseAppInstanceID(firebaseAppInstanceID, appUserID: "kratos")
+        self.subscriberAttributesManager.setFirebaseAppInstanceID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$firebaseAppInstanceId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetFirebaseAppInstanceIDSkipsIfSameValue() {
+        let firebaseAppInstanceID = "firebaseAppInstanceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$firebaseAppInstanceId",
+                                                                                    value: firebaseAppInstanceID)
+        self.subscriberAttributesManager.setFirebaseAppInstanceID(firebaseAppInstanceID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetFirebaseAppInstanceIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let firebaseAppInstanceID = "firebaseAppInstanceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$firebaseAppInstanceId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setFirebaseAppInstanceID(firebaseAppInstanceID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$firebaseAppInstanceId"
+        expect(receivedAttribute.value) == firebaseAppInstanceID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetFirebaseAppInstanceIDDoesNotSetDeviceIdentifiers() {
+        let firebaseAppInstanceID = "firebaseAppInstanceID"
+        self.subscriberAttributesManager.setFirebaseAppInstanceID(firebaseAppInstanceID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
     // region Media source
     func testSetMediaSource() {
         let mediaSource = "mediaSource"

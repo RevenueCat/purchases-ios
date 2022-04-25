@@ -182,7 +182,7 @@ class DeviceCacheTests: XCTestCase {
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: "cesar", isAppBackgrounded: false)) == false
     }
 
-    func testOfferingsAreProperlyCached() {
+    func testOfferingsAreProperlyCached() throws {
         let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
         let products = [
@@ -192,23 +192,32 @@ class DeviceCacheTests: XCTestCase {
 
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
-        let optionalOffering = OfferingsFactory().createOffering(from: products, offeringData: [
-            "identifier": offeringIdentifier,
-            "description": serverDescription,
-            "packages": [
-                ["identifier": "$rc_monthly",
-                 "platform_product_identifier": "com.myproduct.monthly"],
-                ["identifier": "$rc_annual",
-                 "platform_product_identifier": "com.myproduct.annual"],
-                ["identifier": "$rc_six_month",
-                 "platform_product_identifier": "com.myproduct.sixMonth"]
-            ]
-        ])
-        guard let offering = optionalOffering else { fatalError("couldn't create offering for tests") }
+
+        let offeringsJSON = """
+            {
+                "identifier": "\(offeringIdentifier)",
+                "description": "\(serverDescription)",
+                "packages": [
+                    {"identifier": "$rc_monthly",
+                     "platform_product_identifier": "com.myproduct.monthly"},
+                    {"identifier": "$rc_annual",
+                     "platform_product_identifier": "com.myproduct.annual"},
+                    {"identifier": "$rc_six_month",
+                     "platform_product_identifier": "com.myproduct.sixMonth"}
+                ]
+            }
+        """
+        let offeringsData: OfferingsResponse.Offering = try JSONDecoder.default.decode(
+            jsonData: offeringsJSON.data(using: .utf8)!
+        )
+
+        let offering = try XCTUnwrap(
+            OfferingsFactory().createOffering(from: products, offering: offeringsData)
+        )
         let expectedOfferings = Offerings(offerings: ["offering1": offering], currentOfferingID: "base")
         self.deviceCache.cache(offerings: expectedOfferings)
 
-        expect(self.deviceCache.cachedOfferings).to(beIdenticalTo(expectedOfferings))
+        expect(self.deviceCache.cachedOfferings) === expectedOfferings
     }
 
     func testAssertionHappensWhenAppUserIDIsDeleted() {

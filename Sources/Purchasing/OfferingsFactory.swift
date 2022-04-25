@@ -17,66 +17,66 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(from storeProductsByID: [String: StoreProduct], data: [String: Any]) -> Offerings? {
-        guard let offeringsData = data["offerings"] as? [[String: Any]] else {
-            return nil
-        }
-
-        let offerings = offeringsData.reduce([String: Offering]()) { (dict, offeringData) -> [String: Offering] in
-            var dict = dict
-            if let offering = createOffering(from: storeProductsByID,
-                                             offeringData: offeringData) {
-                dict[offering.identifier] = offering
-                if offering.availablePackages.isEmpty {
-                    Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
-                }
+    func createOfferings(from storeProductsByID: [String: StoreProduct], data: OfferingsResponse) -> Offerings? {
+        let offerings: [String: Offering] = data
+            .offerings
+            .compactMap { offeringData in
+                createOffering(from: storeProductsByID, offering: offeringData)
             }
-            return dict
-        }
+            .dictionaryAllowingDuplicateKeys { $0.identifier }
 
         guard !offerings.isEmpty else {
             return nil
         }
 
-        let currentOfferingID = data["current_offering_id"] as? String
-
-        return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
+        return Offerings(offerings: offerings, currentOfferingID: data.currentOfferingId)
     }
 
-    func createOffering(from storeProductsByID: [String: StoreProduct], offeringData: [String: Any]) -> Offering? {
-        guard let offeringIdentifier = offeringData["identifier"] as? String,
-              let packagesData = offeringData["packages"] as? [[String: Any]],
-              let serverDescription = offeringData["description"] as? String else {
-            return nil
+    func createOffering(
+        from storeProductsByID: [String: StoreProduct],
+        offering: OfferingsResponse.Offering
+    ) -> Offering? {
+        let availablePackages: [Package] = offering.packages.compactMap { package in
+            createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
         }
 
-        let availablePackages = packagesData.compactMap { packageData -> Package? in
-            createPackage(with: packageData,
-                          storeProductsByID: storeProductsByID,
-                          offeringIdentifier: offeringIdentifier)
-        }
         guard !availablePackages.isEmpty else {
+            Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
             return nil
         }
 
-        return Offering(identifier: offeringIdentifier, serverDescription: serverDescription,
+        return Offering(identifier: offering.identifier,
+                        serverDescription: offering.description,
                         availablePackages: availablePackages)
     }
 
-    func createPackage(with data: [String: Any],
-                       storeProductsByID: [String: StoreProduct],
-                       offeringIdentifier: String) -> Package? {
-        guard let platformProductIdentifier = data["platform_product_identifier"] as? String,
-              let product = storeProductsByID[platformProductIdentifier],
-              let identifier = data["identifier"] as? String else {
+    func createPackage(
+        with data: OfferingsResponse.Offering.Package,
+        productsByID: [String: StoreProduct],
+        offeringIdentifier: String
+    ) -> Package? {
+        guard let product = productsByID[data.platformProductIdentifier] else {
             return nil
         }
 
-        let packageType = Package.packageType(from: identifier)
-        return Package(identifier: identifier,
-                       packageType: packageType,
-                       storeProduct: product,
-                       offeringIdentifier: offeringIdentifier)
+        return .init(package: data,
+                     product: product,
+                     offeringIdentifier: offeringIdentifier)
+    }
+
+}
+
+private extension Package {
+
+    convenience init(
+        package: OfferingsResponse.Offering.Package,
+        product: StoreProduct,
+        offeringIdentifier: String
+    ) {
+        self.init(identifier: package.identifier,
+                  packageType: Package.packageType(from: package.identifier),
+                  storeProduct: product,
+                  offeringIdentifier: offeringIdentifier)
     }
 
 }

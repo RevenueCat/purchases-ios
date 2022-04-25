@@ -185,24 +185,7 @@ private extension HTTPClient {
                error networkError: Error?
     ) -> HTTPResponse<Data>.Result? {
         if let networkError = networkError {
-            return Result
-                .failure(networkError)
-                .mapError { error -> NetworkError in
-                    if self.dnsChecker.isBlockedAPIError(networkError),
-                       let blockedError = self.dnsChecker.errorWithBlockedHostFromError(networkError) {
-                        Logger.error(blockedError.description)
-                        return blockedError
-                    } else {
-                        let nsError = error as NSError
-
-                        switch (nsError.domain, nsError.code) {
-                        case (NSURLErrorDomain, NSURLErrorNotConnectedToInternet):
-                            return .offlineConnection()
-                        default:
-                            return .networkError(error)
-                        }
-                    }
-                }
+            return .failure(NetworkError(networkError, dnsChecker: self.dnsChecker))
         }
 
         guard let httpURLResponse = urlResponse as? HTTPURLResponse else {
@@ -347,6 +330,28 @@ private extension Encodable {
 
     func asData() throws -> Data {
         return try JSONEncoder.default.encode(self)
+    }
+
+}
+
+private extension NetworkError {
+
+    /// Creates a `NetworkError` from any request `Error`.
+    init(_ error: Error, dnsChecker: DNSCheckerType.Type) {
+        if dnsChecker.isBlockedAPIError(error),
+           let blockedError = dnsChecker.errorWithBlockedHostFromError(error) {
+            Logger.error(blockedError.description)
+            self = blockedError
+        } else {
+            let nsError = error as NSError
+
+            switch (nsError.domain, nsError.code) {
+            case (NSURLErrorDomain, NSURLErrorNotConnectedToInternet):
+                self = .offlineConnection()
+            default:
+                self = .networkError(error)
+            }
+        }
     }
 
 }
