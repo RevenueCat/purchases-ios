@@ -1410,7 +1410,7 @@ public extension Purchases {
      * you won't need to call this.
      *
      * ### Related Symbols
-     * - ``SKPaymentQueue/showPriceConsentIfNeeded``
+     * - ``SKPaymentQueue/showPriceConsentIfNeeded()`
      *
      * ### Related Articles
      * - [Apple Documentation](https://rev.cat/testing-promoted-in-app-purchases)

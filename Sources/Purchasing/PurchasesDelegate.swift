@@ -84,7 +84,7 @@ import Foundation
      * and any time the app comes to foreground.
      *
      * If you return false, the system won’t show the price consent sheet. You can choose to display it later by
-     * calling ``Purchases.showPriceConsentIfNeeded()``.
+     * calling ``Purchases/showPriceConsentIfNeeded()``.
      * You may want to delay showing the sheet if it would interrupt your user’s interaction in your app.
      *
      * ### Related Articles

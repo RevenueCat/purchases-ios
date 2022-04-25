@@ -179,12 +179,17 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - install-and-create-sim:
+          install-name: iOS 15.4 Simulator
+          sim-device-type: iPhone-13
+          sim-device-runtime: iOS-15-4
+          sim-name: iPhone 13 (15.4)
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
           no_output_timeout: 30m
           environment:
-            SCAN_DEVICE: iPad mini (6th generation)
+            SCAN_DEVICE: iPhone 13 (15.4)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
