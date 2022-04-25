@@ -1846,16 +1846,14 @@ extension Purchases: PurchasesOrchestratorDelegate {
      * once the app is ready to start the purchase flow.
      * When the purchase completes, the result will be part of the callback parameters.
      */
-    @objc
-    internal func readyForPromotedProduct(_ product: StoreProduct,
-                                          purchase startPurchase: @escaping StartPurchaseBlock) {
+    func readyForPromotedProduct(_ product: StoreProduct,
+                                 purchase startPurchase: @escaping StartPurchaseBlock) {
         self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
-    @objc
     @available(iOS 13.4, macCatalyst 13.4, *)
-    internal func shouldShowPriceConsent() -> Bool {
+    func shouldShowPriceConsent() -> Bool {
         self.delegate?.shouldShowPriceConsent?() ?? true
     }
     #endif
