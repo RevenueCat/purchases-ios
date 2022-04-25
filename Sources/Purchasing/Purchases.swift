@@ -92,6 +92,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     /**
      * Enable automatic collection of AdServices attribution token. Defaults to `false`.
+     *
+     * Should match OS availability in https://developer.apple.com/documentation/ad_services
      */
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     @objc public static var automaticAdServicesAttributionTokenCollection: Bool = false
@@ -418,6 +420,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         attributionPoster.postPostponedAttributionDataIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
 
+        // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {            postAdServicesTokenIfNeeded()
         }
 
@@ -444,6 +447,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         privateDelegate = nil
         Self.automaticAppleSearchAdsAttributionCollection = false
 
+        // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             Self.automaticAdServicesAttributionTokenCollection = false
         }
@@ -760,6 +764,7 @@ extension Purchases {
         attributionPoster.postAppleSearchAdsAttributionIfNeeded()
     }
 
+    // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     private func postAdServicesTokenIfNeeded() {
         guard Self.automaticAdServicesAttributionTokenCollection else {
@@ -1892,6 +1897,7 @@ private extension Purchases {
         dispatchSyncSubscriberAttributesIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
 
+        // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             postAdServicesTokenIfNeeded()
         }

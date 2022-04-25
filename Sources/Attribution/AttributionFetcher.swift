@@ -88,6 +88,7 @@ class AttributionFetcher {
 #endif
     }
 
+    // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func adServicesToken() -> String? {
 #if canImport(AdServices)
