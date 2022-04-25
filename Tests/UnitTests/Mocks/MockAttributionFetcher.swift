@@ -23,8 +23,9 @@ class MockAttributionFetcher: AttributionFetcher {
         completionHandler(["Version3.1": ["iad-campaign-id": 15292426, "iad-attribution": true] as NSObject], nil)
     }
 
-    override func adServicesToken(completion: @escaping (String?, Error?) -> Void) {
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    override func adServicesToken() -> String? {
         adServicesTokenCollected = true
-        completion("test", nil)
+        return "test"
     }
 }
