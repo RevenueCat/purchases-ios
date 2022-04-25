@@ -1433,9 +1433,31 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
 ///   </li>
 /// </ul>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>Purchases/setPushTokenString(_:)</code>
+///   </li>
+/// </ul>
 /// \param pushToken <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setPushToken:(NSData * _Nullable)pushToken;
+/// Subscriber attribute associated with the push token for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>Purchases/setPushToken(_:)</code>
+///   </li>
+/// </ul>
+/// \param pushToken <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setPushTokenString:(NSString * _Nullable)pushToken;
 /// Subscriber attribute associated with the Adjust Id for the user.
 /// Required for the RevenueCat Adjust integration.
 /// <h4>Related Articles</h4>
