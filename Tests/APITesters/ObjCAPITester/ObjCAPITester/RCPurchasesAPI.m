@@ -113,6 +113,8 @@ BOOL isAnonymous;
     [p setDisplayName: @""];
     [p setPushToken: nil];
     [p setPushToken: [@"" dataUsingEncoding: NSUTF8StringEncoding]];
+    [p setPushTokenString: @""];
+    [p setPushTokenString: nil];
     [p setAdjustID: nil];
     [p setAdjustID: @""];
     [p setAppsflyerID: nil];

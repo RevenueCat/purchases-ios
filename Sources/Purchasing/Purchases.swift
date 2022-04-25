@@ -518,9 +518,27 @@ extension Purchases {
      * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
      *
      * - Parameter pushToken: `nil` will delete the subscriber attribute.
+     *
+     * #### Related Symbols
+     * - ``Purchases/setPushTokenString(_:)``
      */
     @objc public func setPushToken(_ pushToken: Data?) {
         subscriberAttributesManager.setPushToken(pushToken, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the push token for the user.
+     *
+     * #### Related Articles
+     * -  [Subscriber attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+     *
+     * - Parameter pushToken: `nil` will delete the subscriber attribute.
+     *
+     * #### Related Symbols
+     * - ``Purchases/setPushToken(_:)``
+     */
+    @objc public func setPushTokenString(_ pushToken: String?) {
+        subscriberAttributesManager.setPushTokenString(pushToken, appUserID: appUserID)
     }
 
     /**

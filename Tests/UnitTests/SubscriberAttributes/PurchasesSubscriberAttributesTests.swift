@@ -315,6 +315,16 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearPushTokenString() {
+        setupPurchases()
+        purchases.setPushTokenString("atoken")
+        purchases.setPushTokenString(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenStringParametersList[0])
+            .to(equal(("atoken", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenStringParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearAdjustID() {
         setupPurchases()
         purchases.setAdjustID("adjustIt")
