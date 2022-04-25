@@ -133,6 +133,7 @@ Or browse our iOS sample apps:
 - ``Purchases/setCreative(_:)``
 - ``Purchases/setAdGroup(_:)``
 - ``Purchases/setPushToken(_:)``
+- ``Purchases/setPushTokenString(_:)``
 - ``Purchases/setMediaSource(_:)``
 - ``Purchases/setPhoneNumber(_:)``
 - ``Purchases/setAttributes(_:)``

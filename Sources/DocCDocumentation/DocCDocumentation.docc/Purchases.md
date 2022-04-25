@@ -89,6 +89,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/setCreative(_:)``
 - ``Purchases/setAdGroup(_:)``
 - ``Purchases/setPushToken(_:)``
+- ``Purchases/setPushTokenString(_:)``
 - ``Purchases/setMediaSource(_:)``
 - ``Purchases/setPhoneNumber(_:)``
 - ``Purchases/setAttributes(_:)``
