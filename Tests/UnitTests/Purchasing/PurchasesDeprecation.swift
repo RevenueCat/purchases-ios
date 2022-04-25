@@ -12,12 +12,13 @@
 //  Created by Joshua Liebowitz on 10/18/21.
 
 import Foundation
-import RevenueCat
 
 // Protocol that enables us to call deprecated methods without triggering warnings.
 protocol PurchasesDeprecatable {
 
     var allowSharingAppStoreAccount: Bool { get set }
+
+    static var automaticAppleSearchAdsAttributionCollection: Bool { get set }
 
     static func addAttributionData(_ data: [String: Any], fromNetwork network: AttributionNetwork)
     static func addAttributionData(_ data: [String: Any],
@@ -32,6 +33,16 @@ class PurchasesDeprecation: PurchasesDeprecatable {
 
     init(purchases: Purchases) {
         self.purchases = purchases
+    }
+
+    @available(*, deprecated)
+    static var automaticAppleSearchAdsAttributionCollection: Bool {
+        get {
+            return Purchases.automaticAppleSearchAdsAttributionCollection
+        }
+        set {
+            Purchases.automaticAppleSearchAdsAttributionCollection = newValue
+        }
     }
 
     @available(*, deprecated)
