@@ -180,7 +180,7 @@ jobs:
       - checkout
       - install-dependencies
       - install-and-create-sim:
-          install-name: iOS 15.4 Simulator
+          install-name: iOS 15.2 Simulator
           sim-device-type: iPhone-13
           sim-device-runtime: iOS-15-2
           sim-name: iPhone 13 (15.2)
