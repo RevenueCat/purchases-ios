@@ -97,13 +97,14 @@ Most features require configuring the SDK before using it.
 
 ### Integrations
 - ``Purchases/setAdjustID(_:)``
-- ``Purchases/setAppsflyerID(_:)``
 - ``Purchases/setAirshipChannelID(_:)``
+- ``Purchases/setAppsflyerID(_:)``
+- ``Purchases/setCleverTapID(_:)``
+- ``Purchases/setFBAnonymousID(_:)``
+- ``Purchases/setFirebaseAppInstanceID(_:)``
+- ``Purchases/setMixpanelDistinctID(_:)``
 - ``Purchases/setMparticleID(_:)``
 - ``Purchases/setOnesignalID(_:)``
-- ``Purchases/setFBAnonymousID(_:)``
-- ``Purchases/setMixpanelDistinctID(_:)``
-- ``Purchases/setFirebaseAppInstanceID(_:)``
 
 ### Advanced Configuration
 - ``Purchases/finishTransactions``
