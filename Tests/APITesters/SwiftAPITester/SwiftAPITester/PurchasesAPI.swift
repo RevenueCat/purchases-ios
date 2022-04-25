@@ -83,7 +83,8 @@ private func checkStaticMethods() {
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
 
-    // should have deprecation warning 'automaticAppleSearchAdsAttributionCollection' is deprecated: Use Purchases.automaticAdServicesAttributionTokenCollection instead
+    // should have deprecation warning 'automaticAppleSearchAdsAttributionCollection' is deprecated: Use
+    // Purchases.automaticAdServicesAttributionTokenCollection instead
     let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
     // should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
     let debugLogsEnabled: Bool = Purchases.debugLogsEnabled
@@ -96,7 +97,8 @@ private func checkStaticMethods() {
     let automaticAdServicesAttributionTokenCollection: Bool = Purchases.automaticAdServicesAttributionTokenCollection
 
     print(canI, version, automaticAppleSearchAdsAttributionCollection, debugLogsEnabled, logLevel, proxyUrl!,
-          forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isPurchasesConfigured, automaticAdServicesAttributionTokenCollection)
+          forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isPurchasesConfigured,
+          automaticAdServicesAttributionTokenCollection)
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
