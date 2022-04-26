@@ -445,12 +445,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeKitWrapper.delegate = nil
         customerInfoObservationDisposable?()
         privateDelegate = nil
-        Self.deprecated.automaticAppleSearchAdsAttributionCollection = false
 
-        // should match OS availability in https://developer.apple.com/documentation/ad_services
-        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
-            Self.automaticAdServicesAttributionTokenCollection = false
-        }
         Self.proxyURL = nil
     }
 
@@ -758,7 +753,7 @@ extension Purchases {
     }
 
     private func postAppleSearchAddsAttributionCollectionIfNeeded() {
-        guard Self.deprecated.automaticAppleSearchAdsAttributionCollection else {
+        guard Self.automaticAppleSearchAdsAttributionCollection else {
             return
         }
         attributionPoster.postAppleSearchAdsAttributionIfNeeded()
