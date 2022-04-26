@@ -1401,12 +1401,12 @@ public extension Purchases {
 #if os(iOS) || targetEnvironment(macCatalyst)
     /**
      * Displays price consent sheet if needed. You only need to call this manually if you implement
-     * ``PurchasesDelegate/shouldShowPriceConsent()`` and return false at some point.
+     * ``PurchasesDelegate/shouldShowPriceConsent`` and return false at some point.
      *
      * You may want to delay showing the sheet if it would interrupt your user’s interaction in your app. You can do
-     * this by implementing ``PurchasesDelegate/shouldShowPriceConsent()``.
+     * this by implementing ``PurchasesDelegate/shouldShowPriceConsent``.
      *
-     * In most cases, you don't _*typically*_ implement ``PurchasesDelegate/shouldShowPriceConsent()``, therefore,
+     * In most cases, you don't _*typically*_ implement ``PurchasesDelegate/shouldShowPriceConsent``, therefore,
      * you won't need to call this.
      *
      * ### Related Symbols
@@ -1854,7 +1854,7 @@ extension Purchases: PurchasesOrchestratorDelegate {
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     func shouldShowPriceConsent() -> Bool {
-        self.delegate?.shouldShowPriceConsent?() ?? true
+        self.delegate?.shouldShowPriceConsent ?? true
     }
     #endif
 

@@ -471,7 +471,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    func storeKitWrapperShouldShowPriceConsent() -> Bool {
+    var storeKitWrapperShouldShowPriceConsent: Bool {
         return delegate?.shouldShowPriceConsent() ?? true
     }
 

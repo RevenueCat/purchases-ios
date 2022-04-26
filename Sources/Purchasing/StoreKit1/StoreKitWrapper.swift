@@ -29,7 +29,7 @@ protocol StoreKitWrapperDelegate: AnyObject {
 
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
-    func storeKitWrapperShouldShowPriceConsent() -> Bool
+    var storeKitWrapperShouldShowPriceConsent: Bool { get }
     #endif
 
 }
@@ -155,7 +155,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
-        return delegate?.storeKitWrapperShouldShowPriceConsent() ?? true
+        return delegate?.storeKitWrapperShouldShowPriceConsent ?? true
     }
     #endif
 

@@ -80,10 +80,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         return shouldAddPromo
     }
 
-    var shouldShowPriceConsent = true
-    func storeKitWrapperShouldShowPriceConsent() -> Bool {
-        return shouldShowPriceConsent
-    }
+    var storeKitWrapperShouldShowPriceConsent = true
 
     var productIdentifiersWithRevokedEntitlements: [String]?
 
@@ -268,9 +265,9 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         guard #available(iOS 13.4, macCatalyst 13.4, *) else {
             throw XCTSkip()
         }
-        expect(self.shouldShowPriceConsent) == true
+        expect(self.storeKitWrapperShouldShowPriceConsent) == true
 
-        self.shouldShowPriceConsent = false
+        self.storeKitWrapperShouldShowPriceConsent = false
 
         let consentStatuses = self.paymentQueue.simulatePaymentQueueShouldShowPriceConsent()
         expect(consentStatuses) == [false]

@@ -94,6 +94,6 @@ import Foundation
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    @objc optional func shouldShowPriceConsent() -> Bool
+    @objc optional var shouldShowPriceConsent: Bool { get }
 
 }
