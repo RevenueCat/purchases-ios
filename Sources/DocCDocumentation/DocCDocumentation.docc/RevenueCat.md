@@ -133,6 +133,7 @@ Or browse our iOS sample apps:
 - ``Purchases/setCreative(_:)``
 - ``Purchases/setAdGroup(_:)``
 - ``Purchases/setPushToken(_:)``
+- ``Purchases/setPushTokenString(_:)``
 - ``Purchases/setMediaSource(_:)``
 - ``Purchases/setPhoneNumber(_:)``
 - ``Purchases/setAttributes(_:)``
@@ -140,9 +141,11 @@ Or browse our iOS sample apps:
 
 ### Integrations
 - ``Purchases/setAdjustID(_:)``
-- ``Purchases/setAppsflyerID(_:)``
 - ``Purchases/setAirshipChannelID(_:)``
+- ``Purchases/setAppsflyerID(_:)``
+- ``Purchases/setCleverTapID(_:)``
+- ``Purchases/setFBAnonymousID(_:)``
+- ``Purchases/setFirebaseAppInstanceID(_:)``
+- ``Purchases/setMixpanelDistinctID(_:)``
 - ``Purchases/setMparticleID(_:)``
 - ``Purchases/setOnesignalID(_:)``
-- ``Purchases/setFBAnonymousID(_:)``
-- ``Purchases/setMixpanelDistinctID(_:)``

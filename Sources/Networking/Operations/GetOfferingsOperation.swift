@@ -46,7 +46,8 @@ private extension GetOfferingsOperation {
 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
+        httpClient.perform(request,
+                           authHeaders: self.authHeaders) { (response: HTTPResponse<OfferingsResponse>.Result) in
             defer {
                 completion()
             }

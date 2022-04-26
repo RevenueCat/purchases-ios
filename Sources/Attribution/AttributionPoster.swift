@@ -109,7 +109,11 @@ class AttributionPoster {
         }
     }
 
-    // note to maddie -- tried pulling this out for re-use, but subattrs handles latestSentToNetwork == newValueForNetwork differently than what we want for adservices. this is techncially OK from a functionality standpoint, because we already skip fetching a new token if previous != nil, so it shouldn't get to this point. but need to somehow pull the subattrs-specific log out of here
+    // note to maddie -- tried pulling this out for re-use, but subattrs handles
+    // latestSentToNetwork == newValueForNetwork differently than what we want for adservices.
+    // this is techncially OK from a functionality standpoint, because we already skip fetching
+    // a new token if previous != nil, so it shouldn't get to this point. but need to somehow
+    // pull the subattrs-specific log out of here
 //    func getNewDictToCache(currentAppUserID: String,
 //                           network: AttributionNetwork,
 //                           networkUserId: String?,
@@ -179,6 +183,7 @@ class AttributionPoster {
         }
     }
 
+    // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func postAdServicesTokenIfNeeded() {
         let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
@@ -186,12 +191,11 @@ class AttributionPoster {
             return
         }
 
-        guard let _ = attributionFetcher.adServicesToken() else {
+        guard let attributionToken = attributionFetcher.adServicesToken() else {
             return
         }
 
-            self.post(adServicesToken: attributionToken)
-        }
+        self.post(adServicesToken: attributionToken)
     }
 
     func postPostponedAttributionDataIfNeeded() {

@@ -37,7 +37,7 @@ class OfferingsManager {
         self.productsManager = productsManager
     }
 
-    func offerings(appUserID: String, completion: ((Offerings?, Error?) -> Void)?) {
+    func offerings(appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?) {
         guard let cachedOfferings = deviceCache.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
             systemInfo.isApplicationBackgrounded { isAppBackgrounded in
@@ -49,9 +49,7 @@ class OfferingsManager {
         }
 
         Logger.debug(Strings.offering.vending_offerings_cache)
-        dispatchCompletionOnMainThreadIfPossible(completion,
-                                                 offerings: cachedOfferings,
-                                                 error: nil)
+        dispatchCompletionOnMainThreadIfPossible(completion, result: .success(cachedOfferings))
 
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
@@ -68,13 +66,17 @@ class OfferingsManager {
         }
     }
 
-    func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ((Offerings?, Error?) -> Void)?) {
+    func updateOfferingsCache(
+        appUserID: String,
+        isAppBackgrounded: Bool,
+        completion: ((Result<Offerings, Error>) -> Void)?
+    ) {
         deviceCache.setOfferingsCacheTimestampToNow()
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
             self.backend.getOfferings(appUserID: appUserID) { result in
                 switch result {
-                case let .success(data):
-                    self.handleOfferingsBackendResult(with: data, completion: completion)
+                case let .success(response):
+                    self.handleOfferingsBackendResult(with: response, completion: completion)
 
                 case let .failure(error):
                     self.handleOfferingsUpdateError(.backendError(error), completion: completion)
@@ -96,8 +98,12 @@ class OfferingsManager {
 
 private extension OfferingsManager {
 
-    func handleOfferingsBackendResult(with data: [String: Any], completion: ((Offerings?, Error?) -> Void)?) {
-        let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
+    func handleOfferingsBackendResult(
+        with response: OfferingsResponse,
+        completion: ((Result<Offerings, Error>) -> Void)?
+    ) {
+        let productIdentifiers = response.productIdentifiers
+
         guard !productIdentifiers.isEmpty else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
             self.handleOfferingsUpdateError(.configurationError(errorMessage),
@@ -125,42 +131,26 @@ private extension OfferingsManager {
                 )
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
-                                                                            data: data) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, data: response) {
                 self.deviceCache.cache(offerings: createdOfferings)
-                self.dispatchCompletionOnMainThreadIfPossible(completion,
-                                                              offerings: createdOfferings,
-                                                              error: nil)
+                self.dispatchCompletionOnMainThreadIfPossible(completion, result: .success(createdOfferings))
             } else {
                 self.handleOfferingsUpdateError(.noOfferingsFound(), completion: completion)
             }
         }
     }
 
-    func handleOfferingsUpdateError(_ error: Error, completion: ((Offerings?, Error?) -> Void)?) {
+    func handleOfferingsUpdateError(_ error: Error, completion: ((Result<Offerings, Error>) -> Void)?) {
         Logger.appleError(Strings.offering.fetching_offerings_error(error: error.localizedDescription))
         deviceCache.clearOfferingsCacheTimestamp()
-        dispatchCompletionOnMainThreadIfPossible(completion,
-                                                 offerings: nil,
-                                                 error: error)
+        dispatchCompletionOnMainThreadIfPossible(completion, result: .failure(error))
     }
 
-    func extractProductIdentifiers(fromOfferingsData offeringsData: [String: Any]) -> Set<String> {
-        // Fixme: parse Data directly instead of converting from Data to Dictionary back to Data
-        guard let data = try? JSONSerialization.data(withJSONObject: offeringsData),
-              let response: OfferingsResponse = try? JSONDecoder.default.decode(jsonData: data) else {
-            return []
-        }
-
-        return Set(response.productIdentifiers)
-    }
-
-    func dispatchCompletionOnMainThreadIfPossible(_ completion: ((Offerings?, Error?) -> Void)?,
-                                                  offerings: Offerings?,
-                                                  error: Error?) {
+    func dispatchCompletionOnMainThreadIfPossible(_ completion: ((Result<Offerings, Error>) -> Void)?,
+                                                  result: Result<Offerings, Error>) {
         if let completion = completion {
             operationDispatcher.dispatchOnMainThread {
-                completion(offerings, error)
+                completion(result)
             }
         }
     }
@@ -217,42 +207,3 @@ extension OfferingsManager.Error: ErrorCodeConvertible {
     }
 
 }
-
-// swiftlint:disable nesting
-
-private struct OfferingsResponse {
-
-    struct Offering {
-
-        struct Package {
-
-            let identifier: String
-            let platformProductIdentifier: String
-
-        }
-
-        let description: String
-        let identifier: String
-        let packages: [Package]
-
-    }
-
-    let currentOfferingId: String
-    let offerings: [Offering]
-
-}
-
-extension OfferingsResponse {
-
-    var productIdentifiers: [String] {
-        return self.offerings
-            .lazy
-            .flatMap { $0.packages }
-            .map { $0.platformProductIdentifier }
-    }
-
-}
-
-extension OfferingsResponse.Offering.Package: Decodable {}
-extension OfferingsResponse.Offering: Decodable {}
-extension OfferingsResponse: Decodable {}

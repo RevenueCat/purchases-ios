@@ -31,7 +31,8 @@ public final class PromotionalOffer: NSObject {
 
     /// The ``StoreProductDiscount`` in this offer.
     @objc public let discount: StoreProductDiscount
-    let signedData: SignedData
+    /// The ``SignedData-swift.class`` provides information about the ``PromotionalOffer``'s signature.
+    @objc public let signedData: SignedData
 
     init(discount: StoreProductDiscountType, signedData: SignedData) {
         self.discount = StoreProductDiscount.from(discount: discount)
@@ -42,15 +43,30 @@ public final class PromotionalOffer: NSObject {
 
 // MARK: - SignedData
 
-extension PromotionalOffer {
+@objc public extension PromotionalOffer {
 
     /// Contains the details of a promotional offer discount that you want to apply to a payment.
-    internal struct SignedData {
-        var identifier: String
-        var keyIdentifier: String
-        var nonce: UUID
-        var signature: String
-        var timestamp: Int
+    @objc(RCPromotionalOfferSignedData)
+    class SignedData: NSObject {
+        /// The subscription offer identifier.
+        @objc public private(set) var identifier: String
+        /// The key identifier of the subscription key.
+        @objc public private(set) var keyIdentifier: String
+        /// The nonce used in the signature.
+        @objc public private(set) var nonce: UUID
+        /// The cryptographic signature of the offer parameters, generated on RevenueCat's server.
+        @objc public private(set) var signature: String
+        /// The UNIX time, in milliseconds, when the signature was generated.
+        @objc public private(set) var timestamp: Int
+
+        init(identifier: String, keyIdentifier: String, nonce: UUID, signature: String, timestamp: Int) {
+            self.identifier = identifier
+            self.keyIdentifier = keyIdentifier
+            self.nonce = nonce
+            self.signature = signature
+            self.timestamp = timestamp
+            super.init()
+        }
     }
 
 }

@@ -342,19 +342,16 @@ class PurchasesOrchestrator {
             throw ErrorUtils.purchasesError(withStoreKitError: error)
         }
 
-        let (userCancelled, transaction) = try await storeKit2Listener.handle(purchaseResult: result)
+        let (userCancelled, customerInfoIfSynced, sk2Transaction) = try await storeKit2Listener
+            .handle(purchaseResult: result)
+        let transaction = sk2Transaction.map(StoreTransaction.init(sk2Transaction:))
 
-        return try await withCheckedThrowingContinuation { continuation in
-            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { result in
-                continuation.resume(
-                    with: result
-                        .map { customerInfo in
-                            (transaction.map(StoreTransaction.init(sk2Transaction:)),
-                             customerInfo,
-                             userCancelled)
-                        }
-                )
-            }
+        if let customerInfo = customerInfoIfSynced {
+            return (transaction, customerInfo, userCancelled)
+        } else {
+            let customerInfo = try await self.syncPurchases(receiptRefreshPolicy: .always, isRestore: false)
+
+            return (transaction, customerInfo, userCancelled)
         }
     }
 
@@ -522,12 +519,14 @@ private extension PurchasesOrchestrator {
 
 }
 
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
-    func transactionsUpdated() {
+    func transactionsUpdated() async throws -> CustomerInfo {
         // Need to restore if using observer mode (which is inverse of finishTransactions)
         let isRestore = !systemInfo.finishTransactions
-        syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore, completion: nil)
+
+        return try await syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore)
     }
 
 }
@@ -651,7 +650,7 @@ private extension PurchasesOrchestrator {
             Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
         }
 
-        let currentAppUserID = appUserID
+        let currentAppUserID = self.appUserID
         let unsyncedAttributes = unsyncedAttributes
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://rev.cat/apple-restoring-purchased-products
@@ -757,6 +756,20 @@ private extension Error {
 
     var isCancelledError: Bool {
         return (self as? ErrorCode) == .purchaseCancelledError
+    }
+
+}
+
+extension PurchasesOrchestrator {
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                       isRestore: Bool) async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy, isRestore: isRestore) { result in
+                continuation.resume(with: result)
+            }
+        }
     }
 
 }

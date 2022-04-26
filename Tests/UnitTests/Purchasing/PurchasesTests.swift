@@ -193,25 +193,11 @@ class PurchasesTests: XCTestCase {
                 return
             }
             if badOfferingsResponse {
-                completion(.success([:]))
+                completion(.failure(.networkError(.decoding(CodableError.invalidJSONObject(value: [:]), Data()))))
                 return
             }
 
-            let offeringsData = [
-                "offerings": [
-                    [
-                        "identifier": "base",
-                        "description": "This is the base offering",
-                        "packages": [
-                            ["identifier": "$rc_monthly",
-                             "platform_product_identifier": "monthly_freetrial"]
-                        ]
-                    ]
-                ],
-                "current_offering_id": "base"
-            ] as [String: Any]
-
-            completion(.success(offeringsData))
+            completion(.success(.mockResponse))
         }
 
         override func createAlias(appUserID: String, newAppUserID: String, completion: ((BackendError?) -> Void)?) {
@@ -1834,10 +1820,11 @@ class PurchasesTests: XCTestCase {
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
     }
 
-    func testProductDataIsCachedForOfferings() {
+    func testProductDataIsCachedForOfferings() throws {
         setupPurchases()
-        mockOfferingsManager.stubbedOfferingsCompletionResult =
-        (offeringsFactory.createOfferings(from: [:], data: [:]), nil)
+        mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+        )
         self.purchases?.getOfferings { (newOfferings, _) in
             let storeProduct = newOfferings!["base"]!.monthly!.storeProduct
             let product = storeProduct.sk1Product!
@@ -2418,10 +2405,12 @@ class PurchasesTests: XCTestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
     }
 
-    func testPostsOfferingIfPurchasingPackage() {
+    func testPostsOfferingIfPurchasingPackage() throws {
         setupPurchases()
-        mockOfferingsManager.stubbedOfferingsCompletionResult =
-        (offeringsFactory.createOfferings(from: [:], data: [:]), nil)
+        mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+        )
+
         self.purchases!.getOfferings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchase(package: package) { (_, _, _, _) in
@@ -2449,12 +2438,14 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    func testPurchasingPackageDoesntThrowPurchaseAlreadyInProgressIfCallbackMakesANewPurchase() {
+    func testPurchasingPackageDoesntThrowPurchaseAlreadyInProgressIfCallbackMakesANewPurchase() throws {
         setupPurchases()
         var receivedError: NSError?
         var secondCompletionCalled = false
-        mockOfferingsManager.stubbedOfferingsCompletionResult =
-        (offeringsFactory.createOfferings(from: [:], data: [:]), nil)
+        mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+        )
+
         self.purchases!.getOfferings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchase(package: package) { _, _, _, _  in
@@ -2738,5 +2729,20 @@ class PurchasesTests: XCTestCase {
         expect(self.deviceCache.setCustomerInfoCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(expectedCallCount))
     }
+
+}
+
+private extension OfferingsResponse {
+
+    static let mockResponse: Self = .init(
+        currentOfferingId: "base",
+        offerings: [
+            .init(identifier: "base",
+                  description: "This is the base offering",
+                  packages: [
+                    .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
+                  ])
+        ]
+    )
 
 }

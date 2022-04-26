@@ -18,35 +18,35 @@ class MockOfferingsManager: OfferingsManager {
 
     var invokedOfferings = false
     var invokedOfferingsCount = 0
-    var invokedOfferingsParameters: (appUserID: String, completion: ((Offerings?, Error?) -> Void)?)?
-    var invokedOfferingsParametersList = [(appUserID: String, completion: ((Offerings?, Error?) -> Void)?)]()
-    var stubbedOfferingsCompletionResult: (offerings: Offerings?, error: Error?)?
+    var invokedOfferingsParameters: (appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?)?
+    var invokedOfferingsParametersList = [(appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?)]()
+    var stubbedOfferingsCompletionResult: Result<Offerings, Error>?
 
-    override func offerings(appUserID: String, completion: ((Offerings?, Error?) -> Void)?) {
+    override func offerings(appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?) {
         invokedOfferings = true
         invokedOfferingsCount += 1
         invokedOfferingsParameters = (appUserID, completion)
         invokedOfferingsParametersList.append((appUserID, completion))
 
-        completion?(stubbedOfferingsCompletionResult?.offerings, stubbedOfferingsCompletionResult?.error)
+        completion?(stubbedOfferingsCompletionResult!)
     }
 
     struct InvokedUpdateOfferingsCacheParameters {
         let appUserID: String
         let isAppBackgrounded: Bool
-        let completion: ((Offerings?, Error?) -> Void)?
+        let completion: ((Result<Offerings, Error>) -> Void)?
     }
 
     var invokedUpdateOfferingsCache = false
     var invokedUpdateOfferingsCacheCount = 0
     var invokedUpdateOfferingsCacheParameters: InvokedUpdateOfferingsCacheParameters?
     var invokedUpdateOfferingsCachesParametersList = [InvokedUpdateOfferingsCacheParameters]()
-    var stubbedUpdateOfferingsCompletionResult: (offerings: Offerings?, error: Error?)?
+    var stubbedUpdateOfferingsCompletionResult: Result<Offerings, Error>?
 
     override func updateOfferingsCache(
         appUserID: String,
         isAppBackgrounded: Bool,
-        completion: ((Offerings?, Error?) -> Void)?
+        completion: ((Result<Offerings, Error>) -> Void)?
     ) {
         invokedUpdateOfferingsCache = true
         invokedUpdateOfferingsCacheCount += 1
@@ -60,7 +60,7 @@ class MockOfferingsManager: OfferingsManager {
         invokedUpdateOfferingsCacheParameters = parameters
         invokedUpdateOfferingsCachesParametersList.append(parameters)
 
-        completion?(stubbedUpdateOfferingsCompletionResult?.offerings, stubbedUpdateOfferingsCompletionResult?.error)
+        completion?(stubbedUpdateOfferingsCompletionResult!)
     }
 
 }
