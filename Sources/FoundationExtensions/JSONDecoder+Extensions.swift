@@ -144,7 +144,7 @@ private extension ErrorUtils {
 extension Encodable {
 
     func asDictionary() throws -> [String: Any] {
-        let data = try JSONEncoder().encode(self)
+        let data = try JSONEncoder.default.encode(self)
         let result = try JSONSerialization.jsonObject(with: data, options: [])
 
         guard let result = result as? [String: Any] else {
