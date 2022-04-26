@@ -39,4 +39,17 @@ class BackendPostAttributionDataTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
+    func testPostAdServicesCallsHttpClient() throws {
+        self.httpClient.mock(
+            requestPath: .postAdServicesToken(appUserID: Self.userID),
+            response: .init(statusCode: .success)
+        )
+
+        backend.post(adServicesToken: "asdf",
+                     appUserID: "asdf",
+                     completion: nil)
+
+        expect(self.httpClient.calls).toEventually(haveCount(1))
+    }
+
 }

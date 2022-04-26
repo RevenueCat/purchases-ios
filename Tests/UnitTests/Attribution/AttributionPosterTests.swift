@@ -298,4 +298,29 @@ class AttributionPosterTests: XCTestCase {
     }
 
     #endif
+
+#if canImport(AdServices)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    func testPostAdServicesDoesntPostIfLatestTokenNonNil() {
+        MockAttributionTypeFactory.shouldReturnAdClientProxy = false
+        MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
+
+        self.attributionPoster.postAdServicesTokenIfNeeded()
+
+        expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
+    }
+//
+//    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+//    func testPostAdServicesTokenSkipsIfAlreadySent() {
+//        let userID = "userID"
+//        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+//
+//        attributionPoster.post(adServicesToken: "something")
+//        expect(self.backend.invokedPostAdServicesToken) == 1
+//
+//        attributionPoster.post(adServicesToken: "something")
+//        expect(self.backend.invokedPostAttributionDataCount) == 1
+//    }
+
+    #endif
 }
