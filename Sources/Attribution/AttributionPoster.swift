@@ -88,45 +88,10 @@ class AttributionPoster {
         }
 
         if !newData.isEmpty {
-            if network == .appleSearchAds {
-                postSearchAds(newData: newData,
-                              network: network,
-                              appUserID: currentAppUserID,
-                              newDictToCache: newDictToCache)
-            } else {
-                postSubscriberAttributes(newData: newData,
-                                         network: network,
-                                         appUserID: currentAppUserID,
-                                         newDictToCache: newDictToCache)
-            }
-        }
-    }
-
-    func postAppleSearchAdsAttributionIfNeeded() {
-        guard attributionFetcher.isAuthorizedToPostSearchAds else {
-            return
-        }
-
-        let latestIdsSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
-        guard latestIdsSent == nil else {
-            return
-        }
-
-        attributionFetcher.afficheClientAttributionDetails { attributionDetails, error in
-            guard let attributionDetails = attributionDetails,
-                  error == nil else {
-                return
-            }
-
-            let attributionDetailsValues = Array(attributionDetails.values)
-            let firstAttributionDict = attributionDetailsValues.first as? [String: NSObject]
-
-            guard let hasIad = firstAttributionDict?["iad-attribution"] as? NSNumber,
-                  hasIad.boolValue == true else {
-                return
-            }
-
-            self.post(attributionData: attributionDetails, fromNetwork: .appleSearchAds, networkUserId: nil)
+            postSubscriberAttributes(newData: newData,
+                                     network: network,
+                                     appUserID: currentAppUserID,
+                                     newDictToCache: newDictToCache)
         }
     }
 

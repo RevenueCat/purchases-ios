@@ -418,7 +418,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
 
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {            postAdServicesTokenIfNeeded()
@@ -750,13 +749,6 @@ extension Purchases {
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserId: String?) {
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
-    }
-
-    private func postAppleSearchAddsAttributionCollectionIfNeeded() {
-        guard Self.automaticAppleSearchAdsAttributionCollection else {
-            return
-        }
-        attributionPoster.postAppleSearchAdsAttributionIfNeeded()
     }
 
     // should match OS availability in https://developer.apple.com/documentation/ad_services
@@ -1954,7 +1946,6 @@ private extension Purchases {
         Logger.debug(Strings.configure.application_active)
         updateAllCachesIfNeeded()
         dispatchSyncSubscriberAttributesIfNeeded()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
 
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
