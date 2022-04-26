@@ -23,5 +23,5 @@ func checkPromotionalOfferAPI() {
     let _: String = signedData.signature
     let _: Int = signedData.timestamp
 
-    print(discount, sk1Discount!, sk2Discount!, identifier, keyIdentifier, nonce, signature, timestamp)
+    print(discount, sk1Discount!, sk2Discount!)
 }
