@@ -71,6 +71,32 @@ class DecoderExtensionsDefaultValueTests: XCTestCase {
 
 }
 
+class DecoderExtensionsIgnoreErrorsTests: XCTestCase {
+
+    private struct Data: Codable, Equatable {
+        @IgnoreDecodeErrors var url: URL?
+
+        init(url: URL) {
+            self.url = url
+        }
+    }
+
+    func testDecodesActualValue() throws {
+        let data = Data(url: URL(string: "https://revenuecat.com")!)
+        let decodedData = try data.encodeAndDecode()
+
+        expect(decodedData) == data
+    }
+
+    func testIgnoresErrors() throws {
+        let json = "{\"url\": \"not a! valid url@\"}".data(using: .utf8)!
+        let data: Data = try JSONDecoder.default.decode(jsonData: json)
+
+        expect(data.url).to(beNil())
+    }
+
+}
+
 class DecoderExtensionsDefaultDecodableTests: XCTestCase {
 
     private struct Data: Codable, Equatable {
