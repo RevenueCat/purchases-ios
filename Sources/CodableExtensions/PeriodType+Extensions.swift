@@ -24,7 +24,7 @@ extension PeriodType: Decodable {
         }
 
         guard let type = Self.mapping[periodTypeString] else {
-            throw CodableError.unexpectedValue(PeriodType.self)
+            throw CodableError.unexpectedValue(PeriodType.self, periodTypeString)
         }
 
         self = type
