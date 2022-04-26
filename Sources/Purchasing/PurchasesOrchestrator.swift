@@ -23,7 +23,7 @@ import StoreKit
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    func shouldShowPriceConsent() -> Bool
+    var shouldShowPriceConsent: Bool { get }
 
 }
 
@@ -472,7 +472,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     var storeKitWrapperShouldShowPriceConsent: Bool {
-        return delegate?.shouldShowPriceConsent() ?? true
+        return delegate?.shouldShowPriceConsent ?? true
     }
 
 }

@@ -1853,7 +1853,7 @@ extension Purchases: PurchasesOrchestratorDelegate {
 
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
-    func shouldShowPriceConsent() -> Bool {
+    var shouldShowPriceConsent: Bool {
         self.delegate?.shouldShowPriceConsent ?? true
     }
     #endif
