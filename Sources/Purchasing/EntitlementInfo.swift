@@ -41,6 +41,12 @@ import Foundation
 
 extension Store: CaseIterable {}
 
+extension Store: DefaultValueProvider {
+
+    static let defaultValue: Self = .unknownStore
+
+}
+
 /**
  Enum of supported period types for an entitlement.
  */
@@ -57,6 +63,12 @@ extension Store: CaseIterable {}
 }
 
 extension PeriodType: CaseIterable {}
+
+extension PeriodType: DefaultValueProvider {
+
+    static let defaultValue: Self = .normal
+
+}
 
 /**
  The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
@@ -335,14 +347,14 @@ extension EntitlementInfo {
 
     struct ProductData: Decodable {
 
-        let periodType: PeriodType
-        let originalPurchaseDate: Date?
-        let expiresDate: Date?
-        let store: Store
-        let isSandbox: Bool
-        let unsubscribeDetectedAt: Date?
-        let billingIssuesDetectedAt: Date?
-        let ownershipType: PurchaseOwnershipType
+        @DefaultValue<PeriodType> var periodType: PeriodType
+        var originalPurchaseDate: Date?
+        var expiresDate: Date?
+        @DefaultValue<Store> var store: Store
+        @DefaultDecodable.False var isSandbox: Bool
+        var unsubscribeDetectedAt: Date?
+        var billingIssuesDetectedAt: Date?
+        @DefaultValue<PurchaseOwnershipType> var ownershipType: PurchaseOwnershipType
 
     }
 
