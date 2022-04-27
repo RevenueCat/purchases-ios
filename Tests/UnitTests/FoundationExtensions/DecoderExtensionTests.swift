@@ -35,6 +35,18 @@ class DecoderExtensionsDefaultValueTests: XCTestCase {
         }
     }
 
+    private struct Data2: Codable, Equatable {
+        enum DefaultString: DefaultValueProvider {
+            static var defaultValue: String = "default"
+        }
+
+        @DefaultValue<DefaultString> var string: String
+
+        init(string: String) {
+            self.string = string
+        }
+    }
+
     func testDecodesActualValue() throws {
         let data = Data(e: .e1)
         let decodedData = try data.encodeAndDecode()
@@ -42,7 +54,7 @@ class DecoderExtensionsDefaultValueTests: XCTestCase {
         expect(decodedData) == data
     }
 
-    func testDecodesDefaultValue() throws {
+    func testDecodesDefaultValueIfMissing() throws {
         expect(try Data.decodeEmptyData().e) == Data.E.defaultValue
     }
 
@@ -51,6 +63,10 @@ class DecoderExtensionsDefaultValueTests: XCTestCase {
         let data: Data = try JSONDecoder.default.decode(jsonData: json)
 
         expect(data.e) == Data.E.defaultValue
+    }
+
+    func testDecodesDefaultValueFromAnotherSource() throws {
+        expect(try Data2.decodeEmptyData().string) == Data2.DefaultString.defaultValue
     }
 
 }
