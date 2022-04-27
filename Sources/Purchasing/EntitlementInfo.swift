@@ -192,31 +192,28 @@ extension PeriodType: CaseIterable {}
         if self.periodType != info.periodType {
             return false
         }
-        if self.latestPurchaseDate != info.latestPurchaseDate && self.latestPurchaseDate != info.latestPurchaseDate {
+        if self.latestPurchaseDate != info.latestPurchaseDate {
             return false
         }
-        if self.originalPurchaseDate != info.originalPurchaseDate
-            && self.originalPurchaseDate != info.originalPurchaseDate {
+        if self.originalPurchaseDate != info.originalPurchaseDate {
             return false
         }
-        if self.expirationDate != info.expirationDate && self.expirationDate != info.expirationDate {
+        if self.expirationDate != info.expirationDate {
             return false
         }
         if self.store != info.store {
             return false
         }
-        if self.productIdentifier != info.productIdentifier && self.productIdentifier != info.productIdentifier {
+        if self.productIdentifier != info.productIdentifier {
             return false
         }
         if self.isSandbox != info.isSandbox {
             return false
         }
-        if self.unsubscribeDetectedAt != info.unsubscribeDetectedAt
-            && self.unsubscribeDetectedAt != info.unsubscribeDetectedAt {
+        if self.unsubscribeDetectedAt != info.unsubscribeDetectedAt {
             return false
         }
-        if self.billingIssueDetectedAt != info.billingIssueDetectedAt
-            && self.billingIssueDetectedAt != info.billingIssueDetectedAt {
+        if self.billingIssueDetectedAt != info.billingIssueDetectedAt {
             return false
         }
         if self.ownershipType != info.ownershipType {
