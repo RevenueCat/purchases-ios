@@ -194,19 +194,6 @@ class AttributionPoster {
             appUserID: self.currentUserProvider.currentAppUserID
         )
         return cachedDict[networkID]
-}
-
-    private func postSearchAds(newData: [String: Any],
-                               network: AttributionNetwork,
-                               appUserID: String,
-                               newDictToCache: [String: String]) {
-        backend.post(attributionData: newData, network: network, appUserID: appUserID) { error in
-            guard error == nil else {
-                return
-            }
-
-            self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: appUserID)
-        }
     }
 
     private func postSubscriberAttributes(newData: [String: Any],

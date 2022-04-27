@@ -16,10 +16,6 @@ import Foundation
 
 class AttributionTypeFactory {
 
-    func afficheClientProxy() -> AfficheClientProxy? {
-        return AfficheClientProxy.afficheClientClass == nil ? nil : AfficheClientProxy()
-    }
-
     func atFollowingProxy() -> TrackingManagerProxy? {
         return TrackingManagerProxy.trackingClass == nil ? nil : TrackingManagerProxy()
     }

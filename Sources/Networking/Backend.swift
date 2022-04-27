@@ -131,32 +131,6 @@ class Backend {
         self.operationQueue.addOperation(postOfferForSigningOperation)
     }
 
-    func post(attributionData: [String: Any],
-              network: AttributionNetwork,
-              appUserID: String,
-              completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
-                                                                authHeaders: self.authHeaders,
-                                                                appUserID: appUserID)
-        let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
-                                                                        attributionData: attributionData,
-                                                                        network: network,
-                                                                        responseHandler: completion)
-        self.operationQueue.addOperation(postAttributionDataOperation)
-    }
-
-    func post(adServicesToken: String,
-              appUserID: String,
-              completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
-                                                                authHeaders: self.authHeaders,
-                                                                appUserID: appUserID)
-        let postAdServicesTokenOperation = PostAdServicesTokenOperation(configuration: config,
-                                                                        token: adServicesToken,
-                                                                        responseHandler: completion)
-        self.operationQueue.addOperation(postAdServicesTokenOperation)
-    }
-
     func logIn(currentAppUserID: String,
                newAppUserID: String,
                completion: @escaping LogInResponseHandler) {

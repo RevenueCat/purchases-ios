@@ -121,27 +121,6 @@ class MockBackend: Backend {
         completion(stubbedGetOfferingsCompletionResult!)
     }
 
-    var invokedPostAttributionData = false
-    var invokedPostAttributionDataCount = 0
-    var invokedPostAttributionDataParameters: (data: [String: Any]?, network: AttributionNetwork, appUserID: String?)?
-    var invokedPostAttributionDataParametersList = [(data: [String: Any]?,
-                                                     network: AttributionNetwork,
-        appUserID: String?)]()
-    var stubbedPostAttributionDataCompletionResult: (BackendError?, Void)?
-
-    override func post(attributionData: [String: Any],
-                       network: AttributionNetwork,
-                       appUserID: String,
-                       completion: ((BackendError?) -> Void)?) {
-        invokedPostAttributionData = true
-        invokedPostAttributionDataCount += 1
-        invokedPostAttributionDataParameters = (attributionData, network, appUserID)
-        invokedPostAttributionDataParametersList.append((attributionData, network, appUserID))
-        if let result = stubbedPostAttributionDataCompletionResult {
-            completion?(result.0)
-        }
-    }
-
     var invokedPostAdServicesToken = false
     var invokedPostAdServicesTokenCount = 0
     var invokedPostAdServicesTokenParameters: (token: String, appUserID: String?)?

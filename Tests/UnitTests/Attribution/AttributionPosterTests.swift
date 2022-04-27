@@ -57,7 +57,6 @@ class AttributionPosterTests: XCTestCase {
                                               attributionFetcher: attributionFetcher,
                                               subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
-        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
     }
 
     private func resetAttributionStaticProperties() {
@@ -65,9 +64,7 @@ class AttributionPosterTests: XCTestCase {
             MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
         }
 
-        MockAttributionTypeFactory.shouldReturnAdClientProxy = true
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
-        MockAdClientProxy.requestAttributionDetailsCallCount = 0
     }
 
     override func tearDown() {
@@ -79,53 +76,42 @@ class AttributionPosterTests: XCTestCase {
 
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
-        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
-        expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
-        expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
     }
 
     func testPostAttributionDataDoesntSkipIfNetworkChanged() {
         let userID = "userID"
-        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
-        expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .facebook,
                                networkUserId: userID)
 
-        expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
     func testPostAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
-        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
-
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: "attributionUser1")
-        expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .adjust,
                                networkUserId: "attributionUser2")
-
-        expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
