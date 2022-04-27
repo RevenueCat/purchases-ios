@@ -101,21 +101,6 @@ class AttributionPoster {
         }
     }
 
-    // should match OS availability in https://developer.apple.com/documentation/ad_services
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    func postAdServicesTokenIfNeeded() {
-        let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
-        guard latestTokenSent == nil else {
-            return
-        }
-
-        guard let attributionToken = attributionFetcher.adServicesToken() else {
-            return
-        }
-
-        self.post(adServicesToken: attributionToken)
-    }
-
     // note to maddie -- tried pulling this out for re-use, but subattrs handles
     // latestSentToNetwork == newValueForNetwork differently than what we want for adservices.
     // this is techncially OK from a functionality standpoint, because we already skip fetching
