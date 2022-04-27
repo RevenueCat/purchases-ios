@@ -2182,42 +2182,6 @@ class PurchasesTests: XCTestCase {
         expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
-    func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() throws {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
-
-        setupPurchases()
-
-        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
-        for key in data.keys {
-            expect(invokedMethodParams.data?.keys.contains(key)) == true
-        }
-
-        expect(invokedMethodParams.data?.keys.contains("rc_idfa")) == true
-        expect(invokedMethodParams.data?.keys.contains("rc_idfv")) == true
-        expect(invokedMethodParams.data?.keys.contains("rc_attribution_network_id")) == false
-        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
-        expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
-    }
-
-    func testAdClientAttributionDataIsAutomaticallyCollected() throws {
-        setupPurchases(automaticCollection: true)
-
-        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
-
-        expect(invokedMethodParams).toNot(beNil())
-        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
-
-        let obtainedVersionData = try XCTUnwrap(invokedMethodParams.data?["Version3.1"] as? NSDictionary)
-        expect(obtainedVersionData["iad-campaign-id"]).toNot(beNil())
-    }
-
-    func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
-        setupPurchases(automaticCollection: false)
-        expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
-    }
-
     func testAttributionDataPostponesMultiple() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
