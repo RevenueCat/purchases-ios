@@ -24,7 +24,7 @@ public extension Purchases {
     @available(macOS, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
     @available(macCatalyst, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
     @objc func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
-                                              completion: @escaping ([String: IntroEligibility]) -> Void) {
+                                                    completion: @escaping ([String: IntroEligibility]) -> Void) {
         self.checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers, completion: completion)
     }
 
@@ -43,7 +43,7 @@ public extension Purchases {
     @available(macOS, introduced: 10.15, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
     @available(macCatalyst, introduced: 13.0, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
     @objc func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
-                             product: StoreProduct) async throws -> PromotionalOffer {
+                                   product: StoreProduct) async throws -> PromotionalOffer {
         return try await self.promotionalOffer(forProductDiscount: discount, product: product)
     }
 

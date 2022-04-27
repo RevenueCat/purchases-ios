@@ -1893,7 +1893,8 @@ public extension Purchases {
 
     /**
      * Deprecated:  Configure  behavior through the RevenueCat dashboard instead.
-     * Determines whether or not users may reuse a subscription from an App or Play Store account that already has that subscription active.
+     * Determines whether or not users may reuse a subscription from an App or Play Store
+     * account that already has that subscription active.
      * ### Related articles:
      * - https://docs.revenuecat.com/docs/user-ids
      */
