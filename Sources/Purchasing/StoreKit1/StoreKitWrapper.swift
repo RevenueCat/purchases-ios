@@ -27,6 +27,11 @@ protocol StoreKitWrapperDelegate: AnyObject {
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String])
 
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    var storeKitWrapperShouldShowPriceConsent: Bool { get }
+    #endif
+
 }
 
 class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
@@ -101,6 +106,13 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
         return payment
     }
 
+#if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    func showPriceConsentIfNeeded() {
+        paymentQueue.showPriceConsentIfNeeded()
+    }
+#endif
+
 }
 
 extension StoreKitWrapper: SKPaymentQueueDelegate {
@@ -139,5 +151,12 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
         )
         delegate?.storeKitWrapper(self, didRevokeEntitlementsForProductIdentifiers: productIdentifiers)
     }
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
+        return delegate?.storeKitWrapperShouldShowPriceConsent ?? true
+    }
+    #endif
 
 }

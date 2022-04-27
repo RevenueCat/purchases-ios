@@ -179,12 +179,17 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - install-and-create-sim:
+          install-name: iOS 15.2 Simulator
+          sim-device-type: iPhone-13
+          sim-device-runtime: iOS-15-2
+          sim-name: iPhone 13 (15.2)
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
           no_output_timeout: 30m
           environment:
-            SCAN_DEVICE: iPhone 12 (15.4)
+            SCAN_DEVICE: iPhone 13 (15.2)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -433,50 +438,50 @@ workflows:
   build-test:
     jobs:
       - lint:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
       - run-test-ios-15:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
       - run-test-tvos:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
       - run-test-ios-14:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
       - run-test-ios-13:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-branches-and-main
       - run-test-ios-12:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
       - release-checks:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-branches
       - backend-integration-tests:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - installation-tests-cocoapods:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-tags-and-branches
       - installation-tests-swift-package-manager:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-tags-and-branches
       - installation-tests-carthage:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-tags-and-branches
       - installation-tests-xcode-direct-integration:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-tags-and-branches
   deploy:
     jobs:
       - make-release:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-tags
       - prepare-next-version:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-tags
       - docs-deploy:
-          xcode_version: '13.3.0'
+          xcode_version: '13.3.1'
           <<: *release-tags

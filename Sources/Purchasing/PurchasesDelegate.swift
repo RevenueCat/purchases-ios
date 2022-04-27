@@ -76,4 +76,24 @@ import Foundation
                                   shouldPurchasePromoProduct product: StoreProduct,
                                   defermentBlock makeDeferredPurchase: @escaping StartPurchaseBlock)
 
+    /**
+     * The default return value for this optional method is true. By default, the system displays the price consent
+     * sheet when you increase the subscription price in App Store Connect and the subscriber hasn’t yet taken action.
+     *
+     * The system calls your delegate’s method, if appropriate, when RevenueCat starts observing the `SKPaymentQueue`,
+     * and any time the app comes to foreground.
+     *
+     * If you return false, the system won’t show the price consent sheet. You can choose to display it later by
+     * calling ``Purchases/showPriceConsentIfNeeded()``.
+     * You may want to delay showing the sheet if it would interrupt your user’s interaction in your app.
+     *
+     * ### Related Articles
+     * - [Apple Documentation](https://rev.cat/testing-promoted-in-app-purchases)
+     */
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @objc optional var shouldShowPriceConsent: Bool { get }
+
 }

@@ -69,7 +69,7 @@ platform :ios do
   desc "Replace version number in project and supporting files"
   lane :replace_version_number do |options|
     new_version_number = options[:version]
-    fail ArgumentError, "missing version" unless new_version_number
+    UI.user_error!("missing version") unless new_version_number
     previous_version_number = current_version_number
     
     version_number_without_prerelease_modifiers = new_version_number.split("-")[0]
@@ -99,12 +99,12 @@ platform :ios do
   desc "Make github release"
   lane :github_release do |options|
     release_version = options[:version]
-    fail ArgumentError, "missing version" unless release_version
+    UI.user_error!("missing version") unless release_version
 
     begin
       changelog = File.read("../CHANGELOG.latest.md")
     rescue
-      fail "please add a CHANGELOG.latest.md file before calling this lane"
+      UI.user_error!("Please add a CHANGELOG.latest.md file before calling this lane")
     end
     commit_hash = last_git_commit[:commit_hash]
     puts commit_hash
@@ -604,9 +604,9 @@ end
 
 def replace_in(previous_text, new_text, path, allow_empty=false)
   if new_text.to_s.strip.empty? and not allow_empty
-    fail "Missing `new_text` in call to `replace_in`, looking for replacement for #{previous_text} 😵."
+    UI.user_error!("Missing `new_text` in call to `replace_in`, looking for replacement for #{previous_text} 😵.")
   end
-  sed_regex = 's|' + previous_text + '|' + new_text + '|'
+  sed_regex = 's|' + previous_text.sub(".", "\\.") + '|' + new_text + '|'
   backup_extension = '.bck'
   sh("sed", '-i', backup_extension, sed_regex, path)
 end
