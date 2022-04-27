@@ -23,8 +23,8 @@ public extension Purchases {
     @available(watchOS, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
     @available(macOS, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
     @available(macCatalyst, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
-    @objc func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
-                                                    completion: @escaping ([String: IntroEligibility]) -> Void) {
+    func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
+                                              completion: @escaping ([String: IntroEligibility]) -> Void) {
         self.checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers, completion: completion)
     }
 
