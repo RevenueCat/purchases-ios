@@ -124,6 +124,27 @@ class DecoderExtensionsLossyCollectionTests: XCTestCase {
         expect(decodedData) == data
     }
 
+    func testDictionaryKeysAreSnakeCase() throws {
+        let keys: Set<String> = [
+            "snake_case",
+            "com.revenuecat.monthly_4.99.1_week_intro",
+            "com.revenuecat.monthly_4.99.no_intro",
+            "pro.1"
+        ]
+
+        let data = Data(list: [],
+                        map1: keys.dictionaryWithValues { .init(string: $0) },
+                        map2: [:])
+        let decodedData = try data.encodeAndDecode()
+
+        expect(Set(decodedData.map1.keys)) == keys
+        expect(decodedData) == data
+
+        for key in keys {
+            expect(decodedData.map1[key]?.string) == key
+        }
+    }
+
     func testIgnoresArrayErrors() throws {
         let json = "{\"list\": [\"not a number\"], \"map1\": {}, \"map2\": {}}"
         let data = try Data.decode(json)
@@ -162,6 +183,27 @@ class DecoderExtensionsLossyCollectionTests: XCTestCase {
         let data = try Data.decode(json)
 
         expect(data.map2) == ["3": [.init(string: "test")]]
+    }
+
+    func testArrayDictionaryKeysAreSnakeCase() throws {
+        let keys: Set<String> = [
+            "snake_case",
+            "com.revenuecat.monthly_4.99.1_week_intro",
+            "com.revenuecat.monthly_4.99.no_intro",
+            "pro.1"
+        ]
+
+        let data = Data(list: [],
+                        map1: [:],
+                        map2: keys.dictionaryWithValues { [.init(string: $0)] })
+        let decodedData = try data.encodeAndDecode()
+
+        expect(decodedData) == data
+        expect(Set(decodedData.map2.keys)) == keys
+
+        for key in keys {
+            expect(decodedData.map2[key]) == [.init(string: key)]
+        }
     }
 
 }
