@@ -152,6 +152,10 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     #if os(iOS)
     purchases.showManageSubscriptions { _ in }
     #endif
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    _ = purchases.showPriceConsentIfNeeded
+    _ = purchases.delegate?.shouldShowPriceConsent
+    #endif
 }
 
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {

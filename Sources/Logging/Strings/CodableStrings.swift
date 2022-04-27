@@ -16,7 +16,7 @@ import Foundation
 // swiftlint:disable identifier_name
 enum CodableStrings {
 
-    case unexpectedValueError(type: Any.Type)
+    case unexpectedValueError(type: Any.Type, value: Any)
     case valueNotFoundError(value: Any.Type, context: DecodingError.Context)
     case keyNotFoundError(key: CodingKey, context: DecodingError.Context)
     case invalid_json_error(jsonData: [String: Any])
@@ -30,21 +30,21 @@ extension CodableStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .unexpectedValueError(let type):
-            return "Found unexpected value for type: \(type)"
-        case .valueNotFoundError(let value, let context):
+        case let .unexpectedValueError(type, value):
+            return "Found unexpected value '\(value)' for type '\(type)'"
+        case let .valueNotFoundError(value, context):
             let description = context.debugDescription
             return "No value found for: \(value), codingPath: \(context.codingPath), description:\n\(description)"
-        case .keyNotFoundError(let key, let context):
+        case let .keyNotFoundError(key, context):
             let description = context.debugDescription
             return "Key '\(key)' not found, codingPath: \(context.codingPath), description:\n\(description)"
-        case .invalid_json_error(let jsonData):
+        case let .invalid_json_error(jsonData):
             return "The given json data was not valid: \n\(jsonData)"
-        case .decoding_error(let error):
-            return "Couldn't decode data from json. Error:\n\(error.localizedDescription))"
-        case .corrupted_data_error(let context):
+        case let .decoding_error(error):
+            return "Couldn't decode data from json. Error:\n\(error.localizedDescription)"
+        case let .corrupted_data_error(context):
             return "Couldn't decode data from json, it was corrupted: \(context)"
-        case .typeMismatch(let type, let context):
+        case let .typeMismatch(type, context):
             let description = context.debugDescription
             return "Type '\(type)' mismatch, codingPath:\(context.codingPath), description:\n\(description)"
         }

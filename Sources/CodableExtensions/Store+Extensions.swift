@@ -23,7 +23,7 @@ extension Store: Decodable {
         }
 
         guard let type = Self.mapping[storeString] else {
-            throw CodableError.unexpectedValue(Store.self)
+            throw CodableError.unexpectedValue(Store.self, storeString)
         }
 
         self = type

@@ -26,7 +26,8 @@ extension PurchaseOwnershipType: Decodable {
         if let type = Self.mapping[purchaseOwnershipTypeString] {
             self = type
         } else {
-            Logger.error(Strings.codable.unexpectedValueError(type: PurchaseOwnershipType.self))
+            Logger.error(Strings.codable.unexpectedValueError(type: PurchaseOwnershipType.self,
+                                                              value: purchaseOwnershipTypeString))
             self = .unknown
         }
     }

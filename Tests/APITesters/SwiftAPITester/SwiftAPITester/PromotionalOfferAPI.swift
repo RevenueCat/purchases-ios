@@ -17,11 +17,11 @@ func checkPromotionalOfferAPI() {
 
     let signedData = offer.signedData
 
-    let identifier: String = signedData.identifier
-    let keyIdentifier: String = signedData.keyIdentifier
-    let nonce: UUID = signedData.nonce
-    let signature: String = signedData.signature
-    let timestamp: Int = signedData.timestamp
+    let _: String = signedData.identifier
+    let _: String = signedData.keyIdentifier
+    let _: UUID = signedData.nonce
+    let _: String = signedData.signature
+    let _: Int = signedData.timestamp
 
     print(discount, sk1Discount!, sk2Discount!)
 }

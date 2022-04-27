@@ -19,6 +19,12 @@ import StoreKit
     func readyForPromotedProduct(_ product: StoreProduct,
                                  purchase startPurchase: @escaping StartPurchaseBlock)
 
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    var shouldShowPriceConsent: Bool { get }
+
 }
 
 // swiftlint:disable file_length type_body_length
@@ -459,6 +465,14 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         syncPurchases { _ in
             Logger.debug(Strings.purchase.purchases_synced)
         }
+    }
+
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    var storeKitWrapperShouldShowPriceConsent: Bool {
+        return delegate?.shouldShowPriceConsent ?? true
     }
 
 }

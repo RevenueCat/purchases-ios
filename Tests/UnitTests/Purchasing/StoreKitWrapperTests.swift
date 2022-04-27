@@ -14,6 +14,7 @@ import XCTest
 @testable import RevenueCat
 
 class MockPaymentQueue: SKPaymentQueue {
+
     var addedPayments: [SKPayment] = []
     override func add(_ payment: SKPayment) {
         addedPayments.append(payment)
@@ -33,6 +34,16 @@ class MockPaymentQueue: SKPaymentQueue {
     override func finishTransaction(_ transaction: SKPaymentTransaction) {
         finishedTransactions.append(transaction)
     }
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    func simulatePaymentQueueShouldShowPriceConsent() -> [Bool] {
+        return self.observers
+            .compactMap { $0 as? SKPaymentQueueDelegate }
+            .compactMap { $0.paymentQueueShouldShowPriceConsent?(self) }
+    }
+#endif
+
 }
 
 class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
@@ -68,6 +79,8 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         promoProduct = product
         return shouldAddPromo
     }
+
+    var storeKitWrapperShouldShowPriceConsent = true
 
     var productIdentifiersWithRevokedEntitlements: [String]?
 
@@ -246,5 +259,19 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         let payment2 = wrapper.payment(withProduct: mockProduct)
         expect(payment2.simulatesAskToBuyInSandbox) == true
     }
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+    func testShouldShowPriceConsentWiredUp() throws {
+        guard #available(iOS 13.4, macCatalyst 13.4, *) else {
+            throw XCTSkip()
+        }
+        expect(self.storeKitWrapperShouldShowPriceConsent) == true
+
+        self.storeKitWrapperShouldShowPriceConsent = false
+
+        let consentStatuses = self.paymentQueue.simulatePaymentQueueShouldShowPriceConsent()
+        expect(consentStatuses) == [false]
+    }
+#endif
 
 }
