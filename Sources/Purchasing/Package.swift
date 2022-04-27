@@ -43,6 +43,23 @@ import Foundation
          weekly
 }
 
+extension PackageType: CaseIterable {}
+
+extension PackageType: CustomDebugStringConvertible {
+
+    /// A textual description of the type suitable for debugging.
+    public var debugDescription: String {
+        let className = String(describing: PackageType.self)
+
+        switch self {
+        case .unknown: return "\(className).unknown"
+        case .custom: return "\(className).custom"
+        default: return "\(className).\(self.description ?? "")"
+        }
+    }
+
+}
+
 private extension PackageType {
 
     var description: String? {
@@ -57,20 +74,13 @@ private extension PackageType {
         case .monthly: return "$rc_monthly"
         case .weekly: return "$rc_weekly"
         }
-
     }
 
-    static var typesByDescription: [String: PackageType] {
-        [
-            "$rc_lifetime": .lifetime,
-            "$rc_annual": .annual,
-            "$rc_six_month": .sixMonth,
-            "$rc_three_month": .threeMonth,
-            "$rc_two_month": .twoMonth,
-            "$rc_monthly": .monthly,
-            "$rc_weekly": .weekly
-        ]
-    }
+    static let typesByDescription: [String: PackageType] = PackageType
+        .allCases
+        .filter { $0.description != nil }
+        .dictionaryWithKeys { $0.description! }
+
 }
 
 ///
@@ -148,7 +158,7 @@ private extension PackageType {
      * - Parameter string: A string that maps to a enumeration value of type ``PackageType``
      * - Returns: a ``PackageType`` for the given string.
      */
-    class func packageType(from string: String) -> PackageType {
+    static func packageType(from string: String) -> PackageType {
         if let packageType = PackageType.typesByDescription[string] {
             return packageType
         }

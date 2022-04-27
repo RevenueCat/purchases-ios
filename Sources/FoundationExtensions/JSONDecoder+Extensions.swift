@@ -13,22 +13,25 @@
 
 import Foundation
 
-enum CodableError: Error, CustomStringConvertible {
+enum CodableError: Error, CustomStringConvertible, LocalizedError {
 
-    case unexpectedValue(Any.Type)
+    case unexpectedValue(Any.Type, Any)
     case valueNotFound(value: Any.Type, context: DecodingError.Context)
     case invalidJSONObject(value: [String: Any])
 
     var description: String {
         switch self {
-        case let .unexpectedValue(type):
-            return Strings.codable.unexpectedValueError(type: type).description
+        case let .unexpectedValue(type, value):
+            return Strings.codable.unexpectedValueError(type: type, value: value).description
         case let .valueNotFound(value, context):
             return Strings.codable.valueNotFoundError(value: value, context: context).description
         case let .invalidJSONObject(value):
             return Strings.codable.invalid_json_error(jsonData: value).description
         }
     }
+
+    var errorDescription: String? { return self.description }
+
 }
 
 extension JSONDecoder {
@@ -104,7 +107,7 @@ extension JSONSerialization {
         let object = try JSONSerialization.jsonObject(with: data)
 
         guard let object = object as? [String: Any] else {
-            throw CodableError.unexpectedValue(type(of: object))
+            throw CodableError.unexpectedValue(type(of: object), object)
         }
 
         return object
@@ -122,14 +125,14 @@ private extension ErrorUtils {
         }
 
         switch decodingError {
-        case .dataCorrupted(let context):
+        case let .dataCorrupted(context):
             Logger.error(Strings.codable.corrupted_data_error(context: context))
-        case .keyNotFound(let key, let context):
+        case let .keyNotFound(key, context):
             // This is expected to happen occasionally, the backend doesn't always populate all key/values.
             Logger.debug(Strings.codable.keyNotFoundError(key: key, context: context))
-        case .valueNotFound(let value, let context):
+        case let .valueNotFound(value, context):
             Logger.debug(Strings.codable.valueNotFoundError(value: value, context: context))
-        case .typeMismatch(let type, let context):
+        case let .typeMismatch(type, context):
             Logger.error(Strings.codable.typeMismatch(type: type, context: context))
         @unknown default:
             Logger.error("Unhandled DecodingError: \(decodingError)\n\(Strings.codable.decoding_error(decodingError))")
@@ -141,11 +144,11 @@ private extension ErrorUtils {
 extension Encodable {
 
     func asDictionary() throws -> [String: Any] {
-        let data = try JSONEncoder().encode(self)
+        let data = try JSONEncoder.default.encode(self)
         let result = try JSONSerialization.jsonObject(with: data, options: [])
 
         guard let result = result as? [String: Any] else {
-            throw CodableError.unexpectedValue(type(of: result))
+            throw CodableError.unexpectedValue(type(of: result), result)
         }
 
         return result

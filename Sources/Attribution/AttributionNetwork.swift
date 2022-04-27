@@ -22,6 +22,7 @@ import Foundation
     /**
      Apple's search ads
      */
+    @available(*, deprecated, message: "use adServices")
     case appleSearchAds = 0
 
     /**

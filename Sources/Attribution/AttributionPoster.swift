@@ -35,7 +35,6 @@ class AttributionPoster {
         self.subscriberAttributesManager = subscriberAttributesManager
     }
 
-    // swiftlint:disable:next function_body_length
     func post(attributionData data: [String: Any],
               fromNetwork network: AttributionNetwork,
               networkUserId: String?) {
@@ -95,18 +94,26 @@ class AttributionPoster {
         }
 
         if !newData.isEmpty {
-            if network == .appleSearchAds {
-                postSearchAds(newData: newData,
-                              network: network,
-                              appUserID: currentAppUserID,
-                              newDictToCache: newDictToCache)
-            } else {
-                postSubscriberAttributes(newData: newData,
-                                         network: network,
-                                         appUserID: currentAppUserID,
-                                         newDictToCache: newDictToCache)
-            }
+            postSubscriberAttributes(newData: newData,
+                                     network: network,
+                                     appUserID: currentAppUserID,
+                                     newDictToCache: newDictToCache)
         }
+    }
+
+    // should match OS availability in https://developer.apple.com/documentation/ad_services
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    func postAdServicesTokenIfNeeded() {
+        let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
+        guard latestTokenSent == nil else {
+            return
+        }
+
+        guard let attributionToken = attributionFetcher.adServicesToken() else {
+            return
+        }
+
+        self.post(adServicesToken: attributionToken)
     }
 
     // note to maddie -- tried pulling this out for re-use, but subattrs handles
@@ -134,6 +141,22 @@ class AttributionPoster {
 //        return newDictToCache
 //    }
 
+    // should match OS availability in https://developer.apple.com/documentation/ad_services
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    func postAdServicesTokenIfNeeded() {
+        let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
+        guard latestTokenSent == nil else {
+            return
+        }
+
+        guard let attributionToken = attributionFetcher.adServicesToken() else {
+            return
+        }
+
+        self.post(adServicesToken: attributionToken)
+    }
+
+
     func post(adServicesToken: String) {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
         backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
@@ -155,48 +178,6 @@ class AttributionPoster {
         }
     }
 
-    func postAppleSearchAdsAttributionIfNeeded() {
-        guard attributionFetcher.isAuthorizedToPostSearchAds else {
-            return
-        }
-
-        let latestIdsSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
-        guard latestIdsSent == nil else {
-            return
-        }
-
-        attributionFetcher.afficheClientAttributionDetails { attributionDetails, error in
-            guard let attributionDetails = attributionDetails,
-                  error == nil else {
-                return
-            }
-
-            let attributionDetailsValues = Array(attributionDetails.values)
-            let firstAttributionDict = attributionDetailsValues.first as? [String: NSObject]
-
-            guard let hasIad = firstAttributionDict?["iad-attribution"] as? NSNumber,
-                  hasIad.boolValue == true else {
-                return
-            }
-
-            self.post(attributionData: attributionDetails, fromNetwork: .appleSearchAds, networkUserId: nil)
-        }
-    }
-
-    // should match OS availability in https://developer.apple.com/documentation/ad_services
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    func postAdServicesTokenIfNeeded() {
-        let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
-        guard latestTokenSent == nil else {
-            return
-        }
-
-        guard let attributionToken = attributionFetcher.adServicesToken() else {
-            return
-        }
-
-        self.post(adServicesToken: attributionToken)
-    }
 
     func postPostponedAttributionDataIfNeeded() {
         guard let postponedAttributionData = Self.postponedAttributionData else {

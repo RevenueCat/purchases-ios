@@ -49,15 +49,15 @@ public final class PromotionalOffer: NSObject {
     @objc(RCPromotionalOfferSignedData)
     class SignedData: NSObject {
         /// The subscription offer identifier.
-        @objc public private(set) var identifier: String
+        @objc public let identifier: String
         /// The key identifier of the subscription key.
-        @objc public private(set) var keyIdentifier: String
+        @objc public let keyIdentifier: String
         /// The nonce used in the signature.
-        @objc public private(set) var nonce: UUID
+        @objc public let nonce: UUID
         /// The cryptographic signature of the offer parameters, generated on RevenueCat's server.
-        @objc public private(set) var signature: String
+        @objc public let signature: String
         /// The UNIX time, in milliseconds, when the signature was generated.
-        @objc public private(set) var timestamp: Int
+        @objc public let timestamp: Int
 
         init(identifier: String, keyIdentifier: String, nonce: UUID, signature: String, timestamp: Int) {
             self.identifier = identifier
@@ -65,7 +65,6 @@ public final class PromotionalOffer: NSObject {
             self.nonce = nonce
             self.signature = signature
             self.timestamp = timestamp
-            super.init()
         }
     }
 

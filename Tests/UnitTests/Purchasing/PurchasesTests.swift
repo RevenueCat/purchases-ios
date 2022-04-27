@@ -300,6 +300,9 @@ class PurchasesTests: XCTestCase {
 
     func setupAnonPurchases() {
         Purchases.automaticAppleSearchAdsAttributionCollection = false
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
+            Purchases.automaticAdServicesAttributionTokenCollection = false
+        }
         self.identityManager.mockIsAnonymous = true
         initializePurchasesInstance(appUserId: nil)
     }
