@@ -210,32 +210,6 @@ class PurchasesTests: XCTestCase {
             }
         }
 
-        var invokedPostAttributionData = false
-        var invokedPostAttributionDataCount = 0
-        // swiftlint:disable:next large_tuple
-        var invokedPostAttributionDataParameters: (
-            data: [String: Any]?,
-            network: AttributionNetwork,
-            appUserID: String?
-        )?
-        var invokedPostAttributionDataParametersList = [(data: [String: Any]?,
-                                                         network: AttributionNetwork,
-                                                         appUserID: String?)]()
-        var stubbedPostAttributionDataCompletionResult: (BackendError?, Void)?
-
-        override func post(attributionData: [String: Any],
-                           network: AttributionNetwork,
-                           appUserID: String,
-                           completion: ((BackendError?) -> Void)? = nil) {
-            invokedPostAttributionData = true
-            invokedPostAttributionDataCount += 1
-            invokedPostAttributionDataParameters = (attributionData, network, appUserID)
-            invokedPostAttributionDataParametersList.append((attributionData, network, appUserID))
-            if let result = stubbedPostAttributionDataCompletionResult {
-                completion?(result.0)
-            }
-        }
-
         var postOfferForSigningCalled = false
         var postOfferForSigningPaymentDiscountResponse: Result<[String: Any], BackendError> = .success([:])
 
@@ -289,7 +263,6 @@ class PurchasesTests: XCTestCase {
     var purchases: Purchases!
 
     func setupPurchases(automaticCollection: Bool = false) {
-        Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             Purchases.automaticAdServicesAttributionTokenCollection = automaticCollection
         }
@@ -299,7 +272,6 @@ class PurchasesTests: XCTestCase {
     }
 
     func setupAnonPurchases() {
-        Purchases.automaticAppleSearchAdsAttributionCollection = false
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             Purchases.automaticAdServicesAttributionTokenCollection = false
         }
@@ -1869,22 +1841,6 @@ class PurchasesTests: XCTestCase {
         expect(attributionData?["rc_idfv"] as? String) == "rc_idfv"
     }
 
-    func testPassesTheArrayForAllNetworks() {
-        setupPurchases()
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
-
-        for key in data.keys {
-            expect(self.backend.invokedPostAttributionDataParametersList[0].data?.keys.contains(key))
-                .toEventually(beTrue())
-        }
-        expect(self.backend.invokedPostAttributionDataParametersList[0].data?.keys.contains("rc_idfa")) == true
-        expect(self.backend.invokedPostAttributionDataParametersList[0].data?.keys.contains("rc_idfv")) == true
-        expect(self.backend.invokedPostAttributionDataParametersList[0].network) == AttributionNetwork.appleSearchAds
-        expect(self.backend.invokedPostAttributionDataParametersList[0].appUserID) == self.purchases?.appUserID
-    }
-
     func testSharedInstanceIsSetWhenConfiguring() {
         let purchases = Purchases.configure(withAPIKey: "")
         expect(Purchases.shared) === purchases
@@ -2164,30 +2120,6 @@ class PurchasesTests: XCTestCase {
         expect(invokedParameters?.appUserID) == self.purchases?.appUserID
     }
 
-    func testAttributionDataSendsNetworkAppUserId() throws {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data,
-                                                from: AttributionNetwork.appleSearchAds,
-                                                forNetworkUserId: "newuser")
-
-        setupPurchases()
-
-        expect(self.backend.invokedPostAttributionData).toEventually(beTrue())
-
-        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
-        for key in data.keys {
-            expect(invokedMethodParams.data?.keys.contains(key)).to(beTrue())
-        }
-
-        expect(invokedMethodParams.data?.keys.contains("rc_idfa")) == true
-        expect(invokedMethodParams.data?.keys.contains("rc_idfv")) == true
-        expect(invokedMethodParams.data?.keys.contains("rc_attribution_network_id")) == true
-        expect(invokedMethodParams.data?["rc_attribution_network_id"] as? String) == "newuser"
-        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
-        expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
-    }
-
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testAdServicesAttributionTokenIsAutomaticallyCollected() throws {
         guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
@@ -2195,7 +2127,7 @@ class PurchasesTests: XCTestCase {
         }
 
         setupPurchases(automaticCollection: true)
-        expect(self.attributionFetcher.adServicesTokenCollected) == true
+        expect(self.attributionFetcher.adServicesTokenCollectionCalled) == true
     }
 
     @available(iOS 14.3, *)
@@ -2205,17 +2137,7 @@ class PurchasesTests: XCTestCase {
         }
 
         setupPurchases(automaticCollection: false)
-        expect(self.attributionFetcher.adServicesTokenCollected) == false
-    }
-
-    func testAttributionDataPostponesMultiple() {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, from: AttributionNetwork.adjust, forNetworkUserId: "newuser")
-
-        setupPurchases(automaticCollection: true)
-        expect(self.backend.invokedPostAttributionDataParametersList.count) == 1
-        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParametersList.count) == 1
+        expect(self.attributionFetcher.adServicesTokenCollectionCalled) == false
     }
 
     func testObserverModeSetToFalseSetFinishTransactions() throws {
