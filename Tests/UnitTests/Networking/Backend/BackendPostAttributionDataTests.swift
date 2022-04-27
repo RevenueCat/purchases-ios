@@ -23,20 +23,5 @@ class BackendPostAttributionDataTests: BaseBackendTests {
         super.createClient(#file)
     }
 
-    func testPostAttributesPutsDataInDataKey() throws {
-        self.httpClient.mock(
-            requestPath: .postAttributionData(appUserID: Self.userID),
-            response: .init(statusCode: .success)
-        )
-
-        let data: [String: AnyObject] = ["a": "b" as NSString, "c": "d" as NSString]
-
-        backend.post(attributionData: data,
-                     network: AttributionNetwork.appleSearchAds,
-                     appUserID: Self.userID,
-                     completion: nil)
-
-        expect(self.httpClient.calls).toEventually(haveCount(1))
-    }
-
+    
 }
