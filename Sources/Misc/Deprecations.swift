@@ -23,7 +23,7 @@ public extension Purchases {
     @available(watchOS, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
     @available(macOS, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
     @available(macCatalyst, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
-    func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
+    @objc func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String],
                                               completion: @escaping ([String: IntroEligibility]) -> Void) {
         self.checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers, completion: completion)
     }
@@ -33,7 +33,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
     @available(macOS, introduced: 10.15, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
     @available(macCatalyst, introduced: 13.0, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
-    func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+    @objc func checkTrialOrIntroDiscountEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
         return await self.checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers)
     }
 
@@ -42,7 +42,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
     @available(macOS, introduced: 10.15, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
     @available(macCatalyst, introduced: 13.0, deprecated, renamed: "promotionalOffer(forProductDiscount:product:)")
-    func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
+    @objc func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct) async throws -> PromotionalOffer {
         return try await self.promotionalOffer(forProductDiscount: discount, product: product)
     }
@@ -52,7 +52,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
     @available(macOS, introduced: 10.15, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
     @available(macCatalyst, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
-    func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
+    @objc func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffers(forProduct: product)
     }
 
@@ -64,7 +64,7 @@ public extension StoreProduct {
     @available(watchOS, introduced: 6.2, deprecated, renamed: "eligiblePromotionalOffers()")
     @available(macOS, introduced: 10.15, deprecated, renamed: "eligiblePromotionalOffers()")
     @available(macCatalyst, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers()")
-    func getEligiblePromotionalOffers() async -> [PromotionalOffer] {
+    @objc func getEligiblePromotionalOffers() async -> [PromotionalOffer] {
         return await self.eligiblePromotionalOffers()
     }
 }
