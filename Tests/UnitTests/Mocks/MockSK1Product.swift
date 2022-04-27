@@ -51,7 +51,7 @@ class MockSK1Product: SK1Product {
 
     @available(iOS 12.2, macCatalyst 13.0, tvOS 12.2, macOS 10.13.2, *)
     override var discounts: [SKProductDiscount] {
-        return (mockDiscount != nil) ? [mockDiscount!] : []
+        return self.mockDiscount.map { [$0] } ?? []
     }
 
     @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)

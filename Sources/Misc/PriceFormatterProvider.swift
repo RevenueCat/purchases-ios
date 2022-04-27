@@ -20,7 +20,6 @@ class PriceFormatterProvider {
     private var cachedPriceFormatterForSK1: NumberFormatter?
 
     func priceFormatterForSK1(with locale: Locale) -> NumberFormatter {
-
         func makePriceFormatterForSK1(with locale: Locale) -> NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
@@ -28,18 +27,17 @@ class PriceFormatterProvider {
             return formatter
         }
 
-        if cachedPriceFormatterForSK1 == nil || cachedPriceFormatterForSK1?.locale != locale {
-            cachedPriceFormatterForSK1 = makePriceFormatterForSK1(with: locale)
+        if self.cachedPriceFormatterForSK1 == nil || self.cachedPriceFormatterForSK1?.locale != locale {
+            self.cachedPriceFormatterForSK1 = makePriceFormatterForSK1(with: locale)
         }
 
-        return cachedPriceFormatterForSK1!
+        return self.cachedPriceFormatterForSK1!
     }
 
     private var cachedPriceFormatterForSK2: NumberFormatter?
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func priceFormatterForSK2(withCurrencyCode currencyCode: String) -> NumberFormatter {
-
         func makePriceFormatterForSK2(withCurrencyCode currencyCode: String) -> NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
@@ -48,11 +46,11 @@ class PriceFormatterProvider {
             return formatter
         }
 
-        if cachedPriceFormatterForSK2 == nil || cachedPriceFormatterForSK2?.currencyCode != currencyCode {
-            cachedPriceFormatterForSK2 = makePriceFormatterForSK2(withCurrencyCode: currencyCode)
+        if self.cachedPriceFormatterForSK2 == nil || self.cachedPriceFormatterForSK2?.currencyCode != currencyCode {
+            self.cachedPriceFormatterForSK2 = makePriceFormatterForSK2(withCurrencyCode: currencyCode)
         }
 
-        return cachedPriceFormatterForSK2!
+        return self.cachedPriceFormatterForSK2!
     }
 
 }

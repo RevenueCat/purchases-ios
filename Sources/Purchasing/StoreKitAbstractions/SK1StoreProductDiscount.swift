@@ -29,7 +29,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         } else {
             self.offerIdentifier = nil
         }
-        self.currencyCode = sk1Discount.priceLocale.currencyCode
+        self.currencyCode = sk1Discount.optionalLocale?.currencyCode
         self.price = sk1Discount.price as Decimal
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
@@ -48,13 +48,15 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
     let type: StoreProductDiscount.DiscountType
 
     var localizedPriceString: String {
-        return priceFormatter?.string(from: self.underlyingSK1Discount.price) ?? ""
+        return self.priceFormatter.string(from: self.underlyingSK1Discount.price) ?? ""
     }
 
     private let priceFormatterProvider: PriceFormatterProvider = .init()
 
-    private var priceFormatter: NumberFormatter? {
-        return priceFormatterProvider.priceFormatterForSK1(with: self.underlyingSK1Discount.priceLocale)
+    private var priceFormatter: NumberFormatter {
+        return self.priceFormatterProvider.priceFormatterForSK1(
+            with: self.underlyingSK1Discount.optionalLocale ?? .current
+        )
     }
 
 }
@@ -74,6 +76,23 @@ private extension StoreProductDiscount.PaymentMode {
             Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(String.init(describing: paymentMode)))
             return nil
         }
+    }
+
+}
+
+@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+private extension SK1ProductDiscount {
+
+    // See https://github.com/RevenueCat/purchases-ios/issues/1521
+    // Despite `SKProductDiscount.priceLocale` being non-optional, StoreKit might return `nil` `NSLocale`s.
+    // This works around that to make sure the SDK doesn't crash when bridging to `Locale`.
+    var optionalLocale: Locale? {
+        guard let locale = self.priceLocale as NSLocale? else {
+            Logger.appleWarning(Strings.storeKit.sk1_discount_missing_locale)
+            return nil
+        }
+
+        return locale as Locale
     }
 
 }
