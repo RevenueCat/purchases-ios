@@ -129,8 +129,6 @@ class AttributionPosterTests: XCTestCase {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
-    #endif
-
 #if canImport(AdServices)
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testPostAdServicesDoesntPostIfLatestTokenNonNil() {
