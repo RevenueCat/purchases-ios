@@ -35,7 +35,6 @@ class AttributionPoster {
         self.subscriberAttributesManager = subscriberAttributesManager
     }
 
-    // swiftlint:disable:next function_body_length
     func post(attributionData data: [String: Any],
               fromNetwork network: AttributionNetwork,
               networkUserId: String?) {
