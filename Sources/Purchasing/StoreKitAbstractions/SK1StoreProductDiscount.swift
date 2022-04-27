@@ -79,20 +79,3 @@ private extension StoreProductDiscount.PaymentMode {
     }
 
 }
-
-@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-private extension SK1ProductDiscount {
-
-    // See https://github.com/RevenueCat/purchases-ios/issues/1521
-    // Despite `SKProductDiscount.priceLocale` being non-optional, StoreKit might return `nil` `NSLocale`s.
-    // This works around that to make sure the SDK doesn't crash when bridging to `Locale`.
-    var optionalLocale: Locale? {
-        guard let locale = self.priceLocale as NSLocale? else {
-            Logger.appleWarning(Strings.storeKit.sk1_discount_missing_locale)
-            return nil
-        }
-
-        return locale as Locale
-    }
-
-}
