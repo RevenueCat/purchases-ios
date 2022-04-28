@@ -128,26 +128,53 @@ class AttributionPosterTests: XCTestCase {
 
 #if canImport(AdServices)
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() {
+    func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() throws {
+        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
         backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
 
         attributionPoster.postAdServicesTokenIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
 
         attributionPoster.postAdServicesTokenIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 1
+        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    func testPostAdServicesTokenIfNeededSkipsIfNilToken() {
+    func testPostAdServicesTokenIfNeededSkipsIfNilToken() throws {
+        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
         backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
 
         attributionFetcher.adServicesTokenToReturn = nil
         attributionPoster.postAdServicesTokenIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+    }
+
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    func testPostAdServicesTokenIfNeededDoesNotCacheOnAPIError() throws {
+        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+        let stubbedError: BackendError = .networkError(
+            .errorResponse(.init(code: .invalidAPIKey, message: nil),
+                           400)
+        )
+
+        backend.stubbedPostAdServicesTokenCompletionResult = (stubbedError, ())
+
+        attributionFetcher.adServicesTokenToReturn = nil
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 0
     }
 
     #endif
