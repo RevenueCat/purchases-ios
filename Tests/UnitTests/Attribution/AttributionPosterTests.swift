@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  AttributionFetcherTests.swift
+//  AttributionPosterTests.swift
 //  PurchasesTests
 //
 //  Created by César de la Vega on 7/17/20.
@@ -21,7 +21,7 @@ import XCTest
 
 class AttributionPosterTests: XCTestCase {
 
-    var attributionFetcher: AttributionFetcher!
+    var attributionFetcher: MockAttributionFetcher!
     var attributionPoster: AttributionPoster!
     var deviceCache: MockDeviceCache!
     var currentUserProvider: MockCurrentUserProvider!
@@ -43,7 +43,7 @@ class AttributionPosterTests: XCTestCase {
                                       userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
         deviceCache.cache(appUserID: userID)
         backend = MockBackend()
-        attributionFetcher = AttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
+        attributionFetcher = MockAttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
         subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
@@ -57,6 +57,7 @@ class AttributionPosterTests: XCTestCase {
                                               attributionFetcher: attributionFetcher,
                                               subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
+        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
     }
 
     private func resetAttributionStaticProperties() {
@@ -76,67 +77,78 @@ class AttributionPosterTests: XCTestCase {
 
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
+        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
+
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
     }
 
     func testPostAttributionDataDoesntSkipIfNetworkChanged() {
         let userID = "userID"
-
+        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .facebook,
                                networkUserId: userID)
-
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
     func testPostAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
+        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: "attributionUser1")
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .adjust,
                                networkUserId: "attributionUser2")
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
 #if canImport(AdServices)
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    func testPostAdServicesDoesntPostIfLatestTokenNonNil() {
-        MockAttributionTypeFactory.shouldReturnAdClientProxy = false
-        MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
+    func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() {
+        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
 
-        self.attributionPoster.postAdServicesTokenIfNeeded()
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.backend.invokedPostAdServicesTokenCount) == 1
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
-        expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.backend.invokedPostAdServicesTokenCount) == 1
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
-//
-//    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-//    func testPostAdServicesTokenSkipsIfAlreadySent() {
-//        let userID = "userID"
-//        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
-//
-//        attributionPoster.post(adServicesToken: "something")
-//        expect(self.backend.invokedPostAdServicesToken) == 1
-//
-//        attributionPoster.post(adServicesToken: "something")
-//        expect(self.backend.invokedPostAttributionDataCount) == 1
-//    }
+
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    func testPostAdServicesTokenIfNeededSkipsIfNilToken() {
+        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+
+        attributionFetcher.adServicesTokenToReturn = nil
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+    }
 
     #endif
 }

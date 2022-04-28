@@ -230,6 +230,25 @@ class PurchasesTests: XCTestCase {
                 }
             )
         }
+
+        var invokedPostAdServicesToken = false
+        var invokedPostAdServicesTokenCount = 0
+        var invokedPostAdServicesTokenParameters: (token: String, appUserID: String?)?
+        var invokedPostAdServicesTokenParametersList = [(token: String, appUserID: String?)]()
+        var stubbedPostAdServicesTokenCompletionResult: (BackendError?, Void)?
+
+        override func post(adServicesToken: String,
+                           appUserID: String,
+                           completion: ((BackendError?) -> Void)?) {
+            invokedPostAdServicesToken = true
+            invokedPostAdServicesTokenCount += 1
+            invokedPostAdServicesTokenParameters = (adServicesToken, appUserID)
+            invokedPostAdServicesTokenParametersList.append((adServicesToken, appUserID))
+            if let result = stubbedPostAdServicesTokenCompletionResult {
+                completion?(result.0)
+            }
+        }
+
     }
 
     var receiptFetcher: MockReceiptFetcher!

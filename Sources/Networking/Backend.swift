@@ -174,4 +174,17 @@ class Backend {
         self.operationQueue.addOperation(getIntroEligibilityOperation)
     }
 
+    func post(adServicesToken: String,
+              appUserID: String,
+              completion: SimpleResponseHandler?) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
+                                                                authHeaders: self.authHeaders,
+                                                                appUserID: appUserID)
+        let postAdServicesTokenOperation = PostAdServicesTokenOperation(configuration: config,
+                                                                        token: adServicesToken,
+                                                                        responseHandler: completion)
+        self.operationQueue.addOperation(postAdServicesTokenOperation)
+    }
+
+
 }

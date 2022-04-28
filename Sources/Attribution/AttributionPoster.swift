@@ -141,7 +141,6 @@ class AttributionPoster {
         self.post(adServicesToken: attributionToken)
     }
 
-
     func post(adServicesToken: String) {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
         backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
@@ -149,15 +148,7 @@ class AttributionPoster {
                 return
             }
 
-//            let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
-//                                                   network: .adServices,
-//                                                   networkUserId: nil,
-//                                                   identifierForAdvertisers: nil)
-
-            let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
-                self.deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
-            var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
-            newDictToCache[String(AttributionNetwork.adServices.rawValue)] = adServicesToken
+            let newDictToCache = [String(AttributionNetwork.adServices.rawValue): adServicesToken]
 
             self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
         }
