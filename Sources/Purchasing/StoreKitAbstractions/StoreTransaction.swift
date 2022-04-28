@@ -66,6 +66,7 @@ public typealias SK2Transaction = StoreKit.Transaction
 
 /// Information that represents the customer’s purchase of a product.
 internal protocol StoreTransactionType {
+
     /// The product identifier.
     var productIdentifier: String { get }
 
@@ -79,11 +80,13 @@ internal protocol StoreTransactionType {
     /// The number of consumable products purchased.
     /// - Note: multi-quantity purchases aren't currently supported.
     var quantity: Int { get }
+
 }
 
 // MARK: - Wrapper constructors / getters
 
 extension StoreTransaction {
+
     internal convenience init(sk1Transaction: SK1Transaction) {
         self.init(SK1StoreTransaction(sk1Transaction: sk1Transaction))
     }

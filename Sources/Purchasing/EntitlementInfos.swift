@@ -43,78 +43,55 @@ import Foundation
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        guard let object = object as? EntitlementInfos else {
+        guard let other = object as? EntitlementInfos else {
             return false
         }
 
-        if object === self {
+        return self.isEqual(to: other)
+    }
+
+    init(entitlements: [String: EntitlementInfo]) {
+        self.all = entitlements
+    }
+
+    private func isEqual(to other: EntitlementInfos?) -> Bool {
+        guard let other = other else {
+            return false
+        }
+
+        if self === other {
             return true
         }
 
-        return isEqual(toInfos: object)
+        return self.all == other.all
     }
 
-    convenience init(entitlementsData: [String: Any]?,
-                     purchasesData: [String: Any],
-                     requestDate: Date?) {
-        self.init(entitlementsData: entitlementsData,
-                  purchasesData: purchasesData,
-                  requestDate: requestDate,
-                  dateFormatter: ISO8601DateFormatter.default)
-    }
+}
 
-    init(entitlementsData: [String: Any]?,
-         purchasesData: [String: Any],
-         requestDate: Date?,
-         dateFormatter: DateFormatterType) {
-        guard let entitlementsData = entitlementsData else {
-            self.all = [:]
-            return
-        }
+extension EntitlementInfos {
 
-        var entitlementInfos: [String: EntitlementInfo] = [:]
-        entitlementsData.forEach { identifier, entitlement in
-            guard let entitlement = entitlement as? [String: Any] else {
-                return
+    convenience init(
+        entitlements: [String: CustomerInfoResponse.Entitlement],
+        purchases: [String: CustomerInfoResponse.Subscription],
+        requestDate: Date?
+    ) {
+        let entitlements: [String: EntitlementInfo] = Dictionary(
+            uniqueKeysWithValues: entitlements.compactMap { identifier, entitlement in
+                guard let subscription = purchases[entitlement.productIdentifier] else {
+                    return nil
+                }
+
+                return (
+                    identifier,
+                    EntitlementInfo(identifier: identifier,
+                                    entitlement: entitlement,
+                                    subscription: subscription,
+                                    requestDate: requestDate)
+                )
             }
+        )
 
-            guard let productIdentifier = entitlement["product_identifier"] as? String else {
-                return
-            }
-
-            let productData = purchasesData[productIdentifier]
-            guard let productData = productData as? [String: Any] else {
-                return
-            }
-
-            guard let entitlementInfo = EntitlementInfo(
-                entitlementId: identifier,
-                entitlementData: entitlement,
-                productData: productData,
-                requestDate: requestDate
-            ) else {
-                return
-            }
-
-            entitlementInfos[identifier] = entitlementInfo
-        }
-        self.all = entitlementInfos
-    }
-
-    private func isEqual(toInfos infos: EntitlementInfos?) -> Bool {
-        guard let infos = infos else {
-            return false
-        }
-
-        if self === infos {
-            return true
-        }
-
-        if self.all != infos.all && !NSDictionary(dictionary: infos.all).isEqual(to: self.all) {
-            return false
-        }
-
-        return true
+        self.init(entitlements: entitlements)
     }
 
 }

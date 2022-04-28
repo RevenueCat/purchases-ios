@@ -155,14 +155,7 @@ extension PeriodType: DefaultValueProvider {
      */
     @objc public let ownershipType: PurchaseOwnershipType
 
-    /**
-     * The underlying data for this `EntitlementInfo`.
-     *
-     * - Note: the content and format of this data isn’t documented and is subject to change,
-     *         it's only meant for debugging purposes or for getting access to future data
-     *         without updating the SDK.
-     */
-    @objc public let rawData: [String: Any]
+    private let entitlement: CustomerInfoResponse.Entitlement
 
     public override var description: String {
         return """
@@ -256,58 +249,45 @@ extension PeriodType: DefaultValueProvider {
         return hasher.finalize()
     }
 
-    convenience init?(entitlementId: String,
-                      entitlementData: [String: Any],
-                      productData: [String: Any],
-                      requestDate: Date?) {
-        self.init(entitlementId: entitlementId,
-                  entitlementData: entitlementData,
-                  productData: productData,
-                  requestDate: requestDate,
-                  jsonDecoder: JSONDecoder.default)
-    }
+    init(
+        identifier: String,
+        entitlement: CustomerInfoResponse.Entitlement,
+        subscription: CustomerInfoResponse.Subscription,
+        requestDate: Date?
+    ) {
+        self.entitlement = entitlement
 
-    init?(entitlementId: String,
-          entitlementData entitlementDataDict: [String: Any],
-          productData productDataDict: [String: Any],
-          requestDate: Date?,
-          jsonDecoder: JSONDecoder) {
-        // Entitlement data
-        guard let entitlementData: EntitlementData = try? jsonDecoder.decode(
-            dictionary: entitlementDataDict
-        ) else {
-            return nil
-        }
+        self.store = subscription.store
+        self.expirationDate = subscription.expiresDate
+        self.unsubscribeDetectedAt = subscription.unsubscribeDetectedAt
+        self.billingIssueDetectedAt = subscription.billingIssuesDetectedAt
+        self.identifier = identifier
+        self.productIdentifier = entitlement.productIdentifier
+        self.isSandbox = subscription.isSandbox
 
-        // Product data
-        guard let productData: ProductData = try? jsonDecoder.decode(dictionary: productDataDict) else {
-            return nil
-        }
-
-        self.store = productData.store
-        self.expirationDate = productData.expiresDate
-        self.unsubscribeDetectedAt = productData.unsubscribeDetectedAt
-        self.billingIssueDetectedAt = productData.billingIssuesDetectedAt
-        self.identifier = entitlementId
-        self.productIdentifier = entitlementData.productIdentifier
-        self.isSandbox = productData.isSandbox
-
-        self.isActive = Self.isDateActive(expirationDate: entitlementData.expiresDate, forRequestDate: requestDate)
-        self.periodType = productData.periodType
-        self.latestPurchaseDate = entitlementData.purchaseDate
-        self.originalPurchaseDate = productData.originalPurchaseDate
-        self.ownershipType = productData.ownershipType
-        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
-                                                          store: store,
-                                                          unsubscribeDetectedAt: unsubscribeDetectedAt,
-                                                          billingIssueDetectedAt: billingIssueDetectedAt)
-
-        self.rawData = entitlementDataDict
+        self.isActive = Self.isDateActive(expirationDate: entitlement.expiresDate, forRequestDate: requestDate)
+        self.periodType = subscription.periodType
+        self.latestPurchaseDate = entitlement.purchaseDate
+        self.originalPurchaseDate = subscription.originalPurchaseDate
+        self.ownershipType = subscription.ownershipType
+        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: self.expirationDate,
+                                                          store: self.store,
+                                                          unsubscribeDetectedAt: self.unsubscribeDetectedAt,
+                                                          billingIssueDetectedAt: self.billingIssueDetectedAt)
     }
 
 }
 
-extension EntitlementInfo: RawDataContainer {}
+ extension EntitlementInfo: RawDataContainer {
+
+     // Docs inherited from protocol
+     // swiftlint:disable missing_docs
+     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+     public var underlyingData: some Encodable {
+         return self.entitlement
+     }
+
+ }
 
 private extension EntitlementInfo {
 
@@ -330,34 +310,6 @@ private extension EntitlementInfo {
         let hasBillingIssues = billingIssueDetectedAt != nil
 
         return !(isPromo || isLifetime || hasUnsubscribed || hasBillingIssues)
-    }
-
-}
-
-/**
- This extension contains some internal helper structs to decode the data received from the backend.
- */
-extension EntitlementInfo {
-
-    struct EntitlementData: Decodable {
-
-        let expiresDate: Date?
-        let purchaseDate: Date?
-        let productIdentifier: String
-
-    }
-
-    struct ProductData: Decodable {
-
-        @DefaultValue<PeriodType> var periodType: PeriodType
-        var originalPurchaseDate: Date?
-        var expiresDate: Date?
-        @DefaultValue<Store> var store: Store
-        @DefaultDecodable.False var isSandbox: Bool
-        var unsubscribeDetectedAt: Date?
-        var billingIssuesDetectedAt: Date?
-        @DefaultValue<PurchaseOwnershipType> var ownershipType: PurchaseOwnershipType
-
     }
 
 }

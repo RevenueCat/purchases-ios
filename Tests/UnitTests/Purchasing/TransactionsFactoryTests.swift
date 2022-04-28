@@ -12,9 +12,75 @@ import XCTest
 
 class TransactionsFactoryTests: TestCase {
 
-    let dateFormatter = DateFormatter()
+    func testNonSubscriptionsIsCorrectlyCreated() throws {
+        let nonSubscriptionTransactions = try TransactionsFactory.nonSubscriptionTransactions(
+            withSubscriptionsData: Self.sampleTransactions
+        )
+        expect(nonSubscriptionTransactions.count) == 5
 
-    let sampleTransactions = [
+        try Self.sampleTransactions.forEach { productId, transactionsData in
+            let filteredTransactions = nonSubscriptionTransactions
+                .filter { $0.productIdentifier == productId }
+
+            expect(filteredTransactions.count) == transactionsData.count
+
+            try transactionsData.forEach { dictionary in
+                let transactionId = try XCTUnwrap(dictionary["id"] as? String)
+                let containsTransaction = filteredTransactions
+                    .contains { $0.transactionIdentifier == transactionId }
+
+                expect(containsTransaction) == true
+            }
+        }
+
+    }
+
+    func testNonSubscriptionsIsEmptyIfThereAreNoNonSubscriptions() {
+        let list = TransactionsFactory.nonSubscriptionTransactions(withSubscriptionsData: [:])
+        expect(list).to(beEmpty())
+    }
+
+    func testBuildsCorrectlyEvenIfSomeTransactionsCantBeBuilt() throws {
+        let identifier = "lifetime_access"
+        let transactionIdentifier = "d6c097ba74"
+        let date = "2018-07-11T18:36:20Z"
+        let subscriptionsData = [
+            identifier: [
+                [
+                    "id": transactionIdentifier,
+                    "is_sandbox": true,
+                    "original_purchase_date": "2018-07-11T18:36:20Z",
+                    "purchase_date": date,
+                    "store": "app_store"
+                ]
+            ],
+            "invalid_non_transaction": [
+                [
+                    "ioasgioaew": 0832
+                ]
+            ]
+        ]
+
+        let nonSubscriptionTransactions = try TransactionsFactory.nonSubscriptionTransactions(
+            withSubscriptionsData: subscriptionsData
+        )
+        expect(nonSubscriptionTransactions.count) == 1
+
+        let transaction = try XCTUnwrap(nonSubscriptionTransactions.first)
+
+        expect(transaction.productIdentifier) == identifier
+        expect(transaction.purchaseDate.timeIntervalSinceReferenceDate).to(beCloseTo(
+            ISO8601DateFormatter.default.date(from: date)!.timeIntervalSinceReferenceDate
+        ))
+        expect(transaction.transactionIdentifier) == transactionIdentifier
+        expect(transaction.quantity) == 1
+    }
+
+}
+
+private extension TransactionsFactoryTests {
+
+    static let sampleTransactions = [
         "100_coins": [
             [
                 "id": "72c26cc69c",
@@ -53,77 +119,19 @@ class TransactionsFactoryTests: TestCase {
             ]]
     ]
 
-    override func setUp() {
-        dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-    }
+}
 
-    func testNonSubscriptionsIsCorrectlyCreated() throws {
-        let nonSubscriptionTransactions = TransactionsFactory.nonSubscriptionTransactions(
-            withSubscriptionsData: sampleTransactions,
-            dateFormatter: dateFormatter
+private extension TransactionsFactory {
+
+    static func nonSubscriptionTransactions(
+        withSubscriptionsData data: [String: Any]
+    ) throws -> [StoreTransaction] {
+        let data = try JSONSerialization.data(withJSONObject: data)
+        let transactions: LossyArrayDictionary<CustomerInfoResponse.Transaction> = try JSONDecoder.default.decode(
+            jsonData: data
         )
-        expect(nonSubscriptionTransactions.count) == 5
 
-        try sampleTransactions.forEach { productId, transactionsData in
-            let filteredTransactions = nonSubscriptionTransactions
-                .filter { $0.productIdentifier == productId }
-
-            expect(filteredTransactions.count) == transactionsData.count
-
-            try transactionsData.forEach { dictionary in
-                let transactionId = try XCTUnwrap(dictionary["id"] as? String)
-                let containsTransaction = filteredTransactions
-                    .contains { $0.transactionIdentifier == transactionId }
-
-                expect(containsTransaction) == true
-            }
-        }
-
-    }
-
-    func testNonSubscriptionsIsEmptyIfThereAreNoNonSubscriptions() {
-        let list = TransactionsFactory.nonSubscriptionTransactions(withSubscriptionsData: [:],
-                                                                   dateFormatter: dateFormatter)
-        expect(list).to(beEmpty())
-    }
-
-    func testBuildsCorrectlyEvenIfSomeTransactionsCantBeBuilt() throws {
-        let identifier = "lifetime_access"
-        let transactionIdentifier = "d6c097ba74"
-        let date = "2018-07-11T18:36:20Z"
-        let subscriptionsData = [
-            identifier: [
-                [
-                    "id": transactionIdentifier,
-                    "is_sandbox": true,
-                    "original_purchase_date": "2018-07-11T18:36:20Z",
-                    "purchase_date": date,
-                    "store": "app_store"
-                ]
-            ],
-            "invalid_non_transaction": [
-                [
-                    "ioasgioaew": 0832
-                ]
-            ]
-        ]
-
-        let nonSubscriptionTransactions = TransactionsFactory.nonSubscriptionTransactions(
-            withSubscriptionsData: subscriptionsData,
-            dateFormatter: dateFormatter
-        )
-        expect(nonSubscriptionTransactions.count) == 1
-
-        let transaction = try XCTUnwrap(nonSubscriptionTransactions.first)
-
-        expect(transaction.productIdentifier) == identifier
-        expect(transaction.purchaseDate.timeIntervalSinceReferenceDate).to(beCloseTo(
-            dateFormatter.date(from: date)!.timeIntervalSinceReferenceDate
-        ))
-        expect(transaction.transactionIdentifier) == transactionIdentifier
-        expect(transaction.quantity) == 1
+        return Self.nonSubscriptionTransactions(withSubscriptionsData: transactions.wrappedValue)
     }
 
 }

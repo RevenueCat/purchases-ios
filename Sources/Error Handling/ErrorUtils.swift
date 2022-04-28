@@ -389,7 +389,7 @@ enum ErrorUtils {
      * - Note: This error is used when there is a problem related to the customer info.
      */
     static func customerInfoError(
-        withMessage message: String, error: Error? = nil,
+        withMessage message: String? = nil, error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         let errorCode = ErrorCode.customerInfoError
