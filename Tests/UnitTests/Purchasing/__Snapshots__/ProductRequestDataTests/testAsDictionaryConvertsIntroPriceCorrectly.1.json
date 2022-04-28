@@ -1,7 +1,8 @@
+
 {
   "currency" : "UYU",
   "introductory_price" : "6.99",
   "price" : "15.99",
   "product_id" : "product_id",
-  "storefront" : "ESP"
+  "store_country" : "ESP"
 }

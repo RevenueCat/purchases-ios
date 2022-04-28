@@ -59,7 +59,7 @@ extension ProductRequestData: Encodable {
         case productIdentifier = "product_id"
         case paymentMode = "payment_mode"
         case currencyCode = "currency"
-        case storefront
+        case storefront = "store_country"
         case price
         case normalDuration = "normal_duration"
         case introDuration = "intro_duration"

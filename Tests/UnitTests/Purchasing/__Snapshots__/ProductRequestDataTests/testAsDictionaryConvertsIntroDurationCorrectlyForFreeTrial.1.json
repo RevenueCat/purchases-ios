@@ -2,6 +2,6 @@
   "currency" : "UYU",
   "price" : "15.99",
   "product_id" : "product_id",
-  "storefront" : "ESP",
+  "store_country" : "ESP",
   "trial_duration" : "P3M"
 }

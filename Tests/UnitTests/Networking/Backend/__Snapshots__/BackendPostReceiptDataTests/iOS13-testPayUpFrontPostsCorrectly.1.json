@@ -18,7 +18,7 @@
       "payment_mode" : 1,
       "price" : "15.99",
       "product_id" : "product_id",
-      "storefront" : "ESP"
+      "store_country" : "ESP"
     },
     "method" : "POST",
     "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
