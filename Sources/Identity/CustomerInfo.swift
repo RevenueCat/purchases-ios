@@ -43,12 +43,6 @@ import Foundation
         return mostRecentDate
     }
 
-    /// Returns all product IDs of the non-subscription purchases a user has made.
-    @available(*, deprecated, message: "use nonSubscriptionTransactions")
-    @objc public var nonConsumablePurchases: Set<String> {
-        Set(self.nonSubscriptionTransactions.map { $0.productIdentifier })
-    }
-
     /**
      * Returns all the non-subscription purchases a user has made.
      * The purchases are ordered by purchase date in ascending order.
