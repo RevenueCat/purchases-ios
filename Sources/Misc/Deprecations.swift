@@ -65,6 +65,7 @@ public extension Purchases {
 }
 
 public extension StoreProduct {
+
     @available(iOS, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers()")
     @available(tvOS, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers()")
     @available(watchOS, introduced: 6.2, deprecated, renamed: "eligiblePromotionalOffers()")
@@ -73,4 +74,15 @@ public extension StoreProduct {
     func getEligiblePromotionalOffers() async -> [PromotionalOffer] {
         return await self.eligiblePromotionalOffers()
     }
+
+}
+
+extension CustomerInfo {
+
+    /// Returns all product IDs of the non-subscription purchases a user has made.
+    @available(*, deprecated, message: "use nonSubscriptionTransactions")
+    @objc public var nonConsumablePurchases: Set<String> {
+        return Set(self.nonSubscriptionTransactions.map { $0.productIdentifier })
+    }
+
 }
