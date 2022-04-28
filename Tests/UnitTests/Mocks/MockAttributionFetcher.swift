@@ -7,8 +7,6 @@
 
 class MockAttributionFetcher: AttributionFetcher {
 
-    var adServicesTokenCollectionCalled = false
-
     override var identifierForAdvertisers: String? {
         return "rc_idfa"
     }
@@ -17,6 +15,7 @@ class MockAttributionFetcher: AttributionFetcher {
         return "rc_idfv"
     }
 
+    var adServicesTokenCollectionCalled = false
     override var adServicesToken: String? {
         adServicesTokenCollectionCalled = true
         return nil
