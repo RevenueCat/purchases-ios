@@ -102,7 +102,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
      *
      * #### Related Symbols
-     * - ``logHandler``
+     * - ``logHandler``
      * - ``verboseLogHandler``
      */
     @objc public static var logLevel: LogLevel {
