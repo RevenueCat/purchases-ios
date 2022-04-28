@@ -39,7 +39,7 @@ enum AttributionStrings {
     case attribute_set_locally(attribute: String)
     case missing_advertiser_identifiers
     case adservices_not_supported
-    case adservices_token_fetch_failed(error: Error?)
+    case adservices_token_fetch_failed(error: Error)
 
 }
 
@@ -121,7 +121,7 @@ extension AttributionStrings: CustomStringConvertible {
                 "AdServices support."
 
         case .adservices_token_fetch_failed(let error):
-            return "Fetching AdServices attribution token failed with error: \(error?.localizedDescription ?? "")"
+            return "Fetching AdServices attribution token failed with error: \(error.localizedDescription)"
         }
     }
 
