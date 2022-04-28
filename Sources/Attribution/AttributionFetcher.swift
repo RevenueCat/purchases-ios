@@ -78,8 +78,7 @@ class AttributionFetcher {
     var adServicesToken: String? {
 #if canImport(AdServices)
         do {
-            let attributionToken = try AAAttribution.attributionToken()
-            return attributionToken
+            return try AAAttribution.attributionToken()
         } catch {
             let message = Strings.attribution.adservices_token_fetch_failed(error: error)
             Logger.appleWarning(message)
