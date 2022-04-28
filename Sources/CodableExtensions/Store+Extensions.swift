@@ -36,6 +36,16 @@ extension Store: Decodable {
 
 }
 
+extension Store: Encodable {
+
+    // swiftlint:disable:next missing_docs
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.name)
+    }
+
+}
+
 private extension Store {
 
     var name: String? {
