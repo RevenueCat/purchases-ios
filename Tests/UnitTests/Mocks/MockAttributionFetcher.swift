@@ -17,7 +17,7 @@ class MockAttributionFetcher: AttributionFetcher {
         return "rc_idfv"
     }
 
-    override func adServicesToken() -> String? {
+    override var adServicesToken: String? {
         adServicesTokenCollectionCalled = true
         return nil
     }
