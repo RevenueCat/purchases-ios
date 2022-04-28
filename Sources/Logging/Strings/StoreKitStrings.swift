@@ -75,8 +75,8 @@ extension StoreKitStrings: CustomStringConvertible {
             "the value will be undefined. Use `StoreProduct.productCategory` instead."
 
         case .sk1_discount_missing_locale:
-            return "There is a problem with this SKProductDiscount missing a Locale - " +
-            "this is an issue with the App Store."
+            return "There is an issue with the App Store, this SKProductDiscount is missing a Locale - " +
+            "The current device Locale will be used instead."
         }
     }
 
