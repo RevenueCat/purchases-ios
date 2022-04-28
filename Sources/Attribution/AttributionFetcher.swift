@@ -77,10 +77,12 @@ class AttributionFetcher {
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     var adServicesToken: String? {
 #if canImport(AdServices)
-        if let attributionToken = try? AAAttribution.attributionToken() {
+        do {
+            let attributionToken = try AAAttribution.attributionToken()
             return attributionToken
-        } else {
-            Logger.warn(Strings.attribution.adservices_token_fetch_failed)
+        } catch {
+            let message = Strings.attribution.adservices_token_fetch_failed(error: error)
+            Logger.appleWarning(message)
             return nil
         }
 #else
