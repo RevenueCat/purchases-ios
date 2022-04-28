@@ -102,7 +102,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
      *
      * #### Related Symbols
-     * - ``logHandler``
+     * - ``logHandler``
      * - ``verboseLogHandler``
      */
     @objc public static var logLevel: LogLevel {
@@ -420,7 +420,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         attributionPoster.postPostponedAttributionDataIfNeeded()
 
         // should match OS availability in https://developer.apple.com/documentation/ad_services
-        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {            postAdServicesTokenIfNeeded()
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
+            postAdServicesTokenIfNeeded()
         }
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in

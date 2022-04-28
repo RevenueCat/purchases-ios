@@ -134,7 +134,7 @@ class AttributionPoster {
             return
         }
 
-        guard let attributionToken = attributionFetcher.adServicesToken() else {
+        guard let attributionToken = attributionFetcher.adServicesToken else {
             return
         }
 
