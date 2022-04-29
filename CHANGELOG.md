@@ -1,3 +1,7 @@
+## 3.14.2
+- Deprecated `Purchases` pod in favor of `RevenueCat`
+    https://github.com/RevenueCat/purchases-ios/pull/1552
+
 ## 3.14.1
 - Fixed an issue where `checkTrialOrIntroductoryPriceEligibility` might refresh the receipt if it's not present on device,
 causing a log in prompt for App Store credentials.
