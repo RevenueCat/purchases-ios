@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C396F5E281C64B700669657 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C396F5D281C64B700669657 /* AdServices.framework */; };
 		2DD77909270E23870079CBD4 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
 		2DD7790B270E23870079CBD4 /* RCCustomerInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */; };
 		2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */; };
@@ -45,6 +46,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2C396F5D281C64B700669657 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = System/Library/Frameworks/AdServices.framework; sourceTree = SDKROOT; };
 		2DD778F5270E235B0079CBD4 /* ObjCAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjCAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5738F426278672070096D623 /* RCStoreProductDiscountAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCStoreProductDiscountAPI.h; sourceTree = "<group>"; };
 		5738F427278672070096D623 /* RCStoreProductDiscountAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStoreProductDiscountAPI.m; sourceTree = "<group>"; };
@@ -95,6 +97,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				575885A42748274E00CA2169 /* RevenueCat.framework in Frameworks */,
+				2C396F5E281C64B700669657 /* AdServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,6 +168,7 @@
 		A52A8A3A26EC2AEC00F06846 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2C396F5D281C64B700669657 /* AdServices.framework */,
 				575885A32748274E00CA2169 /* RevenueCat.framework */,
 				5758859F2748274600CA2169 /* RevenueCat.framework */,
 				57588593274826DF00CA2169 /* RevenueCat.framework */,
