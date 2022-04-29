@@ -66,12 +66,6 @@ class AttributionPoster {
 
         var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
         newDictToCache[networkKey] = newValueForNetwork
-//        guard let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
-//                                               network: network,
-//                                               networkUserId: networkUserId,
-//                                                     identifierForAdvertisers: identifierForAdvertisers) else {
-//            
-//        }
 
         var newData = data
 
@@ -101,31 +95,6 @@ class AttributionPoster {
         }
     }
 
-    // note to maddie -- tried pulling this out for re-use, but subattrs handles
-    // latestSentToNetwork == newValueForNetwork differently than what we want for adservices.
-    // this is techncially OK from a functionality standpoint, because we already skip fetching
-    // a new token if previous != nil, so it shouldn't get to this point. but need to somehow
-    // pull the subattrs-specific log out of here
-//    func getNewDictToCache(currentAppUserID: String,
-//                           network: AttributionNetwork,
-//                           networkUserId: String?,
-//                           identifierForAdvertisers: String?) -> [String: String]? {
-//        let networkKey = String(network.rawValue)
-//        let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
-//            deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
-//        let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[networkKey]
-//
-//        let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
-//        guard latestSentToNetwork != newValueForNetwork else {
-//            Logger.debug(Strings.attribution.skip_same_attributes)
-//            return nil
-//        }
-//
-//        var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
-//        newDictToCache[networkKey] = newValueForNetwork
-//        return newDictToCache
-//    }
-
     // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func postAdServicesTokenIfNeeded() {
@@ -153,7 +122,6 @@ class AttributionPoster {
             self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
         }
     }
-
 
     func postPostponedAttributionDataIfNeeded() {
         guard let postponedAttributionData = Self.postponedAttributionData else {

@@ -186,5 +186,4 @@ class Backend {
         self.operationQueue.addOperation(postAdServicesTokenOperation)
     }
 
-
 }

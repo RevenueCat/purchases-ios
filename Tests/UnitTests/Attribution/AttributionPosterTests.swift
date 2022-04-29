@@ -91,7 +91,6 @@ class AttributionPosterTests: XCTestCase {
                                networkUserId: userID)
         expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
-
     }
 
     func testPostAttributionDataDoesntSkipIfNetworkChanged() {
