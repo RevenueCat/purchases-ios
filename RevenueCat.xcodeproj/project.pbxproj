@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -305,7 +305,7 @@
 		A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A56C2E012819C33500995421 /* BackendPostAdServicesTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */; };
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
-		A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B6CDD5280F3843007629D5 /* AdServices.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B6CDD5280F3843007629D5 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
         A5B6CDDA28106018007629D5 /* PostAdServicesTokenOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B6CDD928106018007629D5 /* PostAdServicesTokenOperation.swift */; };
 		A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */; };
 		B300E4BF26D436F900B22262 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
