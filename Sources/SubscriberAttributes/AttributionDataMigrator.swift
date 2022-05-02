@@ -61,8 +61,8 @@ private extension AttributionDataMigrator {
             networkSpecificSubscriberAttributes = [:]
         case .mParticle:
             networkSpecificSubscriberAttributes = convertMParticleAttribution(attributionData)
-        case .none, .appleSearchAds:
-            // Apple Search Ads uses standard attribution system
+        case .none, .appleSearchAds, .adServices:
+            // Apple Search Ads & AdServices use standard attribution system
             networkSpecificSubscriberAttributes = [:]
         }
 

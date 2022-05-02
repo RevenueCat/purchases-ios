@@ -91,9 +91,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let operationDispatcher: OperationDispatcher
 
     /**
-     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
+     * Enable automatic collection of AdServices attribution token. Defaults to `false`.
+     *
+     * Should match OS availability in https://developer.apple.com/documentation/ad_services
      */
-    @objc public static var automaticAppleSearchAdsAttributionCollection: Bool = false
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @objc public static var automaticAdServicesAttributionTokenCollection: Bool = false
 
     /**
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
@@ -415,7 +418,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        // should match OS availability in https://developer.apple.com/documentation/ad_services
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
+            postAdServicesTokenIfNeeded()
+        }
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
@@ -438,7 +445,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeKitWrapper.delegate = nil
         customerInfoObservationDisposable?()
         privateDelegate = nil
-        Self.automaticAppleSearchAdsAttributionCollection = false
+
         Self.proxyURL = nil
     }
 
@@ -745,11 +752,13 @@ extension Purchases {
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
     }
 
-    private func postAppleSearchAddsAttributionCollectionIfNeeded() {
-        guard Self.automaticAppleSearchAdsAttributionCollection else {
+    // should match OS availability in https://developer.apple.com/documentation/ad_services
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    private func postAdServicesTokenIfNeeded() {
+        guard Self.automaticAdServicesAttributionTokenCollection else {
             return
         }
-        attributionPoster.postAppleSearchAdsAttributionIfNeeded()
+        attributionPoster.postAdServicesTokenIfNeeded()
     }
 
 }
@@ -1967,7 +1976,11 @@ private extension Purchases {
         Logger.debug(Strings.configure.application_active)
         updateAllCachesIfNeeded()
         dispatchSyncSubscriberAttributesIfNeeded()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        // should match OS availability in https://developer.apple.com/documentation/ad_services
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
+            postAdServicesTokenIfNeeded()
+        }
     }
 
     @objc func applicationWillResignActive(notification: Notification) {

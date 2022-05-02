@@ -35,7 +35,6 @@ class AttributionPoster {
         self.subscriberAttributesManager = subscriberAttributesManager
     }
 
-    // swiftlint:disable:next function_body_length
     func post(attributionData data: [String: Any],
               fromNetwork network: AttributionNetwork,
               networkUserId: String?) {
@@ -88,46 +87,27 @@ class AttributionPoster {
         }
 
         if !newData.isEmpty {
-            if network == .appleSearchAds {
-                postSearchAds(newData: newData,
-                              network: network,
-                              appUserID: currentAppUserID,
-                              newDictToCache: newDictToCache)
-            } else {
-                postSubscriberAttributes(newData: newData,
-                                         network: network,
-                                         appUserID: currentAppUserID,
-                                         newDictToCache: newDictToCache)
-            }
+            postSubscriberAttributes(newData: newData,
+                                     network: network,
+                                     appUserID: currentAppUserID,
+                                     newDictToCache: newDictToCache)
         }
     }
 
-    func postAppleSearchAdsAttributionIfNeeded() {
-        guard attributionFetcher.isAuthorizedToPostSearchAds else {
+    // should match OS availability in https://developer.apple.com/documentation/ad_services
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    func postAdServicesTokenIfNeeded() {
+        let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
+        guard latestTokenSent == nil else {
             return
         }
 
-        let latestIdsSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
-        guard latestIdsSent == nil else {
+        guard let attributionToken = attributionFetcher.adServicesToken else {
             return
         }
 
-        attributionFetcher.afficheClientAttributionDetails { attributionDetails, error in
-            guard let attributionDetails = attributionDetails,
-                  error == nil else {
-                return
-            }
-
-            let attributionDetailsValues = Array(attributionDetails.values)
-            let firstAttributionDict = attributionDetailsValues.first as? [String: NSObject]
-
-            guard let hasIad = firstAttributionDict?["iad-attribution"] as? NSNumber,
-                  hasIad.boolValue == true else {
-                return
-            }
-
-            self.post(attributionData: attributionDetails, fromNetwork: .appleSearchAds, networkUserId: nil)
-        }
+        Logger.debug("Logging attribution token for now to avoid lint warning: \(attributionToken)")
+        // post
     }
 
     func postPostponedAttributionDataIfNeeded() {
@@ -160,19 +140,6 @@ class AttributionPoster {
             appUserID: self.currentUserProvider.currentAppUserID
         )
         return cachedDict[networkID]
-    }
-
-    private func postSearchAds(newData: [String: Any],
-                               network: AttributionNetwork,
-                               appUserID: String,
-                               newDictToCache: [String: String]) {
-        backend.post(attributionData: newData, network: network, appUserID: appUserID) { error in
-            guard error == nil else {
-                return
-            }
-
-            self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: appUserID)
-        }
     }
 
     private func postSubscriberAttributes(newData: [String: Any],

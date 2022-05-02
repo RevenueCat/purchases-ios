@@ -38,7 +38,8 @@ enum AttributionStrings {
     case unsynced_attributes(unsyncedAttributes: SubscriberAttributeDict)
     case attribute_set_locally(attribute: String)
     case missing_advertiser_identifiers
-    case unknown_sk2_product_discount_type(rawValue: String)
+    case adservices_not_supported
+    case adservices_token_fetch_failed(error: Error)
 
 }
 
@@ -115,9 +116,12 @@ extension AttributionStrings: CustomStringConvertible {
         case .missing_advertiser_identifiers:
             return "Attribution error: identifierForAdvertisers is missing"
 
-        case .unknown_sk2_product_discount_type(let rawValue):
-            return "Failed to create StoreProductDiscount.DiscountType with unknown value: \(rawValue)"
+        case .adservices_not_supported:
+            return "Tried to fetch AdServices attribution token on device without " +
+                "AdServices support."
 
+        case .adservices_token_fetch_failed(let error):
+            return "Fetching AdServices attribution token failed with error: \(error.localizedDescription)"
         }
     }
 
