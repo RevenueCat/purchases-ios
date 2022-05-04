@@ -30,7 +30,10 @@ func checkEntitlementInfoAPI() {
     let bida: Date? = entitlementInfo.billingIssueDetectedAt
     let oType: PurchaseOwnershipType = entitlementInfo.ownershipType
 
-    print(entitlementInfo!, ident, isActive, willRenew, pType, lpd!, opd!, eDate!, store, pId, iss, uda!, bida!, oType)
+    let rawData: [String: Any] = entitlementInfo.rawData
+
+    print(entitlementInfo!, ident, isActive, willRenew, pType, lpd!, opd!, eDate!,
+          store, pId, iss, uda!, bida!, oType, rawData)
 }
 
 var store: Store!
