@@ -1637,18 +1637,19 @@ public extension Purchases {
 public extension Purchases {
 
     /**
-     * Configures an instance of the Purchases SDK with a specified API key.
+     * Configures an instance of the Purchases SDK with a specified ``Configuration``.
      *
      * The instance will be set as a singleton.
      * You should access the singleton instance using ``Purchases/shared``
      *
-     * - Note: Use this initializer if your app does not have an account system.
-     * ``Purchases`` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
-     * This also affects the behavior of ``Purchases/restorePurchases(completion:)``.
+     * - Note: Use this initializer if you wish to adjust network request timeouts.
      *
-     * - Parameter configuration: The API Key generated for your app from https://app.revenuecat.com/
+     * - Parameter configuration: The ``Configuration`` object you wish to use to configure `Purchases`
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     *
+     * - Important: See ``Configuration/ConfigurationBuilder`` for more information about configurable properties.
+     * 
      */
     @objc(configureWithConfiguration:)
     @discardableResult static func configure(withConfiguration configuration: Configuration) -> Purchases {
