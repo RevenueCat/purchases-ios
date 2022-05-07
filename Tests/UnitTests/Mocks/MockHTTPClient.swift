@@ -41,13 +41,15 @@ class MockHTTPClient: HTTPClient {
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         dnsChecker: DNSCheckerType.Type = DNSChecker.self,
+        timeoutSeconds: Int,
         sourceTestFile: StaticString = #file
     ) {
         self.sourceTestFile = sourceTestFile
 
         super.init(systemInfo: systemInfo,
                    eTagManager: eTagManager,
-                   dnsChecker: dnsChecker)
+                   dnsChecker: dnsChecker,
+                   timeoutSeconds: timeoutSeconds)
     }
 
     private let sourceTestFile: StaticString

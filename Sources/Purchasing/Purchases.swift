@@ -243,6 +243,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      storeKit2Setting: StoreKit2Setting = .default,
+                     storeKitTimeoutSeconds: Int = Configuration.storeKitTimeoutSecondsDefault,
+                     networkTimeoutSeconds: Int = Configuration.networkTimeoutSecondsDefault,
                      dangerousSettings: DangerousSettings? = nil) {
         let operationDispatcher: OperationDispatcher = .default
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
@@ -265,6 +267,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let backend = Backend(apiKey: apiKey,
                               systemInfo: systemInfo,
+                              httpClientTimeoutSeconds: networkTimeoutSeconds,
                               eTagManager: eTagManager,
                               attributionFetcher: attributionFetcher)
         let storeKitWrapper = StoreKitWrapper()
@@ -294,7 +297,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                   attributionFetcher: attributionFetcher,
                                                   subscriberAttributesManager: subscriberAttributesManager)
         let productsRequestFactory = ProductsRequestFactory()
-        let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory, systemInfo: systemInfo)
+        let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
+                                              systemInfo: systemInfo,
+                                              requestTimeout: DispatchTimeInterval.seconds(storeKitTimeoutSeconds))
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -1641,6 +1646,32 @@ public extension Purchases {
      * ``Purchases`` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
      * This also affects the behavior of ``Purchases/restorePurchases(completion:)``.
      *
+     * - Parameter configuration: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     */
+    @objc(configureWithConfiguration:)
+    @discardableResult static func configure(withConfiguration configuration: Configuration) -> Purchases {
+        configure(withAPIKey: configuration.apiKey,
+                  appUserID: configuration.appUserID,
+                  observerMode: configuration.observerMode,
+                  userDefaults: configuration.userDefaults,
+                  storeKit2Setting: configuration.storeKit2Setting,
+                  storeKitTimeoutSeconds: configuration.storeKit1TimeoutSeconds,
+                  networkTimeoutSeconds: configuration.networkTimeoutSeconds,
+                  dangerousSettings: configuration.dangerousSettings)
+    }
+
+    /**
+     * Configures an instance of the Purchases SDK with a specified API key.
+     *
+     * The instance will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Note: Use this initializer if your app does not have an account system.
+     * ``Purchases`` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
+     * This also affects the behavior of ``Purchases/restorePurchases(completion:)``.
+     *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
@@ -1818,6 +1849,8 @@ public extension Purchases {
             observerMode: observerMode,
             userDefaults: userDefaults,
             storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
+            storeKitTimeoutSeconds: Configuration.storeKitTimeoutSecondsDefault,
+            networkTimeoutSeconds: Configuration.networkTimeoutSecondsDefault,
             dangerousSettings: dangerousSettings
         )
     }
@@ -1828,6 +1861,8 @@ public extension Purchases {
                                                       observerMode: Bool,
                                                       userDefaults: UserDefaults?,
                                                       storeKit2Setting: StoreKit2Setting,
+                                                      storeKitTimeoutSeconds: Int,
+                                                      networkTimeoutSeconds: Int,
                                                       dangerousSettings: DangerousSettings?) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                   appUserID: appUserID,
@@ -1835,6 +1870,8 @@ public extension Purchases {
                                   observerMode: observerMode,
                                   platformInfo: nil,
                                   storeKit2Setting: storeKit2Setting,
+                                  storeKitTimeoutSeconds: storeKitTimeoutSeconds,
+                                  networkTimeoutSeconds: networkTimeoutSeconds,
                                   dangerousSettings: dangerousSettings)
         setDefaultInstance(purchases)
         return purchases
@@ -1956,6 +1993,16 @@ internal extension Purchases {
         return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
                                                                           syncedAttribute: syncedAttribute,
                                                                           completion: completion)
+    }
+
+    // Used for testing
+    var networkTimeoutSeconds: Int {
+        return self.backend.networkTimeoutSeconds
+    }
+
+    // Used for testing
+    var storeKitTimeoutSeconds: DispatchTimeInterval {
+        return self.productsManager.requestTimeout
     }
 
 }

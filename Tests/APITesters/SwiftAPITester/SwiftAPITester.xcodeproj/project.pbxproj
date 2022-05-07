@@ -27,6 +27,7 @@
 		5758EE582786542200B3B703 /* StoreTransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE572786542200B3B703 /* StoreTransactionAPI.swift */; };
 		57DE807528074D9C008D6C6F /* StorefrontAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807428074D9C008D6C6F /* StorefrontAPI.swift */; };
 		A513AD35272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */; };
+		B32554422825E5EA00DA62EA /* ConfigurationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32554412825E5EA00DA62EA /* ConfigurationAPI.swift */; };
 		B3A4C834280DE72600D4AE17 /* PromotionalOfferAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A4C833280DE72600D4AE17 /* PromotionalOfferAPI.swift */; };
 /* End PBXBuildFile section */
 
@@ -66,6 +67,7 @@
 		A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionAPI.swift; sourceTree = "<group>"; };
 		A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroEligibilityAPI.swift; sourceTree = "<group>"; };
 		A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesAPI.swift; sourceTree = "<group>"; };
+		B32554412825E5EA00DA62EA /* ConfigurationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationAPI.swift; sourceTree = "<group>"; };
 		B3A4C833280DE72600D4AE17 /* PromotionalOfferAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOfferAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -112,6 +114,7 @@
 			children = (
 				A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */,
 				A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */,
+				B32554412825E5EA00DA62EA /* ConfigurationAPI.swift */,
 				A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */,
 				A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */,
 				A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */,
@@ -221,6 +224,7 @@
 				2DD778EB270E23460079CBD4 /* ErrorCodesAPI.swift in Sources */,
 				2DD778E4270E23460079CBD4 /* AttributionNetworkAPI.swift in Sources */,
 				2DD778EC270E23460079CBD4 /* TransactionAPI.swift in Sources */,
+				B32554422825E5EA00DA62EA /* ConfigurationAPI.swift in Sources */,
 				5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */,
 				5758EE582786542200B3B703 /* StoreTransactionAPI.swift in Sources */,
 				B3A4C834280DE72600D4AE17 /* PromotionalOfferAPI.swift in Sources */,

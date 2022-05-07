@@ -321,7 +321,10 @@ class BackendSubscriberAttributesTests: TestCase {
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
         self.mockETagManager = eTagManager
 
-        return MockHTTPClient(systemInfo: self.systemInfo, eTagManager: eTagManager, sourceTestFile: file)
+        return MockHTTPClient(systemInfo: self.systemInfo,
+                              eTagManager: eTagManager,
+                              timeoutSeconds: 7,
+                              sourceTestFile: file)
     }
 
 }

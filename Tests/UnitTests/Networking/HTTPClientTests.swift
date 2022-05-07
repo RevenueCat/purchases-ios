@@ -34,7 +34,8 @@ class HTTPClientTests: TestCase {
         client = HTTPClient(
             systemInfo: systemInfo,
             eTagManager: eTagManager,
-            dnsChecker: MockDNSChecker.self
+            dnsChecker: MockDNSChecker.self,
+            timeoutSeconds: 3
         )
     }
 

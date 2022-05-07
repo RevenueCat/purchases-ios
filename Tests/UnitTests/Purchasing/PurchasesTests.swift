@@ -35,7 +35,8 @@ class PurchasesTests: TestCase {
         systemInfo = MockSystemInfo(finishTransactions: true)
         deviceCache = MockDeviceCache(systemInfo: self.systemInfo, userDefaults: userDefaults)
         requestFetcher = MockRequestFetcher()
-        mockProductsManager = MockProductsManager(systemInfo: systemInfo)
+        mockProductsManager = MockProductsManager(systemInfo: systemInfo,
+                                                  requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         mockOperationDispatcher = MockOperationDispatcher()
         mockReceiptParser = MockReceiptParser()
         identityManager = MockIdentityManager(mockAppUserID: "app_user")
@@ -48,7 +49,8 @@ class PurchasesTests: TestCase {
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfoAttribution)
         backend = MockBackend(httpClient: MockHTTPClient(systemInfo: systemInfo,
-                                                         eTagManager: MockETagManager()),
+                                                         eTagManager: MockETagManager(),
+                                                         timeoutSeconds: 7),
                               apiKey: "mockAPIKey",
                               attributionFetcher: attributionFetcher)
         subscriberAttributesManager =
@@ -373,6 +375,17 @@ class PurchasesTests: TestCase {
         expect(Purchases.isConfigured) == false
         setupPurchases()
         expect(Purchases.isConfigured) == true
+    }
+
+    func testConfigurationPassedThroughTimeouts() {
+        let networkTimeoutSeconds = 9
+        let configurationBuilder = Configuration.ConfigurationBuilder(withAPIKey: "")
+            .with(networkTimeoutSeconds: networkTimeoutSeconds)
+            .with(storeKit1TimeoutSeconds: networkTimeoutSeconds)
+        let purchases = Purchases.configure(withConfiguration: configurationBuilder.build())
+
+        expect(purchases.networkTimeoutSeconds) == networkTimeoutSeconds
+        expect(purchases.storeKitTimeoutSeconds) == DispatchTimeInterval.seconds(networkTimeoutSeconds)
     }
 
     func testFirstInitializationCallDelegate() {
@@ -1881,6 +1894,12 @@ class PurchasesTests: TestCase {
 
     func testSharedInstanceIsSetWhenConfiguring() {
         let purchases = Purchases.configure(withAPIKey: "")
+        expect(Purchases.shared) === purchases
+    }
+
+    func testSharedInstanceIsSetWhenConfiguringWithConfiguration() {
+        let configurationBuilder = Configuration.ConfigurationBuilder(withAPIKey: "")
+        let purchases = Purchases.configure(withConfiguration: configurationBuilder.build())
         expect(Purchases.shared) === purchases
     }
 

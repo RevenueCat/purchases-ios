@@ -18,6 +18,7 @@ class ProductsFetcherSK1: NSObject {
 
     typealias Callback = (Result<Set<SK1Product>, Error>) -> Void
 
+    let requestTimeout: DispatchTimeInterval
     private let productsRequestFactory: ProductsRequestFactory
 
     // Note: the cached products don't get invalidated when the Storefront changes,
@@ -26,7 +27,6 @@ class ProductsFetcherSK1: NSObject {
     private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: ProductRequest] = [:]
     private var completionHandlers: [Set<String>: [Callback]] = [:]
-    private let requestTimeout: DispatchTimeInterval
 
     private static let numberOfRetries: Int = 10
 
@@ -35,7 +35,7 @@ class ProductsFetcherSK1: NSObject {
     ///     - Retries up to ``Self.numberOfRetries``
     ///     - Timeout specified by this parameter
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
-         requestTimeout: DispatchTimeInterval = .seconds(30)) {
+         requestTimeout: DispatchTimeInterval) {
         self.productsRequestFactory = productsRequestFactory
         self.requestTimeout = requestTimeout
     }
@@ -173,9 +173,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                     completion(.failure(error))
                 }
             } else {
-                let delayInSeconds = Int((self.requestTimeout.seconds / 10).rounded())
-
-                queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
+                queue.asyncAfter(deadline: .now() + .seconds(3)) { [self] in
                     self.startRequest(forIdentifiers: productRequest.identifiers,
                                       retriesLeft: productRequest.retriesLeft - 1)
                 }

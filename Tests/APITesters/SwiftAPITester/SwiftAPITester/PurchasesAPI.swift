@@ -267,5 +267,6 @@ private func checkConfigure() -> Purchases {
                         userDefaults: UserDefaults(),
                         useStoreKit2IfAvailable: true,
                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+    Purchases.configure(withConfiguration: Configuration.init())
     return purch
 }

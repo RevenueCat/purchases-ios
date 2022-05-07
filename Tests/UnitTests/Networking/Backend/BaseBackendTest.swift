@@ -52,7 +52,10 @@ extension BaseBackendTests {
     final func createClient(_ file: StaticString) -> MockHTTPClient {
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
 
-        return MockHTTPClient(systemInfo: self.systemInfo, eTagManager: eTagManager, sourceTestFile: file)
+        return MockHTTPClient(systemInfo: self.systemInfo,
+                              eTagManager: eTagManager,
+                              timeoutSeconds: 7,
+                              sourceTestFile: file)
     }
 
 }

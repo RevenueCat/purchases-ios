@@ -18,6 +18,9 @@ import StoreKit
 class ProductsManager: NSObject {
 
     let productsFetcherSK1: ProductsFetcherSK1
+    var requestTimeout: DispatchTimeInterval {
+        return productsFetcherSK1.requestTimeout
+    }
 
     private let systemInfo: SystemInfo
 
@@ -27,7 +30,7 @@ class ProductsManager: NSObject {
     init(
         productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
         systemInfo: SystemInfo,
-        requestTimeout: DispatchTimeInterval = .seconds(30)
+        requestTimeout: DispatchTimeInterval
     ) {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
                                                      requestTimeout: requestTimeout)

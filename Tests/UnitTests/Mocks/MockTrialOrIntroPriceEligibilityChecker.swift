@@ -19,7 +19,8 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     convenience init() {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         let systemInfo = try! MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
-        let productsManager = MockProductsManager(systemInfo: systemInfo)
+        let productsManager = MockProductsManager(systemInfo: systemInfo,
+                                                  requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.init(systemInfo: systemInfo,
                   receiptFetcher: MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo),
                   introEligibilityCalculator: MockIntroEligibilityCalculator(productsManager: productsManager,
@@ -27,7 +28,8 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
                   backend: MockBackend(),
                   currentUserProvider: MockCurrentUserProvider(mockAppUserID: "app_user"),
                   operationDispatcher: MockOperationDispatcher(),
-                  productsManager: MockProductsManager(systemInfo: systemInfo))
+                  productsManager: MockProductsManager(systemInfo: systemInfo,
+                                                       requestTimeout: Configuration.storeKitRequestTimeoutDefault))
     }
 
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = false
