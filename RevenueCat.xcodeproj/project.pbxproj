@@ -374,7 +374,7 @@
 		B3F3E8DA277158FE0047A5B9 /* DNSChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F3E8D9277158FE0047A5B9 /* DNSChecker.swift */; };
 		B3F8418F26F3A93400E560FB /* ErrorCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */; };
 		F516BD29282434070083480B /* StoreKit2StorefrontListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */; };
-		F516BD332828FDD90083480B /* StoreKit2StorefrontListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */; };
+		F52CFAFC28290AE500E8ABC5 /* StoreKit2StorefrontListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */; };
 		F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F530E4FE275646EF001AF6BD /* MacDevice.swift */; };
 		F55FFA5A27634C3F00995146 /* MockTransactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA5927634C3F00995146 /* MockTransactionsManager.swift */; };
 		F55FFA5D27634E1900995146 /* MockTransactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA5927634C3F00995146 /* MockTransactionsManager.swift */; };
@@ -2073,6 +2073,7 @@
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift in Sources */,
 				2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */,
 				2D90F8C726FD221D009B9142 /* MockASN1ContainerBuilder.swift in Sources */,
+				F52CFAFC28290AE500E8ABC5 /* StoreKit2StorefrontListenerTests.swift in Sources */,
 				2D90F8C326FD214F009B9142 /* MockAttributionTypeFactory.swift in Sources */,
 				A55D083427235DED00D919E0 /* BeginRefundRequestHelperTests.swift in Sources */,
 				57DE80892807540D008D6C6F /* StorefrontTests.swift in Sources */,
@@ -2384,7 +2385,6 @@
 				35D8330A262FBA9A00E60AC5 /* MockUserDefaults.swift in Sources */,
 				2DDF41DF24F6F527005BC22D /* MockProductsManager.swift in Sources */,
 				351B514F26D44ACE00BD2BD7 /* PurchasesSubscriberAttributesTests.swift in Sources */,
-				F516BD332828FDD90083480B /* StoreKit2StorefrontListenerTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,
 				5796A38127D6B78500653165 /* BaseBackendTest.swift in Sources */,
 				351B516226D44BEE00BD2BD7 /* CustomerInfoManagerTests.swift in Sources */,
