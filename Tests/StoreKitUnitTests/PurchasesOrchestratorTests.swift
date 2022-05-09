@@ -71,13 +71,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     fileprivate func setUpStoreKit2Listener() {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            orchestrator.storeKit2Listener = MockStoreKit2TransactionListener()
+            orchestrator.storeKit2TransactionListener = MockStoreKit2TransactionListener()
         }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     var mockStoreKit2TransactionListener: MockStoreKit2TransactionListener? {
-        return orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener
+        return orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
     }
 
     fileprivate func setUpSystemInfo(finishTransactions: Bool = true) throws {
@@ -247,7 +247,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             }
         }
 
-        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
         expect(mockListener.invokedHandle) == true
     }
 
@@ -295,7 +295,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             XCTFail("Expected error")
         } catch {
             expect(self.backend.invokedPostReceiptData) == false
-            let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
+            let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
             expect(mockListener.invokedHandle) == false
         }
     }
@@ -316,7 +316,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         } catch {
             expect(error).to(matchError(expectedError))
 
-            let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
+            let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
             expect(mockListener.invokedHandle) == true
         }
     }
