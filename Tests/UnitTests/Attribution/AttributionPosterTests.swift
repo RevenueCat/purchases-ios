@@ -176,5 +176,6 @@ class AttributionPosterTests: XCTestCase {
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 0
     }
 
-    #endif
+#endif
+
 }
