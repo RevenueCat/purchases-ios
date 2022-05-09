@@ -67,7 +67,10 @@ class PurchasesOrchestrator {
     private let lock = NSRecursiveLock()
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    lazy var storeKit2Listener = StoreKit2TransactionListener(delegate: self)
+    lazy var storeKit2TransactionListener = StoreKit2TransactionListener(delegate: self)
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    lazy var storeKit2StorefrontListener = StoreKit2StorefrontListener(delegate: self)
 
     init(productsManager: ProductsManager,
          storeKitWrapper: StoreKitWrapper,
@@ -97,7 +100,8 @@ class PurchasesOrchestrator {
         self.beginRefundRequestHelper = beginRefundRequestHelper
 
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            storeKit2Listener.listenForTransactions()
+            storeKit2TransactionListener.listenForTransactions()
+            storeKit2StorefrontListener.listenForStorefrontChanges()
         }
     }
 
@@ -348,7 +352,7 @@ class PurchasesOrchestrator {
             throw ErrorUtils.purchasesError(withStoreKitError: error)
         }
 
-        let (userCancelled, customerInfoIfSynced, sk2Transaction) = try await storeKit2Listener
+        let (userCancelled, customerInfoIfSynced, sk2Transaction) = try await storeKit2TransactionListener
             .handle(purchaseResult: result)
         let transaction = sk2Transaction.map(StoreTransaction.init(sk2Transaction:))
 
@@ -475,6 +479,10 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         return delegate?.shouldShowPriceConsent ?? true
     }
 
+    func storeKitWrapperDidChangeStorefront(_ storeKitWrapper: StoreKitWrapper) {
+        // unused for now
+    }
+
 }
 
 // MARK: Transaction state updates.
@@ -541,6 +549,15 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let isRestore = !systemInfo.finishTransactions
 
         return try await syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore)
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
+
+    func storefrontDidUpdate() {
+        // unused for now
     }
 
 }
