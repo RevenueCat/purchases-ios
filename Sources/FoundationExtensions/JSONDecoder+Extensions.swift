@@ -82,25 +82,6 @@ extension JSONDecoder {
 
 }
 
-extension KeyedDecodingContainer {
-
-    /// Decodes a value of the given type for the given key.
-    /// - Parameters:
-    ///   - type: The type of value to decode.
-    ///   - key: The key that the decoded value is associated with.
-    ///   - defaultValue: The default value returned if decoding fails.
-    /// - Returns: A value of the requested type, or the given default value
-    /// if decoding fails.
-    func decode<T: Decodable>(_ type: T.Type, forKey key: Self.Key, defaultValue: T) -> T {
-        do {
-            return try decode(type, forKey: key)
-        } catch {
-            return defaultValue
-        }
-    }
-
-}
-
 extension JSONSerialization {
 
     static func dictionary(withData data: Data) throws -> [String: Any] {

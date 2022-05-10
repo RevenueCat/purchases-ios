@@ -384,7 +384,6 @@
 		F5714EA826D7A83A00635477 /* Store+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EA726D7A83A00635477 /* Store+Extensions.swift */; };
 		F5714EAA26D7A85D00635477 /* PeriodType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EA926D7A85D00635477 /* PeriodType+Extensions.swift */; };
 		F5714EAC26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EAB26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift */; };
-		F5714EC226D8D82100635477 /* EntitlementProductData+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EC126D8D82100635477 /* EntitlementProductData+Extensions.swift */; };
 		F5714EC426D8D86800635477 /* EntitlementData+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EC326D8D86800635477 /* EntitlementData+Extensions.swift */; };
 		F5714EE526DC2F1D00635477 /* CodableStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EE426DC2F1D00635477 /* CodableStrings.swift */; };
 		F575858D26C088FE00C12B97 /* OfferingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575858C26C088FE00C12B97 /* OfferingsManager.swift */; };
@@ -810,7 +809,6 @@
 		F5714EA726D7A83A00635477 /* Store+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Store+Extensions.swift"; sourceTree = "<group>"; };
 		F5714EA926D7A85D00635477 /* PeriodType+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PeriodType+Extensions.swift"; sourceTree = "<group>"; };
 		F5714EAB26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PurchaseOwnershipType+Extensions.swift"; sourceTree = "<group>"; };
-		F5714EC126D8D82100635477 /* EntitlementProductData+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EntitlementProductData+Extensions.swift"; sourceTree = "<group>"; };
 		F5714EC326D8D86800635477 /* EntitlementData+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EntitlementData+Extensions.swift"; sourceTree = "<group>"; };
 		F5714EE426DC2F1D00635477 /* CodableStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableStrings.swift; sourceTree = "<group>"; };
 		F575858C26C088FE00C12B97 /* OfferingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsManager.swift; sourceTree = "<group>"; };
@@ -1688,7 +1686,6 @@
 			isa = PBXGroup;
 			children = (
 				F5714EC326D8D86800635477 /* EntitlementData+Extensions.swift */,
-				F5714EC126D8D82100635477 /* EntitlementProductData+Extensions.swift */,
 				F5714EA926D7A85D00635477 /* PeriodType+Extensions.swift */,
 				F5714EAB26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift */,
 				F5714EA726D7A83A00635477 /* Store+Extensions.swift */,
@@ -2157,7 +2154,6 @@
 				5751379527F4C4D80064AB2C /* Optional+Extensions.swift in Sources */,
 				B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */,
 				9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */,
-				F5714EC226D8D82100635477 /* EntitlementProductData+Extensions.swift in Sources */,
 				B34605C9279A6E380031CA74 /* GetIntroEligibilityOperation.swift in Sources */,
 				354895D6267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift in Sources */,
 				2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */,
