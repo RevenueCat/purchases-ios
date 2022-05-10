@@ -4,24 +4,35 @@ import StoreKit
 import XCTest
 
 // swiftlint:disable:next type_name
-class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
+class ProductRequestDataSK1ProductInitializationTests: TestCase {
 
     private var product: MockSK1Product!
+    private var storefront: MockStorefront!
 
     private static let productID = "cool_product"
+    private static let storefrontCountryCode = "ESP"
 
     override func setUp() {
+        super.setUp()
+
         self.product = MockSK1Product(mockProductIdentifier: Self.productID)
+        self.storefront = MockStorefront(countryCode: Self.storefrontCountryCode)
     }
 
     private func extract() -> ProductRequestData {
-        return ProductRequestData(with: StoreProduct(sk1Product: self.product))
+        return ProductRequestData(with: StoreProduct(sk1Product: self.product), storefront: self.storefront)
     }
 
     func testExtractInfoFromProductExtractsProductIdentifier() {
         let receivedProductData = self.extract()
 
         expect(receivedProductData.productIdentifier) == Self.productID
+    }
+
+    func testExtractInfoFromProductExtractsStorefrontCountryCode() {
+        let receivedProductData = self.extract()
+
+        expect(receivedProductData.storefront?.countryCode) == Self.storefrontCountryCode
     }
 
     func testExtractInfoFromProductExtractsPrice() {

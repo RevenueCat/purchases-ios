@@ -8,7 +8,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class DeviceCacheTests: XCTestCase {
+class DeviceCacheTests: TestCase {
 
     private var systemInfo: MockSystemInfo! = nil
     private var mockUserDefaults: MockUserDefaults! = nil

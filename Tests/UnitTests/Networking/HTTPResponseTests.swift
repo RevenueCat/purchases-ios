@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ErrorResponseTests: XCTestCase {
+class ErrorResponseTests: TestCase {
 
     func testNormalErrorResponse() throws {
         let result = try self.decode(Self.withoutAttributeErrors)

@@ -10,7 +10,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class TransactionsFactoryTests: XCTestCase {
+class TransactionsFactoryTests: TestCase {
 
     let dateFormatter = DateFormatter()
 

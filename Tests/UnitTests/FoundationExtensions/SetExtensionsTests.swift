@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class SetExtensionsTests: XCTestCase {
+class SetExtensionsTests: TestCase {
 
     func testCreatingDictionaryWithEmptySet() {
         expect(Set<String>().dictionaryWithValues { $0 }) == [:]

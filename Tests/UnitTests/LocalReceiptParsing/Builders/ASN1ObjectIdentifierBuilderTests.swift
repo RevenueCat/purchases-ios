@@ -3,7 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ASN1ObjectIdentifierBuilderTests: XCTestCase {
+class ASN1ObjectIdentifierBuilderTests: TestCase {
 
     let encoder = ASN1ObjectIdentifierEncoder()
     func testBuildFromPayloadBuildsCorrectlyForDataPayload() {

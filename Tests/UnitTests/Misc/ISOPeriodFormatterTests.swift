@@ -13,7 +13,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ISOPeriodFormatterTests: XCTestCase {
+class ISOPeriodFormatterTests: TestCase {
 
     func testStringFromProductSubscriptionPeriodDay() throws {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) else {

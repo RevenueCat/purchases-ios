@@ -8,7 +8,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class AttributionTypeFactoryTests: XCTestCase {
+class AttributionTypeFactoryTests: TestCase {
 
     var attributionTypeFactory: AttributionTypeFactory!
 

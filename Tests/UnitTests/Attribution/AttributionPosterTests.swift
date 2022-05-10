@@ -19,7 +19,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class AttributionPosterTests: XCTestCase {
+class AttributionPosterTests: TestCase {
 
     var attributionFetcher: MockAttributionFetcher!
     var attributionPoster: AttributionPoster!

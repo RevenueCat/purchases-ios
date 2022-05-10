@@ -18,7 +18,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class BeginRefundRequestHelperTests: XCTestCase {
+class BeginRefundRequestHelperTests: TestCase {
 
     private var systemInfo: MockSystemInfo!
     private var customerInfoManager: MockCustomerInfoManager!

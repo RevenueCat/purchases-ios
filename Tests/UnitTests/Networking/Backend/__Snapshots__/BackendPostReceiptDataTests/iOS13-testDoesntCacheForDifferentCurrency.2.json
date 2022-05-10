@@ -16,7 +16,8 @@
       "is_restore" : false,
       "observer_mode" : true,
       "price" : "15.99",
-      "product_id" : "product_id"
+      "product_id" : "product_id",
+      "store_country" : "ESP"
     },
     "method" : "POST",
     "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"

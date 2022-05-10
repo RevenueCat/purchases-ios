@@ -4,56 +4,56 @@ import XCTest
 
 @testable import RevenueCat
 
-class ProductRequestDataTests: XCTestCase {
+class ProductRequestDataTests: TestCase {
 
     func testAsDictionaryConvertsProductIdentifierCorrectly() throws {
         let productIdentifier = "cool_product"
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsPaymentModeCorrectly() throws {
         var paymentMode: StoreProductDiscount.PaymentMode?
         var productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
 
         paymentMode = .payAsYouGo
         productData = .createMockProductData(paymentMode: paymentMode)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
 
         paymentMode = .freeTrial
         productData = .createMockProductData(paymentMode: paymentMode)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
 
         paymentMode = .payUpFront
         productData = .createMockProductData(paymentMode: paymentMode)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsCurrencyCodeCorrectly() throws {
         let currencyCode = "USD"
         let productData: ProductRequestData = .createMockProductData(currencyCode: currencyCode)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsPriceCorrectly() throws {
         let price: NSDecimalNumber = 9.99
         let productData: ProductRequestData = .createMockProductData(price: price as Decimal)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsNormalDurationCorrectly() throws {
         let normalDuration = "P3Y"
         let productData: ProductRequestData = .createMockProductData(normalDuration: normalDuration)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsIntroDurationCorrectlyForFreeTrial() throws {
@@ -61,7 +61,7 @@ class ProductRequestDataTests: XCTestCase {
         let productData: ProductRequestData = .createMockProductData(introDuration: trialDuration,
                                                                      introDurationType: .freeTrial)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsIntroDurationCorrectlyForIntroPrice() throws {
@@ -69,7 +69,7 @@ class ProductRequestDataTests: XCTestCase {
         let productData: ProductRequestData = .createMockProductData(introDuration: introDuration,
                                                                      introDurationType: .payUpFront)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryDoesntAddIntroDurationIfDurationTypeUnknown() throws {
@@ -77,21 +77,21 @@ class ProductRequestDataTests: XCTestCase {
         let productData: ProductRequestData = .createMockProductData(introDuration: introDuration,
                                                                      introDurationType: nil)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsIntroPriceCorrectly() throws {
         let introPrice: NSDecimalNumber = 6.99
         let productData: ProductRequestData = .createMockProductData(introPrice: introPrice as Decimal)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsSubscriptionGroupCorrectly() {
         let subscriptionGroup = "cool_group"
         let productData: ProductRequestData = .createMockProductData(subscriptionGroup: subscriptionGroup)
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testAsDictionaryConvertsDiscountsCorrectly() throws {
@@ -124,7 +124,7 @@ class ProductRequestDataTests: XCTestCase {
 
         let productData: ProductRequestData = .createMockProductData(discounts: [discount1, discount2, discount3])
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testEncoding() throws {
@@ -166,7 +166,7 @@ class ProductRequestDataTests: XCTestCase {
                                                                      subscriptionGroup: "cool_group",
                                                                      discounts: [discount1, discount2, discount3])
 
-        assertSnapshot(matching: productData, as: .formattedJson)
+        assertSnapshot(productData)
     }
 
     func testCacheKey() throws {
@@ -211,7 +211,22 @@ class ProductRequestDataTests: XCTestCase {
                                                                      introPrice: 0,
                                                                      subscriptionGroup: "cool_group",
                                                                      discounts: [discount1, discount2, discount3])
-        expect(productData.cacheKey) == "cool_product-49.99-UYU-1-0-cool_group-P3Y-P3W-2-offerid1-offerid2-offerid3"
+        expect(productData.cacheKey) == "cool_product-49.99-UYU-ESP-1-0-cool_group-P3Y-P3W-2-offerid1-offerid2-offerid3"
+    }
+
+}
+
+private extension ProductRequestDataTests {
+
+    func assertSnapshot(_ data: ProductRequestData,
+                        testName: String = #function,
+                        line: UInt = #line) {
+        SnapshotTesting.assertSnapshot(
+            matching: data,
+            as: .formattedJson,
+            testName: testName,
+            line: line
+        )
     }
 
 }

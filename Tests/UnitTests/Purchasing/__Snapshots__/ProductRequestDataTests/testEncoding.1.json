@@ -22,6 +22,7 @@
   "payment_mode" : 1,
   "price" : "49.99",
   "product_id" : "cool_product",
+  "store_country" : "ESP",
   "subscription_group_id" : "cool_group",
   "trial_duration" : "P3W"
 }

@@ -8,7 +8,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class SubscriberAttributeTests: XCTestCase {
+class SubscriberAttributeTests: TestCase {
     func testInitWithKeyValueSetsRightValues() {
         let now = Date()
         let dateProvider = MockDateProvider(stubbedNow: now)

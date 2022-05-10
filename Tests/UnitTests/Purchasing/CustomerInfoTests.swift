@@ -12,13 +12,13 @@ import XCTest
 
 @testable import RevenueCat
 
-class EmptyCustomerInfoTests: XCTestCase {
+class EmptyCustomerInfoTests: TestCase {
     func testEmptyDataFails() throws {
         expect(try CustomerInfo(data: [:])).to(throwError())
     }
 }
 
-class BasicCustomerInfoTests: XCTestCase {
+class BasicCustomerInfoTests: TestCase {
     let validSubscriberResponse: [String: Any] = [
         "request_date": "2018-10-19T02:40:36Z",
         "request_date_ms": Int64(1563379533946),

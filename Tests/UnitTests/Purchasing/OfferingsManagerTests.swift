@@ -16,7 +16,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-class OfferingsManagerTests: XCTestCase {
+class OfferingsManagerTests: TestCase {
 
     var mockDeviceCache: MockDeviceCache!
     let mockOperationDispatcher = MockOperationDispatcher()

@@ -15,7 +15,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class SubscriberAttributesManagerTests: XCTestCase {
+class SubscriberAttributesManagerTests: TestCase {
 
     var mockBackend: MockBackend!
     var mockDeviceCache: MockDeviceCache!

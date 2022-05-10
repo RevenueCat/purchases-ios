@@ -3,7 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class AppleReceiptBuilderTests: XCTestCase {
+class AppleReceiptBuilderTests: TestCase {
     let containerFactory = ContainerFactory()
     var appleReceiptBuilder: AppleReceiptBuilder!
     var mockInAppPurchaseBuilder: MockInAppPurchaseBuilder!

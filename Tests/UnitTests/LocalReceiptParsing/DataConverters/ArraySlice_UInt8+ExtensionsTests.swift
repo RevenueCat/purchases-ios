@@ -3,7 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ArraySliceUInt8ExtensionsTests: XCTestCase {
+class ArraySliceUInt8ExtensionsTests: TestCase {
     func testToUIntReturnsCorrectValue() {
         var arraySlice = ArraySlice([UInt8(0b10000000), UInt8(0b10000000)])
         expect(arraySlice.toUInt64()) == 0b10000000_10000000
