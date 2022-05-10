@@ -232,6 +232,7 @@ class MockDeviceCache: DeviceCache {
         invokedSetLatestNetworkAndAdvertisingIdsSentCount += 1
         invokedSetLatestNetworkAndAdvertisingIdsSentParameters = (appUserID, ())
         invokedSetLatestNetworkAndAdvertisingIdsSentParametersList.append((appUserID, ()))
+        super.set(latestNetworkAndAdvertisingIdsSent: latestNetworkAndAdvertisingIdsSent, appUserID: appUserID)
     }
 
 }

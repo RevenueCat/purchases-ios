@@ -77,7 +77,6 @@ class AttributionPosterTests: XCTestCase {
 
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
-        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
 
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
