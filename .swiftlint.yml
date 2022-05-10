@@ -19,6 +19,7 @@ opt_in_rules:
 custom_rules:
   xctestcase_superclass:
     included: ".*\\.swift"
+    excluded: Tests/BackendIntegrationTests
     regex: "\\: XCTestCase \\{"
     name: "XCTestCase Superclass"
     message: "Test classes must inherit `TestCase` instead."
