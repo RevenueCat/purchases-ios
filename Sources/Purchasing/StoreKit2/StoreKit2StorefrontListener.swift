@@ -21,7 +21,14 @@ protocol StoreKit2StorefrontListenerDelegate: AnyObject {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2StorefrontListener {
 
-    private(set) var taskHandle: Task<Void, Never>?
+    private(set) var taskHandle: Task<Void, Never>? {
+        didSet {
+            if self.taskHandle != oldValue {
+                oldValue?.cancel()
+            }
+        }
+    }
+
     weak var delegate: StoreKit2StorefrontListenerDelegate?
 
     init(delegate: StoreKit2StorefrontListenerDelegate?) {
@@ -29,7 +36,6 @@ class StoreKit2StorefrontListener {
     }
 
     func listenForStorefrontChanges() {
-        taskHandle?.cancel()
         taskHandle = Task { [weak self] in
             for await _ in StoreKit.Storefront.updates {
                 guard let self = self else { break }
