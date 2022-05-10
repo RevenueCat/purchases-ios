@@ -26,7 +26,7 @@ extension Decoder {
 
 }
 
-// MARK: - DefaultValueProvider / DefaultValue
+// MARK: - DefaultValueProvider
 
 /// A type that can provide a default value.
 protocol DefaultValueProvider {
@@ -36,6 +36,8 @@ protocol DefaultValueProvider {
     static var defaultValue: Value { get }
 
 }
+
+// MARK: - DefaultValue
 
 /// A property wrapper for providing a default value to properties that conform to `DefaultValueProvider`.
 /// - Important: the value will also because `E.defaultValue` if there is a decoding error.
@@ -71,6 +73,55 @@ extension DefaultValue: Encodable where Value: Encodable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(self.wrappedValue)
+    }
+
+}
+
+// MARK: - IgnoreDecodeErrors
+
+/// A property wrapper for that allows ignoring decoding errors for `Optional` properties
+/// - Example:
+/// ```
+/// struct Data {
+///     @IgnoreDecodingErrors var url: URL?
+/// }
+/// ```
+@propertyWrapper
+struct IgnoreDecodeErrors<Value> {
+
+    var wrappedValue: Value? = .none
+
+}
+
+extension IgnoreDecodeErrors: Equatable where Value: Equatable {}
+extension IgnoreDecodeErrors: Hashable where Value: Hashable {}
+
+extension IgnoreDecodeErrors: Decodable where Value: Decodable {
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.wrappedValue = try container.decode(Value.self)
+    }
+
+}
+
+extension IgnoreDecodeErrors: Encodable where Value: Encodable {
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.wrappedValue)
+    }
+
+}
+
+extension KeyedDecodingContainer {
+
+    func decode<T>(_ type: IgnoreDecodeErrors<T>.Type, forKey key: Key) -> IgnoreDecodeErrors<T> where T: Decodable {
+        do {
+            return try self.decodeIfPresent(type, forKey: key) ?? .init()
+        } catch {
+            return .init()
+        }
     }
 
 }
