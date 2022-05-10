@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class AnyEncodableTests: XCTestCase {
+class AnyEncodableTests: TestCase {
 
     func testEmptyDictionary() {
         let empty: [String: Any] = [:]

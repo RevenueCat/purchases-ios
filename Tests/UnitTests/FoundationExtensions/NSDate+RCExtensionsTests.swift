@@ -8,7 +8,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class NSDateExtensionsTests: XCTestCase {
+class NSDateExtensionsTests: TestCase {
     func testMillisecondsSince1970ConvertsCorrectlyWithCurrentTime() {
         let date = NSDate()
         expect(date.millisecondsSince1970AsUInt64()) == (UInt64)(date.timeIntervalSince1970 * 1000)

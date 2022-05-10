@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ArrayExtensionsTests: XCTestCase {
+class ArrayExtensionsTests: TestCase {
 
     func testPopFirstWithEmptyArray() {
         var array: [Int] = []

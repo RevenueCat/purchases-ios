@@ -5,7 +5,7 @@ import XCTest
 @testable import RevenueCat
 
 // swiftlint:disable identifier_name
-class AttributionDataMigratorTests: XCTestCase {
+class AttributionDataMigratorTests: TestCase {
 
     static let defaultIdfa = "00000000-0000-0000-0000-000000000000"
     static let defaultIdfv = "A9CFE78C-51F8-4808-94FD-56B4535753C6"

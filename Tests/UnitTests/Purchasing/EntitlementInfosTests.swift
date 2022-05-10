@@ -12,16 +12,15 @@ import XCTest
 
 @testable import RevenueCat
 
-class EntitlementInfosTests: XCTestCase {
+class EntitlementInfosTests: TestCase {
 
-    private let formatter = DateFormatter()
+    private static let formatter = ISO8601DateFormatter()
     private var response: [String: Any] = [:]
 
     override func setUp() {
-        formatter.timeZone = TimeZone(abbreviation: "GMT")
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        stubResponse()
+        super.setUp()
+
+        self.stubResponse()
     }
 
     func stubResponse(entitlements: [String: Any] = [:],
@@ -103,8 +102,8 @@ class EntitlementInfosTests: XCTestCase {
         try verifyStore(Store.appStore, expectedEntitlement: "lifetime_cat")
         try verifySandbox(false, expectedEntitlement: "lifetime_cat")
         try verifyProduct(expectedIdentifier: "lifetime",
-                          expectedLatestPurchaseDate: formatter.date(from: "2019-07-26T23:45:40Z"),
-                          expectedOriginalPurchaseDate: formatter.date(from: "2019-07-26T23:45:40Z"),
+                          expectedLatestPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),
+                          expectedOriginalPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),
                           expectedExpirationDate: nil,
                           expectedEntitlement: "lifetime_cat"
         )
@@ -278,8 +277,8 @@ class EntitlementInfosTests: XCTestCase {
         try verifyStore()
         try verifySandbox()
         try verifyProduct(expectedIdentifier: "lifetime",
-                          expectedLatestPurchaseDate: formatter.date(from: "2019-07-26T23:45:40Z"),
-                          expectedOriginalPurchaseDate: formatter.date(from: "2019-07-26T23:45:40Z"),
+                          expectedLatestPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),
+                          expectedOriginalPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),
                           expectedExpirationDate: nil)
     }
 
@@ -338,7 +337,7 @@ class EntitlementInfosTests: XCTestCase {
 
         try verifySubscriberInfo()
         try verifyEntitlementActive()
-        try verifyRenewal(false, expectedBillingIssueDetectedAt: formatter.date(from: "2019-07-27T23:30:41Z"))
+        try verifyRenewal(false, expectedBillingIssueDetectedAt: Self.formatter.date(from: "2019-07-27T23:30:41Z"))
         try verifyPeriodType()
         try verifyStore()
         try verifySandbox()
@@ -369,7 +368,7 @@ class EntitlementInfosTests: XCTestCase {
 
         try verifySubscriberInfo()
         try verifyEntitlementActive()
-        try verifyRenewal(false, expectedUnsubscribeDetectedAt: formatter.date(from: "2019-07-27T23:30:41Z"))
+        try verifyRenewal(false, expectedUnsubscribeDetectedAt: Self.formatter.date(from: "2019-07-27T23:30:41Z"))
         try verifyPeriodType()
         try verifyStore()
         try verifySandbox()
@@ -402,8 +401,8 @@ class EntitlementInfosTests: XCTestCase {
         try verifyEntitlementActive()
         try verifyRenewal(
             false,
-            expectedUnsubscribeDetectedAt: formatter.date(from: "2019-07-27T23:30:41Z"),
-            expectedBillingIssueDetectedAt: formatter.date(from: "2019-07-27T22:30:41Z")
+            expectedUnsubscribeDetectedAt: Self.formatter.date(from: "2019-07-27T23:30:41Z"),
+            expectedBillingIssueDetectedAt: Self.formatter.date(from: "2019-07-27T22:30:41Z")
         )
         try verifyPeriodType()
         try verifyStore()
@@ -548,8 +547,8 @@ class EntitlementInfosTests: XCTestCase {
         try verifyStore()
         try verifySandbox()
         try verifyProduct(expectedIdentifier: "lifetime",
-                          expectedLatestPurchaseDate: formatter.date(from: "2019-07-26T23:45:40Z"),
-                          expectedOriginalPurchaseDate: formatter.date(from: "2019-07-26T23:45:40Z"),
+                          expectedLatestPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),
+                          expectedOriginalPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),
                           expectedExpirationDate: nil)
 
     }
@@ -1018,107 +1017,161 @@ class EntitlementInfosTests: XCTestCase {
 
         try verifyRenewal(false)
     }
+}
 
-    func verifySubscriberInfo() throws {
+private extension EntitlementInfosTests {
+
+    func verifySubscriberInfo(file: FileString = #file, line: UInt = #line) throws {
         let subscriberInfo = try CustomerInfo(data: response)
 
-        expect(subscriberInfo).toNot(beNil())
-        expect(subscriberInfo.firstSeen).to(equal(formatter.date(from: "2019-07-26T23:29:50Z")))
-        expect(subscriberInfo.originalAppUserId).to(equal("cesarsandbox1"))
+        expect(file: file, line: line, subscriberInfo).toNot(beNil())
+        expect(file: file, line: line, subscriberInfo.firstSeen).to(
+            equal(Self.formatter.date(from: "2019-07-26T23:29:50Z")),
+            description: "Invalid first seen date"
+        )
+        expect(file: file, line: line, subscriberInfo.originalAppUserId) == "cesarsandbox1"
     }
 
-    func verifyEntitlementActive(_ expectedEntitlementActive: Bool = true, entitlement: String = "pro_cat") throws {
+    func verifyEntitlementActive(
+        _ expectedEntitlementActive: Bool = true,
+        entitlement: String = "pro_cat",
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
         let subscriberInfo = try CustomerInfo(data: response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[entitlement])
 
-        expect(proCat.identifier) == entitlement
-        expect(subscriberInfo.entitlements.all.keys.contains(entitlement)) == true
-        expect(subscriberInfo.entitlements.active.keys.contains(entitlement)) == expectedEntitlementActive
-        expect(proCat.isActive) == expectedEntitlementActive
+        expect(file: file, line: line, proCat.identifier) == entitlement
+        expect(file: file, line: line, subscriberInfo.entitlements.all.keys.contains(entitlement)) == true
+        expect(file: file, line: line, subscriberInfo.entitlements.active.keys.contains(entitlement))
+        == expectedEntitlementActive
+        expect(file: file, line: line, proCat.isActive) == expectedEntitlementActive
     }
 
     func verifyRenewal(_ expectedWillRenew: Bool = true,
                        expectedUnsubscribeDetectedAt: Date? = nil,
                        expectedBillingIssueDetectedAt: Date? = nil,
-                       entitlement: String = "pro_cat") throws {
+                       entitlement: String = "pro_cat",
+                       file: FileString = #file,
+                       line: UInt = #line) throws {
         let subscriberInfo = try CustomerInfo(data: response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[entitlement])
 
-        expect(proCat.willRenew) == expectedWillRenew
+        expect(file: file, line: line, proCat.willRenew) == expectedWillRenew
 
         if expectedUnsubscribeDetectedAt != nil {
-            expect(proCat.unsubscribeDetectedAt) == expectedUnsubscribeDetectedAt
+            expect(file: file, line: line, proCat.unsubscribeDetectedAt).to(
+                equal(expectedUnsubscribeDetectedAt),
+                description: "Invalid unsubscribe date"
+            )
         } else {
-            expect(proCat.unsubscribeDetectedAt).to(beNil())
+            expect(file: file, line: line, proCat.unsubscribeDetectedAt).to(beNil())
         }
 
         if expectedBillingIssueDetectedAt != nil {
-            expect(proCat.billingIssueDetectedAt) == expectedBillingIssueDetectedAt
+            expect(file: file, line: line, proCat.billingIssueDetectedAt).to(
+                equal(expectedBillingIssueDetectedAt),
+                description: "Invalid billing issue date"
+            )
         } else {
-            expect(proCat.billingIssueDetectedAt).to(beNil())
+            expect(file: file, line: line, proCat.billingIssueDetectedAt).to(beNil())
         }
     }
 
     func verifyPeriodType(
-        _ expectedPeriodType: PeriodType = PeriodType.normal,
-        expectedEntitlement: String = "pro_cat"
+        _ expectedPeriodType: PeriodType = .normal,
+        expectedEntitlement: String = "pro_cat",
+        file: FileString = #file,
+        line: UInt = #line
     ) throws {
         let subscriberInfo = try CustomerInfo(data: response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[expectedEntitlement])
 
-        expect(proCat.periodType) == expectedPeriodType
+        expect(file: file, line: line, proCat.periodType) == expectedPeriodType
     }
 
-    func verifyStore(_ expectedStore: Store = Store.appStore, expectedEntitlement: String = "pro_cat") throws {
+    func verifyStore(
+        _ expectedStore: Store = .appStore,
+        expectedEntitlement: String = "pro_cat",
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
         let subscriberInfo = try CustomerInfo(data: response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[expectedEntitlement])
 
-        expect(proCat.store) == expectedStore
+        expect(file: file, line: line, proCat.store) == expectedStore
     }
 
-    func verifySandbox(_ expectedIsSandbox: Bool = false, expectedEntitlement: String = "pro_cat") throws {
+    func verifySandbox(
+        _ expectedIsSandbox: Bool = false,
+        expectedEntitlement: String = "pro_cat",
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
         let subscriberInfo = try CustomerInfo(data: response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[expectedEntitlement])
 
-        expect(proCat.isSandbox) == expectedIsSandbox
+        expect(file: file, line: line, proCat.isSandbox) == expectedIsSandbox
     }
 
-    func verifyProduct(expectedIdentifier: String = "monthly_freetrial",
-                       expectedEntitlement: String = "pro_cat") throws {
-        try verifyProduct(expectedIdentifier: expectedIdentifier,
-                          expectedLatestPurchaseDate: formatter.date(from: "2019-07-26T23:45:40Z"),
-                          expectedOriginalPurchaseDate: formatter.date(from: "2019-07-26T23:30:41Z"),
-                          expectedExpirationDate: formatter.date(from: "2200-07-26T23:50:40Z"),
-                          expectedEntitlement: expectedEntitlement
+    func verifyProduct(
+        expectedIdentifier: String = "monthly_freetrial",
+        expectedEntitlement: String = "pro_cat",
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
+        try verifyProduct(
+            expectedIdentifier: expectedIdentifier,
+            expectedLatestPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),
+            expectedOriginalPurchaseDate: Self.formatter.date(from: "2019-07-26T23:30:41Z"),
+            expectedExpirationDate: Self.formatter.date(from: "2200-07-26T23:50:40Z"),
+            expectedEntitlement: expectedEntitlement,
+            file: file, line: line
         )
     }
 
-    func verifyProduct(expectedIdentifier: String,
-                       expectedLatestPurchaseDate: Date?,
-                       expectedOriginalPurchaseDate: Date?,
-                       expectedExpirationDate: Date?,
-                       expectedEntitlement: String = "pro_cat") throws {
+    func verifyProduct(
+        expectedIdentifier: String,
+        expectedLatestPurchaseDate: Date?,
+        expectedOriginalPurchaseDate: Date?,
+        expectedExpirationDate: Date?,
+        expectedEntitlement: String = "pro_cat",
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
         let subscriberInfo = try CustomerInfo(data: response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[expectedEntitlement])
 
         if expectedLatestPurchaseDate != nil {
-            expect(proCat.latestPurchaseDate) == expectedLatestPurchaseDate
+            expect(file: file, line: line, proCat.latestPurchaseDate).to(
+                equal(expectedLatestPurchaseDate),
+                description: "Invalid latest purchase date"
+            )
         } else {
-            expect(proCat.latestPurchaseDate).to(beNil())
+            expect(file: file, line: line, proCat.latestPurchaseDate).to(beNil())
         }
 
         if expectedOriginalPurchaseDate != nil {
-            expect(proCat.originalPurchaseDate) == expectedOriginalPurchaseDate
+            expect(file: file, line: line, proCat.originalPurchaseDate).to(
+                equal(expectedOriginalPurchaseDate),
+                description: "Invalid original purchase date"
+            )
         } else {
-            expect(proCat.originalPurchaseDate).to(beNil())
+            expect(file: file, line: line, proCat.originalPurchaseDate).to(beNil())
         }
 
         if expectedExpirationDate != nil {
-            expect(proCat.expirationDate) == expectedExpirationDate
+            expect(file: file, line: line, proCat.expirationDate).to(
+                equal(expectedExpirationDate),
+                description: "Invalid expiration date"
+            )
         } else {
-            expect(proCat.expirationDate).to(beNil())
+            expect(file: file, line: line, proCat.expirationDate).to(beNil())
         }
 
-        expect(proCat.productIdentifier) == expectedIdentifier
+        expect(file: file, line: line, proCat.productIdentifier).to(
+            equal(expectedIdentifier),
+            description: "Invalid product identifier"
+        )
     }
 }

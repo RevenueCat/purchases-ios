@@ -18,7 +18,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class BaseBackendTests: XCTestCase {
+class BaseBackendTests: TestCase {
 
     private(set) var systemInfo: SystemInfo!
     private(set) var httpClient: MockHTTPClient!
@@ -38,14 +38,6 @@ class BaseBackendTests: XCTestCase {
                                apiKey: Self.apiKey,
                                attributionFetcher: attributionFetcher,
                                dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
-    }
-
-    override class func setUp() {
-        XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
-    }
-
-    override class func tearDown() {
-        XCTestObservationCenter.shared.removeTestObserver(CurrentTestCaseTracker.shared)
     }
 
     func createClient() -> MockHTTPClient {

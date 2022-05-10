@@ -8,7 +8,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class IdentityManagerTests: XCTestCase {
+class IdentityManagerTests: TestCase {
 
     private var mockDeviceCache: MockDeviceCache!
     private let mockBackend = MockBackend()

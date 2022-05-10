@@ -41,6 +41,12 @@ import Foundation
 
 extension Store: CaseIterable {}
 
+extension Store: DefaultValueProvider {
+
+    static let defaultValue: Self = .unknownStore
+
+}
+
 /**
  Enum of supported period types for an entitlement.
  */
@@ -57,6 +63,12 @@ extension Store: CaseIterable {}
 }
 
 extension PeriodType: CaseIterable {}
+
+extension PeriodType: DefaultValueProvider {
+
+    static let defaultValue: Self = .normal
+
+}
 
 /**
  The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
@@ -192,31 +204,28 @@ extension PeriodType: CaseIterable {}
         if self.periodType != info.periodType {
             return false
         }
-        if self.latestPurchaseDate != info.latestPurchaseDate && self.latestPurchaseDate != info.latestPurchaseDate {
+        if self.latestPurchaseDate != info.latestPurchaseDate {
             return false
         }
-        if self.originalPurchaseDate != info.originalPurchaseDate
-            && self.originalPurchaseDate != info.originalPurchaseDate {
+        if self.originalPurchaseDate != info.originalPurchaseDate {
             return false
         }
-        if self.expirationDate != info.expirationDate && self.expirationDate != info.expirationDate {
+        if self.expirationDate != info.expirationDate {
             return false
         }
         if self.store != info.store {
             return false
         }
-        if self.productIdentifier != info.productIdentifier && self.productIdentifier != info.productIdentifier {
+        if self.productIdentifier != info.productIdentifier {
             return false
         }
         if self.isSandbox != info.isSandbox {
             return false
         }
-        if self.unsubscribeDetectedAt != info.unsubscribeDetectedAt
-            && self.unsubscribeDetectedAt != info.unsubscribeDetectedAt {
+        if self.unsubscribeDetectedAt != info.unsubscribeDetectedAt {
             return false
         }
-        if self.billingIssueDetectedAt != info.billingIssueDetectedAt
-            && self.billingIssueDetectedAt != info.billingIssueDetectedAt {
+        if self.billingIssueDetectedAt != info.billingIssueDetectedAt {
             return false
         }
         if self.ownershipType != info.ownershipType {
@@ -338,14 +347,14 @@ extension EntitlementInfo {
 
     struct ProductData: Decodable {
 
-        let periodType: PeriodType
-        let originalPurchaseDate: Date?
-        let expiresDate: Date?
-        let store: Store
-        let isSandbox: Bool
-        let unsubscribeDetectedAt: Date?
-        let billingIssuesDetectedAt: Date?
-        let ownershipType: PurchaseOwnershipType
+        @DefaultValue<PeriodType> var periodType: PeriodType
+        var originalPurchaseDate: Date?
+        var expiresDate: Date?
+        @DefaultValue<Store> var store: Store
+        @DefaultDecodable.False var isSandbox: Bool
+        var unsubscribeDetectedAt: Date?
+        var billingIssuesDetectedAt: Date?
+        @DefaultValue<PurchaseOwnershipType> var ownershipType: PurchaseOwnershipType
 
     }
 

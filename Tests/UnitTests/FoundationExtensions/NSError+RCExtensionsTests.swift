@@ -8,7 +8,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class NSErrorRCExtensionsTests: XCTestCase {
+class NSErrorRCExtensionsTests: TestCase {
 
     func testSubscriberAttributesErrorsNilIfNoAttributesErrors() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
