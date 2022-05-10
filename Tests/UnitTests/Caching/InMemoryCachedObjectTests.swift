@@ -9,7 +9,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class InMemoryCachedObjectTests: XCTestCase {
+class InMemoryCachedObjectTests: TestCase {
 
     // MARK: isCacheStaleWithDurationInSeconds:
 

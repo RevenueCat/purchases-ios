@@ -26,7 +26,7 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate {
 
 }
 
-class BaseBackendIntegrationTests: XCTestCase {
+class BaseBackendIntegrationTests: TestCase {
 
     private var userDefaults: UserDefaults!
     // swiftlint:disable:next weak_delegate

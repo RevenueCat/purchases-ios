@@ -4,7 +4,7 @@ import StoreKit
 import XCTest
 
 // swiftlint:disable:next type_name
-class ProductRequestDataSK1ProductInitializationTests: XCTestCase {
+class ProductRequestDataSK1ProductInitializationTests: TestCase {
 
     private var product: MockSK1Product!
     private var storefront: MockStorefront!

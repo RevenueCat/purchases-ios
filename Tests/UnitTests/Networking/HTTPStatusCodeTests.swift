@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class HTTPStatusCodeTests: XCTestCase {
+class HTTPStatusCodeTests: TestCase {
 
     func testInitializeFromInteger() {
         func method(_ status: HTTPStatusCode) {

@@ -11,7 +11,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class DictionaryExtensionsTests: XCTestCase {
+class DictionaryExtensionsTests: TestCase {
 
     func testRemovingNSNullValuesFiltersCorrectly() {
         let testValues: [String: Any] = [

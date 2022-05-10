@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class PurchasesSubscriberAttributesTests: XCTestCase {
+class PurchasesSubscriberAttributesTests: TestCase {
 
     var mockReceiptFetcher: MockReceiptFetcher!
     let mockRequestFetcher = MockRequestFetcher()

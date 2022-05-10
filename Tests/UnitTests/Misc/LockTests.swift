@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class LockTests: XCTestCase {
+class LockTests: TestCase {
 
     func testClosureIsCalled() {
         let lock = Lock()

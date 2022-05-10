@@ -4,7 +4,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ETagManagerTests: XCTestCase {
+class ETagManagerTests: TestCase {
 
     private var mockUserDefaults: MockUserDefaults! = nil
     private var eTagManager: ETagManager!

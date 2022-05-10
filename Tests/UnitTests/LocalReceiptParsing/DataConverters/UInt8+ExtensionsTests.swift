@@ -3,7 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class UInt8ExtensionsTests: XCTestCase {
+class UInt8ExtensionsTests: TestCase {
 
     func testBitAtIndexGetsCorrectValue() {
         expect(try UInt8(0b10000000).bitAtIndex(0)) == 1

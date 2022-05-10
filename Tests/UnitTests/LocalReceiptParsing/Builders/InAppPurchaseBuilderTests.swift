@@ -9,7 +9,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class InAppPurchaseBuilderTests: XCTestCase {
+class InAppPurchaseBuilderTests: TestCase {
     // swiftlint:disable force_try
     let quantity = 2
     let productId = "com.revenuecat.sampleProduct"

@@ -17,7 +17,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class BaseErrorTests: XCTestCase {
+class BaseErrorTests: TestCase {
 
     /// Compares the result of calling `asPurchasesError` on a `ErrorCodeConvertible`
     /// against the expected `ErrorCode`.
