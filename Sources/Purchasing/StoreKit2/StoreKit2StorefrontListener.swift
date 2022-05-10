@@ -41,7 +41,9 @@ class StoreKit2StorefrontListener {
         self.taskHandle = Task { [weak self] in
             for await _ in StoreKit.Storefront.updates {
                 guard let self = self else { break }
-                self.delegate?.storefrontDidUpdate()
+                await MainActor.run {
+                    self.delegate?.storefrontDidUpdate()
+                }
             }
         }
     }
