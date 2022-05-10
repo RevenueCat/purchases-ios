@@ -36,7 +36,7 @@ class StoreKit2StorefrontListener {
     }
 
     func listenForStorefrontChanges() {
-        taskHandle = Task { [weak self] in
+        self.taskHandle = Task { [weak self] in
             for await _ in StoreKit.Storefront.updates {
                 guard let self = self else { break }
                 self.delegate?.storefrontDidUpdate()
