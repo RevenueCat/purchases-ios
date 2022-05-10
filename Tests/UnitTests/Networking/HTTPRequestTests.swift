@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class HTTPRequestTests: XCTestCase {
+class HTTPRequestTests: TestCase {
 
     // MARK: - Paths
 

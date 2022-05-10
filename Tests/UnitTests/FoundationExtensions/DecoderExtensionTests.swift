@@ -18,7 +18,7 @@ import XCTest
 
 // swiftlint:disable type_name identifier_name nesting
 
-class DecoderExtensionsDefaultValueTests: XCTestCase {
+class DecoderExtensionsDefaultValueTests: TestCase {
 
     private struct Data: Codable, Equatable {
         enum E: String, DefaultValueProvider, Codable, Equatable {
@@ -71,7 +71,7 @@ class DecoderExtensionsDefaultValueTests: XCTestCase {
 
 }
 
-class DecoderExtensionsIgnoreErrorsTests: XCTestCase {
+class DecoderExtensionsIgnoreErrorsTests: TestCase {
 
     private struct Data: Codable, Equatable {
         @IgnoreDecodeErrors var url: URL?
@@ -97,7 +97,7 @@ class DecoderExtensionsIgnoreErrorsTests: XCTestCase {
 
 }
 
-class DecoderExtensionsLossyCollectionTests: XCTestCase {
+class DecoderExtensionsLossyCollectionTests: TestCase {
 
     private struct Data: Codable, Equatable {
         struct Content: Codable, Equatable {
@@ -166,7 +166,7 @@ class DecoderExtensionsLossyCollectionTests: XCTestCase {
 
 }
 
-class DecoderExtensionsDefaultDecodableTests: XCTestCase {
+class DecoderExtensionsDefaultDecodableTests: TestCase {
 
     private struct Data: Codable, Equatable {
         @DefaultDecodable.True var bool1: Bool
@@ -233,7 +233,7 @@ class DecoderExtensionsDefaultDecodableTests: XCTestCase {
 
 }
 
- class DecoderExtensionsLossyAndDefaultCompositionTests: XCTestCase {
+ class DecoderExtensionsLossyAndDefaultCompositionTests: TestCase {
 
      private struct Data: Codable, Equatable {
          @DefaultDecodable.EmptyArray @LossyArray var list: [Int]

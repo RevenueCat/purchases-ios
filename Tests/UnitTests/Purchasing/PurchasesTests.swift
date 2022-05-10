@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class PurchasesTests: XCTestCase {
+class PurchasesTests: TestCase {
 
     let emptyCustomerInfoData: [String: Any] = [
         "request_date": "2019-08-16T10:30:42Z",

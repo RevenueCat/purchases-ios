@@ -12,7 +12,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class EntitlementInfosTests: XCTestCase {
+class EntitlementInfosTests: TestCase {
 
     private static let formatter = ISO8601DateFormatter()
     private var response: [String: Any] = [:]

@@ -46,7 +46,7 @@ class MockPaymentQueue: SKPaymentQueue {
 
 }
 
-class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
+class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
     let paymentQueue = MockPaymentQueue()
 
     var wrapper: StoreKitWrapper?

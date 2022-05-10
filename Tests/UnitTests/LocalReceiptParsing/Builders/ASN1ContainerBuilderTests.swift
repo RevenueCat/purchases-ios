@@ -3,7 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ASN1ContainerBuilderTests: XCTestCase {
+class ASN1ContainerBuilderTests: TestCase {
     var containerBuilder: ASN1ContainerBuilder!
     let mockContainerPayload: [UInt8] = [0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01]
     let lengthByteForIndefiniteLengthContainers = 0b10000000

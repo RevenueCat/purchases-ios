@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ErrorCodeTests: XCTestCase {
+class ErrorCodeTests: TestCase {
 
     func testUnknownError() {
         ensureEnumCaseMatchesExpectedRawValue(errorCode: .unknownError, expectedRawValue: 0)

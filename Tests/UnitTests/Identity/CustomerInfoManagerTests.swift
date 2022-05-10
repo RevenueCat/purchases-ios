@@ -3,7 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class CustomerInfoManagerTests: XCTestCase {
+class CustomerInfoManagerTests: TestCase {
     var mockBackend = MockBackend()
     var mockOperationDispatcher = MockOperationDispatcher()
     var mockDeviceCache: MockDeviceCache!

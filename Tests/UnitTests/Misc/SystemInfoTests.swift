@@ -3,7 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class SystemInfoTests: XCTestCase {
+class SystemInfoTests: TestCase {
 
     func testproxyURL() {
         let defaultURL = URL(string: "https://api.revenuecat.com")

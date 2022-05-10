@@ -13,7 +13,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class HTTPClientTests: XCTestCase {
+class HTTPClientTests: TestCase {
 
     private typealias EmptyResponse = HTTPResponse<HTTPEmptyResponseBody>.Result
 

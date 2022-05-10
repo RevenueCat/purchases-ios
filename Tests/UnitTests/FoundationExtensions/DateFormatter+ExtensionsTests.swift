@@ -3,7 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class DateFormatterExtensionTests: XCTestCase {
+class DateFormatterExtensionTests: TestCase {
 
     func testDateFromBytesReturnsCorrectValueIfPossible() throws {
         let timeZone = TimeZone(identifier: "UTC")
