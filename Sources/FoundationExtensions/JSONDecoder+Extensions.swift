@@ -97,7 +97,8 @@ extension JSONSerialization {
 }
 
 // MARK: Decoding Error handling
-private extension ErrorUtils {
+
+extension ErrorUtils {
 
     static func logDecodingError(_ error: Error) {
         guard let decodingError = error as? DecodingError else {

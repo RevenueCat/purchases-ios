@@ -59,8 +59,8 @@ class DecoderExtensionsDefaultValueTests: XCTestCase {
     }
 
     func testDecodesDefaultValueForInvalidValue() throws {
-        let json = "{\"e\": \"e3\"}".data(using: .utf8)!
-        let data: Data = try JSONDecoder.default.decode(jsonData: json)
+        let json = "{\"e\": \"e3\"}"
+        let data = try Data.decode(json)
 
         expect(data.e) == Data.E.defaultValue
     }
@@ -89,10 +89,79 @@ class DecoderExtensionsIgnoreErrorsTests: XCTestCase {
     }
 
     func testIgnoresErrors() throws {
-        let json = "{\"url\": \"not a! valid url@\"}".data(using: .utf8)!
-        let data: Data = try JSONDecoder.default.decode(jsonData: json)
+        let json = "{\"url\": \"not a! valid url@\"}"
+        let data = try Data.decode(json)
 
         expect(data.url).to(beNil())
+    }
+
+}
+
+class DecoderExtensionsLossyCollectionTests: XCTestCase {
+
+    private struct Data: Codable, Equatable {
+        struct Content: Codable, Equatable {
+            let string: String
+        }
+
+        @LossyArray var list: [Int]
+        @LossyDictionary var map1: [String: Content]
+        @LossyArrayDictionary var map2: [String: [Content]]
+
+        init(list: [Int], map1: [String: Content], map2: [String: [Content]]) {
+            self.list = list
+            self.map1 = map1
+            self.map2 = map2
+        }
+    }
+
+    func testDecodesActualValues() throws {
+        let data = Data(list: [1, 2, 3],
+                        map1: ["1": .init(string: "test1"), "2": .init(string: "test2")],
+                        map2: ["1": [.init(string: "a"), .init(string: "b")]])
+        let decodedData = try data.encodeAndDecode()
+
+        expect(decodedData) == data
+    }
+
+    func testIgnoresArrayErrors() throws {
+        let json = "{\"list\": [\"not a number\"], \"map1\": {}, \"map2\": {}}"
+        let data = try Data.decode(json)
+
+        expect(data.list) == []
+    }
+
+    func testKeepsValidArrayMembers() throws {
+        let json = "{\"list\": [1, \"not a number\", 3], \"map1\": {}, \"map2\": {}}"
+        let data = try Data.decode(json)
+
+        expect(data.list) == [1, 3]
+    }
+
+    func testInvalidArrayTypeFailsToDecode() throws {
+        let json = "{\"list\": \"not an array\", \"map1\": {}, \"map2\": {}}"
+        expect { try Data.decode(json) }.to(throwError())
+    }
+
+    func testKeepsValidDictionaryValues() throws {
+        // swiftlint:disable:next line_length
+        let json = "{\"list\": [], \"map1\": {\"1\": \"not a dictionary\", \"2\": {\"string\": \"test\"}}, \"map2\": {}}"
+        let data = try Data.decode(json)
+
+        expect(data.map1) == ["2": .init(string: "test")]
+    }
+
+    func testInvalidDictionaryTypeFailsToDecode() throws {
+        let json = "{\"list\": [], \"map1\": \"not a dictionary\", \"map2\": {}}"
+        expect { try Data.decode(json) }.to(throwError())
+    }
+
+    func testIgnoresNestedErrors() throws {
+        // swiftlint:disable:next line_length
+        let json = "{\"list\": [], \"map1\": {}, \"map2\": {\"1\": \"not a dictionary\", \"2\": {\"string\": \"not an array\"}, \"3\": [{\"string\": \"test\"}, \"not an object\"]}}"
+        let data = try Data.decode(json)
+
+        expect(data.map2) == ["3": [.init(string: "test")]]
     }
 
 }
@@ -148,7 +217,89 @@ class DecoderExtensionsDefaultDecodableTests: XCTestCase {
         expect(try Data.decodeEmptyData().dictionary) == [:]
     }
 
+    func testDecodesEmptyArrayForIncorrectType() throws {
+        let json = "{\"list\": \"this is not an array\"}"
+        let data = try Data.decode(json)
+
+        expect(data.array) == []
+    }
+
+    func testDecodesEmptyDictionaryForIncorrectType() throws {
+        let json = "{\"map\": \"this is not a dictionary\"}"
+        let data = try Data.decode(json)
+
+        expect(data.dictionary) == [:]
+    }
+
 }
+
+ class DecoderExtensionsLossyAndDefaultCompositionTests: XCTestCase {
+
+     private struct Data: Codable, Equatable {
+         @DefaultDecodable.EmptyArray @LossyArray var list: [Int]
+         @DefaultDecodable.EmptyDictionary @LossyDictionary var map1: [String: Int]
+         @DefaultDecodable.EmptyDictionary @LossyArrayDictionary var map2: [String: [Int]]
+
+         init(list: [Int], map1: [String: Int], map2: [String: [Int]]) {
+             self.list = list
+             self.map1 = map1
+             self.map2 = map2
+         }
+     }
+
+     func testDecodesActualValues() throws {
+         let data = Data(list: [1, 2, 3],
+                         map1: ["1": 1, "2": 2],
+                         map2: ["1": [1, 2]])
+         let decodedData = try data.encodeAndDecode()
+
+         expect(decodedData) == data
+     }
+
+     func testIgnoresListErrors() throws {
+         let json = "{\"list\": [\"not a number\"], \"map1\": {}, \"map2\": {}}"
+         let data = try Data.decode(json)
+
+         expect(data.list) == []
+     }
+
+     func testKeepsValidListMembers() throws {
+         let json = "{\"list\": [1, \"not a number\", 3], \"map1\": {}, \"map2\": {}}"
+         let data = try Data.decode(json)
+
+         expect(data.list) == [1, 3]
+     }
+
+     func testKeepsValidMapValues() throws {
+         let json = "{\"list\": [], \"map1\": {\"1\": \"not a number\", \"2\": 2}, \"map2\": {}}"
+         let data = try Data.decode(json)
+
+         expect(data.map1) == ["2": 2]
+     }
+
+     func testInvalidArrayBecomesEmpty() throws {
+         let json = "{\"list\": \"not an array\", \"map1\": {}, \"map2\": {}}"
+         let data = try Data.decode(json)
+
+         expect(data.list) == []
+     }
+
+     func testInvalidDictionaryTypeFailsToDecode() throws {
+         let json = "{\"list\": [], \"map1\": \"not a dictionary\", \"map2\": {}}"
+         let data = try Data.decode(json)
+
+         expect(data.map1) == [:]
+     }
+
+     func testIgnoresNestedErrors() throws {
+         // swiftlint:disable:next line_length
+         let json = "{\"list\": [], \"map1\": {}, \"map2\": {\"1\": \"not a dictionary\", \"2\": {\"string\": \"not an array\"}, \"3\": [3, \"not a number\"]}}"
+         let data = try Data.decode(json)
+
+         expect(data.map2) == ["3": [3]]
+     }
+
+ }
 
 private extension Decodable where Self: Encodable {
 
@@ -161,6 +312,10 @@ private extension Decodable where Self: Encodable {
 }
 
 private extension Decodable {
+
+    static func decode(_ json: String) throws -> Self {
+        return try JSONDecoder.default.decode(jsonData: json.data(using: .utf8)!)
+    }
 
     static func decodeEmptyData() throws -> Self {
         let json = "{}".data(using: .utf8)!
