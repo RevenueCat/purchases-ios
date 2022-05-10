@@ -49,6 +49,7 @@ class StoreKit2StorefrontListener {
     }
 
     deinit {
+        taskHandle?.cancel()
         taskHandle = nil
     }
 

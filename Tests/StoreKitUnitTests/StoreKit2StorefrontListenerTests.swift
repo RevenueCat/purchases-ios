@@ -26,7 +26,7 @@ class StoreKit2StorefrontListenerTests: XCTestCase {
         self.listener = .init(delegate: nil)
     }
 
-    func testStopsListeningToChanges() throws {
+    func testStopsListeningToChangesWhenListenerIsReleased() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         var handle: Task<Void, Never>?
@@ -40,6 +40,23 @@ class StoreKit2StorefrontListenerTests: XCTestCase {
         expect(handle?.isCancelled) == false
 
         self.listener = nil
+        expect(handle?.isCancelled) == true
+    }
+
+    func testStopsPreviousTaskWhenStartListeningChangesMoreThanOneTime() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        var handle: Task<Void, Never>?
+
+        expect(self.listener.taskHandle).to(beNil())
+
+        self.listener!.listenForStorefrontChanges()
+        handle = self.listener!.taskHandle
+
+        expect(handle).toNot(beNil())
+        expect(handle?.isCancelled) == false
+
+        self.listener.listenForStorefrontChanges()
         expect(handle?.isCancelled) == true
     }
 
