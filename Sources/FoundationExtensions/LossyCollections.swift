@@ -165,16 +165,17 @@ extension LossyDictionary: Decodable {
     fileprivate static func extractKeys(
         from decoder: Decoder,
         container: KeyedDecodingContainer<DictionaryCodingKey>
-    ) throws -> [(DictionaryCodingKey, String)] {
+    ) throws -> AnySequence<(DictionaryCodingKey, String)> {
         // Decode a dictionary ignoring the values to decode the original keys
         // without using the `JSONDecoder.KeyDecodingStrategy`.
         let keys = try decoder.singleValueContainer().decode([String: AnyDecodableValue].self).keys
 
-        return zip(
-            container.allKeys.sorted(by: { $0.stringValue < $1.stringValue }),
-            keys.sorted()
+        return AnySequence(
+            zip(
+                container.allKeys.sorted(by: { $0.stringValue < $1.stringValue }),
+                keys.sorted()
+            )
         )
-        .map { ($0, $1) }
     }
 
 }
