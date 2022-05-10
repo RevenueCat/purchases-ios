@@ -31,7 +31,7 @@ class StoreKit2StorefrontListenerTests: XCTestCase {
 
         var handle: Task<Void, Never>?
 
-        expect(self.listener!.taskHandle).to(beNil())
+        expect(self.listener.taskHandle).to(beNil())
 
         self.listener!.listenForStorefrontChanges()
         handle = self.listener!.taskHandle
