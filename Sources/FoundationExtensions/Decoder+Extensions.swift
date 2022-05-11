@@ -77,9 +77,48 @@ extension DefaultValue: Encodable where Value: Encodable {
 
 }
 
+// MARK: - IgnoreEncodable
+
+/// A property wrapper that allows not encoding a value.
+/// - Example:
+/// ```
+/// struct Data {
+///     @IgnoreEncodable var data: String // this value won't be encoded
+/// }
+/// ```
+@propertyWrapper
+struct IgnoreEncodable<Value> {
+
+    var wrappedValue: Value
+
+}
+
+extension IgnoreEncodable: Decodable where Value: Decodable {
+
+    init(from decoder: Decoder) throws {
+        self.wrappedValue = try decoder.singleValueContainer().decode(Value.self)
+    }
+
+}
+
+extension IgnoreEncodable: Encodable {
+
+    func encode(to encoder: Encoder) throws {}
+
+}
+
+extension IgnoreEncodable: Equatable where Value: Equatable {}
+extension IgnoreEncodable: Hashable where Value: Hashable {}
+
+extension KeyedEncodingContainer {
+
+    mutating func encode<T>(_ value: IgnoreEncodable<T>, forKey key: K) throws {}
+
+}
+
 // MARK: - IgnoreDecodeErrors
 
-/// A property wrapper for that allows ignoring decoding errors for `Optional` properties
+/// A property wrapper that allows ignoring decoding errors for `Optional` properties
 /// - Example:
 /// ```
 /// struct Data {
