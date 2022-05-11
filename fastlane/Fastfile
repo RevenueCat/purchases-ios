@@ -53,11 +53,6 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/ios",
       fail_build: !generate_snapshots
     )
-
-    if generate_snapshots
-      puts "We need to add the new/changed files, commit, and make a new PR"
-      create_snapshot_pr
-    end
   end
 
   desc "Runs all the tvOS tests"
@@ -75,11 +70,6 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/tvos",
       fail_build: !generate_snapshots
     )
-
-    if generate_snapshots
-      puts "We need to add the new/changed files, commit, and make a new PR"
-      create_snapshot_pr
-    end
   end
 
   lane :create_snapshot_pr do
