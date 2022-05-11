@@ -82,7 +82,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testPushTokenWithInvalidTokenDoesNotFail() async throws {
-        Purchases.shared.setPushToken("invalid token".data(using: .utf8))
+        Purchases.shared.setPushToken("invalid token".asData)
 
         let errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1)

@@ -556,7 +556,7 @@ class HTTPClientTests: TestCase {
             expect(requestNumber) == completionCallCount.value
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: .utf8)!,
+            return HTTPStubsResponse(data: json.asData,
                                      statusCode: .success,
                                      headers: nil)
                 .responseTime(0.003)
@@ -630,7 +630,7 @@ class HTTPClientTests: TestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: .utf8)!,
+            return HTTPStubsResponse(data: json.asData,
                                      statusCode: .success,
                                      headers: nil)
                 .responseTime(responseTime)

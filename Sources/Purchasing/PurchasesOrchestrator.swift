@@ -337,7 +337,7 @@ class PurchasesOrchestrator {
 
         if let signedData = promotionalOffer?.signedData {
             Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier))
-            options.insert(try signedData.sk2PurchaseOption)
+            options.insert(signedData.sk2PurchaseOption)
         }
 
         let result: Product.PurchaseResult

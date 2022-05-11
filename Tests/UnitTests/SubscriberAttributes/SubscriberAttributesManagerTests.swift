@@ -288,7 +288,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetPushToken() {
-        let tokenData = "ligai32g32ig".data(using: .utf8)!
+        let tokenData = "ligai32g32ig".asData
         self.subscriberAttributesManager.setPushToken(tokenData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 1
@@ -304,7 +304,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetPushTokenSetsEmptyIfNil() {
-        let tokenData = "ligai32g32ig".data(using: .utf8)!
+        let tokenData = "ligai32g32ig".asData
         self.subscriberAttributesManager.setPushToken(tokenData, appUserID: "kratos")
 
         self.subscriberAttributesManager.setPushToken(nil, appUserID: "kratos")
@@ -320,7 +320,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetPushTokenSkipsIfSameValue() {
-        let tokenData = "ligai32g32ig".data(using: .utf8)!
+        let tokenData = "ligai32g32ig".asData
         let tokenString = (tokenData as NSData).asString()
         self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$apnsTokens",
                                                                                     value: tokenString)
@@ -331,7 +331,7 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     func testSetPushTokenOverwritesIfNewValue() {
-        let tokenData = "ligai32g32ig".data(using: .utf8)!
+        let tokenData = "ligai32g32ig".asData
         let tokenString = (tokenData as NSData).asString()
         let oldSyncTime = Date()
 

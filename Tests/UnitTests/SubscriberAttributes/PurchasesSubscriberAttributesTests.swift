@@ -307,10 +307,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
     func testSetAndClearPushToken() {
         setupPurchases()
-        purchases.setPushToken("atoken".data(using: .utf8))
+        purchases.setPushToken("atoken".asData)
         purchases.setPushToken(nil)
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParametersList[0])
-            .to(equal(("atoken".data(using: .utf8), purchases.appUserID)))
+            .to(equal(("atoken".asData, purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParametersList[1])
             .to(equal((nil, purchases.appUserID)))
     }
@@ -489,8 +489,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
     func testSetPushTokenMakesRightCalls() {
         setupPurchases()
-        let tokenData = Data("ligai32g32ig".data(using: .utf8)!)
-        let tokenString = (tokenData as NSData).asString()
+        let tokenData = "ligai32g32ig".asData
+        let tokenString = tokenData.asString
 
         Purchases.shared.setPushToken(tokenData)
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenCount) == 1
