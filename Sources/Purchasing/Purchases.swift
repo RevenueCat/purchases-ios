@@ -243,8 +243,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      storeKit2Setting: StoreKit2Setting = .default,
-                     storeKitTimeoutSeconds: Int = Configuration.storeKitTimeoutSecondsDefault,
-                     networkTimeoutSeconds: Int = Configuration.networkTimeoutSecondsDefault,
+                     storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
+                     networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil) {
         let operationDispatcher: OperationDispatcher = .default
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
@@ -267,7 +267,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let backend = Backend(apiKey: apiKey,
                               systemInfo: systemInfo,
-                              httpClientTimeoutSeconds: networkTimeoutSeconds,
+                              httpClientTimeout: networkTimeout,
                               eTagManager: eTagManager,
                               attributionFetcher: attributionFetcher)
         let storeKitWrapper = StoreKitWrapper()
@@ -299,7 +299,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let productsRequestFactory = ProductsRequestFactory()
         let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
                                               systemInfo: systemInfo,
-                                              requestTimeout: DispatchTimeInterval.seconds(storeKitTimeoutSeconds))
+                                              requestTimeout: storeKitTimeout)
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -1644,22 +1644,22 @@ public extension Purchases {
      *
      * - Note: Use this initializer if you wish to adjust network request timeouts.
      *
-     * - Parameter configuration: The ``Configuration`` object you wish to use to configure `Purchases`
+     * - Parameter configuration: The ``Configuration`` object you wish to use to configure ``Purchases``
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
-     * - Important: See ``Configuration/ConfigurationBuilder`` for more information about configurable properties.
+     * - Important: See ``Configuration/Builder`` for more information about configurable properties.
      * 
      */
     @objc(configureWithConfiguration:)
-    @discardableResult static func configure(withConfiguration configuration: Configuration) -> Purchases {
+    @discardableResult static func configure(with configuration: Configuration) -> Purchases {
         configure(withAPIKey: configuration.apiKey,
                   appUserID: configuration.appUserID,
                   observerMode: configuration.observerMode,
                   userDefaults: configuration.userDefaults,
                   storeKit2Setting: configuration.storeKit2Setting,
-                  storeKitTimeoutSeconds: configuration.storeKit1TimeoutSeconds,
-                  networkTimeoutSeconds: configuration.networkTimeoutSeconds,
+                  storeKitTimeout: configuration.storeKit1TimeoutSeconds,
+                  networkTimeout: configuration.networkTimeoutSeconds,
                   dangerousSettings: configuration.dangerousSettings)
     }
 
@@ -1850,8 +1850,8 @@ public extension Purchases {
             observerMode: observerMode,
             userDefaults: userDefaults,
             storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
-            storeKitTimeoutSeconds: Configuration.storeKitTimeoutSecondsDefault,
-            networkTimeoutSeconds: Configuration.networkTimeoutSecondsDefault,
+            storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
+            networkTimeout: Configuration.networkTimeoutDefault,
             dangerousSettings: dangerousSettings
         )
     }
@@ -1862,8 +1862,8 @@ public extension Purchases {
                                                       observerMode: Bool,
                                                       userDefaults: UserDefaults?,
                                                       storeKit2Setting: StoreKit2Setting,
-                                                      storeKitTimeoutSeconds: Int,
-                                                      networkTimeoutSeconds: Int,
+                                                      storeKitTimeout: TimeInterval,
+                                                      networkTimeout: TimeInterval,
                                                       dangerousSettings: DangerousSettings?) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                   appUserID: appUserID,
@@ -1871,8 +1871,8 @@ public extension Purchases {
                                   observerMode: observerMode,
                                   platformInfo: nil,
                                   storeKit2Setting: storeKit2Setting,
-                                  storeKitTimeoutSeconds: storeKitTimeoutSeconds,
-                                  networkTimeoutSeconds: networkTimeoutSeconds,
+                                  storeKitTimeout: storeKitTimeout,
+                                  networkTimeout: networkTimeout,
                                   dangerousSettings: dangerousSettings)
         setDefaultInstance(purchases)
         return purchases
@@ -1997,12 +1997,12 @@ internal extension Purchases {
     }
 
     // Used for testing
-    var networkTimeoutSeconds: Int {
-        return self.backend.networkTimeoutSeconds
+    var networkTimeout: TimeInterval {
+        return self.backend.networkTimeout
     }
 
     // Used for testing
-    var storeKitTimeoutSeconds: DispatchTimeInterval {
+    var storeKitTimeout: TimeInterval {
         return self.productsManager.requestTimeout
     }
 

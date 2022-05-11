@@ -20,7 +20,8 @@ import XCTest
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class StoreKitConfigTestCase: TestCase {
 
-    static var requestTimeout: DispatchTimeInterval = .seconds(60)
+    static var requestTimeout = TimeInterval(60)
+    static var requestDispatchTimeout = DispatchTimeInterval.seconds(Int(requestTimeout))
 
     private static var hasWaited = false
     private static let waitLock = Lock()

@@ -8,7 +8,8 @@ class ProductsFetcherSK1Tests: TestCase {
     var productsRequestFactory: MockProductsRequestFactory!
     var productsFetcherSK1: ProductsFetcherSK1!
 
-    private static let defaultTimeout: DispatchTimeInterval = .seconds(5)
+    private static let defaultTimeout = TimeInterval(2)
+    private static let defaultTimeoutInterval = DispatchTimeInterval.seconds(Int(defaultTimeout))
 
     override func setUp() {
         super.setUp()
@@ -34,7 +35,7 @@ class ProductsFetcherSK1Tests: TestCase {
             receivedProducts = products
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeout)
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeoutInterval)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
         expect(unwrappedProducts.count) == productIdentifiers.count
         let receivedProductsSet = Set(unwrappedProducts.map { $0.productIdentifier })
@@ -53,7 +54,7 @@ class ProductsFetcherSK1Tests: TestCase {
             }
         }
 
-        expect(completionCallCount).toEventually(equal(2), timeout: Self.defaultTimeout)
+        expect(completionCallCount).toEventually(equal(2), timeout: Self.defaultTimeoutInterval)
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1))
         expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
     }
@@ -64,7 +65,8 @@ class ProductsFetcherSK1Tests: TestCase {
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
 
-        expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1), timeout: Self.defaultTimeout)
+        expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1),
+                                                                             timeout: Self.defaultTimeoutInterval)
         expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
     }
 
@@ -80,7 +82,8 @@ class ProductsFetcherSK1Tests: TestCase {
 
     func testProductsWithIdentifiersReturnsDoesntMakeNewRequestIfProductIdentifiersEmpty() {
         productsFetcherSK1.sk1Products(withIdentifiers: []) { _ in }
-        expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0), timeout: Self.defaultTimeout)
+        expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0),
+                                                                             timeout: Self.defaultTimeoutInterval)
     }
 
     func testProductsWithIdentifiersReturnsErrorAndEmptySetIfRequestFails() {
@@ -94,7 +97,7 @@ class ProductsFetcherSK1Tests: TestCase {
         let timeout: DispatchTimeInterval = .milliseconds(10)
 
         let fetcher = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
-                                         requestTimeout: timeout)
+                                         requestTimeout: timeout.seconds)
 
         var receivedResult: Result<Set<SK1Product>, Error>?
         var completionCalled = false
@@ -123,7 +126,7 @@ class ProductsFetcherSK1Tests: TestCase {
             receivedProducts = products
         }
 
-        expect(completionCallCount).toEventually(equal(1), timeout: Self.defaultTimeout)
+        expect(completionCallCount).toEventually(equal(1), timeout: Self.defaultTimeoutInterval)
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0))
         try expect(receivedProducts?.get()) == mockProducts
     }
@@ -137,7 +140,7 @@ class ProductsFetcherSK1Tests: TestCase {
         productsRequestFactory.stubbedRequestResult = request
 
         productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
-                                                requestTimeout: tolerance)
+                                                requestTimeout: tolerance.seconds)
 
         var completionCallCount = 0
         var receivedResult: Result<Set<SKProduct>, Error>?
@@ -165,7 +168,7 @@ class ProductsFetcherSK1Tests: TestCase {
         productsRequestFactory.stubbedRequestResult = request
 
         productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
-                                                requestTimeout: tolerance)
+                                                requestTimeout: tolerance.seconds)
 
         var completionCallCount = 0
         var receivedResult: Result<Set<SKProduct>, Error>?

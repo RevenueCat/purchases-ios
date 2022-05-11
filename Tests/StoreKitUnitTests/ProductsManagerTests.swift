@@ -31,7 +31,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             receivedProducts = products
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestDispatchTimeout)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
         expect(unwrappedProducts.count) == 1
 
@@ -57,7 +57,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             receivedProducts = products
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestTimeout)
+        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestDispatchTimeout)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
         expect(unwrappedProducts.count) == 1
 

@@ -31,7 +31,7 @@ BOOL isAnonymous;
 
 + (void)checkAPI {
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
-    [RCPurchases configureWithConfiguration:[[RCConfiguration alloc] init]];
+    [RCPurchases configureWithConfiguration:[[RCConfiguration builderWithAPIKey:@""] build]];
     [RCPurchases configureWithAPIKey:@"" appUserID:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false];

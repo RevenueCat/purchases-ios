@@ -19,7 +19,7 @@ class HTTPClient {
     typealias Completion<Value: HTTPResponseBody> = (HTTPResponse<Value>.Result) -> Void
 
     internal let systemInfo: SystemInfo
-    internal let timeoutSeconds: Int
+    internal let timeout: TimeInterval
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
@@ -30,17 +30,17 @@ class HTTPClient {
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-        timeoutSeconds: Int = Configuration.networkTimeoutSecondsDefault
+        timeoutSeconds: TimeInterval = Configuration.networkTimeoutDefault
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
-        config.timeoutIntervalForRequest = TimeInterval(timeoutSeconds)
-        config.timeoutIntervalForResource = TimeInterval(timeoutSeconds)
+        config.timeoutIntervalForRequest = timeoutSeconds
+        config.timeoutIntervalForResource = timeoutSeconds
         self.session = URLSession(configuration: config)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
         self.dnsChecker = dnsChecker
-        self.timeoutSeconds = timeoutSeconds
+        self.timeout = timeoutSeconds
     }
 
     func perform<Value: HTTPResponseBody>(_ request: HTTPRequest,

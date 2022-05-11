@@ -36,7 +36,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
         mockProductsManager = MockProductsManager(
             systemInfo: mockSystemInfo,
-            requestTimeout: DispatchTimeInterval.seconds(Configuration.storeKitTimeoutSecondsDefault)
+            requestTimeout: Configuration.storeKitRequestTimeoutDefault
         )
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: MockReceiptParser())

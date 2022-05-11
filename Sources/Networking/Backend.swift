@@ -36,13 +36,13 @@ class Backend {
 
     convenience init(apiKey: String,
                      systemInfo: SystemInfo,
-                     httpClientTimeoutSeconds: Int = Configuration.networkTimeoutSecondsDefault,
+                     httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      eTagManager: ETagManager,
                      attributionFetcher: AttributionFetcher,
                      dateProvider: DateProvider = DateProvider()) {
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
-                                    timeoutSeconds: httpClientTimeoutSeconds)
+                                    timeoutSeconds: httpClientTimeout)
         self.init(httpClient: httpClient,
                   apiKey: apiKey,
                   attributionFetcher: attributionFetcher,
@@ -196,8 +196,8 @@ class Backend {
 // Testing extension
 extension Backend {
 
-    var networkTimeoutSeconds: Int {
-        return self.httpClient.timeoutSeconds
+    var networkTimeout: TimeInterval {
+        return self.httpClient.timeout
     }
 
 }

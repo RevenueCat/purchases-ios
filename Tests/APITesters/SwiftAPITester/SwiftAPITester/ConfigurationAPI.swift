@@ -10,7 +10,7 @@ import RevenueCat
 
 func checkConfigurationAPI() {
     let configuration = Configuration
-        .configurationBuilder(withAPIKey: "")
+        .builder(withAPIKey: "")
         .with(apiKey: "")
         .with(appUserID: "")
         .with(observerMode: false)

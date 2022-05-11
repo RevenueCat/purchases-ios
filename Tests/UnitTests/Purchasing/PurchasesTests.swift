@@ -378,14 +378,14 @@ class PurchasesTests: TestCase {
     }
 
     func testConfigurationPassedThroughTimeouts() {
-        let networkTimeoutSeconds = 9
-        let configurationBuilder = Configuration.ConfigurationBuilder(withAPIKey: "")
+        let networkTimeoutSeconds = TimeInterval(9)
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
             .with(networkTimeoutSeconds: networkTimeoutSeconds)
             .with(storeKit1TimeoutSeconds: networkTimeoutSeconds)
-        let purchases = Purchases.configure(withConfiguration: configurationBuilder.build())
+        let purchases = Purchases.configure(with: configurationBuilder.build())
 
-        expect(purchases.networkTimeoutSeconds) == networkTimeoutSeconds
-        expect(purchases.storeKitTimeoutSeconds) == DispatchTimeInterval.seconds(networkTimeoutSeconds)
+        expect(purchases.networkTimeout) == networkTimeoutSeconds
+        expect(purchases.storeKitTimeout) == networkTimeoutSeconds
     }
 
     func testFirstInitializationCallDelegate() {
@@ -1898,8 +1898,8 @@ class PurchasesTests: TestCase {
     }
 
     func testSharedInstanceIsSetWhenConfiguringWithConfiguration() {
-        let configurationBuilder = Configuration.ConfigurationBuilder(withAPIKey: "")
-        let purchases = Purchases.configure(withConfiguration: configurationBuilder.build())
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+        let purchases = Purchases.configure(with: configurationBuilder.build())
         expect(Purchases.shared) === purchases
     }
 

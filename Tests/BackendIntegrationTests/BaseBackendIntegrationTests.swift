@@ -74,7 +74,7 @@ private extension BaseBackendIntegrationTests {
                             userDefaults: userDefaults,
                             storeKit2Setting: Self.storeKit2Setting,
                             storeKitTimeoutSeconds: Configuration.storeKitTimeoutSecondsDefault,
-                            networkTimeoutSeconds: Configuration.networkTimeoutSecondsDefault,
+                            networkTimeoutSeconds: Configuration.networkTimeoutDefault,
                             dangerousSettings: nil)
         Purchases.logLevel = .debug
         Purchases.shared.delegate = purchasesDelegate

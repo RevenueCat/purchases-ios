@@ -41,7 +41,7 @@ class MockHTTPClient: HTTPClient {
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-        timeoutSeconds: Int,
+        timeoutSeconds: TimeInterval,
         sourceTestFile: StaticString = #file
     ) {
         self.sourceTestFile = sourceTestFile

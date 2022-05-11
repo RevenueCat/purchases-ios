@@ -20,17 +20,16 @@ import Foundation
  * To configure your `Purchases` instance using this object, follow these steps.
  *
  * **Steps:**
- * 1. Call ``Configuration/configurationBuilder(withAPIKey:)`` To obtain a ``ConfigurationBuilder`` object.
+ * 1. Call ``Configuration/builder(withAPIKey:)`` To obtain a ``Builder`` object.
  * 2. Set this builder's properties using the "`with(`" functions.
- * 3. Call ``ConfigurationBuilder/build()`` to obtain the `Configuration` object.
- * 4. Pass the `Configuration` object into ``Purchases/configure(withConfiguration:)``.
+ * 3. Call ``Builder/build()`` to obtain the `Configuration` object.
+ * 4. Pass the `Configuration` object into ``Purchases/configure(with:)``.
  *
  */
 @objc(RCConfiguration) public class Configuration: NSObject {
 
-    static let storeKitTimeoutSecondsDefault: Int = 30
-    static let storeKitRequestTimeoutDefault = DispatchTimeInterval.seconds(storeKitTimeoutSecondsDefault)
-    static let networkTimeoutSecondsDefault: Int = 60
+    static let storeKitRequestTimeoutDefault = TimeInterval(30)
+    static let networkTimeoutDefault = TimeInterval(60)
 
     let apiKey: String
     let appUserID: String?
@@ -38,41 +37,29 @@ import Foundation
     let userDefaults: UserDefaults?
     let storeKit2Setting: StoreKit2Setting
     let dangerousSettings: DangerousSettings?
-    let networkTimeoutSeconds: Int
-    let storeKit1TimeoutSeconds: Int
+    let networkTimeoutSeconds: TimeInterval
+    let storeKit1TimeoutSeconds: TimeInterval
 
-    override public init() {
-        fatalError("Use static function configurationBuilder(withAPIKey:) to configure.")
-    }
-
-    private init(withConfigurationBuilder configurationBuilder: ConfigurationBuilder) {
+    private init(with configurationBuilder: Builder) {
         self.apiKey = configurationBuilder.apiKey
         self.appUserID = configurationBuilder.appUserID
         self.observerMode = configurationBuilder.observerMode
         self.userDefaults = configurationBuilder.userDefaults
         self.storeKit2Setting = configurationBuilder.storeKit2Setting
         self.dangerousSettings = configurationBuilder.dangerousSettings
-
-        if configurationBuilder.storeKit1TimeoutSeconds < 5 {
-            self.storeKit1TimeoutSeconds = 5
-        } else {
-            self.storeKit1TimeoutSeconds = configurationBuilder.storeKit1TimeoutSeconds
-        }
-
-        if configurationBuilder.networkTimeoutSeconds < 5 {
-            self.networkTimeoutSeconds = 5
-        } else {
-            self.networkTimeoutSeconds = configurationBuilder.networkTimeoutSeconds
-        }
+        self.storeKit1TimeoutSeconds = configurationBuilder.storeKit1Timeout
+        self.networkTimeoutSeconds = configurationBuilder.networkTimeoutSeconds
     }
 
-    /// Factory method for the ``ConfigurationBuilder`` object that is required to create a `Configuration`
-    @objc public static func configurationBuilder(withAPIKey apiKey: String) -> ConfigurationBuilder {
-        return ConfigurationBuilder(withAPIKey: apiKey)
+    /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
+    @objc public static func builder(withAPIKey apiKey: String) -> Builder {
+        return Builder(withAPIKey: apiKey)
     }
 
     /// The Builder for ```Configuration```.
-    @objc(RCConfigurationBuilder) public class ConfigurationBuilder: NSObject {
+    @objc(RCConfigurationBuilder) public class Builder: NSObject {
+
+        static let minimumTimeout = TimeInterval(5)
 
         private(set) var apiKey: String
         private(set) var appUserID: String?
@@ -80,12 +67,8 @@ import Foundation
         private(set) var userDefaults: UserDefaults?
         private(set) var storeKit2Setting: StoreKit2Setting = .init(useStoreKit2IfAvailable: false)
         private(set) var dangerousSettings: DangerousSettings?
-        private(set) var networkTimeoutSeconds: Int = Configuration.networkTimeoutSecondsDefault
-        private(set) var storeKit1TimeoutSeconds: Int = Configuration.storeKitTimeoutSecondsDefault
-
-        override public init() {
-            fatalError("Use init(withAPIKey:).")
-        }
+        private(set) var networkTimeoutSeconds = Configuration.networkTimeoutDefault
+        private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
 
         /// Create a new builder with your API key.
         @objc public init(withAPIKey apiKey: String) {
@@ -93,56 +76,70 @@ import Foundation
         }
 
         /// Update your API key.
-        @objc public func with(apiKey: String) -> ConfigurationBuilder {
+        @objc public func with(apiKey: String) -> Builder {
             self.apiKey = apiKey
             return self
         }
 
-        /// Set or update an `appUserID`.
-        @objc public func with(appUserID: String) -> ConfigurationBuilder {
+        /// Set an `appUserID`.
+        @objc public func with(appUserID: String) -> Builder {
             self.appUserID = appUserID
             return self
         }
 
-        /// Set or update `observerMode`.
-        @objc public func with(observerMode: Bool) -> ConfigurationBuilder {
+        /// Set `observerMode`.,
+        @objc public func with(observerMode: Bool) -> Builder {
             self.observerMode = observerMode
             return self
         }
 
-        /// Set or update `userDefaults`.
-        @objc public func with(userDefaults: UserDefaults) -> ConfigurationBuilder {
+        /// Set `userDefaults`.
+        @objc public func with(userDefaults: UserDefaults) -> Builder {
             self.userDefaults = userDefaults
             return self
         }
 
-        /// Set or update `usesStoreKit2IfAvailable`.
-        @objc public func with(usesStoreKit2IfAvailable: Bool) -> ConfigurationBuilder {
+        /// Set `usesStoreKit2IfAvailable`.
+        @objc public func with(usesStoreKit2IfAvailable: Bool) -> Builder {
             self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
             return self
         }
 
-        /// Set or update `dangerousSettings`.
-        @objc public func with(dangerousSettings: DangerousSettings) -> ConfigurationBuilder {
+        /// Set `dangerousSettings`.
+        @objc public func with(dangerousSettings: DangerousSettings) -> Builder {
             self.dangerousSettings = dangerousSettings
             return self
         }
 
-        /// Set or update `networkTimeoutSeconds`.
-        @objc public func with(networkTimeoutSeconds: Int) -> ConfigurationBuilder {
-            self.networkTimeoutSeconds = networkTimeoutSeconds
+        /// Set `networkTimeoutSeconds`.
+        @objc public func with(networkTimeoutSeconds: TimeInterval) -> Builder {
+            self.networkTimeoutSeconds = valueOrMinimum(timeout: networkTimeoutSeconds)
             return self
         }
 
-        /// Set or update `storeKit1TimeoutSeconds`.
-        @objc public func with(storeKit1TimeoutSeconds: Int) -> ConfigurationBuilder {
-            self.storeKit1TimeoutSeconds = storeKit1TimeoutSeconds
+        /// Set `storeKit1Timeout`.
+        @objc public func with(storeKit1TimeoutSeconds: TimeInterval) -> Builder {
+            self.storeKit1Timeout = valueOrMinimum(timeout: storeKit1TimeoutSeconds)
             return self
         }
 
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> Configuration {
-            return Configuration(withConfigurationBuilder: self)
+            return Configuration(with: self)
+        }
+
+        private func valueOrMinimum(timeout: TimeInterval) -> TimeInterval {
+            guard timeout >= Self.minimumTimeout else {
+                Logger.warn(
+                    """
+                    Timeout value: \(timeout) is lower than the minimum, setting it
+                    to the mimimum: (\(Self.minimumTimeout))
+                    """
+                )
+                return Self.minimumTimeout
+            }
+
+            return timeout
         }
 
     }

@@ -12,7 +12,7 @@
 @implementation RCConfigurationAPI
 
 + (void)checkAPI {
-    RCConfigurationBuilder *builder = [RCConfiguration configurationBuilderWithAPIKey:@""];
+    RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
     RCConfiguration *config = [[[[[[[[[builder withApiKey:@""]
                                       withObserverMode:false]
                                      withUserDefaults:NSUserDefaults.standardUserDefaults]
