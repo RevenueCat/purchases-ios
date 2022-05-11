@@ -25,6 +25,16 @@ import Foundation
  * 3. Call ``Builder/build()`` to obtain the `Configuration` object.
  * 4. Pass the `Configuration` object into ``Purchases/configure(with:)``.
  *
+ * ```swift
+ * let configuration = Configuration.Builder(withAPIKey: "MyKey")
+ *                                  .with(appUserID: "SomeAppUserID")
+ *                                  .with(userDefaults: myUserDefaults)
+ *                                  .with(networkTimeoutSeconds: 15)
+ *                                  .with(storeKit1TimeoutSeconds: 15)
+ *                                  .with(usesStoreKit2IfAvailable: true)
+ *                                  .build()
+ *  Purchases.configure(with: configuration)
+ * ```
  */
 @objc(RCConfiguration) public class Configuration: NSObject {
 
