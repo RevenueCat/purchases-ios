@@ -19,8 +19,8 @@ extension PurchaseOwnershipType: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         guard let purchaseOwnershipTypeString = try? container.decode(String.self) else {
-            throw decoder.throwValueNotFoundError(expectedType: PurchaseOwnershipType.self,
-                                                  message: "Unable to extract an purchaseOwnershipTypeString")
+            throw decoder.valueNotFoundError(expectedType: PurchaseOwnershipType.self,
+                                             message: "Unable to extract an purchaseOwnershipTypeString")
         }
 
         if let type = Self.mapping[purchaseOwnershipTypeString] {
