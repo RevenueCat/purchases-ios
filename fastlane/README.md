@@ -50,6 +50,14 @@ Runs all the iOS tests
 
 Runs all the tvOS tests
 
+### ios create_snapshot_pr
+
+```sh
+[bundle exec] fastlane ios create_snapshot_pr
+```
+
+
+
 ### ios replace_version_number
 
 ```sh
