@@ -278,6 +278,58 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  run-generate-snapshots:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - install-and-create-sim:
+          install-name: iOS 15.2 Simulator
+          sim-device-type: iPhone-13
+          sim-device-runtime: iOS-15-2
+          sim-name: iPhone 13 (15.2)
+      - install-and-create-sim:
+          install-name: iOS 13.7 Simulator
+          sim-device-type: iPhone-8
+          sim-device-runtime: iOS-13-7
+          sim-name: iPhone 8 (13.7)
+      - install-and-create-sim:
+          install-name: iOS 12.4 Simulator
+          sim-device-type: iPhone-6
+          sim-device-runtime: iOS-12-4
+          sim-name: iPhone 6 (12.4)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
+          environment:
+            SCAN_DEVICE: iPhone 13 (15.2)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
+          environment:
+            SCAN_DEVICE: iPhone 8 (14.5)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
+          environment:
+            SCAN_DEVICE: iPhone 8 (13.7)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
+          environment:
+            SCAN_DEVICE: iPhone 6 (12.4)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_tvos
+          no_output_timeout: 30m
+      - run:
+          name: Run create_snapshot_pr
+          command: bundle exec fastlane create_snapshot_pr
+
   build-tv-watch-and-macos:
     <<: *base-job
     steps:
@@ -445,7 +497,7 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      - run-test-ios-12:
+      - run-generate-snapshots:
           xcode_version: '13.3.1'
   build-test:
     when:
