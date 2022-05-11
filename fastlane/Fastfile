@@ -40,6 +40,8 @@ platform :ios do
 
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+
     scan(
       step_name: "scan - iPhone", 
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
@@ -48,12 +50,20 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
-      output_directory: "fastlane/test_output/xctest/ios"
+      output_directory: "fastlane/test_output/xctest/ios",
+      fail_build: !generate_snapshots
     )
+
+    if generate_snapshots
+      puts "We need to add the new/changed files, commit, and make a new PR"
+      create_snapshot_pr
+    end
   end
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+
     scan(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV (15.2)",
@@ -62,7 +72,31 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
-      output_directory: "fastlane/test_output/xctest/tvos"
+      output_directory: "fastlane/test_output/xctest/tvos",
+      fail_build: !generate_snapshots
+    )
+
+    if generate_snapshots
+      puts "We need to add the new/changed files, commit, and make a new PR"
+      create_snapshot_pr
+    end
+  end
+
+  lane :create_snapshot_pr do
+    some_version = ENV["CIRCLE_BUILD_NUM"]
+    branch_name = "generated_snapshots/#{some_version}"
+    sh("git", "checkout", "-b", branch_name)
+
+    sh("git", "add", "../Tests")
+    sh("git", "commit", "-m", "Generating new test snapshots")
+    push_to_git_remote
+
+    create_pull_request(
+      repo: "revenuecat/purchases-ios",
+      title: "Generating new test snapshots",
+      base: "main",
+      api_token: ENV["GITHUB_TOKEN"],
+      head: branch_name
     )
   end
 

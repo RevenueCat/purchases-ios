@@ -3,6 +3,11 @@ orbs:
 
 version: 2.1
 
+parameters:
+  generate_snapshots:
+    default: false
+    type: boolean
+
 aliases:
   base-job: &base-job
     resource_class: macos.x86.medium.gen2
@@ -11,6 +16,8 @@ aliases:
     parameters:
       xcode_version:
         type: string
+    environment:
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >> 
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
   release-tags-and-branches: &release-tags-and-branches
@@ -435,7 +442,14 @@ jobs:
 
 workflows:
   version: 2
+  generate-snapshot:
+    when: << pipeline.parameters.generate_snapshots >>
+    jobs:
+      - run-test-ios-12:
+          xcode_version: '13.3.1'
   build-test:
+    when:
+      not: << pipeline.parameters.generate_snapshots >>
     jobs:
       - lint:
           xcode_version: '13.3.1'
