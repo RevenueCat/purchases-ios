@@ -21,7 +21,9 @@ import XCTest
 class StoreKitConfigTestCase: TestCase {
 
     static var requestTimeout: TimeInterval = 60
-    static var requestDispatchTimeout = DispatchTimeInterval.seconds(Int(requestTimeout))
+    static var requestDispatchTimeout: DispatchTimeInterval {
+        return .seconds(Int(Self.requestTimeout))
+    }
 
     private static var hasWaited = false
     private static let waitLock = Lock()

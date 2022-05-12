@@ -16,7 +16,7 @@ struct HTTPRequest {
 
     let method: Method
     let path: Path
-    let timeoutSeconds = Configuration.networkTimeoutDefault
+    let timeout: TimeInterval
 
 }
 

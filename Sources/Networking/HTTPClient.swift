@@ -30,17 +30,17 @@ class HTTPClient {
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-        timeoutSeconds: TimeInterval = Configuration.networkTimeoutDefault
+        requestTimeout: TimeInterval = Configuration.networkTimeoutDefault
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
-        config.timeoutIntervalForRequest = timeoutSeconds
-        config.timeoutIntervalForResource = timeoutSeconds
+        config.timeoutIntervalForRequest = requestTimeout
+        config.timeoutIntervalForResource = requestTimeout
         self.session = URLSession(configuration: config)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
         self.dnsChecker = dnsChecker
-        self.timeout = timeoutSeconds
+        self.timeout = requestTimeout
     }
 
     func perform<Value: HTTPResponseBody>(_ request: HTTPRequest,

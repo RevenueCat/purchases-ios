@@ -1642,8 +1642,6 @@ public extension Purchases {
      * The instance will be set as a singleton.
      * You should access the singleton instance using ``Purchases/shared``
      *
-     * - Note: Use this initializer if you wish to adjust network request timeouts.
-     *
      * - Parameter configuration: The ``Configuration`` object you wish to use to configure ``Purchases``
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.

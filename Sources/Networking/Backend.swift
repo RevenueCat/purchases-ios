@@ -42,7 +42,7 @@ class Backend {
                      dateProvider: DateProvider = DateProvider()) {
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
-                                    timeoutSeconds: httpClientTimeout)
+                                    requestTimeout: httpClientTimeout)
         self.init(httpClient: httpClient,
                   apiKey: apiKey,
                   attributionFetcher: attributionFetcher,

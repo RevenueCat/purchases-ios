@@ -49,7 +49,8 @@ private extension LogInOperation {
 
         let request = HTTPRequest(method: .post(Body(appUserID: self.configuration.appUserID,
                                                      newAppUserID: newAppUserID)),
-                                  path: .logIn)
+                                  path: .logIn,
+                                  timeout: httpClient.timeout)
 
         self.httpClient.perform(request,
                                 authHeaders: self.authHeaders) { (response: HTTPResponse<CustomerInfo>.Result) in

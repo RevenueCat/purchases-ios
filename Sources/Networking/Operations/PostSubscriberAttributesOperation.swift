@@ -49,7 +49,8 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         }
 
         let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)),
-                                  path: .postSubscriberAttributes(appUserID: appUserID))
+                                  path: .postSubscriberAttributes(appUserID: appUserID),
+                                  timeout: httpClient.timeout)
 
         httpClient.perform(request,
                            authHeaders: self.authHeaders) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
