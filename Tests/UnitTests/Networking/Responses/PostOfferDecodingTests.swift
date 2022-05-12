@@ -33,7 +33,11 @@ class PostOfferDecodingTests: BaseHTTPResponseTest {
         expect(offer.keyIdentifier) == "C815358F"
         expect(offer.offerIdentifier) == "com.revenuecat.monthly_4.99.1_free_week"
         expect(offer.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
-        expect(offer.signatureError).to(beNil())
+
+        let error = try XCTUnwrap(offer.signatureError)
+        expect(error.code) == .invalidAppleSubscriptionKey
+        expect(error.message) == "Ineligible for some reason"
+        expect(error.attributeErrors).to(beEmpty())
 
         let signature = try XCTUnwrap(offer.signatureData)
         expect(signature.nonce) == UUID(uuidString: "aea2714d-37cb-4a40-b3fa-3a39cf2ac4ed")

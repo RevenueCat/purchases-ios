@@ -9,7 +9,10 @@
                 "signature": "MEUCIQDDMArMh1PHNa75EZ49ntaNoqLIE7ueO8gjcdFYVbe57wIgLO+7M9AeIMUVMybj8ir982nDo6CfDFjTuqd5YSm8NG4=",
                 "timestamp": 1646761777900
             },
-            "signature_error": null
+            "signature_error": {
+                "code": 7234,
+                "message": "Ineligible for some reason"
+            }
         }
     ]
 }
