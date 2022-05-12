@@ -38,8 +38,8 @@ import Foundation
  */
 @objc(RCConfiguration) public class Configuration: NSObject {
 
-    static let storeKitRequestTimeoutDefault = TimeInterval(30)
-    static let networkTimeoutDefault = TimeInterval(60)
+    static let storeKitRequestTimeoutDefault: TimeInterval = 30
+    static let networkTimeoutDefault: TimeInterval = 60
 
     let apiKey: String
     let appUserID: String?
@@ -50,15 +50,15 @@ import Foundation
     let networkTimeoutSeconds: TimeInterval
     let storeKit1TimeoutSeconds: TimeInterval
 
-    private init(with configurationBuilder: Builder) {
-        self.apiKey = configurationBuilder.apiKey
-        self.appUserID = configurationBuilder.appUserID
-        self.observerMode = configurationBuilder.observerMode
-        self.userDefaults = configurationBuilder.userDefaults
-        self.storeKit2Setting = configurationBuilder.storeKit2Setting
-        self.dangerousSettings = configurationBuilder.dangerousSettings
-        self.storeKit1TimeoutSeconds = configurationBuilder.storeKit1Timeout
-        self.networkTimeoutSeconds = configurationBuilder.networkTimeoutSeconds
+    private init(with builder: Builder) {
+        self.apiKey = builder.apiKey
+        self.appUserID = builder.appUserID
+        self.observerMode = builder.observerMode
+        self.userDefaults = builder.userDefaults
+        self.storeKit2Setting = builder.storeKit2Setting
+        self.dangerousSettings = builder.dangerousSettings
+        self.storeKit1TimeoutSeconds = builder.storeKit1Timeout
+        self.networkTimeoutSeconds = builder.networkTimeoutSeconds
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -69,7 +69,7 @@ import Foundation
     /// The Builder for ```Configuration```.
     @objc(RCConfigurationBuilder) public class Builder: NSObject {
 
-        static let minimumTimeout = TimeInterval(5)
+        private static let minimumTimeout: TimeInterval = 5
 
         private(set) var apiKey: String
         private(set) var appUserID: String?
@@ -123,13 +123,13 @@ import Foundation
 
         /// Set `networkTimeoutSeconds`.
         @objc public func with(networkTimeoutSeconds: TimeInterval) -> Builder {
-            self.networkTimeoutSeconds = valueOrMinimum(timeout: networkTimeoutSeconds)
+            self.networkTimeoutSeconds = clamped(timeout: networkTimeoutSeconds)
             return self
         }
 
         /// Set `storeKit1Timeout`.
         @objc public func with(storeKit1TimeoutSeconds: TimeInterval) -> Builder {
-            self.storeKit1Timeout = valueOrMinimum(timeout: storeKit1TimeoutSeconds)
+            self.storeKit1Timeout = clamped(timeout: storeKit1TimeoutSeconds)
             return self
         }
 
@@ -138,7 +138,7 @@ import Foundation
             return Configuration(with: self)
         }
 
-        private func valueOrMinimum(timeout: TimeInterval) -> TimeInterval {
+        private func clamped(timeout: TimeInterval) -> TimeInterval {
             guard timeout >= Self.minimumTimeout else {
                 Logger.warn(
                     """

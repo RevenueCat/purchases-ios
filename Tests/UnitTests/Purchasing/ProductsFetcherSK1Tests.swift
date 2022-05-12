@@ -8,8 +8,8 @@ class ProductsFetcherSK1Tests: TestCase {
     var productsRequestFactory: MockProductsRequestFactory!
     var productsFetcherSK1: ProductsFetcherSK1!
 
-    private static let defaultTimeout = TimeInterval(2)
-    private static let defaultTimeoutInterval = DispatchTimeInterval.seconds(Int(defaultTimeout))
+    private static let defaultTimeout: TimeInterval = 2
+    private static let defaultTimeoutInterval = DispatchTimeInterval.milliseconds(Int(defaultTimeout * 1000))
 
     override func setUp() {
         super.setUp()
