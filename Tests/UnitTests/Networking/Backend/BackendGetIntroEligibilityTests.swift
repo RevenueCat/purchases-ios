@@ -24,14 +24,16 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
+        var error: NSError??
+
         backend.getIntroEligibility(appUserID: Self.userID,
                                     receiptData: Data(),
-                                    productIdentifiers: [],
-                                    completion: { _, error in
-            expect(error).to(beNil())
-        })
+                                    productIdentifiers: []) {
+            error = $1 as NSError?
+        }
 
-        expect(self.httpClient.calls.count).to(equal(0))
+        expect(error).toEventually(equal(.some(nil)))
+        expect(self.httpClient.calls.count) == 0
     }
 
     func testPostsProductIdentifiers() throws {
