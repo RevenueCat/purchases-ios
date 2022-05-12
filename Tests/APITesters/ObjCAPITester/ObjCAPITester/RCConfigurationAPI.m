@@ -18,8 +18,8 @@
                                      withUserDefaults:NSUserDefaults.standardUserDefaults]
                                     withAppUserID:@""]
                                    withDangerousSettings:[[RCDangerousSettings alloc] init]]
-                                  withNetworkTimeoutSeconds:1]
-                                 withStoreKit1TimeoutSeconds: 1]
+                                  withNetworkTimeout:1]
+                                 withStoreKit1Timeout: 1]
                                 withUsesStoreKit2IfAvailable:false] build];
     NSLog(@"%@", config);
 }

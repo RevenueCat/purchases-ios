@@ -378,8 +378,8 @@ class PurchasesTests: TestCase {
     func testConfigurationPassedThroughTimeouts() {
         let networkTimeoutSeconds: TimeInterval = 9
         let configurationBuilder = Configuration.Builder(withAPIKey: "")
-            .with(networkTimeoutSeconds: networkTimeoutSeconds)
-            .with(storeKit1TimeoutSeconds: networkTimeoutSeconds)
+            .with(networkTimeout: networkTimeoutSeconds)
+            .with(storeKit1Timeout: networkTimeoutSeconds)
         let purchases = Purchases.configure(with: configurationBuilder.build())
 
         expect(purchases.networkTimeout) == networkTimeoutSeconds
