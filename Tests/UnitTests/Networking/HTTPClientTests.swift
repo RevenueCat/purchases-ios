@@ -415,7 +415,7 @@ class HTTPClientTests: TestCase {
 
     #if os(macOS) || targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifierWhenIsSandbox() {
-        let request = HTTPRequest(method: .get, path: .mockPath, timeoutSeconds: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
         systemInfo.stubbedIsSandbox = true
