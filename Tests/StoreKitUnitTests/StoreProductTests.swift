@@ -59,6 +59,21 @@ class StoreProductTests: StoreKitConfigTestCase {
         expectEqualProducts(product, StoreProduct.from(product: product))
     }
 
+    func testSK1DiscountWithNoLocale() throws {
+        let discount = MockSKProductDiscountWithNoPriceLocale()
+        discount.mockPrice = 2.0
+
+        let product = MockSK1Product(mockProductIdentifier: "product")
+        product.mockDiscount = discount
+
+        let storeProduct = StoreProduct(sk1Product: product)
+        expect(storeProduct.discounts).to(haveCount(1))
+
+        let storeDiscount = try XCTUnwrap(storeProduct.discounts.first)
+        expect(storeDiscount.currencyCode).to(beNil())
+        expect(storeDiscount.localizedPriceString) == "$2.00"
+    }
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2AndStoreProductDetailsAreEquivalent() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()

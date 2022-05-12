@@ -29,7 +29,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         } else {
             self.offerIdentifier = nil
         }
-        self.currencyCode = sk1Discount.priceLocale.currencyCode
+        self.currencyCode = sk1Discount.optionalLocale?.currencyCode
         self.price = sk1Discount.price as Decimal
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
@@ -48,13 +48,15 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
     let type: StoreProductDiscount.DiscountType
 
     var localizedPriceString: String {
-        return priceFormatter?.string(from: self.underlyingSK1Discount.price) ?? ""
+        return self.priceFormatter.string(from: self.underlyingSK1Discount.price) ?? ""
     }
 
     private let priceFormatterProvider: PriceFormatterProvider = .init()
 
-    private var priceFormatter: NumberFormatter? {
-        return priceFormatterProvider.priceFormatterForSK1(with: self.underlyingSK1Discount.priceLocale)
+    private var priceFormatter: NumberFormatter {
+        return self.priceFormatterProvider.priceFormatterForSK1(
+            with: self.underlyingSK1Discount.optionalLocale ?? .current
+        )
     }
 
 }

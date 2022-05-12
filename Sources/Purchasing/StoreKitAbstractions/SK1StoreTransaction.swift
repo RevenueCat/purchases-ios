@@ -73,15 +73,4 @@ extension SKPaymentTransaction {
         return self.paymentIfPresent?.quantity ?? 1
     }
 
-    /// Considering issue https://github.com/RevenueCat/purchases-ios/issues/279, sometimes `payment`
-    /// and `productIdentifier` can be `nil`, in this case, they must be treated as nullable.
-    /// Due to that an optional reference is created so that the compiler would allow us to check for nullability.
-    private var paymentIfPresent: SKPayment? {
-        guard let payment = self.payment as SKPayment? else {
-            Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
-            return nil
-        }
-
-        return payment
-    }
 }
