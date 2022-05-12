@@ -32,7 +32,8 @@ class OfferingsManagerTests: TestCase {
         super.setUp()
 
         mockDeviceCache = MockDeviceCache(systemInfo: mockSystemInfo)
-        mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
+        mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo,
+                                                  requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         offeringsManager = OfferingsManager(deviceCache: mockDeviceCache,
                                             operationDispatcher: mockOperationDispatcher,
                                             systemInfo: mockSystemInfo,

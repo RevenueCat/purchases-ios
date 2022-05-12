@@ -38,7 +38,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         try setUpSystemInfo()
-        productsManager = MockProductsManager(systemInfo: systemInfo)
+        productsManager = MockProductsManager(systemInfo: systemInfo,
+                                              requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         operationDispatcher = MockOperationDispatcher()
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo)
         deviceCache = MockDeviceCache(systemInfo: systemInfo)

@@ -34,7 +34,8 @@ class HTTPClientTests: TestCase {
         client = HTTPClient(
             systemInfo: systemInfo,
             eTagManager: eTagManager,
-            dnsChecker: MockDNSChecker.self
+            dnsChecker: MockDNSChecker.self,
+            requestTimeout: 3
         )
     }
 
@@ -706,7 +707,8 @@ class HTTPClientTests: TestCase {
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path),
+                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             completionCalled.value = true
         }
 

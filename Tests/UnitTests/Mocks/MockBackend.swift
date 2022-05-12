@@ -34,7 +34,7 @@ class MockBackend: Backend {
         let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
-        self.init(httpClient: MockHTTPClient(systemInfo: systemInfo, eTagManager: MockETagManager()),
+        self.init(httpClient: MockHTTPClient(systemInfo: systemInfo, eTagManager: MockETagManager(), requestTimeout: 7),
                   apiKey: "mockAPIKey",
                   attributionFetcher: attributionFetcher,
                   dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))

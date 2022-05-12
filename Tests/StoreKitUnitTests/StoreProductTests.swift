@@ -91,7 +91,7 @@ class StoreProductTests: StoreKitConfigTestCase {
             result = products
         }
 
-        expect(result).toEventuallyNot(beNil(), timeout: Self.requestTimeout + .seconds(5))
+        expect(result).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout + .seconds(5))
 
         let products = try result.get()
         expect(products).to(haveCount(1))
@@ -233,7 +233,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         await changeStorefront("ESP")
 
-        var sk1Fetcher = ProductsFetcherSK1()
+        var sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
 
         var storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
@@ -253,7 +253,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         // Note: this test passes only because the fetcher is recreated
         // therefore clearing the cache. `ProductsFetcherSK1` does not
         // detect Storefront changes to invalidate the cache like `ProductsFetcherSK2` does.
-        sk1Fetcher = ProductsFetcherSK1()
+        sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
 
         storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 

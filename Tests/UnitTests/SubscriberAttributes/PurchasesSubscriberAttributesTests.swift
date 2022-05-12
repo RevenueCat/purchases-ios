@@ -76,7 +76,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
         ]
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockReceiptParser = MockReceiptParser()
-        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
+        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo,
+                                                       requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                              receiptParser: mockReceiptParser)
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")

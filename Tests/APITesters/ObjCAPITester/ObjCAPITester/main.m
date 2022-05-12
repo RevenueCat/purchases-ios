@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "RCAttributionNetworkAPI.h"
+#import "RCConfigurationAPI.h"
 #import "RCCustomerInfoAPI.h"
 #import "RCEntitlementInfoAPI.h"
 #import "RCEntitlementInfosAPI.h"
@@ -51,6 +52,8 @@ int main(int argc, const char * argv[]) {
         [RCPurchasesAPI checkAPI];
         [RCPurchasesAPI checkConstants];
         [RCPurchasesAPI checkEnums];
+
+        [RCConfigurationAPI checkAPI];
 
         [RCPurchasesErrorCodeAPI checkEnums];
 
