@@ -12,7 +12,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ReceiptParsingRealReceiptTests: XCTestCase {
+class ReceiptParsingRealReceiptTests: TestCase {
 
     let receipt1Name = "base64encodedreceiptsample1"
 

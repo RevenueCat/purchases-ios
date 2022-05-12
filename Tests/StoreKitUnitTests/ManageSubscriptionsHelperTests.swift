@@ -19,7 +19,7 @@ import XCTest
 
 #if os(macOS) || os(iOS)
 
-class ManageSubscriptionsHelperTests: XCTestCase {
+class ManageSubscriptionsHelperTests: TestCase {
 
     private var systemInfo: MockSystemInfo!
     private var customerInfoManager: MockCustomerInfoManager!

@@ -9,7 +9,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class NSDataExtensionsTests: XCTestCase {
+class NSDataExtensionsTests: TestCase {
 
     func testAsString() {
         let data = Data([

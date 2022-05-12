@@ -13,7 +13,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class OfferingsTests: XCTestCase {
+class OfferingsTests: TestCase {
 
     private let offeringsFactory = OfferingsFactory()
 

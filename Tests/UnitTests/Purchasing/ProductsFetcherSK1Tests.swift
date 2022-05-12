@@ -4,7 +4,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ProductsFetcherSK1Tests: XCTestCase {
+class ProductsFetcherSK1Tests: TestCase {
     var productsRequestFactory: MockProductsRequestFactory!
     var productsFetcherSK1: ProductsFetcherSK1!
 

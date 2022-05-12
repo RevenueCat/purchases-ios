@@ -18,7 +18,7 @@ import StoreKitTest
 import XCTest
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
-class StoreKitConfigTestCase: XCTestCase {
+class StoreKitConfigTestCase: TestCase {
 
     static var requestTimeout: DispatchTimeInterval = .seconds(60)
 

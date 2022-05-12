@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class AtomicTests: XCTestCase {
+class AtomicTests: TestCase {
     func testInitialValue() {
         let value = Int.random(in: 0..<100)
         let atomic = Atomic(value)

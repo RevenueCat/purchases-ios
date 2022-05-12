@@ -16,7 +16,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-class SKPaymentTransactionExtensionsTests: XCTestCase {
+class SKPaymentTransactionExtensionsTests: TestCase {
 
     func testNilProductIdentifierIfPaymentIsMissing() {
         let transaction = SKPaymentTransaction()

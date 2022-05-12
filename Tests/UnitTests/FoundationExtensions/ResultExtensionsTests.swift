@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ResultExtensionsTests: XCTestCase {
+class ResultExtensionsTests: TestCase {
 
     func testValue() {
         expect(Data.success("test").value) == "test"
@@ -48,7 +48,7 @@ class ResultExtensionsTests: XCTestCase {
 
 }
 
-class ResultAsOptionalResultTest: XCTestCase {
+class ResultAsOptionalResultTest: TestCase {
 
     private typealias Data = Result<String?, ResultExtensionsTests.Error>
     private typealias OptionalData = Result<String, ResultExtensionsTests.Error>?

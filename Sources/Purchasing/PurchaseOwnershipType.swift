@@ -35,3 +35,9 @@ import Foundation
 }
 
 extension PurchaseOwnershipType: CaseIterable {}
+
+extension PurchaseOwnershipType: DefaultValueProvider {
+
+    static let defaultValue: Self = .purchased
+
+}

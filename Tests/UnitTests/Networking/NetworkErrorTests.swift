@@ -93,7 +93,7 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
 
 }
 
-class NetworkErrorTests: XCTestCase {
+class NetworkErrorTests: TestCase {
 
     func testSuccessfullySyncedTrue() {
         let errors = [

@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class DNSCheckerTests: XCTestCase {
+class DNSCheckerTests: TestCase {
 
     private let apiURL = URL(string: "https://api.revenuecat.com")!
     private let fakeSubscribersURL1 = URL(string: "https://0.0.0.0/subscribers")!

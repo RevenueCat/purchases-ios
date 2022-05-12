@@ -4,7 +4,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class ProductRequestDataTests: XCTestCase {
+class ProductRequestDataTests: TestCase {
 
     func testAsDictionaryConvertsProductIdentifierCorrectly() throws {
         let productIdentifier = "cool_product"

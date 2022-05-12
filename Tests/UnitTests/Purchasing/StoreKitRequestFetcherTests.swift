@@ -12,7 +12,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class StoreKitRequestFetcherTests: XCTestCase {
+class StoreKitRequestFetcherTests: TestCase {
 
     class MockReceiptRequest: SKReceiptRefreshRequest {
         // swiftlint:disable:next nesting

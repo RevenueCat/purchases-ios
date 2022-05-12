@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class BackendSubscriberAttributesTests: XCTestCase {
+class BackendSubscriberAttributesTests: TestCase {
 
     let appUserID = "abc123"
     let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
@@ -69,14 +69,6 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                                    dateProvider: dateProvider)
 
         try super.setUpWithError()
-    }
-
-    override class func setUp() {
-        XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
-    }
-
-    override class func tearDown() {
-        XCTestObservationCenter.shared.removeTestObserver(CurrentTestCaseTracker.shared)
     }
 
     // MARK: PostReceipt with subscriberAttributes

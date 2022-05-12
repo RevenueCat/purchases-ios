@@ -17,7 +17,7 @@ import XCTest
 import Nimble
 @testable import RevenueCat
 
-class ReceiptFetcherTests: XCTestCase {
+class ReceiptFetcherTests: TestCase {
     var receiptFetcher: ReceiptFetcher!
     var mockRequestFetcher: MockRequestFetcher!
     var mockBundle: MockBundle!
