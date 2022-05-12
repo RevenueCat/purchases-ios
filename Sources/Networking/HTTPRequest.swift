@@ -16,7 +16,6 @@ struct HTTPRequest {
 
     let method: Method
     let path: Path
-    let timeout: TimeInterval
 
 }
 

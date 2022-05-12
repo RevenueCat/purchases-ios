@@ -45,8 +45,7 @@ class PostAttributionDataOperation: NetworkOperation {
         }
 
         let request = HTTPRequest(method: .post(Body(network: self.network, attributionData: self.attributionData)),
-                                  path: .postAttributionData(appUserID: appUserID),
-                                  timeout: httpClient.timeout)
+                                  path: .postAttributionData(appUserID: appUserID))
 
         self.httpClient.perform(
             request,

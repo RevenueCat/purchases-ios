@@ -84,8 +84,7 @@ private extension GetIntroEligibilityOperation {
 
         let request = HTTPRequest(method: .post(Body(productIdentifiers: self.productIdentifiers,
                                                      fetchToken: self.receiptData.asFetchToken)),
-                                  path: .getIntroEligibility(appUserID: appUserID),
-                                  timeout: httpClient.timeout)
+                                  path: .getIntroEligibility(appUserID: appUserID))
 
         httpClient.perform(request, authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
             let eligibilityResponse = IntroEligibilityResponse(result: response.mapError { $0.asPurchasesError },

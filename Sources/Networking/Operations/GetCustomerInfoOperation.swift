@@ -59,8 +59,7 @@ private extension GetCustomerInfoOperation {
         }
 
         let request = HTTPRequest(method: .get,
-                                  path: .getCustomerInfo(appUserID: appUserID),
-                                  timeout: httpClient.timeout)
+                                  path: .getCustomerInfo(appUserID: appUserID))
 
         httpClient.perform(
             request,

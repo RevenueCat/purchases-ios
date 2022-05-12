@@ -44,7 +44,7 @@ private extension GetOfferingsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID), timeout: httpClient.timeout)
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
         httpClient.perform(request,
                            authHeaders: self.authHeaders) { (response: HTTPResponse<OfferingsResponse>.Result) in

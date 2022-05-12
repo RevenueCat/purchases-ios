@@ -49,8 +49,7 @@ private extension CreateAliasOperation {
         Logger.user(Strings.identity.creating_alias)
 
         let request = HTTPRequest(method: .post(Body(newAppUserID: newAppUserID)),
-                                  path: .createAlias(appUserID: appUserID),
-                                  timeout: httpClient.timeout)
+                                  path: .createAlias(appUserID: appUserID))
 
         httpClient.perform(request,
                            authHeaders: self.authHeaders) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in

@@ -54,7 +54,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: 0.1)
+        let request = HTTPRequest(method: .get, path: .mockPath)
         self.client.perform(request, authHeaders: [:]) { (_: EmptyResponse) in }
 
         expect(hostCorrect.value).toEventually(equal(true), timeout: .seconds(1))
@@ -68,7 +68,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
         self.client.perform(request,
                             authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in
         }
@@ -84,7 +84,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
 
@@ -99,7 +99,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
 
@@ -114,7 +114,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
 
@@ -129,7 +129,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
 
@@ -137,7 +137,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testCallsTheGivenPath() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let pathHit: Atomic<Bool> = .init(false)
 
@@ -161,7 +161,7 @@ class HTTPClientTests: TestCase {
             pathHit.value = true
             return .emptySuccessResponse
         }
-        let request = HTTPRequest(method: .post(body), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post(body), path: .mockPath)
 
         self.client.perform(request, authHeaders: [:]) { (_: EmptyResponse) in }
 
@@ -169,7 +169,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testCallsCompletionHandlerWhenFinished() {
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let completionCalled: Atomic<Bool> = .init(false)
 
@@ -185,7 +185,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testHandlesRealErrorConditions() {
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let receivedError: Atomic<NetworkError?> = .init(nil)
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
@@ -211,7 +211,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testServerSide400s() throws {
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int.random(in: 0..<50)
         let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
@@ -240,7 +240,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testServerSide500s() throws {
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = 500 + Int.random(in: 0..<50)
         let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
@@ -269,7 +269,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testInvalidJSONAsDataDoesNotFail() {
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let statusCode = HTTPStatusCode.success
         let data = "{this is not JSON.csdsd".data(using: String.Encoding.utf8)!
@@ -298,7 +298,7 @@ class HTTPClientTests: TestCase {
             let data: String
         }
 
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = HTTPStatusCode.success.rawValue
         let result: Atomic<HTTPResponse<CustomResponse>.Result?> = .init(nil)
@@ -330,7 +330,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testServerSide200s() {
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let responseData = "{\"message\": \"something is great up in the cloud\"}".data(using: String.Encoding.utf8)!
 
@@ -356,7 +356,7 @@ class HTTPClientTests: TestCase {
             let message: String
         }
 
-        let request = HTTPRequest(method: .get, path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .get, path: .mockPath)
 
         let response = CustomResponse(message: "Something is great up in the cloud")
         let responseData = try JSONEncoder.default.encode(response)
@@ -380,7 +380,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testAlwaysPassesClientVersion() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -397,7 +397,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testAlwaysPassesClientBuildVersion() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -443,7 +443,7 @@ class HTTPClientTests: TestCase {
     #else
 
     func testAlwaysPassesAppleDeviceIdentifier() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -461,7 +461,7 @@ class HTTPClientTests: TestCase {
     #endif
 
     func testDefaultsPlatformFlavorToNative() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -476,7 +476,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testPassesPlatformFlavorHeader() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -495,7 +495,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testPassesPlatformFlavorVersionHeader() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -514,7 +514,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenEnabled() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -531,7 +531,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenDisabled() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath, timeout: self.client.timeout)
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = .init(false)
 
@@ -565,9 +565,7 @@ class HTTPClientTests: TestCase {
 
         let serialRequests = 10
         for requestNumber in 0..<serialRequests {
-            client.perform(.init(method: .requestNumber(requestNumber),
-                                 path: path,
-                                 timeout: self.client.timeout),
+            client.perform(.init(method: .requestNumber(requestNumber), path: path),
                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
                 completionCallCount.value += 1
             }
@@ -595,12 +593,12 @@ class HTTPClientTests: TestCase {
                 .responseTime(0.1)
         }
 
-        self.client.perform(.init(method: .requestNumber(1), path: path, timeout: self.client.timeout),
+        self.client.perform(.init(method: .requestNumber(1), path: path),
                             authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             firstRequestFinished.value = true
         }
 
-        self.client.perform(.init(method: .requestNumber(2), path: path, timeout: self.client.timeout),
+        self.client.perform(.init(method: .requestNumber(2), path: path),
                             authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             secondRequestFinished.value = true
         }
@@ -639,17 +637,17 @@ class HTTPClientTests: TestCase {
                 .responseTime(responseTime)
         }
 
-        self.client.perform(.init(method: .requestNumber(1), path: path, timeout: self.client.timeout),
+        self.client.perform(.init(method: .requestNumber(1), path: path),
                             authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             firstRequestFinished.value = true
         }
 
-        self.client.perform(.init(method: .requestNumber(2), path: path, timeout: self.client.timeout),
+        self.client.perform(.init(method: .requestNumber(2), path: path),
                             authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             secondRequestFinished.value = true
         }
 
-        self.client.perform(.init(method: .requestNumber(3), path: path, timeout: self.client.timeout),
+        self.client.perform(.init(method: .requestNumber(3), path: path),
                             authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             thirdRequestFinished.value = true
         }
@@ -662,7 +660,7 @@ class HTTPClientTests: TestCase {
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() throws {
         let response: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
 
-        self.client.perform(.init(method: .invalidBody(), path: .mockPath, timeout: self.client.timeout),
+        self.client.perform(.init(method: .invalidBody(), path: .mockPath),
                             authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
             response.value = result
         }
@@ -684,7 +682,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(.init(method: .invalidBody(), path: path, timeout: self.client.timeout),
+        self.client.perform(.init(method: .invalidBody(), path: path),
                             authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             completionCalled.value = true
         }
@@ -709,9 +707,7 @@ class HTTPClientTests: TestCase {
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.perform(.init(method: .get,
-                                  path: path,
-                                  timeout: self.client.timeout),
+        self.client.perform(.init(method: .get, path: path),
                             authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             completionCalled.value = true
         }
@@ -740,10 +736,7 @@ class HTTPClientTests: TestCase {
                          headers: nil)
         }
 
-        self.client.perform(.init(method: .get,
-                                  path: path,
-                                  timeout: self.client.timeout),
-                            authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
             response.value = result
         }
 
@@ -765,10 +758,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .get,
-                                  path: path,
-                                  timeout: self.client.timeout),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
@@ -786,10 +776,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .post([:]),
-                                  path: path,
-                                  timeout: self.client.timeout),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .post([:]), path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
         }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
@@ -812,10 +799,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .post([:]),
-                                  path: path,
-                                  timeout: self.client.timeout),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .post([:]), path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
         }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
@@ -838,10 +822,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .get,
-                                  path: path,
-                                  timeout: self.client.timeout),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
@@ -859,10 +840,7 @@ class HTTPClientTests: TestCase {
         }
 
         let obtainedError: Atomic<NetworkError?> = .init(nil)
-        self.client.perform(.init(method: .get,
-                                  path: path,
-                                  timeout: self.client.timeout),
-                            authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
             obtainedError.value = result.error
         }
 
@@ -896,10 +874,7 @@ class HTTPClientTests: TestCase {
         }
 
         let obtainedError: Atomic<NetworkError?> = .init(nil)
-        self.client.perform(.init(method: .get,
-                                  path: path,
-                                  timeout: self.client.timeout),
-                            authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
             obtainedError.value = result.error
         }
 
@@ -931,10 +906,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .get,
-                                  path: path,
-                                  timeout: self.client.timeout),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
