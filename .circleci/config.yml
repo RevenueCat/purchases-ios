@@ -218,6 +218,12 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test_tvos
           no_output_timeout: 30m
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -235,6 +241,12 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 8 (14.5)
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -256,6 +268,12 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 8 (13.7)
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -278,6 +296,12 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 6 (12.4)
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:

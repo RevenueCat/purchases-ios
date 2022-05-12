@@ -78,16 +78,22 @@ platform :ios do
     sh("git", "checkout", "-b", branch_name)
 
     sh("git", "add", "../Tests")
-    sh("git", "commit", "-m", "Generating new test snapshots")
-    push_to_git_remote
+    file_count = sh("git diff --cached --numstat | wc -l").strip.to_i
 
-    create_pull_request(
-      repo: "revenuecat/purchases-ios",
-      title: "Generating new test snapshots",
-      base: "main",
-      api_token: ENV["GITHUB_TOKEN"],
-      head: branch_name
-    )
+    if file_count == 0
+      UI.important("No files to be committed")
+    else
+      sh("git", "commit", "-m", "Generating new test snapshots")
+      push_to_git_remote
+
+      create_pull_request(
+        repo: "revenuecat/purchases-ios",
+        title: "Generating new test snapshots",
+        base: "main",
+        api_token: ENV["GITHUB_TOKEN"],
+        head: branch_name
+      )
+    end
   end
 
   desc "Replace version number in project and supporting files"
