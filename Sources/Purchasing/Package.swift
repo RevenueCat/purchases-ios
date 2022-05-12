@@ -60,7 +60,7 @@ extension PackageType: CustomDebugStringConvertible {
 
 }
 
-private extension PackageType {
+extension PackageType {
 
     var description: String? {
         switch self {
@@ -76,7 +76,7 @@ private extension PackageType {
         }
     }
 
-    static let typesByDescription: [String: PackageType] = PackageType
+    fileprivate static let typesByDescription: [String: PackageType] = PackageType
         .allCases
         .filter { $0.description != nil }
         .dictionaryWithKeys { $0.description! }
