@@ -48,9 +48,7 @@ class PurchasesTests: TestCase {
         receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher, systemInfo: systemInfoAttribution)
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfoAttribution)
-        backend = MockBackend(httpClient: MockHTTPClient(systemInfo: systemInfo,
-                                                         eTagManager: MockETagManager(),
-                                                         timeoutSeconds: 7),
+        backend = MockBackend(httpClient: MockHTTPClient(systemInfo: systemInfo, eTagManager: MockETagManager()),
                               apiKey: "mockAPIKey",
                               attributionFetcher: attributionFetcher)
         subscriberAttributesManager =
