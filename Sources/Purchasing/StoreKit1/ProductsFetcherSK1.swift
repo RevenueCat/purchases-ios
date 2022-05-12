@@ -173,7 +173,8 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                     completion(.failure(error))
                 }
             } else {
-                queue.asyncAfter(deadline: .now() + .seconds(3)) { [self] in
+                let delayInSeconds = Int((self.requestTimeout / 10).rounded())
+                queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
                     self.startRequest(forIdentifiers: productRequest.identifiers,
                                       retriesLeft: productRequest.retriesLeft - 1)
                 }
