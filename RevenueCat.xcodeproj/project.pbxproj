@@ -932,11 +932,11 @@
 				57C381DB27961547009E3940 /* SK2StoreProductDiscount.swift */,
 				57536A27278522B400E2AE7F /* SK2StoreTransaction.swift */,
 				57DE806C28074976008D6C6F /* Storefront.swift */,
+				573E7F082819B989007C9128 /* StoreKitWorkarounds.swift */,
 				FECF627761D375C8431EB866 /* StoreProduct.swift */,
 				B372EC53268FEDC60099171E /* StoreProductDiscount.swift */,
 				2D1015D9275959840086173F /* StoreTransaction.swift */,
 				2D1015DD275A57FC0086173F /* SubscriptionPeriod.swift */,
-				573E7F082819B989007C9128 /* StoreKitWorkarounds.swift */,
 			);
 			path = StoreKitAbstractions;
 			sourceTree = "<group>";
@@ -995,7 +995,6 @@
 		2D1DB44A26EA61AB00DDE736 /* StoreKit1 */ = {
 			isa = PBXGroup;
 			children = (
-				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
 				EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */,
 				2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */,
 				2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */,
