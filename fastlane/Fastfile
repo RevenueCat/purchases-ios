@@ -73,10 +73,10 @@ platform :ios do
   end
 
   lane :create_snapshot_pr do |options|
-    branch_prefix = options[:version]
+    version = options[:version]
     base_branch = ENV["CIRCLE_BRANCH"]
 
-    branch_name = "generated_snapshots/#{branch_prefix}-#{base_branch}"
+    branch_name = "generated_snapshots/#{base_branch}-#{version}"
     sh("git", "checkout", "-b", branch_name)
 
     sh("git", "add", "../Tests")
@@ -93,7 +93,8 @@ platform :ios do
 
       create_pull_request(
         repo: "revenuecat/purchases-ios",
-        title: "Generating new test snapshots - #{desc}",
+        title: "Generating new test snapshots - #{version}",
+        body: body,
         base: base_branch,
         api_token: ENV["GITHUB_TOKEN"],
         head: branch_name
