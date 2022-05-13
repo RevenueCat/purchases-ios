@@ -58,6 +58,14 @@ Runs all the tvOS tests
 
 
 
+### ios generate_snapshots
+
+```sh
+[bundle exec] fastlane ios generate_snapshots
+```
+
+
+
 ### ios replace_version_number
 
 ```sh

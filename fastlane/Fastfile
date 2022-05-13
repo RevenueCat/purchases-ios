@@ -72,9 +72,11 @@ platform :ios do
     )
   end
 
-  lane :create_snapshot_pr do
-    some_version = ENV["CIRCLE_BUILD_NUM"]
-    branch_name = "generated_snapshots/#{some_version}"
+  lane :create_snapshot_pr do |options|
+    branch_prefix = options[:version]
+    base_branch = ENV["CIRCLE_BRANCH"]
+
+    branch_name = "generated_snapshots/#{branch_prefix}-#{base_branch}"
     sh("git", "checkout", "-b", branch_name)
 
     sh("git", "add", "../Tests")
@@ -88,12 +90,38 @@ platform :ios do
 
       create_pull_request(
         repo: "revenuecat/purchases-ios",
-        title: "Generating new test snapshots",
-        base: "main",
+        title: "Generating new test snapshots - #{desc}",
+        base: base_branch,
         api_token: ENV["GITHUB_TOKEN"],
         head: branch_name
       )
     end
+  end
+
+  lane :generate_snapshots do 
+    require 'rest-client'
+
+    # Prompt branch
+    default_branch = git_branch
+    branch = UI.input("Branch (defaults to #{default_branch}): ")
+    branch = default_branch if branch == ""
+
+    # Get CircleCI token
+    circle_token = ENV["CIRCLE_TOKEN"]
+    UI.user_error! "Please set the CIRCLE_TOKEN environment variable" unless circle_token
+
+    # Make request
+    headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
+    data = {parameters: {generate_snapshots: true}, branch: branch}
+    url = "https://circleci.com/api/v2/project/github/RevenueCat/purchases-ios/pipeline"
+
+    resp = RestClient.post url, data.to_json, headers
+
+    # Print workflow url
+    number = JSON.parse(resp.body)["number"]
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/purchases-ios/#{number}"
+
+    UI.important "Workflow: #{workflow_url}"
   end
 
   desc "Replace version number in project and supporting files"
