@@ -285,6 +285,8 @@
 		57DE80AF28075D77008D6C6F /* OSVersionEquivalent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */; };
 		57DE80BE28077010008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
+		57DE80802807529F008D6C6F /* MockStorefront.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807F2807529F008D6C6F /* MockStorefront.swift */; };
+		57DE80812807529F008D6C6F /* MockStorefront.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807F2807529F008D6C6F /* MockStorefront.swift */; };
 		57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 57E0473A277260DE0082FE91 /* SnapshotTesting */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
 		57EAE527274324C60060EB74 /* Lock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE526274324C60060EB74 /* Lock.swift */; };
