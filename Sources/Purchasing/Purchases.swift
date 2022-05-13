@@ -96,6 +96,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Should match OS availability in https://developer.apple.com/documentation/ad_services
      */
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     @objc public static var automaticAdServicesAttributionTokenCollection: Bool = false
 
     /**
@@ -754,6 +756,8 @@ extension Purchases {
 
     // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     private func postAdServicesTokenIfNeeded() {
         guard Self.automaticAdServicesAttributionTokenCollection else {
             return
