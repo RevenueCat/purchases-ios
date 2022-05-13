@@ -1,0 +1,33 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "notDetermined"
+        }
+      },
+      "currency" : "BFD",
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "is_restore" : false,
+      "observer_mode" : false,
+      "offers" : [
+        {
+          "offer_identifier" : "offerid",
+          "payment_mode" : 0,
+          "price" : "12.1"
+        }
+      ],
+      "price" : "15.99",
+      "product_id" : "a_great_product",
+      "store_country" : "ESP",
+      "subscription_group_id" : "sub_group"
+    },
+    "method" : "POST",
+    "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
+  }
+}
