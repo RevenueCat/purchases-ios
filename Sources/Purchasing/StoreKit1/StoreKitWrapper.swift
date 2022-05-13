@@ -80,6 +80,10 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
         paymentQueue.finishTransaction(transaction)
     }
 
+    static func canMakePayments() -> Bool {
+        return SKPaymentQueue.canMakePayments()
+    }
+
     @available(iOS 14.0, *)
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
