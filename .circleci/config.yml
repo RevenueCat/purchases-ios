@@ -202,7 +202,7 @@ jobs:
           steps:
             - run:
                 name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr
+                command: bundle exec fastlane create_snapshot_pr version:"ios-15"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -223,7 +223,7 @@ jobs:
           steps:
             - run:
                 name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr
+                command: bundle exec fastlane create_snapshot_pr version:"tvos"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -246,12 +246,13 @@ jobs:
           steps:
             - run:
                 name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr
+                command: bundle exec fastlane create_snapshot_pr version:"ios-14"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+
   run-test-ios-13:
     <<: *base-job
     steps:
@@ -273,7 +274,7 @@ jobs:
           steps:
             - run:
                 name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr
+                command: bundle exec fastlane create_snapshot_pr version:"ios-13"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -301,7 +302,7 @@ jobs:
           steps:
             - run:
                 name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr
+                command: bundle exec fastlane create_snapshot_pr version:"ios-12"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
