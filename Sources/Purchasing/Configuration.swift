@@ -51,6 +51,8 @@ import Foundation
     let storeKit1Timeout: TimeInterval
 
     private init(with builder: Builder) {
+        Self.validate(apiKey: builder.apiKey)
+
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
@@ -182,5 +184,17 @@ import Foundation
         }
 
     }
+
+}
+
+private extension Configuration {
+
+    static func validate(apiKey: String) {
+        if !apiKey.hasPrefix(Self.appleKeyPrefix) {
+            Logger.warn(Strings.configure.invalidAPIKey)
+        }
+    }
+
+    private static let appleKeyPrefix: String = "appl_"
 
 }

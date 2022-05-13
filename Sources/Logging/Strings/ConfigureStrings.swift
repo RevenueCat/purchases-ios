@@ -37,6 +37,8 @@ enum ConfigureStrings {
 
     case sdk_version(sdkVersion: String)
 
+    case invalidAPIKey
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
@@ -68,6 +70,10 @@ extension ConfigureStrings: CustomStringConvertible {
                 "trying to get the default instance. More info here: https://errors.rev.cat/configuring-sdk"
         case .sdk_version(let sdkVersion):
             return "SDK Version - \(sdkVersion)"
+        case .invalidAPIKey:
+            return "The specified API Key is not recognized.\n" +
+            "Ensure that you are using the public app-specific API key.\n" +
+            "See https://docs.revenuecat.com/docs/authentication for more details."
         }
     }
 
