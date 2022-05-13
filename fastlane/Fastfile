@@ -88,6 +88,9 @@ platform :ios do
       sh("git", "commit", "-m", "Generating new test snapshots")
       push_to_git_remote
 
+      circle_user = ENV["CIRCLE_USERNAME"]
+      body = "Requested by @#{circle_user}"
+
       create_pull_request(
         repo: "revenuecat/purchases-ios",
         title: "Generating new test snapshots - #{desc}",
