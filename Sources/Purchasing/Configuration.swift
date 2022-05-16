@@ -51,7 +51,7 @@ import Foundation
     let storeKit1Timeout: TimeInterval
 
     private init(with builder: Builder) {
-        Self.validate(apiKey: builder.apiKey)
+        Self.verify(apiKey: builder.apiKey)
 
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
@@ -187,11 +187,32 @@ import Foundation
 
 }
 
-private extension Configuration {
+// MARK: - API Key Validation
 
-    static func validate(apiKey: String) {
-        if !apiKey.hasPrefix(Self.appleKeyPrefix) {
-            Logger.warn(Strings.configure.invalidAPIKey)
+// Visible for testing
+extension Configuration {
+
+    enum APIKeyValidationResult {
+        case platformSpecific
+        case invalidPlatform
+        case legacy
+    }
+
+    static func validate(apiKey: String) -> APIKeyValidationResult {
+        if apiKey.hasPrefix(Self.appleKeyPrefix) {
+            return .platformSpecific
+        } else if apiKey.contains("_") {
+            return .invalidPlatform
+        } else {
+            return .legacy
+        }
+    }
+
+    fileprivate static func verify(apiKey: String) {
+        switch self.validate(apiKey: apiKey) {
+        case .platformSpecific: break // Valid key
+        case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
+        case .invalidPlatform: Logger.error(Strings.configure.invalidAPIKey)
         }
     }
 
