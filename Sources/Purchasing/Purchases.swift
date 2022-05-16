@@ -421,10 +421,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
 
+#if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             postAdServicesTokenIfNeeded()
         }
+#endif
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
@@ -1981,10 +1983,12 @@ private extension Purchases {
         updateAllCachesIfNeeded()
         dispatchSyncSubscriberAttributesIfNeeded()
 
+#if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             postAdServicesTokenIfNeeded()
         }
+#endif
     }
 
     @objc func applicationWillResignActive(notification: Notification) {
