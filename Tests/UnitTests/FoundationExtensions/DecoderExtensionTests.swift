@@ -353,7 +353,7 @@ private extension Decodable where Self: Encodable {
 
 }
 
-private extension Decodable {
+extension Decodable {
 
     static func decode(_ json: String) throws -> Self {
         return try JSONDecoder.default.decode(jsonData: json.data(using: .utf8)!)
