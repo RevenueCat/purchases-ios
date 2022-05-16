@@ -30,11 +30,13 @@ class BackendPostAdServicesTokenTests: BaseBackendTests {
             response: .init(statusCode: .success)
         )
 
+        var completionCalled = false
         backend.post(adServicesToken: "asdf",
-                     appUserID: "asdf",
-                     completion: nil)
-
+                     appUserID: "asdf") { _ in
+            completionCalled = true
+        }
         expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(completionCalled).toEventually(beTrue())
     }
 
 }
