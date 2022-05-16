@@ -136,6 +136,44 @@ class HTTPClientTests: TestCase {
         expect(headerPresent.value).toEventually(equal(true))
     }
 
+    func testAlwaysPassesIsSandboxWhenEnabled() {
+        let headerName = "X-Is-Sandbox"
+        self.systemInfo.stubbedIsSandbox = true
+
+        let header: Atomic<String?> = .init(nil)
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+
+        expect(header.value).toEventuallyNot(beNil())
+        expect(header.value) == "true"
+    }
+
+    func testAlwaysPassesIsSandboxWhenDisabled() {
+        let headerName = "X-Is-Sandbox"
+        self.systemInfo.stubbedIsSandbox = false
+
+        let header: Atomic<String?> = .init(nil)
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+
+        expect(header.value).toEventuallyNot(beNil())
+        expect(header.value) == "false"
+    }
+
     func testCallsTheGivenPath() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
