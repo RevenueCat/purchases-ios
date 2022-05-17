@@ -188,6 +188,12 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         }
     }
 
+    func clearCache() {
+        queue.async {
+            self.cachedProductsByIdentifier.removeAll()
+        }
+    }
+
 }
 
 private extension ProductsFetcherSK1 {
