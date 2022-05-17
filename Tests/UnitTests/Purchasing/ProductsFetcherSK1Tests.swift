@@ -186,4 +186,21 @@ class ProductsFetcherSK1Tests: TestCase {
         expect(request.cancelCalled) == false
     }
 
+    func testMakesNewRequestAfterClearingCachedProductCorrectly() {
+        let productIdentifiers = Set(["1", "2", "3"])
+        let mockProducts: Set<SK1Product> = Set(productIdentifiers.map {
+            MockSK1Product(mockProductIdentifier: $0)
+        })
+
+        mockProducts.forEach { productsFetcherSK1.cacheProduct($0) }
+
+        productsFetcherSK1.clearCache()
+
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
+
+        expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1),
+                                                                             timeout: Self.defaultTimeoutInterval)
+        expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
+    }
+
 }
