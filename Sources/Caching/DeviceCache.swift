@@ -140,6 +140,10 @@ class DeviceCache {
         }
     }
 
+    func clearCachedOfferings() {
+        self.offeringsCachedObject.clearCache()
+    }
+
     func clearCustomerInfoCacheTimestamp(appUserID: String) {
         self.userDefaults.write {
             Self.clearCustomerInfoCacheTimestamp($0, appUserID: appUserID)
