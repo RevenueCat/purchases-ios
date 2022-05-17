@@ -768,6 +768,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handleChangeStorefront() {
+        productsManager.clearCachedProducts()
         deviceCache.clearCachedOfferings()
     }
 
