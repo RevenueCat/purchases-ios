@@ -71,6 +71,17 @@ class ProductsManager: NSObject {
         productsFetcherSK1.cacheProduct(product)
     }
 
+    func clearCachedProducts() {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+           self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+            Task {
+                await productsFetcherSK2.clearCache()
+            }
+        } else {
+            productsFetcherSK1.clearCache()
+        }
+    }
+
     private func sk1Products(withIdentifiers identifiers: Set<String>,
                              completion: @escaping (Result<Set<SK1Product>, Error>) -> Void) {
         return productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
