@@ -411,4 +411,17 @@ class DeviceCacheTests: TestCase {
         expect(subscriberAttribute.setTime as NSDate) == setTime
         expect(subscriberAttribute.isSynced) == isSynced
     }
+
+    func testClearCachedOfferings() {
+        let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+                                       userDefaults: self.mockUserDefaults,
+                                       offeringsCachedObject: mockCachedObject,
+                                       notificationCenter: nil)
+
+        self.deviceCache.clearCachedOfferings()
+
+        expect(mockCachedObject.invokedClearCache) == true
+    }
+
 }
