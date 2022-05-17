@@ -379,6 +379,23 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testClearCachedProductsAndOfferingsAfterStorefrontChangesWithSK2() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.orchestrator.storefrontDidUpdate()
+
+        expect(self.deviceCache.clearCachedOfferingsCount) == 1
+        expect(self.productsManager.invokedClearCachedProductsCount) == 1
+    }
+
+    func testClearCachedProductsAndOfferingsAfterStorefrontChangesWithSK1() async throws {
+        self.orchestrator.storeKitWrapperDidChangeStorefront(storeKitWrapper)
+
+        expect(self.deviceCache.clearCachedOfferingsCount) == 1
+        expect(self.productsManager.invokedClearCachedProductsCount) == 1
+    }
+
     func testShowManageSubscriptionsCallsCompletionWithErrorIfThereIsAFailure() {
         let message = "Failed to get managementURL from CustomerInfo. Details: customerInfo is nil."
         mockManageSubsHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
