@@ -56,6 +56,93 @@ public extension Purchases {
         return await eligiblePromotionalOffers(forProduct: product)
     }
 
+    @available(iOS, deprecated: 1, renamed: "configure(with:)")
+    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
+    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:)
+    @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
+        configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
+    }
+
+    @available(iOS, deprecated: 1, renamed: "configure(with:)")
+    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
+    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool) -> Purchases {
+        configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: observerMode, userDefaults: nil)
+    }
+
+    @available(iOS, deprecated: 1, renamed: "configure(with:)")
+    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
+    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?) -> Purchases {
+        configure(
+            withAPIKey: apiKey,
+            appUserID: appUserID,
+            observerMode: observerMode,
+            userDefaults: userDefaults,
+            useStoreKit2IfAvailable: false
+        )
+    }
+
+    @available(iOS, deprecated: 1, renamed: "configure(with:)")
+    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
+    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool) -> Purchases {
+        configure(
+            withAPIKey: apiKey,
+            appUserID: appUserID,
+            observerMode: observerMode,
+            userDefaults: userDefaults,
+            useStoreKit2IfAvailable: useStoreKit2IfAvailable,
+            dangerousSettings: nil
+        )
+    }
+
+    @available(iOS, deprecated: 1, renamed: "configure(with:)")
+    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
+    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macOS, deprecated: 1, renamed: "configure(with:)")
+    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:dangerousSettings:)
+    // swiftlint:disable:next function_parameter_count
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool,
+                                             dangerousSettings: DangerousSettings?) -> Purchases {
+        return Self.configure(
+            withAPIKey: apiKey,
+            appUserID: appUserID,
+            observerMode: observerMode,
+            userDefaults: userDefaults,
+            storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
+            storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
+            networkTimeout: Configuration.networkTimeoutDefault,
+            dangerousSettings: dangerousSettings
+        )
+    }
+
 }
 
 public extension StoreProduct {
