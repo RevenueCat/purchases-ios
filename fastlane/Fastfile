@@ -246,10 +246,6 @@ platform :ios do
     )
   end
 
-  lane :generate_changelog do
-
-  end
-
   # Inspired by fastlane's changelog
   # https://github.com/fastlane/fastlane/blob/eb4584e0394c1fecccd70d4313260f4707f2af80/fastlane/Fastfile#L346-L380
   desc "Generate changelog from GitHub compare and PR data for mentioning GitHub usernames in release notes"
@@ -328,15 +324,17 @@ platform :ios do
   private_lane :edit_changelog do |options|
     generated_contents = options[:generated_contents].to_s
 
+    if generated_contents.size > 0
+      UI.message("Using auto generated contents:\n#{generated_contents}")
+      File.write(changelog_path, generated_contents)
+    else
+      UI.user_error!("Generated content for changlog was empty")
+    end
+
     # Open CHANGELOG.latest.md in editor
     changelog_filename = "CHANGELOG.latest.md"
     changelog_path = File.absolute_path("../#{changelog_filename}")
     editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
-
-    if generated_contents.size > 0
-      UI.message("Using auto generated contents:\n#{generated_contents}")
-      File.write(changelog_path, generated_contents)
-    end
 
     content_before_opening_editor = File.read(changelog_path)
 
