@@ -255,7 +255,10 @@ platform :ios do
   # https://github.com/fastlane/fastlane/blob/eb4584e0394c1fecccd70d4313260f4707f2af80/fastlane/Fastfile#L346-L380
   desc "Generate changelog from GitHub compare and PR data for mentioning GitHub usernames in release notes"
   lane :github_changelog do |options|
-    old_version = options[:old_version] || current_version
+    last_version = sh("git describe --tags --abbrev=0").strip
+    old_version = options[:old_version] || last_version
+
+    UI.important("Auto-generating changelog since #{old_version}")
 
     org = "RevenueCat"
     repo = "purchases-ios"
