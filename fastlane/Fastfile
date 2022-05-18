@@ -237,7 +237,6 @@ platform :ios do
 
     attach_changelog_to_master(new_version_number)
 
-    raise "DONT UPDATE STUFF"
     commit_updated_files_and_push(version: new_version_number)    
     
     create_pull_request(
@@ -294,7 +293,7 @@ platform :ios do
       "* #{message} via #{name} (@#{username})"
     end.join("\n")
 
-    puts formatted
+    puts formatted if options[:print]
 
     formatted
   end
