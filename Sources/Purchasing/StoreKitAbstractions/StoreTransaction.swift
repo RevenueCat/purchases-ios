@@ -21,7 +21,8 @@ public typealias SK1Transaction = SKPaymentTransaction
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Transaction = StoreKit.Transaction
 
-/// Abstract class that provides access to properties of a transaction. ``StoreTransaction``s can represent transactions from StoreKit 1, StoreKit 2 or
+/// Abstract class that provides access to properties of a transaction.
+/// ``StoreTransaction``s can represent transactions from StoreKit 1, StoreKit 2 or
 /// transactions made from other places, like Stripe, Google Play or Amazon Store.
 @objc(RCStoreTransaction) public final class StoreTransaction: NSObject, StoreTransactionType {
 
