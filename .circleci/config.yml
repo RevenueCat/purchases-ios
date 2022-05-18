@@ -218,12 +218,6 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test_tvos
           no_output_timeout: 30m
-      - when:
-          condition: << pipeline.parameters.generate_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"tvos"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -476,8 +470,6 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      - run-test-tvos:
-          xcode_version: '13.3.1'
       - run-test-ios-15:
           xcode_version: '13.3.1'
       - run-test-ios-14:
