@@ -162,14 +162,6 @@ Release to CocoaPods, create Carthage archive, export XCFramework, and create Gi
 
 Bump version, edit changelog, and create pull request
 
-### ios generate_changelog
-
-```sh
-[bundle exec] fastlane ios generate_changelog
-```
-
-
-
 ### ios github_changelog
 
 ```sh
