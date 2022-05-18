@@ -115,11 +115,16 @@ class AttributionPoster {
     func post(adServicesToken: String) {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
         backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
-            guard error == nil else {
+            if let receivedNSError = error as NSError? {
+                Logger.warn(Strings.attribution.adservices_token_post_failed(error: receivedNSError))
                 return
             }
 
-            let newDictToCache = [String(AttributionNetwork.adServices.rawValue): adServicesToken]
+            let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
+                self.deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
+
+            var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
+            newDictToCache[String(AttributionNetwork.adServices.rawValue)] = adServicesToken
 
             self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
         }
