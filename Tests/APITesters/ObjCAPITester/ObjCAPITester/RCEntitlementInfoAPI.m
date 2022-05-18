@@ -39,8 +39,10 @@
         case RCPlayStore:
         case RCStripe:
         case RCPromotional:
+        case RCAmazonStore:
         case RCUnknownStore:
             NSLog(@"%ld", (long)rs);
+            break;
     }
 
 
