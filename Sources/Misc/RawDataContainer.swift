@@ -15,7 +15,7 @@
 /// to future data while using an older version of the SDK.
 public protocol RawDataContainer {
 
-    /// The type of the `underlyingData` for this type.
+    /// The type of the ``RawDataContainer/underlyingData`` for this type.
     associatedtype Content: Encodable
 
     /// The underlying content for debugging purposes or for getting access
