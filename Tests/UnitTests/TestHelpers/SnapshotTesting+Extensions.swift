@@ -39,14 +39,22 @@ private extension Encodable {
     func asFormattedData() throws -> Data {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
-        encoder.outputFormatting = [
-            .prettyPrinted,
-            .sortedKeys
-        ]
-        // Note: formatting would be simpler with `.withoutEscapingSlashes`
-        // but that wouldn't be backwards compatible for running tests on iOS 12.0
+        encoder.outputFormatting = outputFormatting
 
         return try encoder.encode(self)
     }
 
 }
+
+private let outputFormatting: JSONEncoder.OutputFormatting = {
+    var result: JSONEncoder.OutputFormatting = [
+        .prettyPrinted,
+        .sortedKeys
+    ]
+
+    if #available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *) {
+        result.update(with: .withoutEscapingSlashes)
+    }
+
+    return result
+}()

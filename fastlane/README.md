@@ -170,6 +170,22 @@ Bump version, edit changelog, and create pull request
 
 Generate changelog from GitHub compare and PR data for mentioning GitHub usernames in release notes
 
+### ios generate_snapshots
+
+```sh
+[bundle exec] fastlane ios generate_snapshots
+```
+
+Trigger CircleCI job to generate snapshots
+
+### ios create_snapshot_pr
+
+```sh
+[bundle exec] fastlane ios create_snapshot_pr
+```
+
+Creates a new PR after new snapshot files were generated
+
 ### ios prepare_next_version
 
 ```sh

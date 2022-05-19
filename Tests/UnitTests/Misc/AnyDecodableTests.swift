@@ -20,7 +20,7 @@ import XCTest
 class AnyDecodableTests: TestCase {
 
     func testNull() throws {
-        expect(try AnyDecodable.decode("null")) == .null
+        expect(try AnyDecodable.decode("{\"key\": null}")) == ["key": .null]
     }
 
     func testEmptyDictionary() throws {
