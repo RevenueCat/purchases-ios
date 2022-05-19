@@ -16,7 +16,7 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class StoreKit2StorefrontListenerTests: XCTestCase {
+class StoreKit2StorefrontListenerTests: TestCase {
 
     private var listener: StoreKit2StorefrontListener! = nil
 
