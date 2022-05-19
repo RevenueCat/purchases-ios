@@ -155,7 +155,7 @@ import Foundation
 
     // MARK: -
 
-    private let data: Data
+    private let data: Contents
 
     /// Initializes a `CustomerInfo` with the underlying data in the current schema version
     convenience init(response: CustomerInfoResponse) {
@@ -167,7 +167,7 @@ import Foundation
         self.init(data: customerInfo.data)
     }
 
-    fileprivate init(data: Data) {
+    fileprivate init(data: Contents) {
         let response = data.response
         let subscriber = response.subscriber
 
@@ -233,7 +233,7 @@ extension CustomerInfo: Codable {
     // swiftlint:disable:next missing_docs
     public convenience init(from decoder: Decoder) throws {
         do {
-            self.init(data: try Data(from: decoder))
+            self.init(data: try Contents(from: decoder))
         } catch {
             throw ErrorUtils.customerInfoError(error: error)
         }
@@ -253,7 +253,7 @@ extension CustomerInfo: HTTPResponseBody {}
 private extension CustomerInfo {
 
     /// The actual contents of a ``CustomerInfo``: the response with the associated version.
-    struct Data {
+    struct Contents {
 
         var response: CustomerInfoResponse
         var schemaVersion: String?
@@ -269,7 +269,7 @@ private extension CustomerInfo {
 
 /// `Codable` implementation that puts the content of`response` and `schemaVersion`
 /// at the same level instead of nested.
-extension CustomerInfo.Data: Codable {
+extension CustomerInfo.Contents: Codable {
 
     private enum CodingKeys: String, CodingKey {
 
