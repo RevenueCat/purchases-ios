@@ -860,6 +860,36 @@ class EntitlementInfosTests: TestCase {
                 subscriptions: [:]
         )
         try verifyStore(.stripe)
+        
+        stubResponse(
+                entitlements: [
+                    "pro_cat": [
+                        "expires_date": nil,
+                        "product_identifier": "lifetime",
+                        "purchase_date": "2019-07-26T23:45:40Z"
+                    ]
+                ],
+                nonSubscriptions: [
+                    "lifetime": [
+                        [
+                            "id": "5b9ba226bc",
+                            "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
+                            "purchase_date": "2019-07-26T22:10:27Z",
+                            "store": "app_store"
+                        ],
+                        [
+                            "id": "ea820afcc4",
+                            "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
+                            "purchase_date": "2019-07-26T23:45:40Z",
+                            "store": "amazon"
+                        ]
+                    ]
+                ],
+                subscriptions: [:]
+        )
+        try verifyStore(.amazonStore)
 
         stubResponse(
                 entitlements: [
