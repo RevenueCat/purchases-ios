@@ -375,6 +375,59 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
+    func testApplyPromotionalOfferDuringSubscription() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let user = UUID().uuidString
+
+        let (_, created) = try await Purchases.shared.logIn(user)
+        expect(created) == true
+
+        let products = await Purchases.shared.products(["com.revenuecat.monthly_4.99.no_intro"])
+        let product = try XCTUnwrap(products.first)
+
+        // 1. Purchase subscription
+
+        _ = try await Purchases.shared.purchase(product: product)
+        var customerInfo = try await Purchases.shared.syncPurchases()
+
+        try self.verifyEntitlementWentThrough(customerInfo)
+
+        // 2. Get eligible offer
+
+        let offers = await product.eligiblePromotionalOffers()
+        expect(offers).to(haveCount(1))
+        let offer = try XCTUnwrap(offers.first)
+
+        // 3. Purchase offer
+
+        _ = try await Purchases.shared.purchase(product: product, promotionalOffer: offer)
+        customerInfo = try await Purchases.shared.syncPurchases()
+
+        // 4. Verify offer was applied
+
+        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
+
+        let transactions: [Transaction] = await Transaction
+            .currentEntitlements
+            .compactMap {
+                switch $0 {
+                case let .verified(transaction): return transaction
+                case .unverified: return nil
+                }
+            }
+            .filter { $0.productID == product.productIdentifier }
+            .extractValues()
+
+        expect(transactions).to(haveCount(1))
+        let transaction = try XCTUnwrap(transactions.first)
+
+        expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
+        expect(transaction.offerID) == offer.discount.offerIdentifier
+        expect(transaction.offerType) == .promotional
+    }
+
+    @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
     func testPurchaseWithPromotionalOffer() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
