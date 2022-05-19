@@ -50,6 +50,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
+      xcodebuild_formatter: generate_snapshots ? '' : nil,
       output_directory: "fastlane/test_output/xctest/ios",
       fail_build: !generate_snapshots
     )
@@ -67,6 +68,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
+      xcodebuild_formatter: generate_snapshots ? '' : nil,
       output_directory: "fastlane/test_output/xctest/tvos",
       fail_build: !generate_snapshots
     )
