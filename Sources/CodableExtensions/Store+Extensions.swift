@@ -55,7 +55,7 @@ private extension Store {
         case .playStore: return "play_store"
         case .stripe: return "stripe"
         case .promotional: return "promotional"
-        case .amazonStore: return "amazon"
+        case .amazon: return "amazon"
         case .unknownStore: return nil
         }
     }
