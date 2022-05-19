@@ -252,7 +252,7 @@ extension CustomerInfo: HTTPResponseBody {}
 
 private extension CustomerInfo {
 
-    /// The actual contents of a `CustomerInfo`: the response with the associated version.
+    /// The actual contents of a ``CustomerInfo``: the response with the associated version.
     struct Data {
 
         var response: CustomerInfoResponse
