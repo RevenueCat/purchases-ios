@@ -19,6 +19,8 @@ import XCTest
 class CustomerInfoDecodingTests: BaseHTTPResponseTest {
 
     private static let dateFormatter = ISO8601DateFormatter()
+    private static let nonSubscriptionID = "com.revenuecat.product.tip"
+    private static let subscriptionID = "com.revenuecat.monthly_4.99.1_week_intro"
 
     private var customerInfo: CustomerInfo!
 
@@ -32,32 +34,39 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         expect(self.customerInfo.schemaVersion) == "4"
     }
 
-    func testResponseDataIsCorrect() throws {
+    func testRequestDate() throws {
         expect(self.customerInfo.requestDate) == Date(timeIntervalSince1970: 1646761378)
+    }
 
+    func testSubscriberData() throws {
         let subscriber = self.customerInfo.subscriber
+
         expect(subscriber.firstSeen) == Self.dateFormatter.date(from: "2022-03-08T17:42:58Z")
         expect(subscriber.managementUrl) == URL(string: "https://apps.apple.com/account/subscriptions")!
         expect(subscriber.originalAppUserId) == "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1"
         expect(subscriber.originalApplicationVersion) == "1.0"
         expect(subscriber.originalPurchaseDate) == Self.dateFormatter.date(from: "2022-04-12T00:03:24Z")
+    }
 
-        let nonSubscriptionID = "com.revenuecat.product.tip"
+    func testNonSubscriptions() throws {
+        let subscriber = self.customerInfo.subscriber
 
-        expect(Set(subscriber.nonSubscriptions.keys)) == [nonSubscriptionID]
-        expect(subscriber.nonSubscriptions[nonSubscriptionID]).to(haveCount(1))
+        expect(Set(subscriber.nonSubscriptions.keys)) == [Self.nonSubscriptionID]
+        expect(subscriber.nonSubscriptions[Self.nonSubscriptionID]).to(haveCount(1))
 
-        let transaction = try XCTUnwrap(subscriber.nonSubscriptions[nonSubscriptionID]?.first)
+        let transaction = try XCTUnwrap(subscriber.nonSubscriptions[Self.nonSubscriptionID]?.first)
         expect(transaction.purchaseDate) == Self.dateFormatter.date(from: "2022-02-11T00:03:28Z")
         expect(transaction.originalPurchaseDate) == Self.dateFormatter.date(from: "2022-03-10T00:04:28Z")
         expect(transaction.transactionIdentifier) == "17459f5ff7"
         expect(transaction.store) == .appStore
         expect(transaction.isSandbox) == false
+    }
 
-        let subscriptionID = "com.revenuecat.monthly_4.99.1_week_intro"
+    func testSubscriptions() throws {
+        let subscriber = self.customerInfo.subscriber
 
-        expect(Set(subscriber.subscriptions.keys)) == [subscriptionID]
-        let subscription = try XCTUnwrap(subscriber.subscriptions[subscriptionID])
+        expect(Set(subscriber.subscriptions.keys)) == [Self.subscriptionID]
+        let subscription = try XCTUnwrap(subscriber.subscriptions[Self.subscriptionID])
 
         expect(subscription.billingIssuesDetectedAt).to(beNil())
         expect(subscription.expiresDate) == Self.dateFormatter.date(from: "2022-04-12T00:03:35Z")
@@ -69,15 +78,19 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         expect(subscription.unsubscribeDetectedAt).to(beNil())
 
         expect(Set(subscriber.entitlements.keys)) == ["premium", "tip"]
+    }
+
+    func testEntitlements() throws {
+        let subscriber = self.customerInfo.subscriber
 
         let entitlement1 = try XCTUnwrap(subscriber.entitlements["premium"])
         expect(entitlement1.expiresDate) == Self.dateFormatter.date(from: "1990-08-30T02:40:36Z")
-        expect(entitlement1.productIdentifier) == subscriptionID
+        expect(entitlement1.productIdentifier) == Self.subscriptionID
         expect(entitlement1.purchaseDate) == Self.dateFormatter.date(from: "1990-08-30T02:40:36Z")
 
         let entitlement2 = try XCTUnwrap(subscriber.entitlements["tip"])
         expect(entitlement2.expiresDate).to(beNil())
-        expect(entitlement2.productIdentifier) == nonSubscriptionID
+        expect(entitlement2.productIdentifier) == Self.nonSubscriptionID
         expect(entitlement2.purchaseDate) == Self.dateFormatter.date(from: "1990-09-30T02:40:36Z")
     }
 
