@@ -860,7 +860,7 @@ class EntitlementInfosTests: TestCase {
                 subscriptions: [:]
         )
         try verifyStore(.stripe)
-        
+
         stubResponse(
                 entitlements: [
                     "pro_cat": [
