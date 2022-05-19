@@ -130,7 +130,7 @@ import Foundation
 
         /**
          * Set `usesStoreKit2IfAvailable`.
-         * - Parameter useStoreKit2IfAvailable: EXPERIMENTAL. opt in to using StoreKit 2 on devices that support it.
+         * - Parameter usesStoreKit2IfAvailable: EXPERIMENTAL. opt in to using StoreKit 2 on devices that support it.
          * Purchases will be made using StoreKit 2 under the hood automatically.
          *
          * - Important: Support for purchases using StoreKit 2 is currently in an experimental phase.
