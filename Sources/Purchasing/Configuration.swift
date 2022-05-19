@@ -193,29 +193,32 @@ import Foundation
 extension Configuration {
 
     enum APIKeyValidationResult {
-        case platformSpecific
-        case invalidPlatform
+        case validApplePlatform
+        case otherPlatforms
         case legacy
     }
 
     static func validate(apiKey: String) -> APIKeyValidationResult {
-        if apiKey.hasPrefix(Self.appleKeyPrefix) {
-            return .platformSpecific
+        if apiKey.hasPrefix(Self.applePlatformKeyPrefix) {
+            // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+            return .validApplePlatform
         } else if apiKey.contains("_") {
-            return .invalidPlatform
+            // Other platforms format: "otherplatform_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+            return .otherPlatforms
         } else {
+            // Legacy key format: "CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
             return .legacy
         }
     }
 
     fileprivate static func verify(apiKey: String) {
         switch self.validate(apiKey: apiKey) {
-        case .platformSpecific: break // Valid key
+        case .validApplePlatform: break
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
-        case .invalidPlatform: Logger.error(Strings.configure.invalidAPIKey)
+        case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
         }
     }
 
-    private static let appleKeyPrefix: String = "appl_"
+    private static let applePlatformKeyPrefix: String = "appl_"
 
 }

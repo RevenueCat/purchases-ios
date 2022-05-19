@@ -20,11 +20,11 @@ import XCTest
 class ConfigurationTests: TestCase {
 
     func testValidateAPIKeyWithPlatformSpecificKey() {
-        expect(Configuration.validate(apiKey: "appl_1a2b3c4d5e6f7h")) == .platformSpecific
+        expect(Configuration.validate(apiKey: "appl_1a2b3c4d5e6f7h")) == .validApplePlatform
     }
 
     func testValidateAPIKeyWithInvalidPlatformKey() {
-        expect(Configuration.validate(apiKey: "goog_1a2b3c4d5e6f7h")) == .invalidPlatform
+        expect(Configuration.validate(apiKey: "goog_1a2b3c4d5e6f7h")) == .otherPlatforms
     }
 
     func testValidateAPIKeyWithLegacyKey() {

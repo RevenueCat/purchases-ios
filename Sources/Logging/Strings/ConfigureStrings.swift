@@ -75,12 +75,12 @@ extension ConfigureStrings: CustomStringConvertible {
         case .legacyAPIKey:
             return "Looks like you're using a legacy API key.\n" +
             "This is still supported, but it's recomended to migrate to using platform-specific API key, " +
-            "which should looks like 'appl_1a2b3c4d5e6f7h'.\n" +
+            "which should look like 'appl_1a2b3c4d5e6f7h'.\n" +
             "See https://docs.revenuecat.com/docs/authentication for more details."
         case .invalidAPIKey:
             return "The specified API Key is not recognized.\n" +
             "Ensure that you are using the public app-specific API key, " +
-            " which should looks like 'appl_1a2b3c4d5e6f7h'.\n" +
+            " which should look like 'appl_1a2b3c4d5e6f7h'.\n" +
             "See https://docs.revenuecat.com/docs/authentication for more details."
         }
     }
