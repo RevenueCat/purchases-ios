@@ -134,8 +134,8 @@ private extension HTTPClient {
 private extension HTTPClient {
 
     var defaultHeaders: [String: String] {
-        let observerMode = (!self.systemInfo.finishTransactions).encodedString
-        let sandbox = self.systemInfo.isSandbox.encodedString
+        let observerMode = !self.systemInfo.finishTransactions
+        let sandbox = self.systemInfo.isSandbox
 
         var headers: [String: String] = [
             "content-type": "application/json",
@@ -146,8 +146,8 @@ private extension HTTPClient {
             "X-Client-Version": SystemInfo.appVersion,
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-StoreKit2-Setting": "\(self.systemInfo.storeKit2Setting.debugDescription)",
-            "X-Observer-Mode-Enabled": observerMode,
-            "X-Is-Sandbox": sandbox
+            "X-Observer-Mode-Enabled": "\(observerMode)",
+            "X-Is-Sandbox": "\(sandbox)"
         ]
 
         if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
@@ -399,14 +399,6 @@ private extension Result where Success == Data? {
     /// Converts a `Result<Data?, Error>` into `Result<HTTPResponse<Data?>, Failure>`
     func mapSuccessToOptionalHTTPResult(_ statusCode: HTTPStatusCode) -> Result<HTTPResponse<Data?>, Failure> {
         return self.map { HTTPResponse(statusCode: statusCode, body: $0) }
-    }
-
-}
-
-private extension Bool {
-
-    var encodedString: String {
-        return self ? "true" : "false"
     }
 
 }
