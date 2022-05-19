@@ -685,7 +685,7 @@ class EntitlementInfosTests: TestCase {
                     "unsubscribe_detected_at": nil
                 ]
             ])
-        try verifyStore(.amazonStore)
+        try verifyStore(.amazon)
 
         stubResponse(
             entitlements: [
@@ -889,7 +889,7 @@ class EntitlementInfosTests: TestCase {
                 ],
                 subscriptions: [:]
         )
-        try verifyStore(.amazonStore)
+        try verifyStore(.amazon)
 
         stubResponse(
                 entitlements: [

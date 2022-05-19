@@ -38,7 +38,7 @@ import Foundation
     @objc(RCUnknownStore) case unknownStore = 5
 
     /// For entitlements granted via the Amazon Store.
-    @objc(RCAmazonStore) case amazonStore = 6
+    @objc(RCAmazon) case amazon = 6
 
 }
 
