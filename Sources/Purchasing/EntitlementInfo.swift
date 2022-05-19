@@ -87,8 +87,7 @@ extension PeriodType: DefaultValueProvider {
 
     /**
      True if the underlying subscription is set to renew at the end of
-     the billing period (``expirationDate``). Will always be `true` if entitlement
-     is for lifetime access.
+     the billing period (``expirationDate``).
      */
     @objc public let willRenew: Bool
 
