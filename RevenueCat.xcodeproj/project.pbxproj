@@ -686,6 +686,7 @@
 /* Begin PBXFileReference section */
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
+		2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-Snapshots.xctestplan"; path = "Tests/TestPlans/CI-Snapshots.xctestplan"; sourceTree = "<group>"; };
 		2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformInfo.swift; sourceTree = "<group>"; };
 		2CD2C541278CE0E0005D1CC2 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; path = Tests/TestingApps/PurchaseTester/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; sourceTree = SOURCE_ROOT; };
 		2CD72941268A823900BFC976 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
@@ -2161,6 +2162,7 @@
 				B3DB3EA5288627D7008EB151 /* CI-AllTests.xctestplan */,
 				B3DB3EA828862898008EB151 /* CI-BackendIntegration.xctestplan */,
 				57910CBD29C393A6006209D5 /* CI-RevenueCat.xctestplan */,
+				2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */,
 				570896B427595C8100296F1C /* Coverage.xctestplan */,
 				570896B327595C8100296F1C /* RevenueCat.xctestplan */,
 				570896B527595C8100296F1C /* UnitTests.xctestplan */,
