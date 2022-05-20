@@ -49,7 +49,7 @@ platform :ios do
       testplan: "AllTests",
       prelaunch_simulator: true,
       output_types: 'junit',
-      number_of_retries: 5,
+      number_of_retries: generate_snapshots ? 0 : 5,
       xcodebuild_formatter: generate_snapshots ? '' : nil,
       output_directory: "fastlane/test_output/xctest/ios",
       fail_build: !generate_snapshots
@@ -67,7 +67,7 @@ platform :ios do
       testplan: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      number_of_retries: 5,
+      number_of_retries: generate_snapshots ? 0 : 5,
       xcodebuild_formatter: generate_snapshots ? '' : nil,
       output_directory: "fastlane/test_output/xctest/tvos",
       fail_build: !generate_snapshots
