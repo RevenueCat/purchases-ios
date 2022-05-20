@@ -75,23 +75,23 @@ extension EntitlementInfos {
         purchases: [String: CustomerInfoResponse.Subscription],
         requestDate: Date?
     ) {
-        let entitlements: [String: EntitlementInfo] = Dictionary(
-            uniqueKeysWithValues: entitlements.compactMap { identifier, entitlement in
-                guard let subscription = purchases[entitlement.productIdentifier] else {
-                    return nil
+        self.init(
+            entitlements: Dictionary(
+                uniqueKeysWithValues: entitlements.compactMap { identifier, entitlement in
+                    guard let subscription = purchases[entitlement.productIdentifier] else {
+                        return nil
+                    }
+
+                    return (
+                        identifier,
+                        EntitlementInfo(identifier: identifier,
+                                        entitlement: entitlement,
+                                        subscription: subscription,
+                                        requestDate: requestDate)
+                    )
                 }
-
-                return (
-                    identifier,
-                    EntitlementInfo(identifier: identifier,
-                                    entitlement: entitlement,
-                                    subscription: subscription,
-                                    requestDate: requestDate)
-                )
-            }
+            )
         )
-
-        self.init(entitlements: entitlements)
     }
 
 }
