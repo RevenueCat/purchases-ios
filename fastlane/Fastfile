@@ -50,7 +50,6 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: generate_snapshots ? 0 : 5,
-      xcodebuild_formatter: generate_snapshots ? '' : nil,
       output_directory: "fastlane/test_output/xctest/ios",
       fail_build: !generate_snapshots
     )
@@ -58,8 +57,6 @@ platform :ios do
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
-    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
-
     scan(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV (15.2)",
@@ -67,10 +64,8 @@ platform :ios do
       testplan: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      number_of_retries: generate_snapshots ? 0 : 5,
-      xcodebuild_formatter: generate_snapshots ? '' : nil,
-      output_directory: "fastlane/test_output/xctest/tvos",
-      fail_build: !generate_snapshots
+      number_of_retries: 5,
+      output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
 
