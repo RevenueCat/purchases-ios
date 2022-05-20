@@ -18,6 +18,12 @@ extension Store: Decodable {
     // swiftlint:disable:next missing_docs
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
+
+        guard !container.decodeNil() else {
+            self = .unknownStore
+            return
+        }
+
         guard let storeString = try? container.decode(String.self) else {
             throw decoder.throwValueNotFoundError(expectedType: Store.self, message: "Unable to extract a storeString")
         }
@@ -55,6 +61,7 @@ private extension Store {
         case .playStore: return "play_store"
         case .stripe: return "stripe"
         case .promotional: return "promotional"
+        case .amazon: return "amazon"
         case .unknownStore: return nil
         }
     }

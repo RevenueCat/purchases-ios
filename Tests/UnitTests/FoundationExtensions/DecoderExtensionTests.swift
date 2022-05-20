@@ -343,7 +343,7 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
 
  }
 
-private extension Decodable where Self: Encodable {
+extension Decodable where Self: Encodable {
 
     func encodeAndDecode() throws -> Self {
         return try JSONDecoder.default.decode(

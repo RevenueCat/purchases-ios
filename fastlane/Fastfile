@@ -228,7 +228,8 @@ platform :ios do
     # Ask for new version number
     new_version_number = UI.input("New version number: ")
 
-    changelog_path = edit_changelog
+    generated_contents = github_changelog
+    changelog_path = edit_changelog(generated_contents: generated_contents)
     changelog = File.read(changelog_path)
     
     create_new_release_branch(version: new_version_number)
@@ -243,6 +244,54 @@ platform :ios do
       base: "main",
       body: changelog
     )
+  end
+
+  # Inspired by fastlane's changelog
+  # https://github.com/fastlane/fastlane/blob/eb4584e0394c1fecccd70d4313260f4707f2af80/fastlane/Fastfile#L346-L380
+  desc "Generate changelog from GitHub compare and PR data for mentioning GitHub usernames in release notes"
+  lane :github_changelog do |options|
+    last_version = sh("git describe --tags --abbrev=0").strip
+    old_version = options[:old_version] || last_version
+
+    UI.important("Auto-generating changelog since #{old_version}")
+
+    org = "RevenueCat"
+    repo = "purchases-ios"
+
+    path = "/repos/#{org}/#{repo}/compare/#{old_version}...HEAD"
+    api_token = ENV["GITHUB_TOKEN"]
+
+    # Get all commits from previous version (tag) to HEAD
+    resp = github_api(path: path, api_token: api_token)
+    body = JSON.parse(resp[:body])
+    commits = body["commits"].reverse
+
+    formatted = commits.map do |commit|
+      # Default to commit message info
+      message = commit["commit"]["message"].lines.first.strip
+      name = commit["commit"]["author"]["name"]
+      username = commit["author"]["login"]
+
+      # Get pull request associate with commit message
+      sha = commit["sha"]
+      pr_resp = github_api(path: "/search/issues?q=repo:#{org}/#{repo}+is:pr+base:main+SHA:#{sha}", api_token: api_token)
+      body = JSON.parse(pr_resp[:body])
+      items = body["items"]
+
+      if items.size == 1
+        item = items.first
+        message = "#{item['title']} (##{item['number']})"
+        username = item["user"]["login"]
+      else
+        UI.user_error!("Cannot generate changelog. Multiple commits found for #{sha}")
+      end
+
+      "* #{message} via #{name} (@#{username})"
+    end.join("\n")
+
+    puts formatted if options[:print]
+
+    formatted
   end
 
   desc "Creates RevenueCat-Swift.h for a new release"
@@ -273,6 +322,15 @@ platform :ios do
   end
 
   private_lane :edit_changelog do |options|
+    generated_contents = options[:generated_contents].to_s
+
+    if generated_contents.size > 0
+      UI.message("Using auto generated contents:\n#{generated_contents}")
+      File.write(changelog_path, generated_contents)
+    else
+      UI.user_error!("Generated content for changlog was empty")
+    end
+
     # Open CHANGELOG.latest.md in editor
     changelog_filename = "CHANGELOG.latest.md"
     changelog_path = File.absolute_path("../#{changelog_filename}")
@@ -281,7 +339,7 @@ platform :ios do
     content_before_opening_editor = File.read(changelog_path)
 
     UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
-    if UI.confirm("Open #{changelog_filename} in '#{editor}'?")
+    if UI.confirm("Open #{changelog_filename} in '#{editor}'? (No will quit this process)")
       system(editor, changelog_path.shellescape)
     else
       UI.user_error!("Cancelled")

@@ -27,6 +27,7 @@ class StorefrontTests: StoreKitConfigTestCase {
 
         expect(currentStorefront.identifier) == expectedStorefront.id
         expect(currentStorefront.countryCode) == expectedStorefront.countryCode
+
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)

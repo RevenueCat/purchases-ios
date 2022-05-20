@@ -37,6 +37,9 @@ import Foundation
     /// For entitlements granted via an unknown store.
     @objc(RCUnknownStore) case unknownStore = 5
 
+    /// For entitlements granted via the Amazon Store.
+    @objc(RCAmazon) case amazon = 6
+
 }
 
 extension Store: CaseIterable {}
@@ -87,8 +90,7 @@ extension PeriodType: DefaultValueProvider {
 
     /**
      True if the underlying subscription is set to renew at the end of
-     the billing period (``expirationDate``). Will always be `true` if entitlement
-     is for lifetime access.
+     the billing period (``expirationDate``).
      */
     @objc public let willRenew: Bool
 

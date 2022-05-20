@@ -296,7 +296,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             XCTFail("Expected error")
         } catch {
             expect(self.backend.invokedPostReceiptData) == false
-            let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
+            let mockListener = try XCTUnwrap(
+                orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+            )
             expect(mockListener.invokedHandle) == false
         }
     }
@@ -317,7 +319,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         } catch {
             expect(error).to(matchError(expectedError))
 
-            let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
+            let mockListener = try XCTUnwrap(
+                orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+            )
             expect(mockListener.invokedHandle) == true
         }
     }
