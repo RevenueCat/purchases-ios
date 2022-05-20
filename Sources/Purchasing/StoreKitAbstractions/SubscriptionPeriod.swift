@@ -29,8 +29,7 @@ public class SubscriptionPeriod: NSObject {
     public init(value: Int, unit: Unit) {
         assert(value > 0, "Invalid value: \(value)")
 
-        self.value = value
-        self.unit = unit
+        (self.value, self.unit) = Self.normalizeValueAndUnits(value: value, unit: unit)
     }
 
     /// Units of time used to describe subscription periods.
