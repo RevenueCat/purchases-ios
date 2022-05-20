@@ -50,18 +50,19 @@ class StoreKitWorkaroundsTests: TestCase {
         ]
 
         for expectation in expectations {
-            let outputPeriod = SubscriptionPeriod(
+            let period = SubscriptionPeriod(
                 value: expectation.inputValue,
                 unit: expectation.inputUnit
-            ).normalized()
-
-            expect(expectation.expectedValue).to(
-                equal(outputPeriod.value),
-                description: "Expected input value \(expectation.inputValue) to become \(expectation.expectedValue)."
             )
-            expect(outputPeriod.unit).to(
-                equal(expectation.expectedUnit),
-                description: "Expected input unit \(expectation.inputUnit) to become \(expectation.expectedUnit)."
+            let normalized = period.normalized()
+            let expected = SubscriptionPeriod(
+                value: expectation.expectedValue,
+                unit: expectation.expectedUnit
+            )
+
+            expect(normalized).to(
+                equal(expected),
+                description: "Expected \(period.debugDescription) to become \(expected.debugDescription)."
             )
         }
     }

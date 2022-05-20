@@ -73,4 +73,63 @@ class SubscriptionPeriodTests: TestCase {
     private func p(_ value: Int, _ unit: SubscriptionPeriod.Unit) -> SubscriptionPeriod {
         return .init(value: value, unit: unit)
     }
+
+    func testFromSK1PeriodNormalizes() throws {
+        guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) else {
+            throw XCTSkip("Required API is unavailable for this test")
+        }
+
+        let expectations: [(
+            inputValue: Int, inputUnit: SKProduct.PeriodUnit,
+            expectedValue: Int, expectedUnit: SubscriptionPeriod.Unit
+        )] = [
+            // Test day simplification
+            (1, .day, 1, .day),
+            (7, .day, 1, .week),
+            (1, .month, 1, .month),
+            (12, .month, 1, .year)
+        ]
+
+        for expectation in expectations {
+            let sk1SubscriptionPeriod = SKProductSubscriptionPeriod(
+                numberOfUnits: expectation.inputValue,
+                unit: expectation.inputUnit
+            )
+            let normalizedPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1SubscriptionPeriod)
+            let expected = SubscriptionPeriod(
+                value: expectation.expectedValue,
+                unit: expectation.expectedUnit
+            )
+
+            expect(normalizedPeriod).to(
+                equal(expected),
+                description: """
+                    Expected \(description(for: sk1SubscriptionPeriod)) to become \(expected.debugDescription).
+                    """
+            )
+        }
+    }
+
+    /// Necessary since SKProductSubscriptionPeriod.debugDescription & SKProductSubscriptionPeriod.description
+    /// return the object's address in memory.
+    @available(iOS 11.2, *)
+    private func description(for skProductSubscriptionPeriod: SKProductSubscriptionPeriod) -> String {
+
+        let periodUnit: String
+        switch skProductSubscriptionPeriod.unit {
+        case .day:
+            periodUnit = "days"
+        case .week:
+            periodUnit = "weeks"
+        case .month:
+            periodUnit = "months"
+        case .year:
+            periodUnit = "years"
+        @unknown default:
+            periodUnit = "unknown"
+        }
+
+        return "SKProductSubscriptionPeriod: \(skProductSubscriptionPeriod.numberOfUnits) \(periodUnit)"
+    }
+
 }

@@ -89,17 +89,17 @@ extension SubscriptionPeriod {
         case .day:
             if value.isMultiple(of: 7) {
                 let numberOfWeeks = value / 7
-                return SubscriptionPeriod(value: numberOfWeeks, unit: .week)
+                return .init(value: numberOfWeeks, unit: .week)
             }
         case .month:
             if value.isMultiple(of: 12) {
                 let numberOfYears = value / 12
-                return SubscriptionPeriod(value: numberOfYears, unit: .year)
+                return .init(value: numberOfYears, unit: .year)
             }
         case .week, .year:
             break
         }
 
-        return SubscriptionPeriod(value: value, unit: unit)
+        return self
     }
 }
