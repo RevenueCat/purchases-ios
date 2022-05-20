@@ -11,6 +11,8 @@
 //
 //  Created by César de la Vega on 7/22/21.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 class HTTPClient {
@@ -132,7 +134,8 @@ private extension HTTPClient {
 private extension HTTPClient {
 
     var defaultHeaders: [String: String] {
-        let observerMode = systemInfo.finishTransactions ? "false" : "true"
+        let observerMode = !self.systemInfo.finishTransactions
+
         var headers: [String: String] = [
             "content-type": "application/json",
             "X-Version": SystemInfo.frameworkVersion,
@@ -142,7 +145,8 @@ private extension HTTPClient {
             "X-Client-Version": SystemInfo.appVersion,
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-StoreKit2-Setting": "\(self.systemInfo.storeKit2Setting.debugDescription)",
-            "X-Observer-Mode-Enabled": observerMode
+            "X-Observer-Mode-Enabled": "\(observerMode)",
+            "X-Is-Sandbox": "\(self.systemInfo.isSandbox)"
         ]
 
         if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
