@@ -102,9 +102,9 @@ class PostOfferForSigningOperation: NetworkOperation {
 private extension PostOfferResponse.Offer {
 
     var asSigningData: PostOfferForSigningOperation.SigningData? {
-        guard let signature = self.signatureData else { return nil }
+        guard let data = self.signatureData else { return nil }
 
-        return (signature.signature, self.keyIdentifier, signature.nonce, signature.timestamp)
+        return (data.signature, self.keyIdentifier, data.nonce, data.timestamp)
     }
 
 }
