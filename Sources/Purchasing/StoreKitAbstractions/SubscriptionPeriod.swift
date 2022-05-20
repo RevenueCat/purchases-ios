@@ -29,7 +29,8 @@ public class SubscriptionPeriod: NSObject {
     public init(value: Int, unit: Unit) {
         assert(value > 0, "Invalid value: \(value)")
 
-        (self.value, self.unit) = Self.normalizeValueAndUnits(value: value, unit: unit)
+        self.value = value
+        self.unit = unit
     }
 
     /// Units of time used to describe subscription periods.
@@ -54,6 +55,7 @@ public class SubscriptionPeriod: NSObject {
         }
 
         return .init(value: sk1SubscriptionPeriod.numberOfUnits, unit: unit)
+            .normalized()
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8, *)
@@ -63,6 +65,7 @@ public class SubscriptionPeriod: NSObject {
         }
 
         return .init(value: sk2SubscriptionPeriod.value, unit: unit)
+            .normalized()
     }
 
     public override func isEqual(_ object: Any?) -> Bool {

@@ -34,7 +34,7 @@ class StoreKitWorkaroundsTests: TestCase {
             (112, .day, 16, .week),
             (356, .day, 356, .day),
             (712, .day, 712, .day),
-            // Test week simplicfication
+            // Test week simplification
             (1, .week, 1, .week),
             (4, .week, 4, .week),
             (24, .week, 24, .week),
@@ -50,13 +50,20 @@ class StoreKitWorkaroundsTests: TestCase {
         ]
 
         for expectation in expectations {
-            let (outputValue, outputUnit) = SubscriptionPeriod.normalizeValueAndUnits(
+            let outputPeriod = SubscriptionPeriod(
                 value: expectation.inputValue,
                 unit: expectation.inputUnit
-            )
+            ).normalized()
 
-            expect(outputValue).to(equal(expectation.expectedValue))
-            expect(outputUnit).to(equal(expectation.expectedUnit))
+            expect(expectation.expectedValue).to(
+                equal(outputPeriod.value),
+                description: "Expected input value \(expectation.inputValue) to become \(expectation.expectedValue)."
+            )
+            expect(outputPeriod.unit).to(
+                equal(expectation.expectedUnit),
+                description: "Expected input unit \(expectation.inputUnit) to become \(expectation.expectedUnit)."
+            )
         }
     }
+
 }
