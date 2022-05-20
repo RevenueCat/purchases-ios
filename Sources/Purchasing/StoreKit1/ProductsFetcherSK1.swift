@@ -189,7 +189,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
     }
 
     func clearCache() {
-        queue.async {
+        self.queue.async {
             self.cachedProductsByIdentifier.removeAll()
         }
     }
