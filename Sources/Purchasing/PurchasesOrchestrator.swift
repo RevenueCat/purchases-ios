@@ -66,11 +66,23 @@ class PurchasesOrchestrator {
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let lock = NSRecursiveLock()
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    lazy var storeKit2TransactionListener = StoreKit2TransactionListener(delegate: self)
+    // Can't have these properties with `@available`.
+    // swiftlint:disable identifier_name
+    var _storeKit2TransactionListener: Any?
+    var _storeKit2StorefrontListener: Any?
+    // swiftlint:enable identifier_name
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    lazy var storeKit2StorefrontListener = StoreKit2StorefrontListener(delegate: self)
+    var storeKit2TransactionListener: StoreKit2TransactionListener {
+        // swiftlint:disable:next force_cast
+        return self._storeKit2TransactionListener! as! StoreKit2TransactionListener
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var storeKit2StorefrontListener: StoreKit2StorefrontListener {
+        // swiftlint:disable:next force_cast
+        return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
+    }
 
     init(productsManager: ProductsManager,
          storeKitWrapper: StoreKitWrapper,
@@ -99,10 +111,17 @@ class PurchasesOrchestrator {
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
 
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
-           systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
-            storeKit2TransactionListener.listenForTransactions()
-            storeKit2StorefrontListener.listenForStorefrontChanges()
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            let transactionListener = StoreKit2TransactionListener(delegate: self)
+            let storefrontListener = StoreKit2StorefrontListener(delegate: self)
+
+            self._storeKit2TransactionListener = transactionListener
+            self._storeKit2StorefrontListener = storefrontListener
+
+            if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+                transactionListener.listenForTransactions()
+                storefrontListener.listenForStorefrontChanges()
+            }
         }
     }
 
@@ -359,7 +378,7 @@ class PurchasesOrchestrator {
             throw ErrorUtils.purchasesError(withStoreKitError: error)
         }
 
-        let (userCancelled, customerInfoIfSynced, sk2Transaction) = try await storeKit2TransactionListener
+        let (userCancelled, customerInfoIfSynced, sk2Transaction) = try await self.storeKit2TransactionListener
             .handle(purchaseResult: result)
         let transaction = sk2Transaction.map(StoreTransaction.init(sk2Transaction:))
 
