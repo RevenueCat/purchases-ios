@@ -50,12 +50,9 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: generate_snapshots ? 0 : 5,
-      xcargs: generate_snapshots ? "CIRCLECI_TESTS_GENERATE_SNAPSHOTS='true'" : nil,
       output_directory: "fastlane/test_output/xctest/ios",
       fail_build: !generate_snapshots
     )
-
-    sh("git status")
   end
 
   desc "Runs all the tvOS tests"
@@ -332,7 +329,9 @@ platform :ios do
     version = options[:version]
     base_branch = ENV["CIRCLE_BRANCH"]
 
-    branch_name = "generated_snapshots/#{base_branch}-#{version}"
+    build_number = ENV["CIRCLE_BUILD_NUM"] 
+
+    branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
     sh("git", "checkout", "-b", branch_name)
 
     sh("git", "add", "../Tests")
