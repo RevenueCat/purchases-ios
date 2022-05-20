@@ -50,9 +50,12 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: generate_snapshots ? 0 : 5,
+      xcargs: generate_snapshots ? "CIRCLECI_TESTS_GENERATE_SNAPSHOTS='true'" : nil,
       output_directory: "fastlane/test_output/xctest/ios",
       fail_build: !generate_snapshots
     )
+
+    sh("git status")
   end
 
   desc "Runs all the tvOS tests"
