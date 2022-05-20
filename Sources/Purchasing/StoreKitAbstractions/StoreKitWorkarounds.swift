@@ -82,7 +82,7 @@ extension SubscriptionPeriod {
     /// of months into years if there are no leftover units after the conversion.
     ///
     /// Occassionally, StoreKit seems to send back a value 7 days for a 7day trial
-    /// instesad of a value of 1 week for a trial of 7 days in length.
+    /// instead of a value of 1 week for a trial of 7 days in length.
     /// Source: https://github.com/RevenueCat/react-native-purchases/issues/348
     internal static func normalizeValueAndUnits(
         value: Int,
