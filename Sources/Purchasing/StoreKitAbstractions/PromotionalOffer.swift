@@ -81,41 +81,15 @@ extension PromotionalOffer.SignedData {
                                  timestamp: self.timestamp as NSNumber)
     }
 
-    /// - Throws: ``ErrorCode/unexpectedBackendResponseError`` if the signature cannot be encoded in UTF8
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     var sk2PurchaseOption: Product.PurchaseOption {
-        get throws {
-            guard let signatureData = self.signature.data(using: .utf8) else {
-                throw ErrorUtils.unexpectedBackendResponse(
-                    withSubError: PromotionalOffer.Error.invalidSignature(self.signature)
-                )
-            }
-
-            return .promotionalOffer(
-                offerID: self.identifier,
-                keyID: self.keyIdentifier,
-                nonce: self.nonce,
-                signature: signatureData,
-                timestamp: self.timestamp
-            )
-        }
-    }
-
-}
-
-extension PromotionalOffer {
-
-    enum Error: DescribableError {
-
-        case invalidSignature(String)
-
-        var description: String {
-            switch self {
-            case let .invalidSignature(signature):
-                return "PromotionalOffer.signature cannot be encoded in UTF8: '\(signature)'"
-            }
-        }
-
+        return .promotionalOffer(
+            offerID: self.identifier,
+            keyID: self.keyIdentifier,
+            nonce: self.nonce,
+            signature: self.signature.asData,
+            timestamp: self.timestamp
+        )
     }
 
 }

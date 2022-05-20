@@ -203,7 +203,7 @@ class ETagManagerTests: TestCase {
         let request = URLRequest(url: url)
         let cacheKey = url.absoluteString
 
-        let actualResponse = "response".data(using: .utf8)!
+        let actualResponse = "response".asData
 
         let wrapper = OldWrapper(eTag: eTag,
                                  statusCode: HTTPStatusCode.success.rawValue,
