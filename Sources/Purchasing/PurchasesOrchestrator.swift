@@ -480,7 +480,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     }
 
     func storeKitWrapperDidChangeStorefront(_ storeKitWrapper: StoreKitWrapper) {
-        handleChangeStorefront()
+        handleStorefrontChange()
     }
 
 }
@@ -557,7 +557,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
     func storefrontDidUpdate() {
-        handleChangeStorefront()
+        handleStorefrontChange()
     }
 
 }
@@ -767,7 +767,7 @@ private extension PurchasesOrchestrator {
                  completion: completion)
     }
 
-    func handleChangeStorefront() {
+    func handleStorefrontChange() {
         productsManager.clearCachedProducts()
         deviceCache.clearCachedOfferings()
     }
