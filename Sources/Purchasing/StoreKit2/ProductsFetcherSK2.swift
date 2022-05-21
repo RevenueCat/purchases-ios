@@ -43,10 +43,6 @@ actor ProductsFetcherSK2 {
         }
     }
 
-    func clearCache() {
-        self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
-    }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -88,6 +84,10 @@ private extension ProductsFetcherSK2 {
         }
 
         return storeFrontIdentifier
+    }
+
+    func clearCache() {
+        self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
     }
 
     var currentStorefrontIdentifier: String? {
