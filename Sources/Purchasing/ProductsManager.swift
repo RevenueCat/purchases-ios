@@ -74,9 +74,7 @@ class ProductsManager: NSObject {
     func clearCachedProducts() {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
-            Task<Void, Never> {
-                await productsFetcherSK2.clearCache()
-            }
+            // We have to re-fetch the products
         } else {
             productsFetcherSK1.clearCache()
         }
