@@ -51,6 +51,8 @@ import Foundation
     let storeKit1Timeout: TimeInterval
 
     private init(with builder: Builder) {
+        Self.verify(apiKey: builder.apiKey)
+
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
@@ -182,5 +184,41 @@ import Foundation
         }
 
     }
+
+}
+
+// MARK: - API Key Validation
+
+// Visible for testing
+extension Configuration {
+
+    enum APIKeyValidationResult {
+        case validApplePlatform
+        case otherPlatforms
+        case legacy
+    }
+
+    static func validate(apiKey: String) -> APIKeyValidationResult {
+        if apiKey.hasPrefix(Self.applePlatformKeyPrefix) {
+            // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+            return .validApplePlatform
+        } else if apiKey.contains("_") {
+            // Other platforms format: "otherplatform_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+            return .otherPlatforms
+        } else {
+            // Legacy key format: "CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+            return .legacy
+        }
+    }
+
+    fileprivate static func verify(apiKey: String) {
+        switch self.validate(apiKey: apiKey) {
+        case .validApplePlatform: break
+        case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
+        case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
+        }
+    }
+
+    private static let applePlatformKeyPrefix: String = "appl_"
 
 }

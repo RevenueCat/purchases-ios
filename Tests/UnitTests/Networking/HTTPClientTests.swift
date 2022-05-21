@@ -136,6 +136,44 @@ class HTTPClientTests: TestCase {
         expect(headerPresent.value).toEventually(equal(true))
     }
 
+    func testAlwaysPassesIsSandboxWhenEnabled() {
+        let headerName = "X-Is-Sandbox"
+        self.systemInfo.stubbedIsSandbox = true
+
+        let header: Atomic<String?> = .init(nil)
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+
+        expect(header.value).toEventuallyNot(beNil())
+        expect(header.value) == "true"
+    }
+
+    func testAlwaysPassesIsSandboxWhenDisabled() {
+        let headerName = "X-Is-Sandbox"
+        self.systemInfo.stubbedIsSandbox = false
+
+        let header: Atomic<String?> = .init(nil)
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+
+        expect(header.value).toEventuallyNot(beNil())
+        expect(header.value) == "false"
+    }
+
     func testCallsTheGivenPath() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
@@ -557,7 +595,7 @@ class HTTPClientTests: TestCase {
             expect(requestNumber) == completionCallCount.value
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: .utf8)!,
+            return HTTPStubsResponse(data: json.asData,
                                      statusCode: .success,
                                      headers: nil)
                 .responseTime(0.003)
@@ -631,7 +669,7 @@ class HTTPClientTests: TestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: .utf8)!,
+            return HTTPStubsResponse(data: json.asData,
                                      statusCode: .success,
                                      headers: nil)
                 .responseTime(responseTime)

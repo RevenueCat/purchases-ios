@@ -356,12 +356,11 @@ extension Decodable where Self: Encodable {
 extension Decodable {
 
     static func decode(_ json: String) throws -> Self {
-        return try JSONDecoder.default.decode(jsonData: json.data(using: .utf8)!)
+        return try JSONDecoder.default.decode(jsonData: json.asData)
     }
 
     static func decodeEmptyData() throws -> Self {
-        let json = "{}".data(using: .utf8)!
-        return try JSONDecoder.default.decode(jsonData: json)
+        return try self.decode("{}")
     }
 
 }

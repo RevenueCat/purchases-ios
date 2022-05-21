@@ -208,7 +208,7 @@ class DeviceCacheTests: TestCase {
             }
         """
         let offeringsData: OfferingsResponse.Offering = try JSONDecoder.default.decode(
-            jsonData: offeringsJSON.data(using: .utf8)!
+            jsonData: offeringsJSON.asData
         )
 
         let offering = try XCTUnwrap(
