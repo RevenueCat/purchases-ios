@@ -13,6 +13,8 @@
 
 import Foundation
 
+/// The representation of ``CustomerInfo`` as sent by the backend.
+/// Thanks to `@IgnoreHashable`, only `subscriber` is used for equality / hash.
 struct CustomerInfoResponse {
 
     var subscriber: Subscriber
@@ -94,6 +96,8 @@ extension CustomerInfoResponse.Entitlement: Hashable {}
 extension CustomerInfoResponse.Entitlement: Encodable {}
 extension CustomerInfoResponse.Entitlement: Decodable {
 
+    // Note: this must be manually implemented because of the custom call to `decodeRawData`
+    // which can't be abstracted as a property wrapper.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -122,6 +126,8 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
 
 extension CustomerInfoResponse: Codable {
 
+    // Note: this must be manually implemented because of the custom call to `decodeRawData`
+    // which can't be abstracted as a property wrapper.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
