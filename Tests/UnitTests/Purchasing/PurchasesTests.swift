@@ -98,14 +98,15 @@ class PurchasesTests: TestCase {
         var timeout = false
         var getSubscriberCallCount = 0
         var overrideCustomerInfoResult: Result<CustomerInfo, BackendError> = .success(
-            CustomerInfo(testData: [
+            // swiftlint:disable:next force_try
+            try! CustomerInfo(data: [
                 "request_date": "2019-08-16T10:30:42Z",
                 "subscriber": [
                     "first_seen": "2019-07-17T00:05:54Z",
                     "original_app_user_id": "app_user_id",
                     "subscriptions": [:],
                     "other_purchases": [:]
-                ]])!
+                ]])
         )
 
         override func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
@@ -405,7 +406,7 @@ class PurchasesTests: TestCase {
 
     func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() throws {
         systemInfo.stubbedIsApplicationBackgrounded = true
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -414,9 +415,7 @@ class PurchasesTests: TestCase {
                 "other_purchases": [:]
             ]])
 
-        let jsonObject = info!.jsonObject()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         setupPurchases()
@@ -1177,7 +1176,7 @@ class PurchasesTests: TestCase {
     }
 
     func testRestoringPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -1188,9 +1187,8 @@ class PurchasesTests: TestCase {
                 "original_purchase_date": "2018-10-26T23:17:53Z"
             ]])
 
-        let jsonObject = info!.jsonObject()
+        let object = try info.asData()
 
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
@@ -1211,7 +1209,7 @@ class PurchasesTests: TestCase {
     }
 
     func testRestoringPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1222,15 +1220,13 @@ class PurchasesTests: TestCase {
                 "original_purchase_date": "2018-10-26T23:17:53Z"
             ]])
 
-        let jsonObject = info!.jsonObject()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
 
         setupPurchases()
-        purchases!.restorePurchases()
+        purchases.restorePurchases()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1315,7 +1311,7 @@ class PurchasesTests: TestCase {
     }
 
     func testSyncPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1326,9 +1322,7 @@ class PurchasesTests: TestCase {
                 "original_purchase_date": "2018-10-26T23:17:53Z"
             ]])
 
-        let jsonObject = info!.jsonObject()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
@@ -1349,7 +1343,7 @@ class PurchasesTests: TestCase {
     }
 
     func testSyncPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1360,9 +1354,7 @@ class PurchasesTests: TestCase {
                 "original_purchase_date": "2018-10-26T23:17:53Z"
             ]])
 
-        let jsonObject = info!.jsonObject()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
@@ -1645,7 +1637,7 @@ class PurchasesTests: TestCase {
     }
 
     func testCachedCustomerInfoHasSchemaVersion() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1653,9 +1645,8 @@ class PurchasesTests: TestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let jsonObject = info!.jsonObject()
 
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
@@ -1663,7 +1654,7 @@ class PurchasesTests: TestCase {
 
         var receivedInfo: CustomerInfo?
 
-        purchases!.getCustomerInfo { (info, _) in
+        purchases.getCustomerInfo { (info, _) in
             receivedInfo = info
         }
 
@@ -1672,7 +1663,7 @@ class PurchasesTests: TestCase {
     }
 
     func testCachedCustomerInfoHandlesNullSchema() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1681,11 +1672,7 @@ class PurchasesTests: TestCase {
                 "other_purchases": [:]
             ]])
 
-        var jsonObject = info!.jsonObject()
-
-        jsonObject["schema_version"] = NSNull()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData(withNewSchemaVersion: NSNull())
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
@@ -1693,7 +1680,7 @@ class PurchasesTests: TestCase {
 
         var receivedInfo: CustomerInfo?
 
-        purchases!.getCustomerInfo { (info, _) in
+        purchases.getCustomerInfo { (info, _) in
             receivedInfo = info
         }
 
@@ -1701,7 +1688,7 @@ class PurchasesTests: TestCase {
     }
 
     func testSendsCachedCustomerInfoToGetter() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1709,7 +1696,8 @@ class PurchasesTests: TestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let object = try JSONSerialization.data(withJSONObject: info!.jsonObject(), options: [])
+
+        let object = try info.asData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
@@ -1717,7 +1705,7 @@ class PurchasesTests: TestCase {
 
         var receivedInfo: CustomerInfo?
 
-        purchases!.getCustomerInfo { (info, _) in
+        purchases.getCustomerInfo { (info, _) in
             receivedInfo = info
         }
 
@@ -1725,7 +1713,7 @@ class PurchasesTests: TestCase {
     }
 
     func testCustomerInfoCompletionBlockCalledExactlyOnceWhenInfoCached() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1733,7 +1721,8 @@ class PurchasesTests: TestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let object = try JSONSerialization.data(withJSONObject: info!.jsonObject(), options: [])
+
+        let object =  try info.asData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
         self.backend.timeout = false
@@ -1742,7 +1731,7 @@ class PurchasesTests: TestCase {
 
         var callCount = 0
 
-        purchases!.getCustomerInfo { (_, _) in
+        purchases.getCustomerInfo { (_, _) in
             callCount += 1
         }
 
@@ -1750,7 +1739,7 @@ class PurchasesTests: TestCase {
     }
 
     func testDoesntSendsCachedCustomerInfoToGetterIfSchemaVersionDiffers() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1758,9 +1747,8 @@ class PurchasesTests: TestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        var jsonObject = info!.jsonObject()
-        jsonObject["schema_version"] = "bad_version"
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+
+        let object = try info.asData(withNewSchemaVersion: "bad_version")
 
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
@@ -1777,7 +1765,7 @@ class PurchasesTests: TestCase {
     }
 
     func testDoesntSendsCachedCustomerInfoToGetterIfNoSchemaVersionInCached() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1785,9 +1773,8 @@ class PurchasesTests: TestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        var jsonObject = info!.jsonObject()
-        jsonObject.removeValue(forKey: "schema_version")
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+
+        let object = try info.asData(withNewSchemaVersion: nil)
 
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true

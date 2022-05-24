@@ -214,9 +214,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
     }
 
-    func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() {
+    func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() throws {
         mockBackend.stubbedGetCustomerInfoResult = .success(
-            CustomerInfo(testData: [
+            try CustomerInfo(data: [
                 "request_date": "2019-08-16T10:30:42Z",
                 "subscriber": [
                     "first_seen": "2019-07-17T00:05:54Z",
@@ -226,7 +226,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                     "original_application_version": "1.0",
                     "original_purchase_date": "2018-10-26T23:17:53Z"
                 ]
-            ])!
+            ])
         )
 
         setupPurchases()
