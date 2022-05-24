@@ -220,9 +220,8 @@ extension CustomerInfo: RawDataContainer {
 
     // Docs inherited from protocol
     // swiftlint:disable missing_docs
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    public var underlyingData: some Encodable {
-        return self.data.response
+    public var rawData: [String: Any] {
+        return self.data.response.rawData
     }
 
 }

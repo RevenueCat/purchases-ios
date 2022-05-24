@@ -15,8 +15,12 @@ import Foundation
 
 struct CustomerInfoResponse {
 
-    var requestDate: Date
     var subscriber: Subscriber
+
+    @IgnoreHashable
+    var requestDate: Date
+    @IgnoreEncodable @IgnoreHashable
+    var rawData: [String: Any]
 
 }
 
@@ -74,6 +78,9 @@ extension CustomerInfoResponse {
         var productIdentifier: String
         var purchaseDate: Date?
 
+        @IgnoreEncodable @IgnoreHashable
+        var rawData: [String: Any]
+
     }
 
 }
@@ -81,8 +88,23 @@ extension CustomerInfoResponse {
 // MARK: -
 
 extension CustomerInfoResponse.Subscriber: Codable, Hashable {}
-extension CustomerInfoResponse.Entitlement: Codable, Hashable {}
 extension CustomerInfoResponse.Subscription: Codable, Hashable {}
+
+extension CustomerInfoResponse.Entitlement: Hashable {}
+extension CustomerInfoResponse.Entitlement: Encodable {}
+extension CustomerInfoResponse.Entitlement: Decodable {
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.expiresDate = try container.decodeIfPresent(Date.self, forKey: .expiresDate)
+        self.productIdentifier = try container.decode(String.self, forKey: .productIdentifier)
+        self.purchaseDate = try container.decodeIfPresent(Date.self, forKey: .purchaseDate)
+
+        self.rawData = decoder.decodeRawData()
+    }
+
+}
 
 extension CustomerInfoResponse.Transaction: Codable, Hashable {
 
@@ -98,20 +120,20 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
 
 }
 
-extension CustomerInfoResponse: Codable {}
+extension CustomerInfoResponse: Codable {
 
-// Equality + hash ignore request date.
-extension CustomerInfoResponse: Equatable, Hashable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
 
-    static func == (lhs: CustomerInfoResponse, rhs: CustomerInfoResponse) -> Bool {
-        return lhs.subscriber == rhs.subscriber
-    }
+        self.requestDate = try container.decode(Date.self, forKey: .requestDate)
+        self.subscriber = try container.decode(Subscriber.self, forKey: .subscriber)
 
-    func hash(into hasher: inout Hasher) {
-        self.subscriber.hash(into: &hasher)
+        self.rawData = decoder.decodeRawData()
     }
 
 }
+
+extension CustomerInfoResponse: Equatable, Hashable {}
 
 extension CustomerInfoResponse.Transaction {
 

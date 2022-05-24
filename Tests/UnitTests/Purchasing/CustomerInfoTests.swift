@@ -261,10 +261,11 @@ class BasicCustomerInfoTests: TestCase {
 
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func testPreservesOriginalJSONSerializableObject() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+    func testDecodesRawData() throws {
+        expect(self.customerInfo.rawData).toNot(beEmpty())
+    }
 
+    func testPreservesOriginalJSONSerializableObject() throws {
         expect(try CustomerInfo(data: self.customerInfo.rawData)) == self.customerInfo
     }
 

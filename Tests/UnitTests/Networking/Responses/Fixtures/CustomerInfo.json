@@ -42,7 +42,10 @@
             "premium": {
                 "expires_date": "1990-08-30T02:40:36Z",
                 "product_identifier": "com.revenuecat.monthly_4.99.1_week_intro",
-                "purchase_date": "1990-08-30T02:40:36Z"
+                "purchase_date": "1990-08-30T02:40:36Z",
+                "future_data": {
+                    "is_included": "in_raw_data"
+                }
             },
             "tip": {
                 "expires_date": null,
@@ -50,5 +53,8 @@
                 "purchase_date": "1990-09-30T02:40:36Z"
             }
         }
+    },
+    "future_data": {
+        "is_included": "in_raw_data"
     }
 }
