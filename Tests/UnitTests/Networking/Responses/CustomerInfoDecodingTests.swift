@@ -94,6 +94,38 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         expect(entitlement2.purchaseDate) == Self.dateFormatter.date(from: "1990-09-30T02:40:36Z")
     }
 
+    func testEntitlementsContainAllRawData() throws {
+        let entitlement = try XCTUnwrap(self.customerInfo.subscriber.entitlements["premium"])
+
+        let futureData = try XCTUnwrap(
+            entitlement.rawData["future_data"],
+            "Unparsed key is not included in raw data"
+        )
+        let parsedData = try XCTUnwrap(
+            futureData as? [String: String],
+            "Data is the wrong type: \(futureData)"
+        )
+
+        expect(parsedData) == ["is_included": "in_raw_data"]
+    }
+
+    func testRawDataIsNotEncoded() throws {
+        expect(try self.customerInfo.asDictionary().keys).toNot(contain("raw_data"))
+    }
+
+    func testRawDataIncludesUnparsedKeys() throws {
+        let futureData = try XCTUnwrap(
+            self.customerInfo.rawData["future_data"],
+            "Unparsed key is not included in raw data"
+        )
+        let parsedData = try XCTUnwrap(
+            futureData as? [String: String],
+            "Data is the wrong type: \(futureData)"
+        )
+
+        expect(parsedData) == ["is_included": "in_raw_data"]
+    }
+
     func testReencoding() {
         expect(try self.customerInfo.encodeAndDecode()) == self.customerInfo
     }

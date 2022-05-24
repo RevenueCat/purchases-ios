@@ -15,27 +15,32 @@
 /// to future data while using an older version of the SDK.
 public protocol RawDataContainer {
 
-    /// The type of the ``RawDataContainer/underlyingData`` for this type.
-    associatedtype Content: Encodable
+    /// The type of the ``RawDataContainer/rawData`` for this type.
+    associatedtype Content
 
     /// The underlying content for debugging purposes or for getting access
     /// to future data while using an older version of the SDK.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    var underlyingData: Content { get }
+    var rawData: Content { get }
 
 }
 
-/// Default implementation that encodes the `underlyingData` for public use.
-extension RawDataContainer {
+extension Decoder {
 
-    /// The underlying data for this type, for debugging purposes or for getting access
-    /// to future data while using an older version of the SDK.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    public var rawData: [String: Any] {
+    /// Decodes the entire content of this `Decoder` into `[String: Any]` to be used for a `RawDataContainer` type.
+    func decodeRawData() -> [String: Any] {
         do {
-            return try self.underlyingData.asDictionary()
+            let value = try self.singleValueContainer()
+                .decode(AnyDecodable.self)
+                .asAny
+
+            guard let dictionary = value as? [String: Any] else {
+                Logger.warn(Strings.codable.unexpectedValueError(type: type(of: value), value: value))
+                return [:]
+            }
+
+            return dictionary
         } catch {
-            Logger.warn(Strings.codable.encoding_error(error))
+            Logger.warn(Strings.codable.decoding_error(error))
             return [:]
         }
     }
