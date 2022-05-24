@@ -25,7 +25,7 @@ import AppKit
 
 class SystemInfo {
 
-    let appleSubscriptionsURL = URL(string: "https://rev.cat/manage-apple-subscription")
+    static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 
     let storeKit2Setting: StoreKit2Setting
     var finishTransactions: Bool
@@ -132,7 +132,7 @@ class SystemInfo {
     }
     #endif
 
-    func isAppleSubscription(managementURL: URL) -> Bool {
+    static func isAppleSubscription(managementURL: URL) -> Bool {
         guard let host = managementURL.host else { return false }
         return host.contains("apple.com")
     }
