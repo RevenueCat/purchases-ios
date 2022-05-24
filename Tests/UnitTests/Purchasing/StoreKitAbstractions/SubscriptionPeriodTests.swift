@@ -104,7 +104,7 @@ class SubscriptionPeriodTests: TestCase {
             expect(normalizedPeriod).to(
                 equal(expected),
                 description: """
-                    Expected \(description(for: sk1SubscriptionPeriod)) to become \(expected.debugDescription).
+                    Expected \(sk1SubscriptionPeriod.testDescription) to become \(expected.debugDescription).
                     """
             )
         }
@@ -130,6 +130,30 @@ class SubscriptionPeriodTests: TestCase {
         }
 
         return "SKProductSubscriptionPeriod: \(skProductSubscriptionPeriod.numberOfUnits) \(periodUnit)"
+    }
+
+}
+
+@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+extension SKProductSubscriptionPeriod {
+
+    internal var testDescription: String {
+        let periodUnit: String
+
+        switch self.unit {
+        case .day:
+            periodUnit = "days"
+        case .week:
+            periodUnit = "weeks"
+        case .month:
+            periodUnit = "months"
+        case .year:
+            periodUnit = "years"
+        @unknown default:
+            periodUnit = "unknown"
+        }
+
+        return "SKProductSubscriptionPeriod: \(numberOfUnits) \(periodUnit)"
     }
 
 }
