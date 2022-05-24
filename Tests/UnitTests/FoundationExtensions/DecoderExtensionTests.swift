@@ -275,6 +275,30 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
 
 }
 
+class IgnoreEncodableTests: TestCase {
+
+    private struct Data: Codable, Equatable {
+        var value: Int
+        @IgnoreEncodable var ignored: Int
+    }
+
+    func testValueIsNotEncoded() throws {
+        let data = Data(value: 2, ignored: 2)
+        let encoded = try XCTUnwrap(
+            String(data: try JSONEncoder.default.encode(data), encoding: .utf8)
+        )
+
+        expect(encoded) == "{\"value\":2}"
+    }
+
+    func testValueIsDecoded() throws {
+        let json = "{\"value\": 1, \"ignored\": 2}"
+
+        expect(try Data.decode(json)) == .init(value: 1, ignored: 2)
+    }
+
+}
+
  class DecoderExtensionsLossyAndDefaultCompositionTests: TestCase {
 
      private struct Data: Codable, Equatable {
