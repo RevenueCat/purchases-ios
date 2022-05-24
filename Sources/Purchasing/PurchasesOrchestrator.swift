@@ -348,6 +348,12 @@ class PurchasesOrchestrator {
 
         do {
             result = try await sk2Product.purchase(options: options)
+        } catch StoreKitError.userCancelled {
+            return (
+                transaction: nil,
+                customerInfo: try await self.syncPurchases(receiptRefreshPolicy: .always, isRestore: false),
+                userCancelled: true
+            )
         } catch {
             throw ErrorUtils.purchasesError(withStoreKitError: error)
         }
