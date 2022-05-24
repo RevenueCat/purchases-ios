@@ -25,34 +25,39 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         self.response = try self.decodeFixture("Offerings")
     }
 
-    func testResponseDataIsCorrect() throws {
+    func testDecodesAllOfferings() throws {
         expect(self.response.currentOfferingId) == "default"
         expect(self.response.offerings).to(haveCount(2))
+    }
 
-        let offering1 = self.response.offerings[0]
-        let offering2 = self.response.offerings[1]
+    func testDecodesFirstOffering() throws {
+        let offering = try XCTUnwrap(self.response.offerings.first)
 
-        expect(offering1.identifier) == "default"
-        expect(offering1.description) == "standard set of packages"
-        expect(offering1.packages).to(haveCount(2))
+        expect(offering.identifier) == "default"
+        expect(offering.description) == "standard set of packages"
+        expect(offering.packages).to(haveCount(2))
 
-        let offering1Package1 = offering1.packages[0]
-        let offering1Package2 = offering1.packages[1]
+        let package1 = offering.packages[0]
+        let package2 = offering.packages[1]
 
-        expect(offering1Package1.identifier) == PackageType.monthly.description
-        expect(offering1Package1.platformProductIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+        expect(package1.identifier) == PackageType.monthly.description
+        expect(package1.platformProductIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
 
-        expect(offering1Package2.identifier) == PackageType.annual.description
-        expect(offering1Package2.platformProductIdentifier) == "com.revenuecat.yearly_10.99.2_week_intro"
+        expect(package2.identifier) == PackageType.annual.description
+        expect(package2.platformProductIdentifier) == "com.revenuecat.yearly_10.99.2_week_intro"
+    }
 
-        expect(offering2.identifier) == "alternate"
-        expect(offering2.description) == "alternate offering"
-        expect(offering2.packages).to(haveCount(1))
+    func testDecodesSecondOffering() throws {
+        let offering = try XCTUnwrap(self.response.offerings.last)
 
-        let offering2Package = offering2.packages[0]
+        expect(offering.identifier) == "alternate"
+        expect(offering.description) == "alternate offering"
+        expect(offering.packages).to(haveCount(1))
 
-        expect(offering2Package.identifier) == PackageType.lifetime.description
-        expect(offering2Package.platformProductIdentifier) == "com.revenuecat.other_product"
+        let package = offering.packages[0]
+
+        expect(package.identifier) == PackageType.lifetime.description
+        expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
     }
 
 }
