@@ -43,3 +43,13 @@ func checkCustomerInfoAPI() {
     print(customerInfo!, entitlementInfo, asubs, appis, led!, ncp, nst, oav!, opd!, rDate!, fSeen, oaud!, murl!,
           edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData)
 }
+
+func checkCacheFetchPolicyEnum(_ policy: CacheFetchPolicy) {
+    switch policy {
+    case .fromCacheOnly: break
+    case .fetchCurrent: break
+    case .cachedOrFetched: break
+
+    @unknown default: break
+    }
+}
