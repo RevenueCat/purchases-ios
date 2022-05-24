@@ -1053,6 +1053,14 @@ class EntitlementInfosTests: TestCase {
 
         try verifyRenewal(false)
     }
+
+    func testRawData() throws {
+        let info = try CustomerInfo(data: self.response)
+
+        expect(info.entitlements.all.values).to(allPass {
+            !$0.rawData.isEmpty
+        })
+    }
 }
 
 private extension EntitlementInfosTests {
