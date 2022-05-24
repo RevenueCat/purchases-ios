@@ -19,8 +19,8 @@ extension PeriodType: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         guard let periodTypeString = try? container.decode(String.self) else {
-            throw decoder.throwValueNotFoundError(expectedType: PeriodType.self,
-                                                  message: "Unable to extract a periodTypeString")
+            throw decoder.valueNotFoundError(expectedType: PeriodType.self,
+                                             message: "Unable to extract a periodTypeString")
         }
 
         guard let type = Self.mapping[periodTypeString] else {
