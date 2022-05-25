@@ -249,6 +249,7 @@
 		5766AABF283E80B500FA6091 /* BasePurchasesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AABE283E80B500FA6091 /* BasePurchasesTests.swift */; };
 		5766AAC5283E843300FA6091 /* PurchasesConfiguringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AAC4283E843300FA6091 /* PurchasesConfiguringTests.swift */; };
 		5766AAC9283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AAC8283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift */; };
+		5766AAD1283E981700FA6091 /* PurchasesPurchasingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AAD0283E981700FA6091 /* PurchasesPurchasingTests.swift */; };
 		576C8A8B27CFCB150058FA6E /* AnyEncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A8A27CFCB150058FA6E /* AnyEncodable.swift */; };
 		576C8A8F27CFCD110058FA6E /* AnyEncodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A8E27CFCD110058FA6E /* AnyEncodableTests.swift */; };
 		576C8A9227D27DDD0058FA6E /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
@@ -719,6 +720,7 @@
 		5766AABE283E80B500FA6091 /* BasePurchasesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePurchasesTests.swift; sourceTree = "<group>"; };
 		5766AAC4283E843300FA6091 /* PurchasesConfiguringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesConfiguringTests.swift; sourceTree = "<group>"; };
 		5766AAC8283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesGetCustomerInfoTests.swift; sourceTree = "<group>"; };
+		5766AAD0283E981700FA6091 /* PurchasesPurchasingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesPurchasingTests.swift; sourceTree = "<group>"; };
 		576C8A8A27CFCB150058FA6E /* AnyEncodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyEncodable.swift; sourceTree = "<group>"; };
 		576C8A8E27CFCD110058FA6E /* AnyEncodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyEncodableTests.swift; sourceTree = "<group>"; };
 		576C8A9027D180540058FA6E /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
@@ -1640,6 +1642,7 @@
 				5766AABE283E80B500FA6091 /* BasePurchasesTests.swift */,
 				5766AAC4283E843300FA6091 /* PurchasesConfiguringTests.swift */,
 				5766AAC8283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift */,
+				5766AAD0283E981700FA6091 /* PurchasesPurchasingTests.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -2523,6 +2526,7 @@
 				5733B1A427FF9F8300EC2045 /* NetworkErrorTests.swift in Sources */,
 				351B517026D44E8D00BD2BD7 /* MockDateProvider.swift in Sources */,
 				2D1C3F3926B9D8B800112626 /* MockBundle.swift in Sources */,
+				5766AAD1283E981700FA6091 /* PurchasesPurchasingTests.swift in Sources */,
 				351B515E26D44B9900BD2BD7 /* MockPurchasesDelegate.swift in Sources */,
 				57554CC1282AE1E3009A7E58 /* TestCase.swift in Sources */,
 				57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */,

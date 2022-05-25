@@ -187,6 +187,19 @@ class BasePurchasesTests: TestCase {
         Purchases.setDefaultInstance(self.purchases)
     }
 
+    func makeAPurchase() {
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+
+        guard let purchases = self.purchases else { fatalError("purchases is not initialized") }
+        purchases.purchase(product: product) { _, _, _, _ in }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockState = SKPaymentTransactionState.purchased
+
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+    }
+
 }
 
 extension BasePurchasesTests {
