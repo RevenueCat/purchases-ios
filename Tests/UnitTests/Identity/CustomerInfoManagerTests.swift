@@ -64,7 +64,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testFetchAndCacheCustomerInfoCallsBackendWithRandomDelayIfAppBackgrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: true,
                                                       completion: nil)
 
@@ -76,7 +76,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testFetchAndCacheCustomerInfoCallsBackendWithoutRandomDelayIfAppForegrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false,
                                                       completion: nil)
 
@@ -92,7 +92,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         var completionCalled = false
         var receivedError: BackendError?
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { result in
             completionCalled = true
             receivedError = result.error
@@ -108,7 +108,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         mockBackend.stubbedGetCustomerInfoResult = .failure(.missingAppUserID())
 
         var completionCalled = false
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { _ in
             completionCalled = true
         }
@@ -124,7 +124,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         var completionCalled = false
         var receivedCustomerInfo: CustomerInfo?
 
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { result in
             completionCalled = true
             receivedCustomerInfo = result.value
@@ -143,7 +143,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
         var completionCalled = false
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { _ in
             completionCalled = true
         }
@@ -159,14 +159,13 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         var firstCompletionCalled = false
         var secondCompletionCalled = false
 
-        let appUserID = "myUser"
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
                                                              isAppBackgrounded: false) { _ in
             firstCompletionCalled = true
         }
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
+        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
                                                              isAppBackgrounded: false) { _ in
             secondCompletionCalled = true
         }
@@ -177,12 +176,11 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testFetchAndCacheCustomerInfoIfStaleFetchesIfStale() {
-        let appUserID = "myUser"
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
+        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
         var completionCalled = false
 
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
                                                              isAppBackgrounded: false) { _ in
             completionCalled = true
         }
@@ -195,7 +193,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
         var completionCalled = false
 
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
                                                              isAppBackgrounded: false) { _ in
             completionCalled = true
         }
@@ -208,17 +206,16 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let info = try CustomerInfo(data: [
         "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
 
         let object = try info.asData()
-        let appUserID = "myUser"
-        self.mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
 
         expect(self.customerInfoManagerChangesCallCount) == 1
     }
@@ -227,7 +224,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let oldInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -235,24 +232,23 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         var object = try oldInfo.asData()
 
-        let appUserID = "myUser"
-        mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
 
         let newInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]])
 
         object = try newInfo.asData()
-        mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
         expect(self.customerInfoManagerChangesCallCount) == 2
     }
 
@@ -260,28 +256,26 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let oldInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
 
         let object = try oldInfo.asData()
-        let appUserID = "myUser"
-        mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
         expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 1
     }
 
     func testCustomerInfoReturnsFromCacheIfAvailable() {
-        let appUserID = "myUser"
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
+        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
 
         var completionCalled = false
         var receivedCustomerInfo: CustomerInfo?
 
-        customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default) { result in
+        customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { result in
             completionCalled = true
             receivedCustomerInfo = result.value
         }
@@ -292,14 +286,13 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCustomerInfoReturnsFromCacheAndRefreshesIfStale() {
-        let appUserID = "myUser"
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
+        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
 
         var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default) { _ in
+        customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { _ in
             completionCalled = true
         }
 
@@ -326,7 +319,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
@@ -350,7 +343,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
@@ -378,7 +371,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
             "request_date": "2019-08-16T10:30:42Z",
             "schema_version": "\(oldSchemaVersion)",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
