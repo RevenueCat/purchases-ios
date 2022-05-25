@@ -32,7 +32,7 @@ class BasePurchasesTests: TestCase {
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockReceiptParser = MockReceiptParser()
-        self.identityManager = MockIdentityManager(mockAppUserID: "app_user")
+        self.identityManager = MockIdentityManager(mockAppUserID: Self.appUserID)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: self.mockProductsManager,
                                                                              receiptParser: self.mockReceiptParser)
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "4.4.0")
@@ -191,11 +191,13 @@ class BasePurchasesTests: TestCase {
 
 extension BasePurchasesTests {
 
+    static let appUserID = "app_user_id"
+
     static let emptyCustomerInfoData: [String: Any] = [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
             "first_seen": "2019-07-17T00:05:54Z",
-            "original_app_user_id": "app_user_id",
+            "original_app_user_id": BasePurchasesTests.appUserID,
             "subscriptions": [:],
             "other_purchases": [:],
             "original_application_version": NSNull()
@@ -210,7 +212,6 @@ extension BasePurchasesTests {
         var userID: String?
         var originalApplicationVersion: String?
         var originalPurchaseDate: Date?
-        var timeout = false
         var getSubscriberCallCount = 0
         var overrideCustomerInfoResult: Result<CustomerInfo, BackendError> = .success(
             // swiftlint:disable:next force_try
@@ -218,14 +219,12 @@ extension BasePurchasesTests {
         )
 
         override func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
-            getSubscriberCallCount += 1
-            userID = appUserID
+            self.getSubscriberCallCount += 1
+            self.userID = appUserID
 
-            if !timeout {
-                let result = self.overrideCustomerInfoResult
-                DispatchQueue.main.async {
-                    completion(result)
-                }
+            let result = self.overrideCustomerInfoResult
+            DispatchQueue.main.async {
+                completion(result)
             }
         }
 
