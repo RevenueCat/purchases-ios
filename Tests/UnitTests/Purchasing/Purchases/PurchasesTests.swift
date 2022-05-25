@@ -330,131 +330,6 @@ class PurchasesTests: BasePurchasesTests {
         expect(self.notificationCenter.observers.count).to(equal(2))
     }
 
-    func testRestoringPurchasesPostsTheReceipt() {
-        setupPurchases()
-        purchases!.restorePurchases()
-        expect(self.backend.postReceiptDataCalled).to(beTrue())
-    }
-
-    func testRestoringPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() throws {
-        let info = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "original_app_user_id": "app_user_id",
-                "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": "1.0",
-                "original_purchase_date": "2018-10-26T23:17:53Z"
-            ]])
-
-        let object = try info.asData()
-
-        self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
-
-        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
-
-        setupPurchases()
-        purchases!.restorePurchases()
-
-        expect(self.backend.postReceiptDataCalled) == false
-    }
-
-    func testRestoringPurchasesPostsIfReceiptEmptyAndCustomerInfoNotLoaded() {
-        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
-
-        setupPurchases()
-        purchases!.restorePurchases()
-
-        expect(self.backend.postReceiptDataCalled) == true
-    }
-
-    func testRestoringPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() throws {
-        let info = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": "1.0",
-                "original_purchase_date": "2018-10-26T23:17:53Z"
-            ]])
-
-        let object = try info.asData()
-        self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
-
-        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
-
-        setupPurchases()
-        purchases.restorePurchases()
-
-        expect(self.backend.postReceiptDataCalled) == true
-    }
-
-    func testRestoringPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoNotLoaded() {
-        mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
-
-        setupPurchases()
-        purchases!.restorePurchases()
-
-        expect(self.backend.postReceiptDataCalled) == true
-    }
-
-    func testRestoringPurchasesAlwaysRefreshesAndPostsTheReceipt() {
-        setupPurchases()
-        self.receiptFetcher.shouldReturnReceipt = true
-        purchases!.restorePurchases()
-
-        expect(self.receiptFetcher.receiptDataTimesCalled).to(equal(1))
-    }
-
-    func testRestoringPurchasesSetsIsRestore() {
-        setupPurchases()
-        purchases!.restorePurchases()
-        expect(self.backend.postedIsRestore!).to(beTrue())
-    }
-
-    func testRestoringPurchasesSetsIsRestoreForAnon() {
-        setupAnonPurchases()
-        purchases!.restorePurchases()
-
-        expect(self.backend.postedIsRestore!).to(beTrue())
-    }
-
-    func testRestoringPurchasesCallsSuccessDelegateMethod() throws {
-        setupPurchases()
-
-        let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
-        self.backend.postReceiptResult = .success(customerInfo)
-
-        var receivedCustomerInfo: CustomerInfo?
-
-        purchases!.restorePurchases { (info, _) in
-            receivedCustomerInfo = info
-        }
-
-        expect(receivedCustomerInfo).toEventually(be(customerInfo))
-    }
-
-    func testRestorePurchasesPassesErrorOnFailure() {
-        setupPurchases()
-
-        let error: BackendError = .missingAppUserID()
-
-        self.backend.postReceiptResult = .failure(error)
-        self.purchasesDelegate.customerInfo = nil
-
-        var receivedError: Error?
-
-        purchases!.restorePurchases { (_, newError) in
-            receivedError = newError
-        }
-
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError).to(matchError(error.asPurchasesError))
-    }
-
     func testSyncPurchasesPostsTheReceipt() {
         setupPurchases()
         purchases.syncPurchases(completion: nil)
@@ -719,34 +594,6 @@ class PurchasesTests: BasePurchasesTests {
             .to(beTrue())
     }
 
-    func testFetchVersionSendsAReceiptIfNoVersion() throws {
-        setupPurchases()
-
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": "1.0",
-                "original_purchase_date": "2018-10-26T23:17:53Z"
-            ]
-        ]))
-
-        var receivedCustomerInfo: CustomerInfo?
-
-        purchases?.restorePurchases { (info, _) in
-            receivedCustomerInfo = info
-        }
-
-        expect(receivedCustomerInfo?.originalApplicationVersion).toEventually(equal("1.0"))
-        expect(receivedCustomerInfo?.originalPurchaseDate)
-            .toEventually(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
-        expect(self.backend.userID).toEventuallyNot(beNil())
-        expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
-    }
-
     func testCachesCustomerInfo() {
         setupPurchases()
 
@@ -880,29 +727,6 @@ class PurchasesTests: BasePurchasesTests {
 
         expect(self.receiptFetcher.receiptDataCalled) == true
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
-    }
-
-    func testRestoresDontPostMissingReceipts() {
-        setupPurchases()
-        self.receiptFetcher.shouldReturnReceipt = false
-        var receivedError: NSError?
-        self.purchases?.restorePurchases { (_, error) in
-            receivedError = error as NSError?
-        }
-
-        expect(receivedError?.code).toEventually(equal(ErrorCode.missingReceiptFileError.rawValue))
-    }
-
-    func testRestorePurchasesCallsCompletionOnMainThreadWhenMissingReceipts() {
-        setupPurchases()
-        self.receiptFetcher.shouldReturnReceipt = false
-        var receivedError: NSError?
-        self.purchases?.restorePurchases { (_, error) in
-            receivedError = error as NSError?
-        }
-
-        expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 1
-        expect(receivedError?.code).toEventually(equal(ErrorCode.missingReceiptFileError.rawValue))
     }
 
     func testPaymentSheetCancelledErrorIsParsedCorrectly() {

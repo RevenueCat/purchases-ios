@@ -250,6 +250,7 @@
 		5766AAC5283E843300FA6091 /* PurchasesConfiguringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AAC4283E843300FA6091 /* PurchasesConfiguringTests.swift */; };
 		5766AAC9283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AAC8283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift */; };
 		5766AAD1283E981700FA6091 /* PurchasesPurchasingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AAD0283E981700FA6091 /* PurchasesPurchasingTests.swift */; };
+		5766AAD5283E9B7400FA6091 /* PurchasesRestoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AAD4283E9B7400FA6091 /* PurchasesRestoreTests.swift */; };
 		576C8A8B27CFCB150058FA6E /* AnyEncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A8A27CFCB150058FA6E /* AnyEncodable.swift */; };
 		576C8A8F27CFCD110058FA6E /* AnyEncodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A8E27CFCD110058FA6E /* AnyEncodableTests.swift */; };
 		576C8A9227D27DDD0058FA6E /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
@@ -721,6 +722,7 @@
 		5766AAC4283E843300FA6091 /* PurchasesConfiguringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesConfiguringTests.swift; sourceTree = "<group>"; };
 		5766AAC8283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesGetCustomerInfoTests.swift; sourceTree = "<group>"; };
 		5766AAD0283E981700FA6091 /* PurchasesPurchasingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesPurchasingTests.swift; sourceTree = "<group>"; };
+		5766AAD4283E9B7400FA6091 /* PurchasesRestoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesRestoreTests.swift; sourceTree = "<group>"; };
 		576C8A8A27CFCB150058FA6E /* AnyEncodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyEncodable.swift; sourceTree = "<group>"; };
 		576C8A8E27CFCD110058FA6E /* AnyEncodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyEncodableTests.swift; sourceTree = "<group>"; };
 		576C8A9027D180540058FA6E /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
@@ -1643,6 +1645,7 @@
 				5766AAC4283E843300FA6091 /* PurchasesConfiguringTests.swift */,
 				5766AAC8283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift */,
 				5766AAD0283E981700FA6091 /* PurchasesPurchasingTests.swift */,
+				5766AAD4283E9B7400FA6091 /* PurchasesRestoreTests.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -2464,6 +2467,7 @@
 				351B51A426D450BC00BD2BD7 /* NSError+RCExtensionsTests.swift in Sources */,
 				57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */,
 				351B51B826D450E800BD2BD7 /* StoreKitWrapperTests.swift in Sources */,
+				5766AAD5283E9B7400FA6091 /* PurchasesRestoreTests.swift in Sources */,
 				FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */,
 				B3CD0D8827F25E3E000793F5 /* BackendSubscriberAttributesTests.swift in Sources */,
 				2DDF41E624F6F5DC005BC22D /* MockSK1Product.swift in Sources */,
