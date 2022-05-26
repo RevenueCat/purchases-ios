@@ -266,7 +266,16 @@ platform :ios do
     body = JSON.parse(resp[:body])
     commits = body["commits"].reverse
 
+    # TODO: Fix this process where rate limiting is not an issue
+    # Temporary workaround to get around GitHub rate limit
+    rate_limit_sleep = ENV["GITHUB_RATE_LIMIT_SLEEP"].to_i
+
     formatted = commits.map do |commit|
+      if rate_limit_sleep > 0
+        UI.message("Sleeping #{rate_limit_sleep} second(s) to avoid rate limit 🐌")
+        sleep(rate_limit_sleep)
+      end
+
       # Default to commit message info
       message = commit["commit"]["message"].lines.first.strip
       name = commit["commit"]["author"]["name"]
