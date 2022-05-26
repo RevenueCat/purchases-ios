@@ -5,7 +5,7 @@ import XCTest
 
 class SystemInfoTests: TestCase {
 
-    func testproxyURL() {
+    func testProxyURL() {
         let defaultURL = URL(string: "https://api.revenuecat.com")
         expect(SystemInfo.serverHostURL) == defaultURL
         expect(SystemInfo.proxyURL).to(beNil())
@@ -22,7 +22,7 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.serverHostURL) == defaultURL
     }
 
-    func testsystemVersion() {
+    func testSystemVersion() {
         expect(SystemInfo.systemVersion) == ProcessInfo().operatingSystemVersionString
     }
 
@@ -65,6 +65,20 @@ class SystemInfoTests: TestCase {
 
     func testIsNotSandboxIfNoReceiptURL() throws {
         expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
+    }
+
+    func testIsAppleSubscriptionURLWithAnotherURL() {
+        expect(SystemInfo.isAppleSubscription(managementURL: URL(string: "www.google.com")!)) == false
+    }
+
+    func testIsAppleSubscriptionURLWithStandardURL() {
+        expect(SystemInfo.isAppleSubscription(managementURL: SystemInfo.appleSubscriptionsURL)) == true
+    }
+
+    func testIsAppleSubscriptionURLWithShortenedURL() {
+        expect(SystemInfo.isAppleSubscription(
+            managementURL: URL(string: "https://rev.cat/manage-apple-subscription")!
+        )) == false
     }
 
 }

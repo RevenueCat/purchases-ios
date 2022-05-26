@@ -43,12 +43,7 @@ class ManageSubscriptionsHelper {
                     guard let managementURL = customerInfo.managementURL else {
                         Logger.debug(Strings.management_url_nil_opening_default)
 
-                        guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
-                            let message = Strings.cant_form_apple_subscriptions_url
-                            return .failure(ErrorUtils.systemInfoError(withMessage: message.description))
-                        }
-
-                        return .success(appleSubscriptionsURL)
+                        return .success(SystemInfo.appleSubscriptionsURL)
                     }
 
                     return .success(managementURL)
@@ -56,7 +51,7 @@ class ManageSubscriptionsHelper {
 
             switch result {
             case let .success(url):
-                if self.systemInfo.isAppleSubscription(managementURL: url) {
+                if SystemInfo.isAppleSubscription(managementURL: url) {
                     self.showAppleManageSubscriptions(managementURL: url, completion: completion)
                 } else {
                     self.openURL(url, completion: completion)
