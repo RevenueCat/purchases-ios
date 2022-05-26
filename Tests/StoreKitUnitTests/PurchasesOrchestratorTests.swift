@@ -72,7 +72,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     fileprivate func setUpStoreKit2Listener() {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            orchestrator.storeKit2TransactionListener = MockStoreKit2TransactionListener()
+            orchestrator._storeKit2TransactionListener = MockStoreKit2TransactionListener()
         }
     }
 
