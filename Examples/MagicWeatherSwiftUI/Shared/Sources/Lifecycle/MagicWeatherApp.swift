@@ -31,17 +31,20 @@ struct MagicWeatherApp: App {
         
         /* Set the delegate to our shared instance of PurchasesDelegateHandler */
         Purchases.shared.delegate = PurchasesDelegateHandler.shared
-        
-        /* Fetch the available offerings */
-        Purchases.shared.getOfferings { (offerings, error) in
-            UserViewModel.shared.offerings = offerings
-        }
     }
     
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .preferredColorScheme(.dark)
+                .task {
+                    do {
+                        // Fetch the available offerings
+                        UserViewModel.shared.offerings = try await Purchases.shared.offerings()
+                    } catch {
+                        print("Error fetching offerings: \(error)")
+                    }
+                }
         }
     }
 }
