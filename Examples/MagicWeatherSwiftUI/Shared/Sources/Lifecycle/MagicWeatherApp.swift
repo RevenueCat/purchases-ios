@@ -18,17 +18,19 @@ struct MagicWeatherApp: App {
         /*
          Initialize the RevenueCat Purchases SDK.
          
-         - appUserID is nil, so an anonymous ID will be generated automatically by the Purchases SDK. Read more about Identifying Users here: https://docs.revenuecat.com/docs/user-ids
+         - `appUserID` is nil by default, so an anonymous ID will be generated automatically by the Purchases SDK.
+            Read more about Identifying Users here: https://docs.revenuecat.com/docs/user-ids
          
-         - observerMode is false, so Purchases will automatically handle finishing transactions. Read more about Observer Mode here: https://docs.revenuecat.com/docs/observer-mode
+         - `observerMode` is false by default, so Purchases will automatically handle finishing transactions.
+            Read more about Observer Mode here: https://dz gocs.revenuecat.com/docs/observer-mode
          */
 
-        Purchases.configure(withAPIKey: Constants.apiKey,
-                            appUserID: nil,
-                            observerMode: false,
-                            userDefaults: nil,
-                            useStoreKit2IfAvailable: true)
-        
+        Purchases.configure(
+            with: Configuration.Builder(withAPIKey: Constants.apiKey)
+                .with(usesStoreKit2IfAvailable: true)
+                .build()
+        )
+
         /* Set the delegate to our shared instance of PurchasesDelegateHandler */
         Purchases.shared.delegate = PurchasesDelegateHandler.shared
         
