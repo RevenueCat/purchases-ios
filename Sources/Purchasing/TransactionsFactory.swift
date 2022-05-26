@@ -16,15 +16,14 @@ import Foundation
 
 enum TransactionsFactory {
 
-    static func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
-                                            dateFormatter: DateFormatterType) -> [StoreTransaction] {
+    static func nonSubscriptionTransactions(
+        withSubscriptionsData subscriptionsData: [String: [CustomerInfoResponse.Transaction]]
+    ) -> [StoreTransaction] {
         subscriptionsData
-            .flatMap { (productId: String, transactionData: [[String: Any]]) -> [StoreTransaction] in
-                transactionData
+            .flatMap { (productID, transactions) -> [StoreTransaction] in
+                transactions
                     .lazy
-                    .compactMap { BackendParsedTransaction(with: $0,
-                                                           productID: productId,
-                                                           dateFormatter: dateFormatter) }
+                    .compactMap { BackendParsedTransaction(with: $0, productID: productID) }
                     .map { StoreTransaction($0) }
             }
             .sorted { $0.purchaseDate < $1.purchaseDate }
@@ -40,16 +39,15 @@ private struct BackendParsedTransaction: StoreTransactionType {
     let transactionIdentifier: String
     let quantity: Int
 
-    init?(with serverResponse: [String: Any], productID: String, dateFormatter: DateFormatterType) {
-        guard let revenueCatId = serverResponse["id"] as? String,
-              let dateString = serverResponse["purchase_date"] as? String,
-              let purchaseDate = dateFormatter.date(from: dateString) else {
-                  Logger.error("Couldn't initialize Transaction from dictionary. " +
-                               "Reason: unexpected format. Dictionary: \(serverResponse).")
-                  return nil
-              }
+    init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {
+        guard let transactionIdentifier = transaction.transactionIdentifier,
+                let purchaseDate = transaction.purchaseDate else {
+            Logger.error("Couldn't initialize Transaction. " +
+                         "Reason: missing data: \(transaction).")
+            return nil
+        }
 
-        self.transactionIdentifier = revenueCatId
+        self.transactionIdentifier = transactionIdentifier
         self.purchaseDate = purchaseDate
         self.productIdentifier = productID
         // Defaulting to `1` since multi-quantity purchases aren't currently supported.

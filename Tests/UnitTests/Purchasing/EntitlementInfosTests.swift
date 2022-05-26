@@ -23,22 +23,6 @@ class EntitlementInfosTests: TestCase {
         self.stubResponse()
     }
 
-    func stubResponse(entitlements: [String: Any] = [:],
-                      nonSubscriptions: [String: Any] = [:],
-                      subscriptions: [String: Any] = [:]) {
-        response = [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "entitlements": entitlements,
-                "first_seen": "2019-07-26T23:29:50Z",
-                "non_subscriptions": nonSubscriptions,
-                "original_app_user_id": "cesarsandbox1",
-                "original_application_version": "1.0",
-                "subscriptions": subscriptions
-            ]
-        ]
-    }
-
     func testMultipleEntitlements() throws {
         stubResponse(
             entitlements: [
@@ -1069,9 +1053,33 @@ class EntitlementInfosTests: TestCase {
 
         try verifyRenewal(false)
     }
+
+    func testRawData() throws {
+        let info = try CustomerInfo(data: self.response)
+
+        expect(info.entitlements.all.values).to(allPass {
+            !$0.rawData.isEmpty
+        })
+    }
 }
 
 private extension EntitlementInfosTests {
+
+    func stubResponse(entitlements: [String: Any] = [:],
+                      nonSubscriptions: [String: Any] = [:],
+                      subscriptions: [String: Any] = [:]) {
+        self.response = [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "entitlements": entitlements,
+                "first_seen": "2019-07-26T23:29:50Z",
+                "non_subscriptions": nonSubscriptions,
+                "original_app_user_id": "cesarsandbox1",
+                "original_application_version": "1.0",
+                "subscriptions": subscriptions
+            ]
+        ]
+    }
 
     func verifySubscriberInfo(file: FileString = #file, line: UInt = #line) throws {
         let subscriberInfo = try CustomerInfo(data: response)
@@ -1193,6 +1201,11 @@ private extension EntitlementInfosTests {
     ) throws {
         let subscriberInfo = try CustomerInfo(data: response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[expectedEntitlement])
+
+        expect(file: file, line: line, proCat.identifier).to(
+            equal(expectedEntitlement),
+            description: "Invalid identifier"
+        )
 
         if expectedLatestPurchaseDate != nil {
             expect(file: file, line: line, proCat.latestPurchaseDate).to(

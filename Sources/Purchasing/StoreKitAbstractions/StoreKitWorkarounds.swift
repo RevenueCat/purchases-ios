@@ -75,3 +75,31 @@ extension SK1Product {
     }
 
 }
+
+extension SubscriptionPeriod {
+
+    /// This function simplifies large numbers of days into months and large numbers
+    /// of months into years if there are no leftover units after the conversion.
+    ///
+    /// Occassionally, StoreKit seems to send back a value 7 days for a 7day trial
+    /// instead of a value of 1 week for a trial of 7 days in length.
+    /// Source: https://github.com/RevenueCat/react-native-purchases/issues/348
+    internal func normalized() -> SubscriptionPeriod {
+        switch unit {
+        case .day:
+            if value.isMultiple(of: 7) {
+                let numberOfWeeks = value / 7
+                return .init(value: numberOfWeeks, unit: .week)
+            }
+        case .month:
+            if value.isMultiple(of: 12) {
+                let numberOfYears = value / 12
+                return .init(value: numberOfYears, unit: .year)
+            }
+        case .week, .year:
+            break
+        }
+
+        return self
+    }
+}

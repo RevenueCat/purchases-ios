@@ -528,6 +528,12 @@ public extension Purchases {
 
 }
 
+@available(iOS, obsoleted: 1, renamed: "StartPurchaseBlock")
+@available(tvOS, obsoleted: 1, renamed: "StartPurchaseBlock")
+@available(watchOS, obsoleted: 1, renamed: "StartPurchaseBlock")
+@available(macOS, obsoleted: 1, renamed: "StartPurchaseBlock")
+public typealias DeferredPromotionalPurchaseBlock = StartPurchaseBlock
+
 @available(iOS, obsoleted: 1, renamed: "CustomerInfo")
 @available(tvOS, obsoleted: 1, renamed: "CustomerInfo")
 @available(watchOS, obsoleted: 1, renamed: "CustomerInfo")

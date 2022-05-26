@@ -91,11 +91,15 @@ extension PurchaseStrings: CustomStringConvertible {
         case .paymentqueue_removedtransaction(let transaction):
             let errorUserInfo = (transaction.error as NSError?)?.userInfo ?? [:]
             return "PaymentQueue removedTransaction: \(transaction.payment.productIdentifier) " +
-            "\(transaction.transactionIdentifier ?? "") " +
-            "(\(transaction.original?.transactionIdentifier ?? "") " +
-            "\(transaction.error?.localizedDescription ?? "") " +
-            "\(!errorUserInfo.isEmpty ? errorUserInfo.description : "") - " +
-            "\(transaction.transactionState.rawValue)"
+            [
+                transaction.transactionIdentifier,
+                transaction.original?.transactionIdentifier,
+                (transaction.error?.localizedDescription).map { "(\($0))" },
+                !errorUserInfo.isEmpty ? errorUserInfo.description : nil,
+                transaction.transactionState.rawValue.description
+            ]
+                .compactMap { $0 }
+                .joined(separator: " ")
 
         case .paymentqueue_revoked_entitlements_for_product_identifiers(let productIdentifiers):
             return "PaymentQueue " +
@@ -103,10 +107,14 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .paymentqueue_updatedtransaction(let transaction):
             return "PaymentQueue updatedTransaction: \(transaction.payment.productIdentifier) " +
-            "\(transaction.transactionIdentifier ?? "") " +
-            "(\(transaction.error?.localizedDescription ?? "")) " +
-            "\(transaction.original?.transactionIdentifier ?? "") - " +
-            "\(transaction.transactionState.rawValue)"
+            [
+                transaction.transactionIdentifier,
+                (transaction.error?.localizedDescription).map { "(\($0))" },
+                transaction.original?.transactionIdentifier ?? nil,
+                transaction.transactionState.rawValue.description
+            ]
+                .compactMap { $0 }
+                .joined(separator: " ")
 
         case .presenting_code_redemption_sheet:
             return "Presenting code redemption sheet."
