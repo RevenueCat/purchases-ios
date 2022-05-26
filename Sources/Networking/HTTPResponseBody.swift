@@ -51,15 +51,6 @@ extension Decodable {
 
 }
 
-/// Default implementation of `HTTPResponseBody` for any `Decodable`
-extension Dictionary: HTTPResponseBody where Key == String, Value == Any {
-
-    static func create(with data: Data) throws -> [String: Any] {
-        return try JSONSerialization.dictionary(withData: data)
-    }
-
-}
-
 /// Default implementation of `HTTPResponseBody` for an `Optional<HTTPResponseBody>`
 extension Optional: HTTPResponseBody where Wrapped: HTTPResponseBody {
 
