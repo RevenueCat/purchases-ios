@@ -99,7 +99,8 @@ class PurchasesOrchestrator {
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
 
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
+           systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             storeKit2TransactionListener.listenForTransactions()
             storeKit2StorefrontListener.listenForStorefrontChanges()
         }
