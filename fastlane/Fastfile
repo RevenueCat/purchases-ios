@@ -333,19 +333,18 @@ platform :ios do
   private_lane :edit_changelog do |options|
     generated_contents = options[:generated_contents].to_s
 
+    # Open CHANGELOG.latest.md in editor
+    changelog_filename = "CHANGELOG.latest.md"
+    changelog_path = File.absolute_path("../#{changelog_filename}")
+    editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
+    content_before_opening_editor = File.read(changelog_path)
+
     if generated_contents.size > 0
       UI.message("Using auto generated contents:\n#{generated_contents}")
       File.write(changelog_path, generated_contents)
     else
       UI.user_error!("Generated content for changlog was empty")
     end
-
-    # Open CHANGELOG.latest.md in editor
-    changelog_filename = "CHANGELOG.latest.md"
-    changelog_path = File.absolute_path("../#{changelog_filename}")
-    editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
-
-    content_before_opening_editor = File.read(changelog_path)
 
     UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
     if UI.confirm("Open #{changelog_filename} in '#{editor}'? (No will quit this process)")
