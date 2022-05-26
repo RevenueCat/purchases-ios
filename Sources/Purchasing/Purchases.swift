@@ -1647,6 +1647,18 @@ public extension Purchases {
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Important: See ``Configuration/Builder`` for more information about configurable properties.
+     *
+     * ### Example
+     *
+     * ```swift
+     *  Purchases.configure(
+     *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
+     *               .with(usesStoreKit2IfAvailable: true)
+     *               .with(observerMode: false)
+     *               .with(appUserID: "<app_user_id>")
+     *               .build()
+     *      )
+     * ```
      * 
      */
     @objc(configureWithConfiguration:)
