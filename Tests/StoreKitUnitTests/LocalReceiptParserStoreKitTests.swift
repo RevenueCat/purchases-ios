@@ -75,7 +75,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         expect(firstPurchase.originalTransactionId).to(beNil())
         expect(firstPurchase.productType).to(beNil())
 
-        expect(firstPurchase.purchaseDate).to(beCloseTo(Date(), within: 1))
+        expect(firstPurchase.purchaseDate).to(beCloseTo(Date(), within: 5))
         expect(firstPurchase.originalPurchaseDate).to(beNil())
 
         expect(firstPurchase.expiresDate).toNot(beNil())
