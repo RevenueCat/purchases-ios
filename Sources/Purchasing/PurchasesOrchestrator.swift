@@ -363,13 +363,10 @@ class PurchasesOrchestrator {
             .handle(purchaseResult: result)
         let transaction = sk2Transaction.map(StoreTransaction.init(sk2Transaction:))
 
-        if let customerInfo = customerInfoIfSynced {
-            return (transaction, customerInfo, userCancelled)
-        } else {
-            let customerInfo = try await self.syncPurchases(receiptRefreshPolicy: .always, isRestore: false)
+        let customerInfo = try await customerInfoIfSynced
+        ??? (await self.syncPurchases(receiptRefreshPolicy: .always, isRestore: false))
 
-            return (transaction, customerInfo, userCancelled)
-        }
+        return (transaction, customerInfo, userCancelled)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
