@@ -84,6 +84,51 @@ class PurchasesOrchestrator {
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    convenience init(productsManager: ProductsManager,
+                     storeKitWrapper: StoreKitWrapper,
+                     systemInfo: SystemInfo,
+                     subscriberAttributesManager: SubscriberAttributesManager,
+                     operationDispatcher: OperationDispatcher,
+                     receiptFetcher: ReceiptFetcher,
+                     customerInfoManager: CustomerInfoManager,
+                     backend: Backend,
+                     currentUserProvider: CurrentUserProvider,
+                     transactionsManager: TransactionsManager,
+                     deviceCache: DeviceCache,
+                     manageSubscriptionsHelper: ManageSubscriptionsHelper,
+                     beginRefundRequestHelper: BeginRefundRequestHelper,
+                     storeKit2TransactionListener: StoreKit2TransactionListener,
+                     storeKit2StorefrontListener: StoreKit2StorefrontListener
+    ) {
+        self.init(
+            productsManager: productsManager,
+            storeKitWrapper: storeKitWrapper,
+            systemInfo: systemInfo,
+            subscriberAttributesManager: subscriberAttributesManager,
+            operationDispatcher: operationDispatcher,
+            receiptFetcher: receiptFetcher,
+            customerInfoManager: customerInfoManager,
+            backend: backend,
+            currentUserProvider: currentUserProvider,
+            transactionsManager: transactionsManager,
+            deviceCache: deviceCache,
+            manageSubscriptionsHelper: manageSubscriptionsHelper,
+            beginRefundRequestHelper: beginRefundRequestHelper
+        )
+
+        self._storeKit2TransactionListener = storeKit2TransactionListener
+        self._storeKit2StorefrontListener = storeKit2StorefrontListener
+
+        storeKit2TransactionListener.delegate = self
+        storeKit2StorefrontListener.delegate = self
+
+        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+            storeKit2TransactionListener.listenForTransactions()
+            storeKit2StorefrontListener.listenForStorefrontChanges()
+        }
+    }
+
     init(productsManager: ProductsManager,
          storeKitWrapper: StoreKitWrapper,
          systemInfo: SystemInfo,
@@ -110,19 +155,6 @@ class PurchasesOrchestrator {
         self.deviceCache = deviceCache
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
-
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            let transactionListener = StoreKit2TransactionListener(delegate: self)
-            let storefrontListener = StoreKit2StorefrontListener(delegate: self)
-
-            self._storeKit2TransactionListener = transactionListener
-            self._storeKit2StorefrontListener = storefrontListener
-
-            if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
-                transactionListener.listenForTransactions()
-                storefrontListener.listenForStorefrontChanges()
-            }
-        }
     }
 
     func restorePurchases(completion: ((Result<CustomerInfo, Error>) -> Void)?) {

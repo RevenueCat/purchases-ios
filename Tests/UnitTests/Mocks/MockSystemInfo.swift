@@ -13,10 +13,11 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
 
-    convenience init(finishTransactions: Bool) {
+    convenience init(finishTransactions: Bool, storeKit2Setting: StoreKit2Setting = .default) {
         // swiftlint:disable:next force_try
         try! self.init(platformInfo: nil,
-                       finishTransactions: finishTransactions)
+                       finishTransactions: finishTransactions,
+                       storeKit2Setting: storeKit2Setting)
     }
 
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
