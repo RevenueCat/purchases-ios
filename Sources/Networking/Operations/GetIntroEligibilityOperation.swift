@@ -92,7 +92,7 @@ private extension GetIntroEligibilityOperation {
         let eligibilities = result.value?.body.eligibilityByProductIdentifier
 
         let result: [String: IntroEligibility] = Set(productIdentifiers)
-            .dictionaryWithValues { eligibilities?[$0] ?? .unknown }
+            .dictionaryWithValues { productID in eligibilities?[productID] ?? .unknown }
             .mapValues(IntroEligibility.init)
 
         completion(result, nil)
