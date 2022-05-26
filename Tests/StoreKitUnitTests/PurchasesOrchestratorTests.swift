@@ -19,21 +19,21 @@ import XCTest
 
 class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
-    var productsManager: MockProductsManager!
-    var storeKitWrapper: MockStoreKitWrapper!
-    var systemInfo: MockSystemInfo!
-    var subscriberAttributesManager: MockSubscriberAttributesManager!
-    var operationDispatcher: MockOperationDispatcher!
-    var receiptFetcher: MockReceiptFetcher!
-    var customerInfoManager: MockCustomerInfoManager!
-    var backend: MockBackend!
-    var currentUserProvider: MockCurrentUserProvider!
-    var transactionsManager: MockTransactionsManager!
-    var deviceCache: MockDeviceCache!
-    var mockManageSubsHelper: MockManageSubscriptionsHelper!
-    var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
+    private var productsManager: MockProductsManager!
+    private var storeKitWrapper: MockStoreKitWrapper!
+    private var systemInfo: MockSystemInfo!
+    private var subscriberAttributesManager: MockSubscriberAttributesManager!
+    private var operationDispatcher: MockOperationDispatcher!
+    private var receiptFetcher: MockReceiptFetcher!
+    private var customerInfoManager: MockCustomerInfoManager!
+    private var backend: MockBackend!
+    private var currentUserProvider: MockCurrentUserProvider!
+    private var transactionsManager: MockTransactionsManager!
+    private var deviceCache: MockDeviceCache!
+    private var mockManageSubsHelper: MockManageSubscriptionsHelper!
+    private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
-    var orchestrator: PurchasesOrchestrator!
+    private var orchestrator: PurchasesOrchestrator!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -72,19 +72,24 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     fileprivate func setUpStoreKit2Listener() {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            orchestrator._storeKit2TransactionListener = MockStoreKit2TransactionListener()
+            self.orchestrator._storeKit2TransactionListener = MockStoreKit2TransactionListener()
         }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     var mockStoreKit2TransactionListener: MockStoreKit2TransactionListener? {
-        return orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        return self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
     }
 
-    fileprivate func setUpSystemInfo(finishTransactions: Bool = true) throws {
+    fileprivate func setUpSystemInfo(
+        finishTransactions: Bool = true,
+        storeKit2Setting: StoreKit2Setting = .default
+    ) throws {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3")
-        systemInfo = try MockSystemInfo(platformInfo: platformInfo,
-                                        finishTransactions: finishTransactions)
+
+        self.systemInfo = try MockSystemInfo(platformInfo: platformInfo,
+                                             finishTransactions: finishTransactions,
+                                             storeKit2Setting: storeKit2Setting)
     }
 
     fileprivate func setupStoreKitWrapper() {
@@ -108,6 +113,29 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
         storeKitWrapper.delegate = orchestrator
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    fileprivate func setUpOrchestrator(
+        storeKit2TransactionListener: StoreKit2TransactionListener,
+        storeKit2StorefrontListener: StoreKit2StorefrontListener
+    ) {
+        self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
+                                                  storeKitWrapper: self.storeKitWrapper,
+                                                  systemInfo: self.systemInfo,
+                                                  subscriberAttributesManager: self.subscriberAttributesManager,
+                                                  operationDispatcher: self.operationDispatcher,
+                                                  receiptFetcher: self.receiptFetcher,
+                                                  customerInfoManager: self.customerInfoManager,
+                                                  backend: self.backend,
+                                                  currentUserProvider: self.currentUserProvider,
+                                                  transactionsManager: self.transactionsManager,
+                                                  deviceCache: self.deviceCache,
+                                                  manageSubscriptionsHelper: self.mockManageSubsHelper,
+                                                  beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
+                                                  storeKit2TransactionListener: storeKit2TransactionListener,
+                                                  storeKit2StorefrontListener: storeKit2StorefrontListener)
+        self.storeKitWrapper.delegate = self.orchestrator
     }
 
     func testPurchaseSK1PackageSendsReceiptToBackendIfSuccessful() async throws {
@@ -381,6 +409,49 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostOfferCount) == 1
         expect(self.backend.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testDoesNotListenForSK2TransactionsWithSK2Disabled() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let transactionListener = MockStoreKit2TransactionListener()
+
+        try self.setUpSystemInfo(storeKit2Setting: .disabled)
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))
+
+        expect(transactionListener.invokedListenForTransactions) == false
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testDoesNotListenForSK2TransactionsWithSK2EnabledOnlyForOptimizations() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let transactionListener = MockStoreKit2TransactionListener()
+
+        try self.setUpSystemInfo(storeKit2Setting: .enabledOnlyForOptimizations)
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))
+
+        expect(transactionListener.invokedListenForTransactions) == false
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testListensForSK2TransactionsWithSK2Enabled() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let transactionListener = MockStoreKit2TransactionListener()
+
+        try self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices)
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))
+
+        expect(transactionListener.invokedListenForTransactions) == true
+        expect(transactionListener.invokedListenForTransactionsCount) == 1
     }
 
     func testShowManageSubscriptionsCallsCompletionWithErrorIfThereIsAFailure() {

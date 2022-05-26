@@ -313,19 +313,44 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo,
                                                                 customerInfoManager: customerInfoManager,
                                                                 currentUserProvider: identityManager)
-        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: productsManager,
-                                                          storeKitWrapper: storeKitWrapper,
-                                                          systemInfo: systemInfo,
-                                                          subscriberAttributesManager: subscriberAttributesManager,
-                                                          operationDispatcher: operationDispatcher,
-                                                          receiptFetcher: receiptFetcher,
-                                                          customerInfoManager: customerInfoManager,
-                                                          backend: backend,
-                                                          currentUserProvider: identityManager,
-                                                          transactionsManager: transactionsManager,
-                                                          deviceCache: deviceCache,
-                                                          manageSubscriptionsHelper: manageSubsHelper,
-                                                          beginRefundRequestHelper: beginRefundRequestHelper)
+        let purchasesOrchestrator: PurchasesOrchestrator = {
+            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                return .init(
+                    productsManager: productsManager,
+                    storeKitWrapper: storeKitWrapper,
+                    systemInfo: systemInfo,
+                    subscriberAttributesManager: subscriberAttributesManager,
+                    operationDispatcher: operationDispatcher,
+                    receiptFetcher: receiptFetcher,
+                    customerInfoManager: customerInfoManager,
+                    backend: backend,
+                    currentUserProvider: identityManager,
+                    transactionsManager: transactionsManager,
+                    deviceCache: deviceCache,
+                    manageSubscriptionsHelper: manageSubsHelper,
+                    beginRefundRequestHelper: beginRefundRequestHelper,
+                    storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
+                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil)
+                )
+            } else {
+                return .init(
+                    productsManager: productsManager,
+                    storeKitWrapper: storeKitWrapper,
+                    systemInfo: systemInfo,
+                    subscriberAttributesManager: subscriberAttributesManager,
+                    operationDispatcher: operationDispatcher,
+                    receiptFetcher: receiptFetcher,
+                    customerInfoManager: customerInfoManager,
+                    backend: backend,
+                    currentUserProvider: identityManager,
+                    transactionsManager: transactionsManager,
+                    deviceCache: deviceCache,
+                    manageSubscriptionsHelper: manageSubsHelper,
+                    beginRefundRequestHelper: beginRefundRequestHelper
+                )
+            }
+        }()
+
         let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
                                                                            receiptFetcher: receiptFetcher,
                                                                            introEligibilityCalculator: introCalculator,
