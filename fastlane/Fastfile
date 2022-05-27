@@ -518,7 +518,7 @@ platform :ios do
               # and push the changes
               docs_destination_folder = "docs/#{version_number}"
               index_destination_path = "docs/index.html"
-              FileUtils.mv docs_generation_folder, docs_destination_folder
+              FileUtils.cp_r docs_generation_folder, docs_destination_folder
               FileUtils.cp docs_index_path, index_destination_path
 
               # using sh instead of fastlane commands because fastlane would run
