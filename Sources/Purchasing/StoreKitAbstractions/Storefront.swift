@@ -97,8 +97,7 @@ public extension Storefront {
     }
 
     /// The current App Store storefront for the device obtained from StoreKit 1 only.
-    /// - Note: this method is intended to be used only from Objective-C.
-    /// In Swift, ``Storefront/currentStorefront`` is preferred.
+    @available(swift, obsoleted: 0.0.1, renamed: "currentStorefront")
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
     @objc static var sk1CurrentStorefront: Storefront? {
         return self.sk1CurrentStorefrontType.map(Storefront.from(storefront: ))

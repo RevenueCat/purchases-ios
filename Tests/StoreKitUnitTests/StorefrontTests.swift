@@ -45,14 +45,4 @@ class StorefrontTests: StoreKitConfigTestCase {
         }
     }
 
-    func testSK1CurrentStorefront() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
-        let expectedStorefront = try XCTUnwrap(SKPaymentQueue.default().storefront)
-        let currentStorefront = try XCTUnwrap(Storefront.sk1CurrentStorefront)
-
-        expect(currentStorefront.identifier) == expectedStorefront.identifier
-        expect(currentStorefront.countryCode) == expectedStorefront.countryCode
-    }
-
 }
