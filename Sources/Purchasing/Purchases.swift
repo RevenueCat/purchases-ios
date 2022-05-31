@@ -452,7 +452,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
 
-#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             postAdServicesTokenIfNeeded()
@@ -1893,7 +1893,7 @@ private extension Purchases {
         updateAllCachesIfNeeded()
         dispatchSyncSubscriberAttributesIfNeeded()
 
-#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             postAdServicesTokenIfNeeded()
