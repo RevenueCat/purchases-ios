@@ -34,6 +34,8 @@ func main() -> Int {
 
     checkPurchasesAPI()
 
+    checkConfigurationAPI()
+
     checkPurchasesEnums()
 
     checkPurchasesErrorCodeEnums()

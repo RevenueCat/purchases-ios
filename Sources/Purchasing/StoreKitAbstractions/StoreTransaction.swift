@@ -21,7 +21,9 @@ public typealias SK1Transaction = SKPaymentTransaction
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Transaction = StoreKit.Transaction
 
-/// Abstract class that provides access to all of StoreKit's product type's properties.
+/// Abstract class that provides access to properties of a transaction.
+/// ``StoreTransaction``s can represent transactions from StoreKit 1, StoreKit 2 or
+/// transactions made from other places, like Stripe, Google Play or Amazon Store.
 @objc(RCStoreTransaction) public final class StoreTransaction: NSObject, StoreTransactionType {
 
     private let transaction: StoreTransactionType
@@ -64,6 +66,7 @@ public typealias SK2Transaction = StoreKit.Transaction
 
 /// Information that represents the customer’s purchase of a product.
 internal protocol StoreTransactionType {
+
     /// The product identifier.
     var productIdentifier: String { get }
 
@@ -77,11 +80,13 @@ internal protocol StoreTransactionType {
     /// The number of consumable products purchased.
     /// - Note: multi-quantity purchases aren't currently supported.
     var quantity: Int { get }
+
 }
 
 // MARK: - Wrapper constructors / getters
 
 extension StoreTransaction {
+
     internal convenience init(sk1Transaction: SK1Transaction) {
         self.init(SK1StoreTransaction(sk1Transaction: sk1Transaction))
     }

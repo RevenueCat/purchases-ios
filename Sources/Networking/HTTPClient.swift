@@ -11,6 +11,8 @@
 //
 //  Created by César de la Vega on 7/22/21.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 class HTTPClient {
@@ -18,8 +20,10 @@ class HTTPClient {
     typealias RequestHeaders = [String: String]
     typealias Completion<Value: HTTPResponseBody> = (HTTPResponse<Value>.Result) -> Void
 
-    private let session: URLSession
     internal let systemInfo: SystemInfo
+    internal let timeout: TimeInterval
+
+    private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
     private let dnsChecker: DNSCheckerType.Type
@@ -27,14 +31,18 @@ class HTTPClient {
     init(
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
-        dnsChecker: DNSCheckerType.Type = DNSChecker.self
+        dnsChecker: DNSCheckerType.Type = DNSChecker.self,
+        requestTimeout: TimeInterval = Configuration.networkTimeoutDefault
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
+        config.timeoutIntervalForRequest = requestTimeout
+        config.timeoutIntervalForResource = requestTimeout
         self.session = URLSession(configuration: config)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
         self.dnsChecker = dnsChecker
+        self.timeout = requestTimeout
     }
 
     func perform<Value: HTTPResponseBody>(_ request: HTTPRequest,
@@ -68,10 +76,6 @@ private extension HTTPClient {
         static let initial: Self = .init(queuedRequests: [],
                                          currentSerialRequest: nil)
     }
-
-}
-
-private extension HTTPClient {
 
     struct Request: CustomStringConvertible {
 
@@ -130,7 +134,8 @@ private extension HTTPClient {
 private extension HTTPClient {
 
     var defaultHeaders: [String: String] {
-        let observerMode = systemInfo.finishTransactions ? "false" : "true"
+        let observerMode = !self.systemInfo.finishTransactions
+
         var headers: [String: String] = [
             "content-type": "application/json",
             "X-Version": SystemInfo.frameworkVersion,
@@ -140,7 +145,8 @@ private extension HTTPClient {
             "X-Client-Version": SystemInfo.appVersion,
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-StoreKit2-Setting": "\(self.systemInfo.storeKit2Setting.debugDescription)",
-            "X-Observer-Mode-Enabled": observerMode
+            "X-Observer-Mode-Enabled": "\(observerMode)",
+            "X-Is-Sandbox": "\(self.systemInfo.isSandbox)"
         ]
 
         if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {

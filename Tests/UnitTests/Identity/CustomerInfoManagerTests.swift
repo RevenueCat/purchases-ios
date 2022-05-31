@@ -8,15 +8,8 @@ class CustomerInfoManagerTests: TestCase {
     var mockOperationDispatcher = MockOperationDispatcher()
     var mockDeviceCache: MockDeviceCache!
     var mockSystemInfo = MockSystemInfo(finishTransactions: true)
-    let mockCustomerInfo = CustomerInfo(testData: [
-        "request_date": "2018-12-21T02:40:36Z",
-        "subscriber": [
-            "original_app_user_id": "app_user_id",
-            "first_seen": "2019-06-17T16:05:33Z",
-            "subscriptions": [:],
-            "other_purchases": [:],
-            "original_application_version": NSNull()
-        ]])!
+
+    private var mockCustomerInfo: CustomerInfo!
 
     var customerInfoManager: CustomerInfoManager!
 
@@ -25,8 +18,19 @@ class CustomerInfoManagerTests: TestCase {
 
     private var customerInfoMonitorDisposable: (() -> Void)?
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.mockCustomerInfo = try CustomerInfo(data: [
+            "request_date": "2018-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": NSNull()
+            ]])
+
         mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         customerInfoManagerChangesCallCount = 0
         customerInfoManagerLastCustomerInfo = nil
@@ -191,7 +195,7 @@ class CustomerInfoManagerTests: TestCase {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfNeverSent() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
         "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -200,9 +204,7 @@ class CustomerInfoManagerTests: TestCase {
                 "other_purchases": [:]
             ]])
 
-        let jsonObject = info!.jsonObject()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData()
         let appUserID = "myUser"
         self.mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
@@ -212,7 +214,7 @@ class CustomerInfoManagerTests: TestCase {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfDifferent() throws {
-        let oldInfo = CustomerInfo(testData: [
+        let oldInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -221,15 +223,14 @@ class CustomerInfoManagerTests: TestCase {
                 "other_purchases": [:]
             ]])
 
-        var jsonObject = oldInfo!.jsonObject()
+        var object = try oldInfo.asData()
 
-        var object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         let appUserID = "myUser"
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
 
-        let newInfo = CustomerInfo(testData: [
+        let newInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -238,9 +239,7 @@ class CustomerInfoManagerTests: TestCase {
                 "other_purchases": [:]
             ]])
 
-        jsonObject = newInfo!.jsonObject()
-
-        object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        object = try newInfo.asData()
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
@@ -248,7 +247,7 @@ class CustomerInfoManagerTests: TestCase {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsOnMainThread() throws {
-        let oldInfo = CustomerInfo(testData: [
+        let oldInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -257,9 +256,7 @@ class CustomerInfoManagerTests: TestCase {
                 "other_purchases": [:]
             ]])
 
-        let jsonObject = oldInfo!.jsonObject()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try oldInfo.asData()
         let appUserID = "myUser"
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
@@ -316,7 +313,7 @@ class CustomerInfoManagerTests: TestCase {
 
     func testCachedCustomerInfoParsesCorrectly() throws {
         let appUserID = "myUser"
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -325,9 +322,7 @@ class CustomerInfoManagerTests: TestCase {
                 "other_purchases": [:]
             ]])
 
-        let jsonObject = info!.jsonObject()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData()
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
         let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
@@ -342,7 +337,7 @@ class CustomerInfoManagerTests: TestCase {
     }
 
     func testCachedCustomerInfoReturnsNilIfNotAvailableForTheAppUserID() throws {
-        let info = CustomerInfo(testData: [
+        let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -351,9 +346,7 @@ class CustomerInfoManagerTests: TestCase {
                 "other_purchases": [:]
             ]])
 
-        let jsonObject = info!.jsonObject()
-
-        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try info.asData()
         mockDeviceCache.cachedCustomerInfo["firstUser"] = object
 
         let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: "secondUser")
@@ -396,27 +389,6 @@ class CustomerInfoManagerTests: TestCase {
 
         expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == mockCustomerInfo
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
-    }
-
-    func testCachePurchaserDoesntStoreIfCantBeSerialized() {
-        // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
-        // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
-        let invalidCustomerInfo = CustomerInfo(testData: [
-            "something": Double.infinity,
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": NSNull()
-            ]])!
-
-        expect {
-            self.customerInfoManager.cache(customerInfo: invalidCustomerInfo, appUserID: "myUser")
-        }.toNot(throwError())
-
-        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(0))
     }
 
     func testCachePurchaserSendsToDelegateIfChanged() {

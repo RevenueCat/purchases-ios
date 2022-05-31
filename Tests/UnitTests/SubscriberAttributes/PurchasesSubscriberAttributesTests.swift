@@ -76,7 +76,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
         ]
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockReceiptParser = MockReceiptParser()
-        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
+        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo,
+                                                       requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                              receiptParser: mockReceiptParser)
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
@@ -212,9 +213,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
     }
 
-    func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() {
+    func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() throws {
         mockBackend.stubbedGetCustomerInfoResult = .success(
-            CustomerInfo(testData: [
+            try CustomerInfo(data: [
                 "request_date": "2019-08-16T10:30:42Z",
                 "subscriber": [
                     "first_seen": "2019-07-17T00:05:54Z",
@@ -224,7 +225,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                     "original_application_version": "1.0",
                     "original_purchase_date": "2018-10-26T23:17:53Z"
                 ]
-            ])!
+            ])
         )
 
         setupPurchases()
@@ -306,10 +307,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
     func testSetAndClearPushToken() {
         setupPurchases()
-        purchases.setPushToken("atoken".data(using: .utf8))
+        purchases.setPushToken("atoken".asData)
         purchases.setPushToken(nil)
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParametersList[0])
-            .to(equal(("atoken".data(using: .utf8), purchases.appUserID)))
+            .to(equal(("atoken".asData, purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParametersList[1])
             .to(equal((nil, purchases.appUserID)))
     }
@@ -488,8 +489,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
     func testSetPushTokenMakesRightCalls() {
         setupPurchases()
-        let tokenData = Data("ligai32g32ig".data(using: .utf8)!)
-        let tokenString = (tokenData as NSData).asString()
+        let tokenData = "ligai32g32ig".asData
+        let tokenString = tokenData.asString
 
         Purchases.shared.setPushToken(tokenData)
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenCount) == 1

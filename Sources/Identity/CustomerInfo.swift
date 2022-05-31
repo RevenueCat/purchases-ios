@@ -12,7 +12,6 @@
 //  Created by Madeline Beyl on 7/9/21.
 //
 
-// swiftlint:disable file_length
 import Foundation
 
 /**
@@ -87,15 +86,6 @@ import Foundation
      */
     @objc public let originalApplicationVersion: String?
 
-    /**
-     * The underlying data for this `CustomerInfo`.
-     *
-     * - Note: the content and format of this data isn’t documented and is subject to change.
-     *         it's only meant for debugging purposes or for getting access to future data
-     *         without updating the SDK.
-     */
-    @objc public let rawData: [String: Any]
-
     /// Get the expiration date for a given product identifier. You should use Entitlements though!
     /// - Parameter productIdentifier: Product identifier for product
     /// - Returns:  The expiration date for `productIdentifier`, `nil` if product never purchased
@@ -129,13 +119,12 @@ import Foundation
             return false
         }
 
-        return NSDictionary(dictionary: self.jsonObjectWithNoDate)
-            .isEqual(NSDictionary(dictionary: other.jsonObjectWithNoDate))
+        return self.data.response == other.data.response
     }
 
     public override var hash: Int {
         var hasher = Hasher()
-        hasher.combine(NSDictionary(dictionary: self.jsonObjectWithNoDate))
+        hasher.combine(self.data.response)
 
         return hasher.finalize()
     }
@@ -164,263 +153,170 @@ import Foundation
             """
     }
 
-    let schemaVersion: String?
+    // MARK: -
 
-    convenience init(data: [String: Any]) throws {
-        try self.init(data: data,
-                      dateFormatter: ISO8601DateFormatter.default)
+    private let data: Contents
+
+    /// Initializes a `CustomerInfo` with the underlying data in the current schema version
+    convenience init(response: CustomerInfoResponse) {
+        self.init(data: .init(response: response, schemaVersion: Self.currentSchemaVersion))
     }
 
-    init(data: [String: Any], dateFormatter: DateFormatterType) throws {
-        guard let subscriberObject = data["subscriber"] as? [String: Any] else {
-            Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(jsonData: data))
-            throw CustomerInfoError.missingJsonObject
-        }
-
-        let subscriberData: SubscriberData
-        do {
-            try subscriberData = SubscriberData(subscriberData: subscriberObject,
-                                                dateFormatter: dateFormatter)
-        } catch let subscriberDataError {
-            throw CustomerInfo.createSubscriberDataError(subscriberDataError, subscriberDictionary: subscriberObject)
-        }
-
-        guard let requestDateString = data["request_date"] as? String else {
-            Logger.error(Strings.customerInfo.cant_parse_request_date_from_json(date: data["request_date"]))
-            throw CustomerInfoError.requestDateFromJson
-        }
-
-        guard let formattedRequestDate = dateFormatter.date(from: requestDateString) else {
-            Logger.error(Strings.customerInfo.cant_parse_request_date_from_string(string: requestDateString))
-            throw CustomerInfoError.requestDateFromString
-        }
-
-        self.dateFormatter = dateFormatter
-        self.rawData = data
-        self.schemaVersion = data["schema_version"] as? String
-        self.requestDate = formattedRequestDate
-        self.originalPurchaseDate = subscriberData.originalPurchaseDate
-        self.firstSeen = subscriberData.firstSeen
-        self.originalAppUserId = subscriberData.originalAppUserId
-        self.managementURL = subscriberData.managementURL
-        self.originalApplicationVersion = subscriberData.originalApplicationVersion
-        self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
-        self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlementsData,
-                                             purchasesData: subscriberData.allTransactionsByProductId,
-                                             requestDate: requestDate,
-                                             dateFormatter: dateFormatter)
-
-        self.subscriptionTransactionsByProductId = subscriberData.subscriptionTransactionsByProductId
-        self.allPurchases = subscriberData.allPurchases
+    /// Initializes a `CustomerInfo` creating a copy.
+    convenience init(customerInfo: CustomerInfo) {
+        self.init(data: customerInfo.data)
     }
 
-    static func from(json: [String: Any]?) throws -> CustomerInfo {
-        guard let customerJSON = json else {
-            throw BackendError.UnexpectedBackendResponseError.customerInfoNil
-        }
+    fileprivate init(data: Contents) {
+        let response = data.response
+        let subscriber = response.subscriber
 
-        do {
-            return try CustomerInfo(data: customerJSON)
-        } catch {
-            throw BackendError.UnexpectedBackendResponseError.customerInfoResponseParsing(
-                error: error as NSError,
-                json: customerJSON.stringRepresentation
-            )
-        }
-    }
-
-    static let currentSchemaVersion = "2"
-
-    func jsonObject() -> [String: Any] {
-        return rawData.merging(
-            ["schema_version": CustomerInfo.currentSchemaVersion],
-            strategy: .keepOriginalValue
+        self.data = data
+        self.entitlements = EntitlementInfos(
+            entitlements: subscriber.entitlements,
+            purchases: subscriber.allPurchasesByProductId,
+            requestDate: response.requestDate
         )
+        self.nonSubscriptionTransactions = TransactionsFactory.nonSubscriptionTransactions(
+            withSubscriptionsData: subscriber.nonSubscriptions
+        )
+        self.requestDate = response.requestDate
+        self.firstSeen = subscriber.firstSeen
+        self.originalAppUserId = subscriber.originalAppUserId
+        self.originalPurchaseDate = subscriber.originalPurchaseDate
+        self.originalApplicationVersion = subscriber.originalApplicationVersion
+        self.managementURL = subscriber.managementUrl
     }
-
-    private var jsonObjectWithNoDate: [String: Any] {
-        var json = self.jsonObject()
-        json.removeValue(forKey: "request_date")
-
-        return json
-    }
-
-    private let allPurchases: [String: [String: Any]]
-    private let subscriptionTransactionsByProductId: [String: [String: Any]]
-    private let dateFormatter: DateFormatterType
 
     private lazy var expirationDatesByProductId: [String: Date?] = {
-        return parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)
+        return self.extractExpirationDates()
     }()
     private lazy var purchaseDatesByProductId: [String: Date?] = {
-        return parsePurchaseDates(transactionsByProductId: allPurchases)
+        return self.extractPurchaseDates()
     }()
+}
 
-    fileprivate struct SubscriberData {
+// MARK: - Internal
 
-        // swiftlint:disable:next nesting
-        enum SubscriberDataError: Int, DescribableError {
+extension CustomerInfo {
 
-            case originalAppUserIdMissing = 0
-            case firstSeenMissing
-            case firstSeenFormat
+    var subscriber: CustomerInfoResponse.Subscriber {
+        return self.data.response.subscriber
+    }
 
-            var description: String {
-                switch self {
-                case .originalAppUserIdMissing:
-                    return "Missing property \"original_app_user_id\" from json."
-                case .firstSeenMissing:
-                    return "Missing propery \"first_seen\" from json."
-                case .firstSeenFormat:
-                    return "Unable to parse \"first_seen\" due to formatting issues."
-                }
-            }
+    var schemaVersion: String? {
+        return self.data.schemaVersion
+    }
 
-        }
+    var isInCurrentSchemaVersion: Bool {
+        return self.schemaVersion == Self.currentSchemaVersion
+    }
 
-        let subscriptionTransactionsByProductId: [String: [String: Any]]
-        let originalAppUserId: String
-        let managementURL: URL?
-        let originalApplicationVersion: String?
-        let originalPurchaseDate: Date?
-        let firstSeen: Date
-        let nonSubscriptionsByProductId: [String: [[String: Any]]]
-        let entitlementsData: [String: Any]
-        let nonSubscriptionTransactions: [StoreTransaction]
-        let allTransactionsByProductId: [String: [String: Any]]
-        let allPurchases: [String: [String: Any]]
+    static let currentSchemaVersion = "3"
 
-        init(subscriberData: [String: Any],
-             dateFormatter: DateFormatterType) throws {
-            let subscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
-            self.subscriptionTransactionsByProductId = subscriptions
+}
 
-            // Metadata
-            self.originalApplicationVersion = subscriberData["original_application_version"] as? String
+extension CustomerInfo: RawDataContainer {
 
-            self.originalPurchaseDate =
-            dateFormatter.date(from: subscriberData["original_purchase_date"] as? String ?? "")
-
-            guard let firstSeenDateString = subscriberData["first_seen"] as? String else {
-                throw SubscriberDataError.firstSeenMissing
-            }
-
-            guard let firstSeenDate = dateFormatter.date(from: firstSeenDateString) else {
-                throw SubscriberDataError.firstSeenFormat
-            }
-
-            self.firstSeen = firstSeenDate
-
-            guard let originalAppUserIdString = subscriberData["original_app_user_id"] as? String else {
-                throw SubscriberDataError.originalAppUserIdMissing
-            }
-            self.originalAppUserId = originalAppUserIdString
-
-            self.managementURL = URL(string: subscriberData["management_url"] as? String ?? "")
-
-            // Purchases and entitlements
-            self.nonSubscriptionsByProductId =
-                subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [:]
-            self.entitlementsData = subscriberData["entitlements"] as? [String: Any] ?? [:]
-            self.nonSubscriptionTransactions = TransactionsFactory.nonSubscriptionTransactions(
-                withSubscriptionsData: nonSubscriptionsByProductId,
-                dateFormatter: dateFormatter)
-
-            let latestNonSubscriptionTransactionsByProductId = [String: [String: Any]](
-                uniqueKeysWithValues: nonSubscriptionsByProductId.map { productId, transactionsArray in
-                    (productId, transactionsArray.last ?? [:])
-                })
-
-            self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
-                .merging(subscriptionTransactionsByProductId, strategy: .keepOriginalValue)
-
-            self.allPurchases = latestNonSubscriptionTransactionsByProductId
-                .merging(subscriptionTransactionsByProductId) { (current, _) in current }
-        }
+    // Docs inherited from protocol
+    // swiftlint:disable missing_docs
+    @objc
+    public var rawData: [String: Any] {
+        return self.data.response.rawData
     }
 
 }
 
-extension CustomerInfo: RawDataContainer {}
+/// `CustomerInfo`'s `Codable` implementation relies on `Data`
+extension CustomerInfo: Codable {
 
-enum CustomerInfoError: Int, DescribableError {
-
-    case missingJsonObject = 0
-    case cantInstantiateJsonObject
-    case requestDateFromJson
-    case requestDateFromString
-
-    var description: String {
-        switch self {
-        case .missingJsonObject:
-            return "Unable to read property \"subscriber\" from json."
-        case .cantInstantiateJsonObject:
-            return "json appears to be in an unexpected format."
-        case .requestDateFromJson:
-            return "Unable to read property \"request_date\" from json."
-        case .requestDateFromString:
-            return "Unable to parse a date from json propery \"request_date\"."
+    // swiftlint:disable:next missing_docs
+    public convenience init(from decoder: Decoder) throws {
+        do {
+            self.init(data: try Contents(from: decoder))
+        } catch {
+            throw ErrorUtils.customerInfoError(error: error)
         }
+    }
+
+    // swiftlint:disable:next missing_docs
+    public func encode(to encoder: Encoder) throws {
+        try self.data.encode(to: encoder)
+    }
+
+}
+
+extension CustomerInfo: HTTPResponseBody {}
+
+// MARK: - Private
+
+private extension CustomerInfo {
+
+    /// The actual contents of a ``CustomerInfo``: the response with the associated version.
+    struct Contents {
+
+        var response: CustomerInfoResponse
+        var schemaVersion: String?
+
+        init(response: CustomerInfoResponse, schemaVersion: String?) {
+            self.response = response
+            self.schemaVersion = schemaVersion
+        }
+
+    }
+
+}
+
+/// `Codable` implementation that puts the content of`response` and `schemaVersion`
+/// at the same level instead of nested.
+extension CustomerInfo.Contents: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case response
+        case schemaVersion
+
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try self.response.encode(to: encoder)
+        // Always use current schema version when encoding
+        try container.encode(CustomerInfo.currentSchemaVersion, forKey: .schemaVersion)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.response = try CustomerInfoResponse(from: decoder)
+        self.schemaVersion = try container.decodeIfPresent(String.self, forKey: .schemaVersion)
     }
 
 }
 
 private extension CustomerInfo {
 
-    static func createSubscriberDataError(_ error: Error, subscriberDictionary: [String: Any]) -> Error {
-        Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(jsonObject: subscriberDictionary))
-
-        guard let subscriberDataError = error as? SubscriberData.SubscriberDataError else {
-            return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(error)
-        }
-
-        let extraContext: String?
-        switch subscriberDataError {
-        case .originalAppUserIdMissing:
-            let originalAppUserId = subscriberDictionary["original_app_user_id"] as? String ?? "missing"
-            extraContext = "original_app_user_id is: \(originalAppUserId)"
-        case .firstSeenMissing, .firstSeenFormat:
-            let firstSeen = subscriberDictionary["first_seen"] as? String ?? "missing"
-            extraContext = "first_seen is: \(firstSeen)"
-        }
-        return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(subscriberDataError,
-                                                                                 extraContext: extraContext)
-    }
-
     func activeKeys(dates: [String: Date?]) -> Set<String> {
-        return Set(dates.keys.filter {
-            guard let nonNullDate = dates[$0] as? Date else { return true }
-            return isAfterReferenceDate(date: nonNullDate)
-        })
+        return Set(
+            dates
+                .lazy
+                .filter {
+                    guard let date = $1 else { return true }
+                    return self.isAfterReferenceDate(date: date)
+                }
+                .map { key, _ in key }
+        )
     }
 
     func isAfterReferenceDate(date: Date) -> Bool { date.timeIntervalSince(self.requestDate) > 0 }
 
-    func parseExpirationDates(transactionsByProductId: [String: [String: Any]]) -> [String: Date?] {
-        return parseDatesIn(transactionsByProductId: transactionsByProductId, dateLabel: "expires_date")
+    func extractExpirationDates() -> [String: Date?] {
+        return self.subscriber.subscriptions.mapValues { $0.expiresDate }
     }
 
-    func parsePurchaseDates(transactionsByProductId: [String: [String: Any]]) -> [String: Date?] {
-        return parseDatesIn(transactionsByProductId: transactionsByProductId, dateLabel: "purchase_date")
-    }
-
-    func parseDatesIn(transactionsByProductId: [String: [String: Any]], dateLabel: String) -> [String: Date?] {
-        // mapValues will keep the key-value pair in the dictionary for nil values, as desired
-        return transactionsByProductId.mapValues { transaction in
-            if let dateString = transaction[dateLabel] as? String {
-                return dateFormatter.date(from: dateString)
-            }
-            return nil
-        }
+    func extractPurchaseDates() -> [String: Date?] {
+        return self.subscriber.allTransactionsByProductId.mapValues { $0.purchaseDate }
     }
 
 }
-
-// Fixme: delete when `CustomerInfo` is `Decodable`
- extension CustomerInfo: HTTPResponseBody {
-
-     static func create(with data: Data) throws -> Self {
-         return try self.init(data: try JSONSerialization.dictionary(withData: data))
-     }
-
- }

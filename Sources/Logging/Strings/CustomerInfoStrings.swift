@@ -29,13 +29,7 @@ enum CustomerInfoStrings {
     case sending_latest_customerinfo_to_delegate
     case sending_updated_customerinfo_to_delegate
     case vending_cache
-    case error_getting_data_from_customerinfo_json(error: Error)
-    case invalid_json
-
-    case missing_json_object_instantiation_error(jsonData: [String: Any]?)
-    case cant_instantiate_from_json_object(jsonObject: [String: Any]?)
-    case cant_parse_request_date_from_json(date: Any?)
-    case cant_parse_request_date_from_string(string: String)
+    case error_encoding_customerinfo(Error)
 
 }
 
@@ -67,26 +61,8 @@ extension CustomerInfoStrings: CustomStringConvertible {
             return "Sending updated CustomerInfo to delegate."
         case .vending_cache:
             return "Vending CustomerInfo from cache."
-        case .error_getting_data_from_customerinfo_json(let error):
-            return "Couldn't get data from customerInfo.jsonObject\n\(error.localizedDescription)"
-        case .invalid_json:
-            return "Invalid JSON returned from customerInfo.jsonObject"
-        case .missing_json_object_instantiation_error(let jsonData):
-            var message = "Unable to find subscriber object in data"
-            if let jsonData = jsonData {
-                message += ":\n\(jsonData.debugDescription)"
-            }
-            return message
-        case .cant_instantiate_from_json_object(let jsonObject):
-            var message = "Unable to instantiate SubscriberData from json object"
-            if let jsonObject = jsonObject {
-                message += ":\n\(jsonObject.debugDescription)"
-            }
-            return message
-        case .cant_parse_request_date_from_json(let date):
-            return "Unable to parse 'request_date' from CustomerInfo json: \(String(describing: date))"
-        case .cant_parse_request_date_from_string(let string):
-            return "Unable to parse 'request_date' from CustomerInfo date string: \(string)"
+        case let .error_encoding_customerinfo(error):
+            return "Couldn't encode CustomerInfo:\n\(error)"
         }
 
     }

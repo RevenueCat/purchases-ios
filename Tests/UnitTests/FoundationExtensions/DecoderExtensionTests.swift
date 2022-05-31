@@ -124,6 +124,27 @@ class DecoderExtensionsLossyCollectionTests: TestCase {
         expect(decodedData) == data
     }
 
+    func testDictionaryKeysAreSnakeCase() throws {
+        let keys: Set<String> = [
+            "snake_case",
+            "com.revenuecat.monthly_4.99.1_week_intro",
+            "com.revenuecat.monthly_4.99.no_intro",
+            "pro.1"
+        ]
+
+        let data = Data(list: [],
+                        map1: keys.dictionaryWithValues { .init(string: $0) },
+                        map2: [:])
+        let decodedData = try data.encodeAndDecode()
+
+        expect(Set(decodedData.map1.keys)) == keys
+        expect(decodedData) == data
+
+        for key in keys {
+            expect(decodedData.map1[key]?.string) == key
+        }
+    }
+
     func testIgnoresArrayErrors() throws {
         let json = "{\"list\": [\"not a number\"], \"map1\": {}, \"map2\": {}}"
         let data = try Data.decode(json)
@@ -162,6 +183,27 @@ class DecoderExtensionsLossyCollectionTests: TestCase {
         let data = try Data.decode(json)
 
         expect(data.map2) == ["3": [.init(string: "test")]]
+    }
+
+    func testArrayDictionaryKeysAreSnakeCase() throws {
+        let keys: Set<String> = [
+            "snake_case",
+            "com.revenuecat.monthly_4.99.1_week_intro",
+            "com.revenuecat.monthly_4.99.no_intro",
+            "pro.1"
+        ]
+
+        let data = Data(list: [],
+                        map1: [:],
+                        map2: keys.dictionaryWithValues { [.init(string: $0)] })
+        let decodedData = try data.encodeAndDecode()
+
+        expect(decodedData) == data
+        expect(Set(decodedData.map2.keys)) == keys
+
+        for key in keys {
+            expect(decodedData.map2[key]) == [.init(string: key)]
+        }
     }
 
 }
@@ -229,6 +271,30 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
         let data = try Data.decode(json)
 
         expect(data.dictionary) == [:]
+    }
+
+}
+
+class IgnoreEncodableTests: TestCase {
+
+    private struct Data: Codable, Equatable {
+        var value: Int
+        @IgnoreEncodable var ignored: Int
+    }
+
+    func testValueIsNotEncoded() throws {
+        let data = Data(value: 2, ignored: 2)
+        let encoded = try XCTUnwrap(
+            String(data: try JSONEncoder.default.encode(data), encoding: .utf8)
+        )
+
+        expect(encoded) == "{\"value\":2}"
+    }
+
+    func testValueIsDecoded() throws {
+        let json = "{\"value\": 1, \"ignored\": 2}"
+
+        expect(try Data.decode(json)) == .init(value: 1, ignored: 2)
     }
 
 }
@@ -301,7 +367,7 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
 
  }
 
-private extension Decodable where Self: Encodable {
+extension Decodable where Self: Encodable {
 
     func encodeAndDecode() throws -> Self {
         return try JSONDecoder.default.decode(
@@ -311,15 +377,14 @@ private extension Decodable where Self: Encodable {
 
 }
 
-private extension Decodable {
+extension Decodable {
 
     static func decode(_ json: String) throws -> Self {
-        return try JSONDecoder.default.decode(jsonData: json.data(using: .utf8)!)
+        return try JSONDecoder.default.decode(jsonData: json.asData)
     }
 
     static func decodeEmptyData() throws -> Self {
-        let json = "{}".data(using: .utf8)!
-        return try JSONDecoder.default.decode(jsonData: json)
+        return try self.decode("{}")
     }
 
 }

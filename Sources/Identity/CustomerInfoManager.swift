@@ -120,45 +120,26 @@ class CustomerInfoManager {
         }
 
         do {
-            let infoDict = try JSONSerialization.jsonObject(with: customerInfoData) as? [String: Any]
-            guard let customerInfoDict = infoDict else {
-                return nil
-            }
+            let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
 
-            let info: CustomerInfo
-            do {
-                info = try CustomerInfo(data: customerInfoDict)
-            } catch {
-                if let customerInfoError = error as? CustomerInfoError {
-                    Logger.error(customerInfoError.description)
-                } else {
-                    Logger.error("Error loading customer info from cache: \(error)")
-                }
-                return nil
-            }
-
-            if let schema = info.schemaVersion, schema == CustomerInfo.currentSchemaVersion {
+            if info.isInCurrentSchemaVersion {
                 return info
+            } else {
+                return nil
             }
         } catch {
-            Logger.error("Unable to unmarshall CustomerInfo from cache:\n \(error.localizedDescription)")
+            Logger.error("Error loading customer info from cache:\n \(error.localizedDescription)")
+            return nil
         }
-
-        return nil
     }
 
     func cache(customerInfo: CustomerInfo, appUserID: String) {
-        let customerInfoJSONObject = customerInfo.jsonObject()
-        if JSONSerialization.isValidJSONObject(customerInfoJSONObject) {
-            do {
-                let jsonData = try JSONSerialization.data(withJSONObject: customerInfo.jsonObject())
-                deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
-                sendUpdateIfChanged(customerInfo: customerInfo)
-            } catch {
-                Logger.error(Strings.customerInfo.error_getting_data_from_customerinfo_json(error: error))
-            }
-        } else {
-            Logger.error(Strings.customerInfo.invalid_json)
+        do {
+            let jsonData = try JSONEncoder.default.encode(customerInfo)
+            deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
+            sendUpdateIfChanged(customerInfo: customerInfo)
+        } catch {
+            Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
         }
     }
 

@@ -143,20 +143,39 @@ private struct DictionaryCodingKey: CodingKey {
 
 extension LossyDictionary: Decodable {
 
+    private struct AnyDecodableValue: Decodable {}
+
     init(from decoder: Decoder) throws {
         var elements: [String: Value] = [:]
 
         let container = try decoder.container(keyedBy: DictionaryCodingKey.self)
+        let keys = try Self.extractKeys(from: decoder, container: container)
 
-        for key in container.allKeys {
+        for (key, stringKey) in keys {
             do {
-                elements[key.stringValue] = try container.decode(Value.self, forKey: key)
+                elements[stringKey] = try container.decode(Value.self, forKey: key)
             } catch {
                 ErrorUtils.logDecodingError(error)
             }
         }
 
         self.wrappedValue = elements
+    }
+
+    fileprivate static func extractKeys(
+        from decoder: Decoder,
+        container: KeyedDecodingContainer<DictionaryCodingKey>
+    ) throws -> AnySequence<(DictionaryCodingKey, String)> {
+        // Decode a dictionary ignoring the values to decode the original keys
+        // without using the `JSONDecoder.KeyDecodingStrategy`.
+        let keys = try decoder.singleValueContainer().decode([String: AnyDecodableValue].self).keys
+
+        return AnySequence(
+            zip(
+                container.allKeys.sorted(by: { $0.stringValue < $1.stringValue }),
+                keys.sorted()
+            )
+        )
     }
 
 }
@@ -167,11 +186,12 @@ extension LossyArrayDictionary: Decodable {
         var elements: [String: [Value]] = [:]
 
         let container = try decoder.container(keyedBy: DictionaryCodingKey.self)
+        let keys = try LossyDictionary<Value>.extractKeys(from: decoder, container: container)
 
-        for key in container.allKeys {
+        for (key, stringKey) in keys {
             do {
                 let arrayDecoder = try container.superDecoder(forKey: key)
-                elements[key.stringValue] = try LossyArray(from: arrayDecoder).wrappedValue
+                elements[stringKey] = try LossyArray(from: arrayDecoder).wrappedValue
             } catch {
                 ErrorUtils.logDecodingError(error)
             }

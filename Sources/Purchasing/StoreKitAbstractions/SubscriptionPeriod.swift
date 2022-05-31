@@ -55,6 +55,7 @@ public class SubscriptionPeriod: NSObject {
         }
 
         return .init(value: sk1SubscriptionPeriod.numberOfUnits, unit: unit)
+            .normalized()
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8, *)
@@ -64,6 +65,7 @@ public class SubscriptionPeriod: NSObject {
         }
 
         return .init(value: sk2SubscriptionPeriod.value, unit: unit)
+            .normalized()
     }
 
     public override func isEqual(_ object: Any?) -> Bool {

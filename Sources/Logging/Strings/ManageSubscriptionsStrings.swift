@@ -19,7 +19,6 @@ extension ManageSubscriptionsHelper {
 
     enum Strings {
 
-        case cant_form_apple_subscriptions_url
         case error_from_appstore_show_manage_subscription(error: Error)
         case failed_to_get_management_url_error_unknown(error: Error)
         case failed_to_get_window_scene
@@ -35,8 +34,6 @@ extension ManageSubscriptionsHelper.Strings: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .cant_form_apple_subscriptions_url:
-            return "Error when trying to form the Apple Subscriptions URL."
         case .error_from_appstore_show_manage_subscription(let error):
             return "Error when trying to show manage subscription: \(error.localizedDescription)"
         case .failed_to_get_management_url_error_unknown(let error):

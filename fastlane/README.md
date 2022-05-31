@@ -162,6 +162,14 @@ Release to CocoaPods, create Carthage archive, export XCFramework, and create Gi
 
 Bump version, edit changelog, and create pull request
 
+### ios github_changelog
+
+```sh
+[bundle exec] fastlane ios github_changelog
+```
+
+Generate changelog from GitHub compare and PR data for mentioning GitHub usernames in release notes
+
 ### ios prepare_next_version
 
 ```sh

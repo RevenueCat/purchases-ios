@@ -18,6 +18,7 @@ class ProductsFetcherSK1: NSObject {
 
     typealias Callback = (Result<Set<SK1Product>, Error>) -> Void
 
+    let requestTimeout: TimeInterval
     private let productsRequestFactory: ProductsRequestFactory
 
     // Note: the cached products don't get invalidated when the Storefront changes,
@@ -26,7 +27,6 @@ class ProductsFetcherSK1: NSObject {
     private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: ProductRequest] = [:]
     private var completionHandlers: [Set<String>: [Callback]] = [:]
-    private let requestTimeout: DispatchTimeInterval
 
     private static let numberOfRetries: Int = 10
 
@@ -35,7 +35,7 @@ class ProductsFetcherSK1: NSObject {
     ///     - Retries up to ``Self.numberOfRetries``
     ///     - Timeout specified by this parameter
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
-         requestTimeout: DispatchTimeInterval = .seconds(30)) {
+         requestTimeout: TimeInterval) {
         self.productsRequestFactory = productsRequestFactory
         self.requestTimeout = requestTimeout
     }
@@ -173,8 +173,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                     completion(.failure(error))
                 }
             } else {
-                let delayInSeconds = Int((self.requestTimeout.seconds / 10).rounded())
-
+                let delayInSeconds = Int((self.requestTimeout / 10).rounded())
                 queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
                     self.startRequest(forIdentifiers: productRequest.identifiers,
                                       retriesLeft: productRequest.retriesLeft - 1)
@@ -224,7 +223,7 @@ private extension ProductsFetcherSK1 {
             request.cancel()
 
             Logger.appleError(Strings.storeKit.skproductsrequest_timed_out(
-                after: Int(self.requestTimeout.seconds.rounded())
+                after: Int(self.requestTimeout.rounded())
             ))
             guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
                 Logger.error("callback not found for failing request: \(request)")

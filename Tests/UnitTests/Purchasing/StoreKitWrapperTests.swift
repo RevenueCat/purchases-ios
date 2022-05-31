@@ -80,6 +80,11 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
         return shouldAddPromo
     }
 
+    var storefrontChangesCount: Int = 0
+    func storeKitWrapperDidChangeStorefront(_ storeKitWrapper: StoreKitWrapper) {
+        storefrontChangesCount += 1
+    }
+
     var storeKitWrapperShouldShowPriceConsent = true
 
     var productIdentifiersWithRevokedEntitlements: [String]?
@@ -176,6 +181,12 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
         wrapper?.paymentQueue(paymentQueue, removedTransactions: [transaction1, transaction2])
 
         expect(self.removedTransactions).to(contain([transaction1, transaction2]))
+    }
+
+    func testCallsStorefrontDidUpdateDelegateMethod() {
+        wrapper?.paymentQueueDidChangeStorefront(self.paymentQueue)
+
+        expect(self.storefrontChangesCount) == 1
     }
 
     func testDoesntAddObserverWithoutDelegate() {

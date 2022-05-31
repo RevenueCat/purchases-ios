@@ -101,6 +101,25 @@ private func checkStaticMethods() {
           automaticAdServicesAttributionTokenCollection)
 }
 
+private func checkTypealiases(
+    transaction: StoreTransaction?,
+    customerInfo: CustomerInfo,
+    userCancelled: Bool
+) {
+    let purchaseResultData: PurchaseResultData = (transaction: transaction,
+                                                  customerInfo: customerInfo,
+                                                  userCancelled: userCancelled)
+
+    // swiftlint:disable:next line_length
+    let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) -> Void in }
+
+    let startPurchaseBlock: StartPurchaseBlock = { (_: PurchaseCompletedBlock) in }
+
+    print(purchaseResultData,
+          purchaseCompletedBlock,
+          startPurchaseBlock)
+}
+
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getCustomerInfo { (_: CustomerInfo?, _: Error?) in }
     purchases.getOfferings { (_: Offerings?, _: Error?) in }
@@ -271,5 +290,6 @@ private func checkConfigure() -> Purchases {
                         userDefaults: UserDefaults(),
                         useStoreKit2IfAvailable: true,
                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+    Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
     return purch
 }
