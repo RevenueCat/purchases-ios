@@ -145,6 +145,24 @@ class ReceiptFetcherTests: TestCase {
         expect(self.receiptFetcher.receiptURL).to(beNil())
     }
 
+    func testReceiptURLIsUnchangedInSandboxOnOlderVersionsIfNotWatchOS() throws {
+        #if os(watchOS)
+            throw XCTSkip("Test designed for any platform but watchOS")
+        #endif
+
+        self.mockBundle.receiptURLResult = .sandboxReceipt
+        self.mockSystemInfo.stubbedIsSandbox = true
+
+        self.mockSystemInfo.stubbedCurrentOperatingSystemVersion = .init(majorVersion: 6,
+                                                                         minorVersion: 0,
+                                                                         patchVersion: 0)
+
+        let appStoreReceiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
+        let url = try XCTUnwrap(self.receiptFetcher.receiptURL)
+
+        expect(url) == appStoreReceiptURL
+    }
+
     func testWatchOSReceiptURLIsUnchangedInProduction() throws {
         self.mockBundle.receiptURLResult = .receiptWithData
         self.mockSystemInfo.stubbedIsSandbox = false
