@@ -61,23 +61,27 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Purchases.shared) === purchases
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithAppUserID() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "")
         expect(Purchases.shared) === purchases
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithObserverMode() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == false
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false, userDefaults: nil)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == true
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaultsAndUseSK2() {
         let purchases = Purchases.configure(withAPIKey: "",
                                             appUserID: "",
