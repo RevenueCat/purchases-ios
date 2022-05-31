@@ -100,7 +100,7 @@ Or browse our iOS sample apps:
 - ``PurchasesDelegate``
 
 - ``Purchases/getCustomerInfo(completion:)``
-- ``Purchases/customerInfo()``
+- ``Purchases/customerInfo(fetchPolicy:)``
 - ``Purchases/customerInfoStream``
 
 ### Identifying Users
