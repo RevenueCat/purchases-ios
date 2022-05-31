@@ -50,6 +50,14 @@ class PurchasesGetProductsTests: BasePurchasesTests {
         expect(products).to(haveCount(productIdentifiers.count))
     }
 
+    func testGetEligibility() {
+        self.purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: []) { (_) in }
+
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore
+        ) == true
+    }
+
 }
 
 class PurchasesGetProductsBackgroundTests: BasePurchasesTests {
