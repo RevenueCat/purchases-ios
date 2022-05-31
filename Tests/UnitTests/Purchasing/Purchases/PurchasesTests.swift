@@ -16,344 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class PurchasesTests: TestCase {
-
-    let emptyCustomerInfoData: [String: Any] = [
-        "request_date": "2019-08-16T10:30:42Z",
-        "subscriber": [
-            "first_seen": "2019-07-17T00:05:54Z",
-            "original_app_user_id": "app_user_id",
-            "subscriptions": [:],
-            "other_purchases": [:],
-            "original_application_version": NSNull()
-        ]]
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        userDefaults = UserDefaults(suiteName: "TestDefaults")
-        systemInfo = MockSystemInfo(finishTransactions: true)
-        deviceCache = MockDeviceCache(systemInfo: self.systemInfo, userDefaults: userDefaults)
-        requestFetcher = MockRequestFetcher()
-        mockProductsManager = MockProductsManager(systemInfo: systemInfo,
-                                                  requestTimeout: Configuration.storeKitRequestTimeoutDefault)
-        mockOperationDispatcher = MockOperationDispatcher()
-        mockReceiptParser = MockReceiptParser()
-        identityManager = MockIdentityManager(mockAppUserID: "app_user")
-        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
-                                                                        receiptParser: mockReceiptParser)
-        let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
-        let systemInfoAttribution = try MockSystemInfo(platformInfo: platformInfo,
-                                                       finishTransactions: true)
-        receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher, systemInfo: systemInfoAttribution)
-        attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
-                                                    systemInfo: systemInfoAttribution)
-        backend = MockBackend(httpClient: MockHTTPClient(systemInfo: systemInfo, eTagManager: MockETagManager()),
-                              apiKey: "mockAPIKey",
-                              attributionFetcher: attributionFetcher)
-        subscriberAttributesManager =
-        MockSubscriberAttributesManager(backend: self.backend,
-                                        deviceCache: self.deviceCache,
-                                        operationDispatcher: self.mockOperationDispatcher,
-                                        attributionFetcher: self.attributionFetcher,
-                                        attributionDataMigrator: AttributionDataMigrator())
-        attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                              currentUserProvider: identityManager,
-                                              backend: backend,
-                                              attributionFetcher: attributionFetcher,
-                                              subscriberAttributesManager: subscriberAttributesManager)
-        customerInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
-                                                  deviceCache: deviceCache,
-                                                  backend: backend,
-                                                  systemInfo: systemInfo)
-        mockOfferingsManager = MockOfferingsManager(deviceCache: deviceCache,
-                                                    operationDispatcher: mockOperationDispatcher,
-                                                    systemInfo: systemInfo,
-                                                    backend: backend,
-                                                    offeringsFactory: offeringsFactory,
-                                                    productsManager: mockProductsManager)
-        mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
-                                                             customerInfoManager: customerInfoManager,
-                                                             currentUserProvider: identityManager)
-        mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
-                                                                    customerInfoManager: customerInfoManager,
-                                                                    currentUserProvider: identityManager)
-        mockTransactionsManager = MockTransactionsManager(storeKit2Setting: systemInfo.storeKit2Setting,
-                                                          receiptParser: mockReceiptParser)
-    }
-
-    override func tearDown() {
-        Purchases.clearSingleton()
-        deviceCache = nil
-        purchases = nil
-        UserDefaults().removePersistentDomain(forName: "TestDefaults")
-
-        super.tearDown()
-    }
-
-    class MockBackend: Backend {
-        var userID: String?
-        var originalApplicationVersion: String?
-        var originalPurchaseDate: Date?
-        var timeout = false
-        var getSubscriberCallCount = 0
-        var overrideCustomerInfoResult: Result<CustomerInfo, BackendError> = .success(
-            // swiftlint:disable:next force_try
-            try! CustomerInfo(data: [
-                "request_date": "2019-08-16T10:30:42Z",
-                "subscriber": [
-                    "first_seen": "2019-07-17T00:05:54Z",
-                    "original_app_user_id": "app_user_id",
-                    "subscriptions": [:],
-                    "other_purchases": [:]
-                ]])
-        )
-
-        override func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
-            getSubscriberCallCount += 1
-            userID = appUserID
-
-            if !timeout {
-                let result = self.overrideCustomerInfoResult
-                DispatchQueue.main.async {
-                    completion(result)
-                }
-            }
-        }
-
-        var postReceiptDataCalled = false
-        var postedReceiptData: Data?
-        var postedIsRestore: Bool?
-        var postedProductID: String?
-        var postedPrice: Decimal?
-        var postedPaymentMode: StoreProductDiscount.PaymentMode?
-        var postedIntroPrice: Decimal?
-        var postedCurrencyCode: String?
-        var postedSubscriptionGroup: String?
-        var postedDiscounts: [StoreProductDiscount]?
-        var postedOfferingIdentifier: String?
-        var postedObserverMode: Bool?
-
-        var postReceiptResult: Result<CustomerInfo, BackendError>?
-        var aliasError: BackendError?
-        var aliasCalled = false
-
-        override func post(receiptData: Data,
-                           appUserID: String,
-                           isRestore: Bool,
-                           productData: ProductRequestData?,
-                           presentedOfferingIdentifier: String?,
-                           observerMode: Bool,
-                           subscriberAttributes: [String: SubscriberAttribute]?,
-                           completion: @escaping Backend.CustomerInfoResponseHandler) {
-            postReceiptDataCalled = true
-            postedReceiptData = receiptData
-            postedIsRestore = isRestore
-
-            if let productData = productData {
-                postedProductID = productData.productIdentifier
-                postedPrice = productData.price
-
-                postedPaymentMode = productData.paymentMode
-                postedIntroPrice = productData.introPrice
-                postedSubscriptionGroup = productData.subscriptionGroup
-
-                postedCurrencyCode = productData.currencyCode
-                postedDiscounts = productData.discounts
-            }
-
-            postedOfferingIdentifier = presentedOfferingIdentifier
-            postedObserverMode = observerMode
-            completion(postReceiptResult ?? .failure(.missingAppUserID()))
-        }
-
-        var postedProductIdentifiers: [String]?
-
-        override func getIntroEligibility(appUserID: String,
-                                          receiptData: Data,
-                                          productIdentifiers: [String],
-                                          completion: @escaping IntroEligibilityResponseHandler) {
-            postedProductIdentifiers = productIdentifiers
-
-            var eligibilities = [String: IntroEligibility]()
-            for productID in productIdentifiers {
-                eligibilities[productID] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)
-            }
-
-            completion(eligibilities, nil)
-        }
-
-        var failOfferings = false
-        var badOfferingsResponse = false
-        var gotOfferings = 0
-
-        override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
-            gotOfferings += 1
-            if failOfferings {
-                completion(.failure(.unexpectedBackendResponse(.getOfferUnexpectedResponse)))
-                return
-            }
-            if badOfferingsResponse {
-                completion(.failure(.networkError(.decoding(CodableError.invalidJSONObject(value: [:]), Data()))))
-                return
-            }
-
-            completion(.success(.mockResponse))
-        }
-
-        override func createAlias(appUserID: String, newAppUserID: String, completion: ((BackendError?) -> Void)?) {
-            aliasCalled = true
-            if aliasError != nil {
-                completion!(aliasError)
-            } else {
-                userID = newAppUserID
-                completion!(nil)
-            }
-        }
-
-        var invokedPostAttributionData = false
-        var invokedPostAttributionDataCount = 0
-        // swiftlint:disable:next large_tuple
-        var invokedPostAttributionDataParameters: (
-            data: [String: Any]?,
-            network: AttributionNetwork,
-            appUserID: String?
-        )?
-        var invokedPostAttributionDataParametersList = [(data: [String: Any]?,
-                                                         network: AttributionNetwork,
-                                                         appUserID: String?)]()
-        var stubbedPostAttributionDataCompletionResult: (BackendError?, Void)?
-
-        override func post(attributionData: [String: Any],
-                           network: AttributionNetwork,
-                           appUserID: String,
-                           completion: ((BackendError?) -> Void)? = nil) {
-            invokedPostAttributionData = true
-            invokedPostAttributionDataCount += 1
-            invokedPostAttributionDataParameters = (attributionData, network, appUserID)
-            invokedPostAttributionDataParametersList.append((attributionData, network, appUserID))
-            if let result = stubbedPostAttributionDataCompletionResult {
-                completion?(result.0)
-            }
-        }
-
-        var postOfferForSigningCalled = false
-        var postOfferForSigningPaymentDiscountResponse: Result<[String: Any], BackendError> = .success([:])
-
-        override func post(offerIdForSigning offerIdentifier: String,
-                           productIdentifier: String,
-                           subscriptionGroup: String?,
-                           receiptData: Data,
-                           appUserID: String,
-                           completion: @escaping OfferSigningResponseHandler) {
-            postOfferForSigningCalled = true
-
-            completion(
-                postOfferForSigningPaymentDiscountResponse.map {
-                    (
-                        // swiftlint:disable:next force_cast line_length
-                        $0["signature"] as! String, $0["keyIdentifier"] as! String, $0["nonce"] as! UUID, $0["timestamp"] as! Int
-                    )
-                }
-            )
-        }
-    }
-
-    var receiptFetcher: MockReceiptFetcher!
-    var requestFetcher: MockRequestFetcher!
-    var mockProductsManager: MockProductsManager!
-    var backend: MockBackend!
-    let storeKitWrapper = MockStoreKitWrapper()
-    let notificationCenter = MockNotificationCenter()
-    var userDefaults: UserDefaults! = nil
-    let offeringsFactory = MockOfferingsFactory()
-    var deviceCache: MockDeviceCache!
-    var subscriberAttributesManager: MockSubscriberAttributesManager!
-    var identityManager: MockIdentityManager!
-    var systemInfo: MockSystemInfo!
-    var mockOperationDispatcher: MockOperationDispatcher!
-    var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
-    var mockReceiptParser: MockReceiptParser!
-    var mockTransactionsManager: MockTransactionsManager!
-    var attributionFetcher: MockAttributionFetcher!
-    var attributionPoster: AttributionPoster!
-    var customerInfoManager: CustomerInfoManager!
-    var mockOfferingsManager: MockOfferingsManager!
-    var purchasesOrchestrator: PurchasesOrchestrator!
-    var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
-    var mockManageSubsHelper: MockManageSubscriptionsHelper!
-    var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
-
-    // swiftlint:disable:next weak_delegate
-    var purchasesDelegate = MockPurchasesDelegate()
-
-    var purchases: Purchases!
-
-    func setupPurchases(automaticCollection: Bool = false) {
-        Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
-        self.identityManager.mockIsAnonymous = false
-
-        initializePurchasesInstance(appUserId: identityManager.currentAppUserID)
-    }
-
-    func setupAnonPurchases() {
-        Purchases.automaticAppleSearchAdsAttributionCollection = false
-        self.identityManager.mockIsAnonymous = true
-        initializePurchasesInstance(appUserId: nil)
-    }
-
-    func setupPurchasesObserverModeOn() throws {
-        systemInfo = try MockSystemInfo(platformInfo: nil, finishTransactions: false)
-        initializePurchasesInstance(appUserId: nil)
-    }
-
-    private func initializePurchasesInstance(appUserId: String?) {
-        purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
-                                                      storeKitWrapper: storeKitWrapper,
-                                                      systemInfo: systemInfo,
-                                                      subscriberAttributesManager: subscriberAttributesManager,
-                                                      operationDispatcher: mockOperationDispatcher,
-                                                      receiptFetcher: receiptFetcher,
-                                                      customerInfoManager: customerInfoManager,
-                                                      backend: backend,
-                                                      currentUserProvider: identityManager,
-                                                      transactionsManager: mockTransactionsManager,
-                                                      deviceCache: deviceCache,
-                                                      manageSubscriptionsHelper: mockManageSubsHelper,
-                                                      beginRefundRequestHelper: mockBeginRefundRequestHelper)
-        trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
-            systemInfo: systemInfo,
-            receiptFetcher: receiptFetcher,
-            introEligibilityCalculator: mockIntroEligibilityCalculator,
-            backend: backend,
-            currentUserProvider: identityManager,
-            operationDispatcher: mockOperationDispatcher,
-            productsManager: mockProductsManager
-        )
-        purchases = Purchases(appUserID: appUserId,
-                              requestFetcher: requestFetcher,
-                              receiptFetcher: receiptFetcher,
-                              attributionFetcher: attributionFetcher,
-                              attributionPoster: attributionPoster,
-                              backend: backend,
-                              storeKitWrapper: storeKitWrapper,
-                              notificationCenter: notificationCenter,
-                              systemInfo: systemInfo,
-                              offeringsFactory: offeringsFactory,
-                              deviceCache: deviceCache,
-                              identityManager: identityManager,
-                              subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher,
-                              customerInfoManager: customerInfoManager,
-                              productsManager: mockProductsManager,
-                              offeringsManager: mockOfferingsManager,
-                              purchasesOrchestrator: purchasesOrchestrator,
-                              trialOrIntroPriceEligibilityChecker: trialOrIntroPriceEligibilityChecker)
-
-        purchasesOrchestrator.delegate = purchases
-        purchases!.delegate = purchasesDelegate
-        Purchases.setDefaultInstance(purchases!)
-    }
+class PurchasesTests: BasePurchasesTests {
 
     func testIsAbleToBeInitialized() {
         setupPurchases()
@@ -460,7 +123,7 @@ class PurchasesTests: TestCase {
     func testDelegateIsCalledForRandomPurchaseSuccess() throws {
         setupPurchases()
 
-        let customerInfo = try CustomerInfo(data: emptyCustomerInfoData)
+        let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
         self.backend.postReceiptResult = .success(customerInfo)
 
         let product = MockSK1Product(mockProductIdentifier: "product")
@@ -769,7 +432,7 @@ class PurchasesTests: TestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -792,7 +455,7 @@ class PurchasesTests: TestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: self.emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -816,7 +479,7 @@ class PurchasesTests: TestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptResult = .success(CustomerInfo(testData: self.emptyCustomerInfoData)!)
+            self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -867,7 +530,7 @@ class PurchasesTests: TestCase {
 
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -1033,7 +696,7 @@ class PurchasesTests: TestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
 
@@ -1057,7 +720,7 @@ class PurchasesTests: TestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = SKPayment.init(product: otherProduct)
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: self.emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
 
@@ -1264,7 +927,7 @@ class PurchasesTests: TestCase {
     func testRestoringPurchasesCallsSuccessDelegateMethod() throws {
         setupPurchases()
 
-        let customerInfo = try CustomerInfo(data: self.emptyCustomerInfoData)
+        let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
         self.backend.postReceiptResult = .success(customerInfo)
 
         var receivedCustomerInfo: CustomerInfo?
@@ -1304,7 +967,7 @@ class PurchasesTests: TestCase {
         systemInfo = try MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
-        initializePurchasesInstance(appUserId: nil)
+        self.initializePurchasesInstance(appUserId: nil)
 
         purchases.syncPurchases(completion: nil)
         expect(self.backend.postReceiptDataCalled).to(beTrue())
@@ -1421,7 +1084,7 @@ class PurchasesTests: TestCase {
     func testSyncPurchasesCallsSuccessDelegateMethod() throws {
         setupPurchases()
 
-        let customerInfo = try CustomerInfo(data: self.emptyCustomerInfoData)
+        let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
         self.backend.postReceiptResult = .success(customerInfo)
 
         var receivedCustomerInfo: CustomerInfo?
@@ -1833,7 +1496,7 @@ class PurchasesTests: TestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptResult = .success(CustomerInfo(testData: self.emptyCustomerInfoData)!)
+            self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2245,7 +1908,7 @@ class PurchasesTests: TestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: self.emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2267,7 +1930,7 @@ class PurchasesTests: TestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: self.emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2294,7 +1957,7 @@ class PurchasesTests: TestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(
             self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: self.emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2320,7 +1983,7 @@ class PurchasesTests: TestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: self.emptyCustomerInfoData))
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2404,7 +2067,7 @@ class PurchasesTests: TestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptResult = .success(CustomerInfo(testData: self.emptyCustomerInfoData)!)
+            self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2449,7 +2112,7 @@ class PurchasesTests: TestCase {
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-        self.backend.postReceiptResult = .success(CustomerInfo(testData: self.emptyCustomerInfoData)!)
+        self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
     }
@@ -2710,20 +2373,5 @@ class PurchasesTests: TestCase {
         expect(self.deviceCache.setCustomerInfoCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(expectedCallCount))
     }
-
-}
-
-private extension OfferingsResponse {
-
-    static let mockResponse: Self = .init(
-        currentOfferingId: "base",
-        offerings: [
-            .init(identifier: "base",
-                  description: "This is the base offering",
-                  packages: [
-                    .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
-                  ])
-        ]
-    )
 
 }
