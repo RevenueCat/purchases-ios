@@ -644,52 +644,6 @@ class PurchasesTests: BasePurchasesTests {
         expect(self.deviceCache.cacheCustomerInfoCount).toEventually(equal(2))
     }
 
-    func testFirstInitializationGetsOfferingsIfAppActive() {
-        systemInfo.stubbedIsApplicationBackgrounded = false
-        setupPurchases()
-        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
-    }
-
-    func testFirstInitializationDoesntFetchOfferingsIfAppBackgrounded() {
-        systemInfo.stubbedIsApplicationBackgrounded = true
-        setupPurchases()
-        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
-    }
-
-    func testProductDataIsCachedForOfferings() throws {
-        setupPurchases()
-        mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
-        )
-        self.purchases?.getOfferings { (newOfferings, _) in
-            let storeProduct = newOfferings!["base"]!.monthly!.storeProduct
-            let product = storeProduct.sk1Product!
-            self.purchases.purchase(product: storeProduct) { (_, _, _, _) in
-
-            }
-
-            let transaction = MockTransaction()
-            transaction.mockPayment = self.storeKitWrapper.payment!
-
-            transaction.mockState = SKPaymentTransactionState.purchasing
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
-            self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
-
-            transaction.mockState = SKPaymentTransactionState.purchased
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
-            expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postedReceiptData).toNot(beNil())
-
-            expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(product.price as Decimal))
-            expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
-
-            expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
-        }
-    }
-
     func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
         setupPurchases()
 
@@ -934,16 +888,6 @@ class PurchasesTests: BasePurchasesTests {
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
-    }
-
-    func testInvalidateCustomerInfoCacheDoesntClearOfferingsCache() {
-        setupPurchases()
-        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
-
-        expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
-
-        nonOptionalPurchases.invalidateCustomerInfoCache()
-        expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
     }
 
     func testProxyURL() {
