@@ -408,21 +408,14 @@ class PurchasesTests: BasePurchasesTests {
             .to(beTrue())
     }
 
-    func testCachesCustomerInfo() {
+    func testCachesCustomerInfo() throws {
         setupPurchases()
 
         expect(self.deviceCache.cachedCustomerInfo.count).toEventually(equal(1))
-        expect(self.deviceCache.cachedCustomerInfo[self.purchases!.appUserID]).toEventuallyNot(beNil())
+        expect(self.deviceCache.cachedCustomerInfo[self.purchases.appUserID]).toEventuallyNot(beNil())
 
-        let customerInfo = self.deviceCache.cachedCustomerInfo[self.purchases!.appUserID]
-
-        do {
-            if customerInfo != nil {
-                try JSONSerialization.jsonObject(with: customerInfo!, options: [])
-            }
-        } catch {
-            fail()
-        }
+        let cachedData = try XCTUnwrap(self.deviceCache.cachedCustomerInfo[self.purchases.appUserID])
+        try JSONSerialization.jsonObject(with: cachedData, options: [])
     }
 
     func testCachesCustomerInfoOnPurchase() throws {
@@ -456,34 +449,6 @@ class PurchasesTests: BasePurchasesTests {
         expect(self.backend.postReceiptDataCalled).to(beTrue())
 
         expect(self.deviceCache.cacheCustomerInfoCount).toEventually(equal(2))
-    }
-
-    func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
-        setupPurchases()
-
-        Purchases.deprecated.addAttributionData([:], fromNetwork: AttributionNetwork.adjust)
-
-        // swiftlint:disable:next line_length
-        let attributionData = self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParameters?.attributionData
-        expect(attributionData?.count) == 2
-        expect(attributionData?["rc_idfa"] as? String) == "rc_idfa"
-        expect(attributionData?["rc_idfv"] as? String) == "rc_idfv"
-    }
-
-    func testPassesTheArrayForAllNetworks() {
-        setupPurchases()
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
-
-        for key in data.keys {
-            expect(self.backend.invokedPostAttributionDataParametersList[0].data?.keys.contains(key))
-                .toEventually(beTrue())
-        }
-        expect(self.backend.invokedPostAttributionDataParametersList[0].data?.keys.contains("rc_idfa")) == true
-        expect(self.backend.invokedPostAttributionDataParametersList[0].data?.keys.contains("rc_idfv")) == true
-        expect(self.backend.invokedPostAttributionDataParametersList[0].network) == AttributionNetwork.appleSearchAds
-        expect(self.backend.invokedPostAttributionDataParametersList[0].appUserID) == self.purchases?.appUserID
     }
 
     func testWhenNoReceiptDataReceiptIsRefreshed() {
@@ -529,96 +494,6 @@ class PurchasesTests: BasePurchasesTests {
         expect(receivedUserCancelled).toEventuallyNot(beNil())
         expect(receivedUserCancelled) == true
         expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
-    }
-
-    func testAttributionDataIsPostponedIfThereIsNoInstance() {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appsFlyer)
-
-        setupPurchases()
-
-        let invokedParameters = self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParameters
-        expect(invokedParameters?.attributionData).toNot(beNil())
-
-        for key in data.keys {
-            expect(invokedParameters?.attributionData.keys.contains(key)).toEventually(beTrue())
-        }
-
-        expect(invokedParameters?.attributionData.keys.contains("rc_idfa")) == true
-        expect(invokedParameters?.attributionData.keys.contains("rc_idfv")) == true
-        expect(invokedParameters?.network) == AttributionNetwork.appsFlyer
-        expect(invokedParameters?.appUserID) == self.purchases?.appUserID
-    }
-
-    func testAttributionDataSendsNetworkAppUserId() throws {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data,
-                                                from: AttributionNetwork.appleSearchAds,
-                                                forNetworkUserId: "newuser")
-
-        setupPurchases()
-
-        expect(self.backend.invokedPostAttributionData).toEventually(beTrue())
-
-        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
-        for key in data.keys {
-            expect(invokedMethodParams.data?.keys.contains(key)).to(beTrue())
-        }
-
-        expect(invokedMethodParams.data?.keys.contains("rc_idfa")) == true
-        expect(invokedMethodParams.data?.keys.contains("rc_idfv")) == true
-        expect(invokedMethodParams.data?.keys.contains("rc_attribution_network_id")) == true
-        expect(invokedMethodParams.data?["rc_attribution_network_id"] as? String) == "newuser"
-        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
-        expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
-    }
-
-    func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() throws {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
-
-        setupPurchases()
-
-        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
-        for key in data.keys {
-            expect(invokedMethodParams.data?.keys.contains(key)) == true
-        }
-
-        expect(invokedMethodParams.data?.keys.contains("rc_idfa")) == true
-        expect(invokedMethodParams.data?.keys.contains("rc_idfv")) == true
-        expect(invokedMethodParams.data?.keys.contains("rc_attribution_network_id")) == false
-        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
-        expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
-    }
-
-    func testAdClientAttributionDataIsAutomaticallyCollected() throws {
-        setupPurchases(automaticCollection: true)
-
-        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
-
-        expect(invokedMethodParams).toNot(beNil())
-        expect(invokedMethodParams.network) == AttributionNetwork.appleSearchAds
-
-        let obtainedVersionData = try XCTUnwrap(invokedMethodParams.data?["Version3.1"] as? NSDictionary)
-        expect(obtainedVersionData["iad-campaign-id"]).toNot(beNil())
-    }
-
-    func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
-        setupPurchases(automaticCollection: false)
-        expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
-    }
-
-    func testAttributionDataPostponesMultiple() {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, from: AttributionNetwork.adjust, forNetworkUserId: "newuser")
-
-        setupPurchases(automaticCollection: true)
-        expect(self.backend.invokedPostAttributionDataParametersList.count) == 1
-        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParametersList.count) == 1
     }
 
     func testIsAnonymous() {
