@@ -39,4 +39,15 @@
     
     NSLog(ci, ei, as, appis, led, ncp, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d, rawData);
 }
+
++ (void)checkCacheFetchPolicyEnum:(RCCacheFetchPolicy) policy {
+    switch (policy) {
+        case RCCacheFetchPolicyFetchCurrent:
+        case RCCacheFetchPolicyCachedOrFetched:
+        case RCCacheFetchPolicyFromCacheOnly:
+        case RCCacheFetchPolicyNotStaleCachedOrFetched:
+            break;
+    }
+}
+
 @end

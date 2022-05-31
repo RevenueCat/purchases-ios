@@ -58,17 +58,22 @@ class MockCustomerInfoManager: CustomerInfoManager {
 
     var invokedCustomerInfo = false
     var invokedCustomerInfoCount = 0
-    var invokedCustomerInfoParameters: (appUserID: String, completion: ((Result<CustomerInfo, BackendError>) -> Void)?)?
-    var invokedCustomerInfoParametersList = [(appUserID: String, completion: ((Result<CustomerInfo, BackendError>) -> Void)?)]()
+    var invokedCustomerInfoParameters: (appUserID: String,
+                                        fetchPolicy: CacheFetchPolicy,
+                                        completion: ((Result<CustomerInfo, BackendError>) -> Void)?)?
+    var invokedCustomerInfoParametersList: [(appUserID: String,
+                                             fetchPolicy: CacheFetchPolicy,
+                                             completion: ((Result<CustomerInfo, BackendError>) -> Void)?)] = []
 
     var stubbedCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
     override func customerInfo(appUserID: String,
+                               fetchPolicy: CacheFetchPolicy,
                                completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
         invokedCustomerInfo = true
         invokedCustomerInfoCount += 1
-        invokedCustomerInfoParameters = (appUserID, completion)
-        invokedCustomerInfoParametersList.append((appUserID, completion))
+        invokedCustomerInfoParameters = (appUserID, fetchPolicy, completion)
+        invokedCustomerInfoParametersList.append((appUserID, fetchPolicy, completion))
         completion?(self.stubbedCustomerInfoResult)
     }
 

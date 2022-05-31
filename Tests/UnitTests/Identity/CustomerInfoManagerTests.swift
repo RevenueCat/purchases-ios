@@ -3,20 +3,22 @@ import XCTest
 
 @testable import RevenueCat
 
-class CustomerInfoManagerTests: TestCase {
-    var mockBackend = MockBackend()
-    var mockOperationDispatcher = MockOperationDispatcher()
-    var mockDeviceCache: MockDeviceCache!
-    var mockSystemInfo = MockSystemInfo(finishTransactions: true)
+class BaseCustomerInfoManagerTests: TestCase {
+    fileprivate static let appUserID = "app_user_id"
 
-    private var mockCustomerInfo: CustomerInfo!
+    fileprivate var mockBackend = MockBackend()
+    fileprivate var mockOperationDispatcher = MockOperationDispatcher()
+    fileprivate var mockDeviceCache: MockDeviceCache!
+    fileprivate var mockSystemInfo = MockSystemInfo(finishTransactions: true)
 
-    var customerInfoManager: CustomerInfoManager!
+    fileprivate var mockCustomerInfo: CustomerInfo!
 
-    var customerInfoManagerChangesCallCount = 0
-    var customerInfoManagerLastCustomerInfo: CustomerInfo?
+    fileprivate var customerInfoManager: CustomerInfoManager!
 
-    private var customerInfoMonitorDisposable: (() -> Void)?
+    fileprivate var customerInfoManagerChangesCallCount = 0
+    fileprivate var customerInfoManagerLastCustomerInfo: CustomerInfo?
+
+    fileprivate var customerInfoMonitorDisposable: (() -> Void)?
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -24,22 +26,30 @@ class CustomerInfoManagerTests: TestCase {
         self.mockCustomerInfo = try CustomerInfo(data: [
             "request_date": "2018-12-21T02:40:36Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": NSNull()
             ]])
 
-        mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
-        customerInfoManagerChangesCallCount = 0
-        customerInfoManagerLastCustomerInfo = nil
-        customerInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
-                                                  deviceCache: mockDeviceCache,
-                                                  backend: mockBackend,
-                                                  systemInfo: mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
+        self.customerInfoManagerChangesCallCount = 0
+        self.customerInfoManagerLastCustomerInfo = nil
+        self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
+                                                       deviceCache: self.mockDeviceCache,
+                                                       backend: self.mockBackend,
+                                                       systemInfo: self.mockSystemInfo)
+    }
 
-        self.customerInfoMonitorDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
+}
+
+class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.customerInfoMonitorDisposable = self.customerInfoManager.monitorChanges { [weak self] customerInfo in
             self?.customerInfoManagerChangesCallCount += 1
             self?.customerInfoManagerLastCustomerInfo = customerInfo
         }
@@ -54,7 +64,7 @@ class CustomerInfoManagerTests: TestCase {
     func testFetchAndCacheCustomerInfoCallsBackendWithRandomDelayIfAppBackgrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: true,
                                                       completion: nil)
 
@@ -66,7 +76,7 @@ class CustomerInfoManagerTests: TestCase {
     func testFetchAndCacheCustomerInfoCallsBackendWithoutRandomDelayIfAppForegrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false,
                                                       completion: nil)
 
@@ -82,7 +92,7 @@ class CustomerInfoManagerTests: TestCase {
 
         var completionCalled = false
         var receivedError: BackendError?
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { result in
             completionCalled = true
             receivedError = result.error
@@ -98,7 +108,7 @@ class CustomerInfoManagerTests: TestCase {
         mockBackend.stubbedGetCustomerInfoResult = .failure(.missingAppUserID())
 
         var completionCalled = false
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { _ in
             completionCalled = true
         }
@@ -114,7 +124,7 @@ class CustomerInfoManagerTests: TestCase {
         var completionCalled = false
         var receivedCustomerInfo: CustomerInfo?
 
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { result in
             completionCalled = true
             receivedCustomerInfo = result.value
@@ -133,7 +143,7 @@ class CustomerInfoManagerTests: TestCase {
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
         var completionCalled = false
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { _ in
             completionCalled = true
         }
@@ -149,14 +159,13 @@ class CustomerInfoManagerTests: TestCase {
         var firstCompletionCalled = false
         var secondCompletionCalled = false
 
-        let appUserID = "myUser"
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
                                                              isAppBackgrounded: false) { _ in
             firstCompletionCalled = true
         }
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
+        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
                                                              isAppBackgrounded: false) { _ in
             secondCompletionCalled = true
         }
@@ -167,12 +176,11 @@ class CustomerInfoManagerTests: TestCase {
     }
 
     func testFetchAndCacheCustomerInfoIfStaleFetchesIfStale() {
-        let appUserID = "myUser"
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
+        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
         var completionCalled = false
 
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
                                                              isAppBackgrounded: false) { _ in
             completionCalled = true
         }
@@ -185,7 +193,7 @@ class CustomerInfoManagerTests: TestCase {
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
         var completionCalled = false
 
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: "myUser",
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
                                                              isAppBackgrounded: false) { _ in
             completionCalled = true
         }
@@ -198,17 +206,16 @@ class CustomerInfoManagerTests: TestCase {
         let info = try CustomerInfo(data: [
         "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
 
         let object = try info.asData()
-        let appUserID = "myUser"
-        self.mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
 
         expect(self.customerInfoManagerChangesCallCount) == 1
     }
@@ -217,7 +224,7 @@ class CustomerInfoManagerTests: TestCase {
         let oldInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -225,24 +232,23 @@ class CustomerInfoManagerTests: TestCase {
 
         var object = try oldInfo.asData()
 
-        let appUserID = "myUser"
-        mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
 
         let newInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]])
 
         object = try newInfo.asData()
-        mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
         expect(self.customerInfoManagerChangesCallCount) == 2
     }
 
@@ -250,28 +256,26 @@ class CustomerInfoManagerTests: TestCase {
         let oldInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
 
         let object = try oldInfo.asData()
-        let appUserID = "myUser"
-        mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
         expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 1
     }
 
     func testCustomerInfoReturnsFromCacheIfAvailable() {
-        let appUserID = "myUser"
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
+        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
 
         var completionCalled = false
         var receivedCustomerInfo: CustomerInfo?
 
-        customerInfoManager.customerInfo(appUserID: appUserID) { result in
+        customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { result in
             completionCalled = true
             receivedCustomerInfo = result.value
         }
@@ -282,14 +286,13 @@ class CustomerInfoManagerTests: TestCase {
     }
 
     func testCustomerInfoReturnsFromCacheAndRefreshesIfStale() {
-        let appUserID = "myUser"
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
+        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
 
         var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: appUserID) { _ in
+        customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { _ in
             completionCalled = true
         }
 
@@ -301,7 +304,7 @@ class CustomerInfoManagerTests: TestCase {
         let appUserID = "myUser"
 
         var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: appUserID) { _ in
+        customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default) { _ in
             completionCalled = true
 
             // checking here to ensure that completion gets called from the backend call
@@ -316,7 +319,7 @@ class CustomerInfoManagerTests: TestCase {
         let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
@@ -340,7 +343,7 @@ class CustomerInfoManagerTests: TestCase {
         let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
@@ -368,7 +371,7 @@ class CustomerInfoManagerTests: TestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "schema_version": "\(oldSchemaVersion)",
             "subscriber": [
-                "original_app_user_id": "app_user_id",
+                "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
@@ -412,6 +415,211 @@ class CustomerInfoManagerTests: TestCase {
         customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
 
         expect(self.customerInfoManager.lastSentCustomerInfo).to(beNil())
+    }
+
+}
+
+// iOS 13.0+ only because these tests are async
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
+
+    private var mockRefreshedCustomerInfo: CustomerInfo!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        self.mockRefreshedCustomerInfo = try CustomerInfo(data: [
+            "request_date": "2019-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2020-06-17T16:05:33Z",
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0"
+            ]])
+    }
+
+    // MARK: - CacheFetchPolicy.fromCacheOnly
+
+    func testCustomerInfoFromCacheOnlyReturnsFromCacheWhenAvailable() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .fromCacheOnly)
+
+        expect(result) == self.mockCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+    }
+
+    func testCustomerInfoFromCacheOnlyReturnsFromCacheEvenIfExpired() async throws {
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .fromCacheOnly)
+
+        expect(result) == self.mockCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+    }
+
+    func testCustomerInfoFromCacheOnlyThrowsWhenNotAvailable() async throws {
+        do {
+            _ = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                fetchPolicy: .fromCacheOnly)
+
+            fail("Expected error")
+        } catch BackendError.missingCachedCustomerInfo {
+            // Expected error
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+    }
+
+    // MARK: - CacheFetchPolicy.cachedOrFetched
+
+    func testCustomerInfoCachedOrFetchedReturnsFromCacheIfAvailable() async throws {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .cachedOrFetched)
+        expect(result) == self.mockCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+    }
+
+    func testCustomerInfoCachedOrFetchedReturnsFromCacheAndRefreshesIfStale() async throws {
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .cachedOrFetched)
+
+        expect(result) == self.mockCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+    }
+
+    func testCustomerInfoCachedOrFetchedFetchesIfNoCache() async throws {
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .cachedOrFetched)
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(result) === self.mockRefreshedCustomerInfo
+    }
+
+    func testCustomerInfoCachedOrFetchedReturnsErrorIfNoCacheAndFailsToFetch() async throws {
+        let expectedError: BackendError = .networkError(.offlineConnection())
+
+        self.mockBackend.stubbedGetCustomerInfoResult = .failure(expectedError)
+
+        do {
+            _ = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                fetchPolicy: .cachedOrFetched)
+
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(expectedError))
+        }
+    }
+
+    // MARK: - CacheFetchPolicy.notStaleCachedOrFetched
+
+    func testCustomerInfoNotStaleCachedOrFetchedReturnsFromCacheIfAvailableAndNotStale() async throws {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .notStaleCachedOrFetched)
+        expect(result) == self.mockCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+    }
+
+    func testCustomerInfoNotStaleCachedOrFetchedFetchesIfStale() async throws {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .notStaleCachedOrFetched)
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(result) === self.mockRefreshedCustomerInfo
+    }
+
+    func testCustomerInfoNotStaleCachedOrFetchedReturnsFromCacheAndRefreshesIfStale() async throws {
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .notStaleCachedOrFetched)
+
+        expect(result) == self.mockRefreshedCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+    }
+
+    func testCustomerInfoNotStaleCachedOrFetchedFetchesIfNoCache() async throws {
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .notStaleCachedOrFetched)
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(result) === self.mockRefreshedCustomerInfo
+    }
+
+    func testCustomerInfoNotStaleCachedOrFetchedReturnsErrorIfNoCacheAndFailsToFetch() async throws {
+        let expectedError: BackendError = .networkError(.offlineConnection())
+
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.mockBackend.stubbedGetCustomerInfoResult = .failure(expectedError)
+
+        do {
+            _ = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                fetchPolicy: .notStaleCachedOrFetched)
+
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(expectedError))
+        }
+    }
+
+    // MARK: - CacheFetchPolicy.fetchCurrent
+
+    func testCustomerInfoFetchCurrentFetchesEvenIfCacheIsAvailable() async throws {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .fetchCurrent)
+        expect(result) == self.mockRefreshedCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+    }
+
+    func testCustomerInfoFetchCurrentFailsIfRequestFails() async throws {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
+        self.mockBackend.stubbedGetCustomerInfoResult = .failure(.networkError(.offlineConnection()))
+
+        do {
+            _ = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                fetchPolicy: .fetchCurrent)
+        } catch BackendError.networkError {
+            // Expected error
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
     }
 
 }

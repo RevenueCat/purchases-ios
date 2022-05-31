@@ -111,6 +111,7 @@ private func checkTypealiases(
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getCustomerInfo { (_: CustomerInfo?, _: Error?) in }
+    purchases.getCustomerInfo(fetchPolicy: .default) { (_: CustomerInfo?, _: Error?) in }
     purchases.getOfferings { (_: Offerings?, _: Error?) in }
     purchases.getProducts([String]()) { (_: [StoreProduct]) in }
 
@@ -218,6 +219,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
         let _: CustomerInfo = try await purchases.customerInfo()
+        let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)
         let _: CustomerInfo = try await purchases.restorePurchases()
         let _: CustomerInfo = try await purchases.syncPurchases()
 

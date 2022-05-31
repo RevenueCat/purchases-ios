@@ -93,7 +93,8 @@ private extension BeginRefundRequestHelper {
 
         do {
             customerInfo = try await self.customerInfoManager.customerInfo(
-                appUserID: self.currentUserProvider.currentAppUserID
+                appUserID: self.currentUserProvider.currentAppUserID,
+                fetchPolicy: .cachedOrFetched
             )
         } catch {
             let message = Strings.purchase.begin_refund_customer_info_error(entitlementID: entitlementID)
