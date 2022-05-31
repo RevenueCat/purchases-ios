@@ -122,7 +122,7 @@ class SystemInfo {
         }
     }
 
-    func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
+    func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 

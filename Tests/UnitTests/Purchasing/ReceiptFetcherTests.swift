@@ -18,20 +18,21 @@ import Nimble
 @testable import RevenueCat
 
 class ReceiptFetcherTests: TestCase {
-    var receiptFetcher: ReceiptFetcher!
-    var mockRequestFetcher: MockRequestFetcher!
-    var mockBundle: MockBundle!
-    var mockSystemInfo: MockSystemInfo!
+
+    private var receiptFetcher: ReceiptFetcher!
+    private var mockRequestFetcher: MockRequestFetcher!
+    private var mockBundle: MockBundle!
+    private var mockSystemInfo: MockSystemInfo!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        mockBundle = MockBundle()
-        mockRequestFetcher = MockRequestFetcher()
-        mockSystemInfo = try MockSystemInfo(platformInfo: nil,
-                                            finishTransactions: false,
-                                            bundle: mockBundle)
-        receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: mockSystemInfo)
+        self.mockBundle = MockBundle()
+        self.mockRequestFetcher = MockRequestFetcher()
+        self.mockSystemInfo = try MockSystemInfo(platformInfo: nil,
+                                                 finishTransactions: false,
+                                                 bundle: self.mockBundle)
+        self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher, systemInfo: self.mockSystemInfo)
     }
 
     func testReceiptDataWithRefreshPolicyNeverReturnsReceiptData() {
@@ -134,6 +135,54 @@ class ReceiptFetcherTests: TestCase {
         expect(self.mockRequestFetcher.refreshReceiptCalled) == true
         expect(receivedData).toNot(beNil())
         expect(receivedData).toNot(beEmpty())
+    }
+
+    // MARK: - Receipt URL
+
+    func testNoReceiptURLIfBundleDoesNotHaveOne() {
+        self.mockBundle.receiptURLResult = .nilURL
+
+        expect(self.receiptFetcher.receiptURL).to(beNil())
+    }
+
+    func testWatchOSReceiptURLIsUnchangedInProduction() throws {
+        self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockSystemInfo.stubbedIsSandbox = false
+
+        let appStoreReceiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
+        let url = self.receiptFetcher.watchOSReceiptURL(appStoreReceiptURL)
+
+        expect(url) == appStoreReceiptURL
+    }
+
+    func testWatchOSReceiptURLIsUnchangedInNewerVersions() throws {
+        self.mockBundle.receiptURLResult = .sandboxReceipt
+        self.mockSystemInfo.stubbedIsSandbox = true
+
+        self.mockSystemInfo.stubbedCurrentOperatingSystemVersion = .init(majorVersion: 7,
+                                                                         minorVersion: 1,
+                                                                         patchVersion: 0)
+
+        let appStoreReceiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
+        let url = try XCTUnwrap(self.receiptFetcher.watchOSReceiptURL(appStoreReceiptURL))
+
+        expect(url) == appStoreReceiptURL
+    }
+
+    func testWatchOSReceiptURLEndsOnReceiptOnOlderVersions() throws {
+        self.mockBundle.receiptURLResult = .sandboxReceipt
+        self.mockSystemInfo.stubbedIsSandbox = true
+
+        self.mockSystemInfo.stubbedCurrentOperatingSystemVersion = .init(majorVersion: 6,
+                                                                         minorVersion: 4,
+                                                                         patchVersion: 2)
+
+        let appStoreReceiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
+        let url = try XCTUnwrap(self.receiptFetcher.watchOSReceiptURL(appStoreReceiptURL))
+
+        expect(url) != appStoreReceiptURL
+        expect(url.absoluteString).toNot(contain("sandboxReceipt"))
+        expect(url.absoluteString).to(contain("receipt"))
     }
 
 }
