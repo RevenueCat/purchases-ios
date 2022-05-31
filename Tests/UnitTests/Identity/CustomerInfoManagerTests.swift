@@ -515,6 +515,21 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
         expect(result) === self.mockRefreshedCustomerInfo
     }
 
+    func testCustomerInfoCachedOrFetchedReturnsErrorIfNoCacheAndFailsToFetch() async throws {
+        let expectedError: BackendError = .networkError(.offlineConnection())
+
+        self.mockBackend.stubbedGetCustomerInfoResult = .failure(expectedError)
+
+        do {
+            _ = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                fetchPolicy: .cachedOrFetched)
+
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(expectedError))
+        }
+    }
+
     // MARK: - CacheFetchPolicy.notStaleCachedOrFetched
 
     func testCustomerInfoNotStaleCachedOrFetchedReturnsFromCacheIfAvailableAndNotStale() async throws {
@@ -560,6 +575,23 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
 
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
         expect(result) === self.mockRefreshedCustomerInfo
+    }
+
+    func testCustomerInfoNotStaleCachedOrFetchedReturnsErrorIfNoCacheAndFailsToFetch() async throws {
+        let expectedError: BackendError = .networkError(.offlineConnection())
+
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.mockBackend.stubbedGetCustomerInfoResult = .failure(expectedError)
+
+        do {
+            _ = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                fetchPolicy: .notStaleCachedOrFetched)
+
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(expectedError))
+        }
     }
 
     // MARK: - CacheFetchPolicy.fetchCurrent
