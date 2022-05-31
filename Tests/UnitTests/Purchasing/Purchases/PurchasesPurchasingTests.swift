@@ -595,6 +595,136 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postReceiptDataCalled).to(beFalse())
     }
 
+    func testCachesCustomerInfo() throws {
+        expect(self.deviceCache.cachedCustomerInfo.count).toEventually(equal(1))
+        expect(self.deviceCache.cachedCustomerInfo[self.purchases.appUserID]).toEventuallyNot(beNil())
+
+        let cachedData = try XCTUnwrap(self.deviceCache.cachedCustomerInfo[self.purchases.appUserID])
+        try JSONSerialization.jsonObject(with: cachedData, options: [])
+    }
+
+    func testCachesCustomerInfoOnPurchase() throws {
+        expect(self.deviceCache.cachedCustomerInfo.count).toEventually(equal(1))
+
+        self.backend.postReceiptResult = .success(try CustomerInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]))
+
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+        self.purchases.purchase(product: product) { (_, _, _, _) in }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = try XCTUnwrap(self.storeKitWrapper.payment)
+
+        transaction.mockState = .purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(self.deviceCache.cacheCustomerInfoCount).toEventually(equal(2))
+    }
+
+    func testWhenNoReceiptDataReceiptIsRefreshed() {
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.receiptFetcher.shouldReturnZeroBytesReceipt = true
+
+        self.makeAPurchase()
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
+    }
+
+    func testPaymentSheetCancelledErrorIsParsedCorrectly() {
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+        var receivedUserCancelled: Bool?
+        var receivedError: NSError?
+
+        let unknownError = NSError(
+            domain: SKErrorDomain,
+            code: 907,
+            userInfo: [
+                NSUnderlyingErrorKey: NSError(
+                    domain: "AMSErrorDomain",
+                    code: 6,
+                    userInfo: [:]
+                )
+            ]
+        )
+
+        self.purchases.purchase(product: product) { (_, _, error, userCancelled) in
+            receivedError = error as NSError?
+            receivedUserCancelled = userCancelled
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockState = .failed
+        transaction.mockError = unknownError
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(receivedUserCancelled).toEventuallyNot(beNil())
+        expect(receivedUserCancelled) == true
+        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
+    }
+
+    func testSendsProductDataIfProductIsCached() throws {
+        let productIdentifiers = ["com.product.id1", "com.product.id2"]
+
+        self.purchases.getProducts(productIdentifiers) { newProducts in
+            let product = newProducts[0]
+            self.purchases.purchase(product: newProducts[0]) { (_, _, _, _) in }
+
+            let transaction = MockTransaction()
+            transaction.mockPayment = self.storeKitWrapper.payment!
+
+            transaction.mockState = SKPaymentTransactionState.purchasing
+            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+            self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
+
+            transaction.mockState = SKPaymentTransactionState.purchased
+            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+            expect(self.backend.postReceiptDataCalled).to(beTrue())
+            expect(self.backend.postedReceiptData).toNot(beNil())
+
+            expect(self.backend.postedProductID).to(equal(product.productIdentifier))
+            expect(self.backend.postedPrice).to(equal(product.price as Decimal))
+
+            if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
+                expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.payAsYouGo))
+                expect(self.backend.postedIntroPrice).to(equal(product.introductoryDiscount?.price))
+            } else {
+                expect(self.backend.postedPaymentMode).to(beNil())
+                expect(self.backend.postedIntroPrice).to(beNil())
+            }
+
+            if #available(iOS 12.0, tvOS 12.0, macOS 10.14, *) {
+                expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
+            }
+
+            if #available(iOS 12.2, *) {
+                expect(self.backend.postedDiscounts?.count).to(equal(1))
+                let postedDiscount: StoreProductDiscount = self.backend.postedDiscounts![0]
+                expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
+                expect(postedDiscount.price).to(equal(1.99))
+                let expectedPaymentMode = StoreProductDiscount.PaymentMode.payAsYouGo.rawValue
+                expect(postedDiscount.paymentMode.rawValue).to(equal(expectedPaymentMode))
+            }
+
+            expect(self.backend.postedCurrencyCode) == product.priceFormatter!.currencyCode
+
+            expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+        }
+    }
+
     // MARK: -
 
     private func performTransaction() {
