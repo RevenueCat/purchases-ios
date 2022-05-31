@@ -145,57 +145,6 @@ class PurchasesTests: BasePurchasesTests {
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(3))
     }
 
-    func testIsAbleToFetchProducts() {
-        setupPurchases()
-        var products: [StoreProduct]?
-        let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.getProducts(productIdentifiers) { (newProducts) in
-            products = newProducts
-        }
-
-        expect(products).toEventuallyNot(beNil())
-        expect(products).toEventually(haveCount(productIdentifiers.count))
-    }
-
-    func testDoesntFetchProductDataIfEmptyList() {
-        setupPurchases()
-        var completionCalled = false
-        mockProductsManager.resetMock()
-        self.purchases.getProducts([]) { _ in
-            completionCalled = true
-        }
-        expect(completionCalled).toEventually(beTrue())
-        expect(self.mockProductsManager.invokedProducts) == false
-    }
-
-    func testFetchesProductDataIfNotCached() throws {
-        systemInfo.stubbedIsApplicationBackgrounded = true
-        setupPurchases()
-        let sk1Product = MockSK1Product(mockProductIdentifier: "com.product.id1")
-        let product = StoreProduct(sk1Product: sk1Product)
-
-        let transaction = MockTransaction()
-        storeKitWrapper.payment = SKPayment(product: sk1Product)
-        transaction.mockPayment = self.storeKitWrapper.payment!
-        transaction.mockState = SKPaymentTransactionState.purchasing
-
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
-
-        transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
-        expect(self.mockProductsManager.invokedProductsParameters).toEventually(contain([product.productIdentifier]))
-
-        expect(self.backend.postedProductID).toNot(beNil())
-        expect(self.backend.postedPrice).toNot(beNil())
-        expect(self.backend.postedCurrencyCode).toNot(beNil())
-        if #available(iOS 12.2, macOS 10.14.4, *) {
-            expect(self.backend.postedIntroPrice).toNot(beNil())
-        }
-    }
-
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() {
         setupPurchases()
         let transaction = MockTransaction()
