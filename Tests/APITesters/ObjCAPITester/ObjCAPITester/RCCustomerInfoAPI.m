@@ -45,6 +45,7 @@
         case RCCacheFetchPolicyFetchCurrent:
         case RCCacheFetchPolicyCachedOrFetched:
         case RCCacheFetchPolicyFromCacheOnly:
+        case RCCacheFetchPolicyNotStaleCachedOrFetched:
             break;
     }
 }

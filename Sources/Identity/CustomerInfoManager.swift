@@ -130,6 +130,27 @@ class CustomerInfoManager {
                                                       isAppBackgrounded: isAppBackgrounded,
                                                       completion: completionIfNotCalledAlready)
             }
+
+        case .notStaleCachedOrFetched:
+            let infoFromCache = self.cachedCustomerInfo(appUserID: appUserID)
+
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
+                                                                             isAppBackgrounded: isAppBackgrounded)
+
+                if let infoFromCache = infoFromCache, !isCacheStale {
+                    Logger.debug(Strings.customerInfo.vending_cache)
+                    if let completion = completion {
+                        self.operationDispatcher.dispatchOnMainThread {
+                            completion(.success(infoFromCache))
+                        }
+                    }
+                } else {
+                    self.fetchAndCacheCustomerInfo(appUserID: appUserID,
+                                                   isAppBackgrounded: isAppBackgrounded,
+                                                   completion: completion)
+                }
+            }
         }
     }
 

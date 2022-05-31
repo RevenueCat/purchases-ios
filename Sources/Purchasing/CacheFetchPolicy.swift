@@ -21,7 +21,10 @@ public enum CacheFetchPolicy: Int {
     /// Always fetch the most up-to-date data.
     case fetchCurrent
 
-    /// Default behavior: returns the cache data if available and not stale, or fetches up-to-date data.
+    /// Returns the cached data if available and not stale, or fetches up-to-date data.
+    case notStaleCachedOrFetched
+
+    /// Default behavior: returns the cached data if available (even if stale), or fetches up-to-date data.
     case cachedOrFetched
 
     /// Default ``CacheFetchPolicy`` behavior.

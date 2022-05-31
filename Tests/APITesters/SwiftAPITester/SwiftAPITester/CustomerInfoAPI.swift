@@ -49,6 +49,7 @@ func checkCacheFetchPolicyEnum(_ policy: CacheFetchPolicy) {
     case .fromCacheOnly: break
     case .fetchCurrent: break
     case .cachedOrFetched: break
+    case .notStaleCachedOrFetched: break
 
     @unknown default: break
     }

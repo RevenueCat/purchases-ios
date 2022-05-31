@@ -515,6 +515,53 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
         expect(result) === self.mockRefreshedCustomerInfo
     }
 
+    // MARK: - CacheFetchPolicy.notStaleCachedOrFetched
+
+    func testCustomerInfoNotStaleCachedOrFetchedReturnsFromCacheIfAvailableAndNotStale() async throws {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .notStaleCachedOrFetched)
+        expect(result) == self.mockCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+    }
+
+    func testCustomerInfoNotStaleCachedOrFetchedFetchesIfStale() async throws {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .notStaleCachedOrFetched)
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(result) === self.mockRefreshedCustomerInfo
+    }
+
+    func testCustomerInfoNotStaleCachedOrFetchedReturnsFromCacheAndRefreshesIfStale() async throws {
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .notStaleCachedOrFetched)
+
+        expect(result) == self.mockRefreshedCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+    }
+
+    func testCustomerInfoNotStaleCachedOrFetchedFetchesIfNoCache() async throws {
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockRefreshedCustomerInfo)
+
+        let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                                     fetchPolicy: .notStaleCachedOrFetched)
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(result) === self.mockRefreshedCustomerInfo
+    }
+
     // MARK: - CacheFetchPolicy.fetchCurrent
 
     func testCustomerInfoFetchCurrentFetchesEvenIfCacheIsAvailable() async throws {
