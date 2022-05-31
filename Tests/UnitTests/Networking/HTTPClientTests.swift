@@ -34,7 +34,8 @@ class HTTPClientTests: TestCase {
         client = HTTPClient(
             systemInfo: systemInfo,
             eTagManager: eTagManager,
-            dnsChecker: MockDNSChecker.self
+            dnsChecker: MockDNSChecker.self,
+            requestTimeout: 3
         )
     }
 
@@ -133,6 +134,44 @@ class HTTPClientTests: TestCase {
         self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
 
         expect(headerPresent.value).toEventually(equal(true))
+    }
+
+    func testAlwaysPassesIsSandboxWhenEnabled() {
+        let headerName = "X-Is-Sandbox"
+        self.systemInfo.stubbedIsSandbox = true
+
+        let header: Atomic<String?> = .init(nil)
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+
+        expect(header.value).toEventuallyNot(beNil())
+        expect(header.value) == "true"
+    }
+
+    func testAlwaysPassesIsSandboxWhenDisabled() {
+        let headerName = "X-Is-Sandbox"
+        self.systemInfo.stubbedIsSandbox = false
+
+        let header: Atomic<String?> = .init(nil)
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+
+        expect(header.value).toEventuallyNot(beNil())
+        expect(header.value) == "false"
     }
 
     func testCallsTheGivenPath() {
@@ -556,7 +595,7 @@ class HTTPClientTests: TestCase {
             expect(requestNumber) == completionCallCount.value
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: .utf8)!,
+            return HTTPStubsResponse(data: json.asData,
                                      statusCode: .success,
                                      headers: nil)
                 .responseTime(0.003)
@@ -630,7 +669,7 @@ class HTTPClientTests: TestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: .utf8)!,
+            return HTTPStubsResponse(data: json.asData,
                                      statusCode: .success,
                                      headers: nil)
                 .responseTime(responseTime)
@@ -706,7 +745,8 @@ class HTTPClientTests: TestCase {
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path),
+                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
             completionCalled.value = true
         }
 

@@ -245,27 +245,13 @@ private extension ErrorResponseTests {
 
 private extension ErrorResponseTests {
 
-    enum Error: Swift.Error {
-
-        case unableToEncodeString
-
-    }
-
     func decode(_ response: String) throws -> ErrorResponse {
-        guard let data = response.data(using: .utf8) else {
-            throw Error.unableToEncodeString
-        }
-
-        return try JSONDecoder.default.decode(ErrorResponse.self, from: data)
+        return try JSONDecoder.default.decode(ErrorResponse.self, from: response.asData)
     }
 
     func decodeSupportingContainer(_ response: String) throws -> ErrorResponse {
-        guard let data = response.data(using: .utf8) else {
-            throw Error.unableToEncodeString
-        }
-
         return ErrorResponse.from(
-            try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
+            try JSONSerialization.jsonObject(with: response.asData) as? [String: Any] ?? [:]
         )
     }
 

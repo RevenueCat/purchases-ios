@@ -28,6 +28,7 @@
 		5758EE5B2786548D00B3B703 /* RCStoreTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE5A2786548D00B3B703 /* RCStoreTransactionAPI.m */; };
 		57DE807828074E59008D6C6F /* RCStorefrontAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807728074E59008D6C6F /* RCStorefrontAPI.m */; };
 		A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
+		B32554452825E74000DA62EA /* RCConfigurationAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B32554442825E74000DA62EA /* RCConfigurationAPI.m */; };
 		B3A4C837280DE95000D4AE17 /* RCPromotionalOfferAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3A4C836280DE95000D4AE17 /* RCPromotionalOfferAPI.m */; };
 /* End PBXBuildFile section */
 
@@ -87,6 +88,8 @@
 		A5D614F326EBE84F007DDB75 /* RCOfferingsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingsAPI.h; sourceTree = "<group>"; };
 		A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTransactionAPI.m; sourceTree = "<group>"; };
 		A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfoAPI.m; sourceTree = "<group>"; };
+		B32554432825E74000DA62EA /* RCConfigurationAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCConfigurationAPI.h; sourceTree = "<group>"; };
+		B32554442825E74000DA62EA /* RCConfigurationAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCConfigurationAPI.m; sourceTree = "<group>"; };
 		B3A4C835280DE95000D4AE17 /* RCPromotionalOfferAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPromotionalOfferAPI.h; sourceTree = "<group>"; };
 		B3A4C836280DE95000D4AE17 /* RCPromotionalOfferAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPromotionalOfferAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -127,6 +130,8 @@
 				A519264C26EBCEF6007D0BD1 /* main.m */,
 				A5D614F126EBE84F007DDB75 /* RCAttributionNetworkAPI.h */,
 				A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */,
+				B32554432825E74000DA62EA /* RCConfigurationAPI.h */,
+				B32554442825E74000DA62EA /* RCConfigurationAPI.m */,
 				A5D614E626EBE84F007DDB75 /* RCCustomerInfoAPI.h */,
 				A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */,
 				A5D614EB26EBE84F007DDB75 /* RCEntitlementInfoAPI.h */,
@@ -260,6 +265,7 @@
 				2DD77909270E23870079CBD4 /* RCAttributionNetworkAPI.m in Sources */,
 				5758EE5B2786548D00B3B703 /* RCStoreTransactionAPI.m in Sources */,
 				5738F42E2786755E0096D623 /* main.m in Sources */,
+				B32554452825E74000DA62EA /* RCConfigurationAPI.m in Sources */,
 				2DD7790E270E23870079CBD4 /* RCIntroEligibilityAPI.m in Sources */,
 				5738F42D278674710096D623 /* RCSubscriptionPeriodAPI.m in Sources */,
 				2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */,

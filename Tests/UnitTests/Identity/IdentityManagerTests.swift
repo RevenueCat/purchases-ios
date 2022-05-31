@@ -14,14 +14,7 @@ class IdentityManagerTests: TestCase {
     private let mockBackend = MockBackend()
     private var mockCustomerInfoManager: MockCustomerInfoManager!
 
-    private let mockCustomerInfo = CustomerInfo(testData: [
-        "request_date": "2019-08-16T10:30:42Z",
-        "subscriber": [
-            "first_seen": "2019-07-17T00:05:54Z",
-            "original_app_user_id": "",
-            "subscriptions": [:],
-            "other_purchases": [:]
-        ]])!
+    private var mockCustomerInfo: CustomerInfo!
 
     private func create(appUserID: String?) -> IdentityManager {
         return IdentityManager(deviceCache: mockDeviceCache,
@@ -30,8 +23,17 @@ class IdentityManagerTests: TestCase {
                                appUserID: appUserID)
     }
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.mockCustomerInfo = try CustomerInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
 
         let systemInfo = MockSystemInfo(finishTransactions: false)
 

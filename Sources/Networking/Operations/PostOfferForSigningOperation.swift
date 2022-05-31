@@ -51,26 +51,28 @@ class PostOfferForSigningOperation: NetworkOperation {
         )
 
         self.httpClient.perform(request,
-                                authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
+                                authHeaders: self.authHeaders) { (response: HTTPResponse<PostOfferResponse>.Result) in
             let result: Result<PostOfferForSigningOperation.SigningData, BackendError> = response
-                .mapError(BackendError.networkError)
+                .mapError { error -> BackendError in
+                    if case .decoding = error {
+                        return .unexpectedBackendResponse(.postOfferIdSignature,
+                                                          extraContext: error.localizedDescription)
+                    } else {
+                        return .networkError(error)
+                    }
+                }
                 .flatMap { response in
                     let (statusCode, response) = (response.statusCode, response.body)
 
-                    guard let offers = response["offers"] as? [[String: Any]] else {
-                        Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
+                    let offers = response.offers
 
-                        return .failure(.unexpectedBackendResponse(.postOfferIdBadResponse,
-                                                                   extraContext: response.stringRepresentation))
-                    }
-
-                    guard offers.count > 0 else {
-                        Logger.debug(Strings.backendError.no_offerings_response_json(response: response))
+                    guard let firstOffer = offers.first else {
+                        Logger.debug(Strings.backendError.offerings_response_no_offerings)
 
                         return .failure(.unexpectedBackendResponse(.postOfferIdMissingOffersInResponse))
                     }
 
-                    return Self.handleOffer(offers[0], statusCode: statusCode)
+                    return Self.handleOffer(firstOffer, statusCode: statusCode)
                 }
 
             self.responseHandler(result)
@@ -79,22 +81,30 @@ class PostOfferForSigningOperation: NetworkOperation {
     }
 
     private static func handleOffer(
-        _ offer: [String: Any],
+        _ offer: PostOfferResponse.Offer,
         statusCode: HTTPStatusCode
     ) -> Result<PostOfferForSigningOperation.SigningData, BackendError> {
-        if let signatureError = offer["signature_error"] as? [String: Any] {
+        if let signatureError = offer.signatureError {
             return .failure(
-                .networkError(.errorResponse(ErrorResponse.from(signatureError), statusCode))
+                .networkError(.errorResponse(signatureError, statusCode))
             )
-        } else if let signatureData = offer["signature_data"] as? [String: Any],
-                  let signature = signatureData["signature"] as? String,
-                  let keyIdentifier = offer["key_id"] as? String,
-                  let nonce = (signatureData["nonce"] as? String).flatMap({ UUID(uuidString: $0) }),
-                  let timestamp = signatureData["timestamp"] as? Int {
-            return .success((signature, keyIdentifier, nonce, timestamp))
+        } else if let signingData = offer.asSigningData {
+            return .success(signingData)
         } else {
-            return .failure(.unexpectedBackendResponse(.postOfferIdSignature, extraContext: offer.stringRepresentation))
+            return .failure(
+                .unexpectedBackendResponse(.postOfferIdSignature, extraContext: "\(offer)")
+            )
         }
+    }
+
+}
+
+private extension PostOfferResponse.Offer {
+
+    var asSigningData: PostOfferForSigningOperation.SigningData? {
+        guard let data = self.signatureData else { return nil }
+
+        return (data.signature, self.keyIdentifier, data.nonce, data.timestamp)
     }
 
 }

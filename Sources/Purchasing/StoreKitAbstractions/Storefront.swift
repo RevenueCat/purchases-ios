@@ -78,9 +78,14 @@ public extension Storefront {
                 let sk2Storefront = await StoreKit.Storefront.current
                 return sk2Storefront.map(SK2Storefront.init)
             } else {
-                return SKPaymentQueue.default().storefront.map(SK1Storefront.init)
+                return Self.sk1CurrentStorefrontType
             }
         }
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
+    private static var sk1CurrentStorefrontType: StorefrontType? {
+        return SKPaymentQueue.default().storefront.map(SK1Storefront.init)
     }
 
     /// The current App Store storefront for the device.
@@ -89,6 +94,13 @@ public extension Storefront {
         get async {
             return await self.currentStorefrontType.map(Storefront.from(storefront: ))
         }
+    }
+
+    /// The current App Store storefront for the device obtained from StoreKit 1 only.
+    @available(swift, obsoleted: 0.0.1, renamed: "currentStorefront")
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
+    @objc static var sk1CurrentStorefront: Storefront? {
+        return self.sk1CurrentStorefrontType.map(Storefront.from(storefront: ))
     }
 
 }

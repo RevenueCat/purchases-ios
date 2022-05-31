@@ -36,6 +36,8 @@ enum StoreKitStrings {
 
     case unknown_sk2_product_discount_type(rawValue: String)
 
+    case sk1_discount_missing_locale
+
 }
 
 extension StoreKitStrings: CustomStringConvertible {
@@ -77,6 +79,9 @@ extension StoreKitStrings: CustomStringConvertible {
         case .unknown_sk2_product_discount_type(let rawValue):
             return "Failed to create StoreProductDiscount.DiscountType with unknown value: \(rawValue)"
 
+        case .sk1_discount_missing_locale:
+            return "There is an issue with the App Store, this SKProductDiscount is missing a Locale - " +
+            "The current device Locale will be used instead."
         }
     }
 

@@ -45,6 +45,7 @@ func checkEntitlementInfoEnums() {
          .playStore,
          .stripe,
          .promotional,
+         .amazon,
          .unknownStore:
         print(store!)
     @unknown default:

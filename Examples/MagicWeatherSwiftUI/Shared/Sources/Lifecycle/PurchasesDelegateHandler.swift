@@ -38,9 +38,9 @@ extension PurchasesDelegateHandler: PurchasesDelegate {
      itms-services://?action=purchaseIntent&bundleId=<BUNDLE_ID>&productIdentifier=<SKPRODUCT_ID>
      */
     func purchases(_ purchases: Purchases,
-                   shouldPurchasePromoProduct product: StoreProduct,
-                   defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock) {
-        makeDeferredPurchase { (transaction, info, error, cancelled) in
+                   readyForPromotedProduct product: StoreProduct,
+                   purchase startPurchase: @escaping StartPurchaseBlock) {
+        startPurchase { (transaction, info, error, cancelled) in
             if let info = info, error == nil, !cancelled {
                 UserViewModel.shared.customerInfo = info
             }

@@ -23,22 +23,6 @@ class EntitlementInfosTests: TestCase {
         self.stubResponse()
     }
 
-    func stubResponse(entitlements: [String: Any] = [:],
-                      nonSubscriptions: [String: Any] = [:],
-                      subscriptions: [String: Any] = [:]) {
-        response = [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "entitlements": entitlements,
-                "first_seen": "2019-07-26T23:29:50Z",
-                "non_subscriptions": nonSubscriptions,
-                "original_app_user_id": "cesarsandbox1",
-                "original_application_version": "1.0",
-                "subscriptions": subscriptions
-            ]
-        ]
-    }
-
     func testMultipleEntitlements() throws {
         stubResponse(
             entitlements: [
@@ -681,6 +665,28 @@ class EntitlementInfosTests: TestCase {
                     "original_purchase_date": "2019-07-26T23:30:41Z",
                     "period_type": "normal",
                     "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "amazon",
+                    "unsubscribe_detected_at": nil
+                ]
+            ])
+        try verifyStore(.amazon)
+
+        stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "tienda",
                     "unsubscribe_detected_at": nil
                 ]
@@ -861,6 +867,36 @@ class EntitlementInfosTests: TestCase {
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
+                            "store": "amazon"
+                        ]
+                    ]
+                ],
+                subscriptions: [:]
+        )
+        try verifyStore(.amazon)
+
+        stubResponse(
+                entitlements: [
+                    "pro_cat": [
+                        "expires_date": nil,
+                        "product_identifier": "lifetime",
+                        "purchase_date": "2019-07-26T23:45:40Z"
+                    ]
+                ],
+                nonSubscriptions: [
+                    "lifetime": [
+                        [
+                            "id": "5b9ba226bc",
+                            "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
+                            "purchase_date": "2019-07-26T22:10:27Z",
+                            "store": "app_store"
+                        ],
+                        [
+                            "id": "ea820afcc4",
+                            "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
+                            "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "tienda"
                         ]
                     ]
@@ -1017,9 +1053,33 @@ class EntitlementInfosTests: TestCase {
 
         try verifyRenewal(false)
     }
+
+    func testRawData() throws {
+        let info = try CustomerInfo(data: self.response)
+
+        expect(info.entitlements.all.values).to(allPass {
+            !$0.rawData.isEmpty
+        })
+    }
 }
 
 private extension EntitlementInfosTests {
+
+    func stubResponse(entitlements: [String: Any] = [:],
+                      nonSubscriptions: [String: Any] = [:],
+                      subscriptions: [String: Any] = [:]) {
+        self.response = [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "entitlements": entitlements,
+                "first_seen": "2019-07-26T23:29:50Z",
+                "non_subscriptions": nonSubscriptions,
+                "original_app_user_id": "cesarsandbox1",
+                "original_application_version": "1.0",
+                "subscriptions": subscriptions
+            ]
+        ]
+    }
 
     func verifySubscriberInfo(file: FileString = #file, line: UInt = #line) throws {
         let subscriberInfo = try CustomerInfo(data: response)
@@ -1141,6 +1201,11 @@ private extension EntitlementInfosTests {
     ) throws {
         let subscriberInfo = try CustomerInfo(data: response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[expectedEntitlement])
+
+        expect(file: file, line: line, proCat.identifier).to(
+            equal(expectedEntitlement),
+            description: "Invalid identifier"
+        )
 
         if expectedLatestPurchaseDate != nil {
             expect(file: file, line: line, proCat.latestPurchaseDate).to(

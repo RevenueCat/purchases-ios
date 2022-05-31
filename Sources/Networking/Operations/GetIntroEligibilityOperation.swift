@@ -48,35 +48,23 @@ private extension GetIntroEligibilityOperation {
             return
         }
 
-        if self.receiptData.count == 0 {
+        // Requested products with unknown eligibilities
+        let unknownEligibilities: [String: IntroEligibility] = Set(self.productIdentifiers)
+            .dictionaryWithValues { _ in IntroEligibility(eligibilityStatus: .unknown) }
+
+        guard !self.receiptData.isEmpty else {
             if self.httpClient.systemInfo.isSandbox {
                 Logger.appleWarning(Strings.receipt.no_sandbox_receipt_intro_eligibility)
             }
 
-            var eligibilities: [String: IntroEligibility] = [:]
-
-            for productID in self.productIdentifiers {
-                eligibilities[productID] = IntroEligibility(eligibilityStatus: .unknown)
-            }
-
-            self.responseHandler(eligibilities, nil)
+            self.responseHandler(unknownEligibilities, nil)
             completion()
 
             return
         }
 
-        // Closure we can use for both missing appUserID as well as server error where we have an unknown
-        // eligibility status.
-        let unknownEligibilityClosure: () -> [String: IntroEligibility] = {
-            let unknownEligibilities = [IntroEligibility](repeating: IntroEligibility(eligibilityStatus: .unknown),
-                                                          count: self.productIdentifiers.count)
-            let productIdentifiersToEligibility = zip(self.productIdentifiers, unknownEligibilities)
-
-            return Dictionary(uniqueKeysWithValues: productIdentifiersToEligibility)
-        }
-
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
-            self.responseHandler(unknownEligibilityClosure(), .missingAppUserID())
+            self.responseHandler(unknownEligibilities, .missingAppUserID())
             completion()
 
             return
@@ -86,40 +74,28 @@ private extension GetIntroEligibilityOperation {
                                                      fetchToken: self.receiptData.asFetchToken)),
                                   path: .getIntroEligibility(appUserID: appUserID))
 
-        httpClient.perform(request, authHeaders: self.authHeaders) { (response: HTTPResponse<[String: Any]>.Result) in
-            let eligibilityResponse = IntroEligibilityResponse(result: response.mapError { $0.asPurchasesError },
-                                                               productIdentifiers: self.productIdentifiers,
-                                                               unknownEligibilityClosure: unknownEligibilityClosure,
-                                                               completion: self.responseHandler)
-            self.handleIntroEligibility(response: eligibilityResponse)
+        httpClient.perform(
+            request, authHeaders: self.authHeaders
+        ) { (response: HTTPResponse<GetIntroEligibilityResponse>.Result) in
+            self.handleIntroEligibility(result: response,
+                                        productIdentifiers: self.productIdentifiers,
+                                        completion: self.responseHandler)
             completion()
         }
     }
 
-    func handleIntroEligibility(response: IntroEligibilityResponse) {
-        let result: [String: IntroEligibility] = {
-            var eligibilitiesByProductIdentifier = response.result.value?.body
+    func handleIntroEligibility(
+        result: Result<HTTPResponse<GetIntroEligibilityResponse>, NetworkError>,
+        productIdentifiers: [String],
+        completion: Backend.IntroEligibilityResponseHandler
+    ) {
+        let eligibilities = result.value?.body.eligibilityByProductIdentifier
 
-            if response.result.value?.statusCode.isSuccessfulResponse != true {
-                eligibilitiesByProductIdentifier = [:]
-            }
+        let result: [String: IntroEligibility] = Set(productIdentifiers)
+            .dictionaryWithValues { productID in eligibilities?[productID] ?? .unknown }
+            .mapValues(IntroEligibility.init)
 
-            guard let eligibilitiesByProductIdentifier = eligibilitiesByProductIdentifier else {
-                return response.unknownEligibilityClosure()
-            }
-
-            return Set(response.productIdentifiers)
-                .dictionaryWithValues { productID in
-                    if let eligibility = eligibilitiesByProductIdentifier[productID] as? Bool {
-                        return eligibility ? .eligible : .ineligible
-                    } else {
-                        return .unknown
-                    }
-                }
-                .mapValues(IntroEligibility.init(eligibilityStatus:))
-        }()
-
-        response.completion(result, nil)
+        completion(result, nil)
     }
 
 }

@@ -32,6 +32,8 @@ protocol StoreKitWrapperDelegate: AnyObject {
     var storeKitWrapperShouldShowPriceConsent: Bool { get }
     #endif
 
+    func storeKitWrapperDidChangeStorefront(_ storeKitWrapper: StoreKitWrapper)
+
 }
 
 class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
@@ -78,6 +80,10 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
     func finishTransaction(_ transaction: SKPaymentTransaction) {
         Logger.purchase(Strings.purchase.finishing_transaction(transaction: transaction))
         paymentQueue.finishTransaction(transaction)
+    }
+
+    static func canMakePayments() -> Bool {
+        return SKPaymentQueue.canMakePayments()
     }
 
     @available(iOS 14.0, *)
@@ -166,5 +172,10 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
         return delegate?.storeKitWrapperShouldShowPriceConsent ?? true
     }
     #endif
+
+    // Sent when the storefront for the payment queue has changed.
+    func paymentQueueDidChangeStorefront(_ queue: SKPaymentQueue) {
+        delegate?.storeKitWrapperDidChangeStorefront(self)
+    }
 
 }

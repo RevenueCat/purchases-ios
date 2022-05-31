@@ -19,7 +19,9 @@
 
     SKStorefront *sk1storefront = storefront.sk1Storefront;
 
-    NSLog(identifier, countryCode, sk1storefront);
+    RCStorefront *currentStorefront = [RCStorefront sk1CurrentStorefront];
+
+    NSLog(identifier, countryCode, sk1storefront, currentStorefront);
 }
 
 @end

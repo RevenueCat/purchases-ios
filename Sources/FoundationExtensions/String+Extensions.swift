@@ -69,6 +69,10 @@ extension String {
         return self.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    var asData: Data {
+        return Data(self.utf8)
+    }
+
 }
 
 private enum ROT13 {

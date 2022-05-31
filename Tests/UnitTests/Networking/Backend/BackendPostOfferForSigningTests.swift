@@ -49,7 +49,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let group = "sub_group"
         var completionCalled = false
         let offerIdentifier = "offerid"
-        let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
+        let discountData = "an awesome discount".asData
 
         backend.post(offerIdForSigning: offerIdentifier,
                      productIdentifier: productIdentifier,

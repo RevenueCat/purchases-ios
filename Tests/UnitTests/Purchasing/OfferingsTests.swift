@@ -204,7 +204,7 @@ class OfferingsTests: TestCase {
             "offerings": [],
             "current_offering_id": null
         }
-        """.data(using: .utf8)!
+        """.asData
 
         let offeringsResponse: OfferingsResponse = try JSONDecoder.default.decode(jsonData: json)
         let offerings = self.offeringsFactory.createOfferings(from: [:], data: offeringsResponse)

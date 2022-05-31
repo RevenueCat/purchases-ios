@@ -145,7 +145,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Indicates whether the user is allowed to make payments.
      * [More information on when this might be `false` here](https://rev.cat/can-make-payments-apple)
      */
-    @objc public static func canMakePayments() -> Bool { SKPaymentQueue.canMakePayments() }
+    @objc public static func canMakePayments() -> Bool { StoreKitWrapper.canMakePayments() }
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
@@ -246,6 +246,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      storeKit2Setting: StoreKit2Setting = .default,
+                     storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
+                     networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil) {
         let operationDispatcher: OperationDispatcher = .default
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
@@ -268,6 +270,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let backend = Backend(apiKey: apiKey,
                               systemInfo: systemInfo,
+                              httpClientTimeout: networkTimeout,
                               eTagManager: eTagManager,
                               attributionFetcher: attributionFetcher)
         let storeKitWrapper = StoreKitWrapper()
@@ -297,7 +300,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                   attributionFetcher: attributionFetcher,
                                                   subscriberAttributesManager: subscriberAttributesManager)
         let productsRequestFactory = ProductsRequestFactory()
-        let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory, systemInfo: systemInfo)
+        let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
+                                              systemInfo: systemInfo,
+                                              requestTimeout: storeKitTimeout)
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -311,19 +316,44 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo,
                                                                 customerInfoManager: customerInfoManager,
                                                                 currentUserProvider: identityManager)
-        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: productsManager,
-                                                          storeKitWrapper: storeKitWrapper,
-                                                          systemInfo: systemInfo,
-                                                          subscriberAttributesManager: subscriberAttributesManager,
-                                                          operationDispatcher: operationDispatcher,
-                                                          receiptFetcher: receiptFetcher,
-                                                          customerInfoManager: customerInfoManager,
-                                                          backend: backend,
-                                                          currentUserProvider: identityManager,
-                                                          transactionsManager: transactionsManager,
-                                                          deviceCache: deviceCache,
-                                                          manageSubscriptionsHelper: manageSubsHelper,
-                                                          beginRefundRequestHelper: beginRefundRequestHelper)
+        let purchasesOrchestrator: PurchasesOrchestrator = {
+            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                return .init(
+                    productsManager: productsManager,
+                    storeKitWrapper: storeKitWrapper,
+                    systemInfo: systemInfo,
+                    subscriberAttributesManager: subscriberAttributesManager,
+                    operationDispatcher: operationDispatcher,
+                    receiptFetcher: receiptFetcher,
+                    customerInfoManager: customerInfoManager,
+                    backend: backend,
+                    currentUserProvider: identityManager,
+                    transactionsManager: transactionsManager,
+                    deviceCache: deviceCache,
+                    manageSubscriptionsHelper: manageSubsHelper,
+                    beginRefundRequestHelper: beginRefundRequestHelper,
+                    storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
+                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil)
+                )
+            } else {
+                return .init(
+                    productsManager: productsManager,
+                    storeKitWrapper: storeKitWrapper,
+                    systemInfo: systemInfo,
+                    subscriberAttributesManager: subscriberAttributesManager,
+                    operationDispatcher: operationDispatcher,
+                    receiptFetcher: receiptFetcher,
+                    customerInfoManager: customerInfoManager,
+                    backend: backend,
+                    currentUserProvider: identityManager,
+                    transactionsManager: transactionsManager,
+                    deviceCache: deviceCache,
+                    manageSubscriptionsHelper: manageSubsHelper,
+                    beginRefundRequestHelper: beginRefundRequestHelper
+                )
+            }
+        }()
+
         let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
                                                                            receiptFetcher: receiptFetcher,
                                                                            introEligibilityCalculator: introCalculator,
@@ -1641,6 +1671,43 @@ public extension Purchases {
 public extension Purchases {
 
     /**
+     * Configures an instance of the Purchases SDK with a specified ``Configuration``.
+     *
+     * The instance will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Parameter configuration: The ``Configuration`` object you wish to use to configure ``Purchases``
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     *
+     * - Important: See ``Configuration/Builder`` for more information about configurable properties.
+     *
+     * ### Example
+     *
+     * ```swift
+     *  Purchases.configure(
+     *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
+     *               .with(usesStoreKit2IfAvailable: true)
+     *               .with(observerMode: false)
+     *               .with(appUserID: "<app_user_id>")
+     *               .build()
+     *      )
+     * ```
+     * 
+     */
+    @objc(configureWithConfiguration:)
+    @discardableResult static func configure(with configuration: Configuration) -> Purchases {
+        configure(withAPIKey: configuration.apiKey,
+                  appUserID: configuration.appUserID,
+                  observerMode: configuration.observerMode,
+                  userDefaults: configuration.userDefaults,
+                  storeKit2Setting: configuration.storeKit2Setting,
+                  storeKitTimeout: configuration.storeKit1Timeout,
+                  networkTimeout: configuration.networkTimeout,
+                  dangerousSettings: configuration.dangerousSettings)
+    }
+
+    /**
      * Configures an instance of the Purchases SDK with a specified API key.
      *
      * The instance will be set as a singleton.
@@ -1656,179 +1723,7 @@ public extension Purchases {
      */
     @objc(configureWithAPIKey:)
     @discardableResult static func configure(withAPIKey apiKey: String) -> Purchases {
-        configure(withAPIKey: apiKey, appUserID: nil)
-    }
-
-    /**
-     * Configures an instance of the Purchases SDK with a specified API key and app user ID.
-     *
-     * The instance will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
-     *
-     * - Note: Best practice is to use a salted hash of your unique app user ids.
-     *
-     * - Warning: Use this initializer if you have your own user identifiers that you manage.
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
-     * to generate this for you.
-     *
-     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     */
-    @objc(configureWithAPIKey:appUserID:)
-    @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
-        configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
-    }
-
-    /**
-     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
-     *
-     * Use this constructor if you want to
-     * sync status across a shared container, such as between a host app and an extension. The instance of the
-     * Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
-     * to generate this for you.
-     *
-     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is `false`.
-     *
-     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     */
-    @objc(configureWithAPIKey:appUserID:observerMode:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool) -> Purchases {
-        configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: observerMode, userDefaults: nil)
-    }
-
-    /**
-     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
-     *
-     * Use this constructor if you want to
-     * sync status across a shared container, such as between a host app and an extension. The instance of the
-     * Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
-     * to generate this for you.
-     *
-     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is `false`.
-     *
-     * - Parameter userDefaults: Custom `UserDefaults` to use
-     *
-     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     */
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?) -> Purchases {
-        configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            useStoreKit2IfAvailable: false
-        )
-    }
-
-    /**
-     * Configures an instance of the Purchases SDK with a custom userDefaults.
-     *
-     * Use this constructor if you want to sync status across a shared container,
-     * such as between a host app and an extension.
-     * The instance of the `Purchases` SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
-     * to generate this for you.
-     *
-     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is `false`.
-     *
-     * - Parameter userDefaults: Custom `UserDefaults` to use
-     *
-     * - Parameter useStoreKit2IfAvailable: EXPERIMENTAL. opt in to using StoreKit 2 on devices that support it.
-     * Purchases will be made using StoreKit 2 under the hood automatically.
-     * - Important: Support for purchases using StoreKit 2 is currently in an experimental phase.
-     * We recommend setting this value to `false` (default) for production apps.
-     *
-     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     */
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?,
-                                             useStoreKit2IfAvailable: Bool) -> Purchases {
-        configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            useStoreKit2IfAvailable: useStoreKit2IfAvailable,
-            dangerousSettings: nil
-        )
-    }
-
-    /**
-     * Configures an instance of the Purchases SDK with a custom userDefaults.
-     *
-     * Use this constructor if you want to sync status across a shared container,
-     * such as between a host app and an extension.
-     * The instance of the `Purchases` SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
-     * to generate this for you.
-     *
-     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is `false`.
-     *
-     * - Parameter userDefaults: Custom `UserDefaults` to use
-     *
-     * - Parameter dangerousSettings: Only use if suggested by RevenueCat support team.
-     *
-     * - Parameter useStoreKit2IfAvailable: EXPERIMENTAL. opt in to using StoreKit 2 on devices that support it.
-     * Purchases will be made using StoreKit 2 under the hood automatically.
-     * - Important: Support for purchases using StoreKit 2 is currently in an experimental phase.
-     * We recommend setting this value to `false` (default) for production apps.
-     *
-     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     */
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:dangerousSettings:)
-    // swiftlint:disable:next function_parameter_count
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?,
-                                             useStoreKit2IfAvailable: Bool,
-                                             dangerousSettings: DangerousSettings?) -> Purchases {
-        return Self.configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
-            dangerousSettings: dangerousSettings
-        )
+        configure(with: Configuration.builder(withAPIKey: apiKey).build())
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -1837,6 +1732,8 @@ public extension Purchases {
                                                       observerMode: Bool,
                                                       userDefaults: UserDefaults?,
                                                       storeKit2Setting: StoreKit2Setting,
+                                                      storeKitTimeout: TimeInterval,
+                                                      networkTimeout: TimeInterval,
                                                       dangerousSettings: DangerousSettings?) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                   appUserID: appUserID,
@@ -1844,6 +1741,8 @@ public extension Purchases {
                                   observerMode: observerMode,
                                   platformInfo: nil,
                                   storeKit2Setting: storeKit2Setting,
+                                  storeKitTimeout: storeKitTimeout,
+                                  networkTimeout: networkTimeout,
                                   dangerousSettings: dangerousSettings)
         setDefaultInstance(purchases)
         return purchases
@@ -1965,6 +1864,16 @@ internal extension Purchases {
         return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
                                                                           syncedAttribute: syncedAttribute,
                                                                           completion: completion)
+    }
+
+    // Used for testing
+    var networkTimeout: TimeInterval {
+        return self.backend.networkTimeout
+    }
+
+    // Used for testing
+    var storeKitTimeout: TimeInterval {
+        return self.productsManager.requestTimeout
     }
 
 }

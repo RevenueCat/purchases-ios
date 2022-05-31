@@ -36,10 +36,13 @@ class Backend {
 
     convenience init(apiKey: String,
                      systemInfo: SystemInfo,
+                     httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      eTagManager: ETagManager,
                      attributionFetcher: AttributionFetcher,
                      dateProvider: DateProvider = DateProvider()) {
-        let httpClient = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
+        let httpClient = HTTPClient(systemInfo: systemInfo,
+                                    eTagManager: eTagManager,
+                                    requestTimeout: httpClientTimeout)
         self.init(httpClient: httpClient,
                   apiKey: apiKey,
                   attributionFetcher: attributionFetcher,
@@ -172,6 +175,15 @@ class Backend {
                                                                         productIdentifiers: productIdentifiers,
                                                                         responseHandler: completion)
         self.operationQueue.addOperation(getIntroEligibilityOperation)
+    }
+
+}
+
+// Testing extension
+extension Backend {
+
+    var networkTimeout: TimeInterval {
+        return self.httpClient.timeout
     }
 
 }
