@@ -54,7 +54,7 @@ Most features require configuring the SDK before using it.
 
 ### Subscription Status
 - ``Purchases/getCustomerInfo(completion:)``
-- ``Purchases/customerInfo()``
+- ``Purchases/customerInfo(fetchPolicy:)``
 - ``Purchases/customerInfoStream``
 
 ### Identifying Users
