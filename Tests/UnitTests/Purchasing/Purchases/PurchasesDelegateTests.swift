@@ -7,8 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Created by RevenueCat.
+//  PurchasesDelegateTests.swift
 //
+//  Created by Nacho Soto on 5/31/22.
 
 import Nimble
 import StoreKit
@@ -16,74 +17,63 @@ import XCTest
 
 @testable import RevenueCat
 
-class PurchasesTests: BasePurchasesTests {
+class PurchasesDelegateTests: BasePurchasesTests {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.setupPurchases()
+    }
 
     func testDoesntSetWrapperDelegateToNilIfDelegateNil() {
-        setupPurchases()
-        purchases!.delegate = nil
+        self.purchases.delegate = nil
 
         expect(self.storeKitWrapper.delegate).toNot(beNil())
 
-        purchases!.delegate = purchasesDelegate
+        self.purchases.delegate = self.purchasesDelegate
 
         expect(self.storeKitWrapper.delegate).toNot(beNil())
     }
 
-    func testSubscribesToUIApplicationDidBecomeActive() {
-        setupPurchases()
-        expect(self.notificationCenter.observers.count).to(equal(2))
-        if self.notificationCenter.observers.count > 0 {
-            let (_, _, name, _) = self.notificationCenter.observers[0]
-            expect(name).to(equal(SystemInfo.applicationDidBecomeActiveNotification))
-        }
+    func testSubscribesToUIApplicationDidBecomeActive() throws {
+        expect(self.notificationCenter.observers).to(haveCount(2))
+
+        let (_, _, name, _) = try XCTUnwrap(self.notificationCenter.observers.first)
+        expect(name) == SystemInfo.applicationDidBecomeActiveNotification
     }
 
     func testTriggersCallToBackend() {
-        setupPurchases()
-        notificationCenter.fireNotifications()
+        self.notificationCenter.fireNotifications()
         expect(self.backend.userID).toEventuallyNot(beNil())
     }
 
     func testAutomaticallyFetchesCustomerInfoOnDidBecomeActiveIfCacheStale() {
-        setupPurchases()
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
 
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
-        notificationCenter.fireNotifications()
+        self.notificationCenter.fireNotifications()
 
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
     }
 
     func testDoesntAutomaticallyFetchCustomerInfoOnDidBecomeActiveIfCacheValid() {
-        setupPurchases()
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
         self.deviceCache.stubbedIsCustomerInfoCacheStale = false
 
-        notificationCenter.fireNotifications()
+        self.notificationCenter.fireNotifications()
 
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
     }
 
     func testAutomaticallyCallsDelegateOnDidBecomeActiveAndUpdate() {
-        setupPurchases()
-        notificationCenter.fireNotifications()
+        self.notificationCenter.fireNotifications()
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
     }
 
     func testDoesntRemoveObservationWhenDelegateNil() {
-        setupPurchases()
-        purchases!.delegate = nil
+        self.purchases.delegate = nil
 
-        expect(self.notificationCenter.observers.count).to(equal(2))
-    }
-
-    func testGetEligibility() {
-        setupPurchases()
-        purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: []) { (_) in
-        }
-
-        expect(self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore)
-            .to(beTrue())
+        expect(self.notificationCenter.observers).to(haveCount(2))
     }
 
 }
