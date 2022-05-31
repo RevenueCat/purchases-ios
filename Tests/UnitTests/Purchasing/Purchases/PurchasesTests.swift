@@ -399,35 +399,6 @@ class PurchasesTests: BasePurchasesTests {
         expect(self.mockProductsManager.invokedCacheProductParameter) == product
     }
 
-    func testDeferBlockMakesPayment() {
-        setupPurchases()
-        let product = MockSK1Product(mockProductIdentifier: "mock_product")
-        let payment = SKPayment.init(product: product)
-
-        guard let storeKitWrapperDelegate = storeKitWrapper.delegate else {
-            fail("storeKitWrapperDelegate nil")
-            return
-        }
-
-        _ = storeKitWrapperDelegate.storeKitWrapper(storeKitWrapper,
-                                                    shouldAddStorePayment: payment,
-                                                    for: product)
-
-        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
-
-        expect(self.storeKitWrapper.payment).to(beNil())
-
-        guard let makeDeferredPurchase = purchasesDelegate.makeDeferredPurchase else {
-            fail("makeDeferredPurchase should have been nonNil")
-            return
-        }
-
-        makeDeferredPurchase { (_, _, _, _) in
-        }
-
-        expect(self.storeKitWrapper.payment).to(be(payment))
-    }
-
     func testGetEligibility() {
         setupPurchases()
         purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: []) { (_) in
@@ -558,39 +529,6 @@ class PurchasesTests: BasePurchasesTests {
         expect(receivedUserCancelled).toEventuallyNot(beNil())
         expect(receivedUserCancelled) == true
         expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
-    }
-
-    func testDeferBlockCallsCompletionBlockAfterPurchaseCompletes() {
-        setupPurchases()
-        let product = MockSK1Product(mockProductIdentifier: "mock_product")
-        let payment = SKPayment.init(product: product)
-
-        _ = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper,
-                                                      shouldAddStorePayment: payment,
-                                                      for: product)
-
-        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
-
-        expect(self.storeKitWrapper.payment).to(beNil())
-
-        var completionCalled = false
-
-        guard let makeDeferredPurchase = purchasesDelegate.makeDeferredPurchase else {
-            fail("makeDeferredPurchase nil")
-            return
-        }
-
-        makeDeferredPurchase { (_, _, _, _) in
-            completionCalled = true
-        }
-
-        let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
-        transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
-        expect(self.storeKitWrapper.payment).to(be(payment))
-        expect(completionCalled).toEventually(beTrue())
     }
 
     func testAttributionDataIsPostponedIfThereIsNoInstance() {
