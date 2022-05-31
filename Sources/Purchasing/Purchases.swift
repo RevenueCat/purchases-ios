@@ -1000,7 +1000,7 @@ public extension Purchases {
     ///
     /// #### Related Symbols
     /// - ``PurchasesDelegate/purchases(_:receivedUpdated:)``
-    /// - ``Purchases/customerInfo()``
+    /// - ``Purchases/customerInfo(fetchPolicy:)``
     ///
     /// #### Example:
     /// ```swift
