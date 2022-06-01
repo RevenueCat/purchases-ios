@@ -123,13 +123,16 @@ class AttributionPoster {
         self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
 
          backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
-             if let receivedNSError = error as NSError? {
-                 Logger.warn(Strings.attribution.adservices_token_post_failed(error: receivedNSError))
-
-                // if there's an error, reset the cache
-                newDictToCache[String(AttributionNetwork.adServices.rawValue)] = nil
-                self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
+             guard let error = error else {
+                 Logger.debug(Strings.attribution.adservices_token_post_succeeded)
+                 return
              }
+             
+             Logger.warn(Strings.attribution.adservices_token_post_failed(error: error))
+
+            // if there's an error, reset the cache
+            newDictToCache[String(AttributionNetwork.adServices.rawValue)] = nil
+            self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
         }
     }
 

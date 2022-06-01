@@ -48,9 +48,7 @@ class PostAdServicesTokenOperation: NetworkOperation {
             request,
             authHeaders: self.authHeaders
         ) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
-            defer {
-                completion()
-            }
+            completion()
 
             self.responseHandler?(response.error.map(BackendError.networkError))
         }
