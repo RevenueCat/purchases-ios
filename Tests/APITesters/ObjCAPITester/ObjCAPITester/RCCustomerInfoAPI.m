@@ -14,30 +14,40 @@
 
 + (void)checkAPI {
     // RCCustomerInfo initializer is publically unavailable.
-    RCCustomerInfo *pi = nil;
-    RCEntitlementInfos *ei = pi.entitlements;
-    NSSet<NSString *> *as = pi.activeSubscriptions;
-    NSSet<NSString *> *appis = pi.allPurchasedProductIdentifiers;
-    NSDate *led = pi.latestExpirationDate;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    NSSet<NSString *> *ncp = pi.nonConsumablePurchases;
-#pragma clang diagnostic pop
-    NSArray<RCStoreTransaction *> *nst = pi.nonSubscriptionTransactions;
-    NSString *oav = pi.originalApplicationVersion;
-    NSDate *opd = pi.originalPurchaseDate;
-    NSDate *rd = pi.requestDate;
-    NSDate *fs = pi.firstSeen;
-    NSString *oaud = pi.originalAppUserId;
-    NSURL *murl = pi.managementURL;
+    RCCustomerInfo *ci = nil;
+    RCEntitlementInfos *ei = ci.entitlements;
+    NSSet<NSString *> *as = ci.activeSubscriptions;
+    NSSet<NSString *> *appis = ci.allPurchasedProductIdentifiers;
+    NSDate *led = ci.latestExpirationDate;
+    NSSet<NSString *> *ncp = ci.nonConsumablePurchases;
+    NSArray<RCStoreTransaction *> *nst = ci.nonSubscriptionTransactions;
+    NSString *oav = ci.originalApplicationVersion;
+    NSDate *opd = ci.originalPurchaseDate;
+    NSDate *rd = ci.requestDate;
+    NSDate *fs = ci.firstSeen;
+    NSString *oaud = ci.originalAppUserId;
+    NSURL *murl = ci.managementURL;
     
-    NSDate *edfpi = [pi expirationDateForProductIdentifier:@""];
-    NSDate *pdfpi = [pi purchaseDateForProductIdentifier:@""];
-    NSDate *exdf = [pi expirationDateForEntitlement:@""];
-    NSDate *pdfe = [pi purchaseDateForEntitlement:@""];
+    NSDate *edfpi = [ci expirationDateForProductIdentifier:@""];
+    NSDate *pdfpi = [ci purchaseDateForProductIdentifier:@""];
+    NSDate *exdf = [ci expirationDateForEntitlement:@""];
+    NSDate *pdfe = [ci purchaseDateForEntitlement:@""];
     
-    NSString *d = [pi description];
+    NSString *d = [ci description];
+
+    NSDictionary<NSString *, id> *rawData = [ci rawData];
     
-    NSLog(pi, ei, as, appis, led, ncp, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d);
+    NSLog(ci, ei, as, appis, led, ncp, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d, rawData);
 }
+
++ (void)checkCacheFetchPolicyEnum:(RCCacheFetchPolicy) policy {
+    switch (policy) {
+        case RCCacheFetchPolicyFetchCurrent:
+        case RCCacheFetchPolicyCachedOrFetched:
+        case RCCacheFetchPolicyFromCacheOnly:
+        case RCCacheFetchPolicyNotStaleCachedOrFetched:
+            break;
+    }
+}
+
 @end

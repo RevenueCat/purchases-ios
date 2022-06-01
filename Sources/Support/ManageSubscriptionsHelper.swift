@@ -33,7 +33,8 @@ class ManageSubscriptionsHelper {
     @available(tvOS, unavailable)
     func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
-        customerInfoManager.customerInfo(appUserID: currentAppUserID) { result in
+        self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
+                                              fetchPolicy: .cachedOrFetched) { result in
             let result: Result<URL, Error> = result
                 .mapError { error in
                     let message = Strings.failed_to_get_management_url_error_unknown(error: error)
@@ -43,12 +44,7 @@ class ManageSubscriptionsHelper {
                     guard let managementURL = customerInfo.managementURL else {
                         Logger.debug(Strings.management_url_nil_opening_default)
 
-                        guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
-                            let message = Strings.cant_form_apple_subscriptions_url
-                            return .failure(ErrorUtils.systemInfoError(withMessage: message.description))
-                        }
-
-                        return .success(appleSubscriptionsURL)
+                        return .success(SystemInfo.appleSubscriptionsURL)
                     }
 
                     return .success(managementURL)
@@ -56,7 +52,7 @@ class ManageSubscriptionsHelper {
 
             switch result {
             case let .success(url):
-                if self.systemInfo.isAppleSubscription(managementURL: url) {
+                if SystemInfo.isAppleSubscription(managementURL: url) {
                     self.showAppleManageSubscriptions(managementURL: url, completion: completion)
                 } else {
                     self.openURL(url, completion: completion)

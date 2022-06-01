@@ -71,7 +71,8 @@ private extension ReceiptFetcher {
         let firstOSVersionWithoutBug: OperatingSystemVersion = OperatingSystemVersion(majorVersion: 7,
                                                                                       minorVersion: 0,
                                                                                       patchVersion: 0)
-        let isBelowFirstOSVersionWithoutBug = ProcessInfo.processInfo.isOperatingSystemAtLeast(firstOSVersionWithoutBug)
+        let isBelowFirstOSVersionWithoutBug =
+            !ProcessInfo.processInfo.isOperatingSystemAtLeast(firstOSVersionWithoutBug)
 
         if isBelowFirstOSVersionWithoutBug && systemInfo.isSandbox {
             let receiptURLFolder: URL = receiptURL.deletingLastPathComponent()

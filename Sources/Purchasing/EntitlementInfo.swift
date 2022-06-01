@@ -282,6 +282,7 @@ extension PeriodType: DefaultValueProvider {
 
      // Docs inherited from protocol
      // swiftlint:disable missing_docs
+     @objc
      public var rawData: [String: Any] {
          return self.entitlement.rawData
      }

@@ -313,19 +313,44 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo,
                                                                 customerInfoManager: customerInfoManager,
                                                                 currentUserProvider: identityManager)
-        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: productsManager,
-                                                          storeKitWrapper: storeKitWrapper,
-                                                          systemInfo: systemInfo,
-                                                          subscriberAttributesManager: subscriberAttributesManager,
-                                                          operationDispatcher: operationDispatcher,
-                                                          receiptFetcher: receiptFetcher,
-                                                          customerInfoManager: customerInfoManager,
-                                                          backend: backend,
-                                                          currentUserProvider: identityManager,
-                                                          transactionsManager: transactionsManager,
-                                                          deviceCache: deviceCache,
-                                                          manageSubscriptionsHelper: manageSubsHelper,
-                                                          beginRefundRequestHelper: beginRefundRequestHelper)
+        let purchasesOrchestrator: PurchasesOrchestrator = {
+            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                return .init(
+                    productsManager: productsManager,
+                    storeKitWrapper: storeKitWrapper,
+                    systemInfo: systemInfo,
+                    subscriberAttributesManager: subscriberAttributesManager,
+                    operationDispatcher: operationDispatcher,
+                    receiptFetcher: receiptFetcher,
+                    customerInfoManager: customerInfoManager,
+                    backend: backend,
+                    currentUserProvider: identityManager,
+                    transactionsManager: transactionsManager,
+                    deviceCache: deviceCache,
+                    manageSubscriptionsHelper: manageSubsHelper,
+                    beginRefundRequestHelper: beginRefundRequestHelper,
+                    storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
+                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil)
+                )
+            } else {
+                return .init(
+                    productsManager: productsManager,
+                    storeKitWrapper: storeKitWrapper,
+                    systemInfo: systemInfo,
+                    subscriberAttributesManager: subscriberAttributesManager,
+                    operationDispatcher: operationDispatcher,
+                    receiptFetcher: receiptFetcher,
+                    customerInfoManager: customerInfoManager,
+                    backend: backend,
+                    currentUserProvider: identityManager,
+                    transactionsManager: transactionsManager,
+                    deviceCache: deviceCache,
+                    manageSubscriptionsHelper: manageSubsHelper,
+                    beginRefundRequestHelper: beginRefundRequestHelper
+                )
+            }
+        }()
+
         let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
                                                                            receiptFetcher: receiptFetcher,
                                                                            introEligibilityCalculator: introCalculator,
@@ -932,6 +957,7 @@ public extension Purchases {
 }
 
 // MARK: Purchasing
+
 public extension Purchases {
 
     /**
@@ -941,28 +967,40 @@ public extension Purchases {
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil if an error occurred.
      */
     @objc func getCustomerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
-        customerInfoManager.customerInfo(appUserID: appUserID) { result in
-            completion(result.value, result.error)
-        }
+        self.getCustomerInfo(fetchPolicy: .default, completion: completion)
     }
 
     /**
      * Get latest available customer  info.
-     * Returns a value immediately if ``CustomerInfo`` is cached.
+     *
+     * - Parameter fetchPolicy: The behavior for what to do regarding caching.
+     * - Parameter completion: A completion block called when customer info is available and not stale.
+     */
+    @objc func getCustomerInfo(fetchPolicy: CacheFetchPolicy, completion: @escaping (CustomerInfo?, Error?) -> Void) {
+        self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                              fetchPolicy: fetchPolicy) { result in
+            completion(result.value, result.error?.asPurchasesError)
+        }
+    }
+
+    /**
+     * Get latest available customer info.
+     *
+     * - Parameter fetchPolicy: The behavior for what to do regarding caching.
      *
      * #### Related Symbols
      * - ``Purchases/customerInfoStream``
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func customerInfo() async throws -> CustomerInfo {
-        return try await customerInfoAsync()
+    func customerInfo(fetchPolicy: CacheFetchPolicy = .default) async throws -> CustomerInfo {
+        return try await self.customerInfoAsync()
     }
 
     /// Returns an `AsyncStream` of ``CustomerInfo`` changes, starting from the last known value.
     ///
     /// #### Related Symbols
     /// - ``PurchasesDelegate/purchases(_:receivedUpdated:)``
-    /// - ``Purchases/customerInfo()``
+    /// - ``Purchases/customerInfo(fetchPolicy:)``
     ///
     /// #### Example:
     /// ```swift
@@ -1647,6 +1685,18 @@ public extension Purchases {
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Important: See ``Configuration/Builder`` for more information about configurable properties.
+     *
+     * ### Example
+     *
+     * ```swift
+     *  Purchases.configure(
+     *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
+     *               .with(usesStoreKit2IfAvailable: true)
+     *               .with(observerMode: false)
+     *               .with(appUserID: "<app_user_id>")
+     *               .build()
+     *      )
+     * ```
      * 
      */
     @objc(configureWithConfiguration:)

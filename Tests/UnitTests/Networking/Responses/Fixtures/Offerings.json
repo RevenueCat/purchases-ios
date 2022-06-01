@@ -1,0 +1,29 @@
+{
+    "current_offering_id": "default",
+    "offerings": [
+        {
+            "description": "standard set of packages",
+            "identifier": "default",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                },
+                {
+                    "identifier": "$rc_annual",
+                    "platform_product_identifier": "com.revenuecat.yearly_10.99.2_week_intro"
+                }
+            ]
+        },
+        {
+            "description": "alternate offering",
+            "identifier": "alternate",
+            "packages": [
+                {
+                    "identifier": "$rc_lifetime",
+                    "platform_product_identifier": "com.revenuecat.other_product"
+                }
+            ]
+        }
+    ]
+}

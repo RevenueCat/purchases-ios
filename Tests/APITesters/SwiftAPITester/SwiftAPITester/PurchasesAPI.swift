@@ -16,9 +16,9 @@ import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
-    // initializers
     let purch = checkConfigure()
 
+    // initializers
     let finishTransactions: Bool = purch.finishTransactions
     let delegate: PurchasesDelegate? = purch.delegate
     let appUserID: String = purch.appUserID
@@ -78,14 +78,7 @@ private func checkStaticMethods() {
 
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
-
-    // both should have deprecation warning
-    Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
-    Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
-
     let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
-    // should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
-    let debugLogsEnabled: Bool = Purchases.debugLogsEnabled
     let logLevel: LogLevel = Purchases.logLevel
     let proxyUrl: URL? = Purchases.proxyURL
     let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
@@ -93,7 +86,7 @@ private func checkStaticMethods() {
     let sharedPurchases: Purchases = Purchases.shared
     let isPurchasesConfigured: Bool = Purchases.isConfigured
 
-    print(canI, version, automaticAppleSearchAdsAttributionCollection, debugLogsEnabled, logLevel, proxyUrl!,
+    print(canI, version, automaticAppleSearchAdsAttributionCollection, logLevel, proxyUrl!,
           forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isPurchasesConfigured)
 }
 
@@ -118,6 +111,7 @@ private func checkTypealiases(
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getCustomerInfo { (_: CustomerInfo?, _: Error?) in }
+    purchases.getCustomerInfo(fetchPolicy: .default) { (_: CustomerInfo?, _: Error?) in }
     purchases.getOfferings { (_: Offerings?, _: Error?) in }
     purchases.getProducts([String]()) { (_: [StoreProduct]) in }
 
@@ -133,8 +127,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.checkTrialOrIntroDiscountEligibility(product: storeProduct) { (_: IntroEligibilityStatus) in }
     purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]()) { (_: [String: IntroEligibility]) in
     }
-    // Deprecated
-    purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
+
     purchases.getPromotionalOffer(
         forProductDiscount: discount,
         product: storeProduct
@@ -211,13 +204,6 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(
             productIdentifiers: [String]()
         )
-        // Deprecated
-        let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility([String]())
-        // Deprecated
-        let _: PromotionalOffer = try await purchases.getPromotionalOffer(
-            forProductDiscount: discount,
-            product: stp
-        )
         let _: PromotionalOffer = try await purchases.promotionalOffer(
             forProductDiscount: discount,
             product: stp
@@ -233,6 +219,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
         let _: CustomerInfo = try await purchases.customerInfo()
+        let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)
         let _: CustomerInfo = try await purchases.restorePurchases()
         let _: CustomerInfo = try await purchases.syncPurchases()
 
@@ -245,14 +232,39 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
 
         // Deprecated
-        let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
     } catch {}
 }
 
 private func checkConfigure() -> Purchases {
-    let purch = Purchases.configure(withAPIKey: "")
+    Purchases
+        .configure(with: Configuration.Builder(withAPIKey: "")
+        .build())
+
+    return Purchases.configure(withAPIKey: "")
+}
+
+@available(*, deprecated) // Ignore deprecation warnings
+private func checkAsyncDeprecatedMethods(_ purchases: Purchases, _ stp: StoreProduct) async throws {
+    let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)
+
+    let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility([String]())
+    let _: PromotionalOffer = try await purchases.getPromotionalOffer(
+        forProductDiscount: discount,
+        product: stp
+    )
+}
+
+@available(*, deprecated) // Ignore deprecation warnings
+private func checkDeprecatedMethods(_ purchases: Purchases) {
+    let _: Bool = Purchases.debugLogsEnabled
+
+    Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
+    Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
+
+    purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
+
     Purchases.configure(withAPIKey: "", appUserID: nil)
     Purchases.configure(withAPIKey: "", appUserID: "")
 
@@ -286,6 +298,4 @@ private func checkConfigure() -> Purchases {
                         userDefaults: UserDefaults(),
                         useStoreKit2IfAvailable: true,
                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
-    Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
-    return purch
 }

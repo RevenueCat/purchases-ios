@@ -19,14 +19,8 @@ enum BackendErrorStrings {
     // Backend tried to instantiate a CustomerInfo but for some reason it couldn't.
     case customer_info_instantiation_error(response: [String: Any]?)
 
-    // getOfferings response was totally empty.
-    case offerings_empty_response
-
-    // getOfferings object was missing from response.
-    case offerings_response_json_error(response: [String: Any])
-
     // getOfferings response contained no offerings.
-    case no_offerings_response_json(response: [String: Any])
+    case offerings_response_no_offerings
 
     // Posting offerIdForSigning failed due to a signature problem.
     case signature_error(signatureDataString: Any?)
@@ -43,12 +37,8 @@ extension BackendErrorStrings: CustomStringConvertible {
                 message += " from:\n \(response.debugDescription)"
             }
             return message
-        case .offerings_empty_response:
-            return "Unable to parse Offerings object from empty response"
-        case .offerings_response_json_error(let response):
-            return "Unable to parse Offerings from response:\n\(String(describing: response["offers"]))"
-        case .no_offerings_response_json(let response):
-            return "No offerings found in response:\n\(String(describing: response["offers"]))"
+        case .offerings_response_no_offerings:
+            return "Offerings response contained no offerings"
         case .signature_error(let signatureDataString):
             return "Missing 'signatureData' or its structure changed:\n\(String(describing: signatureDataString))"
         }

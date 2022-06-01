@@ -266,7 +266,16 @@ platform :ios do
     body = JSON.parse(resp[:body])
     commits = body["commits"].reverse
 
+    # TODO: Fix this process where rate limiting is not an issue
+    # Temporary workaround to get around GitHub rate limit
+    rate_limit_sleep = ENV["GITHUB_RATE_LIMIT_SLEEP"].to_i
+
     formatted = commits.map do |commit|
+      if rate_limit_sleep > 0
+        UI.message("Sleeping #{rate_limit_sleep} second(s) to avoid rate limit 🐌")
+        sleep(rate_limit_sleep)
+      end
+
       # Default to commit message info
       message = commit["commit"]["message"].lines.first.strip
       name = commit["commit"]["author"]["name"]
@@ -324,19 +333,18 @@ platform :ios do
   private_lane :edit_changelog do |options|
     generated_contents = options[:generated_contents].to_s
 
+    # Open CHANGELOG.latest.md in editor
+    changelog_filename = "CHANGELOG.latest.md"
+    changelog_path = File.absolute_path("../#{changelog_filename}")
+    editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
+    content_before_opening_editor = File.read(changelog_path)
+
     if generated_contents.size > 0
       UI.message("Using auto generated contents:\n#{generated_contents}")
       File.write(changelog_path, generated_contents)
     else
       UI.user_error!("Generated content for changlog was empty")
     end
-
-    # Open CHANGELOG.latest.md in editor
-    changelog_filename = "CHANGELOG.latest.md"
-    changelog_path = File.absolute_path("../#{changelog_filename}")
-    editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
-
-    content_before_opening_editor = File.read(changelog_path)
 
     UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
     if UI.confirm("Open #{changelog_filename} in '#{editor}'? (No will quit this process)")
@@ -510,7 +518,7 @@ platform :ios do
               # and push the changes
               docs_destination_folder = "docs/#{version_number}"
               index_destination_path = "docs/index.html"
-              FileUtils.mv docs_generation_folder, docs_destination_folder
+              FileUtils.cp_r docs_generation_folder, docs_destination_folder
               FileUtils.cp docs_index_path, index_destination_path
 
               # using sh instead of fastlane commands because fastlane would run

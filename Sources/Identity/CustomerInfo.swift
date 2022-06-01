@@ -220,6 +220,7 @@ extension CustomerInfo: RawDataContainer {
 
     // Docs inherited from protocol
     // swiftlint:disable missing_docs
+    @objc
     public var rawData: [String: Any] {
         return self.data.response.rawData
     }
