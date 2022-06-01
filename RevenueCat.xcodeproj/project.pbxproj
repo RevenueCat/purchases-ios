@@ -437,6 +437,7 @@
 		F5BE447B269E4A7500254A30 /* TrackingManagerProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */; };
 		F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE447C269E4ADB00254A30 /* ASIdManagerProxy.swift */; };
 		F5C0196926E880800005D61E /* StoreKitStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0196826E880800005D61E /* StoreKitStrings.swift */; };
+		F5E5E2EE28479BD000216ECD /* ProductsFetcherSK2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E5E2E82847953000216ECD /* ProductsFetcherSK2Tests.swift */; };
 		F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */; };
 		F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */; };
 		FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */; };
@@ -901,6 +902,7 @@
 		F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingManagerProxy.swift; sourceTree = "<group>"; };
 		F5BE447C269E4ADB00254A30 /* ASIdManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASIdManagerProxy.swift; sourceTree = "<group>"; };
 		F5C0196826E880800005D61E /* StoreKitStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitStrings.swift; sourceTree = "<group>"; };
+		F5E5E2E82847953000216ECD /* ProductsFetcherSK2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsFetcherSK2Tests.swift; sourceTree = "<group>"; };
 		F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterProvider.swift; sourceTree = "<group>"; };
 		F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterProviderTests.swift; sourceTree = "<group>"; };
 		FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWorkaroundsTests.swift; sourceTree = "<group>"; };
@@ -1117,6 +1119,7 @@
 				F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */,
 				2D222BAA27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift */,
 				57DE80882807540D008D6C6F /* StorefrontTests.swift */,
+				F5E5E2E82847953000216ECD /* ProductsFetcherSK2Tests.swift */,
 			);
 			path = StoreKitUnitTests;
 			sourceTree = "<group>";
@@ -2188,6 +2191,7 @@
 				3543913826F90FE100E669DF /* MockIntroEligibilityCalculator.swift in Sources */,
 				3543914126F911CC00E669DF /* MockDeviceCache.swift in Sources */,
 				3543913C26F9101600E669DF /* MockOperationDispatcher.swift in Sources */,
+				F5E5E2EE28479BD000216ECD /* ProductsFetcherSK2Tests.swift in Sources */,
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift in Sources */,
 				2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */,
 				2D90F8C726FD221D009B9142 /* MockASN1ContainerBuilder.swift in Sources */,

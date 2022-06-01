@@ -23,7 +23,8 @@ actor ProductsFetcherSK2 {
 
     }
 
-    private var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
+    /// Getter is declared as `internal` for testing only.
+    private(set) var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
 
     func products(identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
         do {
