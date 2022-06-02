@@ -62,10 +62,10 @@ extension ReceiptFetcher {
         }
 
         #if os(watchOS)
-        receiptURL = self.watchOSReceiptURL(receiptURL)
-        #endif
-
+        return self.watchOSReceiptURL(receiptURL)
+        #else
         return receiptURL
+        #endif
     }
 
     func watchOSReceiptURL(_ receiptURL: URL) -> URL? {
