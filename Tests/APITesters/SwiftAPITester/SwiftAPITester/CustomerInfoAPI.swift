@@ -21,8 +21,6 @@ func checkCustomerInfoAPI() {
     let appis: Set<String> = customerInfo.allPurchasedProductIdentifiers
     let led: Date? = customerInfo.latestExpirationDate
 
-    // should have dep. warning 'nonConsumablePurchases' is deprecated: use nonSubscriptionTransactions
-    let ncp: Set<String> = customerInfo.nonConsumablePurchases
     let nst: [StoreTransaction] = customerInfo.nonSubscriptionTransactions
     let oav: String? = customerInfo.originalApplicationVersion
     let opd: Date? = customerInfo.originalPurchaseDate
@@ -40,7 +38,7 @@ func checkCustomerInfoAPI() {
 
     let rawData: [String: Any] = customerInfo.rawData
 
-    print(customerInfo!, entitlementInfo, asubs, appis, led!, ncp, nst, oav!, opd!, rDate!, fSeen, oaud!, murl!,
+    print(customerInfo!, entitlementInfo, asubs, appis, led!, nst, oav!, opd!, rDate!, fSeen, oaud!, murl!,
           edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData)
 }
 
@@ -53,4 +51,9 @@ func checkCacheFetchPolicyEnum(_ policy: CacheFetchPolicy) {
 
     @unknown default: break
     }
+}
+
+@available(*, deprecated) // Ignore deprecation warnings
+func checkDeprecatedAPI() {
+    let _: Set<String> = customerInfo.nonConsumablePurchases
 }
