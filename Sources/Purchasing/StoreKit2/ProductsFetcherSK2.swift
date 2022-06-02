@@ -23,7 +23,8 @@ actor ProductsFetcherSK2 {
 
     }
 
-    private var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
+    /// Getter is declared as `internal` for testing purposes only.
+    private(set) var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
 
     func products(identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
         do {
@@ -44,15 +45,6 @@ actor ProductsFetcherSK2 {
 
     func clearCache() {
         self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
-    }
-
-}
-
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension ProductsFetcherSK2 {
-    /// Read-only variable declared for testing only.
-    var cachedProducts: [SK2StoreProduct] {
-        Array(self.cachedProductsByIdentifier.values)
     }
 
 }
