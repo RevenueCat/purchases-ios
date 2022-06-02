@@ -18,20 +18,21 @@ import Nimble
 @testable import RevenueCat
 
 class ReceiptFetcherTests: TestCase {
-    var receiptFetcher: ReceiptFetcher!
-    var mockRequestFetcher: MockRequestFetcher!
-    var mockBundle: MockBundle!
-    var mockSystemInfo: MockSystemInfo!
+
+    private var receiptFetcher: ReceiptFetcher!
+    private var mockRequestFetcher: MockRequestFetcher!
+    private var mockBundle: MockBundle!
+    private var mockSystemInfo: MockSystemInfo!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        mockBundle = MockBundle()
-        mockRequestFetcher = MockRequestFetcher()
-        mockSystemInfo = try MockSystemInfo(platformInfo: nil,
-                                            finishTransactions: false,
-                                            bundle: mockBundle)
-        receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: mockSystemInfo)
+        self.mockBundle = MockBundle()
+        self.mockRequestFetcher = MockRequestFetcher()
+        self.mockSystemInfo = try MockSystemInfo(platformInfo: nil,
+                                                 finishTransactions: false,
+                                                 bundle: self.mockBundle)
+        self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher, systemInfo: self.mockSystemInfo)
     }
 
     func testReceiptDataWithRefreshPolicyNeverReturnsReceiptData() {
