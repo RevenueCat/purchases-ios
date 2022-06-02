@@ -26,7 +26,8 @@ class BasePurchasesTests: TestCase {
 
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
         self.systemInfo = MockSystemInfo(finishTransactions: true)
-        self.deviceCache = MockDeviceCache(systemInfo: self.systemInfo, userDefaults: self.userDefaults)
+        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
+                                           userDefaults: self.userDefaults)
         self.requestFetcher = MockRequestFetcher()
         self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
