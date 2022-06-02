@@ -103,3 +103,28 @@ extension SubscriptionPeriod {
         return self
     }
 }
+
+extension ReceiptFetcher {
+
+    func watchOSReceiptURL(_ receiptURL: URL) -> URL? {
+        // as of watchOS 6.2.8, there's a bug where the receipt is stored in the sandbox receipt location,
+        // but the appStoreReceiptURL method returns the URL for the production receipt.
+        // This code replaces "sandboxReceipt" with "receipt" as the last component of the receiptURL so that we get the
+        // correct receipt.
+        // This has been filed as radar FB7699277. More info in https://github.com/RevenueCat/purchases-ios/issues/207
+
+        let firstOSVersionWithoutBug: OperatingSystemVersion = OperatingSystemVersion(majorVersion: 7,
+                                                                                      minorVersion: 0,
+                                                                                      patchVersion: 0)
+        let isBelowFirstOSVersionWithoutBug = !self.systemInfo.isOperatingSystemAtLeast(firstOSVersionWithoutBug)
+
+        if isBelowFirstOSVersionWithoutBug && self.systemInfo.isSandbox {
+            let receiptURLFolder: URL = receiptURL.deletingLastPathComponent()
+            let productionReceiptURL: URL = receiptURLFolder.appendingPathComponent("receipt")
+            return productionReceiptURL
+        } else {
+            return receiptURL
+        }
+    }
+
+}
