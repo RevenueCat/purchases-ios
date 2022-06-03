@@ -26,6 +26,10 @@ class InitialViewController: UIViewController {
             }
             
             // Route the view depending if we have a premium cat user or not
+            let proCatActive = customerInfo?.entitlements["pro_cat"]?.isActive
+            let snakeActive = customerInfo?.entitlements["PROcat"]?.isActive
+
+            print("non snake case: \(proCatActive)\nwith snake case: \(snakeActive)")
             if customerInfo?.entitlements["pro_cat"]?.isActive == true {
                 
                 // if we have a pro_cat subscriber, send them to the cat screen

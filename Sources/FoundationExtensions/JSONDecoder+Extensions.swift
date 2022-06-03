@@ -134,6 +134,14 @@ extension JSONEncoder {
         return encoder
     }()
 
+    static let preservingKeyCase: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .useDefaultKeys
+        encoder.dateEncodingStrategy = .iso8601
+
+        return encoder
+    }()
+
 }
 
 extension JSONDecoder {
@@ -141,6 +149,14 @@ extension JSONDecoder {
     static let `default`: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .iso8601
+
+        return decoder
+    }()
+
+    static let preservingKeyCase: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .useDefaultKeys
         decoder.dateDecodingStrategy = .iso8601
 
         return decoder

@@ -120,7 +120,7 @@ class CustomerInfoManager {
         }
 
         do {
-            let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
+            let info: CustomerInfo = try JSONDecoder.preservingKeyCase.decode(jsonData: customerInfoData)
 
             if info.isInCurrentSchemaVersion {
                 return info
@@ -135,7 +135,7 @@ class CustomerInfoManager {
 
     func cache(customerInfo: CustomerInfo, appUserID: String) {
         do {
-            let jsonData = try JSONEncoder.default.encode(customerInfo)
+            let jsonData = try JSONEncoder.preservingKeyCase.encode(customerInfo)
             deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
             sendUpdateIfChanged(customerInfo: customerInfo)
         } catch {
