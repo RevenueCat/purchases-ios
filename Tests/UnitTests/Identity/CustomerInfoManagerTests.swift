@@ -324,6 +324,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                     "product_a": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
                     "Product_B": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
                     "ProductC": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
+                    "Pro": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
                     "ProductD": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]
                 ],
                 "other_purchases": [:]
@@ -334,11 +335,12 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         let receivedCustomerInfo = try XCTUnwrap(self.customerInfoManager.cachedCustomerInfo(appUserID: Self.appUserID))
 
-        expect(receivedCustomerInfo.activeSubscriptions).to(haveCount(3))
+        expect(receivedCustomerInfo.activeSubscriptions).to(haveCount(4))
         expect(receivedCustomerInfo.activeSubscriptions).to(contain([
             "product_a",
             "Product_B",
-            "ProductC"
+            "ProductC",
+            "Pro"
         ]))
         expect(receivedCustomerInfo) == info
     }
