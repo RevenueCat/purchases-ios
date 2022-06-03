@@ -358,7 +358,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
 private extension StoreKit1IntegrationTests {
 
-    static let entitlementIdentifier = "premium"
+    static let entitlementIdentifier = "NotASnakeCaseEntitlement"
 
     private var currentOffering: Offering {
         get async throws {
