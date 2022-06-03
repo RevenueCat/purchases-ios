@@ -315,7 +315,6 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCachedCustomerInfoParsesCorrectly() throws {
-        let appUserID = "myUser"
         let info = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -324,21 +323,24 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "subscriptions": [
                     "product_a": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
                     "Product_B": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
-                    "ProductC": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]
+                    "ProductC": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
+                    "ProductD": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]
                 ],
                 "other_purchases": [:]
             ]])
 
         let object = try info.asData()
-        mockDeviceCache.cachedCustomerInfo[appUserID] = object
+        self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
-        let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        let receivedCustomerInfo = try XCTUnwrap(self.customerInfoManager.cachedCustomerInfo(appUserID: Self.appUserID))
 
-        expect(receivedCustomerInfo).toNot(beNil())
-        expect(receivedCustomerInfo?.activeSubscriptions.count) == 2
-        expect(receivedCustomerInfo?.activeSubscriptions.contains("product_a")) == true
-        expect(receivedCustomerInfo?.activeSubscriptions.contains("Product_B")) == true
-        expect(receivedCustomerInfo!) == info
+        expect(receivedCustomerInfo.activeSubscriptions).to(haveCount(3))
+        expect(receivedCustomerInfo.activeSubscriptions).to(contain([
+            "product_a",
+            "Product_B",
+            "ProductC"
+        ]))
+        expect(receivedCustomerInfo) == info
     }
 
     func testCachedCustomerInfoReturnsNilIfNotAvailable() {
