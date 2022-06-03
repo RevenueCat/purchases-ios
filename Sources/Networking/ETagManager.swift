@@ -94,7 +94,7 @@ private extension ETagManager {
             if let cacheKey = eTagDefaultCacheKey(for: request),
                let value = $0.object(forKey: cacheKey),
                let data = value as? Data {
-                return try? JSONDecoder.default.decode(Response.self, jsonData: data)
+                return try? JSONDecoder.snakeCase.decode(Response.self, jsonData: data)
             }
 
             return nil
@@ -151,7 +151,7 @@ extension ETagManager.Response: Codable {}
 extension ETagManager.Response {
 
     func asData() -> Data? {
-        return try? JSONEncoder.default.encode(self)
+        return try? JSONEncoder.snakeCase.encode(self)
     }
 
     fileprivate var asResponse: HTTPResponse<Data> {

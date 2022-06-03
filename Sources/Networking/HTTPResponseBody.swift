@@ -46,7 +46,7 @@ extension Data: HTTPResponseBody {
 extension Decodable {
 
     static func create(with data: Data) throws -> Self {
-        return try JSONDecoder.default.decode(jsonData: data)
+        return try JSONDecoder.snakeCase.decode(jsonData: data)
     }
 
 }

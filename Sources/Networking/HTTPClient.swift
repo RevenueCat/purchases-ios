@@ -335,7 +335,7 @@ extension HTTPRequest.Path {
 private extension Encodable {
 
     func asData() throws -> Data {
-        return try JSONEncoder.default.encode(self)
+        return try JSONEncoder.snakeCase.encode(self)
     }
 
 }

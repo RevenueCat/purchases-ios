@@ -142,7 +142,7 @@ extension ErrorResponse {
     }
 
     private static func parseWrapper(_ data: Data) -> Wrapper? {
-        return try? JSONDecoder.default.decode(jsonData: data, logErrors: false)
+        return try? JSONDecoder.snakeCase.decode(jsonData: data, logErrors: false)
     }
 
     /// Creates an `ErrorResponse` with the content of an `HTTPResponse`.
@@ -165,7 +165,7 @@ extension ErrorResponse {
             if let wrapper = Self.parseWrapper(data) {
                 return wrapper.attributesErrorResponse
             } else {
-                return try JSONDecoder.default.decode(jsonData: data)
+                return try JSONDecoder.snakeCase.decode(jsonData: data)
             }
         } catch {
             Logger.error(Strings.codable.decoding_error(error))

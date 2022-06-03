@@ -112,7 +112,7 @@ extension ErrorUtils {
 extension Encodable {
 
     func asDictionary() throws -> [String: Any] {
-        let data = try JSONEncoder.default.encode(self)
+        let data = try JSONEncoder.snakeCase.encode(self)
         let result = try JSONSerialization.jsonObject(with: data, options: [])
 
         guard let result = result as? [String: Any] else {
@@ -126,7 +126,7 @@ extension Encodable {
 
 extension JSONEncoder {
 
-    static let `default`: JSONEncoder = {
+    static let snakeCase: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.dateEncodingStrategy = .iso8601
@@ -146,7 +146,7 @@ extension JSONEncoder {
 
 extension JSONDecoder {
 
-    static let `default`: JSONDecoder = {
+    static let snakeCase: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         decoder.dateDecodingStrategy = .iso8601
