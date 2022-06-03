@@ -318,7 +318,11 @@ class CustomerInfoManagerTests: TestCase {
             "subscriber": [
                 "original_app_user_id": "app_user_id",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
+                "subscriptions": [
+                    "product_a": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
+                    "Product_B": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
+                    "ProductC": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]
+                ],
                 "other_purchases": [:]
             ]])
 
@@ -328,6 +332,9 @@ class CustomerInfoManagerTests: TestCase {
         let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
 
         expect(receivedCustomerInfo).toNot(beNil())
+        expect(receivedCustomerInfo?.activeSubscriptions.count) == 2
+        expect(receivedCustomerInfo?.activeSubscriptions.contains("product_a")) == true
+        expect(receivedCustomerInfo?.activeSubscriptions.contains("Product_B")) == true
         expect(receivedCustomerInfo!) == info
     }
 
