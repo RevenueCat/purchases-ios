@@ -206,7 +206,7 @@ class OfferingsTests: TestCase {
         }
         """.asData
 
-        let offeringsResponse: OfferingsResponse = try JSONDecoder.default.decode(jsonData: json)
+        let offeringsResponse: OfferingsResponse = try JSONDecoder.snakeCase.decode(jsonData: json)
         let offerings = self.offeringsFactory.createOfferings(from: [:], data: offeringsResponse)
 
         expect(offerings).to(beNil())

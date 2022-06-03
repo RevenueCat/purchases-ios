@@ -19,11 +19,11 @@ extension CustomerInfo {
     /// Initializes the customer with a dictionary
     /// Useful only for backwards compatibility with old tests
     convenience init(data: [String: Any]) throws {
-        self.init(customerInfo: try JSONDecoder.default.decode(dictionary: data))
+        self.init(customerInfo: try JSONDecoder.snakeCase.decode(dictionary: data))
     }
 
     func asData() throws -> Data {
-        return try JSONEncoder.default.encode(self)
+        return try JSONEncoder.snakeCase.encode(self)
     }
 
 }

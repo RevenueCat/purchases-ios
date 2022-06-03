@@ -285,7 +285,7 @@ class IgnoreEncodableTests: TestCase {
     func testValueIsNotEncoded() throws {
         let data = Data(value: 2, ignored: 2)
         let encoded = try XCTUnwrap(
-            String(data: try JSONEncoder.default.encode(data), encoding: .utf8)
+            String(data: try JSONEncoder.snakeCase.encode(data), encoding: .utf8)
         )
 
         expect(encoded) == "{\"value\":2}"
@@ -370,8 +370,8 @@ class IgnoreEncodableTests: TestCase {
 extension Decodable where Self: Encodable {
 
     func encodeAndDecode() throws -> Self {
-        return try JSONDecoder.default.decode(
-            jsonData: JSONEncoder.default.encode(self)
+        return try JSONDecoder.snakeCase.decode(
+            jsonData: JSONEncoder.snakeCase.encode(self)
         )
     }
 
@@ -380,7 +380,7 @@ extension Decodable where Self: Encodable {
 extension Decodable {
 
     static func decode(_ json: String) throws -> Self {
-        return try JSONDecoder.default.decode(jsonData: json.asData)
+        return try JSONDecoder.snakeCase.decode(jsonData: json.asData)
     }
 
     static func decodeEmptyData() throws -> Self {

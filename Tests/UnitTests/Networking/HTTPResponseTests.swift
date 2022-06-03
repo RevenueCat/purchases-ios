@@ -246,7 +246,7 @@ private extension ErrorResponseTests {
 private extension ErrorResponseTests {
 
     func decode(_ response: String) throws -> ErrorResponse {
-        return try JSONDecoder.default.decode(ErrorResponse.self, from: response.asData)
+        return try JSONDecoder.snakeCase.decode(ErrorResponse.self, from: response.asData)
     }
 
     func decodeSupportingContainer(_ response: String) throws -> ErrorResponse {

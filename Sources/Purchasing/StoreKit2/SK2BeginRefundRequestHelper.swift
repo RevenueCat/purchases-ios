@@ -86,7 +86,7 @@ private extension SK2BeginRefundRequestHelper {
                 return Strings.purchase.duplicate_refund_request(details: details).description
             case .failed:
                 return Strings.purchase.failed_refund_request(details: details).description
-            @unknown snakeCase:
+            @unknown default:
                 return Strings.purchase.unknown_refund_request_error_type(details: details).description
             }
         } else {
@@ -129,7 +129,7 @@ private extension RefundRequestStatus {
             return .userCancelled
         case .success:
             return .success
-        @unknown snakeCase:
+        @unknown default:
             return nil
         }
     }

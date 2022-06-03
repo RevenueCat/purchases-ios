@@ -207,7 +207,7 @@ class DeviceCacheTests: TestCase {
                 ]
             }
         """
-        let offeringsData: OfferingsResponse.Offering = try JSONDecoder.default.decode(
+        let offeringsData: OfferingsResponse.Offering = try JSONDecoder.snakeCase.decode(
             jsonData: offeringsJSON.asData
         )
 

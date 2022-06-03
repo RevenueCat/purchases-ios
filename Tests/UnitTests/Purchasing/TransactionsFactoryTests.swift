@@ -127,7 +127,7 @@ private extension TransactionsFactory {
         withSubscriptionsData data: [String: Any]
     ) throws -> [StoreTransaction] {
         let data = try JSONSerialization.data(withJSONObject: data)
-        let transactions: LossyArrayDictionary<CustomerInfoResponse.Transaction> = try JSONDecoder.default.decode(
+        let transactions: LossyArrayDictionary<CustomerInfoResponse.Transaction> = try JSONDecoder.snakeCase.decode(
             jsonData: data
         )
 

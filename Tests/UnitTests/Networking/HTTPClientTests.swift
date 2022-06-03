@@ -397,7 +397,7 @@ class HTTPClientTests: TestCase {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let response = CustomResponse(message: "Something is great up in the cloud")
-        let responseData = try JSONEncoder.default.encode(response)
+        let responseData = try JSONEncoder.snakeCase.encode(response)
 
         let result: Atomic<HTTPResponse<CustomResponse>.Result?> = .init(nil)
 
