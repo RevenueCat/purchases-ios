@@ -36,11 +36,11 @@ extension CustomerInfoResponse {
         var originalApplicationVersion: String?
         var originalPurchaseDate: Date?
         var firstSeen: Date
-        @DefaultDecodable.EmptyDictionary @LossyDictionary
+        @DefaultDecodable.EmptyDictionary
         var subscriptions: [String: Subscription]
-        @DefaultDecodable.EmptyDictionary @LossyArrayDictionary
+        @DefaultDecodable.EmptyDictionary
         var nonSubscriptions: [String: [Transaction]]
-        @DefaultDecodable.EmptyDictionary @LossyDictionary
+        @DefaultDecodable.EmptyDictionary
         var entitlements: [String: Entitlement]
 
     }
