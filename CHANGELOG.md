@@ -1,3 +1,10 @@
+## 4.5.1
+### Fixes
+
+- Fix an issue where entitlement identifiers and product identifiers would get converted to snake case and returned as empty.
+    https://github.com/RevenueCat/purchases-ios/pull/1651
+    https://github.com/RevenueCat/purchases-ios/issues/1650
+
 ## 4.5.0
 ### New Features
 * `Purchases.customerInfo()`: added overload with a new `CacheFetchPolicy` (#1608) via NachoSoto (@NachoSoto)
