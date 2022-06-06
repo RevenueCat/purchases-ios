@@ -112,30 +112,6 @@ class AttributionPoster {
         self.post(adServicesToken: attributionToken)
     }
 
-    func post(adServicesToken: String) {
-        let currentAppUserID = self.currentUserProvider.currentAppUserID
-
-        // set the cache in advance to avoid multiple post calls
-        let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
-            self.deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
-        var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
-        newDictToCache[String(AttributionNetwork.adServices.rawValue)] = adServicesToken
-        self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
-
-         backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
-             guard let error = error else {
-                 Logger.debug(Strings.attribution.adservices_token_post_succeeded)
-                 return
-             }
-             
-             Logger.warn(Strings.attribution.adservices_token_post_failed(error: error))
-
-            // if there's an error, reset the cache
-            newDictToCache[String(AttributionNetwork.adServices.rawValue)] = nil
-            self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
-        }
-    }
-
     func postPostponedAttributionDataIfNeeded() {
         guard let postponedAttributionData = Self.postponedAttributionData else {
             return
@@ -158,6 +134,30 @@ class AttributionPoster {
         var postponedData = postponedAttributionData ?? []
         postponedData.append(AttributionData(data: data, network: network, networkUserId: networkUserID))
         postponedAttributionData = postponedData
+    }
+
+    private func post(adServicesToken: String) {
+        let currentAppUserID = self.currentUserProvider.currentAppUserID
+
+        // set the cache in advance to avoid multiple post calls
+        let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
+            self.deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
+        var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
+        newDictToCache[String(AttributionNetwork.adServices.rawValue)] = adServicesToken
+        self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
+
+         backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
+             guard let error = error else {
+                 Logger.debug(Strings.attribution.adservices_token_post_succeeded)
+                 return
+             }
+             Logger.warn(Strings.attribution.adservices_token_post_failed(error: error))
+
+            // if there's an error, reset the cache
+             newDictToCache[String(AttributionNetwork.adServices.rawValue)] = nil
+
+            self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
+        }
     }
 
     private func latestNetworkIdAndAdvertisingIdentifierSent(network: AttributionNetwork) -> String? {
