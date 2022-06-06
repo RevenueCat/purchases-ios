@@ -255,7 +255,7 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
+                "non_subscriptions": [:],
                 "subscriptions": [
                     "onemonth_freetrial": [:]
                 ],
@@ -277,7 +277,7 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
+                "non_subscriptions": [:],
                 "subscriptions": [
                     "onemonth_freetrial": [:],
                     "onemonth_freetrial2": [:]
@@ -305,8 +305,8 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
-                "subscriptions": [],
+                "non_subscriptions": [:],
+                "subscriptions": [:],
                 "entitlements": [
                     "\(mockEntitlementID)": [
                         "expires_date": "2000-08-30T02:40:36Z",
@@ -325,8 +325,8 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
-                "subscriptions": [],
+                "non_subscriptions": [:],
+                "subscriptions": [:],
                 "entitlements": [
                     "pro": [
                         "expires_date": "2100-08-30T02:40:36Z",

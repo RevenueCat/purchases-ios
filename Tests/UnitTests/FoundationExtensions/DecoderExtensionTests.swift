@@ -58,11 +58,11 @@ class DecoderExtensionsDefaultValueTests: TestCase {
         expect(try Data.decodeEmptyData().e) == Data.E.defaultValue
     }
 
-    func testDecodesDefaultValueForInvalidValue() throws {
+    func testThrowsForInvalidValue() throws {
         let json = "{\"e\": \"e3\"}"
-        let data = try Data.decode(json)
 
-        expect(data.e) == Data.E.defaultValue
+        expect(try Data.decode(json))
+            .to(throwError(errorType: DecodingError.self))
     }
 
     func testDecodesDefaultValueFromAnotherSource() throws {
@@ -74,7 +74,7 @@ class DecoderExtensionsDefaultValueTests: TestCase {
 class DecoderExtensionsIgnoreErrorsTests: TestCase {
 
     private struct Data: Codable, Equatable {
-        @IgnoreDecodeErrors var url: URL?
+        @IgnoreDecodeErrors<URL?> var url: URL?
 
         init(url: URL) {
             self.url = url
@@ -93,6 +93,24 @@ class DecoderExtensionsIgnoreErrorsTests: TestCase {
         let data = try Data.decode(json)
 
         expect(data.url).to(beNil())
+    }
+
+    func testDecodesDefaultValueForInvalidValue() throws {
+        struct Data: Codable, Equatable {
+            enum E: String, DefaultValueProvider, Codable, Equatable {
+                case e1
+                case e2
+
+                static let defaultValue: Self = .e2
+            }
+
+            @IgnoreDecodeErrors<E> var e: E
+        }
+
+        let json = "{\"e\": \"e3\"}"
+
+        let data = try Data.decode(json)
+        expect(data.e) == .e2
     }
 
 }
@@ -148,26 +166,26 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
         expect(try Data.decodeEmptyData().dictionary) == [:]
     }
 
-    func testDecodesEmptyArrayForIncorrectType() throws {
+    func testDoesNotIgnoreErrorsIfNotArray() throws {
         let json = "{\"array\": \"this is not an array\"}"
-        let data = try Data.decode(json)
 
-        expect(data.array) == []
+        expect(try Data.decode(json))
+            .to(throwError(errorType: DecodingError.self))
     }
 
-    func testDecodesEmptyDictionaryForIncorrectType() throws {
+    func testDoesNotIgnoreErrorsIfNotDictionary() throws {
         let json = "{\"dictionary\": \"this is not a dictionary\"}"
-        let data = try Data.decode(json)
 
-        expect(data.dictionary) == [:]
+        expect(try Data.decode(json))
+            .to(throwError(errorType: DecodingError.self))
     }
 
-    func testDecodesEmptyDictionaryIfPartiallyFailsToDecodeData() throws {
-        struct Content: Codable, Equatable {
-            let string: String
-        }
-
+    func testDoesNotIgnoreErrorsIfPartiallyFailsToDecodeData() throws {
         struct Data: Codable, Equatable {
+            struct Content: Codable, Equatable {
+                let string: String
+            }
+
             @DefaultDecodable.EmptyDictionary var dictionary: [String: Content]
         }
 
@@ -179,9 +197,9 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
             }
         }
         """
-        let data = try Data.decode(json)
 
-        expect(data.dictionary) == [:]
+        expect(try Data.decode(json))
+            .to(throwError(errorType: DecodingError.self))
     }
 
 }
