@@ -25,7 +25,7 @@ class BeginRefundRequestHelper {
 
 #if os(iOS)
 
-    private var _sk2Helper: Any!
+    private var _sk2Helper: Any?
 
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
@@ -49,11 +49,13 @@ class BeginRefundRequestHelper {
         self.customerInfoManager = customerInfoManager
         self.currentUserProvider = currentUserProvider
 
+        #if os(iOS)
         if #available(iOS 15, *) {
             self._sk2Helper = SK2BeginRefundRequestHelper()
         } else {
             self._sk2Helper = nil
         }
+        #endif
     }
 
 #if os(iOS)
