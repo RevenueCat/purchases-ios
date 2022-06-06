@@ -24,17 +24,30 @@ class BeginRefundRequestHelper {
     private let currentUserProvider: CurrentUserProvider
 
 #if os(iOS)
+
+    private let _sk2Helper: Any!
+
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    lazy var sk2Helper = SK2BeginRefundRequestHelper()
+    var sk2Helper: SK2BeginRefundRequestHelper {
+        // swiftlint:disable:next force_cast
+        return self._sk2Helper! as! SK2BeginRefundRequestHelper
+    }
+
 #endif
 
     init(systemInfo: SystemInfo, customerInfoManager: CustomerInfoManager, currentUserProvider: CurrentUserProvider) {
         self.systemInfo = systemInfo
         self.customerInfoManager = customerInfoManager
         self.currentUserProvider = currentUserProvider
+
+        if #available(iOS 15, *) {
+            self._sk2Helper = SK2BeginRefundRequestHelper()
+        } else {
+            self._sk2Helper = nil
+        }
     }
 
 #if os(iOS)
