@@ -54,7 +54,7 @@ class AttributionPoster {
 
         let currentAppUserID = self.currentUserProvider.currentAppUserID
         let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
-            deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
+            deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
         let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[network]
 
         let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
@@ -140,10 +140,10 @@ class AttributionPoster {
 
         // set the cache in advance to avoid multiple post calls
         let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
-            self.deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
+            self.deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
         var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
         newDictToCache[AttributionNetwork.adServices] = adServicesToken
-        self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
+        self.deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: currentAppUserID)
 
          backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
              guard let error = error else {
@@ -154,12 +154,12 @@ class AttributionPoster {
 
             // if there's an error, reset the cache
             newDictToCache[AttributionNetwork.adServices] = nil
-            self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
+            self.deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: currentAppUserID)
         }
     }
 
     private func latestNetworkIdAndAdvertisingIdentifierSent(network: AttributionNetwork) -> String? {
-        let cachedDict = deviceCache.latestNetworkAndAdvertisingIdsSent(
+        let cachedDict = deviceCache.latestAdvertisingIdsByNetworkSent(
             appUserID: self.currentUserProvider.currentAppUserID
         )
         return cachedDict[network]
@@ -172,7 +172,7 @@ class AttributionPoster {
         subscriberAttributesManager.setAttributes(fromAttributionData: newData,
                                                   network: network,
                                                   appUserID: appUserID)
-        deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: appUserID)
+        deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: appUserID)
     }
 
 }

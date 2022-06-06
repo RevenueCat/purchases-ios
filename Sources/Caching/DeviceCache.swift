@@ -269,15 +269,19 @@ class DeviceCache {
 
     // MARK: - attribution
 
-    func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [AttributionNetwork: String] {
+    func latestAdvertisingIdsByNetworkSent(appUserID: String) -> [AttributionNetwork: String] {
         return self.userDefaults.read {
             let key = CacheKeyBases.attributionDataDefaults + appUserID
-            let latestAdvertisingIdsByRawNetworkSent = $0.object(forKey: key) as? [Int: String] ?? [:]
+            let latestAdvertisingIdsByRawNetworkSent = $0.object(forKey: key) as? [String: String] ?? [:]
 
-            var latestSent: [AttributionNetwork: String] = [:]
-            latestAdvertisingIdsByRawNetworkSent.forEach { rawNetwork, adIds in
-                if let attributionNetwork = AttributionNetwork(rawValue: rawNetwork) {
-                    latestSent[attributionNetwork] = adIds
+            // convert keys from UserDefault from Integer String to AttributionNetwork
+            let latestSent: [AttributionNetwork: String] =
+                latestAdvertisingIdsByRawNetworkSent.reduce(into: [:]) { adIdsByNetwork, adIdByRawNetworkString in
+                    if let networkRawValue = Int(adIdByRawNetworkString.key),
+                       let attributionNetwork = AttributionNetwork(rawValue: networkRawValue) {
+                    adIdsByNetwork[attributionNetwork] = adIdByRawNetworkString.value
+                } else {
+                    Logger.error(Strings.attribution.latest_attribution_sent_user_defaults_invalid)
                 }
             }
 
@@ -285,11 +289,14 @@ class DeviceCache {
         }
     }
 
-    func set(latestNetworkAndAdvertisingIdsSent: [AttributionNetwork: String], appUserID: String) {
+    func set(latestAdvertisingIdsByNetworkSent: [AttributionNetwork: String], appUserID: String) {
         self.userDefaults.write {
-            $0.setValue(latestNetworkAndAdvertisingIdsSent.reduce(into: [:]) { adIdsByRawNetworkString, adIdsByNetwork in
-                adIdsByRawNetworkString[String(adIdsByNetwork.key.rawValue)] = adIdsByNetwork.value
-              },
+            // convert AttributionNetwork to Integer as String
+            let latestAdIdsByRawNetworkStringSent =
+                latestAdvertisingIdsByNetworkSent.reduce(into: [:]) { adIdsByRawNetworkString, adIdByNetwork in
+                    adIdsByRawNetworkString[String(adIdByNetwork.key.rawValue)] = adIdByNetwork.value
+                }
+            $0.setValue(latestAdIdsByRawNetworkStringSent,
                         forKey: CacheKeyBases.attributionDataDefaults + appUserID)
         }
     }
