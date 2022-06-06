@@ -53,10 +53,9 @@ class AttributionPoster {
         }
 
         let currentAppUserID = self.currentUserProvider.currentAppUserID
-        let networkKey = String(network.rawValue)
         let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
             deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
-        let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[networkKey]
+        let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[network]
 
         let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
         guard latestSentToNetwork != newValueForNetwork else {
@@ -65,7 +64,7 @@ class AttributionPoster {
         }
 
         var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
-        newDictToCache[networkKey] = newValueForNetwork
+        newDictToCache[network] = newValueForNetwork
 
         var newData = data
 
@@ -143,7 +142,7 @@ class AttributionPoster {
         let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
             self.deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
-        newDictToCache[String(AttributionNetwork.adServices.rawValue)] = adServicesToken
+        newDictToCache[AttributionNetwork.adServices] = adServicesToken
         self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
 
          backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
@@ -154,24 +153,22 @@ class AttributionPoster {
              Logger.warn(Strings.attribution.adservices_token_post_failed(error: error))
 
             // if there's an error, reset the cache
-             newDictToCache[String(AttributionNetwork.adServices.rawValue)] = nil
-
+            newDictToCache[AttributionNetwork.adServices] = nil
             self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: currentAppUserID)
         }
     }
 
     private func latestNetworkIdAndAdvertisingIdentifierSent(network: AttributionNetwork) -> String? {
-        let networkID = String(network.rawValue)
         let cachedDict = deviceCache.latestNetworkAndAdvertisingIdsSent(
             appUserID: self.currentUserProvider.currentAppUserID
         )
-        return cachedDict[networkID]
+        return cachedDict[network]
     }
 
     private func postSubscriberAttributes(newData: [String: Any],
                                           network: AttributionNetwork,
                                           appUserID: String,
-                                          newDictToCache: [String: String]) {
+                                          newDictToCache: [AttributionNetwork: String]) {
         subscriberAttributesManager.setAttributes(fromAttributionData: newData,
                                                   network: network,
                                                   appUserID: appUserID)

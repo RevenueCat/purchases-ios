@@ -269,17 +269,27 @@ class DeviceCache {
 
     // MARK: - attribution
 
-    func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [String: String] {
+    func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [AttributionNetwork: String] {
         return self.userDefaults.read {
             let key = CacheKeyBases.attributionDataDefaults + appUserID
-            let latestNetworkAndAdvertisingIdsSent = $0.object(forKey: key) as? [String: String] ?? [:]
-            return latestNetworkAndAdvertisingIdsSent
+            let latestAdvertisingIdsByRawNetworkSent = $0.object(forKey: key) as? [Int: String] ?? [:]
+
+            var latestSent: [AttributionNetwork: String] = [:]
+            latestAdvertisingIdsByRawNetworkSent.forEach { rawNetwork, adIds in
+                if let attributionNetwork = AttributionNetwork(rawValue: rawNetwork) {
+                    latestSent[attributionNetwork] = adIds
+                }
+            }
+
+            return latestSent
         }
     }
 
-    func set(latestNetworkAndAdvertisingIdsSent: [String: String], appUserID: String) {
+    func set(latestNetworkAndAdvertisingIdsSent: [AttributionNetwork: String], appUserID: String) {
         self.userDefaults.write {
-            $0.setValue(latestNetworkAndAdvertisingIdsSent,
+            $0.setValue(latestNetworkAndAdvertisingIdsSent.reduce(into: [:]) { adIdsByRawNetworkString, adIdsByNetwork in
+                adIdsByRawNetworkString[String(adIdsByNetwork.key.rawValue)] = adIdsByNetwork.value
+              },
                         forKey: CacheKeyBases.attributionDataDefaults + appUserID)
         }
     }
