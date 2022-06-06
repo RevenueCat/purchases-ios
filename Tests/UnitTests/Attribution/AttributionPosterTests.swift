@@ -57,7 +57,7 @@ class AttributionPosterTests: TestCase {
                                               attributionFetcher: attributionFetcher,
                                               subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
-        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+        backend.stubbedPostAdServicesTokenCompletionResult = Result.success(())
     }
 
     private func resetAttributionStaticProperties() {
@@ -94,7 +94,7 @@ class AttributionPosterTests: TestCase {
 
     func testPostAttributionDataDoesntSkipIfNetworkChanged() {
         let userID = "userID"
-        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+        backend.stubbedPostAdServicesTokenCompletionResult = Result.success(())
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
@@ -109,7 +109,7 @@ class AttributionPosterTests: TestCase {
     }
 
     func testPostAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
-        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+        backend.stubbedPostAdServicesTokenCompletionResult = Result.success(())
 
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
@@ -131,7 +131,7 @@ class AttributionPosterTests: TestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+        backend.stubbedPostAdServicesTokenCompletionResult = Result.success(())
 
         attributionPoster.postAdServicesTokenIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 1
@@ -150,7 +150,7 @@ class AttributionPosterTests: TestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        backend.stubbedPostAdServicesTokenCompletionResult = (nil, ())
+        backend.stubbedPostAdServicesTokenCompletionResult = Result.success(())
 
         attributionFetcher.adServicesTokenToReturn = nil
         attributionPoster.postAdServicesTokenIfNeeded()
@@ -168,7 +168,7 @@ class AttributionPosterTests: TestCase {
                            400)
         )
 
-        backend.stubbedPostAdServicesTokenCompletionResult = (stubbedError, ())
+        backend.stubbedPostAdServicesTokenCompletionResult = Result.failure(stubbedError)
 
         attributionFetcher.adServicesTokenToReturn = nil
         attributionPoster.postAdServicesTokenIfNeeded()
