@@ -228,7 +228,7 @@ platform :ios do
     # Ask for new version number
     new_version_number = UI.input("New version number: ")
 
-    generated_contents = github_changelog
+    generated_contents = github_changelog(options)
     changelog_path = edit_changelog(generated_contents: generated_contents)
     changelog = File.read(changelog_path)
     
