@@ -44,7 +44,14 @@ extension CodableStrings: CustomStringConvertible {
         case let .encoding_error(error):
             return "Couldn't encode data into json. Error:\n\(error.localizedDescription)"
         case let .decoding_error(error):
-            return "Couldn't decode data from json. Error:\n\(error.localizedDescription)"
+            let underlyingErrorMessage: String
+            if let underlyingError = (error as NSError).userInfo[NSUnderlyingErrorKey] as? NSError {
+                underlyingErrorMessage = "\nUnderlying error: \(underlyingError.debugDescription)"
+            } else {
+                underlyingErrorMessage = ""
+            }
+
+            return "Couldn't decode data from json.\nError: \(error.localizedDescription)." + underlyingErrorMessage
         case let .corrupted_data_error(context):
             return "Couldn't decode data from json, it was corrupted: \(context)"
         case let .typeMismatch(type, context):
