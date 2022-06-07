@@ -572,12 +572,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handleDeferredTransaction(_ transaction: SKPaymentTransaction) {
-        let userCancelled: Bool
-        if let error = transaction.error as NSError? {
-            userCancelled = error.code == SKError.paymentCancelled.rawValue
-        } else {
-            userCancelled = false
-        }
+        let userCancelled = transaction.error?.isCancelledError ?? false
 
         guard let completion = getAndRemovePurchaseCompletedCallback(forTransaction: transaction) else {
             return
@@ -841,7 +836,21 @@ private extension PurchasesOrchestrator {
 private extension Error {
 
     var isCancelledError: Bool {
-        return (self as? ErrorCode) == .purchaseCancelledError
+        switch self {
+        case let error as ErrorCode:
+            switch error {
+            case .purchaseCancelledError: return true
+            default: return false
+            }
+
+        case let error as NSError:
+            switch (error.domain, error.code) {
+            case (SKErrorDomain, SKError.paymentCancelled.rawValue): return true
+            default: return false
+            }
+
+        default: return false
+        }
     }
 
 }
