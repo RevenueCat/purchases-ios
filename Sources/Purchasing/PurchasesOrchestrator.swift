@@ -43,8 +43,8 @@ class PurchasesOrchestrator {
     @objc weak var delegate: PurchasesOrchestratorDelegate?
 
     private var _allowSharingAppStoreAccount: Bool?
-    private var presentedOfferingIDsByProductID: [String: String] = [:]
-    private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
+    private var presentedOfferingIDsByProductID: Atomic<[String: String]> = .init([:])
+    private var purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttributeDict {
@@ -64,7 +64,6 @@ class PurchasesOrchestrator {
     private let deviceCache: DeviceCache
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
-    private let lock = NSRecursiveLock()
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -317,40 +316,41 @@ class PurchasesOrchestrator {
         preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
 
         if let presentedOfferingIdentifier = package?.offeringIdentifier {
-            lock.lock()
-            presentedOfferingIDsByProductID[productIdentifier] = presentedOfferingIdentifier
-            lock.unlock()
+            self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = presentedOfferingIdentifier }
 
         }
 
         productsManager.cacheProduct(sk1Product)
 
-        lock.lock()
-        defer {
-            lock.unlock()
-        }
-
-        guard purchaseCompleteCallbacksByProductID[productIdentifier] == nil else {
-            completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
-            return
-        }
-        purchaseCompleteCallbacksByProductID[productIdentifier] = { transaction, customerInfo, error, cancelled in
-            if !cancelled {
-                if let error = error {
-                    Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
-                        productIdentifier: productIdentifier,
-                        error: error
-                    ))
-                } else {
-                    Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
-                        productIdentifier: productIdentifier
-                    ))
-                }
+        let addPayment: Bool = self.purchaseCompleteCallbacksByProductID.modify { callbacks in
+            guard callbacks[productIdentifier] == nil else {
+                completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
+                return false
             }
 
-            completion(transaction, customerInfo, error, cancelled)
+            callbacks[productIdentifier] = { transaction, customerInfo, error, cancelled in
+                if !cancelled {
+                    if let error = error {
+                        Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
+                            productIdentifier: productIdentifier,
+                            error: error
+                        ))
+                    } else {
+                        Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
+                            productIdentifier: productIdentifier
+                        ))
+                    }
+                }
+
+                completion(transaction, customerInfo, error, cancelled)
+            }
+
+            return true
         }
-        storeKitWrapper.add(payment)
+
+        if addPayment {
+            self.storeKitWrapper.add(payment)
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -509,12 +509,10 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         guard let delegate = delegate else { return false }
 
         let storeProduct = StoreProduct(sk1Product: product)
-        lock.lock()
         delegate.readyForPromotedProduct(storeProduct) { completion in
-            self.purchaseCompleteCallbacksByProductID[product.productIdentifier] = completion
+            self.purchaseCompleteCallbacksByProductID.modify { $0[product.productIdentifier] = completion }
             storeKitWrapper.add(payment)
         }
-        lock.unlock()
         return false
     }
 
@@ -627,10 +625,9 @@ private extension PurchasesOrchestrator {
             return nil
         }
 
-        lock.lock()
-        let completion = purchaseCompleteCallbacksByProductID.removeValue(forKey: productIdentifier)
-        lock.unlock()
-        return completion
+        return self.purchaseCompleteCallbacksByProductID.modify {
+            $0.removeValue(forKey: productIdentifier)
+        }
     }
 
     func fetchProductsAndPostReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data) {
@@ -661,10 +658,10 @@ private extension PurchasesOrchestrator {
             productData = receivedProductData
 
             let productID = receivedProductData.productIdentifier
-            let foundPresentedOfferingID = self.presentedOfferingIDsByProductID[productID]
+            let foundPresentedOfferingID = self.presentedOfferingIDsByProductID.value[productID]
             presentedOfferingID = foundPresentedOfferingID
 
-            presentedOfferingIDsByProductID.removeValue(forKey: productID)
+            self.presentedOfferingIDsByProductID.modify { $0.removeValue(forKey: productID) }
         }
         let unsyncedAttributes = self.unsyncedAttributes
 
