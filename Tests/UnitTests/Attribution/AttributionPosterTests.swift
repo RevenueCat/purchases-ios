@@ -125,7 +125,6 @@ class AttributionPosterTests: TestCase {
     }
 
 #if canImport(AdServices)
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() throws {
         guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
             throw XCTSkip("Required API is not available for this test.")
@@ -144,7 +143,6 @@ class AttributionPosterTests: TestCase {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testPostAdServicesTokenIfNeededSkipsIfNilToken() throws {
         guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
             throw XCTSkip("Required API is not available for this test.")
@@ -158,7 +156,6 @@ class AttributionPosterTests: TestCase {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testPostAdServicesTokenIfNeededDoesNotCacheOnAPIError() throws {
         guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
             throw XCTSkip("Required API is not available for this test.")
