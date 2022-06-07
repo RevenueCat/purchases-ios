@@ -1,5 +1,6 @@
-### Fixes
+_This version supports Xcode 14 beta 1_
 
-- Fix an issue where entitlement identifiers and product identifiers would get converted to snake case and returned as empty.
-    https://github.com/RevenueCat/purchases-ios/pull/1651
-    https://github.com/RevenueCat/purchases-ios/issues/1650
+* `PurchasesOrchestrator.handleDeferredTransaction`: check `NSError.domain` too (#1665) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: replaced manual `Lock` with `Atomic` (#1664) via NachoSoto (@NachoSoto)
+* `CodableStrings.decoding_error`: added underlying error information (#1668) via NachoSoto (@NachoSoto)
+* Fixed Xcode 14 compilation: avoid `@available` properties (#1661) via NachoSoto (@NachoSoto)
