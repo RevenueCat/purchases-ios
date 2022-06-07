@@ -574,12 +574,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             receivedUserCancelled = userCancelled
         }
 
-        expect(receivedInfo).toEventually(beNil())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(ErrorCode.operationAlreadyInProgressForProductError.rawValue))
-        expect(self.storeKitWrapper.addPaymentCallCount).to(equal(1))
-        expect(receivedUserCancelled).toEventually(beFalse())
+        expect(receivedInfo).to(beNil())
+        expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
+        expect(receivedError?.code) == ErrorCode.operationAlreadyInProgressForProductError.rawValue
+        expect(self.storeKitWrapper.addPaymentCallCount) == 1
+        expect(receivedUserCancelled) == false
     }
 
     func testTransitioningToPurchasing() {
