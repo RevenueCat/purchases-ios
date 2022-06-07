@@ -19,61 +19,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class AttributionPosterTests: TestCase {
-
-    var attributionFetcher: MockAttributionFetcher!
-    var attributionPoster: AttributionPoster!
-    var deviceCache: MockDeviceCache!
-    var currentUserProvider: MockCurrentUserProvider!
-    var backend: MockBackend!
-    var subscriberAttributesManager: MockSubscriberAttributesManager!
-    var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
-    // swiftlint:disable:next force_try
-    var systemInfo: MockSystemInfo! = try! MockSystemInfo(
-        platformInfo: .init(flavor: "iOS", version: "3.2.1"),
-        finishTransactions: true)
-
-    let userDefaultsSuiteName = "testUserDefaults"
-
-    override func setUp() {
-        super.setUp()
-
-        let userID = "userID"
-        deviceCache = MockDeviceCache(systemInfo: MockSystemInfo(finishTransactions: false),
-                                      userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
-        deviceCache.cache(appUserID: userID)
-        backend = MockBackend()
-        attributionFetcher = MockAttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
-        subscriberAttributesManager = MockSubscriberAttributesManager(
-            backend: self.backend,
-            deviceCache: self.deviceCache,
-            operationDispatcher: MockOperationDispatcher(),
-            attributionFetcher: self.attributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator())
-        currentUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
-        attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                              currentUserProvider: currentUserProvider,
-                                              backend: backend,
-                                              attributionFetcher: attributionFetcher,
-                                              subscriberAttributesManager: subscriberAttributesManager)
-        resetAttributionStaticProperties()
-        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
-    }
-
-    private func resetAttributionStaticProperties() {
-        if #available(iOS 14, macOS 11, tvOS 14, *) {
-            MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
-        }
-
-        MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
-    }
-
-    override func tearDown() {
-        super.tearDown()
-        UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
-        UserDefaults.standard.synchronize()
-        resetAttributionStaticProperties()
-    }
+class AttributionPosterTests: BaseAttributionPosterTests {
 
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
@@ -123,55 +69,5 @@ class AttributionPosterTests: TestCase {
         expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
-
-#if canImport(AdServices)
-    func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() throws {
-        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
-        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
-
-        attributionPoster.postAdServicesTokenIfNeeded()
-        expect(self.backend.invokedPostAdServicesTokenCount) == 1
-        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
-        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
-
-        attributionPoster.postAdServicesTokenIfNeeded()
-        expect(self.backend.invokedPostAdServicesTokenCount) == 1
-        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
-        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
-    }
-
-    func testPostAdServicesTokenIfNeededSkipsIfNilToken() throws {
-        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
-        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
-
-        attributionFetcher.adServicesTokenToReturn = nil
-        attributionPoster.postAdServicesTokenIfNeeded()
-        expect(self.backend.invokedPostAdServicesTokenCount) == 0
-        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
-    }
-
-    func testPostAdServicesTokenIfNeededDoesNotCacheOnAPIError() throws {
-        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-        let stubbedError: BackendError = .networkError(
-            .errorResponse(.init(code: .invalidAPIKey, message: nil),
-                           400)
-        )
-
-        backend.stubbedPostAdServicesTokenCompletionResult = .failure(stubbedError)
-
-        attributionFetcher.adServicesTokenToReturn = nil
-        attributionPoster.postAdServicesTokenIfNeeded()
-        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 0
-    }
-
-#endif
 
 }
