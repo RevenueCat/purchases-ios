@@ -40,7 +40,7 @@ protocol DefaultValueProvider {
 // MARK: - DefaultValue
 
 /// A property wrapper for providing a default value to properties that conform to `DefaultValueProvider`.
-/// - Important: the value will also because `E.defaultValue` if there is a decoding error.
+/// This is similar to `@IgnoreDecodeErrors` but it will not ignore decoding errors.
 /// - Example:
 /// ```
 /// struct Data {
@@ -74,6 +74,12 @@ extension DefaultValue: Encodable where Value: Encodable {
         var container = encoder.singleValueContainer()
         try container.encode(self.wrappedValue)
     }
+
+}
+
+extension Optional: DefaultValueProvider {
+
+    static var defaultValue: Wrapped? { return .none }
 
 }
 
@@ -118,17 +124,20 @@ extension KeyedEncodingContainer {
 
 // MARK: - IgnoreDecodeErrors
 
-/// A property wrapper that allows ignoring decoding errors for `Optional` properties
+/// A property wrapper that allows ignoring decoding errors for `DefaultValueProvider` properties (like `Optional`)
+/// This is similar to `@DefaultValue` but it will also decode as `Source.defaultValue` if there are any errors
 /// - Example:
 /// ```
 /// struct Data {
-///     @IgnoreDecodingErrors var url: URL?
+///     @IgnoreDecodingErrors<URL?> var url: URL? // becomes `nil` if url is invalid
 /// }
 /// ```
 @propertyWrapper
-struct IgnoreDecodeErrors<Value> {
+struct IgnoreDecodeErrors<Source: DefaultValueProvider> {
 
-    var wrappedValue: Value? = .none
+    typealias Value = Source.Value
+
+    var wrappedValue: Value = Source.defaultValue
 
 }
 
@@ -155,7 +164,10 @@ extension IgnoreDecodeErrors: Encodable where Value: Encodable {
 
 extension KeyedDecodingContainer {
 
-    func decode<T>(_ type: IgnoreDecodeErrors<T>.Type, forKey key: Key) -> IgnoreDecodeErrors<T> where T: Decodable {
+    func decode<T>(
+        _ type: IgnoreDecodeErrors<T>.Type,
+        forKey key: Key
+    ) -> IgnoreDecodeErrors<T> where T.Value: Decodable {
         do {
             return try self.decodeIfPresent(type, forKey: key) ?? .init()
         } catch {
@@ -171,12 +183,8 @@ extension KeyedDecodingContainer {
 
 extension KeyedDecodingContainer {
 
-    func decode<T>(_ type: DefaultValue<T>.Type, forKey key: Key) -> DefaultValue<T> where T.Value: Decodable {
-        do {
-            return try self.decodeIfPresent(type, forKey: key) ?? .init()
-        } catch {
-            return .init()
-        }
+    func decode<T>(_ type: DefaultValue<T>.Type, forKey key: Key) throws -> DefaultValue<T> where T.Value: Decodable {
+        return try self.decodeIfPresent(type, forKey: key) ?? .init()
     }
 
 }

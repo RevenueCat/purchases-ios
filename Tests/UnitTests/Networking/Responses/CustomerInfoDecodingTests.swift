@@ -142,3 +142,14 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     }
 
 }
+
+class CustomerInfoInvalidDataDecodingTests: BaseHTTPResponseTest {
+
+    func testDecodingCustomerInfoWithInvalidSubscriptionFailsToDecode() throws {
+        expect {
+            let _: CustomerInfo = try self.decodeFixture("CustomerInfoWithInvalidSubscription")
+        }
+        .to(throwError(ErrorCode.customerInfoError))
+    }
+
+}

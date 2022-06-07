@@ -224,7 +224,7 @@ private extension BackendLoginTests {
     static let mockCustomerInfoData: [String: Any] = [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
-            "subscriptions": [],
+            "subscriptions": [:],
             "first_seen": "2019-07-17T00:05:54Z",
             "original_app_user_id": "",
             "other_purchases": [:]
