@@ -361,11 +361,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await orchestrator.transactionsUpdated()
+        try await self.orchestrator.transactionsUpdated()
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beFalse())
-        expect(customerInfo) == mockCustomerInfo
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -378,11 +377,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
 
-        let customerInfo = try await orchestrator.transactionsUpdated()
+        try await self.orchestrator.transactionsUpdated()
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beTrue())
-        expect(customerInfo) == mockCustomerInfo
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
