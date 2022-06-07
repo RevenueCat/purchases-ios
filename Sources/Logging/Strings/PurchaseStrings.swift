@@ -61,6 +61,7 @@ enum PurchaseStrings {
     case cached_app_user_id_deleted
     case check_eligibility_no_identifiers
     case check_eligibility_failed(productIdentifier: String, error: Error)
+    case missing_cached_customer_info
 
 }
 
@@ -229,6 +230,9 @@ extension PurchaseStrings: CustomStringConvertible {
         case let .check_eligibility_failed(productIdentifier, error):
             return "Error checking discount eligibility for product '\(productIdentifier)': \(error).\n" +
             "Will be considered not eligible."
+
+        case .missing_cached_customer_info:
+            return "Requested a cached CustomerInfo but it's not available."
         }
     }
 

@@ -17,7 +17,7 @@ import Foundation
 class ReceiptFetcher {
 
     private let requestFetcher: StoreKitRequestFetcher
-    private let systemInfo: SystemInfo
+    let systemInfo: SystemInfo
 
     init(requestFetcher: StoreKitRequestFetcher, systemInfo: SystemInfo) {
         self.requestFetcher = requestFetcher
@@ -53,33 +53,29 @@ class ReceiptFetcher {
 
 }
 
-private extension ReceiptFetcher {
+extension ReceiptFetcher {
 
-    func receiptData() -> Data? {
-        guard var receiptURL: URL = systemInfo.bundle.appStoreReceiptURL else {
+    var receiptURL: URL? {
+        guard var receiptURL = self.systemInfo.bundle.appStoreReceiptURL else {
             Logger.debug(Strings.receipt.no_sandbox_receipt_restore)
             return nil
         }
 
         #if os(watchOS)
-        // as of watchOS 6.2.8, there's a bug where the receipt is stored in the sandbox receipt location,
-        // but the appStoreReceiptURL method returns the URL for the production receipt.
-        // This code replaces "sandboxReceipt" with "receipt" as the last component of the receiptURL so that we get the
-        // correct receipt.
-        // This has been filed as radar FB7699277. More info in https://github.com/RevenueCat/purchases-ios/issues/207.
-
-        let firstOSVersionWithoutBug: OperatingSystemVersion = OperatingSystemVersion(majorVersion: 7,
-                                                                                      minorVersion: 0,
-                                                                                      patchVersion: 0)
-        let isBelowFirstOSVersionWithoutBug =
-            !ProcessInfo.processInfo.isOperatingSystemAtLeast(firstOSVersionWithoutBug)
-
-        if isBelowFirstOSVersionWithoutBug && systemInfo.isSandbox {
-            let receiptURLFolder: URL = receiptURL.deletingLastPathComponent()
-            let productionReceiptURL: URL = receiptURLFolder.appendingPathComponent("receipt")
-            receiptURL = productionReceiptURL
-        }
+        return self.watchOSReceiptURL(receiptURL)
+        #else
+        return receiptURL
         #endif
+    }
+
+}
+
+private extension ReceiptFetcher {
+
+    func receiptData() -> Data? {
+        guard let receiptURL = self.receiptURL else {
+            return nil
+        }
 
         guard let data: Data = try? Data(contentsOf: receiptURL) else {
             Logger.debug(Strings.receipt.unable_to_load_receipt)

@@ -25,12 +25,45 @@ class MockSystemInfo: SystemInfo {
     }
 
     var stubbedIsOperatingSystemAtLeastVersion: Bool?
-    override public func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
-        return stubbedIsOperatingSystemAtLeastVersion ?? true
+    var stubbedCurrentOperatingSystemVersion: OperatingSystemVersion?
+    override public func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
+        if let stubbedIsOperatingSystemAtLeastVersion = self.stubbedIsOperatingSystemAtLeastVersion {
+            return stubbedIsOperatingSystemAtLeastVersion
+        }
+
+        if let currentVersion = self.stubbedCurrentOperatingSystemVersion {
+            return currentVersion >= version
+        }
+
+        return true
     }
 
     override var isSandbox: Bool {
         return stubbedIsSandbox ?? super.isSandbox
+    }
+
+}
+
+extension OperatingSystemVersion: Comparable {
+
+    public static func < (lhs: OperatingSystemVersion, rhs: OperatingSystemVersion) -> Bool {
+        if lhs.majorVersion == rhs.majorVersion {
+            if lhs.minorVersion == rhs.minorVersion {
+                return lhs.patchVersion < rhs.patchVersion
+            } else {
+                return lhs.minorVersion < rhs.minorVersion
+            }
+        } else {
+            return lhs.majorVersion < rhs.majorVersion
+        }
+    }
+
+    public static func == (lhs: OperatingSystemVersion, rhs: OperatingSystemVersion) -> Bool {
+        return (
+            lhs.majorVersion == rhs.majorVersion &&
+            lhs.minorVersion == rhs.minorVersion &&
+            lhs.patchVersion == rhs.patchVersion
+        )
     }
 
 }

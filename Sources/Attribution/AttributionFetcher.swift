@@ -162,7 +162,7 @@ private extension AttributionFetcher {
         let minimumOSVersionRequiringAuthorization = OperatingSystemVersion(majorVersion: 14,
                                                                             minorVersion: 5,
                                                                             patchVersion: 0)
-        return systemInfo.isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
+        return systemInfo.isOperatingSystemAtLeast(minimumOSVersionRequiringAuthorization)
     }
 
     private func callAuthStatusSelector(

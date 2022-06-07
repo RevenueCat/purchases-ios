@@ -47,7 +47,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "4.5.0-SNAPSHOT"
+        return "4.6.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -122,7 +122,7 @@ class SystemInfo {
         }
     }
 
-    func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
+    func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 
