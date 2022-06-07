@@ -89,7 +89,10 @@ func checkProductType(_ type: StoreProduct.ProductType) {
 }
 
 func checkStoreProductAsyncAPI() async {
-    // Deprecated
-    let _: [PromotionalOffer] = await product.getEligiblePromotionalOffers()
     let _: [PromotionalOffer] = await product.eligiblePromotionalOffers()
+}
+
+@available(*, deprecated) // Ignore deprecation warnings
+func checkDeprecatedAsyncAPI() async {
+    let _: [PromotionalOffer] = await product.getEligiblePromotionalOffers()
 }

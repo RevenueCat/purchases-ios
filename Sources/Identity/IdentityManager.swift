@@ -81,7 +81,8 @@ class IdentityManager: CurrentUserProvider {
 
         guard newAppUserID != currentAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
-            customerInfoManager.customerInfo(appUserID: currentAppUserID) { result in
+            self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
+                                                  fetchPolicy: .cachedOrFetched) { result in
                 completion(
                     result.map { (info: $0, created: false) }
                 )

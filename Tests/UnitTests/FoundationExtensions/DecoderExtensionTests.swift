@@ -260,14 +260,36 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
     }
 
     func testDecodesEmptyArrayForIncorrectType() throws {
-        let json = "{\"list\": \"this is not an array\"}"
+        let json = "{\"array\": \"this is not an array\"}"
         let data = try Data.decode(json)
 
         expect(data.array) == []
     }
 
     func testDecodesEmptyDictionaryForIncorrectType() throws {
-        let json = "{\"map\": \"this is not a dictionary\"}"
+        let json = "{\"dictionary\": \"this is not a dictionary\"}"
+        let data = try Data.decode(json)
+
+        expect(data.dictionary) == [:]
+    }
+
+    func testDecodesEmptyDictionaryIfPartiallyFailsToDecodeData() throws {
+        struct Content: Codable, Equatable {
+            let string: String
+        }
+
+        struct Data: Codable, Equatable {
+            @DefaultDecodable.EmptyDictionary var dictionary: [String: Content]
+        }
+
+        let json = """
+        {
+            "dictionary": {
+                "1\": { "invalid_key": false },
+                "2\": { "string": "value" }
+            }
+        }
+        """
         let data = try Data.decode(json)
 
         expect(data.dictionary) == [:]

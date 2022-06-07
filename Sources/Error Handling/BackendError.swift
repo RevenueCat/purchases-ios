@@ -23,6 +23,7 @@ enum BackendError: Error, Equatable {
     case emptySubscriberAttributes(Source)
     case missingReceiptFile(Source)
     case missingTransactionProductIdentifier(Source)
+    case missingCachedCustomerInfo(Source)
     case unexpectedBackendResponse(UnexpectedBackendResponseError, extraContext: String?, Source)
 
 }
@@ -51,6 +52,12 @@ extension BackendError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .missingReceiptFile(.init(file: file, function: function, line: line))
+    }
+
+    static func missingCachedCustomerInfo(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .missingCachedCustomerInfo(.init(file: file, function: function, line: line))
     }
 
     static func unexpectedBackendResponse(
@@ -93,6 +100,12 @@ extension BackendError: ErrorCodeConvertible {
                 line: source.line
             )
 
+        case let .missingCachedCustomerInfo(source):
+            return ErrorUtils.customerInfoError(withMessage: Strings.purchase.missing_cached_customer_info.description,
+                                                fileName: source.file,
+                                                functionName: source.function,
+                                                line: source.line)
+
         case let .unexpectedBackendResponse(error, extraContext, source):
             return ErrorUtils.unexpectedBackendResponse(withSubError: error,
                                                         extraContext: extraContext,
@@ -128,6 +141,7 @@ extension BackendError {
              .emptySubscriberAttributes,
              .missingReceiptFile,
              .missingTransactionProductIdentifier,
+             .missingCachedCustomerInfo,
              .unexpectedBackendResponse:
             return nil
         }

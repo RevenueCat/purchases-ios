@@ -61,23 +61,27 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Purchases.shared) === purchases
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithAppUserID() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "")
         expect(Purchases.shared) === purchases
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithObserverMode() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == false
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false, userDefaults: nil)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == true
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaultsAndUseSK2() {
         let purchases = Purchases.configure(withAPIKey: "",
                                             appUserID: "",
@@ -156,6 +160,48 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.setupPurchases()
 
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+    }
+
+    func testProxyURL() {
+        expect(SystemInfo.proxyURL).to(beNil())
+        let defaultHostURL = URL(string: "https://api.revenuecat.com")
+        expect(SystemInfo.serverHostURL) == defaultHostURL
+
+        let testURL = URL(string: "https://test_url")
+        Purchases.proxyURL = testURL
+
+        expect(SystemInfo.serverHostURL) == testURL
+
+        Purchases.proxyURL = nil
+
+        expect(SystemInfo.serverHostURL) == defaultHostURL
+    }
+
+    @available(*, deprecated) // Ignore deprecation warnings
+    func testSetDebugLogsEnabledSetsTheCorrectValue() {
+        Logger.logLevel = .warn
+
+        Purchases.debugLogsEnabled = true
+        expect(Logger.logLevel) == .debug
+
+        Purchases.debugLogsEnabled = false
+        expect(Logger.logLevel) == .info
+    }
+
+    func testIsAnonymous() {
+        setupAnonPurchases()
+        expect(self.purchases.isAnonymous).to(beTrue())
+    }
+
+    func testIsNotAnonymous() {
+        setupPurchases()
+        expect(self.purchases.isAnonymous).to(beFalse())
+    }
+
+    func testSetsSelfAsStoreKitWrapperDelegate() {
+        self.setupPurchases()
+
+        expect(self.storeKitWrapper.delegate) === self.purchasesOrchestrator
     }
 
 }
