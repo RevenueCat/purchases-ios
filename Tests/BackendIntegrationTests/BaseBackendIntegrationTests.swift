@@ -53,7 +53,8 @@ class BaseBackendIntegrationTests: XCTestCase {
             Purchases.proxyURL = URL(string: Constants.proxyURL)
         }
 
-        configurePurchases()
+        self.clearReceiptIfExists()
+        self.configurePurchases()
     }
 
     override func tearDown() {
@@ -65,6 +66,18 @@ class BaseBackendIntegrationTests: XCTestCase {
 }
 
 private extension BaseBackendIntegrationTests {
+
+    func clearReceiptIfExists() {
+        let manager = FileManager.default
+
+        guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.absoluteString) else { return }
+
+        do {
+            try manager.removeItem(at: url)
+        } catch {
+            Logger.appleWarning("Error attempting to remove receipt URL '\(url)': \(error)")
+        }
+    }
 
     func configurePurchases() {
         purchasesDelegate = TestPurchaseDelegate()
