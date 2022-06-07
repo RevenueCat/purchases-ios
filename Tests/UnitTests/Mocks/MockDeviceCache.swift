@@ -224,15 +224,22 @@ class MockDeviceCache: DeviceCache {
 
     var invokedSetLatestNetworkAndAdvertisingIdsSent = false
     var invokedSetLatestNetworkAndAdvertisingIdsSentCount = 0
-    var invokedSetLatestNetworkAndAdvertisingIdsSentParameters: (appUserID: String?, Void)?
-    var invokedSetLatestNetworkAndAdvertisingIdsSentParametersList = [(appUserID: String?, Void)]()
+    var invokedSetLatestNetworkAndAdvertisingIdsSentParameters:
+        (adIdsByNetwork: [AttributionNetwork: String], appUserID: String?)?
+    var invokedSetLatestNetworkAndAdvertisingIdsSentParametersList =
+        [(adIdsByNetwork: [AttributionNetwork: String], appUserID: String?)?]()
 
     override func set(latestAdvertisingIdsByNetworkSent: [AttributionNetwork: String], appUserID: String) {
         invokedSetLatestNetworkAndAdvertisingIdsSent = true
         invokedSetLatestNetworkAndAdvertisingIdsSentCount += 1
-        invokedSetLatestNetworkAndAdvertisingIdsSentParameters = (appUserID, ())
-        invokedSetLatestNetworkAndAdvertisingIdsSentParametersList.append((appUserID, ()))
-        super.set(latestAdvertisingIdsByNetworkSent: latestAdvertisingIdsByNetworkSent, appUserID: appUserID)
+        invokedSetLatestNetworkAndAdvertisingIdsSentParameters = (latestAdvertisingIdsByNetworkSent, appUserID)
+        invokedSetLatestNetworkAndAdvertisingIdsSentParametersList.append(
+            (latestAdvertisingIdsByNetworkSent, appUserID)
+        )
+    }
+
+    override func latestAdvertisingIdsByNetworkSent(appUserID: String) -> [AttributionNetwork: String] {
+        return invokedSetLatestNetworkAndAdvertisingIdsSentParameters?.adIdsByNetwork ?? [:]
     }
 
 }
