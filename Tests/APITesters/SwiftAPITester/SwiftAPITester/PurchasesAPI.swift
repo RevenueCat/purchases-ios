@@ -79,13 +79,6 @@ private func checkStaticMethods() {
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
 
-    // both should have deprecation warning
-    Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
-    Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
-
-    // should have deprecation warning 'automaticAppleSearchAdsAttributionCollection' is deprecated: Use
-    // Purchases.automaticAdServicesAttributionTokenCollection instead
-    let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
     let logLevel: LogLevel = Purchases.logLevel
     let proxyUrl: URL? = Purchases.proxyURL
     let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
@@ -94,9 +87,8 @@ private func checkStaticMethods() {
     let isPurchasesConfigured: Bool = Purchases.isConfigured
     let automaticAdServicesAttributionTokenCollection: Bool = Purchases.automaticAdServicesAttributionTokenCollection
 
-    print(canI, version, automaticAppleSearchAdsAttributionCollection, logLevel, proxyUrl!,
-          forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isPurchasesConfigured,
-          automaticAdServicesAttributionTokenCollection)
+    print(canI, version, logLevel, proxyUrl!, forceUniversalAppStore, simulatesAskToBuyInSandbox,
+          sharedPurchases, isPurchasesConfigured, automaticAdServicesAttributionTokenCollection)
 }
 
 private func checkTypealiases(
@@ -271,6 +263,7 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
 
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
+    let _: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
 
