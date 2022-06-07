@@ -65,7 +65,10 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     func testSubscriptions() throws {
         let subscriber = self.customerInfo.subscriber
 
-        expect(Set(subscriber.subscriptions.keys)) == [Self.subscriptionID]
+        expect(Set(subscriber.subscriptions.keys)) == [
+            Self.subscriptionID,
+            "com.revenuecat.ABCDNA12U.ProductName"
+        ]
         let subscription = try XCTUnwrap(subscriber.subscriptions[Self.subscriptionID])
 
         expect(subscription.billingIssuesDetectedAt).to(beNil())
