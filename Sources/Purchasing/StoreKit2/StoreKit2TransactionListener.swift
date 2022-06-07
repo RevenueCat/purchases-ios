@@ -41,8 +41,7 @@ class StoreKit2TransactionListener {
                 guard let self = self else { break }
 
                 do {
-                    _ = try await self.handle(transactionResult: result,
-                                              notifyDelegate: true)
+                    _ = try await self.handle(transactionResult: result, notifyDelegate: true)
                 } catch {
                     Logger.error(error.localizedDescription)
                 }
@@ -62,8 +61,8 @@ class StoreKit2TransactionListener {
     ) async throws -> ResultData {
         switch purchaseResult {
         case let .success(verificationResult):
-            let transaction = try await self.handle(transactionResult: verificationResult,
-                                                    notifyDelegate: false)
+            // No need to notify delegate since this method returns the transaction already.
+            let transaction = try await self.handle(transactionResult: verificationResult, notifyDelegate: false)
 
             return (false, transaction)
         case .pending:
