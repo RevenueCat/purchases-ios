@@ -227,7 +227,7 @@ class MockDeviceCache: DeviceCache {
     var invokedSetLatestNetworkAndAdvertisingIdsSentParameters:
         (adIdsByNetwork: [AttributionNetwork: String], appUserID: String?)?
     var invokedSetLatestNetworkAndAdvertisingIdsSentParametersList =
-        [(adIdsByNetwork: [AttributionNetwork: String], appUserID: String?)?]()
+        [(adIdsByNetwork: [AttributionNetwork: String], appUserID: String?)]()
 
     override func set(latestAdvertisingIdsByNetworkSent: [AttributionNetwork: String], appUserID: String) {
         invokedSetLatestNetworkAndAdvertisingIdsSent = true

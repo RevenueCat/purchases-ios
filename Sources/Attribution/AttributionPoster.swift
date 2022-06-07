@@ -139,9 +139,7 @@ class AttributionPoster {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
 
         // set the cache in advance to avoid multiple post calls
-        let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
-            self.deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
-        var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
+        var newDictToCache = self.deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
         newDictToCache[AttributionNetwork.adServices] = adServicesToken
         self.deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: currentAppUserID)
 
