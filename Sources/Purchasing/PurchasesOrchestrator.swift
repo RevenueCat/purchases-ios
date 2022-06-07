@@ -493,7 +493,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         switch transaction.transactionState {
         case .restored, // for observer mode
              .purchased:
-            self.handlePurchasedTransaction(storeTransaction)
+            self.handlePurchasedTransaction(storeTransaction, storefront: storeKitWrapper.currentStorefront)
         case .purchasing:
             break
         case .failed:
@@ -549,11 +549,14 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 // MARK: Transaction state updates.
 private extension PurchasesOrchestrator {
 
-    func handlePurchasedTransaction(_ transaction: StoreTransaction) {
+    func handlePurchasedTransaction(_ transaction: StoreTransaction,
+                                    storefront: StorefrontType?) {
         self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData in
             if let receiptData = receiptData,
                !receiptData.isEmpty {
-                self.fetchProductsAndPostReceipt(withTransaction: transaction, receiptData: receiptData)
+                self.fetchProductsAndPostReceipt(withTransaction: transaction,
+                                                 receiptData: receiptData,
+                                                 storefront: storefront)
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
                                        result: .failure(.missingReceiptFile()),
@@ -647,10 +650,13 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func fetchProductsAndPostReceipt(withTransaction transaction: StoreTransaction, receiptData: Data) {
+    func fetchProductsAndPostReceipt(
+        withTransaction transaction: StoreTransaction,
+        receiptData: Data,
+        storefront: StorefrontType?
+    ) {
         if let productIdentifier = transaction.productIdentifier.notEmpty {
             self.products(withIdentifiers: [productIdentifier]) { products in
-                let storefront = self.storeKitWrapper.currentStorefront
                 self.postReceipt(withTransaction: transaction,
                                  receiptData: receiptData,
                                  products: Set(products),
@@ -882,6 +888,8 @@ private extension Error {
 extension PurchasesOrchestrator {
 
     private func handlePurchasedTransaction(_ transaction: StoreTransaction) async throws -> CustomerInfo {
+        let storefront = await Storefront.currentStorefront
+
         return try await withCheckedThrowingContinuation { continuation in
             self.addPurchaseCompletedCallback(
                 productIdentifier: transaction.productIdentifier,
@@ -890,7 +898,7 @@ extension PurchasesOrchestrator {
                 }
             )
 
-            self.handlePurchasedTransaction(transaction)
+            self.handlePurchasedTransaction(transaction, storefront: storefront)
         }
     }
 
