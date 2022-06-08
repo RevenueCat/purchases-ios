@@ -46,3 +46,6 @@ For more detailed information, you can view our complete documentation at [docs.
 Or browse our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
+
+## Contributing
+Contributions are always welcome! To learn how you can contribute, please see the [Contributing Guide](./Contributing/CONTRIBUTING.md).
