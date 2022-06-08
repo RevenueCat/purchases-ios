@@ -59,6 +59,9 @@ $fastlane setup_dev
 
 This installs [Homebrew](https://brew.sh/), and then [SwiftLint](https://github.com/realm/SwiftLint). After, it links in our pre-commit hook to run swiftlint. That saves you time so you don't have to wait for our CI to do it ⏱.
 
+#### 4. Check out the Style Guide.
+The [Swift Style Guide](./SwiftStyleGuide.swift) illustrates the code style used across the project!
+
 #### 5. Build something!
 
 Use our [Swift Style Guide](./SwiftStyleGuide.swift) to ensure that the style is consistent with the rest of the codebase. This is pretty subjective, so don't get too stressed about it. If there's any issue, we'll suggest a change.
