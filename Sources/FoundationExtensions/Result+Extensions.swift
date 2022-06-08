@@ -15,10 +15,10 @@ extension Result {
 
     /// Creates a `Result` from either a value or an error.
     /// This is useful for converting from old Objective-C closures to new APIs.
-    init( _ value: Success?, _ error: Failure?, file: StaticString = #fileID, line: UInt = #line) {
+    init( _ value: Success?, _ error: @autoclosure () -> Failure?, file: StaticString = #fileID, line: UInt = #line) {
         if let value = value {
             self = .success(value)
-        } else if let error = error {
+        } else if let error = error() {
             self = .failure(error)
         } else {
             fatalError("Unexpected nil value and nil error", file: file, line: line)
