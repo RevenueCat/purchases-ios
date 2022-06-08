@@ -59,10 +59,10 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     override func tearDown() {
-        super.tearDown()
         UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
         UserDefaults.standard.synchronize()
         resetAttributionStaticProperties()
+        super.tearDown()
     }
 
     private func resetAttributionStaticProperties() {
