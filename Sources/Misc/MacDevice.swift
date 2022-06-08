@@ -50,7 +50,9 @@ enum MacDevice {
 
     #if canImport(IOKit)
     static private func getIOService(named name: String, wantBuiltIn: Bool) -> io_service_t? {
-        let defaultPort = kIOMasterPortDefault
+        // 0 is `kIOMasterPortDefault` / `kIOMainPortDefault`, but the first is deprecated
+        // And the second isn't available in Catalyst on Xcode 14.
+        let defaultPort: mach_port_t = 0
         var iterator = io_iterator_t()
         defer {
             if iterator != IO_OBJECT_NULL {
