@@ -1,6 +1,16 @@
-_This version supports Xcode 14 beta 1_
+_This release is compatible with Xcode 14 beta 1_
 
-* `PurchasesOrchestrator.handleDeferredTransaction`: check `NSError.domain` too (#1665) via NachoSoto (@NachoSoto)
-* `PurchasesOrchestrator`: replaced manual `Lock` with `Atomic` (#1664) via NachoSoto (@NachoSoto)
-* `CodableStrings.decoding_error`: added underlying error information (#1668) via NachoSoto (@NachoSoto)
-* Fixed Xcode 14 compilation: avoid `@available` properties (#1661) via NachoSoto (@NachoSoto)
+### New Features
+
+* `EntitlementInfos`: added `activeInAnyEnvironment` and `activeInCurrentEnvironment` (#1647) via NachoSoto (@NachoSoto)
+
+In addition to `EntitlementInfos.active`, two new methods are added to allow detecting entitlements from sandbox and production environments:
+```swift
+customerInfo.entitlements.activeInCurrentEnvironment
+customerInfo.entitlements.activeInAnyEnvironment
+```
+
+### Bug fixes
+
+* `MacDevice`: changed usage of `kIOMasterPortDefault` to fix Catalyst compilation on Xcode 14 (#1676) via NachoSoto (@NachoSoto)
+* `Result.init(value:error:)`: avoid creating error if value is provided (#1672) via NachoSoto (@NachoSoto)
