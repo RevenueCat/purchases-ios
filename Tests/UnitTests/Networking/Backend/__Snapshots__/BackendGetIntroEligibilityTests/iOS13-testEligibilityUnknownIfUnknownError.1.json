@@ -12,6 +12,6 @@
       ]
     },
     "method" : "POST",
-    "url" : "https:\/\/api.revenuecat.com\/v1\/subscribers\/user\/intro_eligibility"
+    "url" : "https://api.revenuecat.com/v1/subscribers/user/intro_eligibility"
   }
 }
