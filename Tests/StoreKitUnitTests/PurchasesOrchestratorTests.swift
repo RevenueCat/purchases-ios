@@ -160,6 +160,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         }
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
     }
 
     func testPurchaseSK1PromotionalOffer() async throws {
@@ -225,6 +226,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         }
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -295,6 +297,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -335,7 +338,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPurchaseSK2PackageRetrunsCustomerInfoForFailedTransaction() async throws {
+    func testPurchaseSK2PackageReturnsCustomerInfoForFailedTransaction() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
@@ -426,6 +429,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostOfferCount) == 1
         expect(self.backend.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
+        expect(self.backend.invokedPostOfferParameters?.data).toNot(beNil())
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
