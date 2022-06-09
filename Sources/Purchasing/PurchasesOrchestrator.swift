@@ -312,23 +312,19 @@ class PurchasesOrchestrator {
             Logger.warn(Strings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning)
         }
 
-        payment.applicationUsername = appUserID
-        preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
+        payment.applicationUsername = self.appUserID
+        self.preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: self.appUserID)
 
         if let presentedOfferingIdentifier = package?.offeringIdentifier {
             self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = presentedOfferingIdentifier }
 
         }
 
-        productsManager.cacheProduct(sk1Product)
+        self.productsManager.cacheProduct(sk1Product)
 
-        let addPayment: Bool = self.purchaseCompleteCallbacksByProductID.modify { callbacks in
-            guard callbacks[productIdentifier] == nil else {
-                completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
-                return false
-            }
-
-            callbacks[productIdentifier] = { transaction, customerInfo, error, cancelled in
+        let addPayment: Bool = self.addPurchaseCompletedCallback(
+            productIdentifier: productIdentifier,
+            completion: { transaction, customerInfo, error, cancelled in
                 if !cancelled {
                     if let error = error {
                         Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
@@ -344,9 +340,7 @@ class PurchasesOrchestrator {
 
                 completion(transaction, customerInfo, error, cancelled)
             }
-
-            return true
-        }
+        )
 
         if addPayment {
             self.storeKitWrapper.add(payment)
@@ -403,19 +397,30 @@ class PurchasesOrchestrator {
         } catch StoreKitError.userCancelled {
             return (
                 transaction: nil,
-                customerInfo: try await self.syncPurchases(receiptRefreshPolicy: .always, isRestore: false),
+                customerInfo: try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                              fetchPolicy: .cachedOrFetched),
                 userCancelled: true
             )
         } catch {
             throw ErrorUtils.purchasesError(withStoreKitError: error)
         }
 
-        let (userCancelled, customerInfoIfSynced, sk2Transaction) = try await self.storeKit2TransactionListener
+        // `userCancelled` above comes from `StoreKitError.userCancelled`.
+        // This detects if `Product.PurchaseResult.userCancelled` is true.
+        let (userCancelled, sk2Transaction) = try await self.storeKit2TransactionListener
             .handle(purchaseResult: result)
         let transaction = sk2Transaction.map(StoreTransaction.init(sk2Transaction:))
+        let customerInfo: CustomerInfo
 
-        let customerInfo = try await customerInfoIfSynced
-        ??? (await self.syncPurchases(receiptRefreshPolicy: .always, isRestore: false))
+        if let transaction = transaction {
+            customerInfo = try await self.handlePurchasedTransaction(transaction,
+                                                                     refreshPolicy: .always)
+        } else {
+            // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
+            // `Product.PurchaseResult.userCancelled`.
+            customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                           fetchPolicy: .cachedOrFetched)
+        }
 
         return (transaction, customerInfo, userCancelled)
     }
@@ -482,16 +487,18 @@ class PurchasesOrchestrator {
 extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, updatedTransaction transaction: SKPaymentTransaction) {
+        let storeTransaction = StoreTransaction(sk1Transaction: transaction)
+
         switch transaction.transactionState {
         case .restored, // for observer mode
              .purchased:
-            handlePurchasedTransaction(transaction)
+            self.handlePurchasedTransaction(storeTransaction, storefront: storeKitWrapper.currentStorefront)
         case .purchasing:
             break
         case .failed:
-            handleFailedTransaction(transaction)
+            self.handleFailedTransaction(transaction)
         case .deferred:
-            handleDeferredTransaction(transaction)
+            self.handleDeferredTransaction(transaction)
         @unknown default:
             Logger.warn("unhandled transaction state!")
         }
@@ -541,11 +548,15 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 // MARK: Transaction state updates.
 private extension PurchasesOrchestrator {
 
-    func handlePurchasedTransaction(_ transaction: SKPaymentTransaction) {
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData in
+    func handlePurchasedTransaction(_ transaction: StoreTransaction,
+                                    refreshPolicy: ReceiptRefreshPolicy = .onlyIfEmpty,
+                                    storefront: StorefrontType?) {
+        self.receiptFetcher.receiptData(refreshPolicy: refreshPolicy) { receiptData in
             if let receiptData = receiptData,
                !receiptData.isEmpty {
-                self.fetchProductsAndPostReceipt(withTransaction: transaction, receiptData: receiptData)
+                self.fetchProductsAndPostReceipt(withTransaction: transaction,
+                                                 receiptData: receiptData,
+                                                 storefront: storefront)
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
                                        result: .failure(.missingReceiptFile()),
@@ -555,11 +566,13 @@ private extension PurchasesOrchestrator {
     }
 
     func handleFailedTransaction(_ transaction: SKPaymentTransaction) {
+        let storeTransaction = StoreTransaction(sk1Transaction: transaction)
+
         if let error = transaction.error,
-           let completion = getAndRemovePurchaseCompletedCallback(forTransaction: transaction) {
+           let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {
             let purchasesError = ErrorUtils.purchasesError(withSKError: error)
             operationDispatcher.dispatchOnMainThread {
-                completion(StoreTransaction(sk1Transaction: transaction),
+                completion(storeTransaction,
                            nil,
                            purchasesError,
                            purchasesError.isCancelledError)
@@ -573,16 +586,18 @@ private extension PurchasesOrchestrator {
 
     func handleDeferredTransaction(_ transaction: SKPaymentTransaction) {
         let userCancelled = transaction.error?.isCancelledError ?? false
+        let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
-        guard let completion = getAndRemovePurchaseCompletedCallback(forTransaction: transaction) else {
+        guard let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) else {
             return
         }
 
         operationDispatcher.dispatchOnMainThread {
             completion(
-                StoreTransaction(sk1Transaction: transaction),
+                storeTransaction,
                 nil,
-                ErrorUtils.paymentDeferredError(), userCancelled
+                ErrorUtils.paymentDeferredError(),
+                userCancelled
             )
         }
     }
@@ -592,11 +607,11 @@ private extension PurchasesOrchestrator {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
-    func transactionsUpdated() async throws -> CustomerInfo {
+    func transactionsUpdated() async throws {
         // Need to restore if using observer mode (which is inverse of finishTransactions)
         let isRestore = !systemInfo.finishTransactions
 
-        return try await syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore)
+        _ = try await syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore)
     }
 
 }
@@ -610,25 +625,42 @@ extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
 }
 
-// MARK: Private funcs.
+// MARK: Private funcs
+
 private extension PurchasesOrchestrator {
 
-    func getAndRemovePurchaseCompletedCallback(
-        forTransaction transaction: SKPaymentTransaction
-    ) -> PurchaseCompletedBlock? {
-        guard let productIdentifier = transaction.productIdentifier else {
-            return nil
-        }
+    /// - Returns: whether the callback was added
+    @discardableResult
+    func addPurchaseCompletedCallback(
+        productIdentifier: String,
+        completion: @escaping PurchaseCompletedBlock
+    ) -> Bool {
+        return self.purchaseCompleteCallbacksByProductID.modify { callbacks in
+            guard callbacks[productIdentifier] == nil else {
+                completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
+                return false
+            }
 
-        return self.purchaseCompleteCallbacksByProductID.modify {
-            $0.removeValue(forKey: productIdentifier)
+            callbacks[productIdentifier] = completion
+            return true
         }
     }
 
-    func fetchProductsAndPostReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data) {
-        if let productIdentifier = transaction.productIdentifier {
+    func getAndRemovePurchaseCompletedCallback(
+        forTransaction transaction: StoreTransaction
+    ) -> PurchaseCompletedBlock? {
+        return self.purchaseCompleteCallbacksByProductID.modify {
+            $0.removeValue(forKey: transaction.productIdentifier)
+        }
+    }
+
+    func fetchProductsAndPostReceipt(
+        withTransaction transaction: StoreTransaction,
+        receiptData: Data,
+        storefront: StorefrontType?
+    ) {
+        if let productIdentifier = transaction.productIdentifier.notEmpty {
             self.products(withIdentifiers: [productIdentifier]) { products in
-                let storefront = self.storeKitWrapper.currentStorefront
                 self.postReceipt(withTransaction: transaction,
                                  receiptData: receiptData,
                                  products: Set(products),
@@ -642,7 +674,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func postReceipt(withTransaction transaction: SKPaymentTransaction,
+    func postReceipt(withTransaction transaction: StoreTransaction,
                      receiptData: Data,
                      products: Set<StoreProduct>,
                      storefront: StorefrontType?) {
@@ -660,23 +692,29 @@ private extension PurchasesOrchestrator {
         }
         let unsyncedAttributes = self.unsyncedAttributes
 
-        backend.post(receiptData: receiptData,
-                     appUserID: appUserID,
-                     isRestore: allowSharingAppStoreAccount,
-                     productData: productData,
-                     presentedOfferingIdentifier: presentedOfferingID,
-                     observerMode: !finishTransactions,
-                     subscriberAttributes: unsyncedAttributes) { result in
+        self.backend.post(receiptData: receiptData,
+                          appUserID: appUserID,
+                          isRestore: allowSharingAppStoreAccount,
+                          productData: productData,
+                          presentedOfferingIdentifier: presentedOfferingID,
+                          observerMode: !finishTransactions,
+                          subscriberAttributes: unsyncedAttributes) { result in
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result,
                                    subscriberAttributes: unsyncedAttributes)
         }
     }
 
-    func handleReceiptPost(withTransaction transaction: SKPaymentTransaction,
+    func handleReceiptPost(withTransaction transaction: StoreTransaction,
                            result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttributeDict?) {
-        operationDispatcher.dispatchOnMainThread {
+        func finishTransactionIfNeeded() {
+            if self.finishTransactions, let sk1Transaction = transaction.sk1Transaction {
+                self.storeKitWrapper.finishTransaction(sk1Transaction)
+            }
+        }
+
+        self.operationDispatcher.dispatchOnMainThread {
             let appUserID = self.appUserID
             self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
                                     appUserID: appUserID,
@@ -686,27 +724,20 @@ private extension PurchasesOrchestrator {
             let error = result.error
             let finishable = error?.finishable ?? false
 
-            let storeTransaction = StoreTransaction(sk1Transaction: transaction)
-
             switch result {
             case let .success(customerInfo):
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
-                completion?(storeTransaction, customerInfo, nil, false)
+                completion?(transaction, customerInfo, nil, false)
 
-                if self.finishTransactions {
-                    self.storeKitWrapper.finishTransaction(transaction)
-                }
+                finishTransactionIfNeeded()
 
             case let .failure(error):
                 let purchasesError = error.asPurchasesError
 
+                completion?(transaction, nil, purchasesError, false)
+
                 if finishable {
-                    completion?(storeTransaction, nil, purchasesError, false)
-                    if self.finishTransactions {
-                        self.storeKitWrapper.finishTransaction(transaction)
-                    }
-                } else {
-                    completion?(storeTransaction, nil, purchasesError, false)
+                    finishTransactionIfNeeded()
                 }
             }
         }
@@ -855,9 +886,31 @@ private extension Error {
 
 }
 
+// MARK: - Async extensions
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesOrchestrator {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    private func handlePurchasedTransaction(
+        _ transaction: StoreTransaction,
+        refreshPolicy: ReceiptRefreshPolicy
+    ) async throws -> CustomerInfo {
+        let storefront = await Storefront.currentStorefront
+
+        return try await withCheckedThrowingContinuation { continuation in
+            self.addPurchaseCompletedCallback(
+                productIdentifier: transaction.productIdentifier,
+                completion: { _, customerInfo, error, _ in
+                    continuation.resume(with: Result(customerInfo, error))
+                }
+            )
+
+            self.handlePurchasedTransaction(transaction,
+                                            refreshPolicy: refreshPolicy,
+                                            storefront: storefront)
+        }
+    }
+
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool) async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
