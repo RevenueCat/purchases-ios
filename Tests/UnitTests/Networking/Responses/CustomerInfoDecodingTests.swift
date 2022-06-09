@@ -138,7 +138,7 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     }
 
     func testEncoding() {
-        assertSnapshot(matching: self.customerInfo, as: .formattedJson)
+        assertSnapshot(matching: self.customerInfo, as: .backwardsCompatibleFormattedJson)
     }
 
 }

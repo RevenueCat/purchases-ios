@@ -27,6 +27,6 @@
       "store_country" : "ESP"
     },
     "method" : "POST",
-    "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
+    "url" : "https://api.revenuecat.com/v1/receipts"
   }
 }
