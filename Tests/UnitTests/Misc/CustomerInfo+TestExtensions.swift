@@ -18,8 +18,12 @@ extension CustomerInfo {
 
     /// Initializes the customer with a dictionary
     /// Useful only for backwards compatibility with old tests
-    convenience init(data: [String: Any]) throws {
-        self.init(customerInfo: try JSONDecoder.default.decode(dictionary: data))
+    convenience init(
+        data: [String: Any],
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector = DefaultSandboxEnvironmentDetector()
+    ) throws {
+        self.init(customerInfo: try JSONDecoder.default.decode(dictionary: data),
+                  sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
     func asData() throws -> Data {
