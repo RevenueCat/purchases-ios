@@ -312,8 +312,8 @@ class PurchasesOrchestrator {
             Logger.warn(Strings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning)
         }
 
-        payment.applicationUsername = appUserID
-        preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
+        payment.applicationUsername = self.appUserID
+        self.preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: self.appUserID)
 
         if let presentedOfferingIdentifier = package?.offeringIdentifier {
             self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = presentedOfferingIdentifier }
@@ -322,13 +322,9 @@ class PurchasesOrchestrator {
 
         self.productsManager.cacheProduct(sk1Product)
 
-        let addPayment: Bool = self.purchaseCompleteCallbacksByProductID.modify { callbacks in
-            guard callbacks[productIdentifier] == nil else {
-                completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
-                return false
-            }
-
-            callbacks[productIdentifier] = { transaction, customerInfo, error, cancelled in
+        let addPayment: Bool = self.addPurchaseCompletedCallback(
+            productIdentifier: productIdentifier,
+            completion: { transaction, customerInfo, error, cancelled in
                 if !cancelled {
                     if let error = error {
                         Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
@@ -344,9 +340,7 @@ class PurchasesOrchestrator {
 
                 completion(transaction, customerInfo, error, cancelled)
             }
-
-            return true
-        }
+        )
 
         if addPayment {
             self.storeKitWrapper.add(payment)
@@ -631,16 +625,20 @@ extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
 private extension PurchasesOrchestrator {
 
+    /// - Returns: whether the callback was added
+    @discardableResult
     func addPurchaseCompletedCallback(
         productIdentifier: String,
         completion: @escaping PurchaseCompletedBlock
-    ) {
-        self.purchaseCompleteCallbacksByProductID.modify { callbacks in
+    ) -> Bool {
+        return self.purchaseCompleteCallbacksByProductID.modify { callbacks in
             guard callbacks[productIdentifier] == nil else {
                 completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
-                return
+                return false
             }
+
             callbacks[productIdentifier] = completion
+            return true
         }
     }
 
