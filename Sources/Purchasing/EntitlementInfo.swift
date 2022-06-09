@@ -242,7 +242,7 @@ private extension EntitlementInfo {
         }
 
         let referenceDate: Date = requestDate ?? Date()
-        return expirationDate.timeIntervalSince(referenceDate) > 0
+        return expirationDate.timeIntervalSince(referenceDate) >= 0
     }
 
     class func willRenewWithExpirationDate(expirationDate: Date?,
