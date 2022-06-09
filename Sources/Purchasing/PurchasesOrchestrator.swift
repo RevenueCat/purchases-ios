@@ -405,6 +405,8 @@ class PurchasesOrchestrator {
             throw ErrorUtils.purchasesError(withStoreKitError: error)
         }
 
+        // `userCancelled` above comes from `StoreKitError.userCancelled`.
+        // This detects if `Product.PurchaseResult.userCancelled` is true.
         let (userCancelled, sk2Transaction) = try await self.storeKit2TransactionListener
             .handle(purchaseResult: result)
         let transaction = sk2Transaction.map(StoreTransaction.init(sk2Transaction:))
@@ -414,6 +416,8 @@ class PurchasesOrchestrator {
             customerInfo = try await self.handlePurchasedTransaction(transaction,
                                                                      refreshPolicy: .always)
         } else {
+            // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
+            // `Product.PurchaseResult.userCancelled`.
             customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
                                                                            fetchPolicy: .cachedOrFetched)
         }
@@ -704,7 +708,7 @@ private extension PurchasesOrchestrator {
     func handleReceiptPost(withTransaction transaction: StoreTransaction,
                            result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttributeDict?) {
-        func finishTransaction() {
+        func finishTransactionIfNeeded() {
             if self.finishTransactions, let sk1Transaction = transaction.sk1Transaction {
                 self.storeKitWrapper.finishTransaction(sk1Transaction)
             }
@@ -725,7 +729,7 @@ private extension PurchasesOrchestrator {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
                 completion?(transaction, customerInfo, nil, false)
 
-                finishTransaction()
+                finishTransactionIfNeeded()
 
             case let .failure(error):
                 let purchasesError = error.asPurchasesError
@@ -733,7 +737,7 @@ private extension PurchasesOrchestrator {
                 completion?(transaction, nil, purchasesError, false)
 
                 if finishable {
-                    finishTransaction()
+                    finishTransactionIfNeeded()
                 }
             }
         }
