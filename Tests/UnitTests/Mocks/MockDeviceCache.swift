@@ -221,4 +221,5 @@ class MockDeviceCache: DeviceCache {
         invokedClearLatestNetworkAndAdvertisingIdsSentParameters = (appUserID, ())
         invokedClearLatestNetworkAndAdvertisingIdsSentParametersList.append((appUserID, ()))
     }
+
 }

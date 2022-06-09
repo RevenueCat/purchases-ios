@@ -16,8 +16,8 @@ class DeviceCacheSubscriberAttributesTests: TestCase {
     override func setUp() {
         UserDefaults.resetStandardUserDefaults()
         self.mockUserDefaults = MockUserDefaults()
-        self.deviceCache = DeviceCache(systemInfo: MockSystemInfo(finishTransactions: false),
-                                       userDefaults: mockUserDefaults)
+        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
+                                       userDefaults: self.mockUserDefaults)
         setUpSubscriberAttributes()
     }
 

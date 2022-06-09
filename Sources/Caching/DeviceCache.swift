@@ -28,7 +28,7 @@ class DeviceCache {
     }
     var cachedOfferings: Offerings? { offeringsCachedObject.cachedInstance() }
 
-    private let systemInfo: SystemInfo
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let userDefaults: SynchronizedUserDefaults
     private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
@@ -37,20 +37,20 @@ class DeviceCache {
     /// cleared from under the SDK
     private var appUserIDHasBeenSet: Bool = false
 
-    convenience init(systemInfo: SystemInfo,
+    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
                      userDefaults: UserDefaults = UserDefaults.standard) {
-        self.init(systemInfo: systemInfo,
+        self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                   userDefaults: userDefaults,
                   offeringsCachedObject: nil,
                   notificationCenter: nil)
     }
 
-    init(systemInfo: SystemInfo,
+    init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
          userDefaults: UserDefaults = UserDefaults.standard,
          offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
          notificationCenter: NotificationCenter? = NotificationCenter.default) {
 
-        self.systemInfo = systemInfo
+        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default
         self.userDefaults = .init(userDefaults: userDefaults)
@@ -133,8 +133,10 @@ class DeviceCache {
             }
 
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-            let cacheDurationInSeconds = self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                                     isSandbox: self.systemInfo.isSandbox)
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(
+                isAppBackgrounded: isAppBackgrounded,
+                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+            )
 
             return timeSinceLastCheck >= cacheDurationInSeconds
         }
@@ -174,7 +176,7 @@ class DeviceCache {
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
         return offeringsCachedObject.isCacheStale(
             durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                           isSandbox: self.systemInfo.isSandbox)
+                                                           isSandbox: self.sandboxEnvironmentDetector.isSandbox)
         )
     }
 

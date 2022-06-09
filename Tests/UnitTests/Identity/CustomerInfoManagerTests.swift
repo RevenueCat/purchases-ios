@@ -33,7 +33,7 @@ class BaseCustomerInfoManagerTests: TestCase {
                 "original_application_version": NSNull()
             ]])
 
-        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
         self.customerInfoManagerChangesCallCount = 0
         self.customerInfoManagerLastCustomerInfo = nil
         self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,

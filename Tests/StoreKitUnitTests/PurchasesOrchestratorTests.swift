@@ -42,7 +42,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                               requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         operationDispatcher = MockOperationDispatcher()
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo)
-        deviceCache = MockDeviceCache(systemInfo: systemInfo)
+        deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo)
         backend = MockBackend()
         customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
                                                       deviceCache: deviceCache,

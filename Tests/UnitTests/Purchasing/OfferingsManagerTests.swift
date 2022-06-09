@@ -31,7 +31,7 @@ class OfferingsManagerTests: TestCase {
     override func setUp() {
         super.setUp()
 
-        mockDeviceCache = MockDeviceCache(systemInfo: mockSystemInfo)
+        mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
         mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo,
                                                   requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         offeringsManager = OfferingsManager(deviceCache: mockDeviceCache,
