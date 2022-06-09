@@ -919,7 +919,7 @@ public extension Purchases {
     /**
      * Fetch the configured ``Offerings`` for this user.
      *
-     *``Offerings`` allows you to configure your in-app products
+     * ``Offerings`` allows you to configure your in-app products
      * via RevenueCat and greatly simplifies management.
      *
      * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,
@@ -940,7 +940,7 @@ public extension Purchases {
     /**
      * Fetch the configured ``Offerings`` for this user.
      *
-     *``Offerings`` allows you to configure your in-app products
+     * ``Offerings`` allows you to configure your in-app products
      * via RevenueCat and greatly simplifies management.
      *
      * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,
