@@ -37,7 +37,6 @@ class PostAdServicesTokenOperation: NetworkOperation {
         guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
             self.responseHandler?(.missingAppUserID())
             completion()
-
             return
         }
 
@@ -48,9 +47,8 @@ class PostAdServicesTokenOperation: NetworkOperation {
             request,
             authHeaders: self.authHeaders
         ) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
-            completion()
-
             self.responseHandler?(response.error.map(BackendError.networkError))
+            completion()
         }
     }
 
