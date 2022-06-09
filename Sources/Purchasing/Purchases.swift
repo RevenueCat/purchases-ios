@@ -96,6 +96,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Should match OS availability in https://developer.apple.com/documentation/ad_services
      */
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     @objc public static var automaticAdServicesAttributionTokenCollection: Bool = false
 
     /**
@@ -382,6 +384,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
 
+    // swiftlint:disable:next function_body_length
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
          receiptFetcher: ReceiptFetcher,
@@ -449,10 +452,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
 
+#if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             postAdServicesTokenIfNeeded()
         }
+#endif
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
@@ -784,6 +789,8 @@ extension Purchases {
 
     // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     private func postAdServicesTokenIfNeeded() {
         guard Self.automaticAdServicesAttributionTokenCollection else {
             return
@@ -1899,10 +1906,12 @@ private extension Purchases {
         updateAllCachesIfNeeded()
         dispatchSyncSubscriberAttributesIfNeeded()
 
+#if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             postAdServicesTokenIfNeeded()
         }
+#endif
     }
 
     @objc func applicationWillResignActive(notification: Notification) {

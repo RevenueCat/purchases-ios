@@ -16,8 +16,9 @@ class MockAttributionFetcher: AttributionFetcher {
     }
 
     var adServicesTokenCollectionCalled = false
+    var adServicesTokenToReturn: String? = "mockAdServicesToken"
     override var adServicesToken: String? {
         adServicesTokenCollectionCalled = true
-        return nil
+        return adServicesTokenToReturn
     }
 }

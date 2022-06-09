@@ -269,17 +269,34 @@ class DeviceCache {
 
     // MARK: - attribution
 
-    func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [String: String] {
+    func latestAdvertisingIdsByNetworkSent(appUserID: String) -> [AttributionNetwork: String] {
         return self.userDefaults.read {
             let key = CacheKeyBases.attributionDataDefaults + appUserID
-            let latestNetworkAndAdvertisingIdsSent = $0.object(forKey: key) as? [String: String] ?? [:]
-            return latestNetworkAndAdvertisingIdsSent
+            let latestAdvertisingIdsByRawNetworkSent = $0.object(forKey: key) as? [String: String] ?? [:]
+
+            // convert keys from UserDefault from Integer String to AttributionNetwork
+            let latestSent: [AttributionNetwork: String] =
+                latestAdvertisingIdsByRawNetworkSent.reduce(into: [:]) { adIdsByNetwork, adIdByRawNetworkString in
+                    if let networkRawValue = Int(adIdByRawNetworkString.key),
+                       let attributionNetwork = AttributionNetwork(rawValue: networkRawValue) {
+                    adIdsByNetwork[attributionNetwork] = adIdByRawNetworkString.value
+                } else {
+                    Logger.error(Strings.attribution.latest_attribution_sent_user_defaults_invalid)
+                }
+            }
+
+            return latestSent
         }
     }
 
-    func set(latestNetworkAndAdvertisingIdsSent: [String: String], appUserID: String) {
+    func set(latestAdvertisingIdsByNetworkSent: [AttributionNetwork: String], appUserID: String) {
         self.userDefaults.write {
-            $0.setValue(latestNetworkAndAdvertisingIdsSent,
+            // convert AttributionNetwork to Integer as String
+            let latestAdIdsByRawNetworkStringSent =
+                latestAdvertisingIdsByNetworkSent.reduce(into: [:]) { adIdsByRawNetworkString, adIdByNetwork in
+                    adIdsByRawNetworkString[String(adIdByNetwork.key.rawValue)] = adIdByNetwork.value
+                }
+            $0.setValue(latestAdIdsByRawNetworkStringSent,
                         forKey: CacheKeyBases.attributionDataDefaults + appUserID)
         }
     }

@@ -7,11 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  AttributionFetcherTests.swift
-//  PurchasesTests
+//  AttributionPosterTests.swift
 //
-//  Created by César de la Vega on 7/17/20.
-//
+//  Created by Madeline Beyl on 6/7/22.
 
 import Foundation
 import Nimble
@@ -19,9 +17,9 @@ import XCTest
 
 @testable import RevenueCat
 
-class AttributionPosterTests: TestCase {
+class BaseAttributionPosterTests: TestCase {
 
-    var attributionFetcher: AttributionFetcher!
+    var attributionFetcher: MockAttributionFetcher!
     var attributionPoster: AttributionPoster!
     var deviceCache: MockDeviceCache!
     var currentUserProvider: MockCurrentUserProvider!
@@ -43,7 +41,7 @@ class AttributionPosterTests: TestCase {
                                       userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
         deviceCache.cache(appUserID: userID)
         backend = MockBackend()
-        attributionFetcher = AttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
+        attributionFetcher = MockAttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
         subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
@@ -57,6 +55,14 @@ class AttributionPosterTests: TestCase {
                                               attributionFetcher: attributionFetcher,
                                               subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
+        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+    }
+
+    override func tearDown() {
+        UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
+        UserDefaults.standard.synchronize()
+        resetAttributionStaticProperties()
+        super.tearDown()
     }
 
     private func resetAttributionStaticProperties() {
@@ -67,51 +73,99 @@ class AttributionPosterTests: TestCase {
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
     }
 
-    override func tearDown() {
-        super.tearDown()
-        UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
-        UserDefaults.standard.synchronize()
-        resetAttributionStaticProperties()
+}
+
+#if canImport(AdServices)
+@available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
+
+    func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() {
+        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.backend.invokedPostAdServicesTokenCount) == 1
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
+
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.backend.invokedPostAdServicesTokenCount) == 1
+        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
+
+    func testPostAdServicesTokenIfNeededSkipsIfNilToken() throws {
+        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+
+        attributionFetcher.adServicesTokenToReturn = nil
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+    }
+
+    func testPostAdServicesTokenIfNeededDoesNotCacheOnAPIError() throws {
+        let stubbedError: BackendError = .networkError(
+            .errorResponse(.init(code: .invalidAPIKey, message: nil),
+                           400)
+        )
+
+        backend.stubbedPostAdServicesTokenCompletionResult = .failure(stubbedError)
+
+        attributionFetcher.adServicesTokenToReturn = nil
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 0
+    }
+
+}
+#endif
+
+class AttributionPosterTests: BaseAttributionPosterTests {
 
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
+
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
+
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
-
     }
 
     func testPostAttributionDataDoesntSkipIfNetworkChanged() {
         let userID = "userID"
-
+        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: userID)
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .facebook,
                                networkUserId: userID)
-
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
     func testPostAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
+        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
                                networkUserId: "attributionUser1")
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .adjust,
                                networkUserId: "attributionUser2")
+        expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 

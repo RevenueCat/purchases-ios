@@ -40,6 +40,9 @@ enum AttributionStrings {
     case missing_advertiser_identifiers
     case adservices_not_supported
     case adservices_token_fetch_failed(error: Error)
+    case adservices_token_post_failed(error: BackendError)
+    case adservices_token_post_succeeded
+    case latest_attribution_sent_user_defaults_invalid
 
 }
 
@@ -122,6 +125,16 @@ extension AttributionStrings: CustomStringConvertible {
 
         case .adservices_token_fetch_failed(let error):
             return "Fetching AdServices attribution token failed with error: \(error.localizedDescription)"
+
+        case .adservices_token_post_failed(let error):
+            return "Posting AdServices attribution token failed with error: \(error.localizedDescription)"
+
+        case .adservices_token_post_succeeded:
+            return "AdServices attribution token successfully posted"
+
+        case .latest_attribution_sent_user_defaults_invalid:
+            return "Attribution data stored in UserDefaults has invalid format."
+
         }
     }
 

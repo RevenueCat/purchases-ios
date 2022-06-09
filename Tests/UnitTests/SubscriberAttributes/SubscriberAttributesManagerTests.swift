@@ -525,7 +525,7 @@ class SubscriberAttributesManagerTests: TestCase {
         mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
         let mockError: BackendError = .missingAppUserID()
-        mockBackend.stubbedPostSubscriberAttributesCompletionResult = (mockError, ())
+        mockBackend.stubbedPostSubscriberAttributesCompletionResult = Result.failure(mockError)
 
         self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: currentUserID)
         expect(self.mockDeviceCache.invokedDeleteAttributesIfSyncedCount).toEventually(equal(0))
