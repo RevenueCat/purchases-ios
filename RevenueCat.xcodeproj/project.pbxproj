@@ -1562,16 +1562,16 @@
 		35F82BBB26A9BFA60051DF03 /* FoundationExtensions */ = {
 			isa = PBXGroup;
 			children = (
-				37E353AF2CAD3CEDE6D9B368 /* NSError+RCExtensionsTests.swift */,
-				37E3508EC20EEBAB4EAC4C82 /* NSDate+RCExtensionsTests.swift */,
-				37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */,
-				2DD269162522A20A006AC4BC /* DictionaryExtensionsTests.swift */,
-				57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */,
-				37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */,
 				572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */,
-				5796A3BF27D7D64500653165 /* ResultExtensionsTests.swift */,
+				37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */,
 				57ACB13628184CF1000DCC9F /* DecoderExtensionTests.swift */,
+				2DD269162522A20A006AC4BC /* DictionaryExtensionsTests.swift */,
+				37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */,
+				37E3508EC20EEBAB4EAC4C82 /* NSDate+RCExtensionsTests.swift */,
+				37E353AF2CAD3CEDE6D9B368 /* NSError+RCExtensionsTests.swift */,
 				5766AA41283C768600FA6091 /* OperatorExtensionsTests.swift */,
+				5796A3BF27D7D64500653165 /* ResultExtensionsTests.swift */,
+				57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */,
 				57D56FC92853C005009E8E1E /* StringExtensionsTests.swift */,
 			);
 			path = FoundationExtensions;
@@ -1800,11 +1800,11 @@
 		B3843BC72851489B009F4854 /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
+				B3843BCA285149A0009F4854 /* Attribution.swift */,
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
+				B3843BC8285148B3009F4854 /* Purchases+Attribution.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
-				B3843BC8285148B3009F4854 /* Purchases+Attribution.swift */,
-				B3843BCA285149A0009F4854 /* Attribution.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";

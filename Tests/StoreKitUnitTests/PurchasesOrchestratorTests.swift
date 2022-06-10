@@ -23,6 +23,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var storeKitWrapper: MockStoreKitWrapper!
     private var systemInfo: MockSystemInfo!
     private var subscriberAttributesManager: MockSubscriberAttributesManager!
+    private var attribution: Attribution!
     private var operationDispatcher: MockOperationDispatcher!
     private var receiptFetcher: MockReceiptFetcher!
     private var customerInfoManager: MockCustomerInfoManager!
@@ -38,6 +39,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         try setUpSystemInfo()
+
+        let mockUserID = "appUserID"
         productsManager = MockProductsManager(systemInfo: systemInfo,
                                               requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         operationDispatcher = MockOperationDispatcher()
@@ -48,7 +51,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                       deviceCache: deviceCache,
                                                       backend: backend,
                                                       systemInfo: systemInfo)
-        currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
+        currentUserProvider = MockCurrentUserProvider(mockAppUserID: mockUserID)
         transactionsManager = MockTransactionsManager(storeKit2Setting: systemInfo.storeKit2Setting,
                                                       receiptParser: MockReceiptParser())
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
@@ -59,6 +62,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
+        attribution = Attribution(subscriberAttributesManager: subscriberAttributesManager,
+                                  identityManager: MockIdentityManager(mockAppUserID: mockUserID))
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                              customerInfoManager: customerInfoManager,
                                                              currentUserProvider: currentUserProvider)
@@ -102,7 +107,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                              storeKitWrapper: storeKitWrapper,
                                              systemInfo: systemInfo,
-                                             subscriberAttributesManager: subscriberAttributesManager,
+                                             subscriberAttributes: attribution,
                                              operationDispatcher: operationDispatcher,
                                              receiptFetcher: receiptFetcher,
                                              customerInfoManager: customerInfoManager,
@@ -123,7 +128,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
                                                   storeKitWrapper: self.storeKitWrapper,
                                                   systemInfo: self.systemInfo,
-                                                  subscriberAttributesManager: self.subscriberAttributesManager,
+                                                  subscriberAttributes: self.attribution,
                                                   operationDispatcher: self.operationDispatcher,
                                                   receiptFetcher: self.receiptFetcher,
                                                   customerInfoManager: self.customerInfoManager,

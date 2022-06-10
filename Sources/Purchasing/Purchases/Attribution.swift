@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SubscriberAttributes.swift
+//  Attribution.swift
 //
 //  Created by Joshua Liebowitz on 6/8/22.
 

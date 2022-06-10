@@ -29,6 +29,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockDeviceCache: MockDeviceCache!
     var mockIdentityManager: MockIdentityManager!
     var mockSubscriberAttributesManager: MockSubscriberAttributesManager!
+    var attribution: Attribution!
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!
@@ -92,6 +93,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             attributionFetcher: self.mockAttributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
         self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user")
+        self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
+                                       identityManager: mockIdentityManager)
         self.mockAttributionPoster = AttributionPoster(deviceCache: mockDeviceCache,
                                                        currentUserProvider: mockIdentityManager,
                                                        backend: mockBackend,
@@ -133,7 +136,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
                                                           storeKitWrapper: mockStoreKitWrapper,
                                                           systemInfo: systemInfo,
-                                                          subscriberAttributesManager: mockSubscriberAttributesManager,
+                                                          subscriberAttributes: attribution,
                                                           operationDispatcher: mockOperationDispatcher,
                                                           receiptFetcher: mockReceiptFetcher,
                                                           customerInfoManager: customerInfoManager,
@@ -164,7 +167,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               offeringsFactory: mockOfferingsFactory,
                               deviceCache: mockDeviceCache,
                               identityManager: mockIdentityManager,
-                              subscriberAttributesManager: mockSubscriberAttributesManager,
+                              subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
