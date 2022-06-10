@@ -71,16 +71,15 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedEligibility = ["product_id": IntroEligibilityStatus.eligible]
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = (stubbedEligibility, nil)
 
-        var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (receivedEligibilities) in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
+
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities).to(haveCount(1))
     }
 
     func testSK1EligibilityProductsWithKnownIntroEligibilityStatus() throws {
@@ -121,16 +120,16 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let productId = "product_id"
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
-        var completionCalled = false
+
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
+
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities).to(haveCount(1))
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.eligible
 
         expect(self.mockBackend.invokedGetIntroEligibilityCount) == 1
@@ -153,16 +152,16 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let productId = "product_id"
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
-        var completionCalled = false
+
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
+
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities).to(haveCount(1))
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.noIntroOfferExists
 
         expect(self.mockBackend.invokedGetIntroEligibilityCount) == 0
@@ -179,16 +178,15 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
 
         mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
-        var completionCalled = false
+
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities).to(haveCount(1))
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.unknown
     }
 
