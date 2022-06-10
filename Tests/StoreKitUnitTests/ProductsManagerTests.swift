@@ -23,17 +23,15 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let manager = try createManager(storeKit2Setting: .disabled)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        var completionCalled = false
         var receivedProducts: Result<Set<StoreProduct>, Error>?
 
         manager.products(withIdentifiers: Set([identifier])) { products in
-            completionCalled = true
             receivedProducts = products
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestDispatchTimeout)
+        expect(receivedProducts).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
-        expect(unwrappedProducts.count) == 1
+        expect(unwrappedProducts).to(haveCount(1))
 
         let product = try XCTUnwrap(unwrappedProducts.first).product
 
@@ -49,17 +47,15 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let manager = try createManager(storeKit2Setting: .enabledForCompatibleDevices)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        var completionCalled = false
         var receivedProducts: Result<Set<StoreProduct>, Error>?
 
         manager.products(withIdentifiers: Set([identifier])) { products in
-            completionCalled = true
             receivedProducts = products
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.requestDispatchTimeout)
+        expect(receivedProducts).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
-        expect(unwrappedProducts.count) == 1
+        expect(unwrappedProducts).to(haveCount(1))
 
         let product = try XCTUnwrap(unwrappedProducts.first).product
 

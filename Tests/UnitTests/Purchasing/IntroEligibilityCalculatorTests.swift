@@ -27,9 +27,9 @@ class IntroEligibilityCalculatorTests: TestCase {
         var completionCalled = false
         calculator.checkEligibility(with: Data(),
                                     productIdentifiers: Set()) { eligibilityByProductId, error in
-            completionCalled = true
             receivedError = error
             receivedEligibility = eligibilityByProductId
+            completionCalled = true
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -48,9 +48,9 @@ class IntroEligibilityCalculatorTests: TestCase {
 
         calculator.checkEligibility(with: Data(),
                                     productIdentifiers: productIdentifiers) { eligibilityByProductId, error in
-            completionCalled = true
             receivedError = error
             receivedEligibility = eligibilityByProductId
+            completionCalled = true
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -109,9 +109,9 @@ class IntroEligibilityCalculatorTests: TestCase {
 
         calculator.checkEligibility(with: Data(),
                                     productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
-            completionCalled = true
             receivedError = error
             receivedEligibility = eligibility
+            completionCalled = true
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -139,9 +139,9 @@ class IntroEligibilityCalculatorTests: TestCase {
 
         calculator.checkEligibility(with: Data(),
                                     productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
-            completionCalled = true
             receivedError = error
             receivedEligibility = eligibility
+            completionCalled = true
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -168,9 +168,9 @@ class IntroEligibilityCalculatorTests: TestCase {
 
         calculator.checkEligibility(with: Data(),
                                     productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
-            completionCalled = true
             receivedError = error
             receivedEligibility = eligibility
+            completionCalled = true
         }
 
         expect(completionCalled).toEventually(beTrue())

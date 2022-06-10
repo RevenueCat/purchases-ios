@@ -139,15 +139,13 @@ class BackendGetOfferingsTests: BaseBackendTests {
     }
 
     func testGetOfferingsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
-        var completionCalled = false
         var receivedError: BackendError?
 
         backend.getOfferings(appUserID: "") { result in
-            completionCalled = true
             receivedError = result.error
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError) == .missingAppUserID()
     }
 

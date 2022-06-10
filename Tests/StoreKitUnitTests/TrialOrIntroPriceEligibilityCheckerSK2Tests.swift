@@ -91,17 +91,15 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
                         "lifetime": IntroEligibilityStatus.noIntroOfferExists]
 
-        var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { receivedEligibilities in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
 
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == expected.count
+        expect(receivedEligibilities).to(haveCount(expected.count))
 
         for (product, receivedEligibility) in receivedEligibilities {
             expect(receivedEligibility.status) == expected[product]
@@ -123,17 +121,15 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         mockProductsManager?.stubbedSk2StoreProductsThrowsError = true
 
-        var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { receivedEligibilities in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
 
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == expected.count
+        expect(receivedEligibilities).to(haveCount(expected.count))
 
         for (product, receivedEligibility) in receivedEligibilities {
             expect(receivedEligibility.status) == expected[product]

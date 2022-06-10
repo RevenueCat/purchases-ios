@@ -90,16 +90,13 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let mockError: BackendError = .missingAppUserID()
         mockBackend.stubbedGetCustomerInfoResult = .failure(mockError)
 
-        var completionCalled = false
         var receivedError: BackendError?
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { result in
-            completionCalled = true
             receivedError = result.error
         }
 
-        expect(completionCalled).toEventually(beTrue())
-
+        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError) == mockError
     }
 
@@ -121,20 +118,18 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         mockOperationDispatcher.shouldInvokeDispatchOnMainThreadBlock = true
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
-        var completionCalled = false
         var receivedCustomerInfo: CustomerInfo?
 
         customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
                                                       isAppBackgrounded: false) { result in
-            completionCalled = true
             receivedCustomerInfo = result.value
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedCustomerInfo) == mockCustomerInfo
+        expect(receivedCustomerInfo).toEventuallyNot(beNil())
+        expect(receivedCustomerInfo) == self.mockCustomerInfo
 
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
         expect(self.customerInfoManagerChangesCallCount) == 1
-        expect(self.customerInfoManagerLastCustomerInfo) == mockCustomerInfo
+        expect(self.customerInfoManagerLastCustomerInfo) == self.mockCustomerInfo
     }
 
     func testFetchAndCacheCustomerInfoCallsCompletionOnMainThread() {
@@ -272,17 +267,15 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testCustomerInfoReturnsFromCacheIfAvailable() {
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
 
-        var completionCalled = false
         var receivedCustomerInfo: CustomerInfo?
 
         customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { result in
-            completionCalled = true
             receivedCustomerInfo = result.value
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(receivedCustomerInfo).toEventuallyNot(beNil())
+        expect(receivedCustomerInfo) == self.mockCustomerInfo
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 0
-        expect(receivedCustomerInfo) == mockCustomerInfo
     }
 
     func testCustomerInfoReturnsFromCacheAndRefreshesIfStale() {

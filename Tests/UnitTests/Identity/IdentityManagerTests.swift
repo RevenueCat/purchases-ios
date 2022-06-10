@@ -250,27 +250,28 @@ class IdentityManagerTests: TestCase {
         let manager = create(appUserID: nil)
 
         mockDeviceCache.stubbedAppUserID = IdentityManager.generateRandomID()
-        var completionCalled = false
-        var receivedError: Error?
+
+        var receivedError: NSError?
         manager.logOut { error in
-            completionCalled = true
-            receivedError = error
+            receivedError = error as NSError?
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).toNot(beNil())
-        expect((receivedError as NSError?)?.code) == ErrorCode.logOutAnonymousUserError.rawValue
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.code) == ErrorCode.logOutAnonymousUserError.rawValue
     }
 
     func testLogOutCallsCompletionWithNoErrorIfSuccessful() {
         let manager = create(appUserID: nil)
 
         mockDeviceCache.stubbedAppUserID = "myUser"
+
         var completionCalled = false
         var receivedError: Error?
         manager.logOut { error in
-            completionCalled = true
             receivedError = error
+            completionCalled = true
         }
+
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).to(beNil())
     }
