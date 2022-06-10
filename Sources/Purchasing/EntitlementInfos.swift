@@ -75,7 +75,9 @@ public extension EntitlementInfos {
 
     /// Dictionary of active ``EntitlementInfo`` objects keyed by their identifiers.
     /// - Warning: this is equivalent to ``activeInAnyEnvironment``
-    /// - Seealso: ``activeInCurrentEnvironment``
+    ///
+    /// #### Related Symbols
+    /// - ``activeInCurrentEnvironment``
     @objc var active: [String: EntitlementInfo] {
         return self.activeInAnyEnvironment
     }
@@ -83,7 +85,9 @@ public extension EntitlementInfos {
     /// Dictionary of active ``EntitlementInfo`` objects keyed by their identifiers.
     /// - Note: When queried from the sandbox environment, it only returns entitlements active in sandbox.
     /// When queried from production, this only returns entitlements active in production.
-    /// - Seealso: ``activeInAnyEnvironment``
+    ///
+    /// #### Related Symbols
+    /// - ``activeInAnyEnvironment``
     @objc var activeInCurrentEnvironment: [String: EntitlementInfo] {
         return self.activeInAnyEnvironment.filter { [isSandbox = self.sandboxEnvironmentDetector.isSandbox] in
             $0.value.isSandbox == isSandbox
@@ -92,7 +96,9 @@ public extension EntitlementInfos {
 
     /// Dictionary of active ``EntitlementInfo`` objects keyed by their identifiers.
     /// - Note: these can be active on any environment.
-    /// - Seealso: ``activeInCurrentEnvironment``
+    ///
+    /// #### Related Symbols
+    /// - ``activeInCurrentEnvironment``
     @objc var activeInAnyEnvironment: [String: EntitlementInfo] {
         return self.all.filter { $0.value.isActive }
     }
