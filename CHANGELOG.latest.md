@@ -1,16 +1,6 @@
-_This release is compatible with Xcode 14 beta 1_
-
-### New Features
-
-* `EntitlementInfos`: added `activeInAnyEnvironment` and `activeInCurrentEnvironment` (#1647) via NachoSoto (@NachoSoto)
-
-In addition to `EntitlementInfos.active`, two new methods are added to allow detecting entitlements from sandbox and production environments:
-```swift
-customerInfo.entitlements.activeInCurrentEnvironment
-customerInfo.entitlements.activeInAnyEnvironment
-```
-
 ### Bug fixes
 
-* `MacDevice`: changed usage of `kIOMasterPortDefault` to fix Catalyst compilation on Xcode 14 (#1676) via NachoSoto (@NachoSoto)
-* `Result.init(value:error:)`: avoid creating error if value is provided (#1672) via NachoSoto (@NachoSoto)
+* `EntitlementInfo.isActive` returns true if `requestDate == expirationDate` (#1684) via beylmk (@beylmk)
+* Fixed usages of `seealso` (#1689) via NachoSoto (@NachoSoto)
+* Fixed `ROT13.string` thread-safety (#1686) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: replaced calls to `syncPurchases` with posting receipt for an individual product during SK2 purchases (#1666) via NachoSoto (@NachoSoto)
