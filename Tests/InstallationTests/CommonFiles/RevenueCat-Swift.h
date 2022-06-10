@@ -568,21 +568,33 @@ SWIFT_CLASS_NAMED("EntitlementInfos")
 /// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
 /// warning:
 /// this is equivalent to <code>activeInAnyEnvironment</code>
-/// seealso:
-/// <code>activeInCurrentEnvironment</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInCurrentEnvironment</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull active;
 /// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
 /// note:
 /// When queried from the sandbox environment, it only returns entitlements active in sandbox.
 /// When queried from production, this only returns entitlements active in production.
-/// seealso:
-/// <code>activeInAnyEnvironment</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInAnyEnvironment</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull activeInCurrentEnvironment;
 /// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
 /// note:
 /// these can be active on any environment.
-/// seealso:
-/// <code>activeInCurrentEnvironment</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInCurrentEnvironment</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull activeInAnyEnvironment;
 @end
 
@@ -2255,8 +2267,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// For a string representation of the price to display to customers, use <code>localizedPriceString</code>.
 /// note:
 /// this is meant for  Objective-C. For Swift, use <code>price</code> instead.
-/// seealso:
-/// <code>pricePerMonth</code>.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>pricePerMonth</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly, strong) NSDecimalNumber * _Nonnull price;
 /// Calculates the price of this subscription product per month.
 ///
