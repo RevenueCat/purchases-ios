@@ -478,5 +478,5 @@ workflows:
           xcode_version: '13.3.1'
           <<: *release-tags
       - docs-deploy:
-          xcode_version: '13.3.1'
+          xcode_version: '14.0.0'
           <<: *release-tags
