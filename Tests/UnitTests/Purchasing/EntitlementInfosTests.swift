@@ -148,6 +148,35 @@ class EntitlementInfosTests: TestCase {
         try verifyEntitlementActive()
     }
 
+    func testSubscriptionActiveIfExpiresDateEqualsRequestDate() throws {
+        let expirationAndRequestDate = "2019-08-16T10:30:42Z"
+        stubResponse(
+                entitlements: [
+                    "pro_cat": [
+                        "expires_date": expirationAndRequestDate,
+                        "product_identifier": "monthly_freetrial",
+                        "purchase_date": "1999-07-26T23:30:41Z"
+                    ]
+                ],
+                nonSubscriptions: [:],
+                subscriptions: [
+                    "monthly_freetrial": [
+                        "billing_issues_detected_at": nil,
+                        "expires_date": "2200-07-26T23:50:40Z",
+                        "is_sandbox": false,
+                        "original_purchase_date": "1999-07-26T23:30:41Z",
+                        "period_type": "normal",
+                        "purchase_date": "1999-07-26T23:30:41Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil
+                    ]
+                ],
+                requestDate: expirationAndRequestDate
+        )
+
+        try verifyEntitlementActive()
+    }
+
     func testInactiveSubscription() throws {
         stubResponse(
                 entitlements: [
@@ -1140,9 +1169,10 @@ private extension EntitlementInfosTests {
 
     func stubResponse(entitlements: [String: Any] = [:],
                       nonSubscriptions: [String: Any] = [:],
-                      subscriptions: [String: Any] = [:]) {
+                      subscriptions: [String: Any] = [:],
+                      requestDate: String = "2019-08-16T10:30:42Z") {
         self.response = [
-            "request_date": "2019-08-16T10:30:42Z",
+            "request_date": requestDate,
             "subscriber": [
                 "entitlements": entitlements,
                 "first_seen": "2019-07-26T23:29:50Z",
