@@ -77,19 +77,20 @@ extension String {
 
 private enum ROT13 {
 
-    private static var key = [Character: Character]()
+    private static let key: [Character: Character] = {
+        var result: [Character: Character] = [:]
+        for number in 0 ..< 26 {
+            result[Self.uppercase[number]] = Self.uppercase[(number + 13) % 26]
+            result[Self.lowercase[number]] = Self.lowercase[(number + 13) % 26]
+        }
+
+        return result
+    }()
     private static let uppercase = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
     private static let lowercase = Array("abcdefghijklmnopqrstuvwxyz")
 
     fileprivate static func string(_ string: String) -> String {
-        if ROT13.key.isEmpty {
-            for number in 0 ..< 26 {
-                ROT13.key[ROT13.uppercase[number]] = ROT13.uppercase[(number + 13) % 26]
-                ROT13.key[ROT13.lowercase[number]] = ROT13.lowercase[(number + 13) % 26]
-            }
-        }
-
-        let transformed = string.map { ROT13.key[$0] ?? $0 }
+        let transformed = string.map { Self.key[$0] ?? $0 }
         return String(transformed)
     }
 
