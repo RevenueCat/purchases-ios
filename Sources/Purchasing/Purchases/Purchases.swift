@@ -215,7 +215,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { systemInfo.finishTransactions = newValue }
     }
 
-    @objc let attribution: Attribution
+    /**
+     * Attribution object that is responsible for all explicit attribution APIs
+     * as well as subscriber attributes that RevenueCat offers.
+     *
+     * #### Related Articles
+     * - [Subscriber Attribution](https://docs.revenuecat.com/docs/subscriber-attributes)
+``
+     * - ``Attribution``
+     */
+    @objc public let attribution: Attribution
 
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
@@ -454,16 +463,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             guard let self = self else { return }
             self.delegate?.purchases?(self, receivedUpdated: customerInfo)
         }
-    }
-
-    /**
-     * Automatically collect subscriber attributes associated with the device identifiers
-     * - `$idfa`
-     * - `$idfv`
-     * - `$ip`
-     */
-    @objc public func collectDeviceIdentifiers() {
-        self.attribution.collectDeviceIdentifiers()
     }
 
     deinit {

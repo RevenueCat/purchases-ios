@@ -13,45 +13,23 @@
 
 import Foundation
 
+/**
+ * This class is responsible for all explicit attribution APIs as well as subscriber attributes that RevenueCat offers.
+ * The attributes are additional structured information on a user. Since attributes are writable using a public key
+ * they should not be used for managing secure or sensitive information such as subscription status, coins, etc.
+ *
+ * Key names starting with "$" are reserved names used by RevenueCat. For a full list of key restrictions refer
+ * [to our guide](https://docs.revenuecat.com/docs/subscriber-attributes)
+ */
 @objc(RCAttribution) public class Attribution: NSObject {
 
     private let subscriberAttributesManager: SubscriberAttributesManager
     private let identityManager: IdentityManager
     private var appUserID: String { identityManager.currentAppUserID }
 
-    init(subscriberAttributesManager: SubscriberAttributesManager, identityManager: IdentityManager) {
+    internal init(subscriberAttributesManager: SubscriberAttributesManager, identityManager: IdentityManager) {
         self.subscriberAttributesManager = subscriberAttributesManager
         self.identityManager = identityManager
-    }
-
-    /// - Parameter syncedAttribute: will be called for every attribute that is updated
-    /// - Parameter completion: will be called once all attributes have completed syncing
-    /// - Returns: the number of attributes that will be synced
-    @discardableResult
-    func syncSubscriberAttributesIfNeeded(
-        syncedAttribute: ((Error?) -> Void)? = nil,
-        completion: (() -> Void)? = nil
-    ) -> Int {
-        return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
-                                                                          syncedAttribute: syncedAttribute,
-                                                                          completion: completion)
-    }
-
-    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
-        self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
-    }
-
-    @discardableResult
-    func syncAttributesForAllUsers(currentAppUserID: String,
-                                   syncedAttribute: ((Error?) -> Void)? = nil,
-                                   completion: (() -> Void)? = nil) -> Int {
-        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
-                                                                   syncedAttribute: syncedAttribute,
-                                                                   completion: completion)
-    }
-
-    func markAttributesAsSynced(_ attributesToSync: SubscriberAttributeDict?, appUserID: String) {
-        self.subscriberAttributesManager.markAttributesAsSynced(attributesToSync, appUserID: appUserID)
     }
 
 }
@@ -127,7 +105,7 @@ public extension Attribution {
      * - Parameter pushToken: `nil` will delete the subscriber attribute.
      *
      * #### Related Symbols
-     * - ``Purchases/setPushTokenString(_:)``
+     * - ``Attribution/setPushTokenString(_:)``
      */
     @objc func setPushToken(_ pushToken: Data?) {
         self.subscriberAttributesManager.setPushToken(pushToken, appUserID: appUserID)
@@ -142,7 +120,7 @@ public extension Attribution {
      * - Parameter pushToken: `nil` will delete the subscriber attribute.
      *
      * #### Related Symbols
-     * - ``Purchases/setPushToken(_:)``
+     * - ``Attribution/setPushToken(_:)``
      */
     @objc func setPushTokenString(_ pushToken: String?) {
         self.subscriberAttributesManager.setPushTokenString(pushToken, appUserID: appUserID)
@@ -337,8 +315,38 @@ public extension Attribution {
         self.subscriberAttributesManager.setCreative(creative, appUserID: appUserID)
     }
 
-    func setPushTokenString(_ pushToken: String) {
-        self.subscriberAttributesManager.setPushTokenString(pushToken, appUserID: appUserID)
+}
+
+extension Attribution {
+
+    /// - Parameter syncedAttribute: will be called for every attribute that is updated
+    /// - Parameter completion: will be called once all attributes have completed syncing
+    /// - Returns: the number of attributes that will be synced
+    @discardableResult
+    func syncSubscriberAttributesIfNeeded(
+        syncedAttribute: ((Error?) -> Void)? = nil,
+        completion: (() -> Void)? = nil
+    ) -> Int {
+        return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
+                                                                          syncedAttribute: syncedAttribute,
+                                                                          completion: completion)
+    }
+
+    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
+        self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
+    }
+
+    @discardableResult
+    func syncAttributesForAllUsers(currentAppUserID: String,
+                                   syncedAttribute: ((Error?) -> Void)? = nil,
+                                   completion: (() -> Void)? = nil) -> Int {
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
+                                                                   syncedAttribute: syncedAttribute,
+                                                                   completion: completion)
+    }
+
+    func markAttributesAsSynced(_ attributesToSync: SubscriberAttributeDict?, appUserID: String) {
+        self.subscriberAttributesManager.markAttributesAsSynced(attributesToSync, appUserID: appUserID)
     }
 
 }
