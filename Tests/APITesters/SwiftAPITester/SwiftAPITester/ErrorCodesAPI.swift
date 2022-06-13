@@ -43,7 +43,6 @@ func checkPurchasesErrorCodeEnums() {
          .unsupportedError,
          .operationAlreadyInProgressForProductError,
          .emptySubscriberAttributes,
-         .missingAppUserIDForAliasCreationError,
          .productDiscountMissingIdentifierError,
          .productDiscountMissingSubscriptionGroupIdentifierError,
          .customerInfoError,

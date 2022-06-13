@@ -8,8 +8,6 @@
 class MockIdentityManager: IdentityManager {
 
     var identifyError: Error?
-    var aliasError: Error?
-    var aliasCalled = false
     var identifyCalled = false
     var resetCalled = false
     var mockIsAnonymous = false

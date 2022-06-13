@@ -63,19 +63,13 @@ class Backend {
         self.logInCallbacksCache = CallbackCache<LogInCallback>(callbackQueue: self.callbackQueue)
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
 
-        let aliasCallbackCache = CallbackCache<AliasCallback>(callbackQueue: callbackQueue)
         let customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: callbackQueue)
         self.subscribersAPI = SubscribersAPI(httpClient: httpClient,
                                              attributionFetcher: attributionFetcher,
                                              authHeaders: self.authHeaders,
                                              operationQueue: self.operationQueue,
-                                             aliasCallbackCache: aliasCallbackCache,
                                              customerInfoCallbackCache: customerInfoCallbackCache,
                                              dateProvider: dateProvider)
-    }
-
-    func createAlias(appUserID: String, newAppUserID: String, completion: SimpleResponseHandler?) {
-        self.subscribersAPI.createAlias(appUserID: appUserID, newAppUserID: newAppUserID, completion: completion)
     }
 
     func clearHTTPClientCaches() {

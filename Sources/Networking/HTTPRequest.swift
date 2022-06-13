@@ -64,7 +64,6 @@ extension HTTPRequest {
         case getOfferings(appUserID: String)
         case getIntroEligibility(appUserID: String)
         case logIn
-        case createAlias(appUserID: String)
         case postAttributionData(appUserID: String)
         case postOfferForSigning
         case postReceiptData
@@ -91,9 +90,6 @@ extension HTTPRequest.Path: CustomStringConvertible {
 
         case .logIn:
             return "subscribers/identify"
-
-        case let .createAlias(appUserID):
-            return "subscribers/\(appUserID)/alias"
 
         case let .postAttributionData(appUserID):
             return "subscribers/\(appUserID)/attribution"

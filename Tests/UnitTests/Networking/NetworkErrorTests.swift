@@ -47,7 +47,7 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
     }
 
     func testUnableToCreateRequest() {
-        let error: NetworkError = .unableToCreateRequest(.createAlias(appUserID: "user ID"))
+        let error: NetworkError = .unableToCreateRequest(.getCustomerInfo(appUserID: "user ID"))
 
         verifyPurchasesError(error,
                              expectedCode: .networkError,
@@ -198,7 +198,7 @@ class NetworkErrorTests: TestCase {
     private static let dnsError: NetworkError = .dnsError(failedURL: URL(string: "https://google.com")!,
                                                           resolvedHost: "https://google.com")
     private static let unableToCreateRequestError: NetworkError = .unableToCreateRequest(
-        .createAlias(appUserID: "user ID")
+        .getCustomerInfo(appUserID: "user ID")
     )
 
     private static let unexpectedResponseError: NetworkError = .unexpectedResponse(nil)

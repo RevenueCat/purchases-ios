@@ -47,7 +47,6 @@
         case RCLogOutAnonymousUserError:
         case RCEmptySubscriberAttributesError:
         case RCProductDiscountMissingIdentifierError:
-        case RCMissingAppUserIDForAliasCreationError:
         case RCProductDiscountMissingSubscriptionGroupIdentifierError:
         case RCConfigurationError:
         case RCUnsupportedError:

@@ -271,7 +271,6 @@
 		5796A38827D6B85900653165 /* BackendPostReceiptDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A38727D6B85900653165 /* BackendPostReceiptDataTests.swift */; };
 		5796A38A27D6B96300653165 /* BackendGetCustomerInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A38927D6B96300653165 /* BackendGetCustomerInfoTests.swift */; };
 		5796A38C27D6BA1600653165 /* BackendLoginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A38B27D6BA1600653165 /* BackendLoginTests.swift */; };
-		5796A38E27D6BB7D00653165 /* BackendCreateAliasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A38D27D6BB7D00653165 /* BackendCreateAliasTests.swift */; };
 		5796A39027D6BCD100653165 /* BackendGetIntroEligibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A38F27D6BCD100653165 /* BackendGetIntroEligibilityTests.swift */; };
 		5796A39427D6BD6900653165 /* BackendGetOfferingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A39327D6BD6900653165 /* BackendGetOfferingsTests.swift */; };
 		5796A39627D6BDAB00653165 /* BackendPostOfferForSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A39527D6BDAB00653165 /* BackendPostOfferForSigningTests.swift */; };
@@ -362,14 +361,12 @@
 		B32B74FF26868AEB005647BF /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C4712685784800CB3C21 /* Package.swift */; };
 		B32B750126868C1D005647BF /* EntitlementInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B750026868C1D005647BF /* EntitlementInfo.swift */; };
 		B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */; };
-		B34605BB279A6E380031CA74 /* AliasCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605A2279A6E380031CA74 /* AliasCallback.swift */; };
 		B34605BC279A6E380031CA74 /* CallbackCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605A3279A6E380031CA74 /* CallbackCache.swift */; };
 		B34605BD279A6E380031CA74 /* CallbackCacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605A4279A6E380031CA74 /* CallbackCacheStatus.swift */; };
 		B34605BE279A6E380031CA74 /* OfferingsCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605A5279A6E380031CA74 /* OfferingsCallback.swift */; };
 		B34605BF279A6E380031CA74 /* LogInCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605A6279A6E380031CA74 /* LogInCallback.swift */; };
 		B34605C0279A6E380031CA74 /* CustomerInfoCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605A7279A6E380031CA74 /* CustomerInfoCallback.swift */; };
 		B34605C1279A6E380031CA74 /* NetworkOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605AB279A6E380031CA74 /* NetworkOperation.swift */; };
-		B34605C2279A6E380031CA74 /* CreateAliasOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605AC279A6E380031CA74 /* CreateAliasOperation.swift */; };
 		B34605C3279A6E380031CA74 /* PostOfferForSigningOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */; };
 		B34605C5279A6E380031CA74 /* CustomerInfoResponseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B0279A6E380031CA74 /* CustomerInfoResponseHandler.swift */; };
 		B34605C7279A6E380031CA74 /* SubscriberAttributesMarshaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B2279A6E380031CA74 /* SubscriberAttributesMarshaller.swift */; };
@@ -751,7 +748,6 @@
 		5796A38727D6B85900653165 /* BackendPostReceiptDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostReceiptDataTests.swift; sourceTree = "<group>"; };
 		5796A38927D6B96300653165 /* BackendGetCustomerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetCustomerInfoTests.swift; sourceTree = "<group>"; };
 		5796A38B27D6BA1600653165 /* BackendLoginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendLoginTests.swift; sourceTree = "<group>"; };
-		5796A38D27D6BB7D00653165 /* BackendCreateAliasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendCreateAliasTests.swift; sourceTree = "<group>"; };
 		5796A38F27D6BCD100653165 /* BackendGetIntroEligibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetIntroEligibilityTests.swift; sourceTree = "<group>"; };
 		5796A39327D6BD6900653165 /* BackendGetOfferingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetOfferingsTests.swift; sourceTree = "<group>"; };
 		5796A39527D6BDAB00653165 /* BackendPostOfferForSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostOfferForSigningTests.swift; sourceTree = "<group>"; };
@@ -830,14 +826,12 @@
 		B325543B2825C81800DA62EA /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		B32B750026868C1D005647BF /* EntitlementInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfo.swift; sourceTree = "<group>"; };
 		B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOPeriodFormatter.swift; sourceTree = "<group>"; };
-		B34605A2279A6E380031CA74 /* AliasCallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AliasCallback.swift; sourceTree = "<group>"; };
 		B34605A3279A6E380031CA74 /* CallbackCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallbackCache.swift; sourceTree = "<group>"; };
 		B34605A4279A6E380031CA74 /* CallbackCacheStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallbackCacheStatus.swift; sourceTree = "<group>"; };
 		B34605A5279A6E380031CA74 /* OfferingsCallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsCallback.swift; sourceTree = "<group>"; };
 		B34605A6279A6E380031CA74 /* LogInCallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInCallback.swift; sourceTree = "<group>"; };
 		B34605A7279A6E380031CA74 /* CustomerInfoCallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoCallback.swift; sourceTree = "<group>"; };
 		B34605AB279A6E380031CA74 /* NetworkOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkOperation.swift; sourceTree = "<group>"; };
-		B34605AC279A6E380031CA74 /* CreateAliasOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateAliasOperation.swift; sourceTree = "<group>"; };
 		B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostOfferForSigningOperation.swift; sourceTree = "<group>"; };
 		B34605B0279A6E380031CA74 /* CustomerInfoResponseHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoResponseHandler.swift; sourceTree = "<group>"; };
 		B34605B2279A6E380031CA74 /* SubscriberAttributesMarshaller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesMarshaller.swift; sourceTree = "<group>"; };
@@ -1698,7 +1692,6 @@
 			isa = PBXGroup;
 			children = (
 				5796A39727D6C07D00653165 /* __Snapshots__ */,
-				5796A38D27D6BB7D00653165 /* BackendCreateAliasTests.swift */,
 				5796A38927D6B96300653165 /* BackendGetCustomerInfoTests.swift */,
 				5796A38F27D6BCD100653165 /* BackendGetIntroEligibilityTests.swift */,
 				5796A39327D6BD6900653165 /* BackendGetOfferingsTests.swift */,
@@ -1753,7 +1746,6 @@
 		B34605A1279A6E380031CA74 /* Caching */ = {
 			isa = PBXGroup;
 			children = (
-				B34605A2279A6E380031CA74 /* AliasCallback.swift */,
 				B34605A3279A6E380031CA74 /* CallbackCache.swift */,
 				B34605A4279A6E380031CA74 /* CallbackCacheStatus.swift */,
 				B34605A7279A6E380031CA74 /* CustomerInfoCallback.swift */,
@@ -1767,7 +1759,6 @@
 			isa = PBXGroup;
 			children = (
 				B34605AE279A6E380031CA74 /* Handling */,
-				B34605AC279A6E380031CA74 /* CreateAliasOperation.swift */,
 				B34605B5279A6E380031CA74 /* GetCustomerInfoOperation.swift */,
 				B34605B4279A6E380031CA74 /* GetIntroEligibilityOperation.swift */,
 				B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */,
@@ -2258,7 +2249,6 @@
 				5766AA3E283C750300FA6091 /* Operators+Extensions.swift in Sources */,
 				B3B5FBBC269D121B00104A0C /* Offerings.swift in Sources */,
 				9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */,
-				B34605BB279A6E380031CA74 /* AliasCallback.swift in Sources */,
 				57CFB98427FE2258002A6730 /* StoreKit2Setting.swift in Sources */,
 				57DE806D28074976008D6C6F /* Storefront.swift in Sources */,
 				B3B5FBB6269CED6400104A0C /* ErrorDetails.swift in Sources */,
@@ -2338,7 +2328,6 @@
 				B3B5FBBF269E081E00104A0C /* InMemoryCachedObject.swift in Sources */,
 				9A65E0802591977900DE00B0 /* ReceiptStrings.swift in Sources */,
 				B3DDB55926854865008CCF23 /* PurchaseOwnershipType.swift in Sources */,
-				B34605C2279A6E380031CA74 /* CreateAliasOperation.swift in Sources */,
 				57A0FBF02749C0C2009E2FC3 /* Atomic.swift in Sources */,
 				2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */,
 				2DDF41B424F6F387005BC22D /* ASN1ContainerBuilder.swift in Sources */,
@@ -2466,7 +2455,6 @@
 				57E415EB2846962500EA5460 /* PurchasesSyncPurchasesTests.swift in Sources */,
 				5766AAC5283E843300FA6091 /* PurchasesConfiguringTests.swift in Sources */,
 				351B514D26D44A8600BD2BD7 /* MockHTTPClient.swift in Sources */,
-				5796A38E27D6BB7D00653165 /* BackendCreateAliasTests.swift in Sources */,
 				5733B1AA27FFBCF900EC2045 /* BaseErrorTests.swift in Sources */,
 				578FB10E27ADDA8000F70709 /* AvailabilityChecks.swift in Sources */,
 				57E415EF284697A300EA5460 /* PurchasesDeferredPurchasesTests.swift in Sources */,
