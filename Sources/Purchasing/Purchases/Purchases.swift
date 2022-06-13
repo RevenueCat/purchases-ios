@@ -209,6 +209,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Attribution object that is responsible for all explicit attribution APIs
      * as well as subscriber attributes that RevenueCat offers.
      *
+     * #### Example:
+     *
+     * ```swift
+     * Purchases.attribution.setEmail(“nobody@example.com”)
+     * ```
+     *
      * - Note: Calling this static property or to instance property has the same effect.
      *
      * #### Related Articles
@@ -223,6 +229,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /**
      * Attribution object that is responsible for all explicit attribution APIs
      * as well as subscriber attributes that RevenueCat offers.
+     *
+     * #### Example:
+     *
+     * ```swift
+     * Purchases.shared.attribution.setEmail(“nobody@example.com”)
+     * ```
      *
      * - Note: Calling this instance property or the class property has the same effect.
      *

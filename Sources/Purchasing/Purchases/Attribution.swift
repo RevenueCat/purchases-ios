@@ -27,7 +27,7 @@ import Foundation
     private let identityManager: IdentityManager
     private var appUserID: String { identityManager.currentAppUserID }
 
-    internal init(subscriberAttributesManager: SubscriberAttributesManager, identityManager: IdentityManager) {
+    init(subscriberAttributesManager: SubscriberAttributesManager, identityManager: IdentityManager) {
         self.subscriberAttributesManager = subscriberAttributesManager
         self.identityManager = identityManager
     }
