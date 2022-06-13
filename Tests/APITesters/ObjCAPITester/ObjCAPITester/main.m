@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
 #import "RCConfigurationAPI.h"
 #import "RCCustomerInfoAPI.h"
@@ -29,6 +30,7 @@
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+        [RCAttributionAPI checkAPI];
         [RCAttributionNetworkAPI checkEnums];
 
         [RCCustomerInfoAPI checkAPI];

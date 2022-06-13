@@ -1238,12 +1238,12 @@
 			isa = PBXGroup;
 			children = (
 				570896B627596E6E00296F1C /* APITesters */,
-				57B425A3275800B60075BDC4 /* Test Plans */,
-				2DE20B6D264087FB004C597D /* BackendIntegrationTests */,
 				2DE20B8026409EB7004C597D /* BackendIntegrationTestApp */,
-				2DEAC2DB26EFE46E006914ED /* UnitTestsHostApp */,
+				2DE20B6D264087FB004C597D /* BackendIntegrationTests */,
 				2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */,
+				57B425A3275800B60075BDC4 /* Test Plans */,
 				2DC5622224EC63430031F69B /* UnitTests */,
+				2DEAC2DB26EFE46E006914ED /* UnitTestsHostApp */,
 			);
 			path = Tests;
 			sourceTree = "<group>";

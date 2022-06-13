@@ -59,6 +59,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         return purchases
     }
+
     private static var purchases: Purchases?
 
     /// Returns `true` if RevenueCat has already been initialized through ``configure(withAPIKey:)``
@@ -204,6 +205,33 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// Current version of the ``Purchases`` framework.
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
+    /**
+     * Attribution object that is responsible for all explicit attribution APIs
+     * as well as subscriber attributes that RevenueCat offers.
+     *
+     * - Note: Calling this static property or to instance property has the same effect.
+     *
+     * #### Related Articles
+     * - [Subscriber Attribution](https://docs.revenuecat.com/docs/subscriber-attributes)
+     ``
+     * - ``Attribution``
+     */
+    @objc public static var attribution: Attribution {
+        return self.shared.attribution
+    }
+
+    /**
+     * Attribution object that is responsible for all explicit attribution APIs
+     * as well as subscriber attributes that RevenueCat offers.
+     *
+     * - Note: Calling this instance property or the class property has the same effect.
+     *
+     * #### Related Articles
+     * - [Subscriber Attribution](https://docs.revenuecat.com/docs/subscriber-attributes)
+     * - ``Attribution``
+     */
+    @objc public let attribution: Attribution
+
     /** Whether transactions should be finished automatically. `true` by default.
      * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
      * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
@@ -214,17 +242,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         get { systemInfo.finishTransactions }
         set { systemInfo.finishTransactions = newValue }
     }
-
-    /**
-     * Attribution object that is responsible for all explicit attribution APIs
-     * as well as subscriber attributes that RevenueCat offers.
-     *
-     * #### Related Articles
-     * - [Subscriber Attribution](https://docs.revenuecat.com/docs/subscriber-attributes)
-``
-     * - ``Attribution``
-     */
-    @objc public let attribution: Attribution
 
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster

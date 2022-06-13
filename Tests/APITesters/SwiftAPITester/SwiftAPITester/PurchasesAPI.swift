@@ -189,7 +189,7 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.attribution.setAd("")
     purchases.attribution.setKeyword("")
     purchases.attribution.setCreative("")
-    purchases.attribution.collectDeviceIdentifiers()
+    Purchases.attribution.collectDeviceIdentifiers()
 }
 
 private func checkAsyncMethods(purchases: Purchases) async {
