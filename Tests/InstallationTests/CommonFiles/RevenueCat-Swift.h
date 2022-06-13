@@ -233,6 +233,18 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCAttributionNetwork, "AttributionNetwork", 
   RCAttributionNetworkMParticle = 6,
 };
 
+/// Specifies the behavior for a caching API.
+typedef SWIFT_ENUM_NAMED(NSInteger, RCCacheFetchPolicy, "CacheFetchPolicy", open) {
+/// Returns values from the cache, or throws an error if not available.
+  RCCacheFetchPolicyFromCacheOnly = 0,
+/// Always fetch the most up-to-date data.
+  RCCacheFetchPolicyFetchCurrent = 1,
+/// Returns the cached data if available and not stale, or fetches up-to-date data.
+  RCCacheFetchPolicyNotStaleCachedOrFetched = 2,
+/// Default behavior: returns the cached data if available (even if stale), or fetches up-to-date data.
+  RCCacheFetchPolicyCachedOrFetched = 3,
+};
+
 
 SWIFT_CLASS("_TtC10RevenueCat16NetworkOperation")
 @interface NetworkOperation : NSOperation
@@ -523,6 +535,7 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 /// or shared to them by a family member. This can be useful for onboarding users who have had
 /// an entitlement shared with them, but might not be entirely aware of the benefits they now have.
 @property (nonatomic, readonly) enum RCPurchaseOwnershipType ownershipType;
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
@@ -532,9 +545,6 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 
 
 
-@interface RCEntitlementInfo (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
-@end
 
 
 
@@ -545,8 +555,6 @@ SWIFT_CLASS_NAMED("EntitlementInfos")
 /// identifier. This dictionary can also be accessed by using an index subscript on <code>EntitlementInfos</code>, e.g.
 /// <code>entitlementInfos["pro_entitlement_id"]</code>.
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull all;
-/// Dictionary of active <code>EntitlementInfo</code> (<code>RCEntitlementInfo</code>) objects keyed by entitlement identifier.
-@property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull active;
 - (RCEntitlementInfo * _Nullable)objectForKeyedSubscript:(NSString * _Nonnull)key SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
@@ -554,6 +562,41 @@ SWIFT_CLASS_NAMED("EntitlementInfos")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+
+
+@interface RCEntitlementInfos (SWIFT_EXTENSION(RevenueCat))
+/// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
+/// warning:
+/// this is equivalent to <code>activeInAnyEnvironment</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInCurrentEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull active;
+/// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
+/// note:
+/// When queried from the sandbox environment, it only returns entitlements active in sandbox.
+/// When queried from production, this only returns entitlements active in production.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInAnyEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull activeInCurrentEnvironment;
+/// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
+/// note:
+/// these can be active on any environment.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInCurrentEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull activeInAnyEnvironment;
+@end
 
 /// Error codes used by the Purchases SDK
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
@@ -682,7 +725,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCIntroEligibilityStatus, "IntroEligibilityS
 /// There is no free trial or intro pricing for this product.
   RCIntroEligibilityStatusNoIntroOfferExists = 3,
 };
-
 
 
 SWIFT_CLASS("_TtC10RevenueCat14LogInOperation")
@@ -1237,7 +1279,17 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 /// You should access the singleton instance using <code>Purchases/shared</code>
 /// important:
 /// See <code>Configuration/Builder</code> for more information about configurable properties.
-/// \param configuration The <code>Configuration</code> object you wish to use to configure <code>Purchases</code>
+/// <h3>Example</h3>
+/// \code
+///  Purchases.configure(
+///      with: Configuration.Builder(withAPIKey: Constants.apiKey)
+///               .with(usesStoreKit2IfAvailable: true)
+///               .with(observerMode: false)
+///               .with(appUserID: "<app_user_id>")
+///               .build()
+///      )
+///
+/// \endcode\param configuration The <code>Configuration</code> object you wish to use to configure <code>Purchases</code>
 ///
 ///
 /// returns:
@@ -1369,10 +1421,8 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// </ul>
 - (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// Fetch the configured <code>Offerings</code> for this user.
-/// \code
-///  *``Offerings`` allows you to configure your in-app products
-///
-/// \endcodevia RevenueCat and greatly simplifies management.
+/// <code>Offerings</code> allows you to configure your in-app products
+/// via RevenueCat and greatly simplifies management.
 /// <code>Offerings</code> will be fetched and cached on instantiation so that, by the time they are needed,
 /// your prices are loaded for your purchase flow. Time is money.
 /// <h4>Related Articles</h4>
@@ -1785,6 +1835,12 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// Called immediately if <code>CustomerInfo</code> is cached. Customer info can be nil if an error occurred.
 ///
 - (void)getCustomerInfoWithCompletion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
+/// Get latest available customer  info.
+/// \param fetchPolicy The behavior for what to do regarding caching.
+///
+/// \param completion A completion block called when customer info is available and not stale.
+///
+- (void)getCustomerInfoWithFetchPolicy:(enum RCCacheFetchPolicy)fetchPolicy completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// Fetches the <code>StoreProduct</code>s for your IAPs for given <code>productIdentifiers</code>.
 /// Use this method if you aren’t using <code>getOfferings(completion:)</code>.
 /// You should use <code>getOfferings(completion:)</code> though.
@@ -2197,6 +2253,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 @property (nonatomic, readonly, copy) NSLocale * _Nonnull priceLocale SWIFT_AVAILABILITY(macos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(watchos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(tvos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(ios,unavailable,message="Use localizedPriceString instead");
 @end
 
+
+@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
+- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
+/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
+@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
+@end
+
 @class NSDecimalNumber;
 
 @interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
@@ -2204,8 +2267,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// For a string representation of the price to display to customers, use <code>localizedPriceString</code>.
 /// note:
 /// this is meant for  Objective-C. For Swift, use <code>price</code> instead.
-/// seealso:
-/// <code>pricePerMonth</code>.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>pricePerMonth</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly, strong) NSDecimalNumber * _Nonnull price;
 /// Calculates the price of this subscription product per month.
 ///
@@ -2217,13 +2284,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryPrice</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
-@end
-
-
-@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
-- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
-/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
-@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
 @end
 
 enum RCPaymentMode : NSInteger;
@@ -2333,12 +2393,18 @@ SWIFT_CLASS_NAMED("Storefront")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-
 @class SKStorefront;
 
 @interface RCStorefront (SWIFT_EXTENSION(RevenueCat))
 /// Returns the <code>SKStorefront</code> if this <code>Storefront</code> represents an <code>SKStorefront</code>.
 @property (nonatomic, readonly, strong) SKStorefront * _Nullable sk1Storefront SWIFT_AVAILABILITY(maccatalyst,introduced=13.1) SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
+@end
+
+
+@interface RCStorefront (SWIFT_EXTENSION(RevenueCat))
+/// The current App Store storefront for the device obtained from StoreKit 1 only.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCStorefront * _Nullable sk1CurrentStorefront SWIFT_AVAILABILITY(maccatalyst,introduced=13.1) SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);)
++ (RCStorefront * _Nullable)sk1CurrentStorefront SWIFT_WARN_UNUSED_RESULT;
 @end
 
 enum RCSubscriptionPeriodUnit : NSInteger;
@@ -2374,13 +2440,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 

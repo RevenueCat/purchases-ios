@@ -103,7 +103,8 @@ import Foundation
             .first
     }
 
-    /// - Seealso: ``package(identifier:)``
+    /// #### Related Symbols
+    /// - ``package(identifier:)``
     @objc public subscript(key: String) -> Package? {
         return package(identifier: key)
     }

@@ -40,6 +40,19 @@ class ResultExtensionsTests: TestCase {
         expect(Data(nil, .error1)) == .failure(.error1)
     }
 
+    func testErrorIsNotCreatedIfValueIsProvided() {
+        var errorCreated = false
+
+        func createError() -> Error {
+            errorCreated = true
+            return .error1
+        }
+
+        let result = Data("1", createError())
+        expect(result) == .success("1")
+        expect(errorCreated) == false
+    }
+
     func testInitWithNoValueOrError() {
         expectFatalError(expectedMessage: "Unexpected nil value and nil error") {
             _ = Data(nil, nil)

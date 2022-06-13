@@ -71,7 +71,7 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
         invokedHandleParameters = (.init(purchaseResult), ())
         invokedHandleParametersList.append((.init(purchaseResult), ()))
 
-        return (false, nil, mockTransaction.value)
+        return (false, mockTransaction.value)
     }
 }
 

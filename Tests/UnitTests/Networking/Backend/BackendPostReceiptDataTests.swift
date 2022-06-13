@@ -51,6 +51,35 @@ class BackendPostReceiptDataTests: BaseBackendTests {
         expect(completionCalled).toEventually(beTrue())
     }
 
+    func testPostsReceiptDataWithProductDataCorrectly() throws {
+        let path: HTTPRequest.Path = .postReceiptData
+
+        httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        var completionCalled = false
+
+        let isRestore = false
+        let observerMode = true
+        let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
+
+        backend.post(receiptData: Self.receiptData,
+                     appUserID: Self.userID,
+                     isRestore: isRestore,
+                     productData: productData,
+                     presentedOfferingIdentifier: nil,
+                     observerMode: observerMode,
+                     subscriberAttributes: nil,
+                     completion: { _ in
+            completionCalled = true
+        })
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testCachesRequestsForSameReceipt() {
         httpClient.mock(
             requestPath: .postReceiptData,

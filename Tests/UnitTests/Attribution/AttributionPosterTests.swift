@@ -39,25 +39,25 @@ class AttributionPosterTests: TestCase {
         super.setUp()
 
         let userID = "userID"
-        deviceCache = MockDeviceCache(systemInfo: MockSystemInfo(finishTransactions: false),
-                                      userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
-        deviceCache.cache(appUserID: userID)
-        backend = MockBackend()
-        attributionFetcher = AttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
-        subscriberAttributesManager = MockSubscriberAttributesManager(
+        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: DefaultSandboxEnvironmentDetector(),
+                                           userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
+        self.deviceCache.cache(appUserID: userID)
+        self.backend = MockBackend()
+        self.attributionFetcher = AttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
+        self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
-        currentUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
-        attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                              currentUserProvider: currentUserProvider,
-                                              backend: backend,
-                                              attributionFetcher: attributionFetcher,
-                                              subscriberAttributesManager: subscriberAttributesManager)
-        resetAttributionStaticProperties()
-        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
+        self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
+                                                   currentUserProvider: self.currentUserProvider,
+                                                   backend: self.backend,
+                                                   attributionFetcher: self.attributionFetcher,
+                                                   subscriberAttributesManager: self.subscriberAttributesManager)
+        self.resetAttributionStaticProperties()
+        self.backend.stubbedPostAttributionDataCompletionResult = (nil, ())
     }
 
     private func resetAttributionStaticProperties() {

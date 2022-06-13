@@ -137,7 +137,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "user",
-                "subscriptions": []
+                "subscriptions": [:]
             ]
         ]
         let path: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)

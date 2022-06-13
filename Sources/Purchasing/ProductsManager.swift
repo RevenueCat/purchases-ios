@@ -24,8 +24,13 @@ class ProductsManager: NSObject {
 
     private let systemInfo: SystemInfo
 
+    private let _productsFetcherSK2: Any?
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private(set) lazy var productsFetcherSK2 = ProductsFetcherSK2()
+    private var productsFetcherSK2: ProductsFetcherSK2 {
+        // swiftlint:disable:next force_cast
+        return self._productsFetcherSK2! as! ProductsFetcherSK2
+    }
 
     init(
         productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
@@ -35,6 +40,12 @@ class ProductsManager: NSObject {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
                                                      requestTimeout: requestTimeout)
         self.systemInfo = systemInfo
+
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            self._productsFetcherSK2 = ProductsFetcherSK2()
+        } else {
+            self._productsFetcherSK2 = nil
+        }
     }
 
     func products(withIdentifiers identifiers: Set<String>,

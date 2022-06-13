@@ -228,7 +228,7 @@ platform :ios do
     # Ask for new version number
     new_version_number = UI.input("New version number: ")
 
-    generated_contents = github_changelog
+    generated_contents = github_changelog(options)
     changelog_path = edit_changelog(generated_contents: generated_contents)
     changelog = File.read(changelog_path)
     
@@ -678,5 +678,5 @@ def replace_in(previous_text, new_text, path, allow_empty=false)
 end
 
 def current_version_number
-  File.read("../.version")
+  File.read("../.version").strip
 end

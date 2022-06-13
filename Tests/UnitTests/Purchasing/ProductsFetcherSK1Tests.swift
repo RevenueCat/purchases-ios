@@ -28,16 +28,15 @@ class ProductsFetcherSK1Tests: TestCase {
     func testProductsWithIdentifiersCallsCompletionCorrectly() throws {
         let productIdentifiers = Set(["1", "2", "3"])
         var receivedProducts: Result<Set<SK1Product>, Error>?
-        var completionCalled = false
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
-            completionCalled = true
             receivedProducts = products
         }
 
-        expect(completionCalled).toEventually(beTrue(), timeout: Self.defaultTimeoutInterval)
+        expect(receivedProducts).toEventuallyNot(beNil(), timeout: Self.defaultTimeoutInterval)
+
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
-        expect(unwrappedProducts.count) == productIdentifiers.count
+        expect(unwrappedProducts).to(haveCount(productIdentifiers.count))
         let receivedProductsSet = Set(unwrappedProducts.map { $0.productIdentifier })
         expect(receivedProductsSet) == productIdentifiers
     }
@@ -100,14 +99,13 @@ class ProductsFetcherSK1Tests: TestCase {
                                          requestTimeout: timeout.seconds)
 
         var receivedResult: Result<Set<SK1Product>, Error>?
-        var completionCalled = false
 
         fetcher.sk1Products(withIdentifiers: productIdentifiers) { result in
-            completionCalled = true
             receivedResult = result
         }
-        expect(completionCalled).toEventually(beTrue(), timeout: timeout + .seconds(1))
-        expect(receivedResult?.error).toNot(beNil())
+
+        expect(receivedResult).toEventuallyNot(beNil(), timeout: timeout + .seconds(1))
+        expect(receivedResult).to(beFailure())
     }
 
     func testCacheProductCachesCorrectly() {
@@ -122,13 +120,13 @@ class ProductsFetcherSK1Tests: TestCase {
         var receivedProducts: Result<Set<SK1Product>, Error>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
-            completionCallCount += 1
             receivedProducts = products
+            completionCallCount += 1
         }
 
         expect(completionCallCount).toEventually(equal(1), timeout: Self.defaultTimeoutInterval)
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0))
-        try expect(receivedProducts?.get()) == mockProducts
+        expect(try receivedProducts?.get()) == mockProducts
     }
 
     func testProductsWithIdentifiersTimesOutIfMaxToleranceExceeded() throws {
@@ -146,8 +144,8 @@ class ProductsFetcherSK1Tests: TestCase {
         var receivedResult: Result<Set<SKProduct>, Error>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { result in
-            completionCallCount += 1
             receivedResult = result
+            completionCallCount += 1
         }
 
         expect(completionCallCount).toEventually(equal(1),
@@ -174,8 +172,8 @@ class ProductsFetcherSK1Tests: TestCase {
         var receivedResult: Result<Set<SKProduct>, Error>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { result in
-            completionCallCount += 1
             receivedResult = result
+            completionCallCount += 1
         }
 
         expect(completionCallCount).toEventually(equal(1), timeout: tolerance + .milliseconds(10))

@@ -39,15 +39,18 @@ class ManageSubscriptionsHelperTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        systemInfo = MockSystemInfo(finishTransactions: true)
-        customerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
-                                                      deviceCache: MockDeviceCache(systemInfo: systemInfo),
-                                                      backend: MockBackend(),
-                                                      systemInfo: systemInfo)
-        currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
-        helper = ManageSubscriptionsHelper(systemInfo: systemInfo,
-                                           customerInfoManager: customerInfoManager,
-                                           currentUserProvider: currentUserProvider)
+
+        self.systemInfo = MockSystemInfo(finishTransactions: true)
+        self.customerInfoManager = MockCustomerInfoManager(
+            operationDispatcher: MockOperationDispatcher(),
+            deviceCache: MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo),
+            backend: MockBackend(),
+            systemInfo: self.systemInfo
+        )
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
+        self.helper = ManageSubscriptionsHelper(systemInfo: self.systemInfo,
+                                                customerInfoManager: self.customerInfoManager,
+                                                currentUserProvider: self.currentUserProvider)
     }
 
     func testShowManageSubscriptions() throws {

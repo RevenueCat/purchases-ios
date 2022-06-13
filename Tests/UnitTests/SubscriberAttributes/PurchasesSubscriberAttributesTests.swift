@@ -63,7 +63,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         try super.setUpWithError()
 
         userDefaults = UserDefaults(suiteName: "TestDefaults")
-        self.mockDeviceCache = MockDeviceCache(systemInfo: self.systemInfo,
+        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                                userDefaults: self.userDefaults)
 
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",

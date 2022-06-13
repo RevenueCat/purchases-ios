@@ -410,12 +410,15 @@ class BasicCustomerInfoTests: TestCase {
                 ],
                 "entitlements": [
                     "pro": [
+                        "product_identifier": "onemonth_freetrial",
                         "expires_date": "2100-08-30T02:40:36Z"
                     ],
                     "old_pro": [
+                        "product_identifier": "onemonth_freetrial",
                         "expires_date": "1990-08-30T02:40:36Z"
                     ],
                     "forever_pro": [
+                        "product_identifier": "threemonth_freetrial",
                         "expires_date": nil
                     ]
                 ]

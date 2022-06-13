@@ -18,122 +18,115 @@ import Nimble
 @testable import RevenueCat
 
 class ReceiptFetcherTests: TestCase {
-    var receiptFetcher: ReceiptFetcher!
-    var mockRequestFetcher: MockRequestFetcher!
-    var mockBundle: MockBundle!
-    var mockSystemInfo: MockSystemInfo!
+
+    private var receiptFetcher: ReceiptFetcher!
+    private var mockRequestFetcher: MockRequestFetcher!
+    private var mockBundle: MockBundle!
+    private var mockSystemInfo: MockSystemInfo!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        mockBundle = MockBundle()
-        mockRequestFetcher = MockRequestFetcher()
-        mockSystemInfo = try MockSystemInfo(platformInfo: nil,
-                                            finishTransactions: false,
-                                            bundle: mockBundle)
-        receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: mockSystemInfo)
+        self.mockBundle = MockBundle()
+        self.mockRequestFetcher = MockRequestFetcher()
+        self.mockSystemInfo = try MockSystemInfo(platformInfo: nil,
+                                                 finishTransactions: false,
+                                                 bundle: self.mockBundle)
+        self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher, systemInfo: self.mockSystemInfo)
     }
 
     func testReceiptDataWithRefreshPolicyNeverReturnsReceiptData() {
-        var completionCalled = false
         var receivedData: Data?
-        receiptFetcher.receiptData(refreshPolicy: .never) { data in
-            completionCalled = true
+        self.receiptFetcher.receiptData(refreshPolicy: .never) { data in
             receivedData = data
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedData).toNot(beNil())
+
+        expect(receivedData).toEventuallyNot(beNil())
     }
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyReturnsReceiptData() {
-        var completionCalled = false
         var receivedData: Data?
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { data in
-            completionCalled = true
+        self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { data in
             receivedData = data
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedData).toNot(beNil())
+
+        expect(receivedData).toEventuallyNot(beNil())
     }
 
     func testReceiptDataWithRefreshPolicyAlwaysReturnsReceiptData() {
-        var completionCalled = false
         var receivedData: Data?
-        receiptFetcher.receiptData(refreshPolicy: .always) { data in
-            completionCalled = true
+        self.receiptFetcher.receiptData(refreshPolicy: .always) { data in
             receivedData = data
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedData).toNot(beNil())
+
+        expect(receivedData).toEventuallyNot(beNil())
     }
 
     func testReceiptDataWithRefreshPolicyNeverDoesntRefreshIfEmpty() {
-        var completionCalled = false
         mockBundle.receiptURLResult = .emptyReceipt
+
+        var completionCalled = false
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .never) { data in
-            completionCalled = true
             receivedData = data
+            completionCalled = true
         }
+
         expect(completionCalled).toEventually(beTrue())
         expect(self.mockRequestFetcher.refreshReceiptCalled) == false
         expect(receivedData).to(beNil())
     }
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyRefreshesIfEmpty() {
-        var completionCalled = false
         mockBundle.receiptURLResult = .emptyReceipt
+
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { data in
-            completionCalled = true
             receivedData = data
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
-        expect(receivedData).toNot(beNil())
+
+        expect(receivedData).toEventuallyNot(beNil())
         expect(receivedData).to(beEmpty())
+        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
     }
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyRefreshesIfNil() {
-        var completionCalled = false
         mockBundle.receiptURLResult = .nilURL
+
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { data in
-            completionCalled = true
             receivedData = data
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
-        expect(receivedData).toNot(beNil())
+
+        expect(receivedData).toEventuallyNot(beNil())
         expect(receivedData).to(beEmpty())
+        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
     }
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyDoesntRefreshIfTheresData() {
-        var completionCalled = false
         mockBundle.receiptURLResult = .receiptWithData
+
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { data in
-            completionCalled = true
             receivedData = data
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(self.mockRequestFetcher.refreshReceiptCalled) == false
-        expect(receivedData).toNot(beNil())
+
+        expect(receivedData).toEventuallyNot(beNil())
         expect(receivedData).toNot(beEmpty())
+        expect(self.mockRequestFetcher.refreshReceiptCalled) == false
     }
 
     func testReceiptDataWithRefreshPolicyAlwaysRefreshesEvenIfTheresData() {
-        var completionCalled = false
         mockBundle.receiptURLResult = .receiptWithData
+
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .always) { data in
-            completionCalled = true
             receivedData = data
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
-        expect(receivedData).toNot(beNil())
+
+        expect(receivedData).toEventuallyNot(beNil())
         expect(receivedData).toNot(beEmpty())
+        expect(receivedData).toNot(beNil())
     }
 
 }

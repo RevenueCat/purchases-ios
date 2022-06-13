@@ -25,13 +25,6 @@ import Foundation
      */
     @objc public let all: [String: EntitlementInfo]
 
-    /**
-     Dictionary of active ``EntitlementInfo`` (`RCEntitlementInfo`) objects keyed by entitlement identifier.
-     */
-    @objc public var active: [String: EntitlementInfo] {
-        return self.all.filter { $0.value.isActive }
-    }
-
     /// #### Related Symbols
     /// `- `all``
     @objc public subscript(key: String) -> EntitlementInfo? {
@@ -50,8 +43,14 @@ import Foundation
         return self.isEqual(to: other)
     }
 
-    init(entitlements: [String: EntitlementInfo]) {
+    // MARK: -
+
+    init(
+        entitlements: [String: EntitlementInfo],
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    ) {
         self.all = entitlements
+        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
     }
 
     private func isEqual(to other: EntitlementInfos?) -> Bool {
@@ -66,6 +65,44 @@ import Foundation
         return self.all == other.all
     }
 
+    // MARK: -
+
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+
+}
+
+public extension EntitlementInfos {
+
+    /// Dictionary of active ``EntitlementInfo`` objects keyed by their identifiers.
+    /// - Warning: this is equivalent to ``activeInAnyEnvironment``
+    ///
+    /// #### Related Symbols
+    /// - ``activeInCurrentEnvironment``
+    @objc var active: [String: EntitlementInfo] {
+        return self.activeInAnyEnvironment
+    }
+
+    /// Dictionary of active ``EntitlementInfo`` objects keyed by their identifiers.
+    /// - Note: When queried from the sandbox environment, it only returns entitlements active in sandbox.
+    /// When queried from production, this only returns entitlements active in production.
+    ///
+    /// #### Related Symbols
+    /// - ``activeInAnyEnvironment``
+    @objc var activeInCurrentEnvironment: [String: EntitlementInfo] {
+        return self.activeInAnyEnvironment.filter { [isSandbox = self.sandboxEnvironmentDetector.isSandbox] in
+            $0.value.isSandbox == isSandbox
+        }
+    }
+
+    /// Dictionary of active ``EntitlementInfo`` objects keyed by their identifiers.
+    /// - Note: these can be active on any environment.
+    ///
+    /// #### Related Symbols
+    /// - ``activeInCurrentEnvironment``
+    @objc var activeInAnyEnvironment: [String: EntitlementInfo] {
+        return self.all.filter { $0.value.isActive }
+    }
+
 }
 
 extension EntitlementInfos {
@@ -73,24 +110,28 @@ extension EntitlementInfos {
     convenience init(
         entitlements: [String: CustomerInfoResponse.Entitlement],
         purchases: [String: CustomerInfoResponse.Subscription],
-        requestDate: Date?
+        requestDate: Date?,
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector = DefaultSandboxEnvironmentDetector()
     ) {
-        self.init(
-            entitlements: Dictionary(
-                uniqueKeysWithValues: entitlements.compactMap { identifier, entitlement in
-                    guard let subscription = purchases[entitlement.productIdentifier] else {
-                        return nil
-                    }
-
-                    return (
-                        identifier,
-                        EntitlementInfo(identifier: identifier,
-                                        entitlement: entitlement,
-                                        subscription: subscription,
-                                        requestDate: requestDate)
-                    )
+        let allEntitlements: [String: EntitlementInfo] = .init(
+            uniqueKeysWithValues: entitlements.compactMap { identifier, entitlement in
+                guard let subscription = purchases[entitlement.productIdentifier] else {
+                    return nil
                 }
-            )
+
+                return (
+                    identifier,
+                    EntitlementInfo(identifier: identifier,
+                                    entitlement: entitlement,
+                                    subscription: subscription,
+                                    requestDate: requestDate)
+                )
+            }
+        )
+
+        self.init(
+            entitlements: allEntitlements,
+            sandboxEnvironmentDetector: sandboxEnvironmentDetector
         )
     }
 

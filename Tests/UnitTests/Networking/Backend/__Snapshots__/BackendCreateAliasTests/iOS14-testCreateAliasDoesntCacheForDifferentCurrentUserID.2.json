@@ -7,6 +7,6 @@
       "new_app_user_id" : "new_alias"
     },
     "method" : "POST",
-    "url" : "https:\/\/api.revenuecat.com\/v1\/subscribers\/user2\/alias"
+    "url" : "https://api.revenuecat.com/v1/subscribers/user2/alias"
   }
 }

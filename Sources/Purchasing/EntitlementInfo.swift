@@ -81,63 +81,63 @@ extension PeriodType: DefaultValueProvider {
     /**
      The entitlement identifier configured in the RevenueCat dashboard
      */
-    @objc public let identifier: String
+    @objc public var identifier: String { self.contents.identifier }
 
     /**
      True if the user has access to this entitlement
      */
-    @objc public let isActive: Bool
+    @objc public var isActive: Bool { self.contents.isActive }
 
     /**
      True if the underlying subscription is set to renew at the end of
      the billing period (``expirationDate``).
      */
-    @objc public let willRenew: Bool
+    @objc public var willRenew: Bool { self.contents.willRenew }
 
     /**
      The last period type this entitlement was in
      Either: ``PeriodType/normal``, ``PeriodType/intro``, ``PeriodType/trial``
      */
-    @objc public let periodType: PeriodType
+    @objc public var periodType: PeriodType { self.contents.periodType }
 
     /**
      The latest purchase or renewal date for the entitlement.
      */
-    @objc public let latestPurchaseDate: Date?
+    @objc public var latestPurchaseDate: Date? { self.contents.latestPurchaseDate }
 
     /**
      The first date this entitlement was purchased
      */
-    @objc public let originalPurchaseDate: Date?
+    @objc public var originalPurchaseDate: Date? { self.contents.originalPurchaseDate }
 
     /**
      The expiration date for the entitlement, can be `nil` for lifetime access.
      If the ``periodType`` is ``PeriodType/trial``, this is the trial expiration date.
      */
-    @objc public let expirationDate: Date?
+    @objc public var expirationDate: Date? { self.contents.expirationDate }
 
     /**
      * The store where this entitlement was unlocked from either: ``Store/appStore``, ``Store/macAppStore``,
      * ``Store/playStore``, ``Store/stripe``, ``Store/promotional``, or ``Store/unknownStore``.
      */
-    @objc public let store: Store
+    @objc public var store: Store { self.contents.store }
 
     /**
      The product identifier that unlocked this entitlement
      */
-    @objc public let productIdentifier: String
+    @objc public var productIdentifier: String { self.contents.productIdentifier }
 
     /**
      False if this entitlement is unlocked via a production purchase
      */
-    @objc public let isSandbox: Bool
+    @objc public var isSandbox: Bool { self.contents.isSandbox }
 
     /**
      The date an unsubscribe was detected. Can be `nil`.
 
      - Note: Entitlement may still be active even if user has unsubscribed. Check the ``isActive`` property.
      */
-    @objc public let unsubscribeDetectedAt: Date?
+    @objc public var unsubscribeDetectedAt: Date? { self.contents.unsubscribeDetectedAt }
 
     /**
      The date a billing issue was detected. Can be `nil` if there is no
@@ -146,16 +146,20 @@ extension PeriodType: DefaultValueProvider {
      - Note: Entitlement may still be active even if there is a billing issue.
      Check the ``isActive`` property.
      */
-    @objc public let billingIssueDetectedAt: Date?
+    @objc public var billingIssueDetectedAt: Date? { self.contents.billingIssueDetectedAt }
 
     /**
      Use this property to determine whether a purchase was made by the current user
      or shared to them by a family member. This can be useful for onboarding users who have had
      an entitlement shared with them, but might not be entirely aware of the benefits they now have.
      */
-    @objc public let ownershipType: PurchaseOwnershipType
+    @objc public var ownershipType: PurchaseOwnershipType { self.contents.ownershipType }
 
-    private let entitlement: CustomerInfoResponse.Entitlement
+    // Docs inherited from protocol
+    // swiftlint:disable:next missing_docs
+    @objc public let rawData: [String: Any]
+
+    // MARK: -
 
     public override var description: String {
         return """
@@ -177,9 +181,7 @@ extension PeriodType: DefaultValueProvider {
             """
     }
 
-    // swiftlint:disable cyclomatic_complexity
     public override func isEqual(_ object: Any?) -> Bool {
-    // swiftlint:enable cyclomatic_complexity
         guard let info = object as? EntitlementInfo else {
             return false
         }
@@ -187,64 +189,13 @@ extension PeriodType: DefaultValueProvider {
         if self === info {
             return true
         }
-        if self.identifier != info.identifier && (self.identifier != info.identifier) {
-            return false
-        }
-        if self.isActive != info.isActive {
-            return false
-        }
-        if self.willRenew != info.willRenew {
-            return false
-        }
-        if self.periodType != info.periodType {
-            return false
-        }
-        if self.latestPurchaseDate != info.latestPurchaseDate {
-            return false
-        }
-        if self.originalPurchaseDate != info.originalPurchaseDate {
-            return false
-        }
-        if self.expirationDate != info.expirationDate {
-            return false
-        }
-        if self.store != info.store {
-            return false
-        }
-        if self.productIdentifier != info.productIdentifier {
-            return false
-        }
-        if self.isSandbox != info.isSandbox {
-            return false
-        }
-        if self.unsubscribeDetectedAt != info.unsubscribeDetectedAt {
-            return false
-        }
-        if self.billingIssueDetectedAt != info.billingIssueDetectedAt {
-            return false
-        }
-        if self.ownershipType != info.ownershipType {
-            return false
-        }
-        return true
+
+        return self.contents == info.contents
     }
 
     public override var hash: Int {
         var hasher = Hasher()
-
-        hasher.combine(self.identifier)
-        hasher.combine(self.isActive)
-        hasher.combine(self.willRenew)
-        hasher.combine(self.periodType)
-        hasher.combine(self.latestPurchaseDate)
-        hasher.combine(self.originalPurchaseDate)
-        hasher.combine(self.expirationDate)
-        hasher.combine(self.store)
-        hasher.combine(self.productIdentifier)
-        hasher.combine(self.isSandbox)
-        hasher.combine(self.unsubscribeDetectedAt)
-        hasher.combine(self.billingIssueDetectedAt)
-        hasher.combine(self.ownershipType)
+        hasher.combine(self.contents)
 
         return hasher.finalize()
     }
@@ -255,39 +206,33 @@ extension PeriodType: DefaultValueProvider {
         subscription: CustomerInfoResponse.Subscription,
         requestDate: Date?
     ) {
-        self.entitlement = entitlement
+        self.contents = .init(
+            identifier: identifier,
+            isActive: Self.isDateActive(expirationDate: entitlement.expiresDate, forRequestDate: requestDate),
+            willRenew: Self.willRenewWithExpirationDate(expirationDate: subscription.expiresDate,
+                                                        store: subscription.store,
+                                                        unsubscribeDetectedAt: subscription.unsubscribeDetectedAt,
+                                                        billingIssueDetectedAt: subscription.billingIssuesDetectedAt),
+            periodType: subscription.periodType,
+            latestPurchaseDate: entitlement.purchaseDate,
+            originalPurchaseDate: subscription.originalPurchaseDate,
+            expirationDate: subscription.expiresDate,
+            store: subscription.store,
+            productIdentifier: entitlement.productIdentifier,
+            isSandbox: subscription.isSandbox,
+            unsubscribeDetectedAt: subscription.unsubscribeDetectedAt,
+            billingIssueDetectedAt: subscription.billingIssuesDetectedAt,
+            ownershipType: subscription.ownershipType
+        )
 
-        self.store = subscription.store
-        self.expirationDate = subscription.expiresDate
-        self.unsubscribeDetectedAt = subscription.unsubscribeDetectedAt
-        self.billingIssueDetectedAt = subscription.billingIssuesDetectedAt
-        self.identifier = identifier
-        self.productIdentifier = entitlement.productIdentifier
-        self.isSandbox = subscription.isSandbox
-
-        self.isActive = Self.isDateActive(expirationDate: entitlement.expiresDate, forRequestDate: requestDate)
-        self.periodType = subscription.periodType
-        self.latestPurchaseDate = entitlement.purchaseDate
-        self.originalPurchaseDate = subscription.originalPurchaseDate
-        self.ownershipType = subscription.ownershipType
-        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: self.expirationDate,
-                                                          store: self.store,
-                                                          unsubscribeDetectedAt: self.unsubscribeDetectedAt,
-                                                          billingIssueDetectedAt: self.billingIssueDetectedAt)
+        self.rawData = entitlement.rawData
     }
+
+    private let contents: Contents
 
 }
 
- extension EntitlementInfo: RawDataContainer {
-
-     // Docs inherited from protocol
-     // swiftlint:disable missing_docs
-     @objc
-     public var rawData: [String: Any] {
-         return self.entitlement.rawData
-     }
-
- }
+extension EntitlementInfo: RawDataContainer {}
 
 private extension EntitlementInfo {
 
@@ -297,7 +242,7 @@ private extension EntitlementInfo {
         }
 
         let referenceDate: Date = requestDate ?? Date()
-        return expirationDate.timeIntervalSince(referenceDate) > 0
+        return expirationDate.timeIntervalSince(referenceDate) >= 0
     }
 
     class func willRenewWithExpirationDate(expirationDate: Date?,
@@ -318,5 +263,27 @@ extension EntitlementInfo: Identifiable {
 
     /// The stable identity of the entity associated with this instance.
     public var id: String { return self.identifier }
+
+}
+
+private extension EntitlementInfo {
+
+    struct Contents: Equatable, Hashable {
+
+        let identifier: String
+        let isActive: Bool
+        let willRenew: Bool
+        let periodType: PeriodType
+        let latestPurchaseDate: Date?
+        let originalPurchaseDate: Date?
+        let expirationDate: Date?
+        let store: Store
+        let productIdentifier: String
+        let isSandbox: Bool
+        let unsubscribeDetectedAt: Date?
+        let billingIssueDetectedAt: Date?
+        let ownershipType: PurchaseOwnershipType
+
+    }
 
 }

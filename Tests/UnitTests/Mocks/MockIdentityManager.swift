@@ -20,7 +20,7 @@ class MockIdentityManager: IdentityManager {
         let mockSystemInfo = try! MockSystemInfo(platformInfo: nil,
                                                  finishTransactions: false,
                                                  dangerousSettings: nil)
-        let mockDeviceCache = MockDeviceCache(systemInfo: mockSystemInfo)
+        let mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: mockSystemInfo)
         let mockBackend = MockBackend()
 
         self.mockAppUserID = mockAppUserID

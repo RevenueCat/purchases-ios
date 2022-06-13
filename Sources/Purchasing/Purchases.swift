@@ -273,7 +273,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let storeKitWrapper = StoreKitWrapper()
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
-        let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
+        let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
         let receiptParser = ReceiptParser()
         let transactionsManager = TransactionsManager(storeKit2Setting: systemInfo.storeKit2Setting,
                                                       receiptParser: receiptParser)
@@ -919,7 +919,7 @@ public extension Purchases {
     /**
      * Fetch the configured ``Offerings`` for this user.
      *
-     *``Offerings`` allows you to configure your in-app products
+     * ``Offerings`` allows you to configure your in-app products
      * via RevenueCat and greatly simplifies management.
      *
      * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,
@@ -940,7 +940,7 @@ public extension Purchases {
     /**
      * Fetch the configured ``Offerings`` for this user.
      *
-     *``Offerings`` allows you to configure your in-app products
+     * ``Offerings`` allows you to configure your in-app products
      * via RevenueCat and greatly simplifies management.
      *
      * ``Offerings`` will be fetched and cached on instantiation so that, by the time they are needed,

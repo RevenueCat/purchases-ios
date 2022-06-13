@@ -1,3 +1,57 @@
+## 4.6.1
+### Bug fixes
+
+* `EntitlementInfo.isActive` returns true if `requestDate == expirationDate` (#1684) via beylmk (@beylmk)
+* Fixed usages of `seealso` (#1689) via NachoSoto (@NachoSoto)
+* Fixed `ROT13.string` thread-safety (#1686) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: replaced calls to `syncPurchases` with posting receipt for an individual product during SK2 purchases (#1666) via NachoSoto (@NachoSoto)
+
+## 4.6.0
+_This release is compatible with Xcode 14 beta 1_
+
+### New Features
+
+* `EntitlementInfos`: added `activeInAnyEnvironment` and `activeInCurrentEnvironment` (#1647) via NachoSoto (@NachoSoto)
+
+In addition to `EntitlementInfos.active`, two new methods are added to allow detecting entitlements from sandbox and production environments:
+```swift
+customerInfo.entitlements.activeInCurrentEnvironment
+customerInfo.entitlements.activeInAnyEnvironment
+```
+
+### Bug fixes
+
+* `MacDevice`: changed usage of `kIOMasterPortDefault` to fix Catalyst compilation on Xcode 14 (#1676) via NachoSoto (@NachoSoto)
+* `Result.init(value:error:)`: avoid creating error if value is provided (#1672) via NachoSoto (@NachoSoto)
+
+## 4.5.2
+_This version supports Xcode 14 beta 1_
+
+* `PurchasesOrchestrator.handleDeferredTransaction`: check `NSError.domain` too (#1665) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: replaced manual `Lock` with `Atomic` (#1664) via NachoSoto (@NachoSoto)
+* `CodableStrings.decoding_error`: added underlying error information (#1668) via NachoSoto (@NachoSoto)
+* Fixed Xcode 14 compilation: avoid `@available` properties (#1661) via NachoSoto (@NachoSoto)
+
+## 4.5.1
+### Fixes
+
+- Fix an issue where entitlement identifiers and product identifiers would get converted to snake case and returned as empty.
+    https://github.com/RevenueCat/purchases-ios/pull/1651
+    https://github.com/RevenueCat/purchases-ios/issues/1650
+
+## 4.5.0
+### New Features
+* `Purchases.customerInfo()`: added overload with a new `CacheFetchPolicy` (#1608) via NachoSoto (@NachoSoto)
+* `Storefront`: added `sk1CurrentStorefront` for Objective-C (#1614) via NachoSoto (@NachoSoto)
+
+### Bug Fixes
+* Fix for not being able to read receipts on watchOS (#1625) via Patrick Busch (@patrickbusch)
+
+### Other Changes
+* Added tests for `PurchasesOrchestrator` invoking `listenForTransactions` only if SK2 is enabled (#1618) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: removed `lazy` hack for properties with `@available` (#1596) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator.purchase(sk2Product:promotionalOffer:)`: simplified implementation with new operator (#1602) via NachoSoto (@NachoSoto)
+
 ## 4.4.0
 ### New Features
 * Added new API key validation (#1581) via NachoSoto (@NachoSoto)
