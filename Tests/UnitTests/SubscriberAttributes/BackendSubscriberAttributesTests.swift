@@ -55,10 +55,13 @@ class BackendSubscriberAttributesTests: TestCase {
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
 
-        self.backend = Backend(httpClient: mockHTTPClient,
-                               apiKey: Self.apiKey,
-                               attributionFetcher: attributionFetcher,
-                               dateProvider: dateProvider)
+        let config = BackendConfiguration(apiKey: Self.apiKey,
+                                          authHeaders: MockHTTPClient.authorizationHeader(withAPIKey: Self.apiKey),
+                                          httpClient: mockHTTPClient,
+                                          operationQueue: MockBackend.QueueProvider.queue,
+                                          dateProvider: dateProvider)
+
+        self.backend = Backend(backendConfig: config, attributionFetcher: attributionFetcher)
 
         subscriberAttribute1 = SubscriberAttribute(withKey: "a key",
                                                    value: "a value",

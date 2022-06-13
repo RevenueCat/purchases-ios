@@ -42,10 +42,15 @@ class BasePurchasesTests: TestCase {
         self.receiptFetcher = MockReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfoAttribution)
         self.attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                          systemInfo: systemInfoAttribution)
-        self.backend = MockBackend(httpClient: MockHTTPClient(systemInfo: self.systemInfo,
-                                                              eTagManager: MockETagManager()),
-                                   apiKey: "mockAPIKey",
-                                   attributionFetcher: self.attributionFetcher)
+
+        let apiKey = "mockAPIKey"
+        let httpClient = MockHTTPClient(systemInfo: self.systemInfo, eTagManager: MockETagManager())
+        let config = BackendConfiguration(apiKey: apiKey,
+                                          authHeaders: MockHTTPClient.authorizationHeader(withAPIKey: apiKey),
+                                          httpClient: httpClient,
+                                          operationQueue: MockBackend.QueueProvider.queue,
+                                          dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+        self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
@@ -223,6 +228,9 @@ extension BasePurchasesTests {
 extension BasePurchasesTests {
 
     final class MockBackend: Backend {
+
+        static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
+
         var userID: String?
         var originalApplicationVersion: String?
         var originalPurchaseDate: Date?

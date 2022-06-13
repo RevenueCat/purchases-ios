@@ -34,10 +34,13 @@ class BaseBackendTests: TestCase {
         self.httpClient = self.createClient()
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
-        self.backend = Backend(httpClient: self.httpClient,
-                               apiKey: Self.apiKey,
-                               attributionFetcher: attributionFetcher,
-                               dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+        let authHeaders = type(of: self.httpClient).authorizationHeader(withAPIKey: Self.apiKey)
+        let backendConfig = BackendConfiguration(apiKey: Self.apiKey,
+                                                 authHeaders: authHeaders,
+                                                 httpClient: self.httpClient,
+                                                 operationQueue: MockBackend.QueueProvider.queue,
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+        self.backend = Backend(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
     }
 
     func createClient() -> MockHTTPClient {

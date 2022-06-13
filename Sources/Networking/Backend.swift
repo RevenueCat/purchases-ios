@@ -24,15 +24,10 @@ class Backend {
     typealias SimpleResponseHandler = (BackendError?) -> Void
     typealias LogInResponseHandler = (Result<(info: CustomerInfo, created: Bool), BackendError>) -> Void
 
-    private let apiKey: String
-    private let authHeaders: [String: String]
-    private let httpClient: HTTPClient
+    private let config: BackendConfiguration
     private let subscribersAPI: SubscribersAPI
-    private let operationQueue: OperationQueue
-
     private let logInCallbacksCache: CallbackCache<LogInCallback>
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
-    private let callbackQueue = DispatchQueue(label: "Backend callbackQueue")
 
     convenience init(apiKey: String,
                      systemInfo: SystemInfo,
@@ -43,37 +38,28 @@ class Backend {
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     requestTimeout: httpClientTimeout)
-        self.init(httpClient: httpClient,
-                  apiKey: apiKey,
-                  attributionFetcher: attributionFetcher,
-                  dateProvider: dateProvider)
+        let config = BackendConfiguration(apiKey: apiKey,
+                                          authHeaders: HTTPClient.authorizationHeader(withAPIKey: apiKey),
+                                          httpClient: httpClient,
+                                          operationQueue: QueueProvider.queue,
+                                          dateProvider: dateProvider)
+        self.init(backendConfig: config, attributionFetcher: attributionFetcher)
     }
 
-    required init(httpClient: HTTPClient,
-                  apiKey: String,
-                  attributionFetcher: AttributionFetcher,
-                  dateProvider: DateProvider = DateProvider()) {
-        self.operationQueue = OperationQueue()
-        self.operationQueue.name = "Backend Queue"
-        self.operationQueue.maxConcurrentOperationCount = 1
+    required init(backendConfig: BackendConfiguration,
+                  attributionFetcher: AttributionFetcher) {
+        self.config = backendConfig
+        self.offeringsCallbacksCache = CallbackCache<OfferingsCallback>(callbackQueue: self.config.callbackQueue)
+        self.logInCallbacksCache = CallbackCache<LogInCallback>(callbackQueue: self.config.callbackQueue)
 
-        self.httpClient = httpClient
-        self.apiKey = apiKey
-        self.offeringsCallbacksCache = CallbackCache<OfferingsCallback>(callbackQueue: self.callbackQueue)
-        self.logInCallbacksCache = CallbackCache<LogInCallback>(callbackQueue: self.callbackQueue)
-        self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
-
-        let customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: callbackQueue)
-        self.subscribersAPI = SubscribersAPI(httpClient: httpClient,
+        let customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: self.config.callbackQueue)
+        self.subscribersAPI = SubscribersAPI(backendConfig: self.config,
                                              attributionFetcher: attributionFetcher,
-                                             authHeaders: self.authHeaders,
-                                             operationQueue: self.operationQueue,
-                                             customerInfoCallbackCache: customerInfoCallbackCache,
-                                             dateProvider: dateProvider)
+                                             customerInfoCallbackCache: customerInfoCallbackCache)
     }
 
     func clearHTTPClientCaches() {
-        self.httpClient.clearCaches()
+        self.config.clearCache()
     }
 
     func getCustomerInfo(appUserID: String, completion: @escaping CustomerInfoResponseHandler) {
@@ -114,8 +100,8 @@ class Backend {
               receiptData: Data,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
-                                                                authHeaders: self.authHeaders,
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
+                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: appUserID)
 
         let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
@@ -125,28 +111,28 @@ class Backend {
         let postOfferForSigningOperation = PostOfferForSigningOperation(configuration: config,
                                                                         postOfferForSigningData: postOfferData,
                                                                         responseHandler: completion)
-        self.operationQueue.addOperation(postOfferForSigningOperation)
+        self.config.operationQueue.addOperation(postOfferForSigningOperation)
     }
 
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
-                                                                authHeaders: self.authHeaders,
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
+                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: appUserID)
         let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
                                                                         attributionData: attributionData,
                                                                         network: network,
                                                                         responseHandler: completion)
-        self.operationQueue.addOperation(postAttributionDataOperation)
+        self.config.operationQueue.addOperation(postAttributionDataOperation)
     }
 
     func logIn(currentAppUserID: String,
                newAppUserID: String,
                completion: @escaping LogInResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
-                                                                authHeaders: self.authHeaders,
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
+                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: currentAppUserID)
         let loginOperation = LogInOperation(configuration: config,
                                             newAppUserID: newAppUserID,
@@ -155,12 +141,12 @@ class Backend {
         let loginCallback = LogInCallback(cacheKey: loginOperation.cacheKey, completion: completion)
         let cacheStatus = self.logInCallbacksCache.add(callback: loginCallback)
 
-        self.operationQueue.addCacheableOperation(loginOperation, cacheStatus: cacheStatus)
+        self.config.operationQueue.addCacheableOperation(loginOperation, cacheStatus: cacheStatus)
     }
 
     func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
-                                                                authHeaders: self.authHeaders,
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
+                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: appUserID)
         let getOfferingsOperation = GetOfferingsOperation(configuration: config,
                                                           offeringsCallbackCache: self.offeringsCallbacksCache)
@@ -168,21 +154,36 @@ class Backend {
         let offeringsCallback = OfferingsCallback(cacheKey: getOfferingsOperation.cacheKey, completion: completion)
         let cacheStatus = self.offeringsCallbacksCache.add(callback: offeringsCallback)
 
-        self.operationQueue.addCacheableOperation(getOfferingsOperation, cacheStatus: cacheStatus)
+        self.config.operationQueue.addCacheableOperation(getOfferingsOperation, cacheStatus: cacheStatus)
     }
 
     func getIntroEligibility(appUserID: String,
                              receiptData: Data,
                              productIdentifiers: [String],
                              completion: @escaping IntroEligibilityResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
-                                                                authHeaders: self.authHeaders,
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
+                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: appUserID)
         let getIntroEligibilityOperation = GetIntroEligibilityOperation(configuration: config,
                                                                         receiptData: receiptData,
                                                                         productIdentifiers: productIdentifiers,
                                                                         responseHandler: completion)
-        self.operationQueue.addOperation(getIntroEligibilityOperation)
+        self.config.operationQueue.addOperation(getIntroEligibilityOperation)
+    }
+
+}
+
+extension Backend {
+
+    enum QueueProvider {
+
+        static var queue: OperationQueue {
+            let operationQueue = OperationQueue()
+            operationQueue.name = "Backend Queue"
+            operationQueue.maxConcurrentOperationCount = 1
+            return operationQueue
+        }
+
     }
 
 }
@@ -191,7 +192,7 @@ class Backend {
 extension Backend {
 
     var networkTimeout: TimeInterval {
-        return self.httpClient.timeout
+        return self.config.httpClient.timeout
     }
 
 }
