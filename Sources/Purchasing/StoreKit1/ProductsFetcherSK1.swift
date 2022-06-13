@@ -21,8 +21,6 @@ class ProductsFetcherSK1: NSObject {
     let requestTimeout: TimeInterval
     private let productsRequestFactory: ProductsRequestFactory
 
-    // Note: the cached products don't get invalidated when the Storefront changes,
-    // so their localized data might be outdated.
     private var cachedProductsByIdentifier: [String: SK1Product] = [:]
     private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: ProductRequest] = [:]
