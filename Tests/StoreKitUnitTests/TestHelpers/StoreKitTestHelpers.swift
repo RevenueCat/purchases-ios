@@ -62,8 +62,12 @@ extension StoreKitConfigTestCase {
     /// Updates `SKTestSession.storefront` and waits for `Storefront.current` to reflect the change
     /// This is necessary because the change is aynchronous within `StoreKit`, and otherwise code that depends
     /// on the change might not see it in time, resulting in race conditions and flaky tests.
-    func changeStorefront(_ new: String) async {
-        testSession.storefront = new
+    func changeStorefront(
+        _ new: String,
+        file: FileString = #fileID,
+        line: UInt = #line
+    ) async {
+        self.testSession.storefront = new
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             // Note: a better approach would be using `XCTestExpectation` and `self.wait(for:timeout:)`
@@ -86,7 +90,11 @@ extension StoreKitConfigTestCase {
             } while numberOfChecksLeft > 0
 
             let detected = await storefrontUpdateDetected
-            expect(detected).to(beTrue(), description: "Storefront change not detected")
+            expect(
+                file: file,
+                line: line,
+                detected
+            ).to(beTrue(), description: "Storefront change not detected")
         }
     }
 

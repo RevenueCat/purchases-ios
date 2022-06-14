@@ -33,7 +33,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
         let secondPriceFormatter = priceFormatterProvider.priceFormatterForSK1(with: locale)
 
-        XCTAssertIdentical(firstPriceFormatter, secondPriceFormatter)
+        expect(firstPriceFormatter) === secondPriceFormatter
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -45,7 +45,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
         let secondPriceFormatter = priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
 
-        XCTAssertIdentical(firstPriceFormatter, secondPriceFormatter)
+        expect(firstPriceFormatter) === secondPriceFormatter
     }
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
@@ -53,7 +53,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         testSession.locale = Locale(identifier: "es_ES")
-        await changeStorefront("ESP")
+        await self.changeStorefront("ESP")
 
         let sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
 
@@ -63,7 +63,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(priceFormatter.currencyCode) == "EUR"
 
         testSession.locale = Locale(identifier: "en_EN")
-        await changeStorefront("USA")
+        await self.changeStorefront("USA")
 
         // Note: this test passes only because the cache is manually
         // cleared. `ProductsFetcherSK1` does not detect Storefront
@@ -82,7 +82,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         testSession.locale = Locale(identifier: "es_ES")
-        await changeStorefront("ESP")
+        await self.changeStorefront("ESP")
 
         let sk2Fetcher = ProductsFetcherSK2()
 
@@ -92,7 +92,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(priceFormatter.currencyCode) == "EUR"
 
         testSession.locale = Locale(identifier: "en_EN")
-        await changeStorefront("USA")
+        await self.changeStorefront("USA")
 
         // Note: this test passes only because the cache is manually
         // cleared. `ProductsFetcherSK2` does not detect Storefront
