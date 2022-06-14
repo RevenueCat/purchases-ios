@@ -14,6 +14,8 @@
 import Foundation
 
 func main() -> Int {
+    checkAttributionAPI()
+
     checkAttributionNetworkEnums()
 
     checkEntitlementInfoAPI()

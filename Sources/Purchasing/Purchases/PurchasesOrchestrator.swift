@@ -48,13 +48,13 @@ class PurchasesOrchestrator {
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttributeDict {
-        subscriberAttributesManager.unsyncedAttributesByKey(appUserID: self.appUserID)
+        self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
 
     private let productsManager: ProductsManager
     private let storeKitWrapper: StoreKitWrapper
     private let systemInfo: SystemInfo
-    private let subscriberAttributesManager: SubscriberAttributesManager
+    private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
     private let receiptFetcher: ReceiptFetcher
     private let customerInfoManager: CustomerInfoManager
@@ -87,7 +87,7 @@ class PurchasesOrchestrator {
     convenience init(productsManager: ProductsManager,
                      storeKitWrapper: StoreKitWrapper,
                      systemInfo: SystemInfo,
-                     subscriberAttributesManager: SubscriberAttributesManager,
+                     subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
                      receiptFetcher: ReceiptFetcher,
                      customerInfoManager: CustomerInfoManager,
@@ -104,7 +104,7 @@ class PurchasesOrchestrator {
             productsManager: productsManager,
             storeKitWrapper: storeKitWrapper,
             systemInfo: systemInfo,
-            subscriberAttributesManager: subscriberAttributesManager,
+            subscriberAttributes: subscriberAttributes,
             operationDispatcher: operationDispatcher,
             receiptFetcher: receiptFetcher,
             customerInfoManager: customerInfoManager,
@@ -131,7 +131,7 @@ class PurchasesOrchestrator {
     init(productsManager: ProductsManager,
          storeKitWrapper: StoreKitWrapper,
          systemInfo: SystemInfo,
-         subscriberAttributesManager: SubscriberAttributesManager,
+         subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
          receiptFetcher: ReceiptFetcher,
          customerInfoManager: CustomerInfoManager,
@@ -144,7 +144,7 @@ class PurchasesOrchestrator {
         self.productsManager = productsManager
         self.storeKitWrapper = storeKitWrapper
         self.systemInfo = systemInfo
-        self.subscriberAttributesManager = subscriberAttributesManager
+        self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
         self.receiptFetcher = receiptFetcher
         self.customerInfoManager = customerInfoManager
@@ -752,7 +752,7 @@ private extension PurchasesOrchestrator {
             )
         }
 
-        subscriberAttributesManager.markAttributesAsSynced(subscriberAttributes, appUserID: appUserID)
+        self.attribution.markAttributesAsSynced(subscriberAttributes, appUserID: appUserID)
     }
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,

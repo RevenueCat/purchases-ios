@@ -391,6 +391,7 @@
 		B372EC54268FEDC60099171E /* StoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = B372EC53268FEDC60099171E /* StoreProductDiscount.swift */; };
 		B372EC56268FEF020099171E /* ProductRequestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B372EC55268FEF020099171E /* ProductRequestData.swift */; };
 		B380D69B27726AB500984578 /* DNSCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B380D69A27726AB500984578 /* DNSCheckerTests.swift */; };
+		B3843BCB285149A1009F4854 /* Attribution.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3843BCA285149A0009F4854 /* Attribution.swift */; };
 		B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3852F9F26C1ED1F005384F8 /* IdentityManager.swift */; };
 		B390F5BA271DDC7400B64D65 /* PurchasesDeprecation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B390F5B9271DDC7400B64D65 /* PurchasesDeprecation.swift */; };
 		B39E811A268E849900D31189 /* AttributionNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E8119268E849900D31189 /* AttributionNetwork.swift */; };
@@ -852,6 +853,7 @@
 		B372EC53268FEDC60099171E /* StoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductDiscount.swift; sourceTree = "<group>"; };
 		B372EC55268FEF020099171E /* ProductRequestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductRequestData.swift; sourceTree = "<group>"; };
 		B380D69A27726AB500984578 /* DNSCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSCheckerTests.swift; sourceTree = "<group>"; };
+		B3843BCA285149A0009F4854 /* Attribution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Attribution.swift; sourceTree = "<group>"; };
 		B3852F9F26C1ED1F005384F8 /* IdentityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityManager.swift; sourceTree = "<group>"; };
 		B390F5B9271DDC7400B64D65 /* PurchasesDeprecation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDeprecation.swift; sourceTree = "<group>"; };
 		B39E8119268E849900D31189 /* AttributionNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionNetwork.swift; sourceTree = "<group>"; };
@@ -1236,12 +1238,12 @@
 			isa = PBXGroup;
 			children = (
 				570896B627596E6E00296F1C /* APITesters */,
-				57B425A3275800B60075BDC4 /* Test Plans */,
-				2DE20B6D264087FB004C597D /* BackendIntegrationTests */,
 				2DE20B8026409EB7004C597D /* BackendIntegrationTestApp */,
-				2DEAC2DB26EFE46E006914ED /* UnitTestsHostApp */,
+				2DE20B6D264087FB004C597D /* BackendIntegrationTests */,
 				2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */,
+				57B425A3275800B60075BDC4 /* Test Plans */,
 				2DC5622224EC63430031F69B /* UnitTests */,
+				2DEAC2DB26EFE46E006914ED /* UnitTestsHostApp */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1437,6 +1439,7 @@
 		354235D524C11138008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
+				B3843BC72851489B009F4854 /* Purchases */,
 				2D1DB44A26EA61AB00DDE736 /* StoreKit1 */,
 				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
 				2D1015DC275A57DB0086173F /* StoreKitAbstractions */,
@@ -1457,9 +1460,6 @@
 				37E35C7060D7E486F5958BED /* ProductsManager.swift */,
 				37E35E8DCF998D9DB63850F8 /* ProductsRequestFactory.swift */,
 				B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */,
-				B35042C326CDB79A00905B95 /* Purchases.swift */,
-				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
-				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
 				80E80EF026970DC3008F245A /* ReceiptFetcher.swift */,
 				F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */,
 				3597020F24BF6A710010506E /* TransactionsFactory.swift */,
@@ -1560,16 +1560,16 @@
 		35F82BBB26A9BFA60051DF03 /* FoundationExtensions */ = {
 			isa = PBXGroup;
 			children = (
-				37E353AF2CAD3CEDE6D9B368 /* NSError+RCExtensionsTests.swift */,
-				37E3508EC20EEBAB4EAC4C82 /* NSDate+RCExtensionsTests.swift */,
-				37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */,
-				2DD269162522A20A006AC4BC /* DictionaryExtensionsTests.swift */,
-				57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */,
-				37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */,
 				572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */,
-				5796A3BF27D7D64500653165 /* ResultExtensionsTests.swift */,
+				37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */,
 				57ACB13628184CF1000DCC9F /* DecoderExtensionTests.swift */,
+				2DD269162522A20A006AC4BC /* DictionaryExtensionsTests.swift */,
+				37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */,
+				37E3508EC20EEBAB4EAC4C82 /* NSDate+RCExtensionsTests.swift */,
+				37E353AF2CAD3CEDE6D9B368 /* NSError+RCExtensionsTests.swift */,
 				5766AA41283C768600FA6091 /* OperatorExtensionsTests.swift */,
+				5796A3BF27D7D64500653165 /* ResultExtensionsTests.swift */,
+				57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */,
 				57D56FC92853C005009E8E1E /* StringExtensionsTests.swift */,
 			);
 			path = FoundationExtensions;
@@ -1793,6 +1793,17 @@
 				2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */,
 			);
 			path = SubscriberAttributes;
+			sourceTree = "<group>";
+		};
+		B3843BC72851489B009F4854 /* Purchases */ = {
+			isa = PBXGroup;
+			children = (
+				B3843BCA285149A0009F4854 /* Attribution.swift */,
+				B35042C326CDB79A00905B95 /* Purchases.swift */,
+				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
+				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
+			);
+			path = Purchases;
 			sourceTree = "<group>";
 		};
 		B3A36AAC26BC76230059EDEA /* Identity */ = {
@@ -2260,6 +2271,7 @@
 				57D5412E27F6311C004CC35C /* OfferingsResponse.swift in Sources */,
 				57AC4C1C2770F56200DDE30F /* SK1StoreProduct.swift in Sources */,
 				B34605C3279A6E380031CA74 /* PostOfferForSigningOperation.swift in Sources */,
+				B3843BCB285149A1009F4854 /* Attribution.swift in Sources */,
 				B34605C7279A6E380031CA74 /* SubscriberAttributesMarshaller.swift in Sources */,
 				57EFDC6B27BC1F370057EC39 /* ProductType.swift in Sources */,
 				B3022072272B3DDC008F1A0D /* DescribableError.swift in Sources */,

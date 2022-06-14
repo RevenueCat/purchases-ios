@@ -53,6 +53,8 @@ class BasePurchasesTests: TestCase {
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator()
         )
+        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
+                                       identityManager: identityManager)
         self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
                                                    currentUserProvider: self.identityManager,
                                                    backend: self.backend,
@@ -99,6 +101,7 @@ class BasePurchasesTests: TestCase {
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
+    var attribution: Attribution!
     var identityManager: MockIdentityManager!
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
@@ -142,7 +145,7 @@ class BasePurchasesTests: TestCase {
             productsManager: self.mockProductsManager,
             storeKitWrapper: self.storeKitWrapper,
             systemInfo: self.systemInfo,
-            subscriberAttributesManager: self.subscriberAttributesManager,
+            subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
             receiptFetcher: self.receiptFetcher,
             customerInfoManager: self.customerInfoManager,
@@ -174,7 +177,7 @@ class BasePurchasesTests: TestCase {
                                    offeringsFactory: self.offeringsFactory,
                                    deviceCache: self.deviceCache,
                                    identityManager: self.identityManager,
-                                   subscriberAttributesManager: self.subscriberAttributesManager,
+                                   subscriberAttributes: self.attribution,
                                    operationDispatcher: self.mockOperationDispatcher,
                                    customerInfoManager: self.customerInfoManager,
                                    productsManager: self.mockProductsManager,
