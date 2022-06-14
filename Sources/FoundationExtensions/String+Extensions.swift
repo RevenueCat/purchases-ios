@@ -78,16 +78,22 @@ extension String {
 private enum ROT13 {
 
     private static let key: [Character: Character] = {
-        var result: [Character: Character] = [:]
-        for number in 0 ..< 26 {
-            result[Self.uppercase[number]] = Self.uppercase[(number + 13) % 26]
-            result[Self.lowercase[number]] = Self.lowercase[(number + 13) % 26]
+        let size = Self.lowercase.count
+        let halfSize: Int = size / 2
+
+        var result: [Character: Character] = .init(minimumCapacity: size)
+
+        for number in 0 ..< size {
+            let index = (number + halfSize) % size
+
+            result[Self.uppercase[number]] = Self.uppercase[index]
+            result[Self.lowercase[number]] = Self.lowercase[index]
         }
 
         return result
     }()
-    private static let uppercase = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-    private static let lowercase = Array("abcdefghijklmnopqrstuvwxyz")
+    private static let lowercase: [Character] = Array("abcdefghijklmnopqrstuvwxyz")
+    private static let uppercase: [Character] = Self.lowercase.map { $0.uppercased().first! }
 
     fileprivate static func string(_ string: String) -> String {
         let transformed = string.map { Self.key[$0] ?? $0 }
