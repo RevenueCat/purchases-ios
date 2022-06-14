@@ -58,6 +58,12 @@ import Foundation
     @objc(RCInvalidPromotionalOfferError) case invalidPromotionalOfferError = 34
     @objc(RCOfflineConnectionError) case offlineConnectionError = 35
 
+    // swiftlint:enable missing_docs
+
+}
+
+extension ErrorCode {
+
     /**
      * When an ErrorCode has been deprecated and then removed, add it to the reserved list so that we do not
      * accidentally reuse it. For example:
@@ -65,11 +71,9 @@ import Foundation
      * so we add its rawValue of `27` to the `reservedRawValues` array. That way our unit tests will catch if we
      * accidentally add `27` back into the enumeration.
      */
-    static var reservedRawValues: [Int] {
+    static var reservedRawValues: Set<RawValue> {
         return [27]
     }
-
-    // swiftlint:enable missing_docs
 
 }
 
