@@ -44,10 +44,8 @@ class BasePurchasesTests: TestCase {
                                                          systemInfo: systemInfoAttribution)
 
         let apiKey = "mockAPIKey"
-        let httpClient = MockHTTPClient(systemInfo: self.systemInfo, eTagManager: MockETagManager())
-        let config = BackendConfiguration(apiKey: apiKey,
-                                          authHeaders: MockHTTPClient.authorizationHeader(withAPIKey: apiKey),
-                                          httpClient: httpClient,
+        let httpClient = MockHTTPClient(apiKey: apiKey, systemInfo: self.systemInfo, eTagManager: MockETagManager())
+        let config = BackendConfiguration(httpClient: httpClient,
                                           operationQueue: MockBackend.QueueProvider.queue,
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)

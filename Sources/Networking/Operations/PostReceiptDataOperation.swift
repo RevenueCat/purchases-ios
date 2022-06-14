@@ -59,10 +59,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
     private func post(completion: @escaping () -> Void) {
         let request = HTTPRequest(method: .post(self.postData), path: .postReceiptData)
 
-        httpClient.perform(
-            request,
-            authHeaders: self.authHeaders
-        ) { (response: HTTPResponse<CustomerInfoResponseHandler.Response>.Result) in
+        httpClient.perform(request) { (response: HTTPResponse<CustomerInfoResponseHandler.Response>.Result) in
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         completion: callbackObject.completion)

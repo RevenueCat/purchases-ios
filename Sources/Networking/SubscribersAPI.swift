@@ -29,7 +29,6 @@ class SubscribersAPI {
 
     func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                authHeaders: self.backendConfig.authHeaders,
                                                                 appUserID: appUserID)
 
         let operation = GetCustomerInfoOperation(configuration: config,
@@ -44,7 +43,6 @@ class SubscribersAPI {
               appUserID: String,
               completion: Backend.SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                authHeaders: self.backendConfig.authHeaders,
                                                                 appUserID: appUserID)
         let operation = PostSubscriberAttributesOperation(configuration: config,
                                                           subscriberAttributes: subscriberAttributes,
@@ -69,7 +67,6 @@ class SubscribersAPI {
         subscriberAttributesByKey[ReservedSubscriberAttribute.consentStatus.key] = consentStatus
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                authHeaders: self.backendConfig.authHeaders,
                                                                 appUserID: appUserID)
 
         let postData = PostReceiptDataOperation.PostData(appUserID: appUserID,

@@ -15,22 +15,16 @@ import Foundation
 
 class BackendConfiguration {
 
-    let apiKey: String
-    let authHeaders: [String: String]
     let httpClient: HTTPClient
 
     let callbackQueue: DispatchQueue
     let operationQueue: OperationQueue
     let dateProvider: DateProvider
 
-    init(apiKey: String,
-         authHeaders: [String: String],
-         httpClient: HTTPClient,
+    init(httpClient: HTTPClient,
          operationQueue: OperationQueue,
          callbackQueue: DispatchQueue = DispatchQueue(label: "Backend callbackQueue"),
          dateProvider: DateProvider = DateProvider()) {
-        self.apiKey = apiKey
-        self.authHeaders = authHeaders
         self.httpClient = httpClient
         self.operationQueue = operationQueue
         self.callbackQueue = callbackQueue

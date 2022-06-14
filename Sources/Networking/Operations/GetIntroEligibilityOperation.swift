@@ -75,7 +75,7 @@ private extension GetIntroEligibilityOperation {
                                   path: .getIntroEligibility(appUserID: appUserID))
 
         httpClient.perform(
-            request, authHeaders: self.authHeaders
+            request
         ) { (response: HTTPResponse<GetIntroEligibilityResponse>.Result) in
             self.handleIntroEligibility(result: response,
                                         productIdentifiers: self.productIdentifiers,

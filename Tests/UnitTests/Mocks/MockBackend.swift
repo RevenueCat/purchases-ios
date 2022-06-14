@@ -35,11 +35,11 @@ class MockBackend: Backend {
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
         let mockAPIKey = "mockAPIKey"
-        let httpClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: MockETagManager(), requestTimeout: 7)
-        let authHeaders = MockHTTPClient.authorizationHeader(withAPIKey: mockAPIKey)
-        let backendConfig = BackendConfiguration(apiKey: mockAPIKey,
-                                                 authHeaders: authHeaders,
-                                                 httpClient: httpClient,
+        let httpClient = MockHTTPClient(apiKey: mockAPIKey,
+                                        systemInfo: systemInfo,
+                                        eTagManager: MockETagManager(),
+                                        requestTimeout: 7)
+        let backendConfig = BackendConfiguration(httpClient: httpClient,
                                                  operationQueue: QueueProvider.queue,
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.init(backendConfig: backendConfig, attributionFetcher: attributionFetcher)

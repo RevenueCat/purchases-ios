@@ -35,12 +35,11 @@ class Backend {
                      eTagManager: ETagManager,
                      attributionFetcher: AttributionFetcher,
                      dateProvider: DateProvider = DateProvider()) {
-        let httpClient = HTTPClient(systemInfo: systemInfo,
+        let httpClient = HTTPClient(apiKey: apiKey,
+                                    systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     requestTimeout: httpClientTimeout)
-        let config = BackendConfiguration(apiKey: apiKey,
-                                          authHeaders: HTTPClient.authorizationHeader(withAPIKey: apiKey),
-                                          httpClient: httpClient,
+        let config = BackendConfiguration(httpClient: httpClient,
                                           operationQueue: QueueProvider.queue,
                                           dateProvider: dateProvider)
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
@@ -101,7 +100,6 @@ class Backend {
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: appUserID)
 
         let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
@@ -119,7 +117,6 @@ class Backend {
               appUserID: String,
               completion: SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: appUserID)
         let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
                                                                         attributionData: attributionData,
@@ -132,7 +129,6 @@ class Backend {
                newAppUserID: String,
                completion: @escaping LogInResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: currentAppUserID)
         let loginOperation = LogInOperation(configuration: config,
                                             newAppUserID: newAppUserID,
@@ -146,7 +142,6 @@ class Backend {
 
     func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: appUserID)
         let getOfferingsOperation = GetOfferingsOperation(configuration: config,
                                                           offeringsCallbackCache: self.offeringsCallbacksCache)
@@ -162,7 +157,6 @@ class Backend {
                              productIdentifiers: [String],
                              completion: @escaping IntroEligibilityResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                authHeaders: self.config.authHeaders,
                                                                 appUserID: appUserID)
         let getIntroEligibilityOperation = GetIntroEligibilityOperation(configuration: config,
                                                                         receiptData: receiptData,
