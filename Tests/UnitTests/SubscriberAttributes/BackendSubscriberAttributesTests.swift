@@ -55,10 +55,11 @@ class BackendSubscriberAttributesTests: TestCase {
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
 
-        self.backend = Backend(httpClient: mockHTTPClient,
-                               apiKey: Self.apiKey,
-                               attributionFetcher: attributionFetcher,
-                               dateProvider: dateProvider)
+        let config = BackendConfiguration(httpClient: mockHTTPClient,
+                                          operationQueue: MockBackend.QueueProvider.queue,
+                                          dateProvider: dateProvider)
+
+        self.backend = Backend(backendConfig: config, attributionFetcher: attributionFetcher)
 
         subscriberAttribute1 = SubscriberAttribute(withKey: "a key",
                                                    value: "a value",
@@ -321,7 +322,10 @@ class BackendSubscriberAttributesTests: TestCase {
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
         self.mockETagManager = eTagManager
 
-        return MockHTTPClient(systemInfo: self.systemInfo, eTagManager: eTagManager, sourceTestFile: file)
+        return MockHTTPClient(apiKey: Self.apiKey,
+                              systemInfo: self.systemInfo,
+                              eTagManager: eTagManager,
+                              sourceTestFile: file)
     }
 
 }

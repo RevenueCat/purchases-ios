@@ -34,10 +34,10 @@ class BaseBackendTests: TestCase {
         self.httpClient = self.createClient()
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
-        self.backend = Backend(httpClient: self.httpClient,
-                               apiKey: Self.apiKey,
-                               attributionFetcher: attributionFetcher,
-                               dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+        let backendConfig = BackendConfiguration(httpClient: self.httpClient,
+                                                 operationQueue: MockBackend.QueueProvider.queue,
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+        self.backend = Backend(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
     }
 
     func createClient() -> MockHTTPClient {
@@ -52,7 +52,8 @@ extension BaseBackendTests {
     final func createClient(_ file: StaticString) -> MockHTTPClient {
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
 
-        return MockHTTPClient(systemInfo: self.systemInfo,
+        return MockHTTPClient(apiKey: Self.apiKey,
+                              systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
                               sourceTestFile: file)
     }

@@ -50,8 +50,7 @@ class PostOfferForSigningOperation: NetworkOperation {
             path: .postOfferForSigning
         )
 
-        self.httpClient.perform(request,
-                                authHeaders: self.authHeaders) { (response: HTTPResponse<PostOfferResponse>.Result) in
+        self.httpClient.perform(request) { (response: HTTPResponse<PostOfferResponse>.Result) in
             let result: Result<PostOfferForSigningOperation.SigningData, BackendError> = response
                 .mapError { error -> BackendError in
                     if case .decoding = error {

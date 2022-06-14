@@ -37,16 +37,16 @@ class MockHTTPClient: HTTPClient {
     var mocks: [HTTPRequest.Path: Response] = [:]
     var calls: [Call] = []
 
-    init(
-        systemInfo: SystemInfo,
-        eTagManager: ETagManager,
-        dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-        requestTimeout: TimeInterval = 7,
-        sourceTestFile: StaticString = #file
-    ) {
+    init(apiKey: String,
+         systemInfo: SystemInfo,
+         eTagManager: ETagManager,
+         dnsChecker: DNSCheckerType.Type = DNSChecker.self,
+         requestTimeout: TimeInterval = 7,
+         sourceTestFile: StaticString = #file) {
         self.sourceTestFile = sourceTestFile
 
-        super.init(systemInfo: systemInfo,
+        super.init(apiKey: apiKey,
+                   systemInfo: systemInfo,
                    eTagManager: eTagManager,
                    dnsChecker: dnsChecker,
                    requestTimeout: requestTimeout)
@@ -54,9 +54,7 @@ class MockHTTPClient: HTTPClient {
 
     private let sourceTestFile: StaticString
 
-    override func perform<Value: HTTPResponseBody>(_ request: HTTPRequest,
-                                                   authHeaders: RequestHeaders,
-                                                   completionHandler: Completion<Value>?) {
+    override func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
         let call = Call(request: request, headers: authHeaders)
 
         DispatchQueue.main.async {

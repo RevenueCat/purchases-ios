@@ -16,7 +16,7 @@ import XCTest
 class HTTPClientTests: TestCase {
 
     private typealias EmptyResponse = HTTPResponse<HTTPEmptyResponseBody>.Result
-
+    let apiKey = "MockAPIKey"
     let systemInfo = MockSystemInfo(finishTransactions: true)
     var client: HTTPClient!
     var userDefaults: UserDefaults!
@@ -31,12 +31,11 @@ class HTTPClientTests: TestCase {
         operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
 
-        client = HTTPClient(
-            systemInfo: systemInfo,
-            eTagManager: eTagManager,
-            dnsChecker: MockDNSChecker.self,
-            requestTimeout: 3
-        )
+        client = HTTPClient(apiKey: apiKey,
+                            systemInfo: systemInfo,
+                            eTagManager: eTagManager,
+                            dnsChecker: MockDNSChecker.self,
+                            requestTimeout: 3)
     }
 
     override func tearDown() {
@@ -55,7 +54,7 @@ class HTTPClientTests: TestCase {
         }
 
         let request = HTTPRequest(method: .get, path: .mockPath)
-        self.client.perform(request, authHeaders: [:]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(hostCorrect.value).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -63,15 +62,13 @@ class HTTPClientTests: TestCase {
     func testPassesHeaders() {
         let headerPresent: Atomic<Bool> = .init(false)
 
-        stub(condition: hasHeaderNamed("test_header")) { _ in
+        stub(condition: hasHeaderNamed("Authorization")) { _ in
             headerPresent.value = true
             return .emptySuccessResponse
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
-        self.client.perform(request,
-                            authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in
-        }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(headerPresent.value).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -86,7 +83,7 @@ class HTTPClientTests: TestCase {
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(headerPresent.value).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -101,7 +98,7 @@ class HTTPClientTests: TestCase {
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -116,7 +113,7 @@ class HTTPClientTests: TestCase {
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -131,7 +128,7 @@ class HTTPClientTests: TestCase {
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -149,7 +146,7 @@ class HTTPClientTests: TestCase {
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(header.value).toEventuallyNot(beNil())
         expect(header.value) == "true"
@@ -168,7 +165,7 @@ class HTTPClientTests: TestCase {
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(header.value).toEventuallyNot(beNil())
         expect(header.value) == "false"
@@ -184,7 +181,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(request, authHeaders: [:]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(pathHit.value).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -201,7 +198,7 @@ class HTTPClientTests: TestCase {
         }
         let request = HTTPRequest(method: .post(body), path: .mockPath)
 
-        self.client.perform(request, authHeaders: [:]) { (_: EmptyResponse) in }
+        self.client.perform(request) { (_: EmptyResponse) in }
 
         expect(pathHit.value).toEventually(equal(true))
     }
@@ -215,7 +212,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(request, authHeaders: [:]) { (_: EmptyResponse) in
+        self.client.perform(request) { (_: EmptyResponse) in
             completionCalled.value = true
         }
 
@@ -233,7 +230,7 @@ class HTTPClientTests: TestCase {
             response.error = error
             return response
         }
-        self.client.perform(request, authHeaders: [:]) { (result: EmptyResponse) in
+        self.client.perform(request) { (result: EmptyResponse) in
             receivedError.value = result.error
         }
 
@@ -263,7 +260,7 @@ class HTTPClientTests: TestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (response: HTTPResponse<Data>.Result) in
+        self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
             result.value = response
         }
 
@@ -292,7 +289,7 @@ class HTTPClientTests: TestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (response: HTTPResponse<Data>.Result) in
+        self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
             result.value = response
         }
 
@@ -322,7 +319,7 @@ class HTTPClientTests: TestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (response: HTTPResponse<Data>.Result) in
+        self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
             result.value = response
         }
 
@@ -350,7 +347,7 @@ class HTTPClientTests: TestCase {
             )
         }
 
-        self.client.perform(request, authHeaders: [:]) { (response: HTTPResponse<CustomResponse>.Result) in
+        self.client.perform(request) { (response: HTTPResponse<CustomResponse>.Result) in
             result.value = response
         }
 
@@ -380,7 +377,7 @@ class HTTPClientTests: TestCase {
                                      headers: nil)
         }
 
-        self.client.perform(request, authHeaders: [:]) { (response: HTTPResponse<Data>.Result) in
+        self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
             result.value = response
         }
 
@@ -407,7 +404,7 @@ class HTTPClientTests: TestCase {
                                      headers: nil)
         }
 
-        self.client.perform(request, authHeaders: [:]) { (response: HTTPResponse<CustomResponse>.Result) in
+        self.client.perform(request) { (response: HTTPResponse<CustomResponse>.Result) in
             result.value = response
         }
 
@@ -429,7 +426,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -446,7 +443,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -465,7 +462,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -492,7 +489,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-            self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -508,7 +505,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -526,8 +523,8 @@ class HTTPClientTests: TestCase {
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
 
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-        client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+        let client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: eTagManager)
+        client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -544,9 +541,9 @@ class HTTPClientTests: TestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
+        let client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: eTagManager)
 
-        client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+        client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -561,9 +558,9 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
+        let client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: eTagManager)
 
-        client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+        client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -578,9 +575,9 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
+        let client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: eTagManager)
 
-        client.perform(request, authHeaders: ["test_header": "value"]) { (_: HTTPResponse<Data>.Result) in }
+        client.perform(request) { (_: HTTPResponse<Data>.Result) in }
 
         expect(headerPresent.value).toEventually(equal(true))
     }
@@ -603,8 +600,7 @@ class HTTPClientTests: TestCase {
 
         let serialRequests = 10
         for requestNumber in 0..<serialRequests {
-            client.perform(.init(method: .requestNumber(requestNumber), path: path),
-                           authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+            client.perform(.init(method: .requestNumber(requestNumber), path: path)) { (_: HTTPResponse<Data>.Result) in
                 completionCallCount.value += 1
             }
         }
@@ -631,13 +627,11 @@ class HTTPClientTests: TestCase {
                 .responseTime(0.1)
         }
 
-        self.client.perform(.init(method: .requestNumber(1), path: path),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(1), path: path)) { (_: HTTPResponse<Data>.Result) in
             firstRequestFinished.value = true
         }
 
-        self.client.perform(.init(method: .requestNumber(2), path: path),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(2), path: path)) { (_: HTTPResponse<Data>.Result) in
             secondRequestFinished.value = true
         }
 
@@ -675,18 +669,15 @@ class HTTPClientTests: TestCase {
                 .responseTime(responseTime)
         }
 
-        self.client.perform(.init(method: .requestNumber(1), path: path),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(1), path: path)) { (_: HTTPResponse<Data>.Result) in
             firstRequestFinished.value = true
         }
 
-        self.client.perform(.init(method: .requestNumber(2), path: path),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(2), path: path)) { (_: HTTPResponse<Data>.Result) in
             secondRequestFinished.value = true
         }
 
-        self.client.perform(.init(method: .requestNumber(3), path: path),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(3), path: path)) { (_: HTTPResponse<Data>.Result) in
             thirdRequestFinished.value = true
         }
 
@@ -698,8 +689,7 @@ class HTTPClientTests: TestCase {
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() throws {
         let response: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
 
-        self.client.perform(.init(method: .invalidBody(), path: .mockPath),
-                            authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .invalidBody(), path: .mockPath)) { (result: HTTPResponse<Data>.Result) in
             response.value = result
         }
 
@@ -720,8 +710,7 @@ class HTTPClientTests: TestCase {
             return .emptySuccessResponse
         }
 
-        self.client.perform(.init(method: .invalidBody(), path: path),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .invalidBody(), path: path)) { (_: HTTPResponse<Data>.Result) in
             completionCalled.value = true
         }
 
@@ -745,8 +734,7 @@ class HTTPClientTests: TestCase {
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.perform(.init(method: .get, path: path),
-                            authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
             completionCalled.value = true
         }
 
@@ -774,7 +762,7 @@ class HTTPClientTests: TestCase {
                          headers: nil)
         }
 
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
             response.value = result
         }
 
@@ -796,7 +784,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
@@ -814,7 +802,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .post([:]), path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .post([:]), path: path)) { (_: HTTPResponse<Data>.Result) in
         }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
@@ -837,7 +825,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .post([:]), path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .post([:]), path: path)) { (_: HTTPResponse<Data>.Result) in
         }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
@@ -860,7 +848,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
@@ -878,7 +866,7 @@ class HTTPClientTests: TestCase {
         }
 
         let obtainedError: Atomic<NetworkError?> = .init(nil)
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
             obtainedError.value = result.error
         }
 
@@ -912,7 +900,7 @@ class HTTPClientTests: TestCase {
         }
 
         let obtainedError: Atomic<NetworkError?> = .init(nil)
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (result: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
             obtainedError.value = result.error
         }
 
@@ -944,7 +932,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .get, path: path), authHeaders: [:]) { (_: HTTPResponse<Data>.Result) in }
+        self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in }
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))

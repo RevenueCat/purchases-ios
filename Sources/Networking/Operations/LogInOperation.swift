@@ -51,8 +51,7 @@ private extension LogInOperation {
                                                      newAppUserID: newAppUserID)),
                                   path: .logIn)
 
-        self.httpClient.perform(request,
-                                authHeaders: self.authHeaders) { (response: HTTPResponse<CustomerInfo>.Result) in
+        self.httpClient.perform(request) { (response: HTTPResponse<CustomerInfo>.Result) in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(response, completion: callbackObject.completion)
             }
