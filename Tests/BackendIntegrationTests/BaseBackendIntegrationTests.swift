@@ -70,7 +70,7 @@ private extension BaseBackendIntegrationTests {
     func clearReceiptIfExists() {
         let manager = FileManager.default
 
-        guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.absoluteString) else { return }
+        guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.path) else { return }
 
         do {
             try manager.removeItem(at: url)
