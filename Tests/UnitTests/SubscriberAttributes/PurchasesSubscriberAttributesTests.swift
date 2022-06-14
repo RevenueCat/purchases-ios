@@ -665,7 +665,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     func testCollectDeviceIdentifiersMakesRightCalls() {
         setupPurchases()
 
-        Purchases.attribution.collectDeviceIdentifiers()
+        Purchases.shared.attribution.collectDeviceIdentifiers()
         expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID

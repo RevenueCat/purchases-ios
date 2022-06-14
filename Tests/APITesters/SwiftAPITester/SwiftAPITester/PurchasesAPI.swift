@@ -28,7 +28,6 @@ func checkPurchasesAPI() {
 
     checkStaticMethods()
     checkIdentity(purchases: purch)
-    checkPurchasesSubscriberAttributesAPI(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
 
@@ -166,30 +165,32 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     #endif
 }
 
+@available(*, deprecated) // Ignore deprecation warnings
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
-    purchases.attribution.setAttributes([String: String]())
-    purchases.attribution.setEmail("")
-    purchases.attribution.setPhoneNumber("")
-    purchases.attribution.setDisplayName("")
-    purchases.attribution.setPushToken("".data(using: String.Encoding.utf8)!)
-    purchases.attribution.setPushToken(nil)
-    purchases.attribution.setPushTokenString("")
-    purchases.attribution.setPushTokenString(nil)
-    purchases.attribution.setAdjustID("")
-    purchases.attribution.setAppsflyerID("")
-    purchases.attribution.setFBAnonymousID("")
-    purchases.attribution.setMparticleID("")
-    purchases.attribution.setOnesignalID("")
-    purchases.attribution.setCleverTapID("")
-    purchases.attribution.setMixpanelDistinctID("")
-    purchases.attribution.setFirebaseAppInstanceID("")
-    purchases.attribution.setMediaSource("")
-    purchases.attribution.setCampaign("")
-    purchases.attribution.setAdGroup("")
-    purchases.attribution.setAd("")
-    purchases.attribution.setKeyword("")
-    purchases.attribution.setCreative("")
-    Purchases.attribution.collectDeviceIdentifiers()
+    _ = purchases.attribution
+    purchases.setAttributes([String: String]())
+    purchases.setEmail("")
+    purchases.setPhoneNumber("")
+    purchases.setDisplayName("")
+    purchases.setPushToken("".data(using: String.Encoding.utf8)!)
+    purchases.setPushToken(nil)
+    purchases.setPushTokenString("")
+    purchases.setPushTokenString(nil)
+    purchases.setAdjustID("")
+    purchases.setAppsflyerID("")
+    purchases.setFBAnonymousID("")
+    purchases.setMparticleID("")
+    purchases.setOnesignalID("")
+    purchases.setCleverTapID("")
+    purchases.setMixpanelDistinctID("")
+    purchases.setFirebaseAppInstanceID("")
+    purchases.setMediaSource("")
+    purchases.setCampaign("")
+    purchases.setAdGroup("")
+    purchases.setAd("")
+    purchases.setKeyword("")
+    purchases.setCreative("")
+    purchases.collectDeviceIdentifiers()
 }
 
 private func checkAsyncMethods(purchases: Purchases) async {

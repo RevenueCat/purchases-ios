@@ -206,28 +206,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
     /**
-     * Attribution object that is responsible for all explicit attribution APIs
-     * as well as subscriber attributes that RevenueCat offers.
-     *
-     * #### Example:
-     *
-     * ```swift
-     * Purchases.attribution.setEmail(“nobody@example.com”)
-     * ```
-     *
-     * - Note: Calling this static property or to instance property has the same effect.
-     *
-     * #### Related Articles
-     * - [Subscriber Attribution](https://docs.revenuecat.com/docs/subscriber-attributes)
-     ``
-     * - ``Attribution``
-     */
-    @objc public static var attribution: Attribution {
-        return self.shared.attribution
-    }
-
-    /**
-     * Attribution object that is responsible for all explicit attribution APIs
+     * ``Attribution`` object that is responsible for all explicit attribution APIs
      * as well as subscriber attributes that RevenueCat offers.
      *
      * #### Example:
@@ -235,8 +214,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * ```swift
      * Purchases.shared.attribution.setEmail(“nobody@example.com”)
      * ```
-     *
-     * - Note: Calling this instance property or the class property has the same effect.
      *
      * #### Related Articles
      * - [Subscriber Attribution](https://docs.revenuecat.com/docs/subscriber-attributes)
