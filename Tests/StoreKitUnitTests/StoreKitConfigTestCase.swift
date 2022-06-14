@@ -48,6 +48,12 @@ class StoreKitConfigTestCase: TestCase {
         userDefaults.removePersistentDomain(forName: suiteName)
     }
 
+    override func tearDown() {
+        super.tearDown()
+
+        self.clearReceiptIfExists()
+    }
+
     // MARK: - Transactions observation
 
     private static var transactionsObservation: Task<Void, Never>?
@@ -86,6 +92,18 @@ private extension StoreKitConfigTestCase {
 
                 Self.hasWaited = true
             }
+        }
+    }
+
+    func clearReceiptIfExists() {
+        let manager = FileManager.default
+
+        guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.path) else { return }
+
+        do {
+            try manager.removeItem(at: url)
+        } catch {
+            Logger.appleWarning("Error attempting to remove receipt URL '\(url)': \(error)")
         }
     }
 
