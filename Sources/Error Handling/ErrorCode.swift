@@ -62,6 +62,21 @@ import Foundation
 
 }
 
+extension ErrorCode {
+
+    /**
+     * When an ErrorCode has been deprecated and then removed, add it to the reserved list so that we do not
+     * accidentally reuse it. For example:
+     * `@objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 27` was removed,
+     * so we add its rawValue of `27` to the `reservedRawValues` array. That way our unit tests will catch if we
+     * accidentally add `27` back into the enumeration.
+     */
+    static var reservedRawValues: Set<RawValue> {
+        return [27]
+    }
+
+}
+
 extension ErrorCode: CaseIterable { }
 
 extension ErrorCode: DescribableError {
