@@ -254,10 +254,7 @@ extension BasePurchasesTests {
         var postedDiscounts: [StoreProductDiscount]?
         var postedOfferingIdentifier: String?
         var postedObserverMode: Bool?
-
         var postReceiptResult: Result<CustomerInfo, BackendError>?
-        var aliasError: BackendError?
-        var aliasCalled = false
 
         override func post(receiptData: Data,
                            appUserID: String,
@@ -320,16 +317,6 @@ extension BasePurchasesTests {
             }
 
             completion(.success(.mockResponse))
-        }
-
-        override func createAlias(appUserID: String, newAppUserID: String, completion: ((BackendError?) -> Void)?) {
-            self.aliasCalled = true
-            if self.aliasError != nil {
-                completion!(self.aliasError)
-            } else {
-                self.userID = newAppUserID
-                completion!(nil)
-            }
         }
 
         var invokedPostAttributionData = false

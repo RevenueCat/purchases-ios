@@ -142,22 +142,6 @@ class MockBackend: Backend {
         }
     }
 
-    var invokedCreateAlias = false
-    var invokedCreateAliasCount = 0
-    var invokedCreateAliasParameters: (appUserID: String?, newAppUserID: String?)?
-    var invokedCreateAliasParametersList = [(appUserID: String?, newAppUserID: String?)]()
-    var stubbedCreateAliasCompletionResult: (BackendError?, Void)?
-
-    override func createAlias(appUserID: String, newAppUserID: String, completion: ((BackendError?) -> Void)?) {
-        invokedCreateAlias = true
-        invokedCreateAliasCount += 1
-        invokedCreateAliasParameters = (appUserID, newAppUserID)
-        invokedCreateAliasParametersList.append((appUserID, newAppUserID))
-        if let result = stubbedCreateAliasCompletionResult {
-            completion?(result.0)
-        }
-    }
-
     var invokedPostOffer = false
     var invokedPostOfferCount = 0
     var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: Data?, applicationUsername: String?, completion: OfferSigningResponseHandler?)?

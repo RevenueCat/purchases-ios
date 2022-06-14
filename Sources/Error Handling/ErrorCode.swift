@@ -48,7 +48,6 @@ import Foundation
     @objc(RCUnsupportedError) case unsupportedError = 24
     @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 25
     @objc(RCProductDiscountMissingIdentifierError) case productDiscountMissingIdentifierError = 26
-    @objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 27
     @objc(RCProductDiscountMissingSubscriptionGroupIdentifierError)
     case productDiscountMissingSubscriptionGroupIdentifierError = 28
     @objc(RCCustomerInfoError) case customerInfoError = 29
@@ -60,6 +59,22 @@ import Foundation
     @objc(RCOfflineConnectionError) case offlineConnectionError = 35
 
     // swiftlint:enable missing_docs
+
+}
+
+extension ErrorCode {
+
+    /**
+     * When an ErrorCode has been deprecated and then removed, add it to the reserved list so that we do not
+     * accidentally reuse it. For example:
+     * `@objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 27` was removed,
+     * so we add its rawValue of `27` to the `reservedRawValues` array. That way our unit tests will catch if we
+     * accidentally add `27` back into the enumeration.
+     */
+    static var reservedRawValues: Set<RawValue> {
+        return [27]
+    }
+
 }
 
 extension ErrorCode: CaseIterable { }
@@ -139,8 +154,6 @@ extension ErrorCode: DescribableError {
                    by StoreProductDiscount is missing an identifier.
                    This is a required property and likely an AppStore quirk that it is missing.
                    """
-        case .missingAppUserIDForAliasCreationError:
-            return "Unable to create an alias when the alias is either nil or empty string"
         case .productDiscountMissingSubscriptionGroupIdentifierError:
             return "Unable to create a discount offer, the product is missing a subscriptionGroupIdentifier."
         case .customerInfoError:
@@ -241,8 +254,6 @@ extension ErrorCode {
             return "EMPTY_SUBSCRIBER_ATTRIBUTES"
         case .productDiscountMissingIdentifierError:
             return "PRODUCT_DISCOUNT_MISSING_IDENTIFIER_ERROR"
-        case .missingAppUserIDForAliasCreationError:
-            return "MISSING_APP_USER_ID_FOR_ALIAS_CREATION_ERROR"
         case .productDiscountMissingSubscriptionGroupIdentifierError:
             return "PRODUCT_DISCOUNT_MISSING_SUBSCRIPTION_GROUP_IDENTIFIER_ERROR"
         case .customerInfoError:

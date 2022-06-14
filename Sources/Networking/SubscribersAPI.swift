@@ -18,7 +18,6 @@ class SubscribersAPI {
     private let httpClient: HTTPClient
     private let operationQueue: OperationQueue
     private let authHeaders: [String: String]
-    private let aliasCallbackCache: CallbackCache<AliasCallback>
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     private let attributionFetcher: AttributionFetcher
     private let dateProvider: DateProvider
@@ -27,29 +26,14 @@ class SubscribersAPI {
          attributionFetcher: AttributionFetcher,
          authHeaders: [String: String],
          operationQueue: OperationQueue,
-         aliasCallbackCache: CallbackCache<AliasCallback>,
          customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
          dateProvider: DateProvider) {
         self.httpClient = httpClient
         self.attributionFetcher = attributionFetcher
         self.authHeaders = authHeaders
         self.operationQueue = operationQueue
-        self.aliasCallbackCache = aliasCallbackCache
         self.customerInfoCallbackCache = customerInfoCallbackCache
         self.dateProvider = dateProvider
-    }
-
-    func createAlias(appUserID: String, newAppUserID: String, completion: Backend.SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.httpClient,
-                                                                authHeaders: self.authHeaders,
-                                                                appUserID: appUserID)
-        let operation = CreateAliasOperation(configuration: config,
-                                             newAppUserID: newAppUserID,
-                                             aliasCallbackCache: self.aliasCallbackCache)
-
-        let aliasCallback = AliasCallback(cacheKey: operation.cacheKey, completion: completion)
-        let cacheStatus = self.aliasCallbackCache.add(callback: aliasCallback)
-        operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
 
     func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
