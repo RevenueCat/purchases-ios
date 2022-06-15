@@ -27,11 +27,16 @@ class ProductsFetcherSK2Tests: StoreKitConfigTestCase {
     }
 
     func testCachedProductsAreEmptyAfterClearingCachedProductCorrectly() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         _ = try await productsFetcherSK2.product(withIdentifier: Self.productID)
+
+        var cachedProducts = await productsFetcherSK2.cachedProductsByIdentifier
+        expect(cachedProducts).notTo(beEmpty())
 
         await productsFetcherSK2.clearCache()
 
-        let cachedProducts = await productsFetcherSK2.cachedProductsByIdentifier
+        cachedProducts = await productsFetcherSK2.cachedProductsByIdentifier
         expect(cachedProducts).to(beEmpty())
     }
 
