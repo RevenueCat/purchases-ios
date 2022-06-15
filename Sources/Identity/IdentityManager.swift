@@ -71,7 +71,7 @@ class IdentityManager: CurrentUserProvider {
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
 
-    func logIn(appUserID: String, completion: @escaping Backend.LogInResponseHandler) {
+    func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_empty_appuserid)

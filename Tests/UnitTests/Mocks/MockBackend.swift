@@ -217,7 +217,7 @@ class MockBackend: Backend {
 
     override func logIn(currentAppUserID: String,
                         newAppUserID: String,
-                        completion: @escaping LogInResponseHandler) {
+                        completion: @escaping IdentityAPI.LogInResponseHandler) {
         invokedLogIn = true
         invokedLogInCount += 1
         invokedLogInParameters = (currentAppUserID, newAppUserID)

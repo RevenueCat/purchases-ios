@@ -22,11 +22,10 @@ class Backend {
     typealias OfferingsResponseHandler = (Result<OfferingsResponse, BackendError>) -> Void
     typealias OfferSigningResponseHandler = (Result<PostOfferForSigningOperation.SigningData, BackendError>) -> Void
     typealias SimpleResponseHandler = (BackendError?) -> Void
-    typealias LogInResponseHandler = (Result<(info: CustomerInfo, created: Bool), BackendError>) -> Void
 
     private let config: BackendConfiguration
+    private let identityAPI: IdentityAPI
     private let subscribersAPI: SubscribersAPI
-    private let logInCallbacksCache: CallbackCache<LogInCallback>
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
 
     convenience init(apiKey: String,
@@ -49,47 +48,15 @@ class Backend {
                   attributionFetcher: AttributionFetcher) {
         self.config = backendConfig
         self.offeringsCallbacksCache = CallbackCache<OfferingsCallback>(callbackQueue: self.config.callbackQueue)
-        self.logInCallbacksCache = CallbackCache<LogInCallback>(callbackQueue: self.config.callbackQueue)
-
         let customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: self.config.callbackQueue)
         self.subscribersAPI = SubscribersAPI(backendConfig: self.config,
                                              attributionFetcher: attributionFetcher,
                                              customerInfoCallbackCache: customerInfoCallbackCache)
+        self.identityAPI = IdentityAPI(backendConfig: self.config)
     }
 
     func clearHTTPClientCaches() {
         self.config.clearCache()
-    }
-
-    func getCustomerInfo(appUserID: String, completion: @escaping CustomerInfoResponseHandler) {
-        self.subscribersAPI.getCustomerInfo(appUserID: appUserID, completion: completion)
-    }
-
-    // swiftlint:disable:next function_parameter_count
-    func post(receiptData: Data,
-              appUserID: String,
-              isRestore: Bool,
-              productData: ProductRequestData?,
-              presentedOfferingIdentifier offeringIdentifier: String?,
-              observerMode: Bool,
-              subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-              completion: @escaping CustomerInfoResponseHandler) {
-        self.subscribersAPI.post(receiptData: receiptData,
-                                 appUserID: appUserID,
-                                 isRestore: isRestore,
-                                 productData: productData,
-                                 presentedOfferingIdentifier: offeringIdentifier,
-                                 observerMode: observerMode,
-                                 subscriberAttributes: subscriberAttributesByKey,
-                                 completion: completion)
-    }
-
-    func post(subscriberAttributes: SubscriberAttributeDict,
-              appUserID: String,
-              completion: SimpleResponseHandler?) {
-        self.subscribersAPI.post(subscriberAttributes: subscriberAttributes,
-                                 appUserID: appUserID,
-                                 completion: completion)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -125,21 +92,6 @@ class Backend {
         self.config.operationQueue.addOperation(postAttributionDataOperation)
     }
 
-    func logIn(currentAppUserID: String,
-               newAppUserID: String,
-               completion: @escaping LogInResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                appUserID: currentAppUserID)
-        let loginOperation = LogInOperation(configuration: config,
-                                            newAppUserID: newAppUserID,
-                                            loginCallbackCache: self.logInCallbacksCache)
-
-        let loginCallback = LogInCallback(cacheKey: loginOperation.cacheKey, completion: completion)
-        let cacheStatus = self.logInCallbacksCache.add(callback: loginCallback)
-
-        self.config.operationQueue.addCacheableOperation(loginOperation, cacheStatus: cacheStatus)
-    }
-
     func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
                                                                 appUserID: appUserID)
@@ -163,6 +115,45 @@ class Backend {
                                                                         productIdentifiers: productIdentifiers,
                                                                         responseHandler: completion)
         self.config.operationQueue.addOperation(getIntroEligibilityOperation)
+    }
+
+    // - MARK: Proxied methods awaiting cleanup.
+
+    func logIn(currentAppUserID: String,
+               newAppUserID: String,
+               completion: @escaping IdentityAPI.LogInResponseHandler) {
+        self.identityAPI.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID, completion: completion)
+    }
+
+    func getCustomerInfo(appUserID: String, completion: @escaping CustomerInfoResponseHandler) {
+        self.subscribersAPI.getCustomerInfo(appUserID: appUserID, completion: completion)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func post(receiptData: Data,
+              appUserID: String,
+              isRestore: Bool,
+              productData: ProductRequestData?,
+              presentedOfferingIdentifier offeringIdentifier: String?,
+              observerMode: Bool,
+              subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
+              completion: @escaping CustomerInfoResponseHandler) {
+        self.subscribersAPI.post(receiptData: receiptData,
+                                 appUserID: appUserID,
+                                 isRestore: isRestore,
+                                 productData: productData,
+                                 presentedOfferingIdentifier: offeringIdentifier,
+                                 observerMode: observerMode,
+                                 subscriberAttributes: subscriberAttributesByKey,
+                                 completion: completion)
+    }
+
+    func post(subscriberAttributes: SubscriberAttributeDict,
+              appUserID: String,
+              completion: SimpleResponseHandler?) {
+        self.subscribersAPI.post(subscriberAttributes: subscriberAttributes,
+                                 appUserID: appUserID,
+                                 completion: completion)
     }
 
 }

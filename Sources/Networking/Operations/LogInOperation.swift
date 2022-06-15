@@ -61,7 +61,7 @@ private extension LogInOperation {
     }
 
     func handleLogin(_ result: HTTPResponse<CustomerInfo>.Result,
-                     completion: Backend.LogInResponseHandler) {
+                     completion: IdentityAPI.LogInResponseHandler) {
         let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
             .map { response in
                 (response.body, created: response.statusCode == .createdSuccess)
