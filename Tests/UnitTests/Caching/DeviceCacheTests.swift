@@ -414,7 +414,7 @@ class DeviceCacheTests: TestCase {
 
     func testClearCachedOfferings() {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
-        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
+        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject,
                                        notificationCenter: nil)
