@@ -11,8 +11,6 @@
 //
 //  Created by César de la Vega on 7/22/21.
 
-// swiftlint:disable file_length
-
 import Foundation
 
 class HTTPClient {
@@ -20,20 +18,21 @@ class HTTPClient {
     typealias RequestHeaders = [String: String]
     typealias Completion<Value: HTTPResponseBody> = (HTTPResponse<Value>.Result) -> Void
 
-    internal let systemInfo: SystemInfo
-    internal let timeout: TimeInterval
+    let systemInfo: SystemInfo
+    let timeout: TimeInterval
+    let apiKey: String
+    let authHeaders: RequestHeaders
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
     private let dnsChecker: DNSCheckerType.Type
 
-    init(
-        systemInfo: SystemInfo,
-        eTagManager: ETagManager,
-        dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-        requestTimeout: TimeInterval = Configuration.networkTimeoutDefault
-    ) {
+    init(apiKey: String,
+         systemInfo: SystemInfo,
+         eTagManager: ETagManager,
+         dnsChecker: DNSCheckerType.Type = DNSChecker.self,
+         requestTimeout: TimeInterval = Configuration.networkTimeoutDefault) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         config.timeoutIntervalForRequest = requestTimeout
@@ -43,13 +42,13 @@ class HTTPClient {
         self.eTagManager = eTagManager
         self.dnsChecker = dnsChecker
         self.timeout = requestTimeout
+        self.apiKey = apiKey
+        self.authHeaders =  HTTPClient.authorizationHeader(withAPIKey: apiKey)
     }
 
-    func perform<Value: HTTPResponseBody>(_ request: HTTPRequest,
-                                          authHeaders: [String: String],
-                                          completionHandler: Completion<Value>?) {
+    func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
         perform(request: .init(httpRequest: request,
-                               headers: authHeaders,
+                               headers: self.authHeaders,
                                completionHandler: completionHandler))
     }
 
@@ -73,8 +72,7 @@ private extension HTTPClient {
         var queuedRequests: [Request]
         var currentSerialRequest: Request?
 
-        static let initial: Self = .init(queuedRequests: [],
-                                         currentSerialRequest: nil)
+        static let initial: Self = .init(queuedRequests: [], currentSerialRequest: nil)
     }
 
     struct Request: CustomStringConvertible {
@@ -84,11 +82,9 @@ private extension HTTPClient {
         var completionHandler: HTTPClient.Completion<Data>?
         var retried: Bool = false
 
-        init<Value: HTTPResponseBody>(
-            httpRequest: HTTPRequest,
-            headers: HTTPClient.RequestHeaders,
-            completionHandler: HTTPClient.Completion<Value>?
-        ) {
+        init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
+                                      headers: HTTPClient.RequestHeaders,
+                                      completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest
             self.headers = headers
 
@@ -188,8 +184,7 @@ private extension HTTPClient {
                request: Request,
                urlRequest: URLRequest,
                data: Data?,
-               error networkError: Error?
-    ) -> HTTPResponse<Data>.Result? {
+               error networkError: Error?) -> HTTPResponse<Data>.Result? {
         if let networkError = networkError {
             return .failure(NetworkError(networkError, dnsChecker: self.dnsChecker))
         }
@@ -320,8 +315,7 @@ private extension HTTPClient {
 extension HTTPRequest.Path {
 
     var url: URL? {
-        return URL(string: self.relativePath,
-                   relativeTo: SystemInfo.serverHostURL)
+        return URL(string: self.relativePath, relativeTo: SystemInfo.serverHostURL)
     }
 
     var relativePath: String {

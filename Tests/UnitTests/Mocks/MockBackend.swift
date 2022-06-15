@@ -34,10 +34,15 @@ class MockBackend: Backend {
         let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
-        self.init(httpClient: MockHTTPClient(systemInfo: systemInfo, eTagManager: MockETagManager(), requestTimeout: 7),
-                  apiKey: "mockAPIKey",
-                  attributionFetcher: attributionFetcher,
-                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+        let mockAPIKey = "mockAPIKey"
+        let httpClient = MockHTTPClient(apiKey: mockAPIKey,
+                                        systemInfo: systemInfo,
+                                        eTagManager: MockETagManager(),
+                                        requestTimeout: 7)
+        let backendConfig = BackendConfiguration(httpClient: httpClient,
+                                                 operationQueue: QueueProvider.queue,
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+        self.init(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
     }
 
     override func post(receiptData: Data,
@@ -138,22 +143,6 @@ class MockBackend: Backend {
         invokedPostAttributionDataParameters = (attributionData, network, appUserID)
         invokedPostAttributionDataParametersList.append((attributionData, network, appUserID))
         if let result = stubbedPostAttributionDataCompletionResult {
-            completion?(result.0)
-        }
-    }
-
-    var invokedCreateAlias = false
-    var invokedCreateAliasCount = 0
-    var invokedCreateAliasParameters: (appUserID: String?, newAppUserID: String?)?
-    var invokedCreateAliasParametersList = [(appUserID: String?, newAppUserID: String?)]()
-    var stubbedCreateAliasCompletionResult: (BackendError?, Void)?
-
-    override func createAlias(appUserID: String, newAppUserID: String, completion: ((BackendError?) -> Void)?) {
-        invokedCreateAlias = true
-        invokedCreateAliasCount += 1
-        invokedCreateAliasParameters = (appUserID, newAppUserID)
-        invokedCreateAliasParametersList.append((appUserID, newAppUserID))
-        if let result = stubbedCreateAliasCompletionResult {
             completion?(result.0)
         }
     }

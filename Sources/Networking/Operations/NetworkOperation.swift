@@ -35,7 +35,6 @@ class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
 class NetworkOperation: Operation {
 
     let httpClient: HTTPClient
-    let authHeaders: [String: String]
 
     private var _isExecuting: Atomic<Bool> = .init(false)
     private(set) override final var isExecuting: Bool {
@@ -75,7 +74,6 @@ class NetworkOperation: Operation {
 
     init(configuration: NetworkConfiguration) {
         self.httpClient = configuration.httpClient
-        self.authHeaders = configuration.authHeaders
 
         super.init()
     }
@@ -136,14 +134,12 @@ class NetworkOperation: Operation {
     struct Configuration: NetworkConfiguration {
 
         let httpClient: HTTPClient
-        let authHeaders: [String: String]
 
     }
 
     struct UserSpecificConfiguration: AppUserConfiguration, NetworkConfiguration {
 
         let httpClient: HTTPClient
-        let authHeaders: [String: String]
         let appUserID: String
 
     }
@@ -159,6 +155,5 @@ protocol AppUserConfiguration {
 protocol NetworkConfiguration {
 
     var httpClient: HTTPClient { get }
-    var authHeaders: [String: String] { get }
 
 }

@@ -149,7 +149,7 @@ class ProductsFetcherSK1Tests: TestCase {
         }
 
         expect(completionCallCount).toEventually(equal(1),
-                                                 timeout: productsRequestResponseTime + .milliseconds(10))
+                                                 timeout: productsRequestResponseTime + .milliseconds(30))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
 
         let error = try XCTUnwrap(receivedResult?.error as? ErrorCode)
