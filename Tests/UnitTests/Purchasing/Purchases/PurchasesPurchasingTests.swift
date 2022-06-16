@@ -638,7 +638,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.makeAPurchase()
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
     }
 
     func testPaymentSheetCancelledErrorIsParsedCorrectly() {
