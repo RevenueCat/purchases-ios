@@ -17,16 +17,10 @@ typealias SubscriberAttributeDict = [String: SubscriberAttribute]
 
 class Backend {
 
-    typealias CustomerInfoResponseHandler = (Result<CustomerInfo, BackendError>) -> Void
-    typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
-    typealias OfferingsResponseHandler = (Result<OfferingsResponse, BackendError>) -> Void
-    typealias OfferSigningResponseHandler = (Result<PostOfferForSigningOperation.SigningData, BackendError>) -> Void
-    typealias SimpleResponseHandler = (BackendError?) -> Void
-
     private let config: BackendConfiguration
     private let identityAPI: IdentityAPI
-    private let subscribersAPI: SubscribersAPI
-    private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
+    private let offeringsAPI: OfferingsAPI
+    private let customerAPI: CustomerAPI
 
     convenience init(apiKey: String,
                      systemInfo: SystemInfo,
@@ -39,20 +33,17 @@ class Backend {
                                     eTagManager: eTagManager,
                                     requestTimeout: httpClientTimeout)
         let config = BackendConfiguration(httpClient: httpClient,
-                                          operationQueue: QueueProvider.queue,
+                                          operationQueue: QueueProvider.createBackendQueue(),
                                           dateProvider: dateProvider)
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
     }
 
-    required init(backendConfig: BackendConfiguration,
-                  attributionFetcher: AttributionFetcher) {
+    required init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
         self.config = backendConfig
-        self.offeringsCallbacksCache = CallbackCache<OfferingsCallback>(callbackQueue: self.config.callbackQueue)
-        let customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: self.config.callbackQueue)
-        self.subscribersAPI = SubscribersAPI(backendConfig: self.config,
-                                             attributionFetcher: attributionFetcher,
-                                             customerInfoCallbackCache: customerInfoCallbackCache)
+
+        self.customerAPI = CustomerAPI(backendConfig: self.config, attributionFetcher: attributionFetcher)
         self.identityAPI = IdentityAPI(backendConfig: self.config)
+        self.offeringsAPI = OfferingsAPI(backendConfig: self.config)
     }
 
     func clearHTTPClientCaches() {
@@ -65,59 +56,38 @@ class Backend {
               subscriptionGroup: String,
               receiptData: Data,
               appUserID: String,
-              completion: @escaping OfferSigningResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                appUserID: appUserID)
-
-        let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
-                                                                                 productIdentifier: productIdentifier,
-                                                                                 subscriptionGroup: subscriptionGroup,
-                                                                                 receiptData: receiptData)
-        let postOfferForSigningOperation = PostOfferForSigningOperation(configuration: config,
-                                                                        postOfferForSigningData: postOfferData,
-                                                                        responseHandler: completion)
-        self.config.operationQueue.addOperation(postOfferForSigningOperation)
+              completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
+        self.offeringsAPI.post(offerIdForSigning: offerIdentifier,
+                               productIdentifier: productIdentifier,
+                               subscriptionGroup: subscriptionGroup,
+                               receiptData: receiptData,
+                               appUserID: appUserID,
+                               completion: completion)
     }
 
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
-              completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                appUserID: appUserID)
-        let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
-                                                                        attributionData: attributionData,
-                                                                        network: network,
-                                                                        responseHandler: completion)
-        self.config.operationQueue.addOperation(postAttributionDataOperation)
+              completion: CustomerAPI.SimpleResponseHandler?) {
+        self.customerAPI.post(attributionData: attributionData,
+                              network: network,
+                              appUserID: appUserID,
+                              completion: completion)
     }
 
-    func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                appUserID: appUserID)
-        let getOfferingsOperation = GetOfferingsOperation(configuration: config,
-                                                          offeringsCallbackCache: self.offeringsCallbacksCache)
-
-        let offeringsCallback = OfferingsCallback(cacheKey: getOfferingsOperation.cacheKey, completion: completion)
-        let cacheStatus = self.offeringsCallbacksCache.add(callback: offeringsCallback)
-
-        self.config.operationQueue.addCacheableOperation(getOfferingsOperation, cacheStatus: cacheStatus)
+    func getOfferings(appUserID: String, completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
+        self.offeringsAPI.getOfferings(appUserID: appUserID, completion: completion)
     }
 
     func getIntroEligibility(appUserID: String,
                              receiptData: Data,
                              productIdentifiers: [String],
-                             completion: @escaping IntroEligibilityResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.config.httpClient,
-                                                                appUserID: appUserID)
-        let getIntroEligibilityOperation = GetIntroEligibilityOperation(configuration: config,
-                                                                        receiptData: receiptData,
-                                                                        productIdentifiers: productIdentifiers,
-                                                                        responseHandler: completion)
-        self.config.operationQueue.addOperation(getIntroEligibilityOperation)
+                             completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
+        self.offeringsAPI.getIntroEligibility(appUserID: appUserID,
+                                              receiptData: receiptData,
+                                              productIdentifiers: productIdentifiers,
+                                              completion: completion)
     }
-
-    // - MARK: Proxied methods awaiting cleanup.
 
     func logIn(currentAppUserID: String,
                newAppUserID: String,
@@ -125,8 +95,8 @@ class Backend {
         self.identityAPI.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID, completion: completion)
     }
 
-    func getCustomerInfo(appUserID: String, completion: @escaping CustomerInfoResponseHandler) {
-        self.subscribersAPI.getCustomerInfo(appUserID: appUserID, completion: completion)
+    func getCustomerInfo(appUserID: String, completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        self.customerAPI.getCustomerInfo(appUserID: appUserID, completion: completion)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -137,23 +107,21 @@ class Backend {
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-              completion: @escaping CustomerInfoResponseHandler) {
-        self.subscribersAPI.post(receiptData: receiptData,
-                                 appUserID: appUserID,
-                                 isRestore: isRestore,
-                                 productData: productData,
-                                 presentedOfferingIdentifier: offeringIdentifier,
-                                 observerMode: observerMode,
-                                 subscriberAttributes: subscriberAttributesByKey,
-                                 completion: completion)
+              completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        self.customerAPI.post(receiptData: receiptData,
+                              appUserID: appUserID,
+                              isRestore: isRestore,
+                              productData: productData,
+                              presentedOfferingIdentifier: offeringIdentifier,
+                              observerMode: observerMode,
+                              subscriberAttributes: subscriberAttributesByKey,
+                              completion: completion)
     }
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
-              completion: SimpleResponseHandler?) {
-        self.subscribersAPI.post(subscriberAttributes: subscriberAttributes,
-                                 appUserID: appUserID,
-                                 completion: completion)
+              completion: CustomerAPI.SimpleResponseHandler?) {
+        self.customerAPI.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
 
 }
@@ -162,7 +130,7 @@ extension Backend {
 
     enum QueueProvider {
 
-        static var queue: OperationQueue {
+        static func createBackendQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
             operationQueue.name = "Backend Queue"
             operationQueue.maxConcurrentOperationCount = 1

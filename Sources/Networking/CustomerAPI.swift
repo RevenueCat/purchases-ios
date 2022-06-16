@@ -13,21 +13,22 @@
 
 import Foundation
 
-class SubscribersAPI {
+class CustomerAPI {
+
+    typealias CustomerInfoResponseHandler = (Result<CustomerInfo, BackendError>) -> Void
+    typealias SimpleResponseHandler = (BackendError?) -> Void
 
     private let backendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     private let attributionFetcher: AttributionFetcher
 
-    init(backendConfig: BackendConfiguration,
-         attributionFetcher: AttributionFetcher,
-         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>) {
+    init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
         self.backendConfig = backendConfig
         self.attributionFetcher = attributionFetcher
-        self.customerInfoCallbackCache = customerInfoCallbackCache
+        self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: backendConfig.callbackQueue)
     }
 
-    func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
+    func getCustomerInfo(appUserID: String, completion: @escaping CustomerInfoResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
@@ -41,13 +42,26 @@ class SubscribersAPI {
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
-              completion: Backend.SimpleResponseHandler?) {
+              completion: SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let operation = PostSubscriberAttributesOperation(configuration: config,
                                                           subscriberAttributes: subscriberAttributes,
                                                           completion: completion)
         self.backendConfig.operationQueue.addOperation(operation)
+    }
+
+    func post(attributionData: [String: Any],
+              network: AttributionNetwork,
+              appUserID: String,
+              completion: SimpleResponseHandler?) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
+                                                                        attributionData: attributionData,
+                                                                        network: network,
+                                                                        responseHandler: completion)
+        self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -58,7 +72,7 @@ class SubscribersAPI {
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-              completion: @escaping Backend.CustomerInfoResponseHandler) {
+              completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let attributionStatus = self.attributionFetcher.authorizationStatus
         var subscriberAttributesByKey = subscriberAttributesByKey ?? [:]
         let consentStatus = SubscriberAttribute(withKey: ReservedSubscriberAttribute.consentStatus.rawValue,

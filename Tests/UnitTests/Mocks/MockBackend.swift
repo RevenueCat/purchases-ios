@@ -20,7 +20,7 @@ class MockBackend: Backend {
                                            offeringIdentifier: String?,
                                            observerMode: Bool,
                                            subscriberAttributesByKey: [String: SubscriberAttribute]?,
-                                           completion: Backend.CustomerInfoResponseHandler?)?
+                                           completion: CustomerAPI.CustomerInfoResponseHandler?)?
     var invokedPostReceiptDataParametersList = [(data: Data?,
         appUserID: String?,
         isRestore: Bool,
@@ -28,7 +28,7 @@ class MockBackend: Backend {
         offeringIdentifier: String?,
         observerMode: Bool,
         subscriberAttributesByKey: [String: SubscriberAttribute]?,
-        completion: Backend.CustomerInfoResponseHandler?)]()
+        completion: CustomerAPI.CustomerInfoResponseHandler?)]()
 
     public convenience init() {
         let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
@@ -40,7 +40,7 @@ class MockBackend: Backend {
                                         eTagManager: MockETagManager(),
                                         requestTimeout: 7)
         let backendConfig = BackendConfiguration(httpClient: httpClient,
-                                                 operationQueue: QueueProvider.queue,
+                                                 operationQueue: QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.init(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
     }
@@ -52,7 +52,7 @@ class MockBackend: Backend {
                        presentedOfferingIdentifier offeringIdentifier: String?,
                        observerMode: Bool,
                        subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-                       completion: @escaping Backend.CustomerInfoResponseHandler) {
+                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
         invokedPostReceiptDataParameters = (receiptData,
@@ -76,13 +76,13 @@ class MockBackend: Backend {
 
     var invokedGetSubscriberData = false
     var invokedGetSubscriberDataCount = 0
-    var invokedGetSubscriberDataParameters: (appUserID: String?, completion: Backend.CustomerInfoResponseHandler?)?
+    var invokedGetSubscriberDataParameters: (appUserID: String?, completion: CustomerAPI.CustomerInfoResponseHandler?)?
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
-                                                   completion: Backend.CustomerInfoResponseHandler?)]()
+                                                   completion: CustomerAPI.CustomerInfoResponseHandler?)]()
 
     var stubbedGetCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
-    override func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
+    override func getCustomerInfo(appUserID: String, completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
         invokedGetSubscriberDataParameters = (appUserID, completion)
@@ -93,17 +93,18 @@ class MockBackend: Backend {
 
     var invokedGetIntroEligibility = false
     var invokedGetIntroEligibilityCount = 0
-    var invokedGetIntroEligibilityParameters: (appUserID: String?, receiptData: Data?, productIdentifiers: [String]?, completion: IntroEligibilityResponseHandler?)?
-    var invokedGetIntroEligibilityParametersList = [(appUserID: String?,
+    var invokedGetIntroEligibilityParameters: (appUserID: String?, receiptData: Data?, productIdentifiers: [String]?, completion: OfferingsAPI.IntroEligibilityResponseHandler?)?
+    var invokedGetIntroEligibilityParametersList = [(
+        appUserID: String?,
         receiptData: Data?,
         productIdentifiers: [String]?,
-        completion: IntroEligibilityResponseHandler?)]()
+        completion: OfferingsAPI.IntroEligibilityResponseHandler?)]()
     var stubbedGetIntroEligibilityCompletionResult: (eligibilities: [String: IntroEligibility], error: BackendError?)?
 
     override func getIntroEligibility(appUserID: String,
                                       receiptData: Data,
                                       productIdentifiers: [String],
-                                      completion: @escaping IntroEligibilityResponseHandler) {
+                                      completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
         invokedGetIntroEligibility = true
         invokedGetIntroEligibilityCount += 1
         invokedGetIntroEligibilityParameters = (appUserID, receiptData, productIdentifiers, completion)
@@ -113,11 +114,12 @@ class MockBackend: Backend {
 
     var invokedGetOfferingsForAppUserID = false
     var invokedGetOfferingsForAppUserIDCount = 0
-    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: OfferingsResponseHandler?)?
-    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, completion: OfferingsResponseHandler?)]()
+    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: OfferingsAPI.OfferingsResponseHandler?)?
+    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, completion: OfferingsAPI.OfferingsResponseHandler?)]()
     var stubbedGetOfferingsCompletionResult: Result<OfferingsResponse, BackendError>?
 
-    override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
+    override func getOfferings(appUserID: String,
+                               completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
         invokedGetOfferingsForAppUserID = true
         invokedGetOfferingsForAppUserIDCount += 1
         invokedGetOfferingsForAppUserIDParameters = (appUserID, completion)
@@ -149,13 +151,14 @@ class MockBackend: Backend {
 
     var invokedPostOffer = false
     var invokedPostOfferCount = 0
-    var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: Data?, applicationUsername: String?, completion: OfferSigningResponseHandler?)?
-    var invokedPostOfferParametersList = [(offerIdentifier: String?,
+    var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: Data?, applicationUsername: String?, completion: OfferingsAPI.OfferSigningResponseHandler?)?
+    var invokedPostOfferParametersList = [(
+        offerIdentifier: String?,
         productIdentifier: String?,
         subscriptionGroup: String?,
         data: Data?,
         applicationUsername: String?,
-        completion: OfferSigningResponseHandler?)]()
+        completion: OfferingsAPI.OfferSigningResponseHandler?)]()
     var stubbedPostOfferCompletionResult: Result<PostOfferForSigningOperation.SigningData, BackendError>?
 
     override func post(offerIdForSigning offerIdentifier: String,
@@ -163,7 +166,7 @@ class MockBackend: Backend {
                        subscriptionGroup: String?,
                        receiptData: Data,
                        appUserID: String,
-                       completion: @escaping OfferSigningResponseHandler) {
+                       completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
         invokedPostOffer = true
         invokedPostOfferCount += 1
         invokedPostOfferParameters = (offerIdentifier,

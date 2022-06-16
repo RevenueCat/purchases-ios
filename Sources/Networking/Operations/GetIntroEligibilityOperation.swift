@@ -18,12 +18,12 @@ class GetIntroEligibilityOperation: NetworkOperation {
     private let configuration: UserSpecificConfiguration
     private let receiptData: Data
     private let productIdentifiers: [String]
-    private let responseHandler: Backend.IntroEligibilityResponseHandler
+    private let responseHandler: OfferingsAPI.IntroEligibilityResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          receiptData: Data,
          productIdentifiers: [String],
-         responseHandler: @escaping Backend.IntroEligibilityResponseHandler) {
+         responseHandler: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
         self.configuration = configuration
         self.receiptData = receiptData
         self.productIdentifiers = productIdentifiers
@@ -87,7 +87,7 @@ private extension GetIntroEligibilityOperation {
     func handleIntroEligibility(
         result: Result<HTTPResponse<GetIntroEligibilityResponse>, NetworkError>,
         productIdentifiers: [String],
-        completion: Backend.IntroEligibilityResponseHandler
+        completion: OfferingsAPI.IntroEligibilityResponseHandler
     ) {
         let eligibilities = result.value?.body.eligibilityByProductIdentifier
 

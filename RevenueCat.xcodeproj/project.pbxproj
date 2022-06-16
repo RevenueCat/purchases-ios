@@ -377,7 +377,7 @@
 		B34605CD279A6E380031CA74 /* PostAttributionDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B8279A6E380031CA74 /* PostAttributionDataOperation.swift */; };
 		B34605CE279A6E380031CA74 /* PostSubscriberAttributesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */; };
 		B34605CF279A6E380031CA74 /* GetOfferingsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */; };
-		B34605D1279A6E600031CA74 /* SubscribersAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605D0279A6E600031CA74 /* SubscribersAPI.swift */; };
+		B34605D1279A6E600031CA74 /* CustomerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605D0279A6E600031CA74 /* CustomerAPI.swift */; };
 		B34605EB279A766C0031CA74 /* OperationQueue+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */; };
 		B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DF6A4F269524080030D57C /* IntroEligibility.swift */; };
 		B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34D2AA526976FC700D88C3A /* ErrorCode.swift */; };
@@ -392,6 +392,7 @@
 		B372EC56268FEF020099171E /* ProductRequestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B372EC55268FEF020099171E /* ProductRequestData.swift */; };
 		B37815492857F1E7000A7B93 /* BackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37815482857F1E7000A7B93 /* BackendConfiguration.swift */; };
 		B3781568285A79FC000A7B93 /* IdentityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3781567285A79FC000A7B93 /* IdentityAPI.swift */; };
+		B378156D285A9772000A7B93 /* OfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B378156B285A9729000A7B93 /* OfferingsAPI.swift */; };
 		B380D69B27726AB500984578 /* DNSCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B380D69A27726AB500984578 /* DNSCheckerTests.swift */; };
 		B3843BCB285149A1009F4854 /* Attribution.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3843BCA285149A0009F4854 /* Attribution.swift */; };
 		B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3852F9F26C1ED1F005384F8 /* IdentityManager.swift */; };
@@ -846,7 +847,7 @@
 		B34605B8279A6E380031CA74 /* PostAttributionDataOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostAttributionDataOperation.swift; sourceTree = "<group>"; };
 		B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostSubscriberAttributesOperation.swift; sourceTree = "<group>"; };
 		B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetOfferingsOperation.swift; sourceTree = "<group>"; };
-		B34605D0279A6E600031CA74 /* SubscribersAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscribersAPI.swift; sourceTree = "<group>"; };
+		B34605D0279A6E600031CA74 /* CustomerAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerAPI.swift; sourceTree = "<group>"; };
 		B34605EA279A766C0031CA74 /* OperationQueue+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OperationQueue+Extensions.swift"; sourceTree = "<group>"; };
 		B34D2AA526976FC700D88C3A /* ErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCode.swift; sourceTree = "<group>"; };
 		B35042C326CDB79A00905B95 /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
@@ -858,6 +859,7 @@
 		B37815482857F1E7000A7B93 /* BackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendConfiguration.swift; sourceTree = "<group>"; };
 		B3781566285A7991000A7B93 /* SwiftStyleGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftStyleGuide.swift; path = Contributing/SwiftStyleGuide.swift; sourceTree = "<group>"; };
 		B3781567285A79FC000A7B93 /* IdentityAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityAPI.swift; sourceTree = "<group>"; };
+		B378156B285A9729000A7B93 /* OfferingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsAPI.swift; sourceTree = "<group>"; };
 		B380D69A27726AB500984578 /* DNSCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSCheckerTests.swift; sourceTree = "<group>"; };
 		B3843BCA285149A0009F4854 /* Attribution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Attribution.swift; sourceTree = "<group>"; };
 		B3852F9F26C1ED1F005384F8 /* IdentityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityManager.swift; sourceTree = "<group>"; };
@@ -1522,20 +1524,14 @@
 			isa = PBXGroup;
 			children = (
 				B34605A1279A6E380031CA74 /* Caching */,
+				B378156E285A978A000A7B93 /* HTTPClient */,
 				B34605AA279A6E380031CA74 /* Operations */,
 				57D5412C27F63108004CC35C /* Responses */,
 				B3C4AAD426B8911300E1B3C8 /* Backend.swift */,
 				B37815482857F1E7000A7B93 /* BackendConfiguration.swift */,
-				B3F3E8D9277158FE0047A5B9 /* DNSChecker.swift */,
-				35D832CC262A5B7500E60AC5 /* ETagManager.swift */,
-				35F82BB326A9A74D0051DF03 /* HTTPClient.swift */,
-				57DC9F4527CC2E4900DA6AF9 /* HTTPRequest.swift */,
-				35D832F3262E606500E60AC5 /* HTTPResponse.swift */,
-				575137CE27F50D2F0064AB2C /* HTTPResponseBody.swift */,
-				35D832D1262E56DB00E60AC5 /* HTTPStatusCode.swift */,
+				B34605D0279A6E600031CA74 /* CustomerAPI.swift */,
 				B3781567285A79FC000A7B93 /* IdentityAPI.swift */,
-				57D5414127F656D9004CC35C /* NetworkError.swift */,
-				B34605D0279A6E600031CA74 /* SubscribersAPI.swift */,
+				B378156B285A9729000A7B93 /* OfferingsAPI.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -1803,6 +1799,21 @@
 				2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */,
 			);
 			path = SubscriberAttributes;
+			sourceTree = "<group>";
+		};
+		B378156E285A978A000A7B93 /* HTTPClient */ = {
+			isa = PBXGroup;
+			children = (
+				B3F3E8D9277158FE0047A5B9 /* DNSChecker.swift */,
+				35D832CC262A5B7500E60AC5 /* ETagManager.swift */,
+				35F82BB326A9A74D0051DF03 /* HTTPClient.swift */,
+				57DC9F4527CC2E4900DA6AF9 /* HTTPRequest.swift */,
+				35D832F3262E606500E60AC5 /* HTTPResponse.swift */,
+				575137CE27F50D2F0064AB2C /* HTTPResponseBody.swift */,
+				35D832D1262E56DB00E60AC5 /* HTTPStatusCode.swift */,
+				57D5414127F656D9004CC35C /* NetworkError.swift */,
+			);
+			path = HTTPClient;
 			sourceTree = "<group>";
 		};
 		B3843BC72851489B009F4854 /* Purchases */ = {
@@ -2320,6 +2331,7 @@
 				B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */,
 				B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */,
 				A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */,
+				B378156D285A9772000A7B93 /* OfferingsAPI.swift in Sources */,
 				B34605C0279A6E380031CA74 /* CustomerInfoCallback.swift in Sources */,
 				F5BE4479269E4A4C00254A30 /* AfficheClientProxy.swift in Sources */,
 				B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */,
@@ -2389,7 +2401,7 @@
 				35F82BAB26A84E130051DF03 /* Dictionary+Extensions.swift in Sources */,
 				9A65E0A02591A23200DE00B0 /* OfferingStrings.swift in Sources */,
 				5774F9B62805E6CC00997128 /* CustomerInfoResponse.swift in Sources */,
-				B34605D1279A6E600031CA74 /* SubscribersAPI.swift in Sources */,
+				B34605D1279A6E600031CA74 /* CustomerAPI.swift in Sources */,
 				2DDF41A224F6F331005BC22D /* ProductsManager.swift in Sources */,
 				575137CF27F50D2F0064AB2C /* HTTPResponseBody.swift in Sources */,
 				573E7F092819B989007C9128 /* StoreKitWorkarounds.swift in Sources */,

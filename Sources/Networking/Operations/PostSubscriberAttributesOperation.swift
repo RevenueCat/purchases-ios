@@ -17,11 +17,11 @@ class PostSubscriberAttributesOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let subscriberAttributes: SubscriberAttributeDict
-    private let responseHandler: Backend.SimpleResponseHandler?
+    private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          subscriberAttributes: SubscriberAttributeDict,
-         completion: Backend.SimpleResponseHandler?) {
+         completion: CustomerAPI.SimpleResponseHandler?) {
         self.configuration = configuration
         self.subscriberAttributes = subscriberAttributes
         self.responseHandler = completion

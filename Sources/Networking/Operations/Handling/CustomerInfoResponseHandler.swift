@@ -18,7 +18,7 @@ class CustomerInfoResponseHandler {
     init() { }
 
     func handle(customerInfoResponse response: HTTPResponse<Response>.Result,
-                completion: Backend.CustomerInfoResponseHandler) {
+                completion: CustomerAPI.CustomerInfoResponseHandler) {
         let result: Result<CustomerInfo, BackendError> = response
             .flatMap {
                 if $0.body.errorResponse.attributeErrors.isEmpty {
