@@ -539,7 +539,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     }
 
     func storeKitWrapperDidChangeStorefront(_ storeKitWrapper: StoreKitWrapper) {
-        // unused for now
+        handleStorefrontChange()
     }
 
 }
@@ -618,7 +618,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
     func storefrontDidUpdate() {
-        // unused for now
+        handleStorefrontChange()
     }
 
 }
@@ -841,6 +841,11 @@ private extension PurchasesOrchestrator {
                  payment: payment,
                  package: package,
                  completion: completion)
+    }
+
+    func handleStorefrontChange() {
+        self.productsManager.clearCachedProducts()
+        self.deviceCache.clearCachedOfferings()
     }
 
 }

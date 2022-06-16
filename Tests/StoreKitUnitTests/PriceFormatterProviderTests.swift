@@ -55,7 +55,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         await changeStorefront("ESP")
 
-        var sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        let sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
 
         var storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
@@ -65,10 +65,11 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "en_EN")
         await changeStorefront("USA")
 
-        // Note: this test passes only because the fetcher is recreated
-        // therefore clearing the cache. `ProductsFetcherSK1` does not
-        // detect Storefront changes to invalidate the cache like `ProductsFetcherSK2` does.
-        sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        // Note: this test passes only because the cache is manually
+        // cleared. `ProductsFetcherSK1` does not detect Storefront
+        // changes to invalidate the cache. The changes are now managed by
+        // `StoreKit2StorefrontListenerDelegate`.
+        sk1Fetcher.clearCache()
 
         storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
@@ -83,7 +84,9 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         await changeStorefront("ESP")
 
-        var storeProduct = try await fetchSk2StoreProduct()
+        let sk2Fetcher = ProductsFetcherSK2()
+
+        var storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         expect(priceFormatter.currencyCode) == "EUR"
@@ -91,7 +94,13 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "en_EN")
         await changeStorefront("USA")
 
-        storeProduct = try await fetchSk2StoreProduct()
+        // Note: this test passes only because the cache is manually
+        // cleared. `ProductsFetcherSK2` does not detect Storefront
+        // changes to invalidate the cache. The changes are now managed by
+        // `StoreKit2StorefrontListenerDelegate`.
+        await sk2Fetcher.clearCache()
+
+        storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         expect(priceFormatter.currencyCode) == "USD"
