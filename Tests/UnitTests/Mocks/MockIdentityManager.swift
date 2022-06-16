@@ -43,7 +43,7 @@ class MockIdentityManager: IdentityManager {
         return mockIsAnonymous
     }
 
-    override func logIn(appUserID: String, completion: @escaping Backend.LogInResponseHandler) {
+    override func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
         fatalError("Logging in not supported on mock")
     }
 
