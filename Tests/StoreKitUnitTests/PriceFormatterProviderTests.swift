@@ -67,7 +67,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
         // Note: this test passes only because the fetcher is recreated
         // therefore clearing the cache. `ProductsFetcherSK1` does not
-        // detect Storefront changes to invalidate the cache like `ProductsFetcherSK2` does.
+        // detect Storefront changes to invalidate the cache.
         sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
 
         storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
@@ -80,10 +80,12 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     func testSk2PriceFormatterUsesCurrentStorefront() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        var sk2Fetcher = ProductsFetcherSK2()
+
         testSession.locale = Locale(identifier: "es_ES")
         await changeStorefront("ESP")
 
-        var storeProduct = try await fetchSk2StoreProduct()
+        var storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         expect(priceFormatter.currencyCode) == "EUR"
@@ -91,7 +93,12 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "en_EN")
         await changeStorefront("USA")
 
-        storeProduct = try await fetchSk2StoreProduct()
+        // Note: this test passes only because the fetcher is recreated
+        // therefore clearing the cache. `ProductsFetcherSK2` does not
+        // detect Storefront changes to invalidate the cache.
+        sk2Fetcher = ProductsFetcherSK2()
+
+        storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         expect(priceFormatter.currencyCode) == "USD"
