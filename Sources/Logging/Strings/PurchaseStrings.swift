@@ -37,7 +37,6 @@ enum PurchaseStrings {
     case sktransaction_missing_transaction_date
     case sktransaction_missing_transaction_identifier
     case could_not_purchase_product_id_not_found
-    case product_identifier_nil
     case payment_identifier_nil
     case purchases_nil
     case purchases_delegate_set_multiple_times
@@ -158,10 +157,6 @@ extension PurchaseStrings: CustomStringConvertible {
         case .could_not_purchase_product_id_not_found:
             return "makePurchase - Could not purchase SKProduct. " +
             "Couldn't find its product identifier. This is possibly an App Store quirk."
-
-        case .product_identifier_nil:
-            return "Apple returned a product where the productIdentifier is nil, " +
-            "this is possibly an App Store quirk"
 
         case .payment_identifier_nil:
             return "Apple returned a payment where the productIdentifier is nil, " +

@@ -431,14 +431,14 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 
-    func testNilProductIdentifier() {
+    func testPurchasingNilProductIdentifierRetrunsError() {
         let product = StoreProduct(sk1Product: SK1Product())
         var receivedError: Error?
         self.purchases.purchase(product: product) { (_, _, error, _) in
             receivedError = error
         }
 
-        expect(receivedError).to(matchError(ErrorCode.unknownError))
+        expect(receivedError).to(matchError(ErrorCode.storeProblemError))
     }
 
     func testPostsOfferingIfPurchasingPackage() throws {
