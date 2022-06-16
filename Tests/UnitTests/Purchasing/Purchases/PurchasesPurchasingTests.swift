@@ -294,31 +294,35 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUnderlyingError?.code).toEventually(equal(unknownError.code))
     }
 
-    func testUserCancelledTrueIfPurchaseCancelled() {
+    func testUserCancelledTrueIfSK1PurchaseCancelled() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+
+        var receivedTransaction: StoreTransaction?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedUserCancelled: Bool?
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
 
-        self.purchases.purchase(product: product) { (_, _, error, userCancelled) in
+        self.purchases.purchase(product: product) { (transaction, customerInfo, error, userCancelled) in
+            receivedTransaction = transaction
+            receivedCustomerInfo = customerInfo
             receivedError = error as NSError?
             receivedUserCancelled = userCancelled
-            // swiftlint:disable:next force_cast
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
-        transaction.mockState = SKPaymentTransactionState.failed
-        transaction.mockError = NSError.init(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
+        transaction.mockPayment = try XCTUnwrap(self.storeKitWrapper.payment)
+        transaction.mockState = .failed
+        transaction.mockError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventuallyNot(beNil())
 
+        expect(receivedTransaction).toNot(beNil())
+        expect(receivedCustomerInfo).to(beNil())
         expect(receivedUserCancelled) == true
-        expect(receivedError).toNot(beNil())
-        expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
-        expect(receivedError?.code) == ErrorCode.purchaseCancelledError.rawValue
+        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
         expect(receivedUnderlyingError?.domain) == SKErrorDomain
         expect(receivedUnderlyingError?.code) == SKError.Code.paymentCancelled.rawValue
     }
