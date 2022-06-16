@@ -1,0 +1,22 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "authorized"
+        }
+      },
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "is_restore" : false,
+      "observer_mode" : true,
+      "presented_offering_identifier" : "offering_a"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
+}

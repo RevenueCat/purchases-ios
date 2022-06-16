@@ -413,8 +413,7 @@ class PurchasesOrchestrator {
         let customerInfo: CustomerInfo
 
         if let transaction = transaction {
-            customerInfo = try await self.handlePurchasedTransaction(transaction,
-                                                                     refreshPolicy: .always)
+            customerInfo = try await self.handlePurchasedTransaction(transaction)
         } else {
             // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
             // `Product.PurchaseResult.userCancelled`.
@@ -549,9 +548,8 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: StoreTransaction,
-                                    refreshPolicy: ReceiptRefreshPolicy = .onlyIfEmpty,
                                     storefront: StorefrontType?) {
-        self.receiptFetcher.receiptData(refreshPolicy: refreshPolicy) { receiptData in
+        self.receiptFetcher.receiptData(refreshPolicy: .always) { receiptData in
             if let receiptData = receiptData,
                !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction,
@@ -896,10 +894,7 @@ private extension Error {
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesOrchestrator {
 
-    private func handlePurchasedTransaction(
-        _ transaction: StoreTransaction,
-        refreshPolicy: ReceiptRefreshPolicy
-    ) async throws -> CustomerInfo {
+    private func handlePurchasedTransaction(_ transaction: StoreTransaction) async throws -> CustomerInfo {
         let storefront = await Storefront.currentStorefront
 
         return try await withCheckedThrowingContinuation { continuation in
@@ -910,9 +905,7 @@ extension PurchasesOrchestrator {
                 }
             )
 
-            self.handlePurchasedTransaction(transaction,
-                                            refreshPolicy: refreshPolicy,
-                                            storefront: storefront)
+            self.handlePurchasedTransaction(transaction, storefront: storefront)
         }
     }
 

@@ -164,6 +164,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             }
         }
 
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
     }
@@ -300,6 +303,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let product = try await fetchSk2Product()
 
         _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
