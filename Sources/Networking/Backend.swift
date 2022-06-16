@@ -17,10 +17,11 @@ typealias SubscriberAttributeDict = [String: SubscriberAttribute]
 
 class Backend {
 
+    let identity: IdentityAPI
+
     private let config: BackendConfiguration
-    private let identityAPI: IdentityAPI
-    private let offeringsAPI: OfferingsAPI
-    private let customerAPI: CustomerAPI
+    private let offerings: OfferingsAPI
+    private let customer: CustomerAPI
 
     convenience init(apiKey: String,
                      systemInfo: SystemInfo,
@@ -38,12 +39,21 @@ class Backend {
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
     }
 
-    required init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
-        self.config = backendConfig
+    convenience init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        let identity = IdentityAPI(backendConfig: backendConfig)
+        let offerings = OfferingsAPI(backendConfig: backendConfig)
+        self.init(backendConfig: backendConfig, customerAPI: customer, identityAPI: identity, offeringsAPI: offerings)
+    }
 
-        self.customerAPI = CustomerAPI(backendConfig: self.config, attributionFetcher: attributionFetcher)
-        self.identityAPI = IdentityAPI(backendConfig: self.config)
-        self.offeringsAPI = OfferingsAPI(backendConfig: self.config)
+    required init(backendConfig: BackendConfiguration,
+                  customerAPI: CustomerAPI,
+                  identityAPI: IdentityAPI,
+                  offeringsAPI: OfferingsAPI) {
+        self.config = backendConfig
+        self.customer = customerAPI
+        self.identity = identityAPI
+        self.offerings = offeringsAPI
     }
 
     func clearHTTPClientCaches() {
@@ -57,46 +67,40 @@ class Backend {
               receiptData: Data,
               appUserID: String,
               completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
-        self.offeringsAPI.post(offerIdForSigning: offerIdentifier,
-                               productIdentifier: productIdentifier,
-                               subscriptionGroup: subscriptionGroup,
-                               receiptData: receiptData,
-                               appUserID: appUserID,
-                               completion: completion)
+        self.offerings.post(offerIdForSigning: offerIdentifier,
+                            productIdentifier: productIdentifier,
+                            subscriptionGroup: subscriptionGroup,
+                            receiptData: receiptData,
+                            appUserID: appUserID,
+                            completion: completion)
     }
 
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
               completion: CustomerAPI.SimpleResponseHandler?) {
-        self.customerAPI.post(attributionData: attributionData,
-                              network: network,
-                              appUserID: appUserID,
-                              completion: completion)
+        self.customer.post(attributionData: attributionData,
+                           network: network,
+                           appUserID: appUserID,
+                           completion: completion)
     }
 
     func getOfferings(appUserID: String, completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
-        self.offeringsAPI.getOfferings(appUserID: appUserID, completion: completion)
+        self.offerings.getOfferings(appUserID: appUserID, completion: completion)
     }
 
     func getIntroEligibility(appUserID: String,
                              receiptData: Data,
                              productIdentifiers: [String],
                              completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
-        self.offeringsAPI.getIntroEligibility(appUserID: appUserID,
-                                              receiptData: receiptData,
-                                              productIdentifiers: productIdentifiers,
-                                              completion: completion)
-    }
-
-    func logIn(currentAppUserID: String,
-               newAppUserID: String,
-               completion: @escaping IdentityAPI.LogInResponseHandler) {
-        self.identityAPI.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID, completion: completion)
+        self.offerings.getIntroEligibility(appUserID: appUserID,
+                                           receiptData: receiptData,
+                                           productIdentifiers: productIdentifiers,
+                                           completion: completion)
     }
 
     func getCustomerInfo(appUserID: String, completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        self.customerAPI.getCustomerInfo(appUserID: appUserID, completion: completion)
+        self.customer.getCustomerInfo(appUserID: appUserID, completion: completion)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -108,20 +112,20 @@ class Backend {
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        self.customerAPI.post(receiptData: receiptData,
-                              appUserID: appUserID,
-                              isRestore: isRestore,
-                              productData: productData,
-                              presentedOfferingIdentifier: offeringIdentifier,
-                              observerMode: observerMode,
-                              subscriberAttributes: subscriberAttributesByKey,
-                              completion: completion)
+        self.customer.post(receiptData: receiptData,
+                           appUserID: appUserID,
+                           isRestore: isRestore,
+                           productData: productData,
+                           presentedOfferingIdentifier: offeringIdentifier,
+                           observerMode: observerMode,
+                           subscriberAttributes: subscriberAttributesByKey,
+                           completion: completion)
     }
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
               completion: CustomerAPI.SimpleResponseHandler?) {
-        self.customerAPI.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
+        self.customer.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
 
 }

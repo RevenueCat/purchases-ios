@@ -90,7 +90,7 @@ class IdentityManager: CurrentUserProvider {
             return
         }
 
-        backend.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
+        backend.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
                 self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
