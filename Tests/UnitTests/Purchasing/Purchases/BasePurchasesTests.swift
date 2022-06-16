@@ -46,7 +46,7 @@ class BasePurchasesTests: TestCase {
         let apiKey = "mockAPIKey"
         let httpClient = MockHTTPClient(apiKey: apiKey, systemInfo: self.systemInfo, eTagManager: MockETagManager())
         let config = BackendConfiguration(httpClient: httpClient,
-                                          operationQueue: MockBackend.QueueProvider.queue,
+                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
@@ -241,7 +241,8 @@ extension BasePurchasesTests {
             try! CustomerInfo(data: BasePurchasesTests.emptyCustomerInfoData)
         )
 
-        override func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
+        override func getCustomerInfo(appUserID: String,
+                                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.getSubscriberCallCount += 1
             self.userID = appUserID
 
@@ -272,7 +273,7 @@ extension BasePurchasesTests {
                            presentedOfferingIdentifier: String?,
                            observerMode: Bool,
                            subscriberAttributes: [String: SubscriberAttribute]?,
-                           completion: @escaping Backend.CustomerInfoResponseHandler) {
+                           completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
             self.postedReceiptData = receiptData
             self.postedIsRestore = isRestore
@@ -299,7 +300,7 @@ extension BasePurchasesTests {
         override func getIntroEligibility(appUserID: String,
                                           receiptData: Data,
                                           productIdentifiers: [String],
-                                          completion: @escaping IntroEligibilityResponseHandler) {
+                                          completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
             self.postedProductIdentifiers = productIdentifiers
 
             var eligibilities = [String: IntroEligibility]()
@@ -314,7 +315,7 @@ extension BasePurchasesTests {
         var badOfferingsResponse = false
         var gotOfferings = 0
 
-        override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
+        override func getOfferings(appUserID: String, completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
             self.gotOfferings += 1
             if self.failOfferings {
                 completion(.failure(.unexpectedBackendResponse(.getOfferUnexpectedResponse)))
@@ -362,7 +363,7 @@ extension BasePurchasesTests {
                            subscriptionGroup: String?,
                            receiptData: Data,
                            appUserID: String,
-                           completion: @escaping OfferSigningResponseHandler) {
+                           completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
             self.postOfferForSigningCalled = true
 
             completion(

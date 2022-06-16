@@ -28,11 +28,11 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let postOfferData: PostOfferForSigningData
-    private let responseHandler: Backend.OfferSigningResponseHandler
+    private let responseHandler: OfferingsAPI.OfferSigningResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          postOfferForSigningData: PostOfferForSigningData,
-         responseHandler: @escaping Backend.OfferSigningResponseHandler) {
+         responseHandler: @escaping OfferingsAPI.OfferSigningResponseHandler) {
         self.configuration = configuration
         self.postOfferData = postOfferForSigningData
         self.responseHandler = responseHandler

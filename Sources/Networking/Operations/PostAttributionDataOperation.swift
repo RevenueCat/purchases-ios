@@ -18,12 +18,12 @@ class PostAttributionDataOperation: NetworkOperation {
     private let configuration: UserSpecificConfiguration
     private let attributionData: [String: Any]
     private let network: AttributionNetwork
-    private let responseHandler: Backend.SimpleResponseHandler?
+    private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          attributionData: [String: Any],
          network: AttributionNetwork,
-         responseHandler: Backend.SimpleResponseHandler?) {
+         responseHandler: CustomerAPI.SimpleResponseHandler?) {
         self.attributionData = attributionData
         self.network = network
         self.configuration = configuration

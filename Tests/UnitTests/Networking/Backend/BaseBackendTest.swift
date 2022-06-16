@@ -35,7 +35,7 @@ class BaseBackendTests: TestCase {
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
         let backendConfig = BackendConfiguration(httpClient: self.httpClient,
-                                                 operationQueue: MockBackend.QueueProvider.queue,
+                                                 operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.backend = Backend(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
     }
