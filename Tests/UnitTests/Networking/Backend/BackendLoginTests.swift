@@ -204,7 +204,7 @@ private extension BackendLoginTests {
                           statusCode: HTTPStatusCode = .success,
                           response: [String: Any] = [:]) -> HTTPRequest.Path {
         let path: HTTPRequest.Path = .logIn
-        let response =  MockHTTPClient.Response(statusCode: statusCode, response: response)
+        let response = MockHTTPClient.Response(statusCode: statusCode, response: response)
 
         self.httpClient.mock(requestPath: path, response: response)
 
