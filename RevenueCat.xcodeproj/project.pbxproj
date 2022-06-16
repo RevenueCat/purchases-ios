@@ -857,7 +857,6 @@
 		B372EC53268FEDC60099171E /* StoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductDiscount.swift; sourceTree = "<group>"; };
 		B372EC55268FEF020099171E /* ProductRequestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductRequestData.swift; sourceTree = "<group>"; };
 		B37815482857F1E7000A7B93 /* BackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendConfiguration.swift; sourceTree = "<group>"; };
-		B3781566285A7991000A7B93 /* SwiftStyleGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftStyleGuide.swift; path = Contributing/SwiftStyleGuide.swift; sourceTree = "<group>"; };
 		B3781567285A79FC000A7B93 /* IdentityAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityAPI.swift; sourceTree = "<group>"; };
 		B378156B285A9729000A7B93 /* OfferingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsAPI.swift; sourceTree = "<group>"; };
 		B380D69A27726AB500984578 /* DNSCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSCheckerTests.swift; sourceTree = "<group>"; };
