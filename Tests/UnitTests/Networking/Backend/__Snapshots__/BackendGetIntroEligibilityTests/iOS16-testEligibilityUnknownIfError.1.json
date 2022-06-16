@@ -1,0 +1,17 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "fetch_token" : "AQI=",
+      "product_identifiers" : [
+        "producta",
+        "productb",
+        "productc"
+      ]
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/subscribers/user/intro_eligibility"
+  }
+}
