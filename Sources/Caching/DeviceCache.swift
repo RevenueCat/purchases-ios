@@ -245,8 +245,7 @@ class DeviceCache {
                 var attributesForUser: [String: SubscriberAttribute] = [:]
                 let attributesDictForUser = attributesDictForUser as? [String: [String: Any]] ?? [:]
                 for (attributeKey, attributeDict) in attributesDictForUser {
-                    let attribute = DeviceCache.newAttribute(dictionary: attributeDict)
-                    if !attribute.isSynced {
+                    if let attribute = SubscriberAttribute(dictionary: attributeDict), !attribute.isSynced {
                         attributesForUser[attributeKey] = attribute
                     }
                 }
@@ -302,17 +301,6 @@ class DeviceCache {
     }
 
     // MARK: - Helper functions
-
-    static func newAttribute(dictionary: [String: Any]) -> SubscriberAttribute {
-        // swiftlint:disable force_cast
-        let key = dictionary[SubscriberAttribute.keyKey] as! String
-        let value = dictionary[SubscriberAttribute.valueKey] as? String
-        let isSynced = (dictionary[SubscriberAttribute.isSyncedKey] as! NSNumber).boolValue
-        let setTime = dictionary[SubscriberAttribute.setTimeKey] as! Date
-        // swiftlint:enable force_cast
-
-        return SubscriberAttribute(withKey: key, value: value, isSynced: isSynced, setTime: setTime)
-    }
 
     fileprivate enum CacheKeys: String {
 
@@ -417,10 +405,10 @@ private extension DeviceCache {
         let allAttributesObjectsByKey = Self.subscriberAttributes(userDefaults, appUserID: appUserID)
         var allSubscriberAttributesByKey: [String: SubscriberAttribute] = [:]
         for (key, attributeDict) in allAttributesObjectsByKey {
-
-            // swiftlint:disable:next force_cast
-            let subscriberAttribute = DeviceCache.newAttribute(dictionary: attributeDict as! [String: Any])
-            allSubscriberAttributesByKey[key] = subscriberAttribute
+            if let dictionary = attributeDict as? [String: Any],
+                let attribute = SubscriberAttribute(dictionary: dictionary) {
+                allSubscriberAttributesByKey[key] = attribute
+            }
         }
 
         return allSubscriberAttributesByKey
@@ -461,9 +449,7 @@ private extension DeviceCache {
             var unsyncedAttributesForUser: [String: [String: Any]] = [:]
             let allStoredAttributesForAppUserID = allStoredAttributes[appUserID] as? [String: [String: Any]] ?? [:]
             for (attributeKey, storedAttributesForUser) in allStoredAttributesForAppUserID {
-                let attribute = DeviceCache.newAttribute(dictionary: storedAttributesForUser)
-
-                if !attribute.isSynced {
+                if let attribute = SubscriberAttribute(dictionary: storedAttributesForUser), !attribute.isSynced {
                     unsyncedAttributesForUser[attributeKey] = storedAttributesForUser
                 }
             }

@@ -51,7 +51,7 @@ class MockBackend: Backend {
                        productData: ProductRequestData?,
                        presentedOfferingIdentifier offeringIdentifier: String?,
                        observerMode: Bool,
-                       subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
+                       subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
@@ -191,7 +191,7 @@ class MockBackend: Backend {
     var invokedPostSubscriberAttributesParametersList: [InvokedPostSubscriberAttributesParams] = []
     var stubbedPostSubscriberAttributesCompletionResult: (BackendError?, Void)?
 
-    override func post(subscriberAttributes: SubscriberAttributeDict,
+    override func post(subscriberAttributes: SubscriberAttribute.Dictionary,
                        appUserID: String,
                        completion: ((BackendError?) -> Void)?) {
         invokedPostSubscriberAttributes = true

@@ -14,75 +14,95 @@
 
 import Foundation
 
-class SubscriberAttribute {
+struct SubscriberAttribute {
 
-    static private let backendValueKey = "value"
-    static private let backendTimestampKey = "updated_at_ms"
-
-    static let keyKey = "key"
-    static let valueKey = "value"
-    static let setTimeKey = "setTime"
-    static let isSyncedKey = "isSynced"
-
-    let setTime: Date
-    let key: String
-    let value: String
+    var setTime: Date
+    var key: String
+    var value: String
     var isSynced: Bool
 
-    required init(withKey key: String, value: String?, isSynced: Bool, setTime: Date) {
+    init(withKey key: String, value: String?, isSynced: Bool, setTime: Date) {
         self.key = key
         self.value = value ?? ""
         self.isSynced = isSynced
         self.setTime = setTime
     }
 
-    convenience init(withKey: String, value: String?) {
-        self.init(withKey: withKey, value: value, dateProvider: DateProvider())
-    }
-
-    convenience init(withKey key: String, value: String?, dateProvider: DateProvider) {
+    init(withKey key: String, value: String?, dateProvider: DateProvider = DateProvider()) {
         self.init(withKey: key, value: value, isSynced: false, setTime: dateProvider.now())
     }
 
+}
+
+extension SubscriberAttribute {
+
+    init?(dictionary: [String: Any]) {
+        guard let key = dictionary[Key.key.rawValue] as? String,
+              let isSynced = (dictionary[Key.isSynced.rawValue] as? NSNumber)?.boolValue,
+              let setTime = dictionary[Key.setTime.rawValue] as? Date else {
+            return nil
+        }
+
+        let value = dictionary[Key.value.rawValue] as? String
+
+        self.init(withKey: key, value: value, isSynced: isSynced, setTime: setTime)
+    }
+
     func asDictionary() -> [String: NSObject] {
-        return [Self.keyKey: self.key as NSString,
-                Self.valueKey: self.value as NSString,
-                Self.isSyncedKey: NSNumber(value: self.isSynced),
-                Self.setTimeKey: self.setTime as NSDate]
+        return [Key.key.rawValue: self.key as NSString,
+                Key.value.rawValue: self.value as NSString,
+                Key.isSynced.rawValue: NSNumber(value: self.isSynced),
+                Key.setTime.rawValue: self.setTime as NSDate]
     }
 
     func asBackendDictionary() -> [String: Any] {
-        let timestamp = self.setTime.millisecondsSince1970AsUInt64()
-
-        return [Self.backendValueKey: self.value,
-                Self.backendTimestampKey: timestamp]
+        return [BackendKey.value.rawValue: self.value,
+                BackendKey.timestamp.rawValue: self.setTime.millisecondsSince1970AsUInt64()]
     }
 
 }
 
-extension SubscriberAttribute: Equatable {
-
-    static func == (lhs: SubscriberAttribute, rhs: SubscriberAttribute) -> Bool {
-        if lhs === rhs {
-            return true
-        } else if lhs.key != rhs.key {
-            return false
-        } else if lhs.value != rhs.value {
-            return false
-        } else if lhs.setTime != rhs.setTime {
-            return false
-        } else if lhs.isSynced != rhs.isSynced {
-            return false
-        }
-        return true
-    }
-
-}
+extension SubscriberAttribute: Equatable {}
 
 extension SubscriberAttribute: CustomStringConvertible {
 
     var description: String {
-        return "Subscriber attribute: key: \(self.key) value: \(self.value) setTime: \(self.setTime)"
+        return "[SubscriberAttribute] key: \(self.key) value: \(self.value) setTime: \(self.setTime)"
+    }
+
+}
+
+extension SubscriberAttribute {
+
+    typealias Dictionary = [String: SubscriberAttribute]
+
+}
+
+extension SubscriberAttribute {
+
+    static func map(subscriberAttributes: SubscriberAttribute.Dictionary) -> [String: [String: Any]] {
+        return subscriberAttributes.mapValues { $0.asBackendDictionary() }
+    }
+}
+
+// MARK: - Private
+
+extension SubscriberAttribute {
+
+    private enum Key: String {
+
+        case key
+        case value
+        case isSynced
+        case setTime
+
+    }
+
+    private enum BackendKey: String {
+
+        case value = "value"
+        case timestamp = "updated_at_ms"
+
     }
 
 }

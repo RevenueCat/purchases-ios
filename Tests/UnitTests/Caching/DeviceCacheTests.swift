@@ -392,26 +392,6 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == false
     }
 
-    func testInitWithDictionarySetsRightValues() {
-        let key = "some key"
-        let value = "some value"
-        let setTime = NSDate()
-        let isSynced = true
-        let subscriberDict: [String: NSObject] = [
-            "key": NSString(string: key),
-            "value": NSString(string: value),
-            "setTime": setTime,
-            "isSynced": NSNumber(value: isSynced)
-        ]
-
-        let subscriberAttribute = DeviceCache.newAttribute(dictionary: subscriberDict)
-
-        expect(subscriberAttribute.key) == key
-        expect(subscriberAttribute.value) == value
-        expect(subscriberAttribute.setTime as NSDate) == setTime
-        expect(subscriberAttribute.isSynced) == isSynced
-    }
-
     func testClearCachedOfferings() {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,

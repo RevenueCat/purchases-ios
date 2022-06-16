@@ -332,7 +332,7 @@ extension Attribution {
                                                                           completion: completion)
     }
 
-    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
+    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {
         self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
     }
 
@@ -345,7 +345,7 @@ extension Attribution {
                                                                    completion: completion)
     }
 
-    func markAttributesAsSynced(_ attributesToSync: SubscriberAttributeDict?, appUserID: String) {
+    func markAttributesAsSynced(_ attributesToSync: SubscriberAttribute.Dictionary?, appUserID: String) {
         self.subscriberAttributesManager.markAttributesAsSynced(attributesToSync, appUserID: appUserID)
     }
 

@@ -47,7 +47,7 @@ class PurchasesOrchestrator {
     private var purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
-    private var unsyncedAttributes: SubscriberAttributeDict {
+    private var unsyncedAttributes: SubscriberAttribute.Dictionary {
         self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
 
@@ -705,7 +705,7 @@ private extension PurchasesOrchestrator {
 
     func handleReceiptPost(withTransaction transaction: StoreTransaction,
                            result: Result<CustomerInfo, BackendError>,
-                           subscriberAttributes: SubscriberAttributeDict?) {
+                           subscriberAttributes: SubscriberAttribute.Dictionary?) {
         func finishTransactionIfNeeded() {
             if self.finishTransactions, let sk1Transaction = transaction.sk1Transaction {
                 self.storeKitWrapper.finishTransaction(sk1Transaction)
@@ -741,7 +741,11 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, error: BackendError?) {
+    func markSyncedIfNeeded(
+        subscriberAttributes: SubscriberAttribute.Dictionary?,
+        appUserID: String,
+        error: BackendError?
+    ) {
         if let error = error {
             guard error.successfullySynced else { return }
 
@@ -811,7 +815,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
-                           subscriberAttributes: SubscriberAttributeDict,
+                           subscriberAttributes: SubscriberAttribute.Dictionary,
                            completion: ((Result<CustomerInfo, Error>) -> Void)?) {
         operationDispatcher.dispatchOnMainThread {
             if let customerInfo = result.value {

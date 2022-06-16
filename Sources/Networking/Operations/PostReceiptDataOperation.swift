@@ -23,7 +23,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
         let observerMode: Bool
-        let subscriberAttributesByKey: SubscriberAttributeDict?
+        let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
 
     }
 
@@ -101,7 +101,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
-                .map(SubscriberAttributesMarshaller.map)
+                .map(SubscriberAttribute.map)
                 .map(AnyEncodable.init),
             forKey: .attributes
         )

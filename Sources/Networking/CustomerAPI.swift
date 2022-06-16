@@ -40,7 +40,7 @@ class CustomerAPI {
         self.backendConfig.operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
 
-    func post(subscriberAttributes: SubscriberAttributeDict,
+    func post(subscriberAttributes: SubscriberAttribute.Dictionary,
               appUserID: String,
               completion: SimpleResponseHandler?) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
@@ -71,7 +71,7 @@ class CustomerAPI {
               productData: ProductRequestData?,
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
-              subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
+              subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let attributionStatus = self.attributionFetcher.authorizationStatus
         var subscriberAttributesByKey = subscriberAttributesByKey ?? [:]
