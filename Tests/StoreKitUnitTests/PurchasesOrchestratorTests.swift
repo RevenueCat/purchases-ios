@@ -48,7 +48,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo)
         deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo)
         backend = MockBackend()
-        offerings = backend.offerings as? MockOfferingsAPI
+        offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
+
         customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
                                                       deviceCache: deviceCache,
                                                       backend: backend,

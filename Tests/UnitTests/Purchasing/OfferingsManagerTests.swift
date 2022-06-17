@@ -29,9 +29,9 @@ class OfferingsManagerTests: TestCase {
     var mockProductsManager: MockProductsManager!
     var offeringsManager: OfferingsManager!
 
-    override func setUp() {
-        super.setUp()
-        self.mockOfferings = mockBackend.offerings as? MockOfferingsAPI
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        self.mockOfferings = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
         self.mockProductsManager = MockProductsManager(systemInfo: self.mockSystemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)

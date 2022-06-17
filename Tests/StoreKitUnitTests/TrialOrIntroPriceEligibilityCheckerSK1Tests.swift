@@ -40,7 +40,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
 
-        self.mockOfferingsAPI = mockBackend.offerings as? MockOfferingsAPI
+        self.mockOfferingsAPI = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
         let mockOperationDispatcher = MockOperationDispatcher()
         let userProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
         trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
