@@ -16,14 +16,8 @@ import Foundation
 
 class MockIdentityAPI: IdentityAPI {
 
-    var invokedLogIn = false
-    var invokedLogInCount = 0
-    var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
-    var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
-    var stubbedLogInCompletionResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
-
-    // swiftlint:disable force_try
     public convenience init() {
+        // swiftlint:disable:next force_try
         let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
         let mockAPIKey = "mockAPIKey"
         let httpClient = MockHTTPClient(apiKey: mockAPIKey,
@@ -35,6 +29,12 @@ class MockIdentityAPI: IdentityAPI {
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.init(backendConfig: backendConfig)
     }
+
+    var invokedLogIn = false
+    var invokedLogInCount = 0
+    var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
+    var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
+    var stubbedLogInCompletionResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
     override func logIn(currentAppUserID: String,
                         newAppUserID: String,

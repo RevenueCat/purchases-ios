@@ -26,7 +26,7 @@ class IdentityManagerTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        self.mockIdentityAPI = mockBackend.identity as? MockIdentityAPI
+        self.mockIdentityAPI = try XCTUnwrap(mockBackend.identity as? MockIdentityAPI)
         self.mockCustomerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [

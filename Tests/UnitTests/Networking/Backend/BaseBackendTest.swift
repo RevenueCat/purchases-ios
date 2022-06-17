@@ -38,13 +38,7 @@ class BaseBackendTests: TestCase {
                                                  operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
 
-        let identity = IdentityAPI(backendConfig: backendConfig)
-        let offerings = OfferingsAPI(backendConfig: backendConfig)
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
-        self.backend = Backend(backendConfig: backendConfig,
-                               customerAPI: customer,
-                               identityAPI: identity,
-                               offeringsAPI: offerings)
+        self.backend = Backend(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
     }
 
     func createClient() -> MockHTTPClient {
