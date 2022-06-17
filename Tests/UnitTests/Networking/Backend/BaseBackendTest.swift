@@ -24,6 +24,7 @@ class BaseBackendTests: TestCase {
     private(set) var httpClient: MockHTTPClient!
     private(set) var backend: Backend!
     private(set) var offerings: OfferingsAPI!
+    private(set) var identity: IdentityAPI!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -39,12 +40,12 @@ class BaseBackendTests: TestCase {
                                                  operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
 
-        let identity = IdentityAPI(backendConfig: backendConfig)
-        self.offerings = OfferingsAPI(backendConfig: backendConfig)
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        self.identity = IdentityAPI(backendConfig: backendConfig)
+        self.offerings = OfferingsAPI(backendConfig: backendConfig)
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
-                               identityAPI: identity,
+                               identityAPI: self.identity,
                                offeringsAPI: self.offerings)
 
     }
