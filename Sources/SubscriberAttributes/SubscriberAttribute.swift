@@ -16,9 +16,9 @@ import Foundation
 
 struct SubscriberAttribute {
 
-    var setTime: Date
-    var key: String
-    var value: String
+    let setTime: Date
+    let key: String
+    let value: String
     var isSynced: Bool
 
     init(withKey key: String, value: String?, isSynced: Bool, setTime: Date) {
