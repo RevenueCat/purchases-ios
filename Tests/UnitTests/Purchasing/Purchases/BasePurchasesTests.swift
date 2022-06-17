@@ -380,7 +380,6 @@ extension BasePurchasesTests {
             }
         }
 
-
     }
 }
 
