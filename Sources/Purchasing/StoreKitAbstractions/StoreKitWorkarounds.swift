@@ -50,9 +50,8 @@ extension SKPayment {
 
     /// Attempts to find a non-nil `productIdentifier`.
     ///
-    /// Although `SKPayment.productIdentifier` is supposed to be non-nil,
-    /// we've seen instances where this is not true.
-    /// So we cast into `Optional` in order to check nullability.
+    /// Although `SKPayment.productIdentifier` is supposed to be non-nil, we've seen instances where this is not true.
+    /// To handle this case, we cast `productIdentifier` to `Optional` in order to check nullability.
     func extractProductIdentifier(fileName: String = #fileID,
                                   functionName: String = #function,
                                   line: UInt = #line) -> String? {
