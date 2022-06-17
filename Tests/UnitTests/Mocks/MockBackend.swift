@@ -42,7 +42,10 @@ class MockBackend: Backend {
         let backendConfig = BackendConfiguration(httpClient: httpClient,
                                                  operationQueue: QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
-        self.init(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        let identity = MockIdentityAPI(backendConfig: backendConfig)
+        let offerings = OfferingsAPI(backendConfig: backendConfig)
+        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        self.init(backendConfig: backendConfig, customerAPI: customer, identityAPI: identity, offeringsAPI: offerings)
     }
 
     override func post(receiptData: Data,
@@ -210,24 +213,6 @@ class MockBackend: Backend {
     struct InvokedPostSubscriberAttributesParams: Equatable {
         let subscriberAttributes: [String: SubscriberAttribute]?
         let appUserID: String?
-    }
-
-    var invokedLogIn = false
-    var invokedLogInCount = 0
-    var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
-    var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
-    var stubbedLogInCompletionResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
-
-    override func logIn(currentAppUserID: String,
-                        newAppUserID: String,
-                        completion: @escaping IdentityAPI.LogInResponseHandler) {
-        invokedLogIn = true
-        invokedLogInCount += 1
-        invokedLogInParameters = (currentAppUserID, newAppUserID)
-        invokedLogInParametersList.append((currentAppUserID, newAppUserID))
-        if let result = stubbedLogInCompletionResult {
-            completion(result)
-        }
     }
 
     static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40

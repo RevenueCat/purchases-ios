@@ -37,6 +37,7 @@ class BaseBackendTests: TestCase {
         let backendConfig = BackendConfiguration(httpClient: self.httpClient,
                                                  operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+
         self.backend = Backend(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
     }
 
