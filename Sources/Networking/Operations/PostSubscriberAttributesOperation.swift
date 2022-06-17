@@ -16,11 +16,11 @@ import Foundation
 class PostSubscriberAttributesOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
-    private let subscriberAttributes: SubscriberAttributeDict
+    private let subscriberAttributes: SubscriberAttribute.Dictionary
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
-         subscriberAttributes: SubscriberAttributeDict,
+         subscriberAttributes: SubscriberAttribute.Dictionary,
          completion: CustomerAPI.SimpleResponseHandler?) {
         self.configuration = configuration
         self.subscriberAttributes = subscriberAttributes
@@ -68,9 +68,9 @@ extension PostSubscriberAttributesOperation {
 
         let attributes: AnyEncodable
 
-        init(_ attributes: SubscriberAttributeDict) {
+        init(_ attributes: SubscriberAttribute.Dictionary) {
             self.attributes = AnyEncodable(
-                SubscriberAttributesMarshaller.map(subscriberAttributes: attributes)
+                SubscriberAttribute.map(subscriberAttributes: attributes)
             )
         }
 

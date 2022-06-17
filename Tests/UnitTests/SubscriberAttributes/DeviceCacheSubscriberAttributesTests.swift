@@ -14,27 +14,26 @@ class DeviceCacheSubscriberAttributesTests: TestCase {
     private var deviceCache: DeviceCache! = nil
 
     override func setUp() {
+        super.setUp()
+
         UserDefaults.resetStandardUserDefaults()
         self.mockUserDefaults = MockUserDefaults()
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
                                        userDefaults: self.mockUserDefaults)
-        setUpSubscriberAttributes()
+
+        self.mockDateProvider = MockDateProvider(stubbedNow: self.now)
+        self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
+                                                             value: "183",
+                                                             dateProvider: self.mockDateProvider)
+        self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
+                                                             value: "160",
+                                                             dateProvider: self.mockDateProvider)
     }
 
-    private var now = Date()
+    private var now = Date(timeIntervalSince1970: 2_000_000_000) // 2033-05-18 03:33:20Z
     private var mockDateProvider: MockDateProvider!
     private var subscriberAttributeHeight: SubscriberAttribute!
     private var subscriberAttributeWeight: SubscriberAttribute!
-
-    private func setUpSubscriberAttributes() {
-        self.mockDateProvider = MockDateProvider(stubbedNow: now)
-        self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
-                                                             value: "183",
-                                                             dateProvider: mockDateProvider)
-        self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
-                                                             value: "160",
-                                                             dateProvider: mockDateProvider)
-    }
 
     func testStoreSubscriberAttributeStoresCorrectly() {
         let appUserID = "waldo"

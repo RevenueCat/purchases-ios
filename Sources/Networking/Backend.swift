@@ -13,8 +13,6 @@
 
 import Foundation
 
-typealias SubscriberAttributeDict = [String: SubscriberAttribute]
-
 class Backend {
 
     private let config: BackendConfiguration
@@ -106,7 +104,7 @@ class Backend {
               productData: ProductRequestData?,
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
-              subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
+              subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customerAPI.post(receiptData: receiptData,
                               appUserID: appUserID,
@@ -118,7 +116,7 @@ class Backend {
                               completion: completion)
     }
 
-    func post(subscriberAttributes: SubscriberAttributeDict,
+    func post(subscriberAttributes: SubscriberAttribute.Dictionary,
               appUserID: String,
               completion: CustomerAPI.SimpleResponseHandler?) {
         self.customerAPI.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)

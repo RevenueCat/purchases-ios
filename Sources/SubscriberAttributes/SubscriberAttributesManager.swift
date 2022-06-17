@@ -180,7 +180,7 @@ class SubscriberAttributesManager {
         }
     }
 
-    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
+    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {
         let unsyncedAttributes = deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
         Logger.debug(Strings.attribution.unsynced_attributes_count(unsyncedAttributesCount: unsyncedAttributes.count,
                                                                    appUserID: appUserID))
@@ -191,11 +191,11 @@ class SubscriberAttributesManager {
         return unsyncedAttributes
     }
 
-    func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {
+    func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttribute.Dictionary] {
         return deviceCache.unsyncedAttributesForAllUsers()
     }
 
-    func markAttributesAsSynced(_ attributesToSync: SubscriberAttributeDict?, appUserID: String) {
+    func markAttributesAsSynced(_ attributesToSync: SubscriberAttribute.Dictionary?, appUserID: String) {
         guard let attributesToSync = attributesToSync,
               !attributesToSync.isEmpty else {
             return
@@ -204,16 +204,15 @@ class SubscriberAttributesManager {
         Logger.info(Strings.attribution.marking_attributes_synced(appUserID: appUserID, attributes: attributesToSync))
 
         self.lock.perform {
-            var unsyncedAttributes = unsyncedAttributesByKey(appUserID: appUserID)
+            var unsyncedAttributes = self.unsyncedAttributesByKey(appUserID: appUserID)
+
             for (key, attribute) in attributesToSync {
-                if let unsyncedAttribute = unsyncedAttributes[key] {
-                    if unsyncedAttribute.value == attribute.value {
-                        unsyncedAttribute.isSynced = true
-                        unsyncedAttributes[key] = unsyncedAttribute
-                    }
+                if unsyncedAttributes[key]?.value == attribute.value {
+                    unsyncedAttributes[key]?.isSynced = true
                 }
             }
-            deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
+
+            self.deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
         }
     }
 
@@ -245,7 +244,7 @@ private extension SubscriberAttributesManager {
         storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
     }
 
-    func syncAttributes(attributes: SubscriberAttributeDict,
+    func syncAttributes(attributes: SubscriberAttribute.Dictionary,
                         appUserID: String,
                         completion: @escaping (BackendError?) -> Void) {
         backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
