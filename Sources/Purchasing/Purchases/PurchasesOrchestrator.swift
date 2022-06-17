@@ -216,13 +216,11 @@ class PurchasesOrchestrator {
                 return
             }
 
-            self.backend.post(
-                offerIdForSigning: discountIdentifier,
-                productIdentifier: product.productIdentifier,
-                subscriptionGroup: subscriptionGroupIdentifier,
-                receiptData: receiptData,
-                appUserID: self.appUserID
-            ) { result in
+            self.backend.offerings.post(offerIdForSigning: discountIdentifier,
+                                        productIdentifier: product.productIdentifier,
+                                        subscriptionGroup: subscriptionGroupIdentifier,
+                                        receiptData: receiptData,
+                                        appUserID: self.appUserID) { result in
                 let result: Result<PromotionalOffer, Error> = result
                     .map { data in
                         let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,

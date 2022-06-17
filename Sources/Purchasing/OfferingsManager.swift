@@ -73,7 +73,7 @@ class OfferingsManager {
     ) {
         deviceCache.setOfferingsCacheTimestampToNow()
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
-            self.backend.getOfferings(appUserID: appUserID) { result in
+            self.backend.offerings.getOfferings(appUserID: appUserID) { result in
                 switch result {
                 case let .success(response):
                     self.handleOfferingsBackendResult(with: response, completion: completion)

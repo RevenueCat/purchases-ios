@@ -43,7 +43,7 @@ class MockBackend: Backend {
                                                  operationQueue: QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         let identity = MockIdentityAPI(backendConfig: backendConfig)
-        let offerings = OfferingsAPI(backendConfig: backendConfig)
+        let offerings = MockOfferingsAPI(backendConfig: backendConfig)
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.init(backendConfig: backendConfig, customerAPI: customer, identityAPI: identity, offeringsAPI: offerings)
     }
@@ -94,43 +94,6 @@ class MockBackend: Backend {
         completion(self.stubbedGetCustomerInfoResult)
     }
 
-    var invokedGetIntroEligibility = false
-    var invokedGetIntroEligibilityCount = 0
-    var invokedGetIntroEligibilityParameters: (appUserID: String?, receiptData: Data?, productIdentifiers: [String]?, completion: OfferingsAPI.IntroEligibilityResponseHandler?)?
-    var invokedGetIntroEligibilityParametersList = [(
-        appUserID: String?,
-        receiptData: Data?,
-        productIdentifiers: [String]?,
-        completion: OfferingsAPI.IntroEligibilityResponseHandler?)]()
-    var stubbedGetIntroEligibilityCompletionResult: (eligibilities: [String: IntroEligibility], error: BackendError?)?
-
-    override func getIntroEligibility(appUserID: String,
-                                      receiptData: Data,
-                                      productIdentifiers: [String],
-                                      completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
-        invokedGetIntroEligibility = true
-        invokedGetIntroEligibilityCount += 1
-        invokedGetIntroEligibilityParameters = (appUserID, receiptData, productIdentifiers, completion)
-        invokedGetIntroEligibilityParametersList.append((appUserID, receiptData, productIdentifiers, completion))
-        completion(stubbedGetIntroEligibilityCompletionResult?.eligibilities ?? [:], stubbedGetIntroEligibilityCompletionResult?.error)
-    }
-
-    var invokedGetOfferingsForAppUserID = false
-    var invokedGetOfferingsForAppUserIDCount = 0
-    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: OfferingsAPI.OfferingsResponseHandler?)?
-    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, completion: OfferingsAPI.OfferingsResponseHandler?)]()
-    var stubbedGetOfferingsCompletionResult: Result<OfferingsResponse, BackendError>?
-
-    override func getOfferings(appUserID: String,
-                               completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
-        invokedGetOfferingsForAppUserID = true
-        invokedGetOfferingsForAppUserIDCount += 1
-        invokedGetOfferingsForAppUserIDParameters = (appUserID, completion)
-        invokedGetOfferingsForAppUserIDParametersList.append((appUserID, completion))
-
-        completion(stubbedGetOfferingsCompletionResult!)
-    }
-
     var invokedPostAttributionData = false
     var invokedPostAttributionDataCount = 0
     var invokedPostAttributionDataParameters: (data: [String: Any]?, network: AttributionNetwork, appUserID: String?)?
@@ -150,42 +113,6 @@ class MockBackend: Backend {
         if let result = stubbedPostAttributionDataCompletionResult {
             completion?(result.0)
         }
-    }
-
-    var invokedPostOffer = false
-    var invokedPostOfferCount = 0
-    var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: Data?, applicationUsername: String?, completion: OfferingsAPI.OfferSigningResponseHandler?)?
-    var invokedPostOfferParametersList = [(
-        offerIdentifier: String?,
-        productIdentifier: String?,
-        subscriptionGroup: String?,
-        data: Data?,
-        applicationUsername: String?,
-        completion: OfferingsAPI.OfferSigningResponseHandler?)]()
-    var stubbedPostOfferCompletionResult: Result<PostOfferForSigningOperation.SigningData, BackendError>?
-
-    override func post(offerIdForSigning offerIdentifier: String,
-                       productIdentifier: String,
-                       subscriptionGroup: String?,
-                       receiptData: Data,
-                       appUserID: String,
-                       completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
-        invokedPostOffer = true
-        invokedPostOfferCount += 1
-        invokedPostOfferParameters = (offerIdentifier,
-            productIdentifier,
-            subscriptionGroup,
-            receiptData,
-            appUserID,
-            completion)
-        invokedPostOfferParametersList.append((offerIdentifier,
-                                                  productIdentifier,
-                                                  subscriptionGroup,
-                                                  receiptData,
-                                                  appUserID,
-                                                  completion))
-
-        completion(stubbedPostOfferCompletionResult ?? .failure(.missingAppUserID()))
     }
 
     var invokedPostSubscriberAttributes = false

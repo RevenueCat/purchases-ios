@@ -16,9 +16,9 @@ import Foundation
 class Backend {
 
     let identity: IdentityAPI
+    let offerings: OfferingsAPI
 
     private let config: BackendConfiguration
-    private let offerings: OfferingsAPI
     private let customer: CustomerAPI
 
     convenience init(apiKey: String,
@@ -58,21 +58,6 @@ class Backend {
         self.config.clearCache()
     }
 
-    // swiftlint:disable:next function_parameter_count
-    func post(offerIdForSigning offerIdentifier: String,
-              productIdentifier: String,
-              subscriptionGroup: String,
-              receiptData: Data,
-              appUserID: String,
-              completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
-        self.offerings.post(offerIdForSigning: offerIdentifier,
-                            productIdentifier: productIdentifier,
-                            subscriptionGroup: subscriptionGroup,
-                            receiptData: receiptData,
-                            appUserID: appUserID,
-                            completion: completion)
-    }
-
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
@@ -81,20 +66,6 @@ class Backend {
                            network: network,
                            appUserID: appUserID,
                            completion: completion)
-    }
-
-    func getOfferings(appUserID: String, completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
-        self.offerings.getOfferings(appUserID: appUserID, completion: completion)
-    }
-
-    func getIntroEligibility(appUserID: String,
-                             receiptData: Data,
-                             productIdentifiers: [String],
-                             completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
-        self.offerings.getIntroEligibility(appUserID: appUserID,
-                                           receiptData: receiptData,
-                                           productIdentifiers: productIdentifiers,
-                                           completion: completion)
     }
 
     func getCustomerInfo(appUserID: String, completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {

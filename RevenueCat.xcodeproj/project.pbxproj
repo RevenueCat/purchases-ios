@@ -411,6 +411,8 @@
 		B3B5FBC1269E17CE00104A0C /* DeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */; };
 		B3BE0264275942D500915B4C /* AvailabilityChecks.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BE0263275942D500915B4C /* AvailabilityChecks.swift */; };
 		B3C4AAD526B8911300E1B3C8 /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C4AAD426B8911300E1B3C8 /* Backend.swift */; };
+		B3CAFF10285CE8E30048A994 /* MockOfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3CAFF0F285CE8E30048A994 /* MockOfferingsAPI.swift */; };
+		B3CAFF1F285CEAAA0048A994 /* MockOfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3CAFF0F285CE8E30048A994 /* MockOfferingsAPI.swift */; };
 		B3CD0D8827F25E3E000793F5 /* BackendSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3CD0D8727F25E3E000793F5 /* BackendSubscriberAttributesTests.swift */; };
 		B3DDB55926854865008CCF23 /* PurchaseOwnershipType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */; };
 		B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */; };
@@ -877,6 +879,7 @@
 		B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCache.swift; sourceTree = "<group>"; };
 		B3BE0263275942D500915B4C /* AvailabilityChecks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailabilityChecks.swift; sourceTree = "<group>"; };
 		B3C4AAD426B8911300E1B3C8 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
+		B3CAFF0F285CE8E30048A994 /* MockOfferingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfferingsAPI.swift; sourceTree = "<group>"; };
 		B3CD0D8727F25E3E000793F5 /* BackendSubscriberAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendSubscriberAttributesTests.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseOwnershipType.swift; sourceTree = "<group>"; };
@@ -1311,6 +1314,7 @@
 				351B515B26D44B7900BD2BD7 /* MockIntroEligibilityCalculator.swift */,
 				35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift */,
 				351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */,
+				B3CAFF0F285CE8E30048A994 /* MockOfferingsAPI.swift */,
 				351B515726D44B3E00BD2BD7 /* MockOfferingsFactory.swift */,
 				F575858E26C0893600C12B97 /* MockOfferingsManager.swift */,
 				351B514A26D44A4A00BD2BD7 /* MockOperationDispatcher.swift */,
@@ -2236,6 +2240,7 @@
 				2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */,
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
 				F5847431278D00C1001B1CE6 /* MockDNSChecker.swift in Sources */,
+				B3CAFF1F285CEAAA0048A994 /* MockOfferingsAPI.swift in Sources */,
 				F55FFA632763F60700995146 /* TransactionsManagerSK1Tests.swift in Sources */,
 				2D222BAB27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift in Sources */,
 				B31C8BEF285BDD76001017B7 /* MockIdentityAPI.swift in Sources */,
@@ -2496,6 +2501,7 @@
 				578FB10E27ADDA8000F70709 /* AvailabilityChecks.swift in Sources */,
 				57E415EF284697A300EA5460 /* PurchasesDeferredPurchasesTests.swift in Sources */,
 				35F82BB226A98EC50051DF03 /* AttributionDataMigratorTests.swift in Sources */,
+				B3CAFF10285CE8E30048A994 /* MockOfferingsAPI.swift in Sources */,
 				351B51BF26D450E800BD2BD7 /* StoreKitRequestFetcherTests.swift in Sources */,
 				2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */,
 				351B514B26D44A4A00BD2BD7 /* MockOperationDispatcher.swift in Sources */,

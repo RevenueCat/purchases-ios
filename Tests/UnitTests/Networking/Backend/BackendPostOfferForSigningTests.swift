@@ -51,11 +51,11 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".asData
 
-        backend.post(offerIdForSigning: offerIdentifier,
-                     productIdentifier: productIdentifier,
-                     subscriptionGroup: group,
-                     receiptData: discountData,
-                     appUserID: Self.userID) { _ in
+        self.offerings.post(offerIdForSigning: offerIdentifier,
+                            productIdentifier: productIdentifier,
+                            subscriptionGroup: group,
+                            receiptData: discountData,
+                            appUserID: Self.userID) { _ in
             completionCalled = true
         }
 
@@ -78,11 +78,11 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
 
         var result: Result<PostOfferForSigningOperation.SigningData, BackendError>?
 
-        backend.post(offerIdForSigning: offerIdentifier,
-                     productIdentifier: productIdentifier,
-                     subscriptionGroup: group,
-                     receiptData: discountData,
-                     appUserID: Self.userID) {
+        self.offerings.post(offerIdForSigning: offerIdentifier,
+                            productIdentifier: productIdentifier,
+                            subscriptionGroup: group,
+                            receiptData: discountData,
+                            appUserID: Self.userID) {
             result = $0
         }
 
@@ -108,11 +108,11 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
 
         var receivedError: BackendError?
 
-        backend.post(offerIdForSigning: offerIdentifier,
-                     productIdentifier: productIdentifier,
-                     subscriptionGroup: group,
-                     receiptData: discountData,
-                     appUserID: Self.userID) { result in
+        self.offerings.post(offerIdForSigning: offerIdentifier,
+                            productIdentifier: productIdentifier,
+                            subscriptionGroup: group,
+                            receiptData: discountData,
+                            appUserID: Self.userID) { result in
             receivedError = result.error
         }
 
@@ -151,11 +151,11 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
 
         var receivedError: BackendError?
 
-        backend.post(offerIdForSigning: offerIdentifier,
-                     productIdentifier: productIdentifier,
-                     subscriptionGroup: group,
-                     receiptData: discountData,
-                     appUserID: Self.userID) { result in
+        self.offerings.post(offerIdForSigning: offerIdentifier,
+                            productIdentifier: productIdentifier,
+                            subscriptionGroup: group,
+                            receiptData: discountData,
+                            appUserID: Self.userID) { result in
             receivedError = result.error
         }
 
@@ -188,11 +188,11 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
 
         var receivedError: BackendError?
 
-        backend.post(offerIdForSigning: offerIdentifier,
-                     productIdentifier: productIdentifier,
-                     subscriptionGroup: group,
-                     receiptData: discountData,
-                     appUserID: Self.userID) { result in
+        self.offerings.post(offerIdForSigning: offerIdentifier,
+                            productIdentifier: productIdentifier,
+                            subscriptionGroup: group,
+                            receiptData: discountData,
+                            appUserID: Self.userID) { result in
             receivedError = result.error
         }
 
