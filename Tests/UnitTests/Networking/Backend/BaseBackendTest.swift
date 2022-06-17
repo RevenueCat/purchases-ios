@@ -47,7 +47,6 @@ class BaseBackendTests: TestCase {
                                customerAPI: customer,
                                identityAPI: self.identity,
                                offeringsAPI: self.offerings)
-
     }
 
     func createClient() -> MockHTTPClient {
