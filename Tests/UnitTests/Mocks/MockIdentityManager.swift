@@ -13,6 +13,8 @@ class MockIdentityManager: IdentityManager {
     var mockIsAnonymous = false
     var mockAppUserID: String
 
+    let mockAttributeSyncing = MockAttributeSyncing()
+
     init(mockAppUserID: String) {
         // swiftlint:disable:next force_try
         let mockSystemInfo = try! MockSystemInfo(platformInfo: nil,
@@ -22,12 +24,14 @@ class MockIdentityManager: IdentityManager {
         let mockBackend = MockBackend()
 
         self.mockAppUserID = mockAppUserID
+
         super.init(deviceCache: mockDeviceCache,
                    backend: mockBackend,
                    customerInfoManager: MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
                                                                 deviceCache: mockDeviceCache,
                                                                 backend: mockBackend,
                                                                 systemInfo: mockSystemInfo),
+                   attributeSyncing: self.mockAttributeSyncing,
                    appUserID: mockAppUserID)
     }
 
@@ -47,7 +51,7 @@ class MockIdentityManager: IdentityManager {
         fatalError("Logging in not supported on mock")
     }
 
-    override func logOut(completion: (Error?) -> Void) {
+    override func logOut(completion: @escaping (Error?) -> Void) {
         fatalError("Logging out not supported on mock")
     }
 

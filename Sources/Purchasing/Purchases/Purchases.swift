@@ -297,16 +297,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                       deviceCache: deviceCache,
                                                       backend: backend,
                                                       systemInfo: systemInfo)
-        let identityManager = IdentityManager(deviceCache: deviceCache,
-                                              backend: backend,
-                                              customerInfoManager: customerInfoManager,
-                                              appUserID: appUserID)
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
                                                                       deviceCache: deviceCache,
                                                                       operationDispatcher: operationDispatcher,
                                                                       attributionFetcher: attributionFetcher,
                                                                       attributionDataMigrator: attributionDataMigrator)
+        let identityManager = IdentityManager(deviceCache: deviceCache,
+                                              backend: backend,
+                                              customerInfoManager: customerInfoManager,
+                                              attributeSyncing: subscriberAttributesManager,
+                                              appUserID: appUserID)
         let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
                                                currentUserProvider: identityManager)
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
@@ -553,7 +554,7 @@ public extension Purchases {
      */
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
-        identityManager.logIn(appUserID: appUserID) { result in
+        self.identityManager.logIn(appUserID: appUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error)
             }
@@ -613,7 +614,7 @@ public extension Purchases {
      * - ``Purchases/appUserID``
      */
     @objc func logOut(completion: ((CustomerInfo?, Error?) -> Void)?) {
-        identityManager.logOut { error in
+        self.identityManager.logOut { error in
             guard error == nil else {
                 if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
