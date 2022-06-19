@@ -24,12 +24,12 @@ import Foundation
 @objc(RCAttribution) public class Attribution: NSObject {
 
     private let subscriberAttributesManager: SubscriberAttributesManager
-    private let identityManager: IdentityManager
-    private var appUserID: String { identityManager.currentAppUserID }
+    private let currentUserProvider: CurrentUserProvider
+    private var appUserID: String { self.currentUserProvider.currentAppUserID }
 
-    init(subscriberAttributesManager: SubscriberAttributesManager, identityManager: IdentityManager) {
+    init(subscriberAttributesManager: SubscriberAttributesManager, currentUserProvider: CurrentUserProvider) {
         self.subscriberAttributesManager = subscriberAttributesManager
-        self.identityManager = identityManager
+        self.currentUserProvider = currentUserProvider
     }
 
 }

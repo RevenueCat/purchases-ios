@@ -91,10 +91,11 @@ class PurchasesSubscriberAttributesTests: TestCase {
             deviceCache: self.mockDeviceCache,
             operationDispatcher: self.mockOperationDispatcher,
             attributionFetcher: self.mockAttributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator())
+            attributionDataMigrator: AttributionDataMigrator()
+        )
         self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user")
         self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
-                                       identityManager: mockIdentityManager)
+                                       currentUserProvider: self.mockIdentityManager)
         self.mockAttributionPoster = AttributionPoster(deviceCache: mockDeviceCache,
                                                        currentUserProvider: mockIdentityManager,
                                                        backend: mockBackend,
@@ -125,9 +126,11 @@ class PurchasesSubscriberAttributesTests: TestCase {
     }
 
     override func tearDown() {
-        purchases?.delegate = nil
-        purchases = nil
+        self.purchases?.delegate = nil
+        self.purchases = nil
         UserDefaults().removePersistentDomain(forName: "TestDefaults")
+
+        super.tearDown()
     }
 
     func setupPurchases(automaticCollection: Bool = false) {
