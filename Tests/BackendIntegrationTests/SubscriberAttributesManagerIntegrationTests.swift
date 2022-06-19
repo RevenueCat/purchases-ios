@@ -20,52 +20,77 @@ import XCTest
 class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
     private var attribution: Attribution!
+    private var userID: String!
+    private var syncedAttributes: [(userID: String, attributes: [String: String])] = []
+
+    private static let testEmail = "test@revenuecat.com"
 
     override func setUp() {
         super.setUp()
 
         self.attribution = Purchases.shared.attribution
+        self.attribution.delegate = self
+
+        self.userID = Purchases.shared.appUserID
+        self.syncedAttributes = []
     }
+
+    // MARK: -
 
     func testNothingToSync() {
         expect(Purchases.shared.syncSubscriberAttributesIfNeeded()) == 0
     }
 
     func testSyncOneAttribute() async throws {
-        self.attribution.setEmail("test@revenuecat.com")
+        self.attribution.setEmail(Self.testEmail)
 
         let errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1)
+
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifySyncedAttribute(self.userID, [reserved(.email): Self.testEmail])
     }
 
     func testSettingTheSameAttributeDoesNotNeedToChangeIt() async throws {
-        let email = "test@revenuecat.com"
-        self.attribution.setEmail(email)
+        self.attribution.setEmail(Self.testEmail)
 
         var errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifySyncedAttribute(self.userID, [reserved(.email): Self.testEmail])
 
-        self.attribution.setEmail(email)
+        self.attribution.setEmail(Self.testEmail)
         errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 0)
+        self.verifyAttributesSyncedWithNoErrors(errors, 0)
+        expect(self.syncedAttributes)
+            .to(
+                haveCount(1),
+                description: "Attribute should not have synced again"
+            )
     }
 
     func testChangingEmailSyncsIt() async throws {
-        self.attribution.setEmail("test@revenuecat.com")
+        self.attribution.setEmail(Self.testEmail)
 
         var errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifySyncedAttribute(self.userID, [reserved(.email): Self.testEmail])
 
-        self.attribution.setEmail("test2@revenuecat.com")
+        let newEmail = "test2@revenuecat.com"
+
+        self.attribution.setEmail(newEmail)
         errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifySyncedAttribute(self.userID, [reserved(.email): newEmail])
     }
 
     func testSyncInvalidEmail() async throws {
-        self.attribution.setEmail("invalid @ email @.com")
+        let invalidEmail = "invalid @ email @.com"
+
+        self.attribution.setEmail(invalidEmail)
 
         let errors = await self.syncAttributes()
         expect(errors).to(haveCount(1))
+
+        self.verifySyncedAttribute(self.userID, [reserved(.email): invalidEmail])
 
         let error = try XCTUnwrap(errors.first ?? nil) as NSError
         expect(error.domain) == RCPurchasesErrorCodeDomain
@@ -76,58 +101,102 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testLogInGetsNewAttributes() async throws {
-        self.attribution.setEmail("test@revenuecat.com")
+        self.attribution.setEmail(Self.testEmail)
 
         var errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
 
-        _ = try await Purchases.shared.logIn(UUID().uuidString)
+        self.verifySyncedAttribute(self.userID, [reserved(.email): Self.testEmail])
 
-        self.attribution.setEmail("test@revenuecat.com")
+        let newUserID = UUID().uuidString
+        _ = try await Purchases.shared.logIn(newUserID)
+
+        self.attribution.setEmail(Self.testEmail)
 
         errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifySyncedAttribute(newUserID, [reserved(.email): Self.testEmail])
     }
 
     func testPushTokenWithInvalidTokenDoesNotFail() async throws {
-        self.attribution.setPushToken("invalid token".asData)
+        let token = "invalid token".asData
+
+        self.attribution.setPushToken(token)
 
         let errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifySyncedAttribute(self.userID, [reserved(.pushToken): token.asString])
     }
 
     func testSetCustomAttributes() async throws {
-        self.attribution.setAttributes([
+        let attributes = [
             "custom_key": "random value",
             "locale": Locale.current.identifier
-        ])
+        ]
+
+        self.attribution.setAttributes(attributes)
 
         let errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1) // 1 user with 2 attributes
+        self.verifyAttributesSyncedWithNoErrors(errors, 1) // 1 user with 2 attributes
+        self.verifySyncedAttribute(self.userID, attributes)
     }
 
     func testSetMultipleAttributes() async throws {
-        self.attribution.setDisplayName("Tom Hanks")
-        self.attribution.setPhoneNumber("4157689215")
+        let name = "Tom Hanks"
+        let phone = "4157689215"
+
+        self.attribution.setDisplayName(name)
+        self.attribution.setPhoneNumber(phone)
 
         let errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 1) // 1 user with 2 attributes
+
+        // 1 user with 2 attributes:
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
+
+        // 1 request with 2 attributes:
+        self.verifySyncedAttribute(self.userID, [
+            reserved(.displayName): name,
+            reserved(.phoneNumber): phone
+        ])
     }
 
     func testSetAttributesForMultipleUsers() async throws {
-        _ = try await Purchases.shared.logIn(UUID().uuidString)
-        self.attribution.setDisplayName("User 1")
+        let user1 = UUID().uuidString
+        let name1 = "User 1"
+        let user2 = UUID().uuidString
+        let name2 = "User 2"
 
-        _ = try await Purchases.shared.logIn(UUID().uuidString)
-        self.attribution.setDisplayName("User 2")
+        _ = try await Purchases.shared.logIn(user1)
+        self.attribution.setDisplayName(name1)
+
+        _ = try await Purchases.shared.logIn(user2)
+        self.attribution.setDisplayName(name2)
 
         let errors = await self.syncAttributes()
-        verifyAttributesSyncedWithNoErrors(errors, 2)
+        self.verifyAttributesSyncedWithNoErrors(errors, 2)
+
+        self.verifySyncedAttribute(user1, [reserved(.displayName): name1])
+        self.verifySyncedAttribute(user2, [reserved(.displayName): name2])
+    }
+
+}
+
+extension SubscriberAttributesManagerIntegrationTests: AttributionDelegate {
+
+    func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
+                     forUserID userID: String) {
+        self.syncedAttributes.append(
+            (userID: userID, attributes: attributes.mapValues { $0.value })
+        )
     }
 
 }
 
 private extension SubscriberAttributesManagerIntegrationTests {
+
+    func reserved(_ attribute: ReservedSubscriberAttribute) -> String {
+        return attribute.rawValue
+    }
 
     func syncAttributes() async -> [Error?] {
         return await withCheckedContinuation { continuation in
@@ -159,6 +228,23 @@ private extension SubscriberAttributesManagerIntegrationTests {
         ).toNot(
             containElementSatisfying { $0 != nil },
             description: "Encountered errors: \(errors)"
+        )
+    }
+
+    private func verifySyncedAttribute(
+        _ userID: String,
+        _ attributes: [String: String],
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        expect(
+            file: file, line: line,
+            self.syncedAttributes
+        ).to(
+            containElementSatisfying {
+                $0.userID == userID && $0.attributes == attributes
+            },
+            description: "Attribute request not found. Synced attributes: \(self.syncedAttributes)"
         )
     }
 
