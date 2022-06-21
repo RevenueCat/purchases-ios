@@ -208,6 +208,12 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     func testEligibleForIntroBeforePurchase() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
+        if Self.storeKit2Setting == .disabled {
+            // SK1 implementation relies on the receipt being loaded already.
+            // See `TrialOrIntroPriceEligibilityChecker.sk1CheckEligibility`
+            _ = try await Purchases.shared.restorePurchases()
+        }
+
         let product = try await self.monthlyPackage.storeProduct
 
         let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)

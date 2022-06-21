@@ -82,7 +82,9 @@ class TrialOrIntroPriceEligibilityChecker {
 
     func sk1CheckEligibility(_ productIdentifiers: [String],
                              completion: @escaping ReceiveIntroEligibilityBlock) {
-        receiptFetcher.receiptData(refreshPolicy: .never) { data in
+        // We don't want to refresh receipts because it will likely prompt the user for their credentials,
+        // and intro eligibility is triggered programmatically.
+        self.receiptFetcher.receiptData(refreshPolicy: .never) { data in
             if #available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *),
                let data = data {
                 self.sk1CheckEligibility(with: data,
