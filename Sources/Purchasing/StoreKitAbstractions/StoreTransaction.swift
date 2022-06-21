@@ -42,6 +42,8 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
     @objc public var quantity: Int { self.transaction.quantity }
 
+    internal func finish(_ wrapper: StoreKitWrapper) { self.transaction.finish(wrapper) }
+
     // swiftlint:enable missing_docs
 
     /// Creates an instance from any `StoreTransactionType`.
@@ -80,6 +82,10 @@ internal protocol StoreTransactionType {
     /// The number of consumable products purchased.
     /// - Note: multi-quantity purchases aren't currently supported.
     var quantity: Int { get }
+
+    /// Indicates to the App Store that the app delivered the purchased content
+    /// or enabled the service to finish the transaction.
+    func finish(_ wrapper: StoreKitWrapper)
 
 }
 
