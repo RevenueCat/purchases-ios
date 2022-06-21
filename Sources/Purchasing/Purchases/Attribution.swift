@@ -27,9 +27,15 @@ import Foundation
     private let currentUserProvider: CurrentUserProvider
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
 
+    weak var delegate: AttributionDelegate?
+
     init(subscriberAttributesManager: SubscriberAttributesManager, currentUserProvider: CurrentUserProvider) {
         self.subscriberAttributesManager = subscriberAttributesManager
         self.currentUserProvider = currentUserProvider
+
+        super.init()
+
+        self.subscriberAttributesManager.delegate = self
     }
 
 }
@@ -317,6 +323,18 @@ public extension Attribution {
 
 }
 
+extension Attribution: SubscriberAttributesManagerDelegate {
+
+    func subscriberAttributesManager(
+        _ manager: SubscriberAttributesManager,
+        didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
+        forUserID userID: String
+    ) {
+        self.delegate?.attribution(didFinishSyncingAttributes: attributes, forUserID: userID)
+    }
+
+}
+
 extension Attribution {
 
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
@@ -348,5 +366,12 @@ extension Attribution {
     func markAttributesAsSynced(_ attributesToSync: SubscriberAttribute.Dictionary?, appUserID: String) {
         self.subscriberAttributesManager.markAttributesAsSynced(attributesToSync, appUserID: appUserID)
     }
+
+}
+
+protocol AttributionDelegate: AnyObject {
+
+    func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
+                     forUserID userID: String)
 
 }

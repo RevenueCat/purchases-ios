@@ -22,6 +22,8 @@ class SubscriberAttributesManager {
     private let attributionDataMigrator: AttributionDataMigrator
     private let lock = Lock()
 
+    weak var delegate: SubscriberAttributesManagerDelegate?
+
     init(backend: Backend,
          deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -145,13 +147,19 @@ class SubscriberAttributesManager {
         operationDispatcher.dispatchOnWorkerThread {
             let completed: Atomic<Int> = .init(0)
 
-            for (syncingAppUserId, attributes) in unsyncedAttributesForAllUsers {
-                self.syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error in
-                    self.handleAttributesSynced(syncingAppUserId: syncingAppUserId,
+            for (syncingAppUserID, attributes) in unsyncedAttributesForAllUsers {
+                self.syncAttributes(attributes: attributes, appUserID: syncingAppUserID) { error in
+                    self.handleAttributesSynced(syncingAppUserId: syncingAppUserID,
                                                 currentAppUserId: currentAppUserID,
                                                 error: error)
 
                     syncedAttribute?(error?.asPurchasesError)
+                    self.delegate?.subscriberAttributesManager(
+                        self,
+                        didFinishSyncingAttributes: attributes,
+                        forUserID: syncingAppUserID
+                    )
+
                     let completedSoFar: Int = completed.modify { $0 += 1; return $0 }
 
                     if completedSoFar == total {
@@ -274,5 +282,13 @@ private extension SubscriberAttributesManager {
         collectDeviceIdentifiers(forAppUserID: appUserID)
         setReservedAttribute(networkID, value: attributionID, appUserID: appUserID)
     }
+
+}
+
+protocol SubscriberAttributesManagerDelegate: AnyObject {
+
+    func subscriberAttributesManager(_ manager: SubscriberAttributesManager,
+                                     didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
+                                     forUserID userID: String)
 
 }
