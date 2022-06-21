@@ -723,7 +723,7 @@ public extension Purchases {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo(fetchPolicy: CacheFetchPolicy = .default) async throws -> CustomerInfo {
-        return try await self.customerInfoAsync()
+        return try await self.customerInfoAsync(fetchPolicy: fetchPolicy)
     }
 
     /// Returns an `AsyncStream` of ``CustomerInfo`` changes, starting from the last known value.

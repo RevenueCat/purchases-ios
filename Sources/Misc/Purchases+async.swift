@@ -45,9 +45,9 @@ extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func customerInfoAsync() async throws -> CustomerInfo {
+    func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            getCustomerInfo { customerInfo, error in
+            getCustomerInfo(fetchPolicy: fetchPolicy) { customerInfo, error in
                 continuation.resume(with: Result(customerInfo, error))
             }
         }
