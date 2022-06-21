@@ -1442,6 +1442,35 @@ public extension Purchases {
     }
 
     /**
+     * Configures an instance of the Purchases SDK with a specified ``Configuration/Builder``.
+     *
+     * The instance will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Parameter builder: The ``Configuration/Builder`` object you wish to use to configure ``Purchases``
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     *
+     * - Important: See ``Configuration/Builder`` for more information about configurable properties.
+     *
+     * ### Example
+     *
+     * ```swift
+     *  Purchases.configure(
+     *      with: .init(withAPIKey: Constants.apiKey)
+     *               .with(usesStoreKit2IfAvailable: true)
+     *               .with(observerMode: false)
+     *               .with(appUserID: "<app_user_id>")
+     *      )
+     * ```
+     *
+     */
+    @objc(configureWithConfigurationBuilder:)
+    @discardableResult static func configure(with builder: Configuration.Builder) -> Purchases {
+        return Self.configure(with: builder.build())
+    }
+
+    /**
      * Configures an instance of the Purchases SDK with a specified API key.
      *
      * The instance will be set as a singleton.

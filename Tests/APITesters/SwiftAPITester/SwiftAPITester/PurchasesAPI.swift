@@ -240,9 +240,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
 }
 
 private func checkConfigure() -> Purchases {
-    Purchases
-        .configure(with: Configuration.Builder(withAPIKey: "")
-        .build())
+    Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
+    Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
 
     return Purchases.configure(withAPIKey: "")
 }
