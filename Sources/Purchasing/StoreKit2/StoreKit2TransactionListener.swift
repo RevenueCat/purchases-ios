@@ -41,7 +41,7 @@ class StoreKit2TransactionListener {
                 guard let self = self else { break }
 
                 do {
-                    _ = try await self.handle(transactionResult: result, notifyDelegate: true)
+                    _ = try await self.handle(transactionResult: result, fromTransactionUpdate: true)
                 } catch {
                     Logger.error(error.localizedDescription)
                 }
@@ -61,8 +61,8 @@ class StoreKit2TransactionListener {
     ) async throws -> ResultData {
         switch purchaseResult {
         case let .success(verificationResult):
-            // No need to notify delegate since this method returns the transaction already.
-            let transaction = try await self.handle(transactionResult: verificationResult, notifyDelegate: false)
+            let transaction = try await self.handle(transactionResult: verificationResult,
+                                                    fromTransactionUpdate: false)
 
             return (false, transaction)
         case .pending:
@@ -83,10 +83,10 @@ class StoreKit2TransactionListener {
 private extension StoreKit2TransactionListener {
 
     /// - Throws: ``ErrorCode`` if the transaction fails to verify.
-    /// - Parameter notifyDelegate: `true` only for transactions detected outside of a manual purchase flow.
+    /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.
     func handle(
         transactionResult: VerificationResult<StoreKit.Transaction>,
-        notifyDelegate: Bool
+        fromTransactionUpdate: Bool
     ) async throws -> SK2Transaction {
         switch transactionResult {
         case let .unverified(unverifiedTransaction, verificationError):
@@ -99,18 +99,16 @@ private extension StoreKit2TransactionListener {
             )
 
         case .verified(let verifiedTransaction):
-            await self.finish(transaction: verifiedTransaction)
+            if fromTransactionUpdate { // Otherwise transaction will be finished by `PurchasesOrchestrator`
+                await verifiedTransaction.finish()
+            }
 
-            if notifyDelegate, let delegate = self.delegate {
+            if fromTransactionUpdate, let delegate = self.delegate {
                 _ = try await delegate.transactionsUpdated()
             }
 
             return verifiedTransaction
         }
-    }
-
-    func finish(transaction: StoreKit.Transaction) async {
-        await transaction.finish()
     }
 
 }

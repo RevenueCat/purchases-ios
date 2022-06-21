@@ -586,9 +586,7 @@ private extension PurchasesOrchestrator {
             }
         }
 
-        if finishTransactions {
-            storeKitWrapper.finishTransaction(transaction)
-        }
+        self.finishTransactionIfNeeded(storeTransaction)
     }
 
     func handleDeferredTransaction(_ transaction: SKPaymentTransaction) {
@@ -720,12 +718,6 @@ private extension PurchasesOrchestrator {
     func handleReceiptPost(withTransaction transaction: StoreTransaction,
                            result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary?) {
-        func finishTransactionIfNeeded() {
-            if self.finishTransactions, let sk1Transaction = transaction.sk1Transaction {
-                self.storeKitWrapper.finishTransaction(sk1Transaction)
-            }
-        }
-
         self.operationDispatcher.dispatchOnMainThread {
             let appUserID = self.appUserID
             self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
@@ -741,7 +733,7 @@ private extension PurchasesOrchestrator {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
                 completion?(transaction, customerInfo, nil, false)
 
-                finishTransactionIfNeeded()
+                self.finishTransactionIfNeeded(transaction)
 
             case let .failure(error):
                 let purchasesError = error.asPurchasesError
@@ -749,7 +741,7 @@ private extension PurchasesOrchestrator {
                 completion?(transaction, nil, purchasesError, false)
 
                 if finishable {
-                    finishTransactionIfNeeded()
+                    self.finishTransactionIfNeeded(transaction)
                 }
             }
         }
@@ -864,6 +856,12 @@ private extension PurchasesOrchestrator {
     func handleStorefrontChange() {
         self.productsManager.clearCachedProducts()
         self.deviceCache.clearCachedOfferings()
+    }
+
+    func finishTransactionIfNeeded(_ transaction: StoreTransaction) {
+        if self.finishTransactions {
+            transaction.finish(self.storeKitWrapper)
+        }
     }
 
 }

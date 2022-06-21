@@ -31,6 +31,10 @@ internal struct SK1StoreTransaction: StoreTransactionType {
     let transactionIdentifier: String
     let quantity: Int
 
+    func finish(_ wrapper: StoreKitWrapper) {
+        wrapper.finishTransaction(self.underlyingSK1Transaction)
+    }
+
 }
 
 extension SKPaymentTransaction {
