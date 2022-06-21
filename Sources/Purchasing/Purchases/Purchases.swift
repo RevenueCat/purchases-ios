@@ -1621,7 +1621,7 @@ internal extension Purchases {
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
     @discardableResult
-    func syncSubscriberAttributesIfNeeded(
+    func syncSubscriberAttributes(
         syncedAttribute: ((Error?) -> Void)? = nil,
         completion: (() -> Void)? = nil
     ) -> Int {
@@ -1647,13 +1647,13 @@ private extension Purchases {
 
     @objc func applicationDidBecomeActive(notification: Notification) {
         Logger.debug(Strings.configure.application_active)
-        updateAllCachesIfNeeded()
-        dispatchSyncSubscriberAttributesIfNeeded()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
+        self.updateAllCachesIfNeeded()
+        self.dispatchSyncSubscriberAttributes()
+        self.postAppleSearchAddsAttributionCollectionIfNeeded()
     }
 
     @objc func applicationWillResignActive(notification: Notification) {
-        dispatchSyncSubscriberAttributesIfNeeded()
+        self.dispatchSyncSubscriberAttributes()
     }
 
     func subscribeToAppStateNotifications() {
@@ -1666,9 +1666,9 @@ private extension Purchases {
                                        name: SystemInfo.applicationWillResignActiveNotification, object: nil)
     }
 
-    func dispatchSyncSubscriberAttributesIfNeeded() {
+    func dispatchSyncSubscriberAttributes() {
         operationDispatcher.dispatchOnWorkerThread {
-            self.syncSubscriberAttributesIfNeeded()
+            self.syncSubscriberAttributes()
         }
     }
 

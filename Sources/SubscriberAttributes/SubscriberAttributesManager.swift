@@ -237,7 +237,7 @@ class SubscriberAttributesManager {
 
 extension SubscriberAttributesManager: AttributeSyncing {
 
-    func syncSubscriberAttributesIfNeeded(currentAppUserID: String, completion: @escaping (() -> Void)) {
+    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping (() -> Void)) {
         self.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
                                        syncedAttribute: nil,
                                        completion: completion)

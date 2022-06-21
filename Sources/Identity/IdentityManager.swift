@@ -22,8 +22,7 @@ protocol CurrentUserProvider {
 
 protocol AttributeSyncing {
 
-    func syncSubscriberAttributesIfNeeded(currentAppUserID: String,
-                                          completion: @escaping (() -> Void))
+    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping (() -> Void))
 }
 
 class IdentityManager: CurrentUserProvider {
@@ -81,13 +80,13 @@ class IdentityManager: CurrentUserProvider {
     }
 
     func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
-        self.attributeSyncing.syncSubscriberAttributesIfNeeded(currentAppUserID: self.currentAppUserID) {
+        self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
             self.performLogIn(appUserID: appUserID, completion: completion)
         }
     }
 
     func logOut(completion: @escaping (Error?) -> Void) {
-        self.attributeSyncing.syncSubscriberAttributesIfNeeded(currentAppUserID: self.currentAppUserID) {
+        self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
             self.performLogOut(completion: completion)
         }
     }

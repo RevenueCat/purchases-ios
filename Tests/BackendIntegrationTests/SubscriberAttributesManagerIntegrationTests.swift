@@ -38,7 +38,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     // MARK: -
 
     func testNothingToSync() {
-        expect(Purchases.shared.syncSubscriberAttributesIfNeeded()) == 0
+        expect(Purchases.shared.syncSubscriberAttributes()) == 0
     }
 
     func testSyncOneAttribute() async throws {
@@ -230,7 +230,7 @@ private extension SubscriberAttributesManagerIntegrationTests {
         return await withCheckedContinuation { continuation in
             var errors: [Error?] = []
 
-            Purchases.shared.syncSubscriberAttributesIfNeeded(
+            Purchases.shared.syncSubscriberAttributes(
                 syncedAttribute: { errors.append($0) },
                 completion: { continuation.resume(returning: errors) }
             )

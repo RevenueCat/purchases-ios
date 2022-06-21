@@ -19,7 +19,7 @@ class MockAttributeSyncing: AttributeSyncing {
     var invokedSyncAttributesCount = 0
     var invokedSyncAttributesUserIDs: [String] = []
 
-    func syncSubscriberAttributesIfNeeded(currentAppUserID: String, completion: @escaping (() -> Void)) {
+    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping (() -> Void)) {
         self.invokedSyncAttributes = true
         self.invokedSyncAttributesCount += 1
         self.invokedSyncAttributesUserIDs.append(currentAppUserID)
