@@ -66,7 +66,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
         attribution = Attribution(subscriberAttributesManager: subscriberAttributesManager,
-                                  identityManager: MockIdentityManager(mockAppUserID: mockUserID))
+                                  currentUserProvider: MockCurrentUserProvider(mockAppUserID: mockUserID))
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                              customerInfoManager: customerInfoManager,
                                                              currentUserProvider: currentUserProvider)

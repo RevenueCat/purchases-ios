@@ -308,7 +308,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                       attributionFetcher: attributionFetcher,
                                                                       attributionDataMigrator: attributionDataMigrator)
         let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
-                                               identityManager: identityManager)
+                                               currentUserProvider: identityManager)
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,

@@ -57,7 +57,7 @@ class BasePurchasesTests: TestCase {
             attributionDataMigrator: AttributionDataMigrator()
         )
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
-                                       identityManager: identityManager)
+                                       currentUserProvider: self.identityManager)
         self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
                                                    currentUserProvider: self.identityManager,
                                                    backend: self.backend,
