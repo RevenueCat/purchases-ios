@@ -5,9 +5,7 @@
 
 @testable import RevenueCat
 
-// swiftlint:disable large_tuple
-// swiftlint:disable force_try
-// swiftlint:disable line_length
+// swiftlint:disable large_tuple force_try line_length
 class MockBackend: Backend {
 
     var invokedPostReceiptData = false

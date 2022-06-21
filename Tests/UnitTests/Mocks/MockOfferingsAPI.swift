@@ -14,8 +14,7 @@
 import Foundation
 @testable import RevenueCat
 
-// swiftlint:disable line_length
-// swiftlint:disable large_tuple
+// swiftlint:disable line_length large_tuple
 class MockOfferingsAPI: OfferingsAPI {
 
     var invokedGetIntroEligibility = false

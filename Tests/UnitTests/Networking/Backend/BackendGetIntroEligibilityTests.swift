@@ -26,9 +26,9 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
     func testEmptyEligibilityCheckDoesNothing() {
         var error: NSError??
 
-        backend.offerings.getIntroEligibility(appUserID: Self.userID,
-                                              receiptData: Data(),
-                                              productIdentifiers: []) {
+        self.backend.offerings.getIntroEligibility(appUserID: Self.userID,
+                                                   receiptData: Data(),
+                                                   productIdentifiers: []) {
             error = $1 as NSError?
         }
 
@@ -98,10 +98,10 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         var eligibility: [String: IntroEligibility]?
         let products = ["producta"]
         var eventualError: BackendError?
-        backend.offerings.getIntroEligibility(appUserID: "",
-                                              receiptData: Data.init(1...2),
-                                              productIdentifiers: products,
-                                              completion: {(productEligibility, error) in
+        self.backend.offerings.getIntroEligibility(appUserID: "",
+                                                   receiptData: Data.init(1...2),
+                                                   productIdentifiers: products,
+                                                   completion: {(productEligibility, error) in
             eventualError = error
             eligibility = productEligibility
         })
