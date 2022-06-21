@@ -106,6 +106,82 @@
           "referenceName" : "monthly no trial",
           "subscriptionGroupID" : "7096FF06",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+            {
+              "internalID" : "FF50819D",
+              "offerID" : "com.revenuecat.weekly_1.99.1_free_week",
+              "paymentMode" : "free",
+              "referenceName" : "com.revenuecat.weekly_1.99.1_free_week",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "49837CD5",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Weekly subscription",
+              "displayName" : "Weekly Subscription",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Subscripción semanal",
+              "displayName" : "Subscripción semanal",
+              "locale" : "es_ES"
+            }
+          ],
+          "productID" : "com.revenuecat.weekly_1.99.no_intro",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "weekly no trial",
+          "subscriptionGroupID" : "7096FF06",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+            {
+              "internalID" : "AF089687",
+              "offerID" : "com.revenuecat.weekly_1.99.3_free_days",
+              "paymentMode" : "free",
+              "referenceName" : "com.revenuecat.weekly_1.99.3_free_days",
+              "subscriptionPeriod" : "P3D"
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "33D75589",
+          "introductoryOffer" : {
+            "internalID" : "32839E59",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
+          "localizations" : [
+            {
+              "description" : "Weekly subscription",
+              "displayName" : "Weekly Subscription",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Subscripción semanal",
+              "displayName" : "Subscripción semanal",
+              "locale" : "es_ES"
+            }
+          ],
+          "productID" : "com.revenuecat.weekly_1.99.3_day_intro",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "weekly free trial",
+          "subscriptionGroupID" : "7096FF06",
+          "type" : "RecurringSubscription"
         }
       ]
     },
