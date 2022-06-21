@@ -46,32 +46,23 @@ extension SKPaymentTransaction {
 
 }
 
-extension SK1Product {
+extension SKPayment {
 
     /// Attempts to find a non-nil `productIdentifier`.
     ///
-    /// Although both `SK1Product.productIdentifier` and `SKPayment.productIdentifier`
-    /// are supposed to be non-nil, we've seen instances where this is not true.
-    /// so we cast into optionals in order to check nullability, and try to fall back if possible.
-    func extractProductIdentifier(withPayment payment: SKPayment,
-                                  fileName: String = #fileID,
+    /// Although `SKPayment.productIdentifier` is supposed to be non-nil, we've seen instances where this is not true.
+    /// To handle this case, we cast `productIdentifier` to `Optional` in order to check nullability.
+    func extractProductIdentifier(fileName: String = #fileID,
                                   functionName: String = #function,
                                   line: UInt = #line) -> String? {
-        if let identifierFromProduct = self.productIdentifier as String?,
-           !identifierFromProduct.trimmingWhitespacesAndNewLines.isEmpty {
-            return identifierFromProduct
+        guard let result = self.productIdentifier as String?,
+           !result.trimmingWhitespacesAndNewLines.isEmpty else {
+            Logger.appleWarning(Strings.purchase.payment_identifier_nil,
+                                fileName: fileName, functionName: functionName, line: line)
+            return nil
         }
-        Logger.appleWarning(Strings.purchase.product_identifier_nil,
-                            fileName: fileName, functionName: functionName, line: line)
 
-        if let identifierFromPayment = payment.productIdentifier as String?,
-           !identifierFromPayment.trimmingWhitespacesAndNewLines.isEmpty {
-            return identifierFromPayment
-        }
-        Logger.appleWarning(Strings.purchase.payment_identifier_nil,
-                            fileName: fileName, functionName: functionName, line: line)
-
-        return nil
+        return result
     }
 
 }

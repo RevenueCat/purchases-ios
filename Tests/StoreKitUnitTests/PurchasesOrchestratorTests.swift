@@ -237,6 +237,40 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
     }
 
+    func testPurchaseSK1PackageWithNoProductIdentifierDoesNotPostReceipt() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let payment = self.storeKitWrapper.payment(withProduct: product)
+        payment.productIdentifier = ""
+
+        let (transaction, customerInfo, error, cancelled) =
+        try await withCheckedThrowingContinuation { continuation in
+            self.orchestrator.purchase(sk1Product: product,
+                                       payment: payment,
+                                       package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        // Internally PurchasesOrchestrator uses product identifiers for callback keys
+        // When the transaction comes back, its payment is the only source for product identifier.
+        // There is no point starting the purchase if we can't retrieve the product identifier from it.
+        expect(transaction).to(beNil())
+        expect(customerInfo).to(beNil())
+        expect(error).to(matchError(ErrorCode.storeProblemError))
+        expect(cancelled) == false
+
+        expect(self.backend.invokedPostReceiptDataCount) == 0
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageReturnsCorrectValues() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()

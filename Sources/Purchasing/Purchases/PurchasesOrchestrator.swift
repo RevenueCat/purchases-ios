@@ -301,10 +301,17 @@ class PurchasesOrchestrator {
                   payment: SKMutablePayment,
                   package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
-        guard let productIdentifier = sk1Product.extractProductIdentifier(withPayment: payment) else {
-            Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
-            let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
-            completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
+        /**
+         * Note: this only extracts the product identifier from `SKPayment`, ignoring the `SK1Product.identifier`
+         * because `storeKitWrapper(_:, updatedTransaction:)` only has a transaction and not the product.
+         * If the transaction is mising a product id, then we wouldn't be able to find the callback
+         * in `purchaseCompleteCallbacksByProductID`, and therefore
+         * we wouldn't be able to notify of the purchase result.
+         */
+
+        guard let productIdentifier = payment.extractProductIdentifier() else {
+            let message = Strings.purchase.could_not_purchase_product_id_not_found.description
+            completion(nil, nil, ErrorUtils.storeProblemError(withMessage: message), false)
             return
         }
 
@@ -511,12 +518,16 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          shouldAddStorePayment payment: SKPayment,
                          for product: SK1Product) -> Bool {
-        productsManager.cacheProduct(product)
-        guard let delegate = delegate else { return false }
+        self.productsManager.cacheProduct(product)
+        guard let delegate = self.delegate else { return false }
+
+        guard let productIdentifier = payment.extractProductIdentifier() else {
+            return false
+        }
 
         let storeProduct = StoreProduct(sk1Product: product)
         delegate.readyForPromotedProduct(storeProduct) { completion in
-            self.purchaseCompleteCallbacksByProductID.modify { $0[product.productIdentifier] = completion }
+            self.purchaseCompleteCallbacksByProductID.modify { $0[productIdentifier] = completion }
             storeKitWrapper.add(payment)
         }
         return false
@@ -633,6 +644,12 @@ private extension PurchasesOrchestrator {
         productIdentifier: String,
         completion: @escaping PurchaseCompletedBlock
     ) -> Bool {
+        guard !productIdentifier.trimmingWhitespacesAndNewLines.isEmpty else {
+            let message = Strings.purchase.could_not_purchase_product_id_not_found.description
+            completion(nil, nil, ErrorUtils.storeProblemError(withMessage: message), false)
+            return false
+        }
+
         return self.purchaseCompleteCallbacksByProductID.modify { callbacks in
             guard callbacks[productIdentifier] == nil else {
                 completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
@@ -668,7 +685,6 @@ private extension PurchasesOrchestrator {
             self.handleReceiptPost(withTransaction: transaction,
                                    result: .failure(.missingTransactionProductIdentifier()),
                                    subscriberAttributes: nil)
-
         }
     }
 

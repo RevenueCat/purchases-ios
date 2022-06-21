@@ -76,7 +76,8 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
     }
 
     func testCallsShouldAddPromoPaymentDelegateMethod() {
-        let payment = SKPayment()
+        let payment = SKMutablePayment()
+        payment.productIdentifier = "test"
 
         _ = self.storeKitWrapperDelegate.storeKitWrapper(storeKitWrapper,
                                                          shouldAddStorePayment: payment,
@@ -85,14 +86,16 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
         expect(self.purchasesDelegate.promoProduct) == StoreProduct(sk1Product: self.product)
     }
 
-    func testShouldAddPromoPaymentDelegateMethodReturnsFalse() {
-        let payment = SKPayment()
+    func testShouldAddStorePaymentReturnsFalseForNilProductIdentifier() {
+        let payment = SKMutablePayment()
+        payment.productIdentifier = ""
 
         let result = self.storeKitWrapperDelegate.storeKitWrapper(storeKitWrapper,
                                                                   shouldAddStorePayment: payment,
                                                                   for: self.product)
 
         expect(result) == false
+        expect(self.purchasesDelegate.promoProduct).to(beNil())
     }
 
     func testPromoPaymentDelegateMethodMakesRightCalls() {
