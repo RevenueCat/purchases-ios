@@ -24,22 +24,23 @@ class OfferingsManagerTests: TestCase {
     let mockSystemInfo = try! MockSystemInfo(platformInfo: .init(flavor: "iOS", version: "3.2.1"),
                                              finishTransactions: true)
     let mockBackend = MockBackend()
+    var mockOfferings: MockOfferingsAPI!
     let mockOfferingsFactory = MockOfferingsFactory()
     var mockProductsManager: MockProductsManager!
     var offeringsManager: OfferingsManager!
 
-    override func setUp() {
-        super.setUp()
-
-        mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
-        mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo,
-                                                  requestTimeout: Configuration.storeKitRequestTimeoutDefault)
-        offeringsManager = OfferingsManager(deviceCache: mockDeviceCache,
-                                            operationDispatcher: mockOperationDispatcher,
-                                            systemInfo: mockSystemInfo,
-                                            backend: mockBackend,
-                                            offeringsFactory: mockOfferingsFactory,
-                                            productsManager: mockProductsManager)
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        self.mockOfferings = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
+        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockProductsManager = MockProductsManager(systemInfo: self.mockSystemInfo,
+                                                       requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        self.offeringsManager = OfferingsManager(deviceCache: self.mockDeviceCache,
+                                                 operationDispatcher: self.mockOperationDispatcher,
+                                                 systemInfo: self.mockSystemInfo,
+                                                 backend: self.mockBackend,
+                                                 offeringsFactory: self.mockOfferingsFactory,
+                                                 productsManager: self.mockProductsManager)
     }
 
 }
@@ -49,7 +50,7 @@ extension OfferingsManagerTests {
     func testOfferingsForAppUserIDReturnsNilIfMissingStoreProduct() throws {
         // given
         mockOfferingsFactory.emptyOfferings = true
-        mockBackend.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
 
         // when
         var result: Result<Offerings, OfferingsManager.Error>?
@@ -67,7 +68,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsOfferingsIfSuccessBackendRequest() throws {
         // given
-        mockBackend.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
 
         // when
         var result: Result<Offerings, OfferingsManager.Error>?
@@ -86,7 +87,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {
         // given
-        mockBackend.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
         mockOfferingsFactory.emptyOfferings = true
 
         // when
@@ -103,7 +104,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
         // given
-        mockBackend.stubbedGetOfferingsCompletionResult = .success(
+        mockOfferings.stubbedGetOfferingsCompletionResult = .success(
             .init(currentOfferingId: "", offerings: [])
         )
         mockOfferingsFactory.emptyOfferings = true
@@ -124,7 +125,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
         // given
-        mockBackend.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
         mockProductsManager.stubbedProductsCompletionResult = Set()
 
         // when
@@ -143,7 +144,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendResponseIfOfferingsFactoryCantCreateOfferings() throws {
         // given
-        mockBackend.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
         mockOfferingsFactory.nilOfferings = true
 
         // when
@@ -160,7 +161,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() throws {
         // given
-        mockBackend.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
         mockOfferingsFactory.nilOfferings = true
 
         // when
@@ -177,7 +178,7 @@ extension OfferingsManagerTests {
 
     func testFailBackendDeviceCacheClearsOfferingsCache() {
         // given
-        mockBackend.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
         mockOfferingsFactory.emptyOfferings = true
         let expectedCallCount = 1
 
@@ -186,13 +187,13 @@ extension OfferingsManagerTests {
 
         // then
         expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
-        expect(self.mockBackend.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
         expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount).toEventually(equal(expectedCallCount))
     }
 
     func testUpdateOfferingsCacheOK() {
         // given
-        mockBackend.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
         let expectedCallCount = 1
 
         // when
@@ -200,7 +201,7 @@ extension OfferingsManagerTests {
 
         // then
         expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
-        expect(self.mockBackend.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
         expect(self.mockDeviceCache.cacheOfferingsCount).toEventually(equal(expectedCallCount))
     }
 

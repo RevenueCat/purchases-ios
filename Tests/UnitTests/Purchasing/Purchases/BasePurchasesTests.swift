@@ -228,6 +228,65 @@ extension BasePurchasesTests {
 
 extension BasePurchasesTests {
 
+    final class MockOfferingsAPI: OfferingsAPI {
+
+        var postedProductIdentifiers: [String]?
+
+        override func getIntroEligibility(appUserID: String,
+                                          receiptData: Data,
+                                          productIdentifiers: [String],
+                                          completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
+            self.postedProductIdentifiers = productIdentifiers
+
+            var eligibilities = [String: IntroEligibility]()
+            for productID in productIdentifiers {
+                eligibilities[productID] = IntroEligibility(eligibilityStatus: .eligible)
+            }
+
+            completion(eligibilities, nil)
+        }
+
+        var failOfferings = false
+        var badOfferingsResponse = false
+        var gotOfferings = 0
+
+        override func getOfferings(appUserID: String, completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
+            self.gotOfferings += 1
+            if self.failOfferings {
+                completion(.failure(.unexpectedBackendResponse(.getOfferUnexpectedResponse)))
+                return
+            }
+            if self.badOfferingsResponse {
+                completion(.failure(.networkError(.decoding(CodableError.invalidJSONObject(value: [:]), Data()))))
+                return
+            }
+
+            completion(.success(.mockResponse))
+        }
+
+        var postOfferForSigningCalled = false
+        var postOfferForSigningPaymentDiscountResponse: Result<[String: Any], BackendError> = .success([:])
+
+        override func post(offerIdForSigning offerIdentifier: String,
+                           productIdentifier: String,
+                           subscriptionGroup: String?,
+                           receiptData: Data,
+                           appUserID: String,
+                           completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
+            self.postOfferForSigningCalled = true
+
+            completion(
+                self.postOfferForSigningPaymentDiscountResponse.map {
+                    (
+                        // swiftlint:disable:next force_cast line_length
+                        $0["signature"] as! String, $0["keyIdentifier"] as! String, $0["nonce"] as! UUID, $0["timestamp"] as! Int
+                    )
+                }
+            )
+        }
+
+    }
+
     final class MockBackend: Backend {
 
         static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
@@ -295,40 +354,6 @@ extension BasePurchasesTests {
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
         }
 
-        var postedProductIdentifiers: [String]?
-
-        override func getIntroEligibility(appUserID: String,
-                                          receiptData: Data,
-                                          productIdentifiers: [String],
-                                          completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
-            self.postedProductIdentifiers = productIdentifiers
-
-            var eligibilities = [String: IntroEligibility]()
-            for productID in productIdentifiers {
-                eligibilities[productID] = IntroEligibility(eligibilityStatus: .eligible)
-            }
-
-            completion(eligibilities, nil)
-        }
-
-        var failOfferings = false
-        var badOfferingsResponse = false
-        var gotOfferings = 0
-
-        override func getOfferings(appUserID: String, completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
-            self.gotOfferings += 1
-            if self.failOfferings {
-                completion(.failure(.unexpectedBackendResponse(.getOfferUnexpectedResponse)))
-                return
-            }
-            if self.badOfferingsResponse {
-                completion(.failure(.networkError(.decoding(CodableError.invalidJSONObject(value: [:]), Data()))))
-                return
-            }
-
-            completion(.success(.mockResponse))
-        }
-
         var invokedPostAttributionData = false
         var invokedPostAttributionDataCount = 0
         // swiftlint:disable:next large_tuple
@@ -355,26 +380,6 @@ extension BasePurchasesTests {
             }
         }
 
-        var postOfferForSigningCalled = false
-        var postOfferForSigningPaymentDiscountResponse: Result<[String: Any], BackendError> = .success([:])
-
-        override func post(offerIdForSigning offerIdentifier: String,
-                           productIdentifier: String,
-                           subscriptionGroup: String?,
-                           receiptData: Data,
-                           appUserID: String,
-                           completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
-            self.postOfferForSigningCalled = true
-
-            completion(
-                self.postOfferForSigningPaymentDiscountResponse.map {
-                    (
-                        // swiftlint:disable:next force_cast line_length
-                        $0["signature"] as! String, $0["keyIdentifier"] as! String, $0["nonce"] as! UUID, $0["timestamp"] as! Int
-                    )
-                }
-            )
-        }
     }
 }
 

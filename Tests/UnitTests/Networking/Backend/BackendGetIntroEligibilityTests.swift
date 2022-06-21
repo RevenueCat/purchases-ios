@@ -26,9 +26,9 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
     func testEmptyEligibilityCheckDoesNothing() {
         var error: NSError??
 
-        backend.getIntroEligibility(appUserID: Self.userID,
-                                    receiptData: Data(),
-                                    productIdentifiers: []) {
+        self.backend.offerings.getIntroEligibility(appUserID: Self.userID,
+                                                   receiptData: Data(),
+                                                   productIdentifiers: []) {
             error = $1 as NSError?
         }
 
@@ -46,10 +46,10 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
-        backend.getIntroEligibility(appUserID: Self.userID,
-                                    receiptData: Data(1...3),
-                                    productIdentifiers: products,
-                                    completion: {(productEligibility, error) in
+        self.offerings.getIntroEligibility(appUserID: Self.userID,
+                                           receiptData: Data(1...3),
+                                           productIdentifiers: products,
+                                           completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
 
@@ -74,10 +74,10 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend.getIntroEligibility(appUserID: Self.userID,
-                                    receiptData: Data.init(1...2),
-                                    productIdentifiers: products,
-                                    completion: {(productEligibility, error) in
+        self.offerings.getIntroEligibility(appUserID: Self.userID,
+                                           receiptData: Data.init(1...2),
+                                           productIdentifiers: products,
+                                           completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
         })
@@ -98,10 +98,10 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         var eligibility: [String: IntroEligibility]?
         let products = ["producta"]
         var eventualError: BackendError?
-        backend.getIntroEligibility(appUserID: "",
-                                    receiptData: Data.init(1...2),
-                                    productIdentifiers: products,
-                                    completion: {(productEligibility, error) in
+        self.backend.offerings.getIntroEligibility(appUserID: "",
+                                                   receiptData: Data.init(1...2),
+                                                   productIdentifiers: products,
+                                                   completion: {(productEligibility, error) in
             eventualError = error
             eligibility = productEligibility
         })
@@ -113,10 +113,10 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         eligibility = nil
         eventualError = nil
 
-        backend.getIntroEligibility(appUserID: "   ",
-                                    receiptData: Data.init(1...2),
-                                    productIdentifiers: products,
-                                    completion: {(productEligibility, error) in
+        self.offerings.getIntroEligibility(appUserID: "   ",
+                                           receiptData: Data.init(1...2),
+                                           productIdentifiers: products,
+                                           completion: {(productEligibility, error) in
             eventualError = error
             eligibility = productEligibility
         })
@@ -136,10 +136,10 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend.getIntroEligibility(appUserID: Self.userID,
-                                    receiptData: Data.init(1...2),
-                                    productIdentifiers: products,
-                                    completion: {(productEligbility, error) in
+        self.offerings.getIntroEligibility(appUserID: Self.userID,
+                                           receiptData: Data.init(1...2),
+                                           productIdentifiers: products,
+                                           completion: {(productEligbility, error) in
             expect(error).to(beNil())
             eligibility = productEligbility
         })
@@ -155,10 +155,10 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend.getIntroEligibility(appUserID: Self.userID,
-                                    receiptData: Data(),
-                                    productIdentifiers: products,
-                                    completion: {(productEligibility, error) in
+        self.offerings.getIntroEligibility(appUserID: Self.userID,
+                                           receiptData: Data(),
+                                           productIdentifiers: products,
+                                           completion: {(productEligibility, error) in
             expect(error).to(beNil())
             eligibility = productEligibility
         })
