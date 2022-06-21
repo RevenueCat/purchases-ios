@@ -19,12 +19,20 @@ import XCTest
 // swiftlint:disable:next type_name
 class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
+    private var attribution: Attribution!
+
+    override func setUp() {
+        super.setUp()
+
+        self.attribution = Purchases.shared.attribution
+    }
+
     func testNothingToSync() {
         expect(Purchases.shared.syncSubscriberAttributesIfNeeded()) == 0
     }
 
     func testSyncOneAttribute() async throws {
-        Purchases.shared.setEmail("test@revenuecat.com")
+        self.attribution.setEmail("test@revenuecat.com")
 
         let errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1)
@@ -32,29 +40,29 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
     func testSettingTheSameAttributeDoesNotNeedToChangeIt() async throws {
         let email = "test@revenuecat.com"
-        Purchases.shared.setEmail(email)
+        self.attribution.setEmail(email)
 
         var errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1)
 
-        Purchases.shared.setEmail(email)
+        self.attribution.setEmail(email)
         errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 0)
     }
 
     func testChangingEmailSyncsIt() async throws {
-        Purchases.shared.setEmail("test@revenuecat.com")
+        self.attribution.setEmail("test@revenuecat.com")
 
         var errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1)
 
-        Purchases.shared.setEmail("test2@revenuecat.com")
+        self.attribution.setEmail("test2@revenuecat.com")
         errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1)
     }
 
     func testSyncInvalidEmail() async throws {
-        Purchases.shared.setEmail("invalid @ email @.com")
+        self.attribution.setEmail("invalid @ email @.com")
 
         let errors = await self.syncAttributes()
         expect(errors).to(haveCount(1))
@@ -68,28 +76,28 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testLogInGetsNewAttributes() async throws {
-        Purchases.shared.setEmail("test@revenuecat.com")
+        self.attribution.setEmail("test@revenuecat.com")
 
         var errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1)
 
         _ = try await Purchases.shared.logIn(UUID().uuidString)
 
-        Purchases.shared.setEmail("test@revenuecat.com")
+        self.attribution.setEmail("test@revenuecat.com")
 
         errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1)
     }
 
     func testPushTokenWithInvalidTokenDoesNotFail() async throws {
-        Purchases.shared.setPushToken("invalid token".asData)
+        self.attribution.setPushToken("invalid token".asData)
 
         let errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1)
     }
 
     func testSetCustomAttributes() async throws {
-        Purchases.shared.setAttributes([
+        self.attribution.setAttributes([
             "custom_key": "random value",
             "locale": Locale.current.identifier
         ])
@@ -99,8 +107,8 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testSetMultipleAttributes() async throws {
-        Purchases.shared.setDisplayName("Tom Hanks")
-        Purchases.shared.setPhoneNumber("4157689215")
+        self.attribution.setDisplayName("Tom Hanks")
+        self.attribution.setPhoneNumber("4157689215")
 
         let errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 1) // 1 user with 2 attributes
@@ -108,10 +116,10 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
     func testSetAttributesForMultipleUsers() async throws {
         _ = try await Purchases.shared.logIn(UUID().uuidString)
-        Purchases.shared.setDisplayName("User 1")
+        self.attribution.setDisplayName("User 1")
 
         _ = try await Purchases.shared.logIn(UUID().uuidString)
-        Purchases.shared.setDisplayName("User 2")
+        self.attribution.setDisplayName("User 2")
 
         let errors = await self.syncAttributes()
         verifyAttributesSyncedWithNoErrors(errors, 2)
