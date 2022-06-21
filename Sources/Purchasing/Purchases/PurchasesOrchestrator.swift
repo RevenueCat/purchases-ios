@@ -301,6 +301,14 @@ class PurchasesOrchestrator {
                   payment: SKMutablePayment,
                   package: Package?,
                   completion: @escaping PurchaseCompletedBlock) {
+        /**
+         * Note: this only extracts the product identifier from `SKPayment`, ignoring the `SK1Product.identifier`
+         * because `storeKitWrapper(_:, updatedTransaction:)` only has a transaction and not the product.
+         * If the transaction is mising a product id, then we wouldn't be able to find the callback
+         * in `purchaseCompleteCallbacksByProductID`, and therefore
+         * we wouldn't be able to notify of the purchase result.
+         */
+
         guard let productIdentifier = payment.extractProductIdentifier() else {
             let message = Strings.purchase.could_not_purchase_product_id_not_found.description
             completion(nil, nil, ErrorUtils.storeProblemError(withMessage: message), false)
