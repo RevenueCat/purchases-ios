@@ -265,7 +265,7 @@ class PurchasesOrchestrator {
                   package: Package?,
                   promotionalOffer: PromotionalOffer,
                   completion: @escaping PurchaseCompletedBlock) {
-        Self.logPurchase(product: product, package: package)
+        Self.logPurchase(product: product, package: package, offer: promotionalOffer)
 
         if let sk1Product = product.sk1Product {
             purchase(sk1Product: sk1Product,
@@ -868,17 +868,19 @@ private extension PurchasesOrchestrator {
 
 private extension PurchasesOrchestrator {
 
-    static func logPurchase(product: StoreProduct, package: Package?) {
-        if let package = package {
-            Logger.purchase(
-                Strings.purchase.purchasing_product_from_package(
-                    productIdentifier: product.productIdentifier,
-                    offeringIdentifier: package.offeringIdentifier
-                )
-            )
-        } else {
-            Logger.purchase(Strings.purchase.purchasing_product(productIdentifier: product.productIdentifier))
-        }
+    static func logPurchase(product: StoreProduct, package: Package?, offer: PromotionalOffer? = nil) {
+        let string: PurchaseStrings = {
+            switch (package, offer) {
+            case (nil, nil): return .purchasing_product(product)
+            case let (package?, nil): return .purchasing_product_from_package(product, package)
+            case let (nil, offer?): return .purchasing_product_with_offer(product, offer.discount)
+            case let (package?, offer?): return .purchasing_product_from_package_with_offer(product,
+                                                                                            package,
+                                                                                            offer.discount)
+            }
+        }()
+
+        Logger.purchase(string)
     }
 
 }
