@@ -1297,10 +1297,12 @@ public extension Purchases {
 
     /**
      * Use this function to open the manage subscriptions page.
-
-     * - Parameter completion: A completion block that is called when the modal is closed.
-     * If it was not successful, there will be an `Error`.
-
+     *
+     * - Parameter completion: A completion block that will be called when the modal is opened,
+     * not when it's actually closed. ß∫This is because of an undocumented change in StoreKit's behavior
+     * between iOS 15.0 and 15.2, where 15.0 would return when the modal was closed, and 15.2 returns
+     * when the modal is opened.
+     *
      * If the manage subscriptions page can't be opened, the ``CustomerInfo/managementURL`` in
      * the ``CustomerInfo`` will be opened. If ``CustomerInfo/managementURL`` is not available,
      * the App Store's subscription management section will be opened.
