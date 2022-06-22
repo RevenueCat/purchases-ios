@@ -108,7 +108,7 @@ lane :github_changelog do |options|
   last_version = sh("git describe --tags --abbrev=0").strip
   old_version = options[:old_version] || last_version
   api_token = ENV["GITHUB_TOKEN"]
-  UI.user_error!("missing GITHUB_TOKEN env") unless repo
+  UI.user_error!("missing GITHUB_TOKEN env") unless api_token
 
   UI.important("Auto-generating changelog since #{old_version}")
 
