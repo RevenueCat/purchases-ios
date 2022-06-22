@@ -41,6 +41,8 @@ struct SubscriberAttributesView: View {
         case setMparticleID
         case setOnesignalID
         case setFBAnonymousID
+        case setMixpanelDistinctID
+        case setFirebaseAppInstanceID
     }
     
     let customerInfo: RevenueCat.CustomerInfo
@@ -98,7 +100,7 @@ struct SubscriberAttributesView: View {
             ("Key", "Key name", self.$attributeKey),
             ("Value", "Value", self.$attributeValue)
         ]) {
-            Purchases.shared.setAttributes([self.attributeKey:  self.attributeValue])
+            Purchases.shared.attribution.setAttributes([self.attributeKey:  self.attributeValue])
         }
         .textFieldAlert(isShowing: self.$showOtherAlert, title: self.revenueCatKind?.rawValue ?? self.thirdPartyKind?.rawValue ?? "<ERROR>", fields: [
             ("Value", "Value", self.$otherValue),
@@ -106,46 +108,50 @@ struct SubscriberAttributesView: View {
             if let kind = self.revenueCatKind {
                 switch kind {
                 case .setAd:
-                    Purchases.shared.setAd(self.otherValue)
+                    Purchases.shared.attribution.setAd(self.otherValue)
                 case .setEmail:
-                    Purchases.shared.setEmail(self.otherValue)
+                    Purchases.shared.attribution.setEmail(self.otherValue)
                 case .setDisplayName:
-                    Purchases.shared.setDisplayName(self.otherValue)
+                    Purchases.shared.attribution.setDisplayName(self.otherValue)
                 case .setKeyword:
-                    Purchases.shared.setKeyword(self.otherValue)
+                    Purchases.shared.attribution.setKeyword(self.otherValue)
                 case .setCampaign:
-                    Purchases.shared.setCampaign(self.otherValue)
+                    Purchases.shared.attribution.setCampaign(self.otherValue)
                 case .setCreative:
-                    Purchases.shared.setCreative(self.otherValue)
+                    Purchases.shared.attribution.setCreative(self.otherValue)
                 case .setAdGroup:
-                    Purchases.shared.setAdGroup(self.otherValue)
+                    Purchases.shared.attribution.setAdGroup(self.otherValue)
                 case .setPushToken:
                     if let token = self.otherValue.data(using: .utf8) {
-                        Purchases.shared.setPushToken(token)
+                        Purchases.shared.attribution.setPushToken(token)
                     }
                 case .setMediaSource:
-                    Purchases.shared.setMediaSource(self.otherValue)
+                    Purchases.shared.attribution.setMediaSource(self.otherValue)
                 case .setPhoneNumber:
-                    Purchases.shared.setPhoneNumber(self.otherValue)
+                    Purchases.shared.attribution.setPhoneNumber(self.otherValue)
                 }
             }
             
             if let kind = self.thirdPartyKind {
                 switch kind {
                 case .setAdjustID:
-                    Purchases.shared.setAdjustID(self.otherValue)
+                    Purchases.shared.attribution.setAdjustID(self.otherValue)
                 case .setAppsflyerID:
-                    Purchases.shared.setAppsflyerID(self.otherValue)
+                    Purchases.shared.attribution.setAppsflyerID(self.otherValue)
                 case .setAirshipChannelID:
-                    Purchases.shared.setAirshipChannelID(self.otherValue)
+                    Purchases.shared.attribution.setAirshipChannelID(self.otherValue)
                 case .setCleverTapID:
-                    Purchases.shared.setCleverTapID(self.otherValue)
+                    Purchases.shared.attribution.setCleverTapID(self.otherValue)
                 case .setMparticleID:
-                    Purchases.shared.setMparticleID(self.otherValue)
+                    Purchases.shared.attribution.setMparticleID(self.otherValue)
                 case .setOnesignalID:
-                    Purchases.shared.setOnesignalID(self.otherValue)
+                    Purchases.shared.attribution.setOnesignalID(self.otherValue)
                 case .setFBAnonymousID:
-                    Purchases.shared.setFBAnonymousID(self.otherValue)
+                    Purchases.shared.attribution.setFBAnonymousID(self.otherValue)
+                case .setMixpanelDistinctID:
+                    Purchases.shared.attribution.setMixpanelDistinctID(self.otherValue)
+                case .setFirebaseAppInstanceID:
+                    Purchases.shared.attribution.setFirebaseAppInstanceID(self.otherValue)
                 }
             }
         }
