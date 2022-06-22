@@ -1705,7 +1705,6 @@
 			isa = PBXGroup;
 			children = (
 				5796A39727D6C07D00653165 /* __Snapshots__ */,
-				5796A38D27D6BB7D00653165 /* BackendCreateAliasTests.swift */,
 				A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */,
 				5796A38927D6B96300653165 /* BackendGetCustomerInfoTests.swift */,
 				5796A38F27D6BCD100653165 /* BackendGetIntroEligibilityTests.swift */,

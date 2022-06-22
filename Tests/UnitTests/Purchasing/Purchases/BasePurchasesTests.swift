@@ -56,13 +56,14 @@ class BasePurchasesTests: TestCase {
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator()
         )
-        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
-                                       currentUserProvider: self.identityManager)
         self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
                                                    currentUserProvider: self.identityManager,
                                                    backend: self.backend,
                                                    attributionFetcher: self.attributionFetcher,
                                                    subscriberAttributesManager: self.subscriberAttributesManager)
+        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
+                                       currentUserProvider: self.identityManager,
+                                       attributionPoster: self.attributionPoster)
         self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
                                                        backend: self.backend,

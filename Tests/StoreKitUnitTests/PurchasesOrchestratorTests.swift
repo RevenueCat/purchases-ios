@@ -65,8 +65,14 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
+        let attributionPoster = AttributionPoster(deviceCache: deviceCache,
+                                                  currentUserProvider: currentUserProvider,
+                                                  backend: backend,
+                                                  attributionFetcher: attributionFetcher,
+                                                  subscriberAttributesManager: subscriberAttributesManager)
         attribution = Attribution(subscriberAttributesManager: subscriberAttributesManager,
-                                  currentUserProvider: MockCurrentUserProvider(mockAppUserID: mockUserID))
+                                  currentUserProvider: MockCurrentUserProvider(mockAppUserID: mockUserID),
+                                  attributionPoster: attributionPoster)
         mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                              customerInfoManager: customerInfoManager,
                                                              currentUserProvider: currentUserProvider)

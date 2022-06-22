@@ -80,8 +80,6 @@ BOOL isAnonymous;
     // 'automaticAppleSearchAdsAttributionCollection' is deprecated: Use Purchases.automaticAdServicesAttributionTokenCollection instead
     automaticAppleSearchAdsAttributionCollection = [RCPurchases automaticAppleSearchAdsAttributionCollection];
 
-    automaticAdServicesAttributionTokenCollection = [RCPurchases automaticAdServicesAttributionTokenCollection];
-
     // should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
     debugLogsEnabled = [RCPurchases debugLogsEnabled];
 

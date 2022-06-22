@@ -86,10 +86,9 @@ private func checkStaticMethods() {
     let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox
     let sharedPurchases: Purchases = Purchases.shared
     let isPurchasesConfigured: Bool = Purchases.isConfigured
-    let automaticAdServicesAttributionTokenCollection: Bool = Purchases.automaticAdServicesAttributionTokenCollection
 
     print(canI, version, logLevel, proxyUrl!, forceUniversalAppStore, simulatesAskToBuyInSandbox,
-          sharedPurchases, isPurchasesConfigured, automaticAdServicesAttributionTokenCollection)
+          sharedPurchases, isPurchasesConfigured)
 }
 
 private func checkTypealiases(

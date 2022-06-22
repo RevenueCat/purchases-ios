@@ -92,16 +92,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let operationDispatcher: OperationDispatcher
 
     /**
-     * Enable automatic collection of AdServices attribution token. Defaults to `false`.
-     *
-     * Should match OS availability in https://developer.apple.com/documentation/ad_services
-     */
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
-    @objc public static var automaticAdServicesAttributionTokenCollection: Bool = false
-
-    /**
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
      *
      * #### Related Symbols
@@ -312,13 +302,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                       operationDispatcher: operationDispatcher,
                                                                       attributionFetcher: attributionFetcher,
                                                                       attributionDataMigrator: attributionDataMigrator)
-        let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
-                                               currentUserProvider: identityManager)
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
                                                   attributionFetcher: attributionFetcher,
                                                   subscriberAttributesManager: subscriberAttributesManager)
+        let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
+                                               currentUserProvider: identityManager,
+                                               attributionPoster: attributionPoster)
         let productsRequestFactory = ProductsRequestFactory()
         let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
                                               systemInfo: systemInfo,
@@ -402,7 +393,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
 
-    // swiftlint:disable:next function_body_length
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
          receiptFetcher: ReceiptFetcher,
@@ -470,13 +460,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
 
-#if os(iOS) || os(macOS)
-        // should match OS availability in https://developer.apple.com/documentation/ad_services
-        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
-            postAdServicesTokenIfNeeded()
-        }
-#endif
-
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
             self.delegate?.purchases?(self, receivedUpdated: customerInfo)
@@ -515,17 +498,6 @@ extension Purchases {
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserId: String?) {
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
-    }
-
-    // should match OS availability in https://developer.apple.com/documentation/ad_services
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
-    private func postAdServicesTokenIfNeeded() {
-        guard Self.automaticAdServicesAttributionTokenCollection else {
-            return
-        }
-        attributionPoster.postAdServicesTokenIfNeeded()
     }
 
 }
@@ -1668,7 +1640,7 @@ private extension Purchases {
 #if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
-            postAdServicesTokenIfNeeded()
+            self.attribution.postAdServicesTokenIfNeeded()
         }
 #endif
     }
