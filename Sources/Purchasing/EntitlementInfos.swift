@@ -111,7 +111,7 @@ extension EntitlementInfos {
         entitlements: [String: CustomerInfoResponse.Entitlement],
         purchases: [String: CustomerInfoResponse.Subscription],
         requestDate: Date?,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = DefaultSandboxEnvironmentDetector()
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
         let allEntitlements: [String: EntitlementInfo] = .init(
             uniqueKeysWithValues: entitlements.compactMap { identifier, entitlement in

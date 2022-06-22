@@ -38,7 +38,7 @@ private extension SandboxEnvironmentDetector {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
-        return DefaultSandboxEnvironmentDetector(bundle: bundle)
+        return BundleSandboxEnvironmentDetector(bundle: bundle)
     }
 
 }

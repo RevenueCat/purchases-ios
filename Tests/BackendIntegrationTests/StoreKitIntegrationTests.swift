@@ -11,7 +11,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
@@ -49,6 +49,10 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         return .disabled
     }
 
+    func testIsSandbox() {
+        expect(Purchases.shared.isSandbox) == true
+    }
+
     func testCanGetOfferings() async throws {
         let receivedOfferings = try await Purchases.shared.offerings()
         expect(receivedOfferings.all).toNot(beEmpty())
@@ -56,6 +60,14 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     func testCanMakePurchase() async throws {
         try await self.purchaseMonthlyOffering()
+    }
+
+    func testSubscriptionIsSandbox() async throws {
+        let info = try await self.purchaseMonthlyOffering().customerInfo
+
+        let entitlement = try XCTUnwrap(info.entitlements.active.first?.value)
+
+        expect(entitlement.isSandbox) == true
     }
 
     func testPurchaseUpdatesCustomerInfoDelegate() async throws {

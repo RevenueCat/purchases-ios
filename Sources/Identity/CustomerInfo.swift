@@ -171,7 +171,7 @@ import Foundation
 
     fileprivate init(
         data: Contents,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = DefaultSandboxEnvironmentDetector()
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
         let response = data.response
         let subscriber = response.subscriber

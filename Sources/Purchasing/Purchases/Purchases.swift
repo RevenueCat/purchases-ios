@@ -1642,6 +1642,10 @@ internal extension Purchases {
         return self.productsManager.requestTimeout
     }
 
+    var isSandbox: Bool {
+        return self.systemInfo.isSandbox
+    }
+
 }
 
 // MARK: Private
