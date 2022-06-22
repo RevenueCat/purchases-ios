@@ -39,7 +39,7 @@ class AttributionPosterTests: TestCase {
         super.setUp()
 
         let userID = "userID"
-        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: DefaultSandboxEnvironmentDetector(),
+        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
                                            userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
         self.deviceCache.cache(appUserID: userID)
         self.backend = MockBackend()

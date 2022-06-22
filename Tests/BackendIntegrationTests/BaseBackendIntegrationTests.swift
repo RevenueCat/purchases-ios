@@ -36,6 +36,10 @@ class BaseBackendIntegrationTests: XCTestCase {
         return .default
     }
 
+    override class func setUp() {
+        BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector()
+    }
+
     override func setUp() async throws {
         try await super.setUp()
 
@@ -80,17 +84,24 @@ private extension BaseBackendIntegrationTests {
     }
 
     func configurePurchases() {
-        purchasesDelegate = TestPurchaseDelegate()
+        self.purchasesDelegate = TestPurchaseDelegate()
+
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
                             observerMode: false,
-                            userDefaults: userDefaults,
+                            userDefaults: self.userDefaults,
                             storeKit2Setting: Self.storeKit2Setting,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
                             networkTimeout: Configuration.networkTimeoutDefault,
                             dangerousSettings: nil)
         Purchases.logLevel = .debug
-        Purchases.shared.delegate = purchasesDelegate
+        Purchases.shared.delegate = self.purchasesDelegate
     }
+
+}
+
+private final class MockSandboxEnvironmentDetector: SandboxEnvironmentDetector {
+
+    let isSandbox: Bool = true
 
 }
