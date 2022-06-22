@@ -17,11 +17,11 @@ class PostAdServicesTokenOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let token: String
-    private let responseHandler: Backend.SimpleResponseHandler?
+    private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
          token: String,
-         responseHandler: Backend.SimpleResponseHandler?) {
+         responseHandler: CustomerAPI.SimpleResponseHandler?) {
         self.token = token
         self.configuration = configuration
         self.responseHandler = responseHandler
@@ -43,12 +43,12 @@ class PostAdServicesTokenOperation: NetworkOperation {
         let request = HTTPRequest(method: .post(Body(aadAttributionToken: self.token)),
                                   path: .postAdServicesToken(appUserID: appUserID))
 
-        self.httpClient.perform(
-            request,
-            authHeaders: self.authHeaders
-        ) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+        self.httpClient.perform(request) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+            defer {
+                completion()
+            }
+
             self.responseHandler?(response.error.map(BackendError.networkError))
-            completion()
         }
     }
 

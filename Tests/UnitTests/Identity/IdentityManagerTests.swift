@@ -14,6 +14,7 @@ class IdentityManagerTests: TestCase {
     private let mockBackend = MockBackend()
     private var mockCustomerInfoManager: MockCustomerInfoManager!
 
+    private var mockIdentityAPI: MockIdentityAPI!
     private var mockCustomerInfo: CustomerInfo!
 
     private func create(appUserID: String?) -> IdentityManager {
@@ -25,7 +26,7 @@ class IdentityManagerTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-
+        self.mockIdentityAPI = try XCTUnwrap(mockBackend.identity as? MockIdentityAPI)
         self.mockCustomerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -37,7 +38,7 @@ class IdentityManagerTests: TestCase {
 
         let systemInfo = MockSystemInfo(finishTransactions: false)
 
-        self.mockDeviceCache = MockDeviceCache(systemInfo: systemInfo)
+        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: systemInfo)
         self.mockCustomerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
                                                                deviceCache: self.mockDeviceCache,
                                                                backend: MockBackend(),
@@ -125,7 +126,7 @@ class IdentityManagerTests: TestCase {
 
         expect(receivedResult).toEventuallyNot(beNil())
 
-        expect(self.mockBackend.invokedLogInCount) == 0
+        expect(self.mockIdentityAPI.invokedLogInCount) == 0
         expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 1
     }
 
@@ -148,7 +149,7 @@ class IdentityManagerTests: TestCase {
 
         expect(receivedResult?.error) == stubbedError
 
-        expect(self.mockBackend.invokedLogInCount) == 0
+        expect(self.mockIdentityAPI.invokedLogInCount) == 0
         expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 1
     }
 
@@ -161,7 +162,7 @@ class IdentityManagerTests: TestCase {
         mockDeviceCache.stubbedAppUserID = oldAppUserID
         var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
-        self.mockBackend.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
 
         manager.logIn(appUserID: newAppUserID) { result in
             receivedResult = result
@@ -172,7 +173,7 @@ class IdentityManagerTests: TestCase {
         expect(receivedResult?.value?.created) == true
         expect(receivedResult?.value?.info) == mockCustomerInfo
 
-        expect(self.mockBackend.invokedLogInCount) == 1
+        expect(self.mockIdentityAPI.invokedLogInCount) == 1
         expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 0
     }
 
@@ -186,7 +187,7 @@ class IdentityManagerTests: TestCase {
         let manager = create(appUserID: nil)
 
         let stubbedError: BackendError = .missingAppUserID()
-        self.mockBackend.stubbedLogInCompletionResult = .failure(stubbedError)
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .failure(stubbedError)
 
         self.mockCustomerInfoManager.stubbedCustomerInfoResult = .failure(stubbedError)
 
@@ -198,7 +199,7 @@ class IdentityManagerTests: TestCase {
 
         expect(receivedResult?.error) == stubbedError
 
-        expect(self.mockBackend.invokedLogInCount) == 1
+        expect(self.mockIdentityAPI.invokedLogInCount) == 1
         expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 0
 
         expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
@@ -213,7 +214,7 @@ class IdentityManagerTests: TestCase {
 
         let manager = create(appUserID: nil)
 
-        self.mockBackend.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
 
         manager.logIn(appUserID: newAppUserID) { _ in
             completionCalled = true
@@ -233,7 +234,7 @@ class IdentityManagerTests: TestCase {
 
         mockDeviceCache.stubbedAppUserID = oldAppUserID
 
-        self.mockBackend.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
 
         manager.logIn(appUserID: newAppUserID) { _ in
             completionCalled = true
@@ -250,27 +251,28 @@ class IdentityManagerTests: TestCase {
         let manager = create(appUserID: nil)
 
         mockDeviceCache.stubbedAppUserID = IdentityManager.generateRandomID()
-        var completionCalled = false
-        var receivedError: Error?
+
+        var receivedError: NSError?
         manager.logOut { error in
-            completionCalled = true
-            receivedError = error
+            receivedError = error as NSError?
         }
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).toNot(beNil())
-        expect((receivedError as NSError?)?.code) == ErrorCode.logOutAnonymousUserError.rawValue
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.code) == ErrorCode.logOutAnonymousUserError.rawValue
     }
 
     func testLogOutCallsCompletionWithNoErrorIfSuccessful() {
         let manager = create(appUserID: nil)
 
         mockDeviceCache.stubbedAppUserID = "myUser"
+
         var completionCalled = false
         var receivedError: Error?
         manager.logOut { error in
-            completionCalled = true
             receivedError = error
+            completionCalled = true
         }
+
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).to(beNil())
     }

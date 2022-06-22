@@ -71,7 +71,7 @@ class IdentityManager: CurrentUserProvider {
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
 
-    func logIn(appUserID: String, completion: @escaping Backend.LogInResponseHandler) {
+    func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_empty_appuserid)
@@ -90,7 +90,7 @@ class IdentityManager: CurrentUserProvider {
             return
         }
 
-        backend.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
+        backend.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
                 self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)

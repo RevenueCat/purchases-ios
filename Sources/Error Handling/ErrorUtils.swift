@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable file_length multiline_parameters type_body_length
+// swiftlint:disable file_length multiline_parameters
 
 enum ErrorUtils {
 
@@ -157,19 +157,6 @@ enum ErrorUtils {
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
         return error(with: ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError,
-                     fileName: fileName, functionName: functionName, line: line)
-    }
-
-    /**
-     * Constructs an Error with the ``ErrorCode/invalidAppUserIdError`` code.
-     *
-     * - Note: This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
-     * are removed manually or if the OS deletes entries when running out of space.
-     */
-    static func missingAppUserIDForAliasCreationError(
-        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
-        return error(with: ErrorCode.missingAppUserIDForAliasCreationError,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -545,7 +532,6 @@ private extension ErrorUtils {
                 .unsupportedError,
                 .emptySubscriberAttributes,
                 .productDiscountMissingIdentifierError,
-                .missingAppUserIDForAliasCreationError,
                 .productDiscountMissingSubscriptionGroupIdentifierError,
                 .customerInfoError,
                 .systemInfoError,

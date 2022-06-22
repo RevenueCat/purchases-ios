@@ -151,6 +151,208 @@ public extension Purchases {
 
 }
 
+public extension Purchases {
+
+    @available(iOS, deprecated, renamed: "attribution.collectDeviceIdentifiers()")
+    @available(tvOS, deprecated, renamed: "attribution.collectDeviceIdentifiers()")
+    @available(watchOS, deprecated, renamed: "attribution.collectDeviceIdentifiers()")
+    @available(macOS, deprecated, renamed: "attribution.collectDeviceIdentifiers()")
+    @available(macCatalyst, deprecated, renamed: "attribution.collectDeviceIdentifiers()")
+    @objc func collectDeviceIdentifiers() {
+        self.attribution.collectDeviceIdentifiers()
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setAttributes(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setAttributes(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setAttributes(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setAttributes(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setAttributes(_:)")
+    @objc func setAttributes(_ attributes: [String: String]) {
+        self.attribution.setAttributes(attributes)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setEmail(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setEmail(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setEmail(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setEmail(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setEmail(_:)")
+    @objc func setEmail(_ email: String?) {
+        self.attribution.setEmail(email)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setPhoneNumber(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setPhoneNumber(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setPhoneNumber(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setPhoneNumber(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setPhoneNumber(_:)")
+    @objc func setPhoneNumber(_ phoneNumber: String?) {
+        self.attribution.setPhoneNumber(phoneNumber)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setDisplayName(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setDisplayName(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setDisplayName(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setDisplayName(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setDisplayName(_:)")
+    @objc func setDisplayName(_ displayName: String?) {
+        self.attribution.setDisplayName(displayName)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setPushToken(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setPushToken(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setPushToken(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setPushToken(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setPushToken(_:)")
+    @objc func setPushToken(_ pushToken: Data?) {
+        self.attribution.setPushToken(pushToken)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setPushTokenString(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setPushTokenString(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setPushTokenString(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setPushTokenString(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setPushTokenString(_:)")
+    @objc func setPushTokenString(_ pushToken: String?) {
+        self.attribution.setPushTokenString(pushToken)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setAdjustID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setAdjustID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setAdjustID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setAdjustID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setAdjustID(_:)")
+    @objc func setAdjustID(_ adjustID: String?) {
+        self.attribution.setAdjustID(adjustID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setAppsflyerID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setAppsflyerID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setAppsflyerID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setAppsflyerID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setAppsflyerID(_:)")
+    @objc func setAppsflyerID(_ appsflyerID: String?) {
+        self.attribution.setAppsflyerID(appsflyerID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setFBAnonymousID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setFBAnonymousID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setFBAnonymousID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setFBAnonymousID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setFBAnonymousID(_:)")
+    @objc func setFBAnonymousID(_ fbAnonymousID: String?) {
+        self.attribution.setFBAnonymousID(fbAnonymousID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setMparticleID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setMparticleID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setMparticleID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setMparticleID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setMparticleID(_:)")
+    @objc func setMparticleID(_ mparticleID: String?) {
+        self.attribution.setMparticleID(mparticleID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setOnesignalID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setOnesignalID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setOnesignalID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setOnesignalID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setOnesignalID(_:)")
+    @objc func setOnesignalID(_ onesignalID: String?) {
+        self.attribution.setOnesignalID(onesignalID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setAirshipChannelID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setAirshipChannelID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setAirshipChannelID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setAirshipChannelID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setAirshipChannelID(_:)")
+    @objc func setAirshipChannelID(_ airshipChannelID: String?) {
+        self.attribution.setAirshipChannelID(airshipChannelID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setCleverTapID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setCleverTapID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setCleverTapID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setCleverTapID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setCleverTapID(_:)")
+    @objc func setCleverTapID(_ cleverTapID: String?) {
+        self.attribution.setCleverTapID(cleverTapID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setMixpanelDistinctID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setMixpanelDistinctID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setMixpanelDistinctID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setMixpanelDistinctID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setMixpanelDistinctID(_:)")
+    @objc func setMixpanelDistinctID(_ mixpanelDistinctID: String?) {
+        self.attribution.setMixpanelDistinctID(mixpanelDistinctID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setFirebaseAppInstanceID(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setFirebaseAppInstanceID(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setFirebaseAppInstanceID(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setFirebaseAppInstanceID(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setFirebaseAppInstanceID(_:)")
+    @objc func setFirebaseAppInstanceID(_ firebaseAppInstanceID: String?) {
+        self.attribution.setFirebaseAppInstanceID(firebaseAppInstanceID)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setMediaSource(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setMediaSource(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setMediaSource(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setMediaSource(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setMediaSource(_:)")
+    @objc func setMediaSource(_ mediaSource: String?) {
+        self.attribution.setMediaSource(mediaSource)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setCampaign(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setCampaign(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setCampaign(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setCampaign(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setCampaign(_:)")
+    @objc func setCampaign(_ campaign: String?) {
+        self.attribution.setCampaign(campaign)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setAdGroup(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setAdGroup(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setAdGroup(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setAdGroup(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setAdGroup(_:)")
+    @objc func setAdGroup(_ adGroup: String?) {
+        self.attribution.setAdGroup(adGroup)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setAd(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setAd(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setAd(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setAd(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setAd(_:)")
+    @objc func setAd(_ installAd: String?) {
+        self.attribution.setAd(installAd)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setKeyword(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setKeyword(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setKeyword(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setKeyword(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setKeyword(_:)")
+    @objc func setKeyword(_ keyword: String?) {
+        self.attribution.setKeyword(keyword)
+    }
+
+    @available(iOS, deprecated, renamed: "attribution.setCreative(_:)")
+    @available(tvOS, deprecated, renamed: "attribution.setCreative(_:)")
+    @available(watchOS, deprecated, renamed: "attribution.setCreative(_:)")
+    @available(macOS, deprecated, renamed: "attribution.setCreative(_:)")
+    @available(macCatalyst, deprecated, renamed: "attribution.setCreative(_:)")
+    @objc func setCreative(_ creative: String?) {
+        self.attribution.setCreative(creative)
+    }
+
+}
+
 public extension StoreProduct {
 
     @available(iOS, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers()")

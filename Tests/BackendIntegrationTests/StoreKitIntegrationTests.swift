@@ -28,10 +28,15 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     override func setUp() async throws {
         try await super.setUp()
 
-        testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
-        testSession.resetToDefaultState()
-        testSession.disableDialogs = true
-        testSession.clearTransactions()
+        self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        self.testSession.resetToDefaultState()
+        self.testSession.disableDialogs = true
+        self.testSession.clearTransactions()
+        if #available(iOS 15.2, *) {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        } else {
+            self.testSession.timeRate = .oneSecondIsOneDay
+        }
 
         // SDK initialization begins with an initial request to offerings
         // Which results in a get-create of the initial anonymous user.
@@ -225,14 +230,15 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+        let product = try await self.weeklyPackage.storeProduct
 
-        let product = try await self.monthlyPackage.storeProduct
+        let customerInfo = try await self.purchaseWeeklyOffering().customerInfo
+        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
 
-        try await self.purchaseMonthlyOffering()
-
-        try self.testSession.expireSubscription(productIdentifier: product.productIdentifier)
+        try await self.expireSubscription(entitlement)
 
         let info = try await Purchases.shared.syncPurchases()
+
         self.assertNoActiveSubscription(info)
 
         let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
@@ -243,14 +249,14 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     func testEligibleAfterPurchaseWithNoTrialExpires() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        let products = await Purchases.shared.products(["com.revenuecat.monthly_4.99.no_intro"])
+        let products = await Purchases.shared.products(["com.revenuecat.weekly_1.99.no_intro"])
         let productWithNoIntro = try XCTUnwrap(products.first)
-        let productWithIntro = try await self.monthlyPackage.storeProduct
+        let productWithIntro = try await self.weeklyPackage.storeProduct
 
         let customerInfo = try await Purchases.shared.purchase(product: productWithNoIntro).customerInfo
-        try self.verifyEntitlementWentThrough(customerInfo)
+        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
 
-        try self.testSession.expireSubscription(productIdentifier: productWithNoIntro.productIdentifier)
+        try await self.expireSubscription(entitlement)
 
         let info = try await Purchases.shared.syncPurchases()
         self.assertNoActiveSubscription(info)
@@ -265,14 +271,11 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
         expect(created) == true
 
-        try await self.purchaseMonthlyOffering()
+        try await self.purchaseWeeklyOffering()
         var customerInfo = try await Purchases.shared.syncPurchases()
 
-        try self.verifyEntitlementWentThrough(customerInfo)
-
-        try await self.testSession.expireSubscription(
-            productIdentifier: self.monthlyPackage.storeProduct.productIdentifier
-        )
+        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
+        try await self.expireSubscription(entitlement)
 
         customerInfo = try await Purchases.shared.syncPurchases()
         self.assertNoActiveSubscription(customerInfo)
@@ -303,7 +306,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let (_, created) = try await Purchases.shared.logIn(user)
         expect(created) == true
 
-        let products = await Purchases.shared.products(["com.revenuecat.monthly_4.99.no_intro"])
+        let products = await Purchases.shared.products(["com.revenuecat.weekly_1.99.no_intro"])
         let product = try XCTUnwrap(products.first)
 
         // 1. Purchase subscription
@@ -311,11 +314,11 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         _ = try await Purchases.shared.purchase(product: product)
         var customerInfo = try await Purchases.shared.syncPurchases()
 
-        try self.verifyEntitlementWentThrough(customerInfo)
+        var entitlement = try self.verifyEntitlementWentThrough(customerInfo)
 
         // 2. Expire subscription
 
-        try self.testSession.expireSubscription(productIdentifier: product.productIdentifier)
+        try await self.expireSubscription(entitlement)
 
         let info = try await Purchases.shared.syncPurchases()
         self.assertNoActiveSubscription(info)
@@ -333,7 +336,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 5. Verify offer was applied
 
-        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
+        entitlement = try self.verifyEntitlementWentThrough(customerInfo)
 
         let transactions: [Transaction] = await Transaction
             .currentEntitlements
@@ -366,6 +369,12 @@ private extension StoreKit1IntegrationTests {
         }
     }
 
+    var weeklyPackage: Package {
+        get async throws {
+            return try await XCTAsyncUnwrap(try await self.currentOffering.weekly)
+        }
+    }
+
     var monthlyPackage: Package {
         get async throws {
             return try await XCTAsyncUnwrap(try await self.currentOffering.monthly)
@@ -384,6 +393,20 @@ private extension StoreKit1IntegrationTests {
         line: UInt = #line
     ) async throws -> PurchaseResultData {
         let data = try await Purchases.shared.purchase(package: self.monthlyPackage)
+
+        try self.verifyEntitlementWentThrough(data.customerInfo,
+                                              file: file,
+                                              line: line)
+
+        return data
+    }
+
+    @discardableResult
+    func purchaseWeeklyOffering(
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let data = try await Purchases.shared.purchase(package: self.weeklyPackage)
 
         try self.verifyEntitlementWentThrough(data.customerInfo,
                                               file: file,
@@ -438,6 +461,24 @@ private extension StoreKit1IntegrationTests {
             beEmpty(),
             description: "Expected no entitlements. Got: \(customerInfo.entitlements.all)"
         )
+    }
+
+    func expireSubscription(_ entitlement: EntitlementInfo) async throws {
+        guard let expirationDate = entitlement.expirationDate else { return }
+
+        Logger.info("Expiring subscription for product '\(entitlement.productIdentifier)'")
+
+        // Try expiring using `SKTestSession`
+        try self.testSession.expireSubscription(productIdentifier: entitlement.productIdentifier)
+
+        let secondsUntilExpiration = expirationDate.timeIntervalSince(Date())
+        guard secondsUntilExpiration > 0 else { return }
+
+        let timeToSleep = Int(secondsUntilExpiration.rounded(.up) + 1)
+
+        // `SKTestSession.expireSubscription` doesn't seem to work, so force expiration by waiting
+        Logger.warn("Sleeping for \(timeToSleep) seconds to force expiration")
+        try await Task.sleep(nanoseconds: UInt64(timeToSleep * 1_000_000_000))
     }
 
 }

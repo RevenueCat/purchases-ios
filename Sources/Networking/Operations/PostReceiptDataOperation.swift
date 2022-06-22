@@ -23,7 +23,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
         let observerMode: Bool
-        let subscriberAttributesByKey: SubscriberAttributeDict?
+        let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
 
     }
 
@@ -59,10 +59,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
     private func post(completion: @escaping () -> Void) {
         let request = HTTPRequest(method: .post(self.postData), path: .postReceiptData)
 
-        httpClient.perform(
-            request,
-            authHeaders: self.authHeaders
-        ) { (response: HTTPResponse<CustomerInfoResponseHandler.Response>.Result) in
+        httpClient.perform(request) { (response: HTTPResponse<CustomerInfoResponseHandler.Response>.Result) in
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.customerInfoResponseHandler.handle(customerInfoResponse: response,
                                                         completion: callbackObject.completion)
@@ -104,7 +101,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
-                .map(SubscriberAttributesMarshaller.map)
+                .map(SubscriberAttribute.map)
                 .map(AnyEncodable.init),
             forKey: .attributes
         )

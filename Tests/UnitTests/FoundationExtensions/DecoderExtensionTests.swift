@@ -58,11 +58,11 @@ class DecoderExtensionsDefaultValueTests: TestCase {
         expect(try Data.decodeEmptyData().e) == Data.E.defaultValue
     }
 
-    func testDecodesDefaultValueForInvalidValue() throws {
+    func testThrowsForInvalidValue() throws {
         let json = "{\"e\": \"e3\"}"
-        let data = try Data.decode(json)
 
-        expect(data.e) == Data.E.defaultValue
+        expect(try Data.decode(json))
+            .to(throwError(errorType: DecodingError.self))
     }
 
     func testDecodesDefaultValueFromAnotherSource() throws {
@@ -74,7 +74,7 @@ class DecoderExtensionsDefaultValueTests: TestCase {
 class DecoderExtensionsIgnoreErrorsTests: TestCase {
 
     private struct Data: Codable, Equatable {
-        @IgnoreDecodeErrors var url: URL?
+        @IgnoreDecodeErrors<URL?> var url: URL?
 
         init(url: URL) {
             self.url = url
@@ -95,115 +95,22 @@ class DecoderExtensionsIgnoreErrorsTests: TestCase {
         expect(data.url).to(beNil())
     }
 
-}
+    func testDecodesDefaultValueForInvalidValue() throws {
+        struct Data: Codable, Equatable {
+            enum E: String, DefaultValueProvider, Codable, Equatable {
+                case e1
+                case e2
 
-class DecoderExtensionsLossyCollectionTests: TestCase {
+                static let defaultValue: Self = .e2
+            }
 
-    private struct Data: Codable, Equatable {
-        struct Content: Codable, Equatable {
-            let string: String
+            @IgnoreDecodeErrors<E> var e: E
         }
 
-        @LossyArray var list: [Int]
-        @LossyDictionary var map1: [String: Content]
-        @LossyArrayDictionary var map2: [String: [Content]]
+        let json = "{\"e\": \"e3\"}"
 
-        init(list: [Int], map1: [String: Content], map2: [String: [Content]]) {
-            self.list = list
-            self.map1 = map1
-            self.map2 = map2
-        }
-    }
-
-    func testDecodesActualValues() throws {
-        let data = Data(list: [1, 2, 3],
-                        map1: ["1": .init(string: "test1"), "2": .init(string: "test2")],
-                        map2: ["1": [.init(string: "a"), .init(string: "b")]])
-        let decodedData = try data.encodeAndDecode()
-
-        expect(decodedData) == data
-    }
-
-    func testDictionaryKeysAreSnakeCase() throws {
-        let keys: Set<String> = [
-            "snake_case",
-            "com.revenuecat.monthly_4.99.1_week_intro",
-            "com.revenuecat.monthly_4.99.no_intro",
-            "pro.1"
-        ]
-
-        let data = Data(list: [],
-                        map1: keys.dictionaryWithValues { .init(string: $0) },
-                        map2: [:])
-        let decodedData = try data.encodeAndDecode()
-
-        expect(Set(decodedData.map1.keys)) == keys
-        expect(decodedData) == data
-
-        for key in keys {
-            expect(decodedData.map1[key]?.string) == key
-        }
-    }
-
-    func testIgnoresArrayErrors() throws {
-        let json = "{\"list\": [\"not a number\"], \"map1\": {}, \"map2\": {}}"
         let data = try Data.decode(json)
-
-        expect(data.list) == []
-    }
-
-    func testKeepsValidArrayMembers() throws {
-        let json = "{\"list\": [1, \"not a number\", 3], \"map1\": {}, \"map2\": {}}"
-        let data = try Data.decode(json)
-
-        expect(data.list) == [1, 3]
-    }
-
-    func testInvalidArrayTypeFailsToDecode() throws {
-        let json = "{\"list\": \"not an array\", \"map1\": {}, \"map2\": {}}"
-        expect { try Data.decode(json) }.to(throwError())
-    }
-
-    func testKeepsValidDictionaryValues() throws {
-        // swiftlint:disable:next line_length
-        let json = "{\"list\": [], \"map1\": {\"1\": \"not a dictionary\", \"2\": {\"string\": \"test\"}}, \"map2\": {}}"
-        let data = try Data.decode(json)
-
-        expect(data.map1) == ["2": .init(string: "test")]
-    }
-
-    func testInvalidDictionaryTypeFailsToDecode() throws {
-        let json = "{\"list\": [], \"map1\": \"not a dictionary\", \"map2\": {}}"
-        expect { try Data.decode(json) }.to(throwError())
-    }
-
-    func testIgnoresNestedErrors() throws {
-        // swiftlint:disable:next line_length
-        let json = "{\"list\": [], \"map1\": {}, \"map2\": {\"1\": \"not a dictionary\", \"2\": {\"string\": \"not an array\"}, \"3\": [{\"string\": \"test\"}, \"not an object\"]}}"
-        let data = try Data.decode(json)
-
-        expect(data.map2) == ["3": [.init(string: "test")]]
-    }
-
-    func testArrayDictionaryKeysAreSnakeCase() throws {
-        let keys: Set<String> = [
-            "snake_case",
-            "com.revenuecat.monthly_4.99.1_week_intro",
-            "com.revenuecat.monthly_4.99.no_intro",
-            "pro.1"
-        ]
-
-        let data = Data(list: [],
-                        map1: [:],
-                        map2: keys.dictionaryWithValues { [.init(string: $0)] })
-        let decodedData = try data.encodeAndDecode()
-
-        expect(decodedData) == data
-        expect(Set(decodedData.map2.keys)) == keys
-
-        for key in keys {
-            expect(decodedData.map2[key]) == [.init(string: key)]
-        }
+        expect(data.e) == .e2
     }
 
 }
@@ -259,26 +166,26 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
         expect(try Data.decodeEmptyData().dictionary) == [:]
     }
 
-    func testDecodesEmptyArrayForIncorrectType() throws {
+    func testDoesNotIgnoreErrorsIfNotArray() throws {
         let json = "{\"array\": \"this is not an array\"}"
-        let data = try Data.decode(json)
 
-        expect(data.array) == []
+        expect(try Data.decode(json))
+            .to(throwError(errorType: DecodingError.self))
     }
 
-    func testDecodesEmptyDictionaryForIncorrectType() throws {
+    func testDoesNotIgnoreErrorsIfNotDictionary() throws {
         let json = "{\"dictionary\": \"this is not a dictionary\"}"
-        let data = try Data.decode(json)
 
-        expect(data.dictionary) == [:]
+        expect(try Data.decode(json))
+            .to(throwError(errorType: DecodingError.self))
     }
 
-    func testDecodesEmptyDictionaryIfPartiallyFailsToDecodeData() throws {
-        struct Content: Codable, Equatable {
-            let string: String
-        }
-
+    func testDoesNotIgnoreErrorsIfPartiallyFailsToDecodeData() throws {
         struct Data: Codable, Equatable {
+            struct Content: Codable, Equatable {
+                let string: String
+            }
+
             @DefaultDecodable.EmptyDictionary var dictionary: [String: Content]
         }
 
@@ -290,9 +197,9 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
             }
         }
         """
-        let data = try Data.decode(json)
 
-        expect(data.dictionary) == [:]
+        expect(try Data.decode(json))
+            .to(throwError(errorType: DecodingError.self))
     }
 
 }
@@ -320,74 +227,6 @@ class IgnoreEncodableTests: TestCase {
     }
 
 }
-
- class DecoderExtensionsLossyAndDefaultCompositionTests: TestCase {
-
-     private struct Data: Codable, Equatable {
-         @DefaultDecodable.EmptyArray @LossyArray var list: [Int]
-         @DefaultDecodable.EmptyDictionary @LossyDictionary var map1: [String: Int]
-         @DefaultDecodable.EmptyDictionary @LossyArrayDictionary var map2: [String: [Int]]
-
-         init(list: [Int], map1: [String: Int], map2: [String: [Int]]) {
-             self.list = list
-             self.map1 = map1
-             self.map2 = map2
-         }
-     }
-
-     func testDecodesActualValues() throws {
-         let data = Data(list: [1, 2, 3],
-                         map1: ["1": 1, "2": 2],
-                         map2: ["1": [1, 2]])
-         let decodedData = try data.encodeAndDecode()
-
-         expect(decodedData) == data
-     }
-
-     func testIgnoresListErrors() throws {
-         let json = "{\"list\": [\"not a number\"], \"map1\": {}, \"map2\": {}}"
-         let data = try Data.decode(json)
-
-         expect(data.list) == []
-     }
-
-     func testKeepsValidListMembers() throws {
-         let json = "{\"list\": [1, \"not a number\", 3], \"map1\": {}, \"map2\": {}}"
-         let data = try Data.decode(json)
-
-         expect(data.list) == [1, 3]
-     }
-
-     func testKeepsValidMapValues() throws {
-         let json = "{\"list\": [], \"map1\": {\"1\": \"not a number\", \"2\": 2}, \"map2\": {}}"
-         let data = try Data.decode(json)
-
-         expect(data.map1) == ["2": 2]
-     }
-
-     func testInvalidArrayBecomesEmpty() throws {
-         let json = "{\"list\": \"not an array\", \"map1\": {}, \"map2\": {}}"
-         let data = try Data.decode(json)
-
-         expect(data.list) == []
-     }
-
-     func testInvalidDictionaryTypeFailsToDecode() throws {
-         let json = "{\"list\": [], \"map1\": \"not a dictionary\", \"map2\": {}}"
-         let data = try Data.decode(json)
-
-         expect(data.map1) == [:]
-     }
-
-     func testIgnoresNestedErrors() throws {
-         // swiftlint:disable:next line_length
-         let json = "{\"list\": [], \"map1\": {}, \"map2\": {\"1\": \"not a dictionary\", \"2\": {\"string\": \"not an array\"}, \"3\": [3, \"not a number\"]}}"
-         let data = try Data.decode(json)
-
-         expect(data.map2) == ["3": [3]]
-     }
-
- }
 
 extension Decodable where Self: Encodable {
 

@@ -21,7 +21,7 @@ enum AttributionStrings {
     case attributes_sync_error(error: NSError?)
     case attributes_sync_success(appUserID: String)
     case empty_subscriber_attributes
-    case marking_attributes_synced(appUserID: String, attributes: SubscriberAttributeDict)
+    case marking_attributes_synced(appUserID: String, attributes: SubscriberAttribute.Dictionary)
     case setting_reserved_attribute(_ reservedAttribute: ReservedSubscriberAttribute)
     case setting_attributes(attributes: [String])
     case networkuserid_required_for_appsflyer
@@ -35,7 +35,7 @@ enum AttributionStrings {
     case skip_same_attributes
     case subscriber_attributes_error(errors: [String: String]?)
     case unsynced_attributes_count(unsyncedAttributesCount: Int, appUserID: String)
-    case unsynced_attributes(unsyncedAttributes: SubscriberAttributeDict)
+    case unsynced_attributes(unsyncedAttributes: SubscriberAttribute.Dictionary)
     case attribute_set_locally(attribute: String)
     case missing_advertiser_identifiers
     case adservices_not_supported

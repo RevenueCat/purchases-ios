@@ -26,6 +26,17 @@
             }
         },
         "subscriptions": {
+            "com.revenuecat.ABCDNA12U.ProductName": {
+                "billing_issues_detected_at": null,
+                "expires_date": "2022-04-12T00:03:35Z",
+                "grace_period_expires_date": null,
+                "is_sandbox": true,
+                "original_purchase_date": "2022-04-12T00:03:28Z",
+                "period_type": "intro",
+                "purchase_date": "2022-04-12T00:03:28Z",
+                "store": "app_store",
+                "unsubscribe_detected_at": null
+            },
             "com.revenuecat.monthly_4.99.1_week_intro": {
                 "billing_issues_detected_at": null,
                 "expires_date": "2022-04-12T00:03:35Z",

@@ -51,8 +51,7 @@ private extension LogInOperation {
                                                      newAppUserID: newAppUserID)),
                                   path: .logIn)
 
-        self.httpClient.perform(request,
-                                authHeaders: self.authHeaders) { (response: HTTPResponse<CustomerInfo>.Result) in
+        self.httpClient.perform(request) { (response: HTTPResponse<CustomerInfo>.Result) in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(response, completion: callbackObject.completion)
             }
@@ -62,7 +61,7 @@ private extension LogInOperation {
     }
 
     func handleLogin(_ result: HTTPResponse<CustomerInfo>.Result,
-                     completion: Backend.LogInResponseHandler) {
+                     completion: IdentityAPI.LogInResponseHandler) {
         let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
             .map { response in
                 (response.body, created: response.statusCode == .createdSuccess)

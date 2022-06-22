@@ -202,9 +202,9 @@ extension TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                         receiptData: receiptData,
-                                         productIdentifiers: productIdentifiers) { backendResult, error in
+        self.backend.offerings.getIntroEligibility(appUserID: self.appUserID,
+                                                   receiptData: receiptData,
+                                                   productIdentifiers: productIdentifiers) { backendResult, error in
             var result = backendResult
             if let error = error {
                 Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))

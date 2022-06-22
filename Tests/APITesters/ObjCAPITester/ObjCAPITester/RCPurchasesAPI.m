@@ -33,6 +33,7 @@ BOOL isAnonymous;
 + (void)checkAPI {
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
     [RCPurchases configureWithConfiguration:[[RCConfiguration builderWithAPIKey:@""] build]];
+    [RCPurchases configureWithConfigurationBuilder:[RCConfiguration builderWithAPIKey:@""]];
     [RCPurchases configureWithAPIKey:@"" appUserID:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false];
@@ -110,6 +111,7 @@ BOOL isAnonymous;
     [p invalidateCustomerInfoCache];
 
     NSDictionary<NSString *, NSString *> *attributes = nil;
+    RCAttribution __unused *attribution = p.attribution;
     [p setAttributes: attributes];
     [p setEmail: nil];
     [p setEmail: @""];
@@ -149,8 +151,7 @@ BOOL isAnonymous;
     [p setKeyword: @""];
     [p setCreative: nil];
     [p setCreative: @""];
-    [p collectDeviceIdentifiers];
-    
+
     [p getCustomerInfoWithFetchPolicy:RCCacheFetchPolicyFetchCurrent completion:^(RCCustomerInfo *customerInfo,
                                                                                   NSError *error) {}];
     [p getCustomerInfoWithCompletion:^(RCCustomerInfo *info, NSError *error) {}];

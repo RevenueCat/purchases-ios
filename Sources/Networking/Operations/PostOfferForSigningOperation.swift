@@ -28,11 +28,11 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let postOfferData: PostOfferForSigningData
-    private let responseHandler: Backend.OfferSigningResponseHandler
+    private let responseHandler: OfferingsAPI.OfferSigningResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          postOfferForSigningData: PostOfferForSigningData,
-         responseHandler: @escaping Backend.OfferSigningResponseHandler) {
+         responseHandler: @escaping OfferingsAPI.OfferSigningResponseHandler) {
         self.configuration = configuration
         self.postOfferData = postOfferForSigningData
         self.responseHandler = responseHandler
@@ -50,8 +50,7 @@ class PostOfferForSigningOperation: NetworkOperation {
             path: .postOfferForSigning
         )
 
-        self.httpClient.perform(request,
-                                authHeaders: self.authHeaders) { (response: HTTPResponse<PostOfferResponse>.Result) in
+        self.httpClient.perform(request) { (response: HTTPResponse<PostOfferResponse>.Result) in
             let result: Result<PostOfferForSigningOperation.SigningData, BackendError> = response
                 .mapError { error -> BackendError in
                     if case .decoding = error {

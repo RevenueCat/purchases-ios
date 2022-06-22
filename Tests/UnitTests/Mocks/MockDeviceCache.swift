@@ -73,6 +73,7 @@ class MockDeviceCache: DeviceCache {
     // MARK: offerings
 
     var cacheOfferingsCount = 0
+    var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
     var stubbedIsOfferingsCacheStale = false
@@ -96,6 +97,10 @@ class MockDeviceCache: DeviceCache {
 
     override func setOfferingsCacheTimestampToNow() {
         setOfferingsCacheTimestampToNowCount += 1
+    }
+
+    override func clearCachedOfferings() {
+        clearCachedOfferingsCount += 1
     }
 
     // MARK: SubscriberAttributes
@@ -241,5 +246,4 @@ class MockDeviceCache: DeviceCache {
     override func latestAdvertisingIdsByNetworkSent(appUserID: String) -> [AttributionNetwork: String] {
         return invokedSetLatestNetworkAndAdvertisingIdsSentParameters?.adIdsByNetwork ?? [:]
     }
-
 }

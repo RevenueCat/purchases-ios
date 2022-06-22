@@ -535,6 +535,7 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 /// or shared to them by a family member. This can be useful for onboarding users who have had
 /// an entitlement shared with them, but might not be entirely aware of the benefits they now have.
 @property (nonatomic, readonly) enum RCPurchaseOwnershipType ownershipType;
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
@@ -544,9 +545,6 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 
 
 
-@interface RCEntitlementInfo (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
-@end
 
 
 
@@ -557,8 +555,6 @@ SWIFT_CLASS_NAMED("EntitlementInfos")
 /// identifier. This dictionary can also be accessed by using an index subscript on <code>EntitlementInfos</code>, e.g.
 /// <code>entitlementInfos["pro_entitlement_id"]</code>.
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull all;
-/// Dictionary of active <code>EntitlementInfo</code> (<code>RCEntitlementInfo</code>) objects keyed by entitlement identifier.
-@property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull active;
 - (RCEntitlementInfo * _Nullable)objectForKeyedSubscript:(NSString * _Nonnull)key SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
@@ -566,6 +562,41 @@ SWIFT_CLASS_NAMED("EntitlementInfos")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+
+
+@interface RCEntitlementInfos (SWIFT_EXTENSION(RevenueCat))
+/// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
+/// warning:
+/// this is equivalent to <code>activeInAnyEnvironment</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInCurrentEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull active;
+/// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
+/// note:
+/// When queried from the sandbox environment, it only returns entitlements active in sandbox.
+/// When queried from production, this only returns entitlements active in production.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInAnyEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull activeInCurrentEnvironment;
+/// Dictionary of active <code>EntitlementInfo</code> objects keyed by their identifiers.
+/// note:
+/// these can be active on any environment.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>activeInCurrentEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull activeInAnyEnvironment;
+@end
 
 /// Error codes used by the Purchases SDK
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
@@ -849,13 +880,6 @@ SWIFT_CLASS_NAMED("Package")
 @end
 
 
-@class SKProduct;
-
-@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
-/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
-@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
-@end
-
 
 @interface RCPackage (SWIFT_EXTENSION(RevenueCat))
 /// \param packageType A <code>PackageType</code>.
@@ -870,6 +894,13 @@ SWIFT_CLASS_NAMED("Package")
 /// returns:
 /// a <code>PackageType</code> for the given string.
 + (enum RCPackageType)packageTypeFrom:(NSString * _Nonnull)string SWIFT_WARN_UNUSED_RESULT;
+@end
+
+@class SKProduct;
+
+@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
+/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
+@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
 @end
 
 
@@ -1390,10 +1421,8 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// </ul>
 - (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// Fetch the configured <code>Offerings</code> for this user.
-/// \code
-///  *``Offerings`` allows you to configure your in-app products
-///
-/// \endcodevia RevenueCat and greatly simplifies management.
+/// <code>Offerings</code> allows you to configure your in-app products
+/// via RevenueCat and greatly simplifies management.
 /// <code>Offerings</code> will be fetched and cached on instantiation so that, by the time they are needed,
 /// your prices are loaded for your purchase flow. Time is money.
 /// <h4>Related Articles</h4>
@@ -2238,8 +2267,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// For a string representation of the price to display to customers, use <code>localizedPriceString</code>.
 /// note:
 /// this is meant for  Objective-C. For Swift, use <code>price</code> instead.
-/// seealso:
-/// <code>pricePerMonth</code>.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>pricePerMonth</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly, strong) NSDecimalNumber * _Nonnull price;
 /// Calculates the price of this subscription product per month.
 ///

@@ -26,7 +26,8 @@ class BasePurchasesTests: TestCase {
 
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
         self.systemInfo = MockSystemInfo(finishTransactions: true)
-        self.deviceCache = MockDeviceCache(systemInfo: self.systemInfo, userDefaults: self.userDefaults)
+        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
+                                           userDefaults: self.userDefaults)
         self.requestFetcher = MockRequestFetcher()
         self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
@@ -41,10 +42,13 @@ class BasePurchasesTests: TestCase {
         self.receiptFetcher = MockReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfoAttribution)
         self.attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                          systemInfo: systemInfoAttribution)
-        self.backend = MockBackend(httpClient: MockHTTPClient(systemInfo: self.systemInfo,
-                                                              eTagManager: MockETagManager()),
-                                   apiKey: "mockAPIKey",
-                                   attributionFetcher: self.attributionFetcher)
+
+        let apiKey = "mockAPIKey"
+        let httpClient = MockHTTPClient(apiKey: apiKey, systemInfo: self.systemInfo, eTagManager: MockETagManager())
+        let config = BackendConfiguration(httpClient: httpClient,
+                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+        self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
@@ -52,6 +56,8 @@ class BasePurchasesTests: TestCase {
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator()
         )
+        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
+                                       currentUserProvider: self.identityManager)
         self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
                                                    currentUserProvider: self.identityManager,
                                                    backend: self.backend,
@@ -98,6 +104,7 @@ class BasePurchasesTests: TestCase {
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
+    var attribution: Attribution!
     var identityManager: MockIdentityManager!
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
@@ -139,7 +146,7 @@ class BasePurchasesTests: TestCase {
             productsManager: self.mockProductsManager,
             storeKitWrapper: self.storeKitWrapper,
             systemInfo: self.systemInfo,
-            subscriberAttributesManager: self.subscriberAttributesManager,
+            subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
             receiptFetcher: self.receiptFetcher,
             customerInfoManager: self.customerInfoManager,
@@ -171,7 +178,7 @@ class BasePurchasesTests: TestCase {
                                    offeringsFactory: self.offeringsFactory,
                                    deviceCache: self.deviceCache,
                                    identityManager: self.identityManager,
-                                   subscriberAttributesManager: self.subscriberAttributesManager,
+                                   subscriberAttributes: self.attribution,
                                    operationDispatcher: self.mockOperationDispatcher,
                                    customerInfoManager: self.customerInfoManager,
                                    productsManager: self.mockProductsManager,
@@ -219,7 +226,69 @@ extension BasePurchasesTests {
 
 extension BasePurchasesTests {
 
+    final class MockOfferingsAPI: OfferingsAPI {
+
+        var postedProductIdentifiers: [String]?
+
+        override func getIntroEligibility(appUserID: String,
+                                          receiptData: Data,
+                                          productIdentifiers: [String],
+                                          completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
+            self.postedProductIdentifiers = productIdentifiers
+
+            var eligibilities = [String: IntroEligibility]()
+            for productID in productIdentifiers {
+                eligibilities[productID] = IntroEligibility(eligibilityStatus: .eligible)
+            }
+
+            completion(eligibilities, nil)
+        }
+
+        var failOfferings = false
+        var badOfferingsResponse = false
+        var gotOfferings = 0
+
+        override func getOfferings(appUserID: String, completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
+            self.gotOfferings += 1
+            if self.failOfferings {
+                completion(.failure(.unexpectedBackendResponse(.getOfferUnexpectedResponse)))
+                return
+            }
+            if self.badOfferingsResponse {
+                completion(.failure(.networkError(.decoding(CodableError.invalidJSONObject(value: [:]), Data()))))
+                return
+            }
+
+            completion(.success(.mockResponse))
+        }
+
+        var postOfferForSigningCalled = false
+        var postOfferForSigningPaymentDiscountResponse: Result<[String: Any], BackendError> = .success([:])
+
+        override func post(offerIdForSigning offerIdentifier: String,
+                           productIdentifier: String,
+                           subscriptionGroup: String?,
+                           receiptData: Data,
+                           appUserID: String,
+                           completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
+            self.postOfferForSigningCalled = true
+
+            completion(
+                self.postOfferForSigningPaymentDiscountResponse.map {
+                    (
+                        // swiftlint:disable:next force_cast line_length
+                        $0["signature"] as! String, $0["keyIdentifier"] as! String, $0["nonce"] as! UUID, $0["timestamp"] as! Int
+                    )
+                }
+            )
+        }
+
+    }
+
     final class MockBackend: Backend {
+
+        static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
+
         var userID: String?
         var originalApplicationVersion: String?
         var originalPurchaseDate: Date?
@@ -229,7 +298,8 @@ extension BasePurchasesTests {
             try! CustomerInfo(data: BasePurchasesTests.emptyCustomerInfoData)
         )
 
-        override func getCustomerInfo(appUserID: String, completion: @escaping Backend.CustomerInfoResponseHandler) {
+        override func getCustomerInfo(appUserID: String,
+                                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.getSubscriberCallCount += 1
             self.userID = appUserID
 
@@ -251,10 +321,7 @@ extension BasePurchasesTests {
         var postedDiscounts: [StoreProductDiscount]?
         var postedOfferingIdentifier: String?
         var postedObserverMode: Bool?
-
         var postReceiptResult: Result<CustomerInfo, BackendError>?
-        var aliasError: BackendError?
-        var aliasCalled = false
 
         override func post(receiptData: Data,
                            appUserID: String,
@@ -263,7 +330,7 @@ extension BasePurchasesTests {
                            presentedOfferingIdentifier: String?,
                            observerMode: Bool,
                            subscriberAttributes: [String: SubscriberAttribute]?,
-                           completion: @escaping Backend.CustomerInfoResponseHandler) {
+                           completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
             self.postedReceiptData = receiptData
             self.postedIsRestore = isRestore
@@ -283,71 +350,6 @@ extension BasePurchasesTests {
             self.postedOfferingIdentifier = presentedOfferingIdentifier
             self.postedObserverMode = observerMode
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
-        }
-
-        var postedProductIdentifiers: [String]?
-
-        override func getIntroEligibility(appUserID: String,
-                                          receiptData: Data,
-                                          productIdentifiers: [String],
-                                          completion: @escaping IntroEligibilityResponseHandler) {
-            self.postedProductIdentifiers = productIdentifiers
-
-            var eligibilities = [String: IntroEligibility]()
-            for productID in productIdentifiers {
-                eligibilities[productID] = IntroEligibility(eligibilityStatus: .eligible)
-            }
-
-            completion(eligibilities, nil)
-        }
-
-        var failOfferings = false
-        var badOfferingsResponse = false
-        var gotOfferings = 0
-
-        override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
-            self.gotOfferings += 1
-            if self.failOfferings {
-                completion(.failure(.unexpectedBackendResponse(.getOfferUnexpectedResponse)))
-                return
-            }
-            if self.badOfferingsResponse {
-                completion(.failure(.networkError(.decoding(CodableError.invalidJSONObject(value: [:]), Data()))))
-                return
-            }
-
-            completion(.success(.mockResponse))
-        }
-
-        override func createAlias(appUserID: String, newAppUserID: String, completion: ((BackendError?) -> Void)?) {
-            self.aliasCalled = true
-            if self.aliasError != nil {
-                completion!(self.aliasError)
-            } else {
-                self.userID = newAppUserID
-                completion!(nil)
-            }
-        }
-
-        var postOfferForSigningCalled = false
-        var postOfferForSigningPaymentDiscountResponse: Result<[String: Any], BackendError> = .success([:])
-
-        override func post(offerIdForSigning offerIdentifier: String,
-                           productIdentifier: String,
-                           subscriptionGroup: String?,
-                           receiptData: Data,
-                           appUserID: String,
-                           completion: @escaping OfferSigningResponseHandler) {
-            self.postOfferForSigningCalled = true
-
-            completion(
-                self.postOfferForSigningPaymentDiscountResponse.map {
-                    (
-                        // swiftlint:disable:next force_cast line_length
-                        $0["signature"] as! String, $0["keyIdentifier"] as! String, $0["nonce"] as! UUID, $0["timestamp"] as! Int
-                    )
-                }
-            )
         }
     }
 }

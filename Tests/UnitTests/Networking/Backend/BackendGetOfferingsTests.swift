@@ -31,7 +31,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         var result: Result<OfferingsResponse, BackendError>?
 
-        backend.getOfferings(appUserID: Self.userID) {
+        self.offerings.getOfferings(appUserID: Self.userID) {
             result = $0
         }
 
@@ -44,8 +44,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
         )
-        backend.getOfferings(appUserID: Self.userID) { _ in }
-        backend.getOfferings(appUserID: Self.userID) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -58,8 +58,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
         self.httpClient.mock(requestPath: .getOfferings(appUserID: Self.userID), response: response)
         self.httpClient.mock(requestPath: .getOfferings(appUserID: userID2), response: response)
 
-        backend.getOfferings(appUserID: Self.userID, completion: { _ in })
-        backend.getOfferings(appUserID: userID2, completion: { _ in })
+        self.offerings.getOfferings(appUserID: Self.userID, completion: { _ in })
+        self.offerings.getOfferings(appUserID: userID2, completion: { _ in })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -71,7 +71,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         var result: Result<OfferingsResponse, BackendError>?
-        backend.getOfferings(appUserID: Self.userID) {
+        self.offerings.getOfferings(appUserID: Self.userID) {
             result = $0
         }
 
@@ -101,7 +101,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         var result: Result<OfferingsResponse, BackendError>?
 
-        backend.getOfferings(appUserID: Self.userID) {
+        self.offerings.getOfferings(appUserID: Self.userID) {
             result = $0
         }
 
@@ -118,7 +118,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         var result: Result<OfferingsResponse, BackendError>?
-        backend.getOfferings(appUserID: Self.userID) {
+        self.offerings.getOfferings(appUserID: Self.userID) {
             result = $0
         }
 
@@ -130,7 +130,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
         var completionCalled = false
 
-        backend.getOfferings(appUserID: "") { _ in
+        self.offerings.getOfferings(appUserID: "") { _ in
             completionCalled = true
         }
 
@@ -139,15 +139,13 @@ class BackendGetOfferingsTests: BaseBackendTests {
     }
 
     func testGetOfferingsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
-        var completionCalled = false
         var receivedError: BackendError?
 
-        backend.getOfferings(appUserID: "") { result in
-            completionCalled = true
+        self.offerings.getOfferings(appUserID: "") { result in
             receivedError = result.error
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError) == .missingAppUserID()
     }
 

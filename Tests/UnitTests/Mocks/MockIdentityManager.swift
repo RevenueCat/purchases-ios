@@ -8,8 +8,6 @@
 class MockIdentityManager: IdentityManager {
 
     var identifyError: Error?
-    var aliasError: Error?
-    var aliasCalled = false
     var identifyCalled = false
     var resetCalled = false
     var mockIsAnonymous = false
@@ -20,7 +18,7 @@ class MockIdentityManager: IdentityManager {
         let mockSystemInfo = try! MockSystemInfo(platformInfo: nil,
                                                  finishTransactions: false,
                                                  dangerousSettings: nil)
-        let mockDeviceCache = MockDeviceCache(systemInfo: mockSystemInfo)
+        let mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: mockSystemInfo)
         let mockBackend = MockBackend()
 
         self.mockAppUserID = mockAppUserID
@@ -45,7 +43,7 @@ class MockIdentityManager: IdentityManager {
         return mockIsAnonymous
     }
 
-    override func logIn(appUserID: String, completion: @escaping Backend.LogInResponseHandler) {
+    override func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
         fatalError("Logging in not supported on mock")
     }
 

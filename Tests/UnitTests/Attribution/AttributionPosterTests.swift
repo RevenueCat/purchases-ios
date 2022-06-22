@@ -37,33 +37,33 @@ class BaseAttributionPosterTests: TestCase {
         super.setUp()
 
         let userID = "userID"
-        deviceCache = MockDeviceCache(systemInfo: MockSystemInfo(finishTransactions: false),
-                                      userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
-        deviceCache.cache(appUserID: userID)
-        backend = MockBackend()
-        attributionFetcher = MockAttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
-        subscriberAttributesManager = MockSubscriberAttributesManager(
+        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: DefaultSandboxEnvironmentDetector(),
+                                           userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
+        self.deviceCache.cache(appUserID: userID)
+        self.backend = MockBackend()
+        self.attributionFetcher = MockAttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
+        self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
-        currentUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
-        attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                              currentUserProvider: currentUserProvider,
-                                              backend: backend,
-                                              attributionFetcher: attributionFetcher,
-                                              subscriberAttributesManager: subscriberAttributesManager)
-        resetAttributionStaticProperties()
-        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
+        self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
+                                                   currentUserProvider: self.currentUserProvider,
+                                                   backend: self.backend,
+                                                   attributionFetcher: self.attributionFetcher,
+                                                   subscriberAttributesManager: self.subscriberAttributesManager)
+        self.resetAttributionStaticProperties()
+        self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
     }
 
     override func tearDown() {
-        UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
-        UserDefaults.standard.synchronize()
-        resetAttributionStaticProperties()
-        super.tearDown()
-    }
+            UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
+            UserDefaults.standard.synchronize()
+            resetAttributionStaticProperties()
+            super.tearDown()
+        }
 
     private func resetAttributionStaticProperties() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {

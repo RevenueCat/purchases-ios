@@ -30,8 +30,8 @@ final class CurrentTestCaseTracker: NSObject, XCTestObservation {
 
     /// Extracts the name of the current running test.
     ///
-    /// Example: extracts `testCreateAliasCachesForSameUserIDs`
-    /// from `-[BackendTests testCreateAliasCachesForSameUserIDs]`
+    /// Example: extracts `testLoginCachesForSameUserIDs`
+    /// from `-[BackendTests testLoginCachesForSameUserIDs]`
     static var sanitizedTestName: String {
         guard let test = Self.shared.currentTestCase else {
             fatalError("No test currently running")

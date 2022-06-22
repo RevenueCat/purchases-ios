@@ -23,8 +23,8 @@ actor ProductsFetcherSK2 {
 
     }
 
-    private var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
-    private var cachedProductsStorefrontIdentifier: String?
+    /// Getter is declared as `internal` for testing purposes only.
+    private(set) var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
 
     func products(identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
         do {
@@ -43,20 +43,16 @@ actor ProductsFetcherSK2 {
         }
     }
 
+    func clearCache() {
+        self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 private extension ProductsFetcherSK2 {
 
     func cachedProducts(withIdentifiers identifiers: Set<String>) async -> Set<SK2StoreProduct>? {
-        guard await self.cachedProductsStorefrontIdentifier == self.currentStorefrontIdentifier else {
-            if !self.cachedProductsByIdentifier.isEmpty {
-                Logger.debug(Strings.offering.product_cache_invalid_for_storefront_change)
-            }
-
-            return nil
-        }
-
         let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
         if productsAlreadyCached.count == identifiers.count {
             Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
@@ -67,34 +63,9 @@ private extension ProductsFetcherSK2 {
     }
 
     func cache(products: Set<SK2StoreProduct>) async {
-        let storeFrontIdentifier = await self.invalidateOutdatedProductsIfNeeded()
-
-        self.cachedProductsStorefrontIdentifier = storeFrontIdentifier
         self.cachedProductsByIdentifier += products.dictionaryWithKeys {
             $0.productIdentifier
         }
-    }
-
-    /// - Returns: current `Storefront` identifier
-    func invalidateOutdatedProductsIfNeeded() async -> String? {
-        let storeFrontIdentifier = await self.currentStorefrontIdentifier
-
-        if storeFrontIdentifier != self.cachedProductsStorefrontIdentifier {
-            self.clearCache()
-        }
-
-        return storeFrontIdentifier
-    }
-
-    func clearCache() {
-        self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
-    }
-
-    var currentStorefrontIdentifier: String? {
-        // Note: not using `StoreKit.Storefront.updates` because it's not currently possible
-        // to avoid race conditions. Updates never arrive on time for tests to detect
-        // changes and clear the cache.
-        get async { await Storefront.currentStorefront?.identifier }
     }
 
 }

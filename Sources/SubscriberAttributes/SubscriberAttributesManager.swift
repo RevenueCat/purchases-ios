@@ -22,6 +22,8 @@ class SubscriberAttributesManager {
     private let attributionDataMigrator: AttributionDataMigrator
     private let lock = Lock()
 
+    weak var delegate: SubscriberAttributesManagerDelegate?
+
     init(backend: Backend,
          deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -145,13 +147,19 @@ class SubscriberAttributesManager {
         operationDispatcher.dispatchOnWorkerThread {
             let completed: Atomic<Int> = .init(0)
 
-            for (syncingAppUserId, attributes) in unsyncedAttributesForAllUsers {
-                self.syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error in
-                    self.handleAttributesSynced(syncingAppUserId: syncingAppUserId,
+            for (syncingAppUserID, attributes) in unsyncedAttributesForAllUsers {
+                self.syncAttributes(attributes: attributes, appUserID: syncingAppUserID) { error in
+                    self.handleAttributesSynced(syncingAppUserId: syncingAppUserID,
                                                 currentAppUserId: currentAppUserID,
                                                 error: error)
 
                     syncedAttribute?(error?.asPurchasesError)
+                    self.delegate?.subscriberAttributesManager(
+                        self,
+                        didFinishSyncingAttributes: attributes,
+                        forUserID: syncingAppUserID
+                    )
+
                     let completedSoFar: Int = completed.modify { $0 += 1; return $0 }
 
                     if completedSoFar == total {
@@ -180,7 +188,7 @@ class SubscriberAttributesManager {
         }
     }
 
-    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
+    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {
         let unsyncedAttributes = deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
         Logger.debug(Strings.attribution.unsynced_attributes_count(unsyncedAttributesCount: unsyncedAttributes.count,
                                                                    appUserID: appUserID))
@@ -191,11 +199,11 @@ class SubscriberAttributesManager {
         return unsyncedAttributes
     }
 
-    func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {
+    func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttribute.Dictionary] {
         return deviceCache.unsyncedAttributesForAllUsers()
     }
 
-    func markAttributesAsSynced(_ attributesToSync: SubscriberAttributeDict?, appUserID: String) {
+    func markAttributesAsSynced(_ attributesToSync: SubscriberAttribute.Dictionary?, appUserID: String) {
         guard let attributesToSync = attributesToSync,
               !attributesToSync.isEmpty else {
             return
@@ -204,16 +212,15 @@ class SubscriberAttributesManager {
         Logger.info(Strings.attribution.marking_attributes_synced(appUserID: appUserID, attributes: attributesToSync))
 
         self.lock.perform {
-            var unsyncedAttributes = unsyncedAttributesByKey(appUserID: appUserID)
+            var unsyncedAttributes = self.unsyncedAttributesByKey(appUserID: appUserID)
+
             for (key, attribute) in attributesToSync {
-                if let unsyncedAttribute = unsyncedAttributes[key] {
-                    if unsyncedAttribute.value == attribute.value {
-                        unsyncedAttribute.isSynced = true
-                        unsyncedAttributes[key] = unsyncedAttribute
-                    }
+                if unsyncedAttributes[key]?.value == attribute.value {
+                    unsyncedAttributes[key]?.isSynced = true
                 }
             }
-            deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
+
+            self.deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
         }
     }
 
@@ -245,7 +252,7 @@ private extension SubscriberAttributesManager {
         storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
     }
 
-    func syncAttributes(attributes: SubscriberAttributeDict,
+    func syncAttributes(attributes: SubscriberAttribute.Dictionary,
                         appUserID: String,
                         completion: @escaping (BackendError?) -> Void) {
         backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
@@ -275,5 +282,13 @@ private extension SubscriberAttributesManager {
         collectDeviceIdentifiers(forAppUserID: appUserID)
         setReservedAttribute(networkID, value: attributionID, appUserID: appUserID)
     }
+
+}
+
+protocol SubscriberAttributesManagerDelegate: AnyObject {
+
+    func subscriberAttributesManager(_ manager: SubscriberAttributesManager,
+                                     didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
+                                     forUserID userID: String)
 
 }

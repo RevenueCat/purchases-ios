@@ -29,8 +29,7 @@ class BackendLoginTests: BaseBackendTests {
         _ = self.mockLoginRequest(appUserID: currentAppUserID)
         var completionCalled = false
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _ in
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _ in
             completionCalled = true
         }
 
@@ -46,8 +45,7 @@ class BackendLoginTests: BaseBackendTests {
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { result in
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
             receivedResult = result
         }
 
@@ -64,8 +62,7 @@ class BackendLoginTests: BaseBackendTests {
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { result in
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
             receivedResult = result
         }
 
@@ -90,8 +87,7 @@ class BackendLoginTests: BaseBackendTests {
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { result in
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
             receivedResult = result
         }
 
@@ -110,8 +106,7 @@ class BackendLoginTests: BaseBackendTests {
 
         var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { result in
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
             receivedResult = result
         }
 
@@ -129,10 +124,8 @@ class BackendLoginTests: BaseBackendTests {
                                   statusCode: .createdSuccess,
                                   response: Self.mockCustomerInfoData)
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _  in }
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _  in }
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _  in }
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _  in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -146,10 +139,8 @@ class BackendLoginTests: BaseBackendTests {
                                   statusCode: .createdSuccess,
                                   response: Self.mockCustomerInfoData)
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _ in }
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: secondNewAppUserID) { _ in }
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _ in }
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: secondNewAppUserID) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -163,10 +154,8 @@ class BackendLoginTests: BaseBackendTests {
                                   statusCode: .createdSuccess,
                                   response: Self.mockCustomerInfoData)
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _ in }
-        backend.logIn(currentAppUserID: currentAppUserID2,
-                      newAppUserID: newAppUserID) { _ in }
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _ in }
+        self.identity.logIn(currentAppUserID: currentAppUserID2, newAppUserID: newAppUserID) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -182,12 +171,10 @@ class BackendLoginTests: BaseBackendTests {
         var completion1Called = false
         var completion2Called = false
 
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _ in
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _ in
             completion1Called = true
         }
-        backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { _ in
+        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _ in
             completion2Called = true
         }
 
@@ -204,7 +191,7 @@ private extension BackendLoginTests {
                           statusCode: HTTPStatusCode = .success,
                           response: [String: Any] = [:]) -> HTTPRequest.Path {
         let path: HTTPRequest.Path = .logIn
-        let response =  MockHTTPClient.Response(statusCode: statusCode, response: response)
+        let response = MockHTTPClient.Response(statusCode: statusCode, response: response)
 
         self.httpClient.mock(requestPath: path, response: response)
 
@@ -224,7 +211,7 @@ private extension BackendLoginTests {
     static let mockCustomerInfoData: [String: Any] = [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
-            "subscriptions": [],
+            "subscriptions": [:],
             "first_seen": "2019-07-17T00:05:54Z",
             "original_app_user_id": "",
             "other_purchases": [:]

@@ -28,7 +28,7 @@ class DeviceCache {
     }
     var cachedOfferings: Offerings? { offeringsCachedObject.cachedInstance() }
 
-    private let systemInfo: SystemInfo
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let userDefaults: SynchronizedUserDefaults
     private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
@@ -37,20 +37,20 @@ class DeviceCache {
     /// cleared from under the SDK
     private var appUserIDHasBeenSet: Bool = false
 
-    convenience init(systemInfo: SystemInfo,
+    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
                      userDefaults: UserDefaults = UserDefaults.standard) {
-        self.init(systemInfo: systemInfo,
+        self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                   userDefaults: userDefaults,
                   offeringsCachedObject: nil,
                   notificationCenter: nil)
     }
 
-    init(systemInfo: SystemInfo,
+    init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
          userDefaults: UserDefaults = UserDefaults.standard,
          offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
          notificationCenter: NotificationCenter? = NotificationCenter.default) {
 
-        self.systemInfo = systemInfo
+        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default
         self.userDefaults = .init(userDefaults: userDefaults)
@@ -133,11 +133,17 @@ class DeviceCache {
             }
 
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-            let cacheDurationInSeconds = self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                                     isSandbox: self.systemInfo.isSandbox)
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(
+                isAppBackgrounded: isAppBackgrounded,
+                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+            )
 
             return timeSinceLastCheck >= cacheDurationInSeconds
         }
+    }
+
+    func clearCachedOfferings() {
+        self.offeringsCachedObject.clearCache()
     }
 
     func clearCustomerInfoCacheTimestamp(appUserID: String) {
@@ -174,7 +180,7 @@ class DeviceCache {
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
         return offeringsCachedObject.isCacheStale(
             durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                           isSandbox: self.systemInfo.isSandbox)
+                                                           isSandbox: self.sandboxEnvironmentDetector.isSandbox)
         )
     }
 
@@ -239,8 +245,7 @@ class DeviceCache {
                 var attributesForUser: [String: SubscriberAttribute] = [:]
                 let attributesDictForUser = attributesDictForUser as? [String: [String: Any]] ?? [:]
                 for (attributeKey, attributeDict) in attributesDictForUser {
-                    let attribute = DeviceCache.newAttribute(dictionary: attributeDict)
-                    if !attribute.isSynced {
+                    if let attribute = SubscriberAttribute(dictionary: attributeDict), !attribute.isSynced {
                         attributesForUser[attributeKey] = attribute
                     }
                 }
@@ -313,17 +318,6 @@ class DeviceCache {
     }
 
     // MARK: - Helper functions
-
-    static func newAttribute(dictionary: [String: Any]) -> SubscriberAttribute {
-        // swiftlint:disable force_cast
-        let key = dictionary[SubscriberAttribute.keyKey] as! String
-        let value = dictionary[SubscriberAttribute.valueKey] as? String
-        let isSynced = (dictionary[SubscriberAttribute.isSyncedKey] as! NSNumber).boolValue
-        let setTime = dictionary[SubscriberAttribute.setTimeKey] as! Date
-        // swiftlint:enable force_cast
-
-        return SubscriberAttribute(withKey: key, value: value, isSynced: isSynced, setTime: setTime)
-    }
 
     fileprivate enum CacheKeys: String {
 
@@ -428,10 +422,10 @@ private extension DeviceCache {
         let allAttributesObjectsByKey = Self.subscriberAttributes(userDefaults, appUserID: appUserID)
         var allSubscriberAttributesByKey: [String: SubscriberAttribute] = [:]
         for (key, attributeDict) in allAttributesObjectsByKey {
-
-            // swiftlint:disable:next force_cast
-            let subscriberAttribute = DeviceCache.newAttribute(dictionary: attributeDict as! [String: Any])
-            allSubscriberAttributesByKey[key] = subscriberAttribute
+            if let dictionary = attributeDict as? [String: Any],
+                let attribute = SubscriberAttribute(dictionary: dictionary) {
+                allSubscriberAttributesByKey[key] = attribute
+            }
         }
 
         return allSubscriberAttributesByKey
@@ -472,9 +466,7 @@ private extension DeviceCache {
             var unsyncedAttributesForUser: [String: [String: Any]] = [:]
             let allStoredAttributesForAppUserID = allStoredAttributes[appUserID] as? [String: [String: Any]] ?? [:]
             for (attributeKey, storedAttributesForUser) in allStoredAttributesForAppUserID {
-                let attribute = DeviceCache.newAttribute(dictionary: storedAttributesForUser)
-
-                if !attribute.isSynced {
+                if let attribute = SubscriberAttribute(dictionary: storedAttributesForUser), !attribute.isSynced {
                     unsyncedAttributesForUser[attributeKey] = storedAttributesForUser
                 }
             }

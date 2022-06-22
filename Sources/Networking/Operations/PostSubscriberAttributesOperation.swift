@@ -16,12 +16,12 @@ import Foundation
 class PostSubscriberAttributesOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
-    private let subscriberAttributes: SubscriberAttributeDict
-    private let responseHandler: Backend.SimpleResponseHandler?
+    private let subscriberAttributes: SubscriberAttribute.Dictionary
+    private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(configuration: UserSpecificConfiguration,
-         subscriberAttributes: SubscriberAttributeDict,
-         completion: Backend.SimpleResponseHandler?) {
+         subscriberAttributes: SubscriberAttribute.Dictionary,
+         completion: CustomerAPI.SimpleResponseHandler?) {
         self.configuration = configuration
         self.subscriberAttributes = subscriberAttributes
         self.responseHandler = completion
@@ -51,8 +51,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)),
                                   path: .postSubscriberAttributes(appUserID: appUserID))
 
-        httpClient.perform(request,
-                           authHeaders: self.authHeaders) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+        httpClient.perform(request) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
                 completion()
             }
@@ -69,9 +68,9 @@ extension PostSubscriberAttributesOperation {
 
         let attributes: AnyEncodable
 
-        init(_ attributes: SubscriberAttributeDict) {
+        init(_ attributes: SubscriberAttribute.Dictionary) {
             self.attributes = AnyEncodable(
-                SubscriberAttributesMarshaller.map(subscriberAttributes: attributes)
+                SubscriberAttribute.map(subscriberAttributes: attributes)
             )
         }
 

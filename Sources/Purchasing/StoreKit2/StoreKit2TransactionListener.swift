@@ -17,7 +17,7 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 protocol StoreKit2TransactionListenerDelegate: AnyObject {
 
-    func transactionsUpdated() async throws -> CustomerInfo
+    func transactionsUpdated() async throws
 
 }
 
@@ -25,7 +25,7 @@ protocol StoreKit2TransactionListenerDelegate: AnyObject {
 class StoreKit2TransactionListener {
 
     /// Similar to ``PurchaseResultData`` but with an optional `CustomerInfo`
-    typealias ResultData = (userCancelled: Bool, customerInfo: CustomerInfo?, transaction: SK2Transaction?)
+    typealias ResultData = (userCancelled: Bool, transaction: SK2Transaction?)
 
     private(set) var taskHandle: Task<Void, Never>?
     weak var delegate: StoreKit2TransactionListenerDelegate?
@@ -41,7 +41,7 @@ class StoreKit2TransactionListener {
                 guard let self = self else { break }
 
                 do {
-                    _ = try await self.handle(transactionResult: result)
+                    _ = try await self.handle(transactionResult: result, fromTransactionUpdate: true)
                 } catch {
                     Logger.error(error.localizedDescription)
                 }
@@ -60,14 +60,15 @@ class StoreKit2TransactionListener {
         purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> ResultData {
         switch purchaseResult {
-        case .success(let verificationResult):
-            let (transaction, customerInfo) = try await handle(transactionResult: verificationResult)
+        case let .success(verificationResult):
+            let transaction = try await self.handle(transactionResult: verificationResult,
+                                                    fromTransactionUpdate: false)
 
-            return (false, customerInfo, transaction)
+            return (false, transaction)
         case .pending:
             throw ErrorUtils.paymentDeferredError()
         case .userCancelled:
-            return (true, nil, nil)
+            return (true, nil)
         @unknown default:
             throw ErrorUtils.storeProblemError(
                 withMessage: Strings.purchase.unknown_purchase_result(result: String(describing: purchaseResult))
@@ -82,9 +83,11 @@ class StoreKit2TransactionListener {
 private extension StoreKit2TransactionListener {
 
     /// - Throws: ``ErrorCode`` if the transaction fails to verify.
+    /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.
     func handle(
-        transactionResult: VerificationResult<StoreKit.Transaction>
-    ) async throws -> (SK2Transaction, CustomerInfo?) {
+        transactionResult: VerificationResult<StoreKit.Transaction>,
+        fromTransactionUpdate: Bool
+    ) async throws -> SK2Transaction {
         switch transactionResult {
         case let .unverified(unverifiedTransaction, verificationError):
             throw ErrorUtils.storeProblemError(
@@ -96,19 +99,16 @@ private extension StoreKit2TransactionListener {
             )
 
         case .verified(let verifiedTransaction):
-            let customerInfo = try await self.finish(transaction: verifiedTransaction)
+            if fromTransactionUpdate { // Otherwise transaction will be finished by `PurchasesOrchestrator`
+                await verifiedTransaction.finish()
+            }
 
-            return (verifiedTransaction, customerInfo)
+            if fromTransactionUpdate, let delegate = self.delegate {
+                _ = try await delegate.transactionsUpdated()
+            }
+
+            return verifiedTransaction
         }
-    }
-
-    /// - Returns `nil` only if the delegate isn't set.
-    func finish(transaction: StoreKit.Transaction) async throws -> CustomerInfo? {
-        await transaction.finish()
-
-        guard let delegate = self.delegate else { return nil }
-
-        return try await delegate.transactionsUpdated()
     }
 
 }

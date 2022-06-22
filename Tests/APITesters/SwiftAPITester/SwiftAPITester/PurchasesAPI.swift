@@ -28,9 +28,10 @@ func checkPurchasesAPI() {
 
     checkStaticMethods()
     checkIdentity(purchases: purch)
-    checkPurchasesSubscriberAttributesAPI(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
+
+    let _: Attribution = purch.attribution
 
     if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
         _ = Task.init {
@@ -167,6 +168,7 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     #endif
 }
 
+@available(*, deprecated) // Ignore deprecation warnings
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setAttributes([String: String]())
     purchases.setEmail("")
@@ -239,9 +241,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
 }
 
 private func checkConfigure() -> Purchases {
-    Purchases
-        .configure(with: Configuration.Builder(withAPIKey: "")
-        .build())
+    Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
+    Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
 
     return Purchases.configure(withAPIKey: "")
 }

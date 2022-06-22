@@ -25,6 +25,7 @@ enum OSVersionEquivalent: Int {
     case iOS13 = 13
     case iOS14 = 14
     case iOS15 = 15
+    case iOS16 = 16
 
 }
 

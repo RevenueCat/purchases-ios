@@ -129,7 +129,9 @@ internal protocol StoreProductType {
 
     /// The decimal representation of the cost of the product, in local currency.
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
-    /// - SeeAlso: ``pricePerMonth``.
+    ///
+    /// #### Related Symbols
+    /// - ``pricePerMonth``
     var price: Decimal { get }
 
     /// The price of this product using ``priceFormatter``.
@@ -146,7 +148,9 @@ internal protocol StoreProductType {
     ///
     /// Configure your in-app purchases to allow Family Sharing in App Store Connect.
     /// For more information about setting up Family Sharing, see Turn-on Family Sharing for in-app purchases.
-    /// - SeeAlso: https://support.apple.com/en-us/HT201079
+    ///
+    /// #### Related Articles
+    /// - https://support.apple.com/en-us/HT201079
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     var isFamilyShareable: Bool { get }
 
@@ -195,7 +199,9 @@ public extension StoreProduct {
     /// The decimal representation of the cost of the product, in local currency.
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
     /// - Note: this is meant for  Objective-C. For Swift, use ``price`` instead.
-    /// - SeeAlso: ``pricePerMonth``.
+    ///
+    /// #### Related Symbols
+    /// - ``pricePerMonth``
     @objc(price) var priceDecimalNumber: NSDecimalNumber {
         return self.price as NSDecimalNumber
     }

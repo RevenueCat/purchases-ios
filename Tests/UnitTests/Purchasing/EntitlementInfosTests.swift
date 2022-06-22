@@ -148,6 +148,35 @@ class EntitlementInfosTests: TestCase {
         try verifyEntitlementActive()
     }
 
+    func testSubscriptionActiveIfExpiresDateEqualsRequestDate() throws {
+        let expirationAndRequestDate = "2019-08-16T10:30:42Z"
+        stubResponse(
+                entitlements: [
+                    "pro_cat": [
+                        "expires_date": expirationAndRequestDate,
+                        "product_identifier": "monthly_freetrial",
+                        "purchase_date": "1999-07-26T23:30:41Z"
+                    ]
+                ],
+                nonSubscriptions: [:],
+                subscriptions: [
+                    "monthly_freetrial": [
+                        "billing_issues_detected_at": nil,
+                        "expires_date": "2200-07-26T23:50:40Z",
+                        "is_sandbox": false,
+                        "original_purchase_date": "1999-07-26T23:30:41Z",
+                        "period_type": "normal",
+                        "purchase_date": "1999-07-26T23:30:41Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil
+                    ]
+                ],
+                requestDate: expirationAndRequestDate
+        )
+
+        try verifyEntitlementActive()
+    }
+
     func testInactiveSubscription() throws {
         stubResponse(
                 entitlements: [
@@ -1054,6 +1083,78 @@ class EntitlementInfosTests: TestCase {
         try verifyRenewal(false)
     }
 
+    // MARK: - Active
+
+    private func stubResponseWithActiveEntitlement(inSandbox sandbox: Bool) {
+        self.stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2221-01-10T02:35:25Z",
+                    "product_identifier": "rc_promo_pro_cat_lifetime",
+                    "purchase_date": "2021-02-27T02:35:25Z"
+                ],
+                "another_entitlement": [
+                    "expires_date": "2016-01-10T02:35:25Z",
+                    "product_identifier": "another_product",
+                    "purchase_date": "2015-02-27T02:35:25Z"
+                ]
+            ],
+            subscriptions: [
+                "rc_promo_pro_cat_lifetime": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2221-01-10T02:35:25Z",
+                    "is_sandbox": sandbox,
+                    "original_purchase_date": "2021-02-27T02:35:25Z",
+                    "period_type": "normal",
+                    "purchase_date": "2021-02-27T02:35:25Z",
+                    "store": "promotional",
+                    "unsubscribe_detected_at": nil
+                ]
+            ])
+    }
+
+    func testActiveInAnyEnvironmentIncludesSandboxInSandbox() throws {
+        self.stubResponseWithActiveEntitlement(inSandbox: true)
+        try self.verifyEntitlementActiveInAnyEnvironment(sandbox: true)
+    }
+
+    func testActiveInAnyEnvironmentIncludesProductionInProduction() throws {
+        self.stubResponseWithActiveEntitlement(inSandbox: false)
+        try self.verifyEntitlementActiveInAnyEnvironment(sandbox: false)
+    }
+
+    func testActiveInAnyEnvironmentIncludesSandboxInProduction() throws {
+        self.stubResponseWithActiveEntitlement(inSandbox: true)
+        try self.verifyEntitlementActiveInAnyEnvironment(sandbox: false)
+    }
+
+    func testActiveInAnyEnvironmentIncludesProductionInSandbox() throws {
+        self.stubResponseWithActiveEntitlement(inSandbox: false)
+        try self.verifyEntitlementActiveInAnyEnvironment(sandbox: true)
+    }
+
+    func testActiveInCurrentEnvironmentIncludesSandboxInSandbox() throws {
+        self.stubResponseWithActiveEntitlement(inSandbox: true)
+        try self.verifyEntitlementActiveInCurrentEnvironment(sandbox: true)
+    }
+
+    func testActiveInCurrentEnvironmentIncludesProductionInProduction() throws {
+        self.stubResponseWithActiveEntitlement(inSandbox: false)
+        try self.verifyEntitlementActiveInCurrentEnvironment(sandbox: false)
+    }
+
+    func testActiveInCurrentEnvironmentDoesNotIncludeSandboxInProduction() throws {
+        self.stubResponseWithActiveEntitlement(inSandbox: true)
+        try self.verifyEntitlementActiveInCurrentEnvironment(false, sandbox: false)
+    }
+
+    func testActiveInCurrentEnvironmentDoesNotIncludesProductionInSandbox() throws {
+        self.stubResponseWithActiveEntitlement(inSandbox: false)
+        try self.verifyEntitlementActiveInCurrentEnvironment(false, sandbox: true)
+    }
+
+    // MARK: -
+
     func testRawData() throws {
         let info = try CustomerInfo(data: self.response)
 
@@ -1061,15 +1162,17 @@ class EntitlementInfosTests: TestCase {
             !$0.rawData.isEmpty
         })
     }
+
 }
 
 private extension EntitlementInfosTests {
 
     func stubResponse(entitlements: [String: Any] = [:],
                       nonSubscriptions: [String: Any] = [:],
-                      subscriptions: [String: Any] = [:]) {
+                      subscriptions: [String: Any] = [:],
+                      requestDate: String = "2019-08-16T10:30:42Z") {
         self.response = [
-            "request_date": "2019-08-16T10:30:42Z",
+            "request_date": requestDate,
             "subscriber": [
                 "entitlements": entitlements,
                 "first_seen": "2019-07-26T23:29:50Z",
@@ -1106,6 +1209,50 @@ private extension EntitlementInfosTests {
         expect(file: file, line: line, subscriberInfo.entitlements.active.keys.contains(entitlement))
         == expectedEntitlementActive
         expect(file: file, line: line, proCat.isActive) == expectedEntitlementActive
+    }
+
+    private func extractEntitlements(identifier: String,
+                                     inSandbox sandbox: Bool) throws -> EntitlementInfos {
+        return try CustomerInfo(
+            data: self.response,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: sandbox)
+        ).entitlements
+    }
+
+    func verifyEntitlementActiveInAnyEnvironment(
+        _ expectedEntitlementActive: Bool = true,
+        identifier: String = "pro_cat",
+        sandbox: Bool,
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
+        let entitlements = try self.extractEntitlements(identifier: identifier, inSandbox: sandbox)
+        let entitlement = try XCTUnwrap(entitlements[identifier])
+
+        expect(file: file, line: line, entitlement.identifier) == identifier
+        expect(file: file, line: line, Set(entitlements.all.keys)).to(contain([identifier]))
+        expect(file: file, line: line, entitlement.isActive) == true
+
+        expect(file: file, line: line, Set(entitlements.activeInAnyEnvironment.keys))
+        == (expectedEntitlementActive ? [identifier] : [])
+    }
+
+    func verifyEntitlementActiveInCurrentEnvironment(
+        _ expectedEntitlementActive: Bool = true,
+        identifier: String = "pro_cat",
+        sandbox: Bool,
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
+        let entitlements = try self.extractEntitlements(identifier: identifier, inSandbox: sandbox)
+        let entitlement = try XCTUnwrap(entitlements[identifier])
+
+        expect(file: file, line: line, entitlement.identifier) == identifier
+        expect(file: file, line: line, entitlements.all.keys).to(contain([identifier]))
+        expect(file: file, line: line, entitlement.isActive) == true
+
+        expect(file: file, line: line, Set(entitlements.activeInCurrentEnvironment.keys))
+        == (expectedEntitlementActive ? [identifier] : [])
     }
 
     func verifyRenewal(_ expectedWillRenew: Bool = true,
@@ -1239,4 +1386,5 @@ private extension EntitlementInfosTests {
             description: "Invalid product identifier"
         )
     }
+
 }

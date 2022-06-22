@@ -28,27 +28,35 @@ class BeginRefundRequestHelperTests: TestCase {
     private let mockEntitlementID = "1234"
     private let mockEntitlementID2 = "2345"
 
+    private var _sk2Helper: Any!
+
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    private lazy var sk2Helper: MockSK2BeginRefundRequestHelper! = nil
+    private var sk2Helper: MockSK2BeginRefundRequestHelper {
+        // swiftlint:disable:next force_cast
+        return self._sk2Helper as! MockSK2BeginRefundRequestHelper
+    }
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        systemInfo = MockSystemInfo(finishTransactions: true)
-        customerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
-                                                      deviceCache: MockDeviceCache(systemInfo: systemInfo),
-                                                      backend: MockBackend(),
-                                                      systemInfo: systemInfo)
-        currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
-        helper = BeginRefundRequestHelper(systemInfo: systemInfo,
-                                          customerInfoManager: customerInfoManager,
-                                          currentUserProvider: currentUserProvider)
+
+        self.systemInfo = MockSystemInfo(finishTransactions: true)
+        self.customerInfoManager = MockCustomerInfoManager(
+            operationDispatcher: MockOperationDispatcher(),
+            deviceCache: MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo),
+            backend: MockBackend(),
+            systemInfo: self.systemInfo
+        )
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
+        self.helper = BeginRefundRequestHelper(systemInfo: self.systemInfo,
+                                               customerInfoManager: self.customerInfoManager,
+                                               currentUserProvider: self.currentUserProvider)
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {
-            sk2Helper = MockSK2BeginRefundRequestHelper()
-            helper.sk2Helper = sk2Helper
+            self._sk2Helper = MockSK2BeginRefundRequestHelper()
+            self.helper.sk2Helper = sk2Helper
         }
     }
 
@@ -255,7 +263,7 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
+                "non_subscriptions": [:],
                 "subscriptions": [
                     "onemonth_freetrial": [:]
                 ],
@@ -277,7 +285,7 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
+                "non_subscriptions": [:],
                 "subscriptions": [
                     "onemonth_freetrial": [:],
                     "onemonth_freetrial2": [:]
@@ -305,8 +313,8 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
-                "subscriptions": [],
+                "non_subscriptions": [:],
+                "subscriptions": [:],
                 "entitlements": [
                     "\(mockEntitlementID)": [
                         "expires_date": "2000-08-30T02:40:36Z",
@@ -325,8 +333,8 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [],
-                "subscriptions": [],
+                "non_subscriptions": [:],
+                "subscriptions": [:],
                 "entitlements": [
                     "pro": [
                         "expires_date": "2100-08-30T02:40:36Z",

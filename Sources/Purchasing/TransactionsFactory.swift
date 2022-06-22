@@ -54,4 +54,8 @@ private struct BackendParsedTransaction: StoreTransactionType {
         self.quantity = 1
     }
 
+    func finish(_ wrapper: StoreKitWrapper) {
+        // Nothing to do
+    }
+
 }

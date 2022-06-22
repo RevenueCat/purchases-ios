@@ -128,10 +128,6 @@ class ErrorCodeTests: TestCase {
         ensureEnumCaseMatchesExpectedRawValue(errorCode: .productDiscountMissingIdentifierError, expectedRawValue: 26)
     }
 
-    func testMissingAppUserIDForAliasCreationError() {
-        ensureEnumCaseMatchesExpectedRawValue(errorCode: .missingAppUserIDForAliasCreationError, expectedRawValue: 27)
-    }
-
     func testProductDiscountMissingSubscriptionGroupIdentifierError() {
         ensureEnumCaseMatchesExpectedRawValue(errorCode: .productDiscountMissingSubscriptionGroupIdentifierError,
                                               expectedRawValue: 28)
@@ -173,11 +169,15 @@ class ErrorCodeTests: TestCase {
     }
 
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases).to(haveCount(36))
+        expect(ErrorCode.allCases).to(haveCount(35))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {
         expect(errorCode.rawValue).to(equal(expectedRawValue))
+    }
+
+    func testRemovedErrorCodesAreNotReAdded() {
+        expect(ErrorCode.reservedRawValues).toNot(contain(ErrorCode.allCases.map { $0.rawValue }))
     }
 
 }

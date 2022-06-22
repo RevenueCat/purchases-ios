@@ -22,6 +22,8 @@ public enum CacheFetchPolicy: Int {
     case fetchCurrent
 
     /// Returns the cached data if available and not stale, or fetches up-to-date data.
+    /// - Warning: if the cached data is stale, and fetching up-to-date data fails (if offline, for example)
+    /// an error will be returned instead of the outdated cached data.
     case notStaleCachedOrFetched
 
     /// Default behavior: returns the cached data if available (even if stale), or fetches up-to-date data.

@@ -158,16 +158,21 @@ import Foundation
     private let data: Contents
 
     /// Initializes a `CustomerInfo` with the underlying data in the current schema version
-    convenience init(response: CustomerInfoResponse) {
-        self.init(data: .init(response: response, schemaVersion: Self.currentSchemaVersion))
+    convenience init(response: CustomerInfoResponse, sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
+        self.init(data: .init(response: response, schemaVersion: Self.currentSchemaVersion),
+                  sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
     /// Initializes a `CustomerInfo` creating a copy.
-    convenience init(customerInfo: CustomerInfo) {
-        self.init(data: customerInfo.data)
+    convenience init(customerInfo: CustomerInfo,
+                     sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
+        self.init(data: customerInfo.data, sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
-    fileprivate init(data: Contents) {
+    fileprivate init(
+        data: Contents,
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector = DefaultSandboxEnvironmentDetector()
+    ) {
         let response = data.response
         let subscriber = response.subscriber
 
@@ -175,7 +180,8 @@ import Foundation
         self.entitlements = EntitlementInfos(
             entitlements: subscriber.entitlements,
             purchases: subscriber.allPurchasesByProductId,
-            requestDate: response.requestDate
+            requestDate: response.requestDate,
+            sandboxEnvironmentDetector: sandboxEnvironmentDetector
         )
         self.nonSubscriptionTransactions = TransactionsFactory.nonSubscriptionTransactions(
             withSubscriptionsData: subscriber.nonSubscriptions

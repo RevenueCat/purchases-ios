@@ -23,6 +23,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
     var trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockBackend: MockBackend!
+    var mockOfferingsAPI: MockOfferingsAPI!
     var mockProductsManager: MockProductsManager!
     var mockSystemInfo: MockSystemInfo!
 
@@ -38,6 +39,8 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
+
+        self.mockOfferingsAPI = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
         let mockOperationDispatcher = MockOperationDispatcher()
         let userProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
         trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
@@ -71,16 +74,15 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedEligibility = ["product_id": IntroEligibilityStatus.eligible]
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = (stubbedEligibility, nil)
 
-        var completionCalled = false
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (receivedEligibilities) in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
+
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities).to(haveCount(1))
     }
 
     func testSK1EligibilityProductsWithKnownIntroEligibilityStatus() throws {
@@ -120,20 +122,20 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
         let productId = "product_id"
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
-        mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
-        var completionCalled = false
+        mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
+
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
+
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities).to(haveCount(1))
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.eligible
 
-        expect(self.mockBackend.invokedGetIntroEligibilityCount) == 1
+        expect(self.mockOfferingsAPI.invokedGetIntroEligibilityCount) == 1
     }
 
     func testSK1EligibilityIsNotFetchedFromBackendIfEligibilityAlreadyExists() throws {
@@ -152,20 +154,20 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
         let productId = "product_id"
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
-        mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
-        var completionCalled = false
+        mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
+
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
+
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities).to(haveCount(1))
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.noIntroOfferExists
 
-        expect(self.mockBackend.invokedGetIntroEligibilityCount) == 0
+        expect(self.mockOfferingsAPI.invokedGetIntroEligibilityCount) == 0
     }
 
     func testSK1ErrorFetchingFromBackendAfterErrorCalculatingEligibility() throws {
@@ -178,17 +180,16 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         )
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)
 
-        mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
-        var completionCalled = false
+        mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
+
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            completionCalled = true
             eligibilities = receivedEligibilities
         }
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(eligibilities).toEventuallyNot(beNil())
         let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities).to(haveCount(1))
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.unknown
     }
 

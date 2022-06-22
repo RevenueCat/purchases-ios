@@ -26,6 +26,7 @@ import AppKit
 class SystemInfo {
 
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
+    static var forceUniversalAppStore: Bool = false
 
     let storeKit2Setting: StoreKit2Setting
     var finishTransactions: Bool
@@ -35,19 +36,14 @@ class SystemInfo {
     let bundle: Bundle
     let dangerousSettings: DangerousSettings
 
-    static var forceUniversalAppStore: Bool = false
-    var isSandbox: Bool {
-        let url = self.bundle.appStoreReceiptURL
-        guard let url = url else {
-            return false
-        }
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
 
-        let receiptURLString = url.path
-        return receiptURLString.contains("sandboxReceipt")
+    var isSandbox: Bool {
+        return self.sandboxEnvironmentDetector.isSandbox
     }
 
     static var frameworkVersion: String {
-        return "4.6.0-SNAPSHOT"
+        return "4.7.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -114,6 +110,7 @@ class SystemInfo {
         self.operationDispatcher = operationDispatcher
         self.storeKit2Setting = storeKit2Setting
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
+        self.sandboxEnvironmentDetector = DefaultSandboxEnvironmentDetector(bundle: bundle)
     }
 
     func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
@@ -138,6 +135,8 @@ class SystemInfo {
     }
 
 }
+
+extension SystemInfo: SandboxEnvironmentDetector {}
 
 extension SystemInfo {
 

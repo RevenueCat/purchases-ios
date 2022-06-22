@@ -16,9 +16,11 @@
     RCEntitlementInfos *ei;
     NSDictionary<NSString *, RCEntitlementInfo *> *all = ei.all;
     NSDictionary<NSString *, RCEntitlementInfo *> *active = ei.active;
+    NSDictionary<NSString *, RCEntitlementInfo *> *activeInAnyEnvironment = ei.activeInAnyEnvironment;
+    NSDictionary<NSString *, RCEntitlementInfo *> *activeInCurrentEnvironment = ei.activeInCurrentEnvironment;
     RCEntitlementInfo *e = [ei objectForKeyedSubscript:@""];
 
-    NSLog(ei, all, active, e);
+    NSLog(ei, all, active, activeInAnyEnvironment, activeInCurrentEnvironment, e);
 }
 
 @end

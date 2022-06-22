@@ -28,7 +28,6 @@ class HTTPRequestTests: TestCase {
         .getOfferings(appUserID: userID),
         .getIntroEligibility(appUserID: userID),
         .logIn,
-        .createAlias(appUserID: userID),
         .postAttributionData(appUserID: userID),
         .postOfferForSigning,
         .postReceiptData,

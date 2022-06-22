@@ -31,7 +31,7 @@ extension CustomerInfoResponse {
     struct Subscriber {
 
         var originalAppUserId: String
-        @IgnoreDecodeErrors
+        @IgnoreDecodeErrors<URL?>
         var managementUrl: URL?
         var originalApplicationVersion: String?
         var originalPurchaseDate: Date?
@@ -47,18 +47,18 @@ extension CustomerInfoResponse {
 
     struct Subscription {
 
-        @DefaultValue<PeriodType>
+        @IgnoreDecodeErrors<PeriodType>
         var periodType: PeriodType
         var purchaseDate: Date?
         var originalPurchaseDate: Date?
         var expiresDate: Date?
-        @DefaultValue<Store>
+        @IgnoreDecodeErrors<Store>
         var store: Store
         @DefaultDecodable.False
         var isSandbox: Bool
         var unsubscribeDetectedAt: Date?
         var billingIssuesDetectedAt: Date?
-        @DefaultValue<PurchaseOwnershipType>
+        @IgnoreDecodeErrors<PurchaseOwnershipType>
         var ownershipType: PurchaseOwnershipType
 
     }
@@ -68,7 +68,7 @@ extension CustomerInfoResponse {
         var purchaseDate: Date?
         var originalPurchaseDate: Date?
         var transactionIdentifier: String?
-        @DefaultValue<Store>
+        @IgnoreDecodeErrors<Store>
         var store: Store
         var isSandbox: Bool
 
