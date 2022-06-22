@@ -215,258 +215,6 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 # pragma pop_macro("any")
 #endif
 
-
-/// This class is responsible for all explicit attribution APIs as well as subscriber attributes that RevenueCat offers.
-/// The attributes are additional structured information on a user. Since attributes are writable using a public key
-/// they should not be used for managing secure or sensitive information such as subscription status, coins, etc.
-/// Key names starting with “$” are reserved names used by RevenueCat. For a full list of key restrictions refer
-/// <a href="https://docs.revenuecat.com/docs/subscriber-attributes">to our guide</a>
-SWIFT_CLASS_NAMED("Attribution")
-@interface RCAttribution : NSObject
-- (nonnull instancetype)init SWIFT_UNAVAILABLE;
-+ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
-@end
-
-
-@class NSString;
-@class NSData;
-
-@interface RCAttribution (SWIFT_EXTENSION(RevenueCat))
-/// Automatically collect subscriber attributes associated with the device identifiers
-/// <ul>
-///   <li>
-///     <code>$idfa</code>
-///   </li>
-///   <li>
-///     <code>$idfv</code>
-///   </li>
-///   <li>
-///     <code>$ip</code>
-///   </li>
-/// </ul>
-- (void)collectDeviceIdentifiers;
-/// Subscriber attributes are useful for storing additional, structured information on a user.
-/// Since attributes are writable using a public key they should not be used for
-/// managing secure or sensitive information such as subscription status, coins, etc.
-/// Key names starting with “$” are reserved names used by RevenueCat. For a full list of key
-/// restrictions refer <a href="https://docs.revenuecat.com/docs/subscriber-attributes">to our guide</a>
-/// \param attributes Map of attributes by key. Set the value as an empty string to delete an attribute.
-///
-- (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
-/// Subscriber attribute associated with the email address for the user.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param email Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setEmail:(NSString * _Nullable)email;
-/// Subscriber attribute associated with the phone number for the user.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param phoneNumber Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setPhoneNumber:(NSString * _Nullable)phoneNumber;
-/// Subscriber attribute associated with the display name for the user.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param displayName Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setDisplayName:(NSString * _Nullable)displayName;
-/// Subscriber attribute associated with the push token for the user.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// <h4>Related Symbols</h4>
-/// <ul>
-///   <li>
-///     <code>Attribution/setPushTokenString(_:)</code>
-///   </li>
-/// </ul>
-/// \param pushToken <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setPushToken:(NSData * _Nullable)pushToken;
-/// Subscriber attribute associated with the push token for the user.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// <h4>Related Symbols</h4>
-/// <ul>
-///   <li>
-///     <code>Attribution/setPushToken(_:)</code>
-///   </li>
-/// </ul>
-/// \param pushToken <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setPushTokenString:(NSString * _Nullable)pushToken;
-/// Subscriber attribute associated with the Adjust Id for the user.
-/// Required for the RevenueCat Adjust integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/adjust">Adjust RevenueCat Integration</a>
-///     *- Parameter adjustID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setAdjustID:(NSString * _Nullable)adjustID;
-/// Subscriber attribute associated with the Appsflyer Id for the user.
-/// Required for the RevenueCat Appsflyer integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/appsflyer">AppsFlyer RevenueCat Integration</a>
-///     *- Parameter appsflyerID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setAppsflyerID:(NSString * _Nullable)appsflyerID;
-/// Subscriber attribute associated with the Facebook SDK Anonymous Id for the user.
-/// Recommended for the RevenueCat Facebook integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/facebook-ads">Facebook Ads RevenueCat Integration</a>
-///     *- Parameter fbAnonymousID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setFBAnonymousID:(NSString * _Nullable)fbAnonymousID;
-/// Subscriber attribute associated with the mParticle Id for the user.
-/// Recommended for the RevenueCat mParticle integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/mparticle">mParticle RevenueCat Integration</a>
-///     *- Parameter mparticleID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setMparticleID:(NSString * _Nullable)mparticleID;
-/// Subscriber attribute associated with the OneSignal Player ID for the user.
-/// Required for the RevenueCat OneSignal integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/onesignal">OneSignal RevenueCat Integration</a>
-///     *- Parameter onesignalID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setOnesignalID:(NSString * _Nullable)onesignalID;
-/// Subscriber attribute associated with the Airship Channel ID for the user.
-/// Required for the RevenueCat Airship integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/airship">AirShip RevenueCat Integration</a>
-///     *- Parameter airshipChannelID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setAirshipChannelID:(NSString * _Nullable)airshipChannelID;
-/// Subscriber attribute associated with the CleverTap ID for the user.
-/// Required for the RevenueCat CleverTap integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/clevertap">CleverTap RevenueCat Integration</a>
-///     *- Parameter cleverTapID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setCleverTapID:(NSString * _Nullable)cleverTapID;
-/// Subscriber attribute associated with the Mixpanel Distinct ID for the user.
-/// Optional for the RevenueCat Mixpanel integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/mixpanel">Mixpanel RevenueCat Integration</a>
-///     *- Parameter mixpanelDistinctID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setMixpanelDistinctID:(NSString * _Nullable)mixpanelDistinctID;
-/// Subscriber attribute associated with the Firebase App Instance ID for the user.
-/// Required for the RevenueCat Firebase integration.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/firebase-integration">Firebase RevenueCat Integration</a>
-///     *- Parameter firebaseAppInstanceID: Empty String or <code>nil</code> will delete the subscriber attribute.
-///   </li>
-/// </ul>
-- (void)setFirebaseAppInstanceID:(NSString * _Nullable)firebaseAppInstanceID;
-/// Subscriber attribute associated with the install media source for the user.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param mediaSource Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setMediaSource:(NSString * _Nullable)mediaSource;
-/// Subscriber attribute associated with the install campaign for the user.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param campaign Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setCampaign:(NSString * _Nullable)campaign;
-/// Subscriber attribute associated with the install ad group for the user
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param adGroup Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setAdGroup:(NSString * _Nullable)adGroup;
-/// Subscriber attribute associated with the install ad for the user
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param installAd Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setAd:(NSString * _Nullable)installAd;
-/// Subscriber attribute associated with the install keyword for the user
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param keyword Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setKeyword:(NSString * _Nullable)keyword;
-/// Subscriber attribute associated with the install ad creative for the user.
-/// <h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
-///   </li>
-/// </ul>
-/// \param creative Empty String or <code>nil</code> will delete the subscriber attribute.
-///
-- (void)setCreative:(NSString * _Nullable)creative;
-@end
-
 /// Enum of supported attribution networks
 typedef SWIFT_ENUM_NAMED(NSInteger, RCAttributionNetwork, "AttributionNetwork", open) {
 /// Apple’s search ads
@@ -492,9 +240,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCCacheFetchPolicy, "CacheFetchPolicy", open
 /// Always fetch the most up-to-date data.
   RCCacheFetchPolicyFetchCurrent = 1,
 /// Returns the cached data if available and not stale, or fetches up-to-date data.
-/// warning:
-/// if the cached data is stale, and fetching up-to-date data fails (if offline, for example)
-/// an error will be returned instead of the outdated cached data.
   RCCacheFetchPolicyNotStaleCachedOrFetched = 2,
 /// Default behavior: returns the cached data if available (even if stale), or fetches up-to-date data.
   RCCacheFetchPolicyCachedOrFetched = 3,
@@ -518,6 +263,7 @@ SWIFT_CLASS("_TtC10RevenueCat25CacheableNetworkOperation")
 @interface CacheableNetworkOperation : NetworkOperation
 @end
 
+@class NSString;
 @class RCConfigurationBuilder;
 
 /// <code>Configuration</code> can be used when configuring the <code>Purchases</code> instance. It is not required to be used, but
@@ -609,6 +355,13 @@ SWIFT_CLASS_NAMED("Builder")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
+
+
+SWIFT_CLASS("_TtC10RevenueCat20CreateAliasOperation")
+@interface CreateAliasOperation : CacheableNetworkOperation
+@end
+
 
 
 @class RCEntitlementInfos;
@@ -874,6 +627,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
   RCUnsupportedError SWIFT_COMPILE_NAME("unsupportedError") = 24,
   RCEmptySubscriberAttributesError SWIFT_COMPILE_NAME("emptySubscriberAttributes") = 25,
   RCProductDiscountMissingIdentifierError SWIFT_COMPILE_NAME("productDiscountMissingIdentifierError") = 26,
+  RCMissingAppUserIDForAliasCreationError SWIFT_COMPILE_NAME("missingAppUserIDForAliasCreationError") = 27,
   RCProductDiscountMissingSubscriptionGroupIdentifierError SWIFT_COMPILE_NAME("productDiscountMissingSubscriptionGroupIdentifierError") = 28,
   RCCustomerInfoError SWIFT_COMPILE_NAME("customerInfoError") = 29,
   RCSystemInfoError SWIFT_COMPILE_NAME("systemInfoError") = 30,
@@ -1452,28 +1206,25 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL verboseLogs;)
 /// Current version of the <code>Purchases</code> framework.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _Nonnull frameworkVersion;)
 + (NSString * _Nonnull)frameworkVersion SWIFT_WARN_UNUSED_RESULT;
-/// <code>Attribution</code> object that is responsible for all explicit attribution APIs
-/// as well as subscriber attributes that RevenueCat offers.
-/// <h4>Example:</h4>
-/// \code
-/// Purchases.shared.attribution.setEmail(“nobody@example.com”)
-///
-/// \endcode<h4>Related Articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber Attribution</a>
-///   </li>
-///   <li>
-///     <code>Attribution</code>
-///   </li>
-/// </ul>
-@property (nonatomic, readonly, strong) RCAttribution * _Nonnull attribution;
 /// Whether transactions should be finished automatically. <code>true</code> by default.
 /// * - Warning: Setting this value to <code>false</code> will prevent the SDK from finishing transactions.
 /// * In this case, you <em>must</em> finish transactions in your app, otherwise they will remain in the queue and
 /// * will turn up every time the app is opened.
 /// * More information on finishing transactions manually <a href="https://rev.cat/finish-transactions">is available here</a>.
 @property (nonatomic) BOOL finishTransactions;
+/// Automatically collect subscriber attributes associated with the device identifiers
+/// <ul>
+///   <li>
+///     <code>$idfa</code>
+///   </li>
+///   <li>
+///     <code>$idfv</code>
+///   </li>
+///   <li>
+///     <code>$ip</code>
+///   </li>
+/// </ul>
+- (void)collectDeviceIdentifiers;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -1561,6 +1312,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 
 
 
+
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
@@ -1597,7 +1349,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 + (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
 @end
-
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -1688,30 +1439,229 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 
 
 
+@class NSData;
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-- (void)collectDeviceIdentifiers SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'collectDeviceIdentifiers' has been renamed to 'attribution.collectDeviceIdentifiers()'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'collectDeviceIdentifiers' has been renamed to 'attribution.collectDeviceIdentifiers()'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'collectDeviceIdentifiers' has been renamed to 'attribution.collectDeviceIdentifiers()'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'collectDeviceIdentifiers' has been renamed to 'attribution.collectDeviceIdentifiers()'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'collectDeviceIdentifiers' has been renamed to 'attribution.collectDeviceIdentifiers()'");
-- (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setAttributes' has been renamed to 'attribution.setAttributes(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setAttributes' has been renamed to 'attribution.setAttributes(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setAttributes' has been renamed to 'attribution.setAttributes(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setAttributes' has been renamed to 'attribution.setAttributes(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setAttributes' has been renamed to 'attribution.setAttributes(_:)'");
-- (void)setEmail:(NSString * _Nullable)email SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setEmail' has been renamed to 'attribution.setEmail(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setEmail' has been renamed to 'attribution.setEmail(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setEmail' has been renamed to 'attribution.setEmail(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setEmail' has been renamed to 'attribution.setEmail(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setEmail' has been renamed to 'attribution.setEmail(_:)'");
-- (void)setPhoneNumber:(NSString * _Nullable)phoneNumber SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setPhoneNumber' has been renamed to 'attribution.setPhoneNumber(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setPhoneNumber' has been renamed to 'attribution.setPhoneNumber(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setPhoneNumber' has been renamed to 'attribution.setPhoneNumber(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setPhoneNumber' has been renamed to 'attribution.setPhoneNumber(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setPhoneNumber' has been renamed to 'attribution.setPhoneNumber(_:)'");
-- (void)setDisplayName:(NSString * _Nullable)displayName SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setDisplayName' has been renamed to 'attribution.setDisplayName(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setDisplayName' has been renamed to 'attribution.setDisplayName(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setDisplayName' has been renamed to 'attribution.setDisplayName(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setDisplayName' has been renamed to 'attribution.setDisplayName(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setDisplayName' has been renamed to 'attribution.setDisplayName(_:)'");
-- (void)setPushToken:(NSData * _Nullable)pushToken SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setPushToken' has been renamed to 'attribution.setPushToken(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setPushToken' has been renamed to 'attribution.setPushToken(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setPushToken' has been renamed to 'attribution.setPushToken(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setPushToken' has been renamed to 'attribution.setPushToken(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setPushToken' has been renamed to 'attribution.setPushToken(_:)'");
-- (void)setPushTokenString:(NSString * _Nullable)pushToken SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setPushTokenString' has been renamed to 'attribution.setPushTokenString(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setPushTokenString' has been renamed to 'attribution.setPushTokenString(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setPushTokenString' has been renamed to 'attribution.setPushTokenString(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setPushTokenString' has been renamed to 'attribution.setPushTokenString(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setPushTokenString' has been renamed to 'attribution.setPushTokenString(_:)'");
-- (void)setAdjustID:(NSString * _Nullable)adjustID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setAdjustID' has been renamed to 'attribution.setAdjustID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setAdjustID' has been renamed to 'attribution.setAdjustID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setAdjustID' has been renamed to 'attribution.setAdjustID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setAdjustID' has been renamed to 'attribution.setAdjustID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setAdjustID' has been renamed to 'attribution.setAdjustID(_:)'");
-- (void)setAppsflyerID:(NSString * _Nullable)appsflyerID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setAppsflyerID' has been renamed to 'attribution.setAppsflyerID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setAppsflyerID' has been renamed to 'attribution.setAppsflyerID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setAppsflyerID' has been renamed to 'attribution.setAppsflyerID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setAppsflyerID' has been renamed to 'attribution.setAppsflyerID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setAppsflyerID' has been renamed to 'attribution.setAppsflyerID(_:)'");
-- (void)setFBAnonymousID:(NSString * _Nullable)fbAnonymousID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setFBAnonymousID' has been renamed to 'attribution.setFBAnonymousID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setFBAnonymousID' has been renamed to 'attribution.setFBAnonymousID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setFBAnonymousID' has been renamed to 'attribution.setFBAnonymousID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setFBAnonymousID' has been renamed to 'attribution.setFBAnonymousID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setFBAnonymousID' has been renamed to 'attribution.setFBAnonymousID(_:)'");
-- (void)setMparticleID:(NSString * _Nullable)mparticleID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setMparticleID' has been renamed to 'attribution.setMparticleID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setMparticleID' has been renamed to 'attribution.setMparticleID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setMparticleID' has been renamed to 'attribution.setMparticleID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setMparticleID' has been renamed to 'attribution.setMparticleID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setMparticleID' has been renamed to 'attribution.setMparticleID(_:)'");
-- (void)setOnesignalID:(NSString * _Nullable)onesignalID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setOnesignalID' has been renamed to 'attribution.setOnesignalID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setOnesignalID' has been renamed to 'attribution.setOnesignalID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setOnesignalID' has been renamed to 'attribution.setOnesignalID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setOnesignalID' has been renamed to 'attribution.setOnesignalID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setOnesignalID' has been renamed to 'attribution.setOnesignalID(_:)'");
-- (void)setAirshipChannelID:(NSString * _Nullable)airshipChannelID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setAirshipChannelID' has been renamed to 'attribution.setAirshipChannelID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setAirshipChannelID' has been renamed to 'attribution.setAirshipChannelID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setAirshipChannelID' has been renamed to 'attribution.setAirshipChannelID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setAirshipChannelID' has been renamed to 'attribution.setAirshipChannelID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setAirshipChannelID' has been renamed to 'attribution.setAirshipChannelID(_:)'");
-- (void)setCleverTapID:(NSString * _Nullable)cleverTapID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setCleverTapID' has been renamed to 'attribution.setCleverTapID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setCleverTapID' has been renamed to 'attribution.setCleverTapID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setCleverTapID' has been renamed to 'attribution.setCleverTapID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setCleverTapID' has been renamed to 'attribution.setCleverTapID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setCleverTapID' has been renamed to 'attribution.setCleverTapID(_:)'");
-- (void)setMixpanelDistinctID:(NSString * _Nullable)mixpanelDistinctID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setMixpanelDistinctID' has been renamed to 'attribution.setMixpanelDistinctID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setMixpanelDistinctID' has been renamed to 'attribution.setMixpanelDistinctID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setMixpanelDistinctID' has been renamed to 'attribution.setMixpanelDistinctID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setMixpanelDistinctID' has been renamed to 'attribution.setMixpanelDistinctID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setMixpanelDistinctID' has been renamed to 'attribution.setMixpanelDistinctID(_:)'");
-- (void)setFirebaseAppInstanceID:(NSString * _Nullable)firebaseAppInstanceID SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setFirebaseAppInstanceID' has been renamed to 'attribution.setFirebaseAppInstanceID(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setFirebaseAppInstanceID' has been renamed to 'attribution.setFirebaseAppInstanceID(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setFirebaseAppInstanceID' has been renamed to 'attribution.setFirebaseAppInstanceID(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setFirebaseAppInstanceID' has been renamed to 'attribution.setFirebaseAppInstanceID(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setFirebaseAppInstanceID' has been renamed to 'attribution.setFirebaseAppInstanceID(_:)'");
-- (void)setMediaSource:(NSString * _Nullable)mediaSource SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setMediaSource' has been renamed to 'attribution.setMediaSource(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setMediaSource' has been renamed to 'attribution.setMediaSource(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setMediaSource' has been renamed to 'attribution.setMediaSource(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setMediaSource' has been renamed to 'attribution.setMediaSource(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setMediaSource' has been renamed to 'attribution.setMediaSource(_:)'");
-- (void)setCampaign:(NSString * _Nullable)campaign SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setCampaign' has been renamed to 'attribution.setCampaign(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setCampaign' has been renamed to 'attribution.setCampaign(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setCampaign' has been renamed to 'attribution.setCampaign(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setCampaign' has been renamed to 'attribution.setCampaign(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setCampaign' has been renamed to 'attribution.setCampaign(_:)'");
-- (void)setAdGroup:(NSString * _Nullable)adGroup SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setAdGroup' has been renamed to 'attribution.setAdGroup(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setAdGroup' has been renamed to 'attribution.setAdGroup(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setAdGroup' has been renamed to 'attribution.setAdGroup(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setAdGroup' has been renamed to 'attribution.setAdGroup(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setAdGroup' has been renamed to 'attribution.setAdGroup(_:)'");
-- (void)setAd:(NSString * _Nullable)installAd SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'");
-- (void)setKeyword:(NSString * _Nullable)keyword SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'");
-- (void)setCreative:(NSString * _Nullable)creative SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'");
+/// Subscriber attributes are useful for storing additional, structured information on a user.
+/// Since attributes are writable using a public key they should not be used for
+/// managing secure or sensitive information such as subscription status, coins, etc.
+/// Key names starting with “$” are reserved names used by RevenueCat. For a full list of key
+/// restrictions refer <a href="https://docs.revenuecat.com/docs/subscriber-attributes">to our guide</a>
+/// \param attributes Map of attributes by key. Set the value as an empty string to delete an attribute.
+///
+- (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
+/// Subscriber attribute associated with the email address for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param email Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setEmail:(NSString * _Nullable)email;
+/// Subscriber attribute associated with the phone number for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param phoneNumber Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setPhoneNumber:(NSString * _Nullable)phoneNumber;
+/// Subscriber attribute associated with the display name for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param displayName Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setDisplayName:(NSString * _Nullable)displayName;
+/// Subscriber attribute associated with the push token for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>Purchases/setPushTokenString(_:)</code>
+///   </li>
+/// </ul>
+/// \param pushToken <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setPushToken:(NSData * _Nullable)pushToken;
+/// Subscriber attribute associated with the push token for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>Purchases/setPushToken(_:)</code>
+///   </li>
+/// </ul>
+/// \param pushToken <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setPushTokenString:(NSString * _Nullable)pushToken;
+/// Subscriber attribute associated with the Adjust Id for the user.
+/// Required for the RevenueCat Adjust integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/adjust">Adjust RevenueCat Integration</a>
+///     *- Parameter adjustID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setAdjustID:(NSString * _Nullable)adjustID;
+/// Subscriber attribute associated with the Appsflyer Id for the user.
+/// Required for the RevenueCat Appsflyer integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/appsflyer">AppsFlyer RevenueCat Integration</a>
+///     *- Parameter appsflyerID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setAppsflyerID:(NSString * _Nullable)appsflyerID;
+/// Subscriber attribute associated with the Facebook SDK Anonymous Id for the user.
+/// Recommended for the RevenueCat Facebook integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/facebook-ads">Facebook Ads RevenueCat Integration</a>
+///     *- Parameter fbAnonymousID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setFBAnonymousID:(NSString * _Nullable)fbAnonymousID;
+/// Subscriber attribute associated with the mParticle Id for the user.
+/// Recommended for the RevenueCat mParticle integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/mparticle">mParticle RevenueCat Integration</a>
+///     *- Parameter mparticleID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setMparticleID:(NSString * _Nullable)mparticleID;
+/// Subscriber attribute associated with the OneSignal Player ID for the user.
+/// Required for the RevenueCat OneSignal integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/onesignal">OneSignal RevenueCat Integration</a>
+///     *- Parameter onesignalID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setOnesignalID:(NSString * _Nullable)onesignalID;
+/// Subscriber attribute associated with the Airship Channel ID for the user.
+/// Required for the RevenueCat Airship integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/airship">AirShip RevenueCat Integration</a>
+///     *- Parameter airshipChannelID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setAirshipChannelID:(NSString * _Nullable)airshipChannelID;
+/// Subscriber attribute associated with the CleverTap ID for the user.
+/// Required for the RevenueCat CleverTap integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/clevertap">CleverTap RevenueCat Integration</a>
+///     *- Parameter cleverTapID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setCleverTapID:(NSString * _Nullable)cleverTapID;
+/// Subscriber attribute associated with the Mixpanel Distinct ID for the user.
+/// Optional for the RevenueCat Mixpanel integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/mixpanel">Mixpanel RevenueCat Integration</a>
+///     *- Parameter mixpanelDistinctID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setMixpanelDistinctID:(NSString * _Nullable)mixpanelDistinctID;
+/// Subscriber attribute associated with the Firebase App Instance ID for the user.
+/// Required for the RevenueCat Firebase integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/firebase-integration">Firebase RevenueCat Integration</a>
+///     *- Parameter firebaseAppInstanceID: Empty String or <code>nil</code> will delete the subscriber attribute.
+///   </li>
+/// </ul>
+- (void)setFirebaseAppInstanceID:(NSString * _Nullable)firebaseAppInstanceID;
+/// Subscriber attribute associated with the install media source for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param mediaSource Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setMediaSource:(NSString * _Nullable)mediaSource;
+/// Subscriber attribute associated with the install campaign for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param campaign Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setCampaign:(NSString * _Nullable)campaign;
+/// Subscriber attribute associated with the install ad group for the user
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param adGroup Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setAdGroup:(NSString * _Nullable)adGroup;
+/// Subscriber attribute associated with the install ad for the user
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param installAd Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setAd:(NSString * _Nullable)installAd;
+/// Subscriber attribute associated with the install keyword for the user
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param keyword Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setKeyword:(NSString * _Nullable)keyword;
+/// Subscriber attribute associated with the install ad creative for the user.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/subscriber-attributes">Subscriber attributes</a>
+///   </li>
+/// </ul>
+/// \param creative Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setCreative:(NSString * _Nullable)creative;
 @end
 
 @class SKPaymentDiscount;
@@ -2303,6 +2253,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 @property (nonatomic, readonly, copy) NSLocale * _Nonnull priceLocale SWIFT_AVAILABILITY(macos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(watchos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(tvos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(ios,unavailable,message="Use localizedPriceString instead");
 @end
 
+
+@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
+- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
+/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
+@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
+@end
+
 @class NSDecimalNumber;
 
 @interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
@@ -2327,13 +2284,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryPrice</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
-@end
-
-
-@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
-- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
-/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
-@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
 @end
 
 enum RCPaymentMode : NSInteger;
