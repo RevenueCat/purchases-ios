@@ -13,19 +13,22 @@ class IdentityManagerTests: TestCase {
     private var mockDeviceCache: MockDeviceCache!
     private let mockBackend = MockBackend()
     private var mockCustomerInfoManager: MockCustomerInfoManager!
+    private var mockAttributeSyncing: MockAttributeSyncing!
 
     private var mockIdentityAPI: MockIdentityAPI!
     private var mockCustomerInfo: CustomerInfo!
 
     private func create(appUserID: String?) -> IdentityManager {
-        return IdentityManager(deviceCache: mockDeviceCache,
-                               backend: mockBackend,
-                               customerInfoManager: mockCustomerInfoManager,
+        return IdentityManager(deviceCache: self.mockDeviceCache,
+                               backend: self.mockBackend,
+                               customerInfoManager: self.mockCustomerInfoManager,
+                               attributeSyncing: self.mockAttributeSyncing,
                                appUserID: appUserID)
     }
 
     override func setUpWithError() throws {
         try super.setUpWithError()
+
         self.mockIdentityAPI = try XCTUnwrap(mockBackend.identity as? MockIdentityAPI)
         self.mockCustomerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
@@ -43,6 +46,7 @@ class IdentityManagerTests: TestCase {
                                                                deviceCache: self.mockDeviceCache,
                                                                backend: MockBackend(),
                                                                systemInfo: systemInfo)
+        self.mockAttributeSyncing = MockAttributeSyncing()
     }
 
     func testConfigureWithAnonymousUserIDGeneratesAnAppUserID() {
@@ -289,6 +293,22 @@ class IdentityManagerTests: TestCase {
 
         expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == true
         expect(self.mockDeviceCache.invokedClearLatestNetworkAndAdvertisingIdsSent) == true
+    }
+
+    func testLogInSyncsAttributes() {
+        let manager = self.create(appUserID: "old_user")
+
+        manager.logIn(appUserID: "nacho") { _ in }
+
+        expect(self.mockAttributeSyncing.invokedSyncAttributesUserIDs) == ["old_user"]
+    }
+
+    func testLogOutSyncsAttributes() {
+        let manager = self.create(appUserID: "nacho")
+
+        manager.logOut { _ in }
+
+        expect(self.mockAttributeSyncing.invokedSyncAttributesUserIDs) == ["nacho"]
     }
 
 }

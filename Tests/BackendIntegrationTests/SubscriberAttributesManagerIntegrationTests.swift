@@ -38,7 +38,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     // MARK: -
 
     func testNothingToSync() {
-        expect(Purchases.shared.syncSubscriberAttributesIfNeeded()) == 0
+        expect(Purchases.shared.syncSubscriberAttributes()) == 0
     }
 
     func testSyncOneAttribute() async throws {
@@ -160,7 +160,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
         ])
     }
 
-    func testSetAttributesForMultipleUsers() async throws {
+    func testLogInPostsUnsyncedAttributes() async throws {
         let user1 = UUID().uuidString
         let name1 = "User 1"
         let user2 = UUID().uuidString
@@ -170,13 +170,41 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
         self.attribution.setDisplayName(name1)
 
         _ = try await Purchases.shared.logIn(user2)
+        // Log in forced previous unsynced attributes to be synced
+        self.verifySyncedAttribute(user1, [reserved(.displayName): name1])
+
         self.attribution.setDisplayName(name2)
 
         let errors = await self.syncAttributes()
-        self.verifyAttributesSyncedWithNoErrors(errors, 2)
-
-        self.verifySyncedAttribute(user1, [reserved(.displayName): name1])
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(user2, [reserved(.displayName): name2])
+    }
+
+    func testLogOutPostsUnsyncedAttributes() async throws {
+        let user = UUID().uuidString
+        let name = "User 1"
+
+        _ = try await Purchases.shared.logIn(user)
+        expect(Purchases.shared.isAnonymous) == false
+
+        self.attribution.setDisplayName(name)
+
+        _ = try await Purchases.shared.logOut()
+        expect(Purchases.shared.isAnonymous) == true
+
+        // Log out should post unsynced attributes
+        self.verifySyncedAttribute(user, [reserved(.displayName): name])
+
+        let anonUser = Purchases.shared.appUserID
+        let anonName = "User 2"
+
+        expect(anonUser) != user
+
+        self.attribution.setDisplayName(anonName)
+
+        let errors = await self.syncAttributes()
+        self.verifyAttributesSyncedWithNoErrors(errors, 1)
+        self.verifySyncedAttribute(anonUser, [reserved(.displayName): anonName])
     }
 
 }
@@ -202,7 +230,7 @@ private extension SubscriberAttributesManagerIntegrationTests {
         return await withCheckedContinuation { continuation in
             var errors: [Error?] = []
 
-            Purchases.shared.syncSubscriberAttributesIfNeeded(
+            Purchases.shared.syncSubscriberAttributes(
                 syncedAttribute: { errors.append($0) },
                 completion: { continuation.resume(returning: errors) }
             )

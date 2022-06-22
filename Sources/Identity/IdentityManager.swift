@@ -20,11 +20,17 @@ protocol CurrentUserProvider {
 
 }
 
+protocol AttributeSyncing {
+
+    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping (() -> Void))
+}
+
 class IdentityManager: CurrentUserProvider {
 
     private let deviceCache: DeviceCache
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
+    private let attributeSyncing: AttributeSyncing
 
     internal static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
@@ -32,11 +38,13 @@ class IdentityManager: CurrentUserProvider {
         deviceCache: DeviceCache,
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
+        attributeSyncing: AttributeSyncing,
         appUserID: String?
     ) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.customerInfoManager = customerInfoManager
+        self.attributeSyncing = attributeSyncing
 
         if appUserID?.isEmpty == true {
             Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
@@ -72,6 +80,26 @@ class IdentityManager: CurrentUserProvider {
     }
 
     func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
+            self.performLogIn(appUserID: appUserID, completion: completion)
+        }
+    }
+
+    func logOut(completion: @escaping (Error?) -> Void) {
+        self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
+            self.performLogOut(completion: completion)
+        }
+    }
+
+    static func generateRandomID() -> String {
+        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
+    }
+
+}
+
+private extension IdentityManager {
+
+    func performLogIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_empty_appuserid)
@@ -90,7 +118,7 @@ class IdentityManager: CurrentUserProvider {
             return
         }
 
-        backend.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
+        self.backend.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
                 self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
@@ -100,10 +128,10 @@ class IdentityManager: CurrentUserProvider {
         }
     }
 
-    func logOut(completion: (Error?) -> Void) {
+    func performLogOut(completion: (Error?) -> Void) {
         Logger.info(Strings.identity.log_out_called_for_user)
 
-        if currentUserIsAnonymous {
+        if self.currentUserIsAnonymous {
             completion(ErrorUtils.logOutAnonymousUserError())
             return
         }
@@ -111,10 +139,6 @@ class IdentityManager: CurrentUserProvider {
         self.resetUserIDCache()
         Logger.info(Strings.identity.log_out_success)
         completion(nil)
-    }
-
-    static func generateRandomID() -> String {
-        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
 }
 
