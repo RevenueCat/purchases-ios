@@ -374,7 +374,7 @@ extension Attribution {
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
     @discardableResult
-    func syncSubscriberAttributesIfNeeded(
+    func syncSubscriberAttributes(
         syncedAttribute: ((Error?) -> Void)? = nil,
         completion: (() -> Void)? = nil
     ) -> Int {

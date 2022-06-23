@@ -292,16 +292,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                       deviceCache: deviceCache,
                                                       backend: backend,
                                                       systemInfo: systemInfo)
-        let identityManager = IdentityManager(deviceCache: deviceCache,
-                                              backend: backend,
-                                              customerInfoManager: customerInfoManager,
-                                              appUserID: appUserID)
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
                                                                       deviceCache: deviceCache,
                                                                       operationDispatcher: operationDispatcher,
                                                                       attributionFetcher: attributionFetcher,
                                                                       attributionDataMigrator: attributionDataMigrator)
+        let identityManager = IdentityManager(deviceCache: deviceCache,
+                                              backend: backend,
+                                              customerInfoManager: customerInfoManager,
+                                              attributeSyncing: subscriberAttributesManager,
+                                              appUserID: appUserID)
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
@@ -541,7 +542,7 @@ public extension Purchases {
      */
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
-        identityManager.logIn(appUserID: appUserID) { result in
+        self.identityManager.logIn(appUserID: appUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error)
             }
@@ -601,7 +602,7 @@ public extension Purchases {
      * - ``Purchases/appUserID``
      */
     @objc func logOut(completion: ((CustomerInfo?, Error?) -> Void)?) {
-        identityManager.logOut { error in
+        self.identityManager.logOut { error in
             guard error == nil else {
                 if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
@@ -1285,10 +1286,12 @@ public extension Purchases {
 
     /**
      * Use this function to open the manage subscriptions page.
-
-     * - Parameter completion: A completion block that is called when the modal is closed.
-     * If it was not successful, there will be an `Error`.
-
+     *
+     * - Parameter completion: A completion block that will be called when the modal is opened,
+     * not when it's actually closed. This is because of an undocumented change in StoreKit's behavior
+     * between iOS 15.0 and 15.2, where 15.0 would return when the modal was closed, and 15.2 returns
+     * when the modal is opened.
+     *
      * If the manage subscriptions page can't be opened, the ``CustomerInfo/managementURL`` in
      * the ``CustomerInfo`` will be opened. If ``CustomerInfo/managementURL`` is not available,
      * the App Store's subscription management section will be opened.
@@ -1608,7 +1611,7 @@ internal extension Purchases {
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
     @discardableResult
-    func syncSubscriberAttributesIfNeeded(
+    func syncSubscriberAttributes(
         syncedAttribute: ((Error?) -> Void)? = nil,
         completion: (() -> Void)? = nil
     ) -> Int {
@@ -1627,6 +1630,10 @@ internal extension Purchases {
         return self.productsManager.requestTimeout
     }
 
+    var isSandbox: Bool {
+        return self.systemInfo.isSandbox
+    }
+
 }
 
 // MARK: Private
@@ -1634,8 +1641,8 @@ private extension Purchases {
 
     @objc func applicationDidBecomeActive(notification: Notification) {
         Logger.debug(Strings.configure.application_active)
-        updateAllCachesIfNeeded()
-        dispatchSyncSubscriberAttributesIfNeeded()
+        self.updateAllCachesIfNeeded()
+        self.dispatchSyncSubscriberAttributes()
 
 #if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
@@ -1646,7 +1653,7 @@ private extension Purchases {
     }
 
     @objc func applicationWillResignActive(notification: Notification) {
-        dispatchSyncSubscriberAttributesIfNeeded()
+        self.dispatchSyncSubscriberAttributes()
     }
 
     func subscribeToAppStateNotifications() {
@@ -1659,9 +1666,9 @@ private extension Purchases {
                                        name: SystemInfo.applicationWillResignActiveNotification, object: nil)
     }
 
-    func dispatchSyncSubscriberAttributesIfNeeded() {
+    func dispatchSyncSubscriberAttributes() {
         operationDispatcher.dispatchOnWorkerThread {
-            self.syncSubscriberAttributesIfNeeded()
+            self.syncSubscriberAttributes()
         }
     }
 

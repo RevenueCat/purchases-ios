@@ -110,7 +110,9 @@ class SystemInfo {
         self.operationDispatcher = operationDispatcher
         self.storeKit2Setting = storeKit2Setting
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
-        self.sandboxEnvironmentDetector = DefaultSandboxEnvironmentDetector(bundle: bundle)
+        self.sandboxEnvironmentDetector = bundle === Bundle.main
+            ? BundleSandboxEnvironmentDetector.default
+            : BundleSandboxEnvironmentDetector(bundle: bundle)
     }
 
     func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {

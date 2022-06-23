@@ -21,7 +21,7 @@ protocol SandboxEnvironmentDetector {
 }
 
 /// ``SandboxEnvironmentDetector`` that uses a `Bundle` to detect the environment
-final class DefaultSandboxEnvironmentDetector: SandboxEnvironmentDetector {
+final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
     private let bundle: Bundle
 
@@ -36,5 +36,12 @@ final class DefaultSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
         return url.path.contains("sandboxReceipt")
     }
+
+    #if DEBUG
+    // Mutable in tests so it can be overriden
+    static var `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+    #else
+    static let `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+    #endif
 
 }

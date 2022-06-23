@@ -232,6 +232,17 @@ class SubscriberAttributesManager {
             network: network.rawValue)
         setAttributes(convertedAttribution, appUserID: appUserID)
     }
+
+}
+
+extension SubscriberAttributesManager: AttributeSyncing {
+
+    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping (() -> Void)) {
+        self.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
+                                       syncedAttribute: nil,
+                                       completion: completion)
+    }
+
 }
 
 private extension SubscriberAttributesManager {
