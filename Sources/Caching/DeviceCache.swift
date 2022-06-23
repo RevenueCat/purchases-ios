@@ -37,7 +37,7 @@ class DeviceCache {
     /// cleared from under the SDK
     private var appUserIDHasBeenSet: Bool = false
 
-    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
                      userDefaults: UserDefaults = UserDefaults.standard) {
         self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                   userDefaults: userDefaults,
