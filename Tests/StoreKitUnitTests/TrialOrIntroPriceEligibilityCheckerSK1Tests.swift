@@ -64,7 +64,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
         expect(self.receiptFetcher.receiptDataCalled) == false
 
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { _ in }
+        self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([]) { _ in }
 
         expect(self.receiptFetcher.receiptDataCalled) == true
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .never
