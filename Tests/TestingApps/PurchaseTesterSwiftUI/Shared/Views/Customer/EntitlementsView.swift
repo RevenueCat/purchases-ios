@@ -33,18 +33,24 @@ struct EntitlementsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                Section("Active Entitlements") {
+                Section(header: Text("Active Entitlements").bold()) {
                     ForEach(self.active, id: \.self) { id in
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(id)
+                            HStack {
+                                Text(id)
+                                Spacer()
+                            }
                         }
                     }
                 }
                 
-                Section("Inactive Entitlements") {
+                Section(header: Text("Inactive Entitlements").bold()) {
                     ForEach(self.inactive, id: \.self) { id in
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(id)
+                            HStack {
+                                Text(id)
+                                Spacer()
+                            }
                         }
                     }
                 }

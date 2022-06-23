@@ -37,7 +37,7 @@ struct HomeView: View {
                 
                 Section("Functions") {
                     Button {
-                        Task {
+                        Task<Void, Never> {
                             do {
                                 let customerInfo = try await Purchases.shared.restorePurchases()
                                 print("🚀 Info 💁‍♂️ - Customer Info: \(customerInfo)")
@@ -50,7 +50,7 @@ struct HomeView: View {
                     }
                     
                     Button {
-                        Task {
+                        Task<Void, Never> {
                             do {
                                 let customerInfo = try await Purchases.shared.syncPurchases()
                                 print("🚀 Info 💁‍♂️ - Customer Info: \(customerInfo)")
@@ -69,7 +69,7 @@ struct HomeView: View {
                     }
                     
                     Button {
-                        Task {
+                        Task<Void, Never> {
                             do {
                                 try await Purchases.shared.showManageSubscriptions()
                             } catch {
@@ -81,8 +81,12 @@ struct HomeView: View {
                     }
                     
                     Button {
-                        Task {
-                            try await Purchases.shared.beginRefundRequestForActiveEntitlement()
+                        Task<Void, Never> {
+                            do {
+                                try await Purchases.shared.beginRefundRequestForActiveEntitlement()
+                            } catch {
+                                print("🚀 Info 💁‍♂️ - Error: \(error)")
+                            }
                         }
                     } label: {
                         Text("Begin Refund For Active Entitlement")
@@ -90,11 +94,12 @@ struct HomeView: View {
                 }
             }
                 .padding()
-                .onAppear {
-                    fetchData()
+                .task {
+                    await self.fetchData()
                 }
 
-        }.navigationTitle("PurchaseTester")
+        }
+        .navigationTitle("PurchaseTester")
         .textFieldAlert(isShowing: self.$showingAlert, title: "App User ID", fields: [("User ID", "ID of your user", self.$newAppUserID)]) {
             guard !self.newAppUserID.isEmpty else {
                 return
@@ -112,13 +117,14 @@ struct HomeView: View {
         }
     }
     
-    private func fetchData() {
-        Purchases.shared.getOfferings { offerings, error in
-            if let offerings = offerings {
-                self.offerings = Array(offerings.all.values).sorted(by: { a, b in
-                    return b.identifier > a.identifier
-                })
-            }
+    private func fetchData() async {
+        do {
+            let offerings = try await Purchases.shared.offerings()
+            self.offerings = Array(offerings.all.values).sorted(by: { a, b in
+                return b.identifier > a.identifier
+            })
+        } catch {
+            print("🚀 Info 💁‍♂️ - Error: \(error)")
         }
     }
     
@@ -145,7 +151,7 @@ private struct CustomerInfoHeaderView: View {
 
     let completion: Completion
     
-    internal init(completion: @escaping Completion) {
+    init(completion: @escaping Completion) {
         self.completion = completion
     }
     
@@ -162,7 +168,7 @@ private struct CustomerInfoHeaderView: View {
             return []
         }
         return Array(customerInfo.entitlements.all.values)
-            .filter({$0.isActive})
+            .filter { $0.isActive }
     }
     
     var body: some View {

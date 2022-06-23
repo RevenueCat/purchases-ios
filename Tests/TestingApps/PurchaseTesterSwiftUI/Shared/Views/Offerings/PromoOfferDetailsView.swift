@@ -10,9 +10,9 @@ import SwiftUI
 import RevenueCat
 
 struct PromoOfferDetailsView: View {
-    let package: RevenueCat.Package
+    let package: Package
     
-    @State var eligibility: [RevenueCat.StoreProductDiscount: RevenueCat.PromotionalOffer?]? = nil
+    @State private var eligibility: [StoreProductDiscount: PromotionalOffer?]? = nil
     
     private func price(_ discount: StoreProductDiscount) -> String {
         return "\(discount.price)"
@@ -26,6 +26,8 @@ struct PromoOfferDetailsView: View {
             return "pay up front"
         case .freeTrial:
             return "free trial"
+        @unknown default:
+            fatalError()
         }
     }
     
@@ -39,6 +41,8 @@ struct PromoOfferDetailsView: View {
             return "\(discount.subscriptionPeriod.value) month(s)"
         case .year:
             return "\(discount.subscriptionPeriod.value) year(s)"
+        @unknown default:
+            fatalError()
         }
     }
     
@@ -59,7 +63,7 @@ struct PromoOfferDetailsView: View {
                 }
             }
             
-            var temp = [RevenueCat.StoreProductDiscount: RevenueCat.PromotionalOffer]()
+            var temp = [StoreProductDiscount: PromotionalOffer]()
             
             for await pair in group {
                 temp[pair.0] = pair.1
@@ -70,12 +74,7 @@ struct PromoOfferDetailsView: View {
     }
     
     func isEligible(_ discount: StoreProductDiscount) -> Bool? {
-        let temp = self.eligibility ?? [:]
-        if let _ = temp[discount] {
-            return true
-        } else {
-            return nil
-        }
+        return self.eligibility?[discount] != nil
     }
     
     var body: some View {
@@ -103,10 +102,8 @@ struct PromoOfferDetailsView: View {
                         }
                 }
             }
-        }.onAppear {
-            Task {
-                await checkEligibility(storeProduct: package.storeProduct)
-            }
+        }.task {
+            await checkEligibility(storeProduct: package.storeProduct)
         }
     }
     

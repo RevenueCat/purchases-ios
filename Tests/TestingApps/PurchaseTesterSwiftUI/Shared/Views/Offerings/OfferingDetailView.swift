@@ -25,29 +25,6 @@ struct OfferingDetailView: View {
     struct PackageItem: View {
         let package: RevenueCat.Package
         
-        var packageType: String {
-            switch package.packageType {
-            case .unknown:
-                return "unknown"
-            case .custom:
-                return "custom"
-            case .lifetime:
-                return "lifetime"
-            case .annual:
-                return "annual"
-            case .sixMonth:
-                return "six month"
-            case .threeMonth:
-                return "three month"
-            case .twoMonth:
-                return "two month"
-            case .monthly:
-                return "monthly"
-            case .weekly:
-                return "weekly"
-            }
-        }
-        
         @State private var isEligible: Bool? = nil
         
         func checkIntroEligibility() async {
@@ -56,14 +33,9 @@ struct OfferingDetailView: View {
             }
             
             let productIdentifier = package.storeProduct.productIdentifier
-            let results = await Purchases.shared.checkTrialOrIntroDiscountEligibility([productIdentifier])
-            
-            guard let result = results[productIdentifier] else {
-                self.isEligible = false
-                return
-            }
-            
-            self.isEligible = result.status == .eligible
+            let results = await Purchases.shared.checkTrialOrIntroDiscountEligibility(productIdentifiers: [productIdentifier])
+
+            self.isEligible = results[productIdentifier]?.status == .eligible
         }
         
         var body: some View {
@@ -74,7 +46,7 @@ struct OfferingDetailView: View {
                         Text("**Desc:** \(package.storeProduct.localizedDescription)")
                         Text("**Pkg Id:** \(package.identifier)")
                         Text("**Sub Group:** \(package.storeProduct.subscriptionGroupIdentifier ?? "-")")
-                        Text("**Package type:** \(packageType)")
+                        Text("**Package type:** \(package.display)")
                         
                         
                         
@@ -124,10 +96,8 @@ struct OfferingDetailView: View {
                 }
 
 
-            }.onAppear {
-                Task {
-                    await self.checkIntroEligibility()
-                }
+            }.task {
+                await self.checkIntroEligibility()
             }
         }
         

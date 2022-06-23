@@ -11,12 +11,8 @@ import RevenueCat
 
 @main
 struct PurchaseTesterApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var revenueCatCustomerData = RevenueCatCustomerData()
-
-    init() {
-        Purchases.logLevel = .debug
-        Purchases.configure(withAPIKey: Constants.apiKey)
-    }
     
     var body: some Scene {
         WindowGroup {
@@ -32,7 +28,18 @@ struct PurchaseTesterApp: App {
     }
 }
 
-class AppDelegate: NSObject {
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+
+        Purchases.logLevel = .debug
+        Purchases.configure(with: Configuration
+            .builder(withAPIKey: Constants.apiKey)
+            .with(usesStoreKit2IfAvailable: true)
+            .build())
+        Purchases.shared.delegate = self
+
+        return true
+    }
 }
 
 extension AppDelegate: PurchasesDelegate {
@@ -45,8 +52,10 @@ extension AppDelegate: PurchasesDelegate {
 }
 
 class RevenueCatCustomerData: ObservableObject {
+
     @Published var appUserID: String? = nil
     @Published var customerInfo: RevenueCat.CustomerInfo? = nil
+
 }
 
 extension RevenueCat.StoreProduct: Identifiable {}
