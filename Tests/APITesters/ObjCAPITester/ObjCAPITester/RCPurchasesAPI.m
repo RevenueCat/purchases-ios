@@ -16,7 +16,6 @@ bool canI;
 NSString *version;
 
 BOOL automaticAppleSearchAdsAttributionCollection;
-BOOL automaticAdServicesAttributionTokenCollection;
 BOOL debugLogsEnabled;
 RCLogLevel logLevel;
 NSURL *proxyURL;

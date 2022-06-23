@@ -94,6 +94,7 @@ class Backend {
               completion: CustomerAPI.SimpleResponseHandler?) {
         self.customer.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
+
 }
 
 extension Backend {
