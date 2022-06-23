@@ -349,6 +349,8 @@
 		A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A56C2E012819C33500995421 /* BackendPostAdServicesTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */; };
+		A56DFDE428652CFC00EF2E32 /* PostAttributionDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDE328652CFC00EF2E32 /* PostAttributionDataOperation.swift */; };
+		A56DFDE828652D8300EF2E32 /* AfficheClientProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDE728652D8300EF2E32 /* AfficheClientProxy.swift */; };
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
 		A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B6CDD5280F3843007629D5 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */; };
@@ -828,6 +830,8 @@
 		A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBeginRefundRequestHelper.swift; sourceTree = "<group>"; };
 		A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelperTests.swift; sourceTree = "<group>"; };
 		A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostAdServicesTokenTests.swift; sourceTree = "<group>"; };
+		A56DFDE328652CFC00EF2E32 /* PostAttributionDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAttributionDataOperation.swift; sourceTree = "<group>"; };
+		A56DFDE728652D8300EF2E32 /* AfficheClientProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AfficheClientProxy.swift; sourceTree = "<group>"; };
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
 		A5B6CDD5280F3843007629D5 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/AdServices.framework; sourceTree = DEVELOPER_DIR; };
 		A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
@@ -1785,6 +1789,7 @@
 				B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */,
 				B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */,
 				A55D5D65282ECCC100FA7623 /* PostAdServicesTokenOperation.swift */,
+				A56DFDE328652CFC00EF2E32 /* PostAttributionDataOperation.swift */,
 			);
 			path = Operations;
 			sourceTree = "<group>";
@@ -1887,6 +1892,7 @@
 				B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */,
 				F5BE44422698581100254A30 /* AttributionTypeFactory.swift */,
 				F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */,
+				A56DFDE728652D8300EF2E32 /* AfficheClientProxy.swift */,
 			);
 			path = Attribution;
 			sourceTree = "<group>";
@@ -2382,6 +2388,7 @@
 				B34605CF279A6E380031CA74 /* GetOfferingsOperation.swift in Sources */,
 				2DDF41AC24F6F37C005BC22D /* ASN1Container.swift in Sources */,
 				9A65E07B2591977500DE00B0 /* NetworkStrings.swift in Sources */,
+				A56DFDE828652D8300EF2E32 /* AfficheClientProxy.swift in Sources */,
 				F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */,
 				F5714EAC26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift in Sources */,
 				F5BE424026962ACF00254A30 /* ReceiptRefreshPolicy.swift in Sources */,
@@ -2461,6 +2468,7 @@
 				5766AA56283D4C5400FA6091 /* IgnoreHashable.swift in Sources */,
 				5766C622282DAA700067D886 /* GetIntroEligibilityResponse.swift in Sources */,
 				35E840CC270FB70D00899AE2 /* ManageSubscriptionsHelper.swift in Sources */,
+				A56DFDE428652CFC00EF2E32 /* PostAttributionDataOperation.swift in Sources */,
 				6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */,
 				B34605BD279A6E380031CA74 /* CallbackCacheStatus.swift in Sources */,
 				42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */,

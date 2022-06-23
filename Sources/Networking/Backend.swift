@@ -89,6 +89,16 @@ class Backend {
                            completion: completion)
     }
 
+    func post(attributionData: [String: Any],
+              network: AttributionNetwork,
+              appUserID: String,
+              completion: CustomerAPI.SimpleResponseHandler?) {
+        self.customer.post(attributionData: attributionData,
+                           network: network,
+                           appUserID: appUserID,
+                           completion: completion)
+    }
+
     func post(subscriberAttributes: SubscriberAttribute.Dictionary,
               appUserID: String,
               completion: CustomerAPI.SimpleResponseHandler?) {
