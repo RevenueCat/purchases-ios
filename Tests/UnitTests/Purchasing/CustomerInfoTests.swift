@@ -111,11 +111,25 @@ class BasicCustomerInfoTests: TestCase {
         expect(latestExpiration) == self.customerInfo.expirationDate(forProductIdentifier: "onemonth_freetrial")
     }
 
-    func testParsesOtherPurchases() {
-        let nonConsumables = self.customerInfo.nonSubscriptionTransactions
-
+    func testnonSubscriptions() throws {
+        let nonConsumables = self.customerInfo.nonSubscriptions
         expect(nonConsumables).to(haveCount(1))
-        expect(nonConsumables.first?.productIdentifier) == "onetime_purchase"
+
+        let transaction = try XCTUnwrap(nonConsumables.first)
+        expect(transaction.productIdentifier) == "onetime_purchase"
+        expect(transaction.purchaseDate) == ISO8601DateFormatter.default.date(from: "1990-08-30T02:40:36Z")
+        expect(transaction.transactionIdentifier) == "d6c007ba74"
+    }
+
+    @available(*, deprecated) // Ignore deprecation warnings
+    func testNonSubscriptionTransactions() throws {
+        let nonConsumables = self.customerInfo.nonSubscriptionTransactions
+        expect(nonConsumables).to(haveCount(1))
+
+        let transaction = try XCTUnwrap(nonConsumables.first)
+        expect(transaction.productIdentifier) == "onetime_purchase"
+        expect(transaction.purchaseDate) == ISO8601DateFormatter.default.date(from: "1990-08-30T02:40:36Z")
+        expect(transaction.transactionIdentifier) == "d6c007ba74"
     }
 
     @available(*, deprecated) // Ignore deprecation warnings

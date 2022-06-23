@@ -21,7 +21,7 @@ func checkCustomerInfoAPI() {
     let appis: Set<String> = customerInfo.allPurchasedProductIdentifiers
     let led: Date? = customerInfo.latestExpirationDate
 
-    let nst: [StoreTransaction] = customerInfo.nonSubscriptionTransactions
+    let nst: [NonSubscriptionTransaction] = customerInfo.nonSubscriptions
     let oav: String? = customerInfo.originalApplicationVersion
     let opd: Date? = customerInfo.originalPurchaseDate
     let rDate: Date? = customerInfo.requestDate
@@ -56,4 +56,5 @@ func checkCacheFetchPolicyEnum(_ policy: CacheFetchPolicy) {
 @available(*, deprecated) // Ignore deprecation warnings
 func checkDeprecatedAPI() {
     let _: Set<String> = customerInfo.nonConsumablePurchases
+    let _: [StoreTransaction] = customerInfo.nonSubscriptionTransactions
 }
