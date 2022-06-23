@@ -74,6 +74,14 @@ Replace version number in project
 
 ## iOS
 
+### ios bump_ios
+
+```sh
+[bundle exec] fastlane ios bump_ios
+```
+
+Bump version, update swift header, edit changelog, and create pull request
+
 ### ios setup_dev
 
 ```sh

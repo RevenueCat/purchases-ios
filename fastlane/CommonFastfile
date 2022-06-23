@@ -108,7 +108,6 @@ lane :github_changelog do |options|
   last_version = sh("git describe --tags --abbrev=0").strip
   old_version = options[:old_version] || last_version
   api_token = ENV["GITHUB_TOKEN"]
-  UI.user_error!("missing GITHUB_TOKEN env") unless api_token
 
   UI.important("Auto-generating changelog since #{old_version}")
 
@@ -212,9 +211,7 @@ end
 private_lane :commit_updated_files_and_push do |options|
   release_version = options[:version]
   UI.user_error!("missing version") unless release_version
-  sh("git add -u")
-  sh("git commit -m 'Version bump for #{release_version}'")
-  push_to_git_remote
+  commmit_changes_and_push_current_branch("Version bump for #{release_version}")
 end
 
 desc "Replace version number in project"
@@ -263,6 +260,12 @@ def replace_in(previous_text, new_text, path, allow_empty=false)
   sed_regex = 's|' + previous_text.sub(".", "\\.") + '|' + new_text + '|'
   backup_extension = '.bck'
   sh("sed", '-i', backup_extension, sed_regex, path)
+end
+
+def commmit_changes_and_push_current_branch(commit_message)
+  sh("git add -u")
+  sh("git commit -m '#{commit_message}'")
+  push_to_git_remote
 end
 
 def current_version_number
