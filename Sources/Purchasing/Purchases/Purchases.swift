@@ -473,7 +473,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeKitWrapper.delegate = nil
         customerInfoObservationDisposable?()
         privateDelegate = nil
-        Self.automaticAppleSearchAdsAttributionCollection = false
         Self.proxyURL = nil
     }
 
