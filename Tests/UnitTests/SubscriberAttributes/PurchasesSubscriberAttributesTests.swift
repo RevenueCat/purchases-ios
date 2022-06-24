@@ -134,7 +134,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
         super.tearDown()
     }
 
-    func setupPurchases() {
+    func setupPurchases(automaticCollection: Bool = false) {
+        Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.mockIdentityManager.mockIsAnonymous = false
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
                                                           storeKitWrapper: mockStoreKitWrapper,

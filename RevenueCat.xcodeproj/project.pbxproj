@@ -351,6 +351,7 @@
 		A56C2E012819C33500995421 /* BackendPostAdServicesTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */; };
 		A56DFDEC2866438B00EF2E32 /* AfficheClientProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDEB2866438B00EF2E32 /* AfficheClientProxy.swift */; };
 		A56DFDF0286643BF00EF2E32 /* PostAttributionDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDEF286643BF00EF2E32 /* PostAttributionDataOperation.swift */; };
+		A56DFDF3286673CE00EF2E32 /* BackendPostAttributionDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */; };
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
 		A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B6CDD5280F3843007629D5 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */; };
@@ -832,6 +833,7 @@
 		A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostAdServicesTokenTests.swift; sourceTree = "<group>"; };
 		A56DFDEB2866438B00EF2E32 /* AfficheClientProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AfficheClientProxy.swift; sourceTree = "<group>"; };
 		A56DFDEF286643BF00EF2E32 /* PostAttributionDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAttributionDataOperation.swift; sourceTree = "<group>"; };
+		A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostAttributionDataTests.swift; sourceTree = "<group>"; };
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
 		A5B6CDD5280F3843007629D5 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/AdServices.framework; sourceTree = DEVELOPER_DIR; };
 		A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
@@ -1722,6 +1724,7 @@
 				5796A39827D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift */,
 				5796A38727D6B85900653165 /* BackendPostReceiptDataTests.swift */,
 				5796A38027D6B78500653165 /* BaseBackendTest.swift */,
+				A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -2516,6 +2519,7 @@
 				B3CAFF10285CE8E30048A994 /* MockOfferingsAPI.swift in Sources */,
 				351B51BF26D450E800BD2BD7 /* StoreKitRequestFetcherTests.swift in Sources */,
 				2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */,
+				A56DFDF3286673CE00EF2E32 /* BackendPostAttributionDataTests.swift in Sources */,
 				351B514B26D44A4A00BD2BD7 /* MockOperationDispatcher.swift in Sources */,
 				351B514926D44A2F00BD2BD7 /* MockCustomerInfoManager.swift in Sources */,
 				5766AAC9283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift in Sources */,
@@ -2899,6 +2903,7 @@
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,6";
 				TVOS_DEPLOYMENT_TARGET = 11.0;
@@ -2931,6 +2936,7 @@
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,6";
 				TVOS_DEPLOYMENT_TARGET = 11.0;
