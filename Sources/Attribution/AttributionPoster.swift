@@ -87,18 +87,16 @@ class AttributionPoster {
         }
 
         if !newData.isEmpty {
-            if !newData.isEmpty {
-                if network == .appleSearchAds {
-                    postSearchAds(newData: newData,
-                                  network: network,
-                                  appUserID: currentAppUserID,
-                                  newDictToCache: newDictToCache)
-                } else {
-                    postSubscriberAttributes(newData: newData,
-                                             network: network,
-                                             appUserID: currentAppUserID,
-                                             newDictToCache: newDictToCache)
-                }
+            if network == .appleSearchAds {
+                postSearchAds(newData: newData,
+                              network: network,
+                              appUserID: currentAppUserID,
+                              newDictToCache: newDictToCache)
+            } else {
+                postSubscriberAttributes(newData: newData,
+                                         network: network,
+                                         appUserID: currentAppUserID,
+                                         newDictToCache: newDictToCache)
             }
         }
     }
@@ -200,16 +198,6 @@ class AttributionPoster {
         return cachedDict[network]
     }
 
-    private func postSubscriberAttributes(newData: [String: Any],
-                                          network: AttributionNetwork,
-                                          appUserID: String,
-                                          newDictToCache: [AttributionNetwork: String]) {
-        subscriberAttributesManager.setAttributes(fromAttributionData: newData,
-                                                  network: network,
-                                                  appUserID: appUserID)
-        deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: appUserID)
-    }
-
     private func postSearchAds(newData: [String: Any],
                                network: AttributionNetwork,
                                appUserID: String,
@@ -221,6 +209,16 @@ class AttributionPoster {
 
             self.deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: appUserID)
         }
+    }
+
+    private func postSubscriberAttributes(newData: [String: Any],
+                                          network: AttributionNetwork,
+                                          appUserID: String,
+                                          newDictToCache: [AttributionNetwork: String]) {
+        subscriberAttributesManager.setAttributes(fromAttributionData: newData,
+                                                  network: network,
+                                                  appUserID: appUserID)
+        deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: appUserID)
     }
 
 }

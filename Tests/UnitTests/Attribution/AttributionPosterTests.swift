@@ -59,6 +59,15 @@ class BaseAttributionPosterTests: TestCase {
         self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
     }
 
+    private func resetAttributionStaticProperties() {
+        if #available(iOS 14, macOS 11, tvOS 14, *) {
+            MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
+        }
+        MockAttributionTypeFactory.shouldReturnAdClientProxy = true
+        MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
+        MockAdClientProxy.requestAttributionDetailsCallCount = 0
+    }
+
     override func tearDown() {
         UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
         UserDefaults.standard.synchronize()
@@ -268,15 +277,6 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     #endif
-
-    private func resetAttributionStaticProperties() {
-        if #available(iOS 14, macOS 11, tvOS 14, *) {
-            MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
-        }
-        MockAttributionTypeFactory.shouldReturnAdClientProxy = true
-        MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
-        MockAdClientProxy.requestAttributionDetailsCallCount = 0
-    }
 
 }
 
