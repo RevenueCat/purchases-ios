@@ -460,6 +460,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
+        postAppleSearchAddsAttributionCollectionIfNeeded()
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
@@ -472,7 +473,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeKitWrapper.delegate = nil
         customerInfoObservationDisposable?()
         privateDelegate = nil
-
+        Self.automaticAppleSearchAdsAttributionCollection = false
         Self.proxyURL = nil
     }
 
@@ -499,6 +500,13 @@ extension Purchases {
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserId: String?) {
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
+    }
+
+    private func postAppleSearchAddsAttributionCollectionIfNeeded() {
+        guard Self.automaticAppleSearchAdsAttributionCollection else {
+            return
+        }
+        attributionPoster.postAppleSearchAdsAttributionIfNeeded()
     }
 
 }
@@ -1643,7 +1651,7 @@ private extension Purchases {
         Logger.debug(Strings.configure.application_active)
         self.updateAllCachesIfNeeded()
         self.dispatchSyncSubscriberAttributes()
-
+        postAppleSearchAddsAttributionCollectionIfNeeded()
 #if os(iOS) || os(macOS)
         // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
