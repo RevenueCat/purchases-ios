@@ -53,9 +53,9 @@ class AttributionPoster {
         }
 
         let currentAppUserID = self.currentUserProvider.currentAppUserID
-        let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
+        let latestAdvertisingIdsByNetworkSent =
             deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
-        let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[network]
+        let latestSentToNetwork = latestAdvertisingIdsByNetworkSent[network]
 
         let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
         guard latestSentToNetwork != newValueForNetwork else {
@@ -63,7 +63,7 @@ class AttributionPoster {
             return
         }
 
-        var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
+        var newDictToCache = latestAdvertisingIdsByNetworkSent
         newDictToCache[network] = newValueForNetwork
 
         var newData = data
@@ -219,7 +219,7 @@ class AttributionPoster {
                 return
             }
 
-            self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: appUserID)
+            self.deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: appUserID)
         }
     }
 
