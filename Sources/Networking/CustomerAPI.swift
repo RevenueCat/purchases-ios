@@ -40,19 +40,6 @@ class CustomerAPI {
         self.backendConfig.operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
     }
 
-    func post(attributionData: [String: Any],
-              network: AttributionNetwork,
-              appUserID: String,
-              completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
-        let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
-                                                                        attributionData: attributionData,
-                                                                        network: network,
-                                                                        responseHandler: completion)
-        self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
-    }
-
     func post(subscriberAttributes: SubscriberAttribute.Dictionary,
               appUserID: String,
               completion: SimpleResponseHandler?) {
