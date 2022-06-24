@@ -213,7 +213,7 @@ class AttributionPoster {
     private func postSearchAds(newData: [String: Any],
                                network: AttributionNetwork,
                                appUserID: String,
-                               newDictToCache: [String: String]) {
+                               newDictToCache: [AttributionNetwork: String]) {
         backend.post(attributionData: newData, network: network, appUserID: appUserID) { error in
             guard error == nil else {
                 return
