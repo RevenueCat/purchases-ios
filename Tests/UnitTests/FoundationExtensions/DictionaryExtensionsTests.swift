@@ -175,7 +175,7 @@ class DictionaryExtensionsMapKeysTests: TestCase {
         ]
     }
 
-    func tetMapKeysWithOverlappingKeys() {
+    func testMapKeysWithOverlappingKeys() {
         let input: [String: Int] = [
             "a1": 1,
             "a2": 2,
@@ -205,7 +205,7 @@ class DictionaryExtensionsMapKeysTests: TestCase {
         expect([1: "test"].compactMapKeys { _ in nil }) == [:]
     }
 
-    func tetCompactMapKeys() {
+    func testCompactMapKeys() {
         let input: [Int: Int] = [
             1: 1,
             2: 2,
@@ -220,8 +220,8 @@ class DictionaryExtensionsMapKeysTests: TestCase {
                 : nil
         }
         expect(output) == [
-            2: 2,
-            4: 4
+            "2": 2,
+            "4": 4
         ]
     }
 
