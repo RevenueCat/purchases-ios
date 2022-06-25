@@ -366,7 +366,7 @@ class PurchasesOrchestrator {
                 ))
 
                 DispatchQueue.main.async {
-                    completion(result.0, result.1, nil, result.2)
+                    completion(result.transaction, result.customerInfo, nil, result.userCancelled)
                 }
             } catch let error {
                 Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(

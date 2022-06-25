@@ -11,7 +11,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
@@ -22,8 +22,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     private var testSession: SKTestSession!
-
-    private static let timeout: DispatchTimeInterval = .seconds(10)
 
     override func setUp() async throws {
         try await super.setUp()
@@ -204,9 +202,12 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     // MARK: - Trial or Intro Eligibility tests
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testEligibleForIntroBeforePurchase() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+        if Self.storeKit2Setting == .disabled {
+            // SK1 implementation relies on the receipt being loaded already.
+            // See `TrialOrIntroPriceEligibilityChecker.sk1CheckEligibility`
+            _ = try await Purchases.shared.restorePurchases()
+        }
 
         let product = try await self.monthlyPackage.storeProduct
 
@@ -214,10 +215,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(eligibility) == .eligible
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testIneligibleForIntroAfterPurchase() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let product = try await self.monthlyPackage.storeProduct
 
         try await self.purchaseMonthlyOffering()
@@ -226,10 +224,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(eligibility) == .ineligible
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testEligibleForIntroForDifferentProductAfterPurchase() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         try await self.purchaseMonthlyOffering()
 
         let product2 = try await self.annualPackage.storeProduct
@@ -239,9 +234,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(eligibility) == .eligible
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
         let product = try await self.weeklyPackage.storeProduct
 
         let customerInfo = try await self.purchaseWeeklyOffering().customerInfo
@@ -257,10 +250,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(eligibility) == .ineligible
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testEligibleAfterPurchaseWithNoTrialExpires() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let products = await Purchases.shared.products(["com.revenuecat.weekly_1.99.no_intro"])
         let productWithNoIntro = try XCTUnwrap(products.first)
         let productWithIntro = try await self.weeklyPackage.storeProduct
