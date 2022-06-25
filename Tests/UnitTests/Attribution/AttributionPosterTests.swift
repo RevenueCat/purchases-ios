@@ -126,6 +126,23 @@ class BaseAttributionPosterTests: TestCase {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
+    func testPostAppleSearchAdsAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
+        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
+
+        attributionPoster.post(attributionData: ["something": "here"],
+                               fromNetwork: .appleSearchAds,
+                               networkUserId: "attributionUser1")
+        expect(self.backend.invokedPostAttributionDataCount) == 1
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+
+        attributionPoster.post(attributionData: ["something": "else"],
+                               fromNetwork: .appleSearchAds,
+                               networkUserId: "attributionUser2")
+
+        expect(self.backend.invokedPostAttributionDataCount) == 2
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+    }
+
     func testPostAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
