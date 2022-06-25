@@ -197,6 +197,40 @@
           "referenceName" : "weekly free trial",
           "subscriptionGroupID" : "7096FF06",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "42778756",
+          "introductoryOffer" : {
+            "internalID" : "AA450462",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Monthly subscription with a 1-week free trial",
+              "displayName" : "Super Premium Monthly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Subscripción mensual con 1 semana gratis",
+              "displayName" : "Super Premium mensual",
+              "locale" : "es_ES"
+            }
+          ],
+          "productID" : "com.revenuecat.monthly_9.99.super_premium.1_week_intro",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "super premium monthly free trial",
+          "subscriptionGroupID" : "7096FF06",
+          "type" : "RecurringSubscription"
         }
       ]
     },

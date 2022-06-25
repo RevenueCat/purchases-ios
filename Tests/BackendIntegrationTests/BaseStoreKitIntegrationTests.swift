@@ -83,6 +83,7 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
 extension BaseStoreKitIntegrationTests {
 
     static let entitlementIdentifier = "premium"
+    static let superEntitlementIdentifier = "super_premium"
     static let consumable10Coins = "consumable.10_coins"
     static let monthlyNoIntroProductID = "com.revenuecat.monthly_4.99.no_intro"
     static let group3MonthlyTrialProductID = "com.revenuecat.monthly.1.99.1_free_week"

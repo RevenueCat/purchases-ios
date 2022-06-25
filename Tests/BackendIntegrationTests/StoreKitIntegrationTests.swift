@@ -517,4 +517,33 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(transaction.offerType) == .promotional
     }
 
+    func testUpgradingInSameSubscriptionGroupCancelsOldEntitlement() async throws {
+        let user = UUID().uuidString
+
+        let (_, created) = try await Purchases.shared.logIn(user)
+        expect(created) == true
+
+        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+
+        let superPremiumProduct = try await XCTAsyncUnwrap(
+            await Purchases.shared.products([
+                "com.revenuecat.monthly_9.99.super_premium.1_week_intro"
+            ]).first
+        )
+
+        let entitlements = try await Purchases.shared.purchase(product: superPremiumProduct)
+            .customerInfo
+            .entitlements
+
+        expect(entitlements.active).to(haveCount(1))
+        expect(entitlements[Self.entitlementIdentifier]?.isActive).to(
+            beFalse(),
+            description: "Old entitlement should not be active anymore"
+        )
+        expect(entitlements[Self.superEntitlementIdentifier]?.isActive).to(
+            beTrue(),
+            description: "New upgraded entitlement should be active"
+        )
+    }
+
 }
