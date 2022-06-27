@@ -458,9 +458,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             storeKitWrapper.delegate = purchasesOrchestrator
         }
-        subscribeToAppStateNotifications()
-        attributionPoster.postPostponedAttributionDataIfNeeded()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        self.subscribeToAppStateNotifications()
+        self.attributionPoster.postPostponedAttributionDataIfNeeded()
+
+        (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
@@ -501,7 +503,8 @@ extension Purchases {
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
     }
 
-    private func postAppleSearchAddsAttributionCollectionIfNeeded() {
+    @available(*, deprecated)
+    fileprivate func postAppleSearchAddsAttributionCollectionIfNeeded() {
         guard Self.automaticAppleSearchAdsAttributionCollection else {
             return
         }
@@ -1650,9 +1653,10 @@ private extension Purchases {
         Logger.debug(Strings.configure.application_active)
         self.updateAllCachesIfNeeded()
         self.dispatchSyncSubscriberAttributes()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
+
 #if os(iOS) || os(macOS)
-        // should match OS availability in https://developer.apple.com/documentation/ad_services
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             self.attribution.postAdServicesTokenIfNeeded()
         }
@@ -1709,3 +1713,14 @@ private extension Purchases {
     }
 
 }
+
+// MARK: - Deprecations
+
+/// Protocol to be able to call `Purchases.postAppleSearchAddsAttributionCollectionIfNeeded` without warnings
+private protocol DeprecatedSearchAdsAttribution {
+
+    func postAppleSearchAddsAttributionCollectionIfNeeded()
+
+}
+
+extension Purchases: DeprecatedSearchAdsAttribution {}

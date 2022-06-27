@@ -71,3 +71,14 @@ extension AttributionNetwork: Encodable {
     }
 
 }
+
+extension AttributionNetwork {
+
+    var isAppleSearchAdds: Bool {
+        switch self {
+        case .appleSearchAds: return true
+        default: return false
+        }
+    }
+
+}
