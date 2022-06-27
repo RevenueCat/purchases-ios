@@ -75,6 +75,10 @@ class BaseAttributionPosterTests: TestCase {
         super.tearDown()
     }
 
+}
+
+class AttributionPosterTests: BaseAttributionPosterTests {
+
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
@@ -182,12 +186,12 @@ class BaseAttributionPosterTests: TestCase {
         expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
     }
 
-    // `MockTrackingManagerProxy.mockAuthorizationStatus isn't available on tvOS
-    #if os(iOS)
+}
 
+// `MockTrackingManagerProxy.mockAuthorizationStatus isn't available on tvOS
+@available(iOS 14, *)
+class IOSAttributionPosterTests: BaseAttributionPosterTests {
     func testPostAppleSearchAdsAttributionIfNeededPostsIfATTFrameworkNotIncludedOnOldOS() throws {
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = false
@@ -198,8 +202,6 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorizedOnNewOS() throws {
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
 
         MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
@@ -212,8 +214,6 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorizedOnOldOS() throws {
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
         MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
@@ -225,8 +225,6 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthNotDeterminedOnOldOS() throws {
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
         MockTrackingManagerProxy.mockAuthorizationStatus = .notDetermined
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
@@ -238,8 +236,6 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfAuthNotDeterminedOnNewOS() throws {
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
 
         MockTrackingManagerProxy.mockAuthorizationStatus = .notDetermined
@@ -252,8 +248,6 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorizedOnOldOS() throws {
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
         MockTrackingManagerProxy.mockAuthorizationStatus = .denied
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
@@ -265,8 +259,6 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorizedOnNewOS() throws {
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
         MockTrackingManagerProxy.mockAuthorizationStatus = .denied
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
@@ -278,8 +270,6 @@ class BaseAttributionPosterTests: TestCase {
     }
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfAlreadySent() throws {
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-
         MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
@@ -292,9 +282,6 @@ class BaseAttributionPosterTests: TestCase {
 
         expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
     }
-
-    #endif
-
 }
 
 #if canImport(AdServices)
@@ -339,9 +326,3 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
 
 }
 #endif
-
-class AttributionPosterTests: BaseAttributionPosterTests {
-
-    // TODO move stuff back into here?
-
-}
