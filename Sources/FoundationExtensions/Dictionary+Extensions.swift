@@ -89,6 +89,26 @@ extension Dictionary {
 
 }
 
+extension Dictionary {
+
+    func mapKeys<NewKey: Hashable>(_ transformer: (Key) -> NewKey) -> [NewKey: Value] {
+        return self.compactMapKeys(transformer)
+    }
+
+    func compactMapKeys<NewKey: Hashable>(_ transformer: (Key) -> NewKey?) -> [NewKey: Value] {
+        var result = [NewKey: Value](minimumCapacity: self.count)
+
+        for (key, value) in self {
+            if let newKey = transformer(key) {
+                result.updateValue(value, forKey: newKey)
+            }
+        }
+
+        return result
+    }
+
+}
+
 extension Sequence {
 
     /// Creates a `Dictionary` with the values in the receiver sequence, and the keys provided by `key`.
