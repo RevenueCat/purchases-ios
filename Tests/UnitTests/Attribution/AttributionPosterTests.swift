@@ -191,6 +191,12 @@ class AttributionPosterTests: BaseAttributionPosterTests {
 // `MockTrackingManagerProxy.mockAuthorizationStatus isn't available on tvOS
 @available(iOS 14, *)
 class IOSAttributionPosterTests: BaseAttributionPosterTests {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        guard #available(iOS 14, *) else { throw XCTSkip() }
+    }
+
     func testPostAppleSearchAdsAttributionIfNeededPostsIfATTFrameworkNotIncludedOnOldOS() throws {
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
