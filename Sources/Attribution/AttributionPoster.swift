@@ -87,7 +87,7 @@ class AttributionPoster {
         }
 
         if !newData.isEmpty {
-            if network == .appleSearchAds {
+            if network.isAppleSearchAdds {
                 postSearchAds(newData: newData,
                               network: network,
                               appUserID: currentAppUserID,
@@ -101,13 +101,13 @@ class AttributionPoster {
         }
     }
 
+    @available(*, deprecated)
     func postAppleSearchAdsAttributionIfNeeded() {
         guard attributionFetcher.isAuthorizedToPostSearchAds else {
             return
         }
 
-        let latestIdsSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
-        guard latestIdsSent == nil else {
+        guard self.latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds) == nil else {
             return
         }
 

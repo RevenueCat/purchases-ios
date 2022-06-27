@@ -32,7 +32,7 @@ class BackendPostAttributionDataTests: BaseBackendTests {
         let data: [String: AnyObject] = ["a": "b" as NSString, "c": "d" as NSString]
 
         backend.post(attributionData: data,
-                     network: AttributionNetwork.appleSearchAds,
+                     network: .adjust,
                      appUserID: Self.userID,
                      completion: nil)
 

@@ -68,7 +68,7 @@ public extension Attribution {
         guard self.automaticAdServicesAttributionTokenCollection else {
             return
         }
-        attributionPoster.postAdServicesTokenIfNeeded()
+        self.attributionPoster.postAdServicesTokenIfNeeded()
     }
 
 }
