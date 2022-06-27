@@ -127,14 +127,14 @@ class BasePurchasesTests: TestCase {
     var purchases: Purchases!
 
     func setupPurchases(automaticCollection: Bool = false) {
-        Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
+        Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
 
         self.initializePurchasesInstance(appUserId: self.identityManager.currentAppUserID)
     }
 
     func setupAnonPurchases() {
-        Purchases.automaticAppleSearchAdsAttributionCollection = false
+        Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = false
         self.identityManager.mockIsAnonymous = true
         self.initializePurchasesInstance(appUserId: nil)
     }

@@ -35,6 +35,7 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(attributionData["rc_idfv"] as? String) == "rc_idfv"
     }
 
+    @available(*, deprecated)
     func testPassesTheArrayForAllNetworks() {
         self.setupPurchases()
 
@@ -73,6 +74,7 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(invokedParameters.appUserID) == self.purchases?.appUserID
     }
 
+    @available(*, deprecated)
     func testAttributionDataSendsNetworkAppUserId() throws {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
@@ -97,6 +99,7 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
+    @available(*, deprecated)
     func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() throws {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
@@ -116,6 +119,7 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
+    @available(*, deprecated)
     func testAdClientAttributionDataIsAutomaticallyCollected() throws {
         self.setupPurchases(automaticCollection: true)
 

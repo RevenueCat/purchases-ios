@@ -95,6 +95,7 @@ class AttributionPosterTests: BaseAttributionPosterTests {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
     }
 
+    @available(*, deprecated)
     func testPostAppleSearchAdsAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
@@ -130,6 +131,7 @@ class AttributionPosterTests: BaseAttributionPosterTests {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
+    @available(*, deprecated)
     func testPostAppleSearchAdsAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
@@ -164,6 +166,7 @@ class AttributionPosterTests: BaseAttributionPosterTests {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
+    @available(*, deprecated)
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfATTFrameworkNotIncludedOnNewOS() throws {
         guard #available(iOS 14, *) else { throw XCTSkip() }
 
@@ -177,6 +180,7 @@ class AttributionPosterTests: BaseAttributionPosterTests {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
+    @available(*, deprecated)
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfIAdFrameworkNotIncluded() {
         MockAttributionTypeFactory.shouldReturnAdClientProxy = false
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
@@ -190,6 +194,7 @@ class AttributionPosterTests: BaseAttributionPosterTests {
 
 // `MockTrackingManagerProxy.mockAuthorizationStatus isn't available on tvOS
 @available(iOS 14, *)
+@available(*, deprecated)
 class IOSAttributionPosterTests: BaseAttributionPosterTests {
 
     override func setUpWithError() throws {
