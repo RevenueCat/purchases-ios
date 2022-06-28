@@ -42,7 +42,7 @@ enum AttributionStrings {
     case adservices_token_fetch_failed(error: Error)
     case adservices_token_post_failed(error: BackendError)
     case adservices_token_post_succeeded
-    case latest_attribution_sent_user_defaults_invalid
+    case latest_attribution_sent_user_defaults_invalid(networkKey: String)
 
 }
 
@@ -132,8 +132,8 @@ extension AttributionStrings: CustomStringConvertible {
         case .adservices_token_post_succeeded:
             return "AdServices attribution token successfully posted"
 
-        case .latest_attribution_sent_user_defaults_invalid:
-            return "Attribution data stored in UserDefaults has invalid format."
+        case .latest_attribution_sent_user_defaults_invalid(let networkKey):
+            return "Attribution data stored in UserDefaults has invalid format for network key: \(networkKey)"
 
         }
     }

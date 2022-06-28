@@ -246,4 +246,5 @@ class MockDeviceCache: DeviceCache {
     override func latestAdvertisingIdsByNetworkSent(appUserID: String) -> [AttributionNetwork: String] {
         return invokedSetLatestNetworkAndAdvertisingIdsSentParameters?.adIdsByNetwork ?? [:]
     }
+
 }

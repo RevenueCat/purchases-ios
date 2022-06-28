@@ -279,12 +279,15 @@ class DeviceCache {
             let key = CacheKeyBases.attributionDataDefaults + appUserID
             let latestAdvertisingIdsByRawNetworkSent = $0.object(forKey: key) as? [String: String] ?? [:]
 
-            // convert keys from UserDefault from Integer String to AttributionNetwork
             let latestSent: [AttributionNetwork: String] =
-                 latestAdvertisingIdsByRawNetworkSent.compactMapKeys { network in
-                     guard let networkRawValue = Int(network),
+                 latestAdvertisingIdsByRawNetworkSent.compactMapKeys { networkKey in
+                     guard let networkRawValue = Int(networkKey),
                         let attributionNetwork = AttributionNetwork(rawValue: networkRawValue) else {
-                             Logger.error(Strings.attribution.latest_attribution_sent_user_defaults_invalid)
+                            Logger.error(
+                                Strings.attribution.latest_attribution_sent_user_defaults_invalid(
+                                    networkKey: networkKey
+                                )
+                            )
                              return nil
                         }
                         return attributionNetwork
@@ -296,7 +299,6 @@ class DeviceCache {
 
     func set(latestAdvertisingIdsByNetworkSent: [AttributionNetwork: String], appUserID: String) {
         self.userDefaults.write {
-            // convert AttributionNetwork to Integer as String
             let latestAdIdsByRawNetworkStringSent = latestAdvertisingIdsByNetworkSent.mapKeys { $0.rawValue }
             $0.setValue(latestAdIdsByRawNetworkStringSent,
                         forKey: CacheKeyBases.attributionDataDefaults + appUserID)

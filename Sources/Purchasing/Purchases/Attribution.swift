@@ -47,28 +47,24 @@ import Foundation
 
 }
 
+// should match OS availability in https://developer.apple.com/documentation/ad_services
+@available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 public extension Attribution {
 
     /**
      * Enable automatic collection of AdServices attribution token.
      */
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
     @objc func enableAdServicesAttributionTokenCollection() {
         self.automaticAdServicesAttributionTokenCollection = true
         self.postAdServicesTokenIfNeeded()
     }
 
-    // should match OS availability in https://developer.apple.com/documentation/ad_services
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
     internal func postAdServicesTokenIfNeeded() {
-        guard self.automaticAdServicesAttributionTokenCollection else {
-            return
+        if self.automaticAdServicesAttributionTokenCollection {
+            self.attributionPoster.postAdServicesTokenIfNeeded()
         }
-        self.attributionPoster.postAdServicesTokenIfNeeded()
     }
 
 }

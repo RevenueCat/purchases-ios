@@ -53,10 +53,10 @@ class AttributionPoster {
         }
 
         let currentAppUserID = self.currentUserProvider.currentAppUserID
-        guard let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
-                                                     idfa: identifierForAdvertisers,
-                                                     network: network,
-                                                     networkUserId: networkUserId) else {
+        guard let newDictToCache = self.getNewDictToCache(currentAppUserID: currentAppUserID,
+                                                          idfa: identifierForAdvertisers,
+                                                          network: network,
+                                                          networkUserId: networkUserId) else {
             return
         }
 
