@@ -346,6 +346,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     currentUserProvider: identityManager,
                     transactionsManager: transactionsManager,
                     deviceCache: deviceCache,
+                    offeringsManager: offeringsManager,
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
@@ -364,6 +365,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     currentUserProvider: identityManager,
                     transactionsManager: transactionsManager,
                     deviceCache: deviceCache,
+                    offeringsManager: offeringsManager,
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper
                 )

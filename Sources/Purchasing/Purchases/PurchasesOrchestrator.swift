@@ -62,6 +62,7 @@ class PurchasesOrchestrator {
     private let currentUserProvider: CurrentUserProvider
     private let transactionsManager: TransactionsManager
     private let deviceCache: DeviceCache
+    private let offeringsManager: OfferingsManager
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
 
@@ -95,6 +96,7 @@ class PurchasesOrchestrator {
                      currentUserProvider: CurrentUserProvider,
                      transactionsManager: TransactionsManager,
                      deviceCache: DeviceCache,
+                     offeringsManager: OfferingsManager,
                      manageSubscriptionsHelper: ManageSubscriptionsHelper,
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListener,
@@ -112,6 +114,7 @@ class PurchasesOrchestrator {
             currentUserProvider: currentUserProvider,
             transactionsManager: transactionsManager,
             deviceCache: deviceCache,
+            offeringsManager: offeringsManager,
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper
         )
@@ -139,6 +142,7 @@ class PurchasesOrchestrator {
          currentUserProvider: CurrentUserProvider,
          transactionsManager: TransactionsManager,
          deviceCache: DeviceCache,
+         offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper) {
         self.productsManager = productsManager
@@ -152,6 +156,7 @@ class PurchasesOrchestrator {
         self.currentUserProvider = currentUserProvider
         self.transactionsManager = transactionsManager
         self.deviceCache = deviceCache
+        self.offeringsManager = offeringsManager
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
     }
@@ -855,7 +860,7 @@ private extension PurchasesOrchestrator {
 
     func handleStorefrontChange() {
         self.productsManager.invalidateAndReFetchCachedProductsIfAppropiate()
-        self.deviceCache.clearCachedOfferings()
+        self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
     }
 
     func finishTransactionIfNeeded(_ transaction: StoreTransaction) {

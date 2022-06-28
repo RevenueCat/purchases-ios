@@ -423,6 +423,7 @@
 		F516BD29282434070083480B /* StoreKit2StorefrontListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */; };
 		F52CFAFC28290AE500E8ABC5 /* StoreKit2StorefrontListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */; };
 		F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F530E4FE275646EF001AF6BD /* MacDevice.swift */; };
+		F535515F286B5BE5009CA47A /* MockOfferingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575858E26C0893600C12B97 /* MockOfferingsManager.swift */; };
 		F55FFA5A27634C3F00995146 /* MockTransactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA5927634C3F00995146 /* MockTransactionsManager.swift */; };
 		F55FFA5D27634E1900995146 /* MockTransactionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA5927634C3F00995146 /* MockTransactionsManager.swift */; };
 		F55FFA632763F60700995146 /* TransactionsManagerSK1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55FFA622763F60700995146 /* TransactionsManagerSK1Tests.swift */; };
@@ -2232,6 +2233,7 @@
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift in Sources */,
 				2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */,
 				2D90F8C726FD221D009B9142 /* MockASN1ContainerBuilder.swift in Sources */,
+				F535515F286B5BE5009CA47A /* MockOfferingsManager.swift in Sources */,
 				F52CFAFC28290AE500E8ABC5 /* StoreKit2StorefrontListenerTests.swift in Sources */,
 				57ACB12528174B9F000DCC9F /* CustomerInfo+TestExtensions.swift in Sources */,
 				2D90F8C326FD214F009B9142 /* MockAttributionTypeFactory.swift in Sources */,
