@@ -43,8 +43,14 @@ actor ProductsFetcherSK2 {
         }
     }
 
-    func clearCache() {
-        self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
+    /// - Returns: The product identifiers that were removed, or empty if there were not
+    ///   cached products.
+    func clearCache() -> Set<String> {
+        let cachedProductIdentifiers = self.cachedProductsByIdentifier.keys
+        if !cachedProductIdentifiers.isEmpty {
+            self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
+        }
+        return Set(cachedProductIdentifiers)
     }
 
 }
