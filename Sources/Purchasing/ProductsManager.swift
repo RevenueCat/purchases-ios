@@ -82,14 +82,20 @@ class ProductsManager: NSObject {
         productsFetcherSK1.cacheProduct(product)
     }
 
-    func clearCachedProducts() {
+    func invalidateAndReFetchCachedProductsIfAppropiate() {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Task<Void, Never> {
-                await productsFetcherSK2.clearCache()
+                let removedProductIdentifiers = await productsFetcherSK2.clearCache()
+                if !removedProductIdentifiers.isEmpty {
+                    _ = try? await self.productsFetcherSK2.products(identifiers: removedProductIdentifiers)
+                }
             }
         } else {
-            productsFetcherSK1.clearCache()
+            productsFetcherSK1.clearCache { [weak self] removedProductIdentifiers in
+                guard !removedProductIdentifiers.isEmpty else { return }
+                self?.productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { _ in })
+            }
         }
     }
 

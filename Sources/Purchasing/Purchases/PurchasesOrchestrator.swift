@@ -854,7 +854,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handleStorefrontChange() {
-        self.productsManager.clearCachedProducts()
+        self.productsManager.invalidateAndReFetchCachedProductsIfAppropiate()
         self.deviceCache.clearCachedOfferings()
     }
 
