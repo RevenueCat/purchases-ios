@@ -99,7 +99,7 @@ class OfferingsManager {
         self.deviceCache.clearCachedOfferings()
 
         if cachedOfferings != nil {
-            offerings(appUserID: appUserID, completion: { _ in })
+            self.offerings(appUserID: appUserID, completion: { _ in })
         }
     }
 
