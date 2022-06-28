@@ -92,9 +92,9 @@ class ProductsManager: NSObject {
                 }
             }
         } else {
-            productsFetcherSK1.clearCache { [weak self] removedProductIdentifiers in
+            productsFetcherSK1.clearCache { [productsFetcherSK1] removedProductIdentifiers in
                 guard !removedProductIdentifiers.isEmpty else { return }
-                self?.productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { _ in })
+                productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { _ in })
             }
         }
     }
