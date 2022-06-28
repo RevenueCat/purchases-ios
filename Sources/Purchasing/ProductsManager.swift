@@ -85,34 +85,59 @@ class ProductsManager: NSObject {
     func invalidateAndReFetchCachedProductsIfAppropiate() {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
-            Task<Void, Never> {
-                let removedProductIdentifiers = await productsFetcherSK2.clearCache()
-                if !removedProductIdentifiers.isEmpty {
-                    _ = try? await self.productsFetcherSK2.products(identifiers: removedProductIdentifiers)
-                }
-            }
+            self.invalidateAndReFetchCachedSK2Products()
         } else {
-            productsFetcherSK1.clearCache { [productsFetcherSK1] removedProductIdentifiers in
-                guard !removedProductIdentifiers.isEmpty else { return }
-                productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { _ in })
-            }
+            self.invalidateAndReFetchCachedSK1Products()
         }
     }
 
-    private func sk1Products(withIdentifiers identifiers: Set<String>,
-                             completion: @escaping (Result<Set<SK1Product>, Error>) -> Void) {
+}
+
+private extension ProductsManager {
+
+    func sk1Products(withIdentifiers identifiers: Set<String>,
+                     completion: @escaping (Result<Set<SK1Product>, Error>) -> Void) {
         return productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func sk2Products(withIdentifiers identifiers: Set<String>,
-                             completion: @escaping (Result<Set<SK2StoreProduct>, Error>) -> Void) {
+    func sk2Products(withIdentifiers identifiers: Set<String>,
+                     completion: @escaping (Result<Set<SK2StoreProduct>, Error>) -> Void) {
         _ = Task<Void, Never> {
             do {
                 let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
                 completion(.success(Set(products)))
             } catch {
                 completion(.failure(error))
+            }
+        }
+    }
+
+    func invalidateAndReFetchCachedSK1Products() {
+        productsFetcherSK1.clearCache { [productsFetcherSK1] removedProductIdentifiers in
+            guard !removedProductIdentifiers.isEmpty else { return }
+            productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { result in
+                switch result {
+                case.success:
+                    Logger.debug(Strings.storeKit.skproductsrequest_finished)
+                case .failure(let error):
+                    Logger.debug(Strings.storeKit.skproductsrequest_failed(error: error))
+                }
+            })
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func invalidateAndReFetchCachedSK2Products() {
+        Task<Void, Never> {
+            let removedProductIdentifiers = await productsFetcherSK2.clearCache()
+            if !removedProductIdentifiers.isEmpty {
+                do {
+                    _ = try await self.productsFetcherSK2.products(identifiers: removedProductIdentifiers)
+                    Logger.debug(Strings.storeKit.skproductsrequest_finished)
+                } catch {
+                    Logger.debug(Strings.storeKit.skproductsrequest_failed(error: error))
+                }
             }
         }
     }
