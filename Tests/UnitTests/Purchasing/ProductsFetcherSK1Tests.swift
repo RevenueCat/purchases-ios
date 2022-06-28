@@ -192,7 +192,7 @@ class ProductsFetcherSK1Tests: TestCase {
 
         mockProducts.forEach(self.productsFetcherSK1.cacheProduct)
 
-        productsFetcherSK1.clearCache()
+        productsFetcherSK1.clearCache { _ in }
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
 

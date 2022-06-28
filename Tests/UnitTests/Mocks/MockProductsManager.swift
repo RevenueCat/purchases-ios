@@ -82,9 +82,9 @@ class MockProductsManager: ProductsManager {
         }
     }
 
-    var invokedClearCachedProductsCount = 0
-    override func clearCachedProducts() {
-        invokedClearCachedProductsCount += 1
+    var invokedInvalidateAndReFetchCachedProductsIfAppropiateCount = 0
+    override func invalidateAndReFetchCachedProductsIfAppropiate() {
+        invokedInvalidateAndReFetchCachedProductsIfAppropiateCount += 1
     }
 
     func resetMock() {
@@ -96,6 +96,6 @@ class MockProductsManager: ProductsManager {
         invokedCacheProduct = false
         invokedCacheProductCount = 0
         invokedCacheProductParameter = nil
-        invokedClearCachedProductsCount = 0
+        invokedInvalidateAndReFetchCachedProductsIfAppropiateCount = 0
     }
 }

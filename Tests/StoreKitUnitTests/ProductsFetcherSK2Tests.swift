@@ -34,7 +34,7 @@ class ProductsFetcherSK2Tests: StoreKitConfigTestCase {
         var cachedProducts = await productsFetcherSK2.cachedProductsByIdentifier
         expect(cachedProducts).notTo(beEmpty())
 
-        await productsFetcherSK2.clearCache()
+        _ = await productsFetcherSK2.clearCache()
 
         cachedProducts = await productsFetcherSK2.cachedProductsByIdentifier
         expect(cachedProducts).to(beEmpty())

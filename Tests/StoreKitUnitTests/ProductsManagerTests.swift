@@ -63,6 +63,63 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(product.productIdentifier) == identifier
     }
 
+    func testInvalidateAndReFetchCachedProductsAfterStorefrontChangesSK1() async throws {
+        let manager = try createManager(storeKit2Setting: .disabled)
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var receivedProducts: Set<StoreProduct>?
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        var unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "USD"
+
+        testSession.locale = Locale(identifier: "es_ES")
+        await changeStorefront("ESP")
+
+        // Note: this test passes only because the method `invalidateAndReFetchCachedProductsIfAppropiate`
+        // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
+        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        manager.invalidateAndReFetchCachedProductsIfAppropiate()
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "EUR"
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testInvalidateAndReFetchCachedProductsAfterStorefrontChangesSK2() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let manager = try createManager(storeKit2Setting: .enabledForCompatibleDevices)
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var receivedProducts: Set<StoreProduct>?
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        var unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "USD"
+
+        testSession.locale = Locale(identifier: "es_ES")
+        await changeStorefront("ESP")
+
+        // Note: this test passes only because the method `invalidateAndReFetchCachedProductsIfAppropiate`
+        // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
+        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        manager.invalidateAndReFetchCachedProductsIfAppropiate()
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "EUR"
+    }
+
     private func createManager(storeKit2Setting: StoreKit2Setting) throws -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         return ProductsManager(

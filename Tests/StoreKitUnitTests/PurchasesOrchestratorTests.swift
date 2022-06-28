@@ -487,14 +487,14 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.orchestrator.storefrontDidUpdate()
 
         expect(self.deviceCache.clearCachedOfferingsCount) == 1
-        expect(self.productsManager.invokedClearCachedProductsCount) == 1
+        expect(self.productsManager.invokedInvalidateAndReFetchCachedProductsIfAppropiateCount) == 1
     }
 
     func testClearCachedProductsAndOfferingsAfterStorefrontChangesWithSK1() async throws {
         self.orchestrator.storeKitWrapperDidChangeStorefront(storeKitWrapper)
 
         expect(self.deviceCache.clearCachedOfferingsCount) == 1
-        expect(self.productsManager.invokedClearCachedProductsCount) == 1
+        expect(self.productsManager.invokedInvalidateAndReFetchCachedProductsIfAppropiateCount) == 1
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

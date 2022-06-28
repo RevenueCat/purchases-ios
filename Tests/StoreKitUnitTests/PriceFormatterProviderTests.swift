@@ -69,7 +69,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         // cleared. `ProductsFetcherSK1` does not detect Storefront
         // changes to invalidate the cache. The changes are now managed by
         // `StoreKit2StorefrontListenerDelegate`.
-        sk1Fetcher.clearCache()
+        sk1Fetcher.clearCache { _ in }
 
         storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
@@ -98,7 +98,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         // cleared. `ProductsFetcherSK2` does not detect Storefront
         // changes to invalidate the cache. The changes are now managed by
         // `StoreKit2StorefrontListenerDelegate`.
-        await sk2Fetcher.clearCache()
+        _ = await sk2Fetcher.clearCache()
 
         storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 
