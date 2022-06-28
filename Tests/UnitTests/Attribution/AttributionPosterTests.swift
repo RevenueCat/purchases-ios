@@ -178,15 +178,11 @@ class AttributionPosterTests: BaseAttributionPosterTests {
 
 }
 
+#if os(iOS)
 // `MockTrackingManagerProxy.mockAuthorizationStatus isn't available on tvOS
 @available(iOS 14, *)
 @available(*, deprecated)
 class IOSAttributionPosterTests: BaseAttributionPosterTests {
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        guard #available(iOS 14, *) else { throw XCTSkip() }
-    }
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfATTFrameworkNotIncludedOnNewOS() throws {
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
@@ -291,6 +287,7 @@ class IOSAttributionPosterTests: BaseAttributionPosterTests {
         expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
     }
 }
+#endif
 
 #if canImport(AdServices)
 @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
