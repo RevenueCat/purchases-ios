@@ -53,18 +53,12 @@ class AttributionPoster {
         }
 
         let currentAppUserID = self.currentUserProvider.currentAppUserID
-        let latestAdvertisingIdsByNetworkSent =
-            deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
-        let latestSentToNetwork = latestAdvertisingIdsByNetworkSent[network]
-
-        let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
-        guard latestSentToNetwork != newValueForNetwork else {
-            Logger.debug(Strings.attribution.skip_same_attributes)
+        guard let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
+                                                     idfa: identifierForAdvertisers,
+                                                     network: network,
+                                                     networkUserId: networkUserId) else {
             return
         }
-
-        var newDictToCache = latestAdvertisingIdsByNetworkSent
-        newDictToCache[network] = newValueForNetwork
 
         var newData = data
 
@@ -219,6 +213,25 @@ class AttributionPoster {
                                                   network: network,
                                                   appUserID: appUserID)
         deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: appUserID)
+    }
+
+    private func getNewDictToCache(currentAppUserID: String,
+                                   idfa: String?,
+                                   network: AttributionNetwork,
+                                   networkUserId: String?) -> [AttributionNetwork: String]? {
+        let latestAdvertisingIdsByNetworkSent =
+            deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
+        let latestSentToNetwork = latestAdvertisingIdsByNetworkSent[network]
+
+        let newValueForNetwork = "\(idfa ?? "(null)")_\(networkUserId ?? "(null)")"
+        guard latestSentToNetwork != newValueForNetwork else {
+            Logger.debug(Strings.attribution.skip_same_attributes)
+            return nil
+        }
+
+        var newDictToCache = latestAdvertisingIdsByNetworkSent
+        newDictToCache[network] = newValueForNetwork
+        return newDictToCache
     }
 
 }

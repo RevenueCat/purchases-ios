@@ -300,7 +300,7 @@ extension BasePurchasesTests {
             // swiftlint:disable:next force_try
             try! CustomerInfo(data: BasePurchasesTests.emptyCustomerInfoData)
         )
-        
+
         override func getCustomerInfo(appUserID: String,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.getSubscriberCallCount += 1

@@ -23,7 +23,6 @@ import Foundation
      Apple's search ads
      */
     @available(*, deprecated, message: "use adServices")
-    // TODO make a private enum that's not deprecated that maps to this?
     case appleSearchAds = 0
 
     /**
