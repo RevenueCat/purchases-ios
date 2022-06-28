@@ -45,6 +45,7 @@ actor ProductsFetcherSK2 {
 
     /// - Returns: The product identifiers that were removed, or empty if there were not
     ///   cached products.
+    @discardableResult
     func clearCache() -> Set<String> {
         let cachedProductIdentifiers = self.cachedProductsByIdentifier.keys
         if !cachedProductIdentifiers.isEmpty {
