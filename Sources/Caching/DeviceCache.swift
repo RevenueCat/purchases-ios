@@ -281,14 +281,14 @@ class DeviceCache {
 
             // convert keys from UserDefault from Integer String to AttributionNetwork
             let latestSent: [AttributionNetwork: String] =
-                latestAdvertisingIdsByRawNetworkSent.reduce(into: [:]) { adIdsByNetwork, adIdByRawNetworkString in
-                    if let networkRawValue = Int(adIdByRawNetworkString.key),
-                       let attributionNetwork = AttributionNetwork(rawValue: networkRawValue) {
-                    adIdsByNetwork[attributionNetwork] = adIdByRawNetworkString.value
-                } else {
-                    Logger.error(Strings.attribution.latest_attribution_sent_user_defaults_invalid)
-                }
-            }
+                 latestAdvertisingIdsByRawNetworkSent.compactMapKeys { network in
+                     guard let networkRawValue = Int(network),
+                        let attributionNetwork = AttributionNetwork(rawValue: networkRawValue) else {
+                             Logger.error(Strings.attribution.latest_attribution_sent_user_defaults_invalid)
+                             return nil
+                        }
+                        return attributionNetwork
+                    }
 
             return latestSent
         }
@@ -297,10 +297,7 @@ class DeviceCache {
     func set(latestAdvertisingIdsByNetworkSent: [AttributionNetwork: String], appUserID: String) {
         self.userDefaults.write {
             // convert AttributionNetwork to Integer as String
-            let latestAdIdsByRawNetworkStringSent =
-                latestAdvertisingIdsByNetworkSent.reduce(into: [:]) { adIdsByRawNetworkString, adIdByNetwork in
-                    adIdsByRawNetworkString[String(adIdByNetwork.key.rawValue)] = adIdByNetwork.value
-                }
+            let latestAdIdsByRawNetworkStringSent = latestAdvertisingIdsByNetworkSent.mapKeys { $0.rawValue }
             $0.setValue(latestAdIdsByRawNetworkStringSent,
                         forKey: CacheKeyBases.attributionDataDefaults + appUserID)
         }
