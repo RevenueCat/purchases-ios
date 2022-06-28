@@ -349,6 +349,9 @@
 		A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A56C2E012819C33500995421 /* BackendPostAdServicesTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */; };
+		A56DFDEC2866438B00EF2E32 /* AfficheClientProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDEB2866438B00EF2E32 /* AfficheClientProxy.swift */; };
+		A56DFDF0286643BF00EF2E32 /* PostAttributionDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDEF286643BF00EF2E32 /* PostAttributionDataOperation.swift */; };
+		A56DFDF3286673CE00EF2E32 /* BackendPostAttributionDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */; };
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
 		A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B6CDD5280F3843007629D5 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */; };
@@ -828,6 +831,9 @@
 		A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBeginRefundRequestHelper.swift; sourceTree = "<group>"; };
 		A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelperTests.swift; sourceTree = "<group>"; };
 		A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostAdServicesTokenTests.swift; sourceTree = "<group>"; };
+		A56DFDEB2866438B00EF2E32 /* AfficheClientProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AfficheClientProxy.swift; sourceTree = "<group>"; };
+		A56DFDEF286643BF00EF2E32 /* PostAttributionDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAttributionDataOperation.swift; sourceTree = "<group>"; };
+		A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostAttributionDataTests.swift; sourceTree = "<group>"; };
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
 		A5B6CDD5280F3843007629D5 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/AdServices.framework; sourceTree = DEVELOPER_DIR; };
 		A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
@@ -1718,6 +1724,7 @@
 				5796A39827D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift */,
 				5796A38727D6B85900653165 /* BackendPostReceiptDataTests.swift */,
 				5796A38027D6B78500653165 /* BaseBackendTest.swift */,
+				A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -1785,6 +1792,7 @@
 				B34605B6279A6E380031CA74 /* PostReceiptDataOperation.swift */,
 				B34605B9279A6E380031CA74 /* PostSubscriberAttributesOperation.swift */,
 				A55D5D65282ECCC100FA7623 /* PostAdServicesTokenOperation.swift */,
+				A56DFDEF286643BF00EF2E32 /* PostAttributionDataOperation.swift */,
 			);
 			path = Operations;
 			sourceTree = "<group>";
@@ -1887,6 +1895,7 @@
 				B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */,
 				F5BE44422698581100254A30 /* AttributionTypeFactory.swift */,
 				F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */,
+				A56DFDEB2866438B00EF2E32 /* AfficheClientProxy.swift */,
 			);
 			path = Attribution;
 			sourceTree = "<group>";
@@ -2403,6 +2412,7 @@
 				35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */,
 				A55D08302722368600D919E0 /* SK2BeginRefundRequestHelper.swift in Sources */,
 				35D832CD262A5B7500E60AC5 /* ETagManager.swift in Sources */,
+				A56DFDF0286643BF00EF2E32 /* PostAttributionDataOperation.swift in Sources */,
 				2DDF41BC24F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift in Sources */,
 				574A2F4B282D7AEA00150D40 /* PostOfferResponse.swift in Sources */,
 				F575858D26C088FE00C12B97 /* OfferingsManager.swift in Sources */,
@@ -2436,6 +2446,7 @@
 				B302206E2728B798008F1A0D /* BackendErrorStrings.swift in Sources */,
 				2D8D03B52799A2B90044C2ED /* DocCDocumentation.docc in Sources */,
 				576C8A8B27CFCB150058FA6E /* AnyEncodable.swift in Sources */,
+				A56DFDEC2866438B00EF2E32 /* AfficheClientProxy.swift in Sources */,
 				35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */,
 				B372EC54268FEDC60099171E /* StoreProductDiscount.swift in Sources */,
 				B34605BE279A6E380031CA74 /* OfferingsCallback.swift in Sources */,
@@ -2508,6 +2519,7 @@
 				B3CAFF10285CE8E30048A994 /* MockOfferingsAPI.swift in Sources */,
 				351B51BF26D450E800BD2BD7 /* StoreKitRequestFetcherTests.swift in Sources */,
 				2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */,
+				A56DFDF3286673CE00EF2E32 /* BackendPostAttributionDataTests.swift in Sources */,
 				351B514B26D44A4A00BD2BD7 /* MockOperationDispatcher.swift in Sources */,
 				351B514926D44A2F00BD2BD7 /* MockCustomerInfoManager.swift in Sources */,
 				5766AAC9283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift in Sources */,

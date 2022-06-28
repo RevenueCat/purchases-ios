@@ -53,18 +53,12 @@ class AttributionPoster {
         }
 
         let currentAppUserID = self.currentUserProvider.currentAppUserID
-        let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
-            deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
-        let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[network]
-
-        let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
-        guard latestSentToNetwork != newValueForNetwork else {
-            Logger.debug(Strings.attribution.skip_same_attributes)
+        guard let newDictToCache = getNewDictToCache(currentAppUserID: currentAppUserID,
+                                                     idfa: identifierForAdvertisers,
+                                                     network: network,
+                                                     networkUserId: networkUserId) else {
             return
         }
-
-        var newDictToCache = latestNetworkIdsAndAdvertisingIdsSentByNetwork
-        newDictToCache[network] = newValueForNetwork
 
         var newData = data
 
@@ -87,10 +81,45 @@ class AttributionPoster {
         }
 
         if !newData.isEmpty {
-            postSubscriberAttributes(newData: newData,
-                                     network: network,
-                                     appUserID: currentAppUserID,
-                                     newDictToCache: newDictToCache)
+            if network.isAppleSearchAdds {
+                postSearchAds(newData: newData,
+                              network: network,
+                              appUserID: currentAppUserID,
+                              newDictToCache: newDictToCache)
+            } else {
+                postSubscriberAttributes(newData: newData,
+                                         network: network,
+                                         appUserID: currentAppUserID,
+                                         newDictToCache: newDictToCache)
+            }
+        }
+    }
+
+    @available(*, deprecated)
+    func postAppleSearchAdsAttributionIfNeeded() {
+        guard attributionFetcher.isAuthorizedToPostSearchAds else {
+            return
+        }
+
+        guard self.latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds) == nil else {
+            return
+        }
+
+        attributionFetcher.afficheClientAttributionDetails { attributionDetails, error in
+            guard let attributionDetails = attributionDetails,
+                  error == nil else {
+                return
+            }
+
+            let attributionDetailsValues = Array(attributionDetails.values)
+            let firstAttributionDict = attributionDetailsValues.first as? [String: NSObject]
+
+            guard let hasIad = firstAttributionDict?["iad-attribution"] as? NSNumber,
+                  hasIad.boolValue == true else {
+                return
+            }
+
+            self.post(attributionData: attributionDetails, fromNetwork: .appleSearchAds, networkUserId: nil)
         }
     }
 
@@ -163,6 +192,19 @@ class AttributionPoster {
         return cachedDict[network]
     }
 
+    private func postSearchAds(newData: [String: Any],
+                               network: AttributionNetwork,
+                               appUserID: String,
+                               newDictToCache: [AttributionNetwork: String]) {
+        backend.post(attributionData: newData, network: network, appUserID: appUserID) { error in
+            guard error == nil else {
+                return
+            }
+
+            self.deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: appUserID)
+        }
+    }
+
     private func postSubscriberAttributes(newData: [String: Any],
                                           network: AttributionNetwork,
                                           appUserID: String,
@@ -171,6 +213,25 @@ class AttributionPoster {
                                                   network: network,
                                                   appUserID: appUserID)
         deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: appUserID)
+    }
+
+    private func getNewDictToCache(currentAppUserID: String,
+                                   idfa: String?,
+                                   network: AttributionNetwork,
+                                   networkUserId: String?) -> [AttributionNetwork: String]? {
+        let latestAdvertisingIdsByNetworkSent =
+            deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: currentAppUserID)
+        let latestSentToNetwork = latestAdvertisingIdsByNetworkSent[network]
+
+        let newValueForNetwork = "\(idfa ?? "(null)")_\(networkUserId ?? "(null)")"
+        guard latestSentToNetwork != newValueForNetwork else {
+            Logger.debug(Strings.attribution.skip_same_attributes)
+            return nil
+        }
+
+        var newDictToCache = latestAdvertisingIdsByNetworkSent
+        newDictToCache[network] = newValueForNetwork
+        return newDictToCache
     }
 
 }

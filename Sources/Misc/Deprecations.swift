@@ -146,7 +146,7 @@ public extension Purchases {
     /**
      * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
      */
-    @available(*, deprecated, message: "Use Purchases.automaticAdServicesAttributionTokenCollection instead")
+    @available(*, deprecated, message: "Use Purchases.attribution.enableAdServicesAttributionTokenCollection() instead")
     @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
 
 }

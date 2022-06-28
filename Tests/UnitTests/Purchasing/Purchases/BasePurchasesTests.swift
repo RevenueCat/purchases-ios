@@ -127,12 +127,14 @@ class BasePurchasesTests: TestCase {
     var purchases: Purchases!
 
     func setupPurchases(automaticCollection: Bool = false) {
+        Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
 
         self.initializePurchasesInstance(appUserId: self.identityManager.currentAppUserID)
     }
 
     func setupAnonPurchases() {
+        Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = false
         self.identityManager.mockIsAnonymous = true
         self.initializePurchasesInstance(appUserId: nil)
     }
@@ -351,6 +353,32 @@ extension BasePurchasesTests {
             self.postedOfferingIdentifier = presentedOfferingIdentifier
             self.postedObserverMode = observerMode
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
+        }
+
+        var invokedPostAttributionData = false
+        var invokedPostAttributionDataCount = 0
+        // swiftlint:disable:next large_tuple
+        var invokedPostAttributionDataParameters: (
+            data: [String: Any]?,
+            network: AttributionNetwork,
+            appUserID: String?
+        )?
+        var invokedPostAttributionDataParametersList = [(data: [String: Any]?,
+                                                         network: AttributionNetwork,
+                                                         appUserID: String?)]()
+        var stubbedPostAttributionDataCompletionResult: (BackendError?, Void)?
+
+        override func post(attributionData: [String: Any],
+                           network: AttributionNetwork,
+                           appUserID: String,
+                           completion: ((BackendError?) -> Void)? = nil) {
+            self.invokedPostAttributionData = true
+            self.invokedPostAttributionDataCount += 1
+            self.invokedPostAttributionDataParameters = (attributionData, network, appUserID)
+            self.invokedPostAttributionDataParametersList.append((attributionData, network, appUserID))
+            if let result = stubbedPostAttributionDataCompletionResult {
+                completion?(result.0)
+            }
         }
     }
 }

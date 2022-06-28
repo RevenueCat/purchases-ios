@@ -58,6 +58,16 @@ class Backend {
         self.config.clearCache()
     }
 
+    func post(attributionData: [String: Any],
+              network: AttributionNetwork,
+              appUserID: String,
+              completion: CustomerAPI.SimpleResponseHandler?) {
+        self.customer.post(attributionData: attributionData,
+                           network: network,
+                           appUserID: appUserID,
+                           completion: completion)
+    }
+
     func post(adServicesToken: String,
               appUserID: String,
               completion: CustomerAPI.SimpleResponseHandler?) {

@@ -79,7 +79,6 @@ private func checkStaticMethods() {
 
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
-
     let logLevel: LogLevel = Purchases.logLevel
     let proxyUrl: URL? = Purchases.proxyURL
     let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
@@ -264,6 +263,7 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
     let _: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
+    Purchases.automaticAppleSearchAdsAttributionCollection = false
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
 

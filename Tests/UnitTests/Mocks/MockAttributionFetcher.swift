@@ -21,4 +21,5 @@ class MockAttributionFetcher: AttributionFetcher {
         adServicesTokenCollectionCalled = true
         return adServicesTokenToReturn
     }
+
 }

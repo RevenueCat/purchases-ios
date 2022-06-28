@@ -73,6 +73,21 @@ class AttributionFetcher {
         return nil
     }
 
+    func afficheClientAttributionDetails(completion: @escaping ([String: NSObject]?, Error?) -> Void) {
+        // Should match available platforms in
+        // https://developer.apple.com/documentation/iad/adclient?language=swift
+#if os(iOS)
+        guard let afficheClientProxy = attributionFactory.afficheClientProxy() else {
+            Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_ad_framework)
+            completion(nil, AttributionFetcherError.identifierForAdvertiserFrameworksUnavailable)
+            return
+        }
+        afficheClientProxy.requestAttributionDetails(completion)
+#else
+        completion(nil, AttributionFetcherError.identifierForAdvertiserUnavailableForPlatform)
+#endif
+    }
+
     // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     var adServicesToken: String? {
@@ -88,6 +103,20 @@ class AttributionFetcher {
         Logger.warn(Strings.attribution.adservices_not_supported)
         return nil
 #endif
+    }
+
+    var isAuthorizedToPostSearchAds: Bool {
+        // Should match platforms that require permissions detailed in
+        // https://developer.apple.com/app-store/user-privacy-and-data-use/
+        if !appTrackingTransparencyRequired {
+            return true
+        }
+
+        if #available(iOS 14.0.0, tvOS 14.0.0, *) {
+            return isAuthorizedToPostSearchAdsInATTRequiredOS
+        }
+
+        return true
     }
 
     var authorizationStatus: FakeTrackingManagerAuthorizationStatus {
