@@ -329,5 +329,16 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 0
     }
 
+    func testPostAdServicesTokenCachesProperData() throws {
+        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+
+        let adServicesToken = "asdf"
+        attributionFetcher.adServicesTokenToReturn = adServicesToken
+        attributionPoster.postAdServicesTokenIfNeeded()
+        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
+        expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentParameters) ==
+            ([.adServices:adServicesToken], currentUserProvider.currentAppUserID)
+    }
+
 }
 #endif
