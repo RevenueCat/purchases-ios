@@ -299,7 +299,7 @@ class DeviceCache {
 
     func set(latestAdvertisingIdsByNetworkSent: [AttributionNetwork: String], appUserID: String) {
         self.userDefaults.write {
-            let latestAdIdsByRawNetworkStringSent = latestAdvertisingIdsByNetworkSent.mapKeys { $0.rawValue }
+            let latestAdIdsByRawNetworkStringSent = latestAdvertisingIdsByNetworkSent.mapKeys { String($0.rawValue) }
             $0.setValue(latestAdIdsByRawNetworkStringSent,
                         forKey: CacheKeyBases.attributionDataDefaults + appUserID)
         }
