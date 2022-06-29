@@ -3,7 +3,7 @@ before_all do
 end
 
 desc "Bump version, edit changelog, and create pull request"
-lane :bump do |options|
+lane :bump_version_update_changelog_create_pr do |options|
   ensure_git_branch(branch: options[:branch] || 'main')
   ensure_git_status_clean
 
