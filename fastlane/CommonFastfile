@@ -47,8 +47,7 @@ lane :prepare_next_version do |options|
   next_version_snapshot = "#{next_version}-SNAPSHOT"
 
   org = "RevenueCat"
-  repo = ENV["REPO_NAME"]
-  UI.user_error!("missing REPO_NAME env") unless repo
+  repo = get_repo_name
 
   branch_name = "bump/#{next_version_snapshot}"
   sh("git", "checkout", "-b", branch_name)
@@ -72,8 +71,7 @@ lane :github_release do |options|
   release_version = options[:version]
   UI.user_error!("missing version") unless release_version
   org = "RevenueCat"
-  repo = ENV["REPO_NAME"]
-  UI.user_error!("missing repo name env") unless repo
+  repo = get_repo_name
 
   begin
     changelog = File.read("../CHANGELOG.latest.md")
@@ -81,8 +79,6 @@ lane :github_release do |options|
     UI.user_error!("Please add a CHANGELOG.latest.md file before calling this lane")
   end
   commit_hash = last_git_commit[:commit_hash]
-  puts commit_hash
-
 
   is_prerelease = release_version.include?("-")
 
@@ -112,8 +108,7 @@ lane :github_changelog do |options|
   UI.important("Auto-generating changelog since #{old_version}")
 
   org = "RevenueCat"
-  repo = ENV["REPO_NAME"]
-  UI.user_error!("missing REPO_NAME env") unless repo
+  repo = get_repo_name
 
   path = "/repos/#{org}/#{repo}/compare/#{old_version}...HEAD"
 
@@ -266,6 +261,12 @@ def commmit_changes_and_push_current_branch(commit_message)
   sh("git add -u")
   sh("git commit -m '#{commit_message}'")
   push_to_git_remote
+end
+
+def get_repo_name
+  repo = ENV["REPO_NAME"]
+  UI.user_error!("missing REPO_NAME env") unless repo
+  repo
 end
 
 def current_version_number
