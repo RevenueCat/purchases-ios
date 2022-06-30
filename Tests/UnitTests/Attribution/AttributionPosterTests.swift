@@ -337,7 +337,7 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
         attributionPoster.postAdServicesTokenIfNeeded()
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentParameters) ==
-            ([.adServices:adServicesToken], currentUserProvider.currentAppUserID)
+            ([.adServices: adServicesToken], currentUserProvider.currentAppUserID)
     }
 
 }
