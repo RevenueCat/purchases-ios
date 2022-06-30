@@ -28,8 +28,10 @@ enum PurchaseStrings {
     case presenting_code_redemption_sheet
     case unable_to_present_redemption_sheet
     case purchases_synced
-    case purchasing_product_from_package(productIdentifier: String, offeringIdentifier: String)
-    case purchasing_product(productIdentifier: String)
+    case purchasing_product(StoreProduct)
+    case purchasing_product_from_package(StoreProduct, Package)
+    case purchasing_product_with_offer(StoreProduct, StoreProductDiscount)
+    case purchasing_product_from_package_with_offer(StoreProduct, Package, StoreProductDiscount)
     case purchased_product(productIdentifier: String)
     case product_purchase_failed(productIdentifier: String, error: Error)
     case skpayment_missing_from_skpaymenttransaction
@@ -126,11 +128,19 @@ extension PurchaseStrings: CustomStringConvertible {
         case .purchases_synced:
             return "Purchases synced."
 
-        case let .purchasing_product_from_package(productIdentifier, offeringIdentifier):
-            return "Purchasing product from package '\(productIdentifier)' in Offering '\(offeringIdentifier)'"
+        case let .purchasing_product(product):
+            return "Purchasing Product '\(product.productIdentifier)'"
 
-        case .purchasing_product(let productIdentifier):
-            return "Purchasing product '\(productIdentifier)'"
+        case let .purchasing_product_from_package(product, package):
+            return "Purchasing Product '\(product.productIdentifier)' from package " +
+            "in Offering '\(package.offeringIdentifier)'"
+
+        case let .purchasing_product_with_offer(product, discount):
+            return "Purchasing Product '\(product.productIdentifier)' with Offer '\(discount.offerIdentifier ?? "")'"
+
+        case let .purchasing_product_from_package_with_offer(product, package, discount):
+            return "Purchasing Product '\(product.productIdentifier)' from package in Offering " +
+            "'\(package.offeringIdentifier)' with Offer '\(discount.offerIdentifier ?? "")'"
 
         case let .purchased_product(productIdentifier):
             return "Purchased product - '\(productIdentifier)'"
