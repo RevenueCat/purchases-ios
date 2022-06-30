@@ -29,7 +29,7 @@ import Foundation
     /// All product identifiers purchases by the user regardless of expiration.
     @objc public private(set) lazy var allPurchasedProductIdentifiers: Set<String> = {
         return Set(self.expirationDatesByProductId.keys)
-            .union(self.nonSubscriptionTransactions.map { $0.productIdentifier })
+            .union(self.nonSubscriptions.map { $0.productIdentifier })
     }()
 
     /// Returns the latest expiration date of all products, nil if there are none.
@@ -46,7 +46,7 @@ import Foundation
      * Returns all the non-subscription purchases a user has made.
      * The purchases are ordered by purchase date in ascending order.
      */
-    @objc public let nonSubscriptionTransactions: [StoreTransaction]
+    @objc public let nonSubscriptions: [NonSubscriptionTransaction]
 
     /**
      * Returns the fetch date of this CustomerInfo.
@@ -144,7 +144,7 @@ import Foundation
             latestExpirationDate=\(String(describing: self.latestExpirationDate)),
             activeEntitlements=\(activeEntitlementsDescription),
             activeSubscriptions=\(activeSubsDescription),
-            nonSubscriptionTransactions=\(self.nonSubscriptionTransactions),
+            nonSubscriptions=\(self.nonSubscriptions),
             requestDate=\(String(describing: self.requestDate)),
             firstSeen=\(String(describing: self.firstSeen)),
             originalAppUserId=\(self.originalAppUserId),
@@ -183,7 +183,7 @@ import Foundation
             requestDate: response.requestDate,
             sandboxEnvironmentDetector: sandboxEnvironmentDetector
         )
-        self.nonSubscriptionTransactions = TransactionsFactory.nonSubscriptionTransactions(
+        self.nonSubscriptions = TransactionsFactory.nonSubscriptionTransactions(
             withSubscriptionsData: subscriber.nonSubscriptions
         )
         self.requestDate = response.requestDate

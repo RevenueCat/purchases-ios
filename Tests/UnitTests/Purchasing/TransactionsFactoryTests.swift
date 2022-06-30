@@ -89,7 +89,7 @@ private extension TransactionsFactory {
 
     static func nonSubscriptionTransactions(
         withSubscriptionsData data: [String: Any]
-    ) throws -> [StoreTransaction] {
+    ) throws -> [NonSubscriptionTransaction] {
         let data = try JSONSerialization.data(withJSONObject: data)
         let transactions: [String: [CustomerInfoResponse.Transaction]] = try JSONDecoder.default.decode(
             jsonData: data
