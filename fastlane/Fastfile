@@ -10,7 +10,7 @@
 #     https://docs.fastlane.tools/plugins/available-plugins
 #
 
-import("./CommonFastfile")
+import("#{File.expand_path(File.dirname(__FILE__))}/CommonFastfile")
 
 default_platform(:ios)
 
