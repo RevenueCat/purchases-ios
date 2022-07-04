@@ -463,6 +463,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             storeKitWrapper.delegate = purchasesOrchestrator
+        } else {
+            Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()

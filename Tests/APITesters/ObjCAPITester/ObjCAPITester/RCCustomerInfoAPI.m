@@ -20,6 +20,7 @@
     NSSet<NSString *> *appis = ci.allPurchasedProductIdentifiers;
     NSDate *led = ci.latestExpirationDate;
     NSSet<NSString *> *ncp = ci.nonConsumablePurchases;
+    NSArray<RCNonSubscriptionTransaction *> *ns = ci.nonSubscriptions;
     NSArray<RCStoreTransaction *> *nst = ci.nonSubscriptionTransactions;
     NSString *oav = ci.originalApplicationVersion;
     NSDate *opd = ci.originalPurchaseDate;
@@ -37,7 +38,7 @@
 
     NSDictionary<NSString *, id> *rawData = [ci rawData];
     
-    NSLog(ci, ei, as, appis, led, ncp, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d, rawData);
+    NSLog(ci, ei, as, appis, led, ncp, ns, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d, rawData);
 }
 
 + (void)checkCacheFetchPolicyEnum:(RCCacheFetchPolicy) policy {
