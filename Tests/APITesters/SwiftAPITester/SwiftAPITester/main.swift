@@ -47,6 +47,7 @@ func main() -> Int {
 
     checkRefundRequestStatusEnum()
 
+    checkNonSubscriptionTransactionAPI()
     checkTransactionAPI()
 
     checkStoreProductAPI()

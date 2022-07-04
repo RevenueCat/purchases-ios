@@ -28,8 +28,10 @@ enum PurchaseStrings {
     case presenting_code_redemption_sheet
     case unable_to_present_redemption_sheet
     case purchases_synced
-    case purchasing_product_from_package(productIdentifier: String, offeringIdentifier: String)
-    case purchasing_product(productIdentifier: String)
+    case purchasing_product(StoreProduct)
+    case purchasing_product_from_package(StoreProduct, Package)
+    case purchasing_product_with_offer(StoreProduct, StoreProductDiscount)
+    case purchasing_product_from_package_with_offer(StoreProduct, Package, StoreProductDiscount)
     case purchased_product(productIdentifier: String)
     case product_purchase_failed(productIdentifier: String, error: Error)
     case skpayment_missing_from_skpaymenttransaction
@@ -126,11 +128,19 @@ extension PurchaseStrings: CustomStringConvertible {
         case .purchases_synced:
             return "Purchases synced."
 
-        case let .purchasing_product_from_package(productIdentifier, offeringIdentifier):
-            return "Purchasing product from package '\(productIdentifier)' in Offering '\(offeringIdentifier)'"
+        case let .purchasing_product(product):
+            return "Purchasing Product '\(product.productIdentifier)'"
 
-        case .purchasing_product(let productIdentifier):
-            return "Purchasing product '\(productIdentifier)'"
+        case let .purchasing_product_from_package(product, package):
+            return "Purchasing Product '\(product.productIdentifier)' from package " +
+            "in Offering '\(package.offeringIdentifier)'"
+
+        case let .purchasing_product_with_offer(product, discount):
+            return "Purchasing Product '\(product.productIdentifier)' with Offer '\(discount.offerIdentifier ?? "")'"
+
+        case let .purchasing_product_from_package_with_offer(product, package, discount):
+            return "Purchasing Product '\(product.productIdentifier)' from package in Offering " +
+            "'\(package.offeringIdentifier)' with Offer '\(discount.offerIdentifier ?? "")'"
 
         case let .purchased_product(productIdentifier):
             return "Purchased product - '\(productIdentifier)'"
@@ -148,11 +158,19 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .sktransaction_missing_transaction_date:
             return "There is a problem with the SKPaymentTransaction missing " +
-            "a transaction date - this is an issue with the App Store."
+            "a transaction date - this is an issue with the App Store. Unix Epoch will be used instead. \n" +
+            "Transactions in the backend and in webhooks are unaffected and will have the correct timestamps. " +
+            "This is a bug in StoreKit 1. To prevent running into this issue on devices running " +
+            "iOS 15+, watchOS 8+, macOS 12+, and tvOS 15+, " +
+            "you can set `usesStoreKit2IfAvailable` to true when calling `configure`."
 
         case .sktransaction_missing_transaction_identifier:
             return "There is a problem with the SKPaymentTransaction missing " +
-            "a transaction identifier - this is an issue with the App Store."
+            "a transaction identifier - this is an issue with the App Store." +
+            "Transactions in the backend and in webhooks are unaffected and will have the correct identifier. " +
+            "This is a bug in StoreKit 1. To prevent running into this issue on devices running " +
+            "iOS 15+, watchOS 8+, macOS 12+, and tvOS 15+, " +
+            "you can set `usesStoreKit2IfAvailable` to true when calling `configure`."
 
         case .could_not_purchase_product_id_not_found:
             return "makePurchase - Could not purchase SKProduct. " +
