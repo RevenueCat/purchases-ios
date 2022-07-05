@@ -193,7 +193,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
             let cachedProductIdentifiers = self.cachedProductsByIdentifier.keys
             if !cachedProductIdentifiers.isEmpty {
                 Logger.debug(Strings.offering.product_cache_invalid_for_storefront_change)
-                self.cachedProductsByIdentifier.removeAll()
+                self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
             }
             completion?(Set(cachedProductIdentifiers))
         }
