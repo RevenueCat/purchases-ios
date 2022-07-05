@@ -65,6 +65,8 @@ class MockOfferingsManager: OfferingsManager {
 
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = false
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount = 0
+
+    // swiftlint:disable identifier_name
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParameters: String?
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParametersList = [String]()
 
