@@ -82,7 +82,7 @@ extension OfferingStrings: CustomStringConvertible {
                 "cached. products: \(identifiers)"
 
         case .product_cache_invalid_for_storefront_change:
-            return "Storefront change detected. Invalidating product cache."
+            return "Storefront change detected. Invalidating and re-fetching product cache."
 
         case .vending_offerings_cache:
             return "Vending Offerings from cache"

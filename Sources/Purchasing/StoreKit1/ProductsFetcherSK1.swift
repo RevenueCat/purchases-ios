@@ -186,9 +186,16 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         }
     }
 
-    func clearCache() {
+    /// - Returns (via callback): The product identifiers that were removed, or empty if there were not
+    ///   cached products.
+    func clearCache(completion: ((Set<String>) -> Void)? = nil) {
         self.queue.async {
-            self.cachedProductsByIdentifier.removeAll()
+            let cachedProductIdentifiers = self.cachedProductsByIdentifier.keys
+            if !cachedProductIdentifiers.isEmpty {
+                Logger.debug(Strings.offering.product_cache_invalid_for_storefront_change)
+                self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
+            }
+            completion?(Set(cachedProductIdentifiers))
         }
     }
 

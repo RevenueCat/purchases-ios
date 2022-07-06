@@ -34,6 +34,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var deviceCache: MockDeviceCache!
     private var mockManageSubsHelper: MockManageSubscriptionsHelper!
     private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
+    private var mockOfferingsManager: MockOfferingsManager!
 
     private var orchestrator: PurchasesOrchestrator!
 
@@ -49,6 +50,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo)
         backend = MockBackend()
         offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
+
+        mockOfferingsManager = MockOfferingsManager(deviceCache: deviceCache,
+                                                    operationDispatcher: operationDispatcher,
+                                                    systemInfo: self.systemInfo,
+                                                    backend: backend,
+                                                    offeringsFactory: OfferingsFactory(),
+                                                    productsManager: productsManager)
 
         customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
                                                       deviceCache: deviceCache,
@@ -118,6 +126,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              currentUserProvider: currentUserProvider,
                                              transactionsManager: transactionsManager,
                                              deviceCache: deviceCache,
+                                             offeringsManager: mockOfferingsManager,
                                              manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
         storeKitWrapper.delegate = orchestrator
@@ -139,6 +148,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   currentUserProvider: self.currentUserProvider,
                                                   transactionsManager: self.transactionsManager,
                                                   deviceCache: self.deviceCache,
+                                                  offeringsManager: self.mockOfferingsManager,
                                                   manageSubscriptionsHelper: self.mockManageSubsHelper,
                                                   beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
                                                   storeKit2TransactionListener: storeKit2TransactionListener,
@@ -486,15 +496,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         self.orchestrator.storefrontDidUpdate()
 
-        expect(self.deviceCache.clearCachedOfferingsCount) == 1
-        expect(self.productsManager.invokedClearCachedProductsCount) == 1
+        expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
+        expect(self.productsManager.invokedInvalidateAndReFetchCachedProductsIfAppropiateCount) == 1
     }
 
     func testClearCachedProductsAndOfferingsAfterStorefrontChangesWithSK1() async throws {
         self.orchestrator.storeKitWrapperDidChangeStorefront(storeKitWrapper)
 
-        expect(self.deviceCache.clearCachedOfferingsCount) == 1
-        expect(self.productsManager.invokedClearCachedProductsCount) == 1
+        expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
+        expect(self.productsManager.invokedInvalidateAndReFetchCachedProductsIfAppropiateCount) == 1
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

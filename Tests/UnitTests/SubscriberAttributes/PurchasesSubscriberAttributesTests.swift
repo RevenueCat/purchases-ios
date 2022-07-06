@@ -147,6 +147,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                           currentUserProvider: mockIdentityManager,
                                                           transactionsManager: mockTransactionsManager,
                                                           deviceCache: mockDeviceCache,
+                                                          offeringsManager: mockOfferingsManager,
                                                           manageSubscriptionsHelper: mockManageSubsHelper,
                                                           beginRefundRequestHelper: mockBeginRefundRequestHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(

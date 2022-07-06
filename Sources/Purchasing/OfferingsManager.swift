@@ -94,6 +94,15 @@ class OfferingsManager {
         return productIDsFromBackend.subtracting(productIDsFromStore)
     }
 
+    func invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: String) {
+        let cachedOfferings = self.deviceCache.cachedOfferings
+        self.deviceCache.clearCachedOfferings()
+
+        if cachedOfferings != nil {
+            self.offerings(appUserID: appUserID, completion: { _ in })
+        }
+    }
+
 }
 
 private extension OfferingsManager {
