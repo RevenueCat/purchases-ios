@@ -33,7 +33,7 @@ enum AttributionStrings {
     case search_ads_attribution_cancelled_missing_ad_framework
     case search_ads_attribution_cancelled_not_authorized
     case skip_same_attributes
-    case subscriber_attributes_error(errors: [String: String]?)
+    case subscriber_attributes_error(errors: [String: String])
     case unsynced_attributes_count(unsyncedAttributesCount: Int, appUserID: String)
     case unsynced_attributes(unsyncedAttributes: SubscriberAttribute.Dictionary)
     case attribute_set_locally(attribute: String)
@@ -103,8 +103,8 @@ extension AttributionStrings: CustomStringConvertible {
         case .skip_same_attributes:
             return "Attribution data is the same as latest. Skipping."
 
-        case .subscriber_attributes_error(let errors):
-            return "Subscriber attributes errors: \((errors?.description ?? ""))"
+        case let .subscriber_attributes_error(errors):
+            return "Subscriber attributes errors: \(errors.description))"
 
         case .unsynced_attributes_count(let unsyncedAttributesCount, let appUserID):
             return "Found \(unsyncedAttributesCount) unsynced attributes for App User ID: \(appUserID)"

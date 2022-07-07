@@ -1,0 +1,274 @@
+before_all do
+  update_fastlane
+end
+
+desc "Bump version, edit changelog, and create pull request"
+lane :bump_version_update_changelog_create_pr do |options|
+  ensure_git_branch(branch: options[:branch] || 'main')
+  ensure_git_status_clean
+
+  # Ensure GitHub API token is set
+  if ENV['GITHUB_PULL_REQUEST_API_TOKEN'].nil?
+    UI.error("Environment variable GITHUB_PULL_REQUEST_API_TOKEN is required to create a pull request")
+    UI.error("Please make a fastlane/.env file from the fastlane/.env.SAMPLE template")
+    UI.user_error!("Could not find value for GITHUB_PULL_REQUEST_API_TOKEN")
+  end
+
+  # Get and print current version number
+  version_number = current_version_number
+  UI.important("Current version is #{version_number}")
+
+  # Ask for new version number
+  new_version_number = UI.input("New version number: ")
+
+  generated_contents = github_changelog(options)
+  changelog_path = edit_changelog(generated_contents: generated_contents)
+  changelog = File.read(changelog_path)
+  
+  create_new_release_branch(version: new_version_number)
+  replace_version_number(version: new_version_number)
+
+  attach_changelog_to_master(new_version_number)
+
+  commit_updated_files_and_push(version: new_version_number)    
+  
+  create_pull_request(
+    title: "Release/#{new_version_number}",
+    base: "main",
+    body: changelog
+  )
+end
+
+desc "Prepare next version"
+lane :prepare_next_version do |options|
+  old_version_number = current_version_number
+  major, minor, _ = old_version_number.split('.')
+  next_version = "#{major}.#{minor.to_i + 1}.0"
+  next_version_snapshot = "#{next_version}-SNAPSHOT"
+
+  org = "RevenueCat"
+  repo = get_repo_name
+
+  branch_name = "bump/#{next_version_snapshot}"
+  sh("git", "checkout", "-b", branch_name)
+
+  replace_version_number(version: next_version_snapshot)
+
+  sh("git", "commit", "-am", "Preparing for next version")
+  push_to_git_remote
+
+  create_pull_request(
+    repo: "#{org}/#{repo}",
+    title: "Prepare next version: #{next_version_snapshot}",
+    base: "main",
+    api_token: ENV["GITHUB_TOKEN"],
+    head: branch_name
+  )
+end
+
+desc "Make github release"
+lane :github_release do |options|
+  release_version = options[:version]
+  UI.user_error!("missing version") unless release_version
+  org = "RevenueCat"
+  repo = get_repo_name
+
+  begin
+    changelog = File.read("../CHANGELOG.latest.md")
+  rescue
+    UI.user_error!("Please add a CHANGELOG.latest.md file before calling this lane")
+  end
+  commit_hash = last_git_commit[:commit_hash]
+
+  is_prerelease = release_version.include?("-")
+
+  upload_assets = ENV["GITHUB_RELEASE_UPLOAD_ASSETS"]&.split(",") || []
+
+  set_github_release(
+    repository_name: "#{org}/#{repo}",
+    api_token: ENV["GITHUB_TOKEN"],
+    name: release_version,
+    tag_name: "#{release_version}",
+    description: changelog,
+    commitish: commit_hash,
+    upload_assets: upload_assets,
+    is_draft: false,
+    is_prerelease: is_prerelease
+)
+end
+
+# Inspired by fastlane's changelog
+# https://github.com/fastlane/fastlane/blob/eb4584e0394c1fecccd70d4313260f4707f2af80/fastlane/Fastfile#L346-L380
+desc "Generate changelog from GitHub compare and PR data for mentioning GitHub usernames in release notes"
+lane :github_changelog do |options|
+  last_version = sh("git describe --tags --abbrev=0").strip
+  old_version = options[:old_version] || last_version
+  api_token = ENV["GITHUB_TOKEN"]
+
+  UI.important("Auto-generating changelog since #{old_version}")
+
+  org = "RevenueCat"
+  repo = get_repo_name
+
+  path = "/repos/#{org}/#{repo}/compare/#{old_version}...HEAD"
+
+  # Get all commits from previous version (tag) to HEAD
+  resp = github_api(path: path, api_token: api_token)
+  body = JSON.parse(resp[:body])
+  commits = body["commits"].reverse
+
+  # TODO: Fix this process where rate limiting is not an issue
+  # Temporary workaround to get around GitHub rate limit
+  rate_limit_sleep = ENV["GITHUB_RATE_LIMIT_SLEEP"].to_i
+
+  formatted = commits.map do |commit|
+    if rate_limit_sleep > 0
+      UI.message("Sleeping #{rate_limit_sleep} second(s) to avoid rate limit 🐌")
+      sleep(rate_limit_sleep)
+    end
+
+    # Default to commit message info
+    message = commit["commit"]["message"].lines.first.strip
+    name = commit["commit"]["author"]["name"]
+    username = commit["author"]["login"]
+
+    # Get pull request associate with commit message
+    sha = commit["sha"]
+    pr_resp = github_api(path: "/search/issues?q=repo:#{org}/#{repo}+is:pr+base:main+SHA:#{sha}", api_token: api_token)
+    body = JSON.parse(pr_resp[:body])
+    items = body["items"]
+
+    if items.size == 1
+      item = items.first
+      message = "#{item['title']} (##{item['number']})"
+      username = item["user"]["login"]
+    else
+      UI.user_error!("Cannot generate changelog. Multiple commits found for #{sha}")
+    end
+
+    "* #{message} via #{name} (@#{username})"
+  end.join("\n")
+
+  puts formatted if options[:print]
+
+  formatted
+end
+
+desc "Increment build number and update changelog"
+lane :bump_and_update_changelog do |options|
+  replace_version_number(options)
+  attach_changelog_to_master(options[:version])
+end
+
+private_lane :edit_changelog do |options|
+  generated_contents = options[:generated_contents].to_s
+
+  # Open CHANGELOG.latest.md in editor
+  changelog_filename = "CHANGELOG.latest.md"
+  changelog_path = File.absolute_path("../#{changelog_filename}")
+  editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
+  content_before_opening_editor = File.read(changelog_path)
+
+  if generated_contents.size > 0
+    UI.message("Using auto generated contents:\n#{generated_contents}")
+    File.write(changelog_path, generated_contents)
+  else
+    UI.user_error!("Generated content for changlog was empty")
+  end
+
+  UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
+  if UI.confirm("Open #{changelog_filename} in '#{editor}'? (No will quit this process)")
+    system(editor, changelog_path.shellescape)
+  else
+    UI.user_error!("Cancelled")
+  end
+
+  # Some people may use visual editors and `system` will continue right away.
+  # This will compare the content before and afer attempting to open
+  # and will open a blocking prompt for the visual editor changes to be saved
+  content_after_opening_editor = File.read(changelog_path)
+  if content_before_opening_editor == content_after_opening_editor
+    unless UI.confirm("You may have opened the changelog in a visual editor. Enter 'y' when changes are saved or 'n' to cancel")
+      UI.user_error!("Cancelled")
+    end
+  end
+
+  changelog_path
+end
+
+desc "Creates new branch in the form `release/:version`. It receives `version` as parameter"
+private_lane :create_new_release_branch do |options|
+  release_version = options[:version]
+  UI.user_error!("missing version") unless release_version
+  sh("git checkout -b 'release/#{release_version}'")
+end
+
+private_lane :commit_updated_files_and_push do |options|
+  release_version = options[:version]
+  UI.user_error!("missing version") unless release_version
+  commmit_changes_and_push_current_branch("Version bump for #{release_version}")
+end
+
+desc "Replace version number in project"
+lane :replace_version_number do |options|
+  new_version_number = options[:version]
+  UI.user_error!("missing version") unless new_version_number
+  files_to_update_string = ENV['FILES_TO_UPDATE_VERSION_STRING']
+  UI.user_error!("missing files to update env") unless files_to_update_string
+  files_to_update = files_to_update_string.split(",")
+  previous_version_number = current_version_number
+  previous_version_number_without_prerelease_modifiers = previous_version_number.split("-")[0]
+  new_version_number_without_prerelease_modifiers = new_version_number.split("-")[0]
+
+  for file_to_update in files_to_update
+    increment_build_number(previous_version_number, new_version_number, file_to_update.strip)
+    increment_build_number(previous_version_number_without_prerelease_modifiers, new_version_number_without_prerelease_modifiers, file_to_update.strip)
+  end
+end
+
+def attach_changelog_to_master(version_number)
+  current_changelog = File.open("../CHANGELOG.latest.md", 'r')
+  master_changelog = File.open("../CHANGELOG.md", 'r')
+
+  current_changelog_data = current_changelog.read
+  master_changelog_data = master_changelog.read
+
+  current_changelog.close  
+  master_changelog.close
+
+  File.open("../CHANGELOG.md", 'w') { |master_changelog_write_mode|
+    version_header = "## #{version_number}"
+    whole_file_data = "#{version_header}\n#{current_changelog_data}\n#{master_changelog_data}"
+    
+    master_changelog_write_mode.write(whole_file_data)
+  }
+end
+
+def increment_build_number(previous_version_number, new_version_number, file_path)
+  replace_in(previous_version_number, new_version_number, file_path)
+end
+
+def replace_in(previous_text, new_text, path, allow_empty=false)
+  if new_text.to_s.strip.empty? and not allow_empty
+    UI.user_error!("Missing `new_text` in call to `replace_in`, looking for replacement for #{previous_text} 😵.")
+  end
+  sed_regex = 's|' + previous_text.sub(".", "\\.") + '|' + new_text + '|'
+  backup_extension = '.bck'
+  sh("sed", '-i', backup_extension, sed_regex, path)
+end
+
+def commmit_changes_and_push_current_branch(commit_message)
+  sh("git add -u")
+  sh("git commit -m '#{commit_message}'")
+  push_to_git_remote
+end
+
+def get_repo_name
+  repo = ENV["REPO_NAME"]
+  UI.user_error!("missing REPO_NAME env") unless repo
+  repo
+end
+
+def current_version_number
+  File.read("../.version").strip
+end

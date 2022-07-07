@@ -13,6 +13,8 @@
 
 import Foundation
 
+#if DEBUG
+
 enum FatalErrorUtil {
 
     fileprivate static var fatalErrorClosure: (String, StaticString, UInt) -> Never = defaultFatalErrorClosure
@@ -31,3 +33,5 @@ enum FatalErrorUtil {
 func fatalError(_ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line) -> Never {
     FatalErrorUtil.fatalErrorClosure(message(), file, line)
 }
+
+#endif

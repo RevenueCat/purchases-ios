@@ -9,7 +9,7 @@ import StoreKit
 
 import RevenueCat
 
-var transaction: StoreTransaction!
+private  var transaction: StoreTransaction!
 func checkStoreTransactionAPI() {
     let productIdentifier: String = transaction.productIdentifier
     let purchaseDate: Date = transaction.purchaseDate

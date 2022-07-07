@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable line_length missing_docs
+// swiftlint:disable file_length line_length missing_docs
 
 public extension Purchases {
 
@@ -372,6 +372,40 @@ extension CustomerInfo {
     @available(*, deprecated, message: "use nonSubscriptionTransactions")
     @objc public var nonConsumablePurchases: Set<String> {
         return Set(self.nonSubscriptionTransactions.map { $0.productIdentifier })
+    }
+
+    /**
+     * Returns all the non-subscription purchases a user has made.
+     * The purchases are ordered by purchase date in ascending order.
+     */
+    @available(*, deprecated, renamed: "nonSubscriptions")
+    @objc public var nonSubscriptionTransactions: [StoreTransaction] {
+        return self.nonSubscriptions
+            .map(BackendParsedTransaction.init)
+            .map(StoreTransaction.init)
+    }
+
+    @available(*, deprecated, message: "Use NonSubscriptionTransaction")
+    private struct BackendParsedTransaction: StoreTransactionType {
+
+        let productIdentifier: String
+        let purchaseDate: Date
+        let transactionIdentifier: String
+        let quantity: Int
+
+        init(with transaction: NonSubscriptionTransaction) {
+            self.productIdentifier = transaction.productIdentifier
+            self.purchaseDate = transaction.purchaseDate
+            self.transactionIdentifier = transaction.transactionIdentifier
+
+            // Defaulting to `1` since multi-quantity purchases aren't currently supported.
+            self.quantity = 1
+        }
+
+        func finish(_ wrapper: StoreKitWrapper) {
+            // Nothing to do
+        }
+
     }
 
 }
