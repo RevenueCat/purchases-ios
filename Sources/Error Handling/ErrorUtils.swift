@@ -471,6 +471,7 @@ private extension ErrorUtils {
 
         Self.logErrorIfNeeded(
             code,
+            message: message,
             fileName: fileName, functionName: functionName, line: line
         )
 
@@ -513,9 +514,12 @@ private extension ErrorUtils {
 
     // swiftlint:disable:next function_body_length
     private static func logErrorIfNeeded(_ code: ErrorCode,
+                                         message: String?,
                                          fileName: String = #fileID,
                                          functionName: String = #function,
                                          line: UInt = #line) {
+        let message = code.description + (message.map { " " + $0 } ?? "")
+
         switch code {
         case .networkError,
                 .unknownError,
@@ -540,7 +544,7 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError:
                 Logger.error(
-                    code.description,
+                    message,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -560,7 +564,7 @@ private extension ErrorUtils {
                 .paymentPendingError,
                 .productRequestTimedOut:
                 Logger.appleError(
-                    code.description,
+                    message,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -568,7 +572,7 @@ private extension ErrorUtils {
 
         @unknown default:
             Logger.error(
-                code.description,
+                message,
                 fileName: fileName,
                 functionName: functionName,
                 line: line
