@@ -518,7 +518,7 @@ private extension ErrorUtils {
                                          fileName: String = #fileID,
                                          functionName: String = #function,
                                          line: UInt = #line) {
-        let message = code.description + (message.map { " " + $0 } ?? "")
+        let formattedMessage = code.description + (message.map { " " + $0 } ?? "")
 
         switch code {
         case .networkError,
@@ -544,7 +544,7 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError:
                 Logger.error(
-                    message,
+                    formattedMessage,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -564,7 +564,7 @@ private extension ErrorUtils {
                 .paymentPendingError,
                 .productRequestTimedOut:
                 Logger.appleError(
-                    message,
+                    formattedMessage,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -572,7 +572,7 @@ private extension ErrorUtils {
 
         @unknown default:
             Logger.error(
-                message,
+                formattedMessage,
                 fileName: fileName,
                 functionName: functionName,
                 line: line
