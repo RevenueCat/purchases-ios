@@ -45,12 +45,8 @@ import Foundation
 
     // MARK: -
 
-    init(
-        entitlements: [String: EntitlementInfo],
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector
-    ) {
+    init(entitlements: [String: EntitlementInfo]) {
         self.all = entitlements
-        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
     }
 
     private func isEqual(to other: EntitlementInfos?) -> Bool {
@@ -64,10 +60,6 @@ import Foundation
 
         return self.all == other.all
     }
-
-    // MARK: -
-
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
 
 }
 
@@ -89,9 +81,7 @@ public extension EntitlementInfos {
     /// #### Related Symbols
     /// - ``activeInAnyEnvironment``
     @objc var activeInCurrentEnvironment: [String: EntitlementInfo] {
-        return self.activeInAnyEnvironment.filter { [isSandbox = self.sandboxEnvironmentDetector.isSandbox] in
-            $0.value.isSandbox == isSandbox
-        }
+        return self.all.filter { $0.value.isActiveInCurrentEnvironment }
     }
 
     /// Dictionary of active ``EntitlementInfo`` objects keyed by their identifiers.
@@ -100,7 +90,7 @@ public extension EntitlementInfos {
     /// #### Related Symbols
     /// - ``activeInCurrentEnvironment``
     @objc var activeInAnyEnvironment: [String: EntitlementInfo] {
-        return self.all.filter { $0.value.isActive }
+        return self.all.filter { $0.value.isActiveInAnyEnvironment }
     }
 
 }
@@ -124,15 +114,13 @@ extension EntitlementInfos {
                     EntitlementInfo(identifier: identifier,
                                     entitlement: entitlement,
                                     subscription: subscription,
+                                    sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                                     requestDate: requestDate)
                 )
             }
         )
 
-        self.init(
-            entitlements: allEntitlements,
-            sandboxEnvironmentDetector: sandboxEnvironmentDetector
-        )
+        self.init(entitlements: allEntitlements)
     }
 
 }

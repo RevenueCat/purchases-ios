@@ -1232,6 +1232,7 @@ private extension EntitlementInfosTests {
         expect(file: file, line: line, entitlement.identifier) == identifier
         expect(file: file, line: line, Set(entitlements.all.keys)).to(contain([identifier]))
         expect(file: file, line: line, entitlement.isActive) == true
+        expect(file: file, line: line, entitlement.isActiveInAnyEnvironment) == expectedEntitlementActive
 
         expect(file: file, line: line, Set(entitlements.activeInAnyEnvironment.keys))
         == (expectedEntitlementActive ? [identifier] : [])
@@ -1250,6 +1251,7 @@ private extension EntitlementInfosTests {
         expect(file: file, line: line, entitlement.identifier) == identifier
         expect(file: file, line: line, entitlements.all.keys).to(contain([identifier]))
         expect(file: file, line: line, entitlement.isActive) == true
+        expect(file: file, line: line, entitlement.isActiveInCurrentEnvironment) == expectedEntitlementActive
 
         expect(file: file, line: line, Set(entitlements.activeInCurrentEnvironment.keys))
         == (expectedEntitlementActive ? [identifier] : [])
