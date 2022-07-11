@@ -85,6 +85,10 @@ extension PeriodType: DefaultValueProvider {
 
     /**
      True if the user has access to this entitlement
+     - Warning: this is equivalent to ``isActiveInAnyEnvironment``
+
+     #### Related Symbols
+     - ``isActiveInCurrentEnvironment``
      */
     @objc public var isActive: Bool { self.contents.isActive }
 
@@ -204,6 +208,7 @@ extension PeriodType: DefaultValueProvider {
         identifier: String,
         entitlement: CustomerInfoResponse.Entitlement,
         subscription: CustomerInfoResponse.Subscription,
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector,
         requestDate: Date?
     ) {
         self.contents = .init(
@@ -224,15 +229,44 @@ extension PeriodType: DefaultValueProvider {
             billingIssueDetectedAt: subscription.billingIssuesDetectedAt,
             ownershipType: subscription.ownershipType
         )
+        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
 
         self.rawData = entitlement.rawData
     }
 
+    // MARK: -
+
     private let contents: Contents
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
 
 }
 
 extension EntitlementInfo: RawDataContainer {}
+
+public extension EntitlementInfo {
+
+    /// True if the user has access to this entitlement,
+    /// - Note: When queried from the sandbox environment, it only returns true if active in sandbox.
+    /// When queried from production, this only returns true if active in production.
+    ///
+    /// #### Related Symbols
+    /// - ``isActiveInAnyEnvironment``
+    @objc var isActiveInCurrentEnvironment: Bool {
+        return (self.isActiveInAnyEnvironment &&
+                self.isSandbox == self.sandboxEnvironmentDetector.isSandbox)
+    }
+
+    /// True if the user has access to this entitlement in any environment.
+    ///
+    /// #### Related Symbols
+    /// - ``isActiveInCurrentEnvironment``
+    @objc var isActiveInAnyEnvironment: Bool {
+        return self.isActive
+    }
+
+}
+
+// MARK: - Private
 
 private extension EntitlementInfo {
 
