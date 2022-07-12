@@ -167,8 +167,8 @@ import Foundation
             return self
         }
 
-        /// Set `platformInfo`. Internal details, no need to expose.
-        func with(platformInfo: Purchases.PlatformInfo) -> Builder {
+        /// Set `platformInfo`.
+        internal func with(platformInfo: Purchases.PlatformInfo) -> Builder {
             self.platformInfo = platformInfo
             return self
         }
