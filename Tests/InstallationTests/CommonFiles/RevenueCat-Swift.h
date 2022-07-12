@@ -752,6 +752,14 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 /// The entitlement identifier configured in the RevenueCat dashboard
 @property (nonatomic, readonly, copy) NSString * _Nonnull identifier;
 /// True if the user has access to this entitlement
+/// warning:
+/// this is equivalent to <code>isActiveInAnyEnvironment</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>isActiveInCurrentEnvironment</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly) BOOL isActive;
 /// True if the underlying subscription is set to renew at the end of
 /// the billing period (<code>expirationDate</code>).
@@ -798,6 +806,29 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 
 
 
+
+
+@interface RCEntitlementInfo (SWIFT_EXTENSION(RevenueCat))
+/// True if the user has access to this entitlement,
+/// note:
+/// When queried from the sandbox environment, it only returns true if active in sandbox.
+/// When queried from production, this only returns true if active in production.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>isActiveInAnyEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly) BOOL isActiveInCurrentEnvironment;
+/// True if the user has access to this entitlement in any environment.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>isActiveInCurrentEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly) BOOL isActiveInAnyEnvironment;
+@end
 
 
 /// This class contains all the entitlements associated to the user.
@@ -1259,6 +1290,7 @@ SWIFT_CLASS("_TtC10RevenueCat15ProductsManager")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+
 @class RCStoreProductDiscount;
 @class RCPromotionalOfferSignedData;
 
@@ -1599,6 +1631,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 @end
 
 
+
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
@@ -1635,7 +1668,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 + (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
 @end
-
 
 
 
