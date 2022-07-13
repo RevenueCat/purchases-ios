@@ -168,7 +168,7 @@ import Foundation
         }
 
         /// Set `platformInfo`.
-        internal func with(platformInfo: Purchases.PlatformInfo) -> Builder {
+        @objc public func with(platformInfo: Purchases.PlatformInfo) -> Builder {
             self.platformInfo = platformInfo
             return self
         }
