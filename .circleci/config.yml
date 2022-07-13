@@ -461,7 +461,9 @@ jobs:
     steps:
       - checkout
       - bundle-install-with-cache
-      - run: bundle exec danger --verbose
+      - run: 
+          name: Run Danger
+          command: bundle exec danger --verbose
 
 workflows:
   version: 2
