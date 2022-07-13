@@ -19,6 +19,7 @@ func checkConfigurationAPI() {
         .with(networkTimeout: 1)
         .with(storeKit1Timeout: 1)
         .with(usesStoreKit2IfAvailable: false)
+        .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
         .build()
     print(configuration)
 }
