@@ -471,10 +471,23 @@ private extension StoreKit1IntegrationTests {
         Logger.info("Expiring subscription for product '\(entitlement.productIdentifier)'")
 
         // Try expiring using `SKTestSession`
-        try self.testSession.expireSubscription(productIdentifier: entitlement.productIdentifier)
+        do {
+            try self.testSession.expireSubscription(productIdentifier: entitlement.productIdentifier)
+        } catch {
+            Logger.warn(
+                """
+                Failed testSession.expireSubscription, this is probably an Xcode bug.
+                Test will now wait for expiration instead of triggering it.
+                Error: \(error.localizedDescription)
+                """
+            )
+        }
 
         let secondsUntilExpiration = expirationDate.timeIntervalSince(Date())
-        guard secondsUntilExpiration > 0 else { return }
+        guard secondsUntilExpiration > 0 else {
+            Logger.info("Done waiting for subscription expiration, continuing test.")
+            return
+        }
 
         let timeToSleep = Int(secondsUntilExpiration.rounded(.up) + 1)
 
