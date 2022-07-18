@@ -16,6 +16,7 @@
       "name" : "UnitTestsHostApp"
     },
     "testExecutionOrdering" : "random",
+    "testRepetitionMode" : "retryOnFailure",
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [

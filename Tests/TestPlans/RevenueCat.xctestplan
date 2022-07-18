@@ -10,7 +10,8 @@
   ],
   "defaultOptions" : {
     "codeCoverage" : false,
-    "testExecutionOrdering" : "random"
+    "testExecutionOrdering" : "random",
+    "testRepetitionMode" : "retryOnFailure"
   },
   "testTargets" : [
     {
