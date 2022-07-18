@@ -74,7 +74,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
-      testplan: "Tests/TestPlans/AllTests.xctestplan",
+      testplan: "AllTests",
       output_directory: "fastlane/test_output/xctest/ios"
     )
   end
@@ -89,7 +89,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
-      testplan: "Tests/TestPlans/AllTests.xctestplan",
+      testplan: "AllTests",
       output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
