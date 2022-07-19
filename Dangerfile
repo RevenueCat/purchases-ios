@@ -7,3 +7,13 @@ if !git.modified_files.include?("CHANGELOG.latest.md") && !no_changelog
     fail("Please include a CHANGELOG entry. \nYou can find it at [CHANGELOG.latest.md](https://github.com/RevenueCat/purchases-ios/blob/main/CHANGELOG.latest.md).")
     message "Note, add #trivial to the PR title if it doesn't require a changelog entry."
 end
+
+jira.check(
+  key: ["CSDK", "CF", "SDKONCALL"],
+  url: "https://revenuecats.atlassian.net/browse",
+  search_title: true,
+  search_commits: false,
+  fail_on_warning: false,
+  report_missing: true,
+  skippable: true
+)
