@@ -890,6 +890,9 @@
 		B3CAFF0F285CE8E30048A994 /* MockOfferingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfferingsAPI.swift; sourceTree = "<group>"; };
 		B3CD0D8727F25E3E000793F5 /* BackendSubscriberAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendSubscriberAttributesTests.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		B3DB3EA5288627D7008EB151 /* CI-AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-AllTests.xctestplan"; path = "Tests/TestPlans/CI-AllTests.xctestplan"; sourceTree = "<group>"; };
+		B3DB3EA828862898008EB151 /* CI-BackendIntegration.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-BackendIntegration.xctestplan"; path = "Tests/TestPlans/CI-BackendIntegration.xctestplan"; sourceTree = "<group>"; };
+		B3DB3EA928862A85008EB151 /* BackendIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = BackendIntegrationTests.xctestplan; sourceTree = "<group>"; };
 		B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseOwnershipType.swift; sourceTree = "<group>"; };
 		B3DF6A4F269524080030D57C /* IntroEligibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibility.swift; sourceTree = "<group>"; };
 		B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Error+Extensions.swift"; sourceTree = "<group>"; };
@@ -1732,6 +1735,9 @@
 			isa = PBXGroup;
 			children = (
 				570896B227595C8100296F1C /* AllTests.xctestplan */,
+				B3DB3EA928862A85008EB151 /* BackendIntegrationTests.xctestplan */,
+				B3DB3EA5288627D7008EB151 /* CI-AllTests.xctestplan */,
+				B3DB3EA828862898008EB151 /* CI-BackendIntegration.xctestplan */,
 				570896B427595C8100296F1C /* Coverage.xctestplan */,
 				570896B327595C8100296F1C /* RevenueCat.xctestplan */,
 				570896B527595C8100296F1C /* UnitTests.xctestplan */,

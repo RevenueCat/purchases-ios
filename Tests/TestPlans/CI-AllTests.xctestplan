@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "0F20159C-1CBD-47B2-BA13-2AFF518106DE",
+      "id" : "62C79EF4-8071-439C-B693-34F1E57211FC",
       "name" : "Configuration 1",
       "options" : {
         "testTimeoutsEnabled" : true
@@ -16,15 +16,15 @@
       "name" : "UnitTestsHostApp"
     },
     "testExecutionOrdering" : "random",
+    "testRepetitionMode" : "retryOnFailure",
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "2DC5621D24EC63430031F69B",
-        "name" : "RevenueCatTests"
+        "name" : "UnitTests"
       }
     },
     {

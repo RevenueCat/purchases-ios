@@ -97,6 +97,9 @@
          <TestPlanReference
             reference = "container:Tests/TestPlans/Coverage.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/TestPlans/CI-AllTests.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference
