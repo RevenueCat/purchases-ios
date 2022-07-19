@@ -472,7 +472,6 @@ workflows:
       - lint:
           xcode_version: '13.4.1'
       - danger
-          xcode_version: '13.4.1'
       - run-test-ios-16:
           xcode_version: '14.0.0'
       - run-test-ios-15:
