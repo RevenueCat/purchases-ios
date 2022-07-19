@@ -1,9 +1,9 @@
 # Sometimes it's a README fix, or something like that - which isn't relevant for
 # including in a project's CHANGELOG for example
-declared_trivial = github.pr_title.include? "#trivial"
+no_changelog = github.pr_title.include? "[no-changelog]"
 
 # Add a CHANGELOG entry for app changes
-if !git.modified_files.include?("CHANGELOG.latest.md") && !declared_trivial
+if !git.modified_files.include?("CHANGELOG.latest.md") && !no_changelog
     fail("Please include a CHANGELOG entry. \nYou can find it at [CHANGELOG.latest.md](https://github.com/RevenueCat/purchases-ios/blob/main/CHANGELOG.latest.md).")
     message "Note, add #trivial to the PR title if it doesn't require a changelog entry."
 end
