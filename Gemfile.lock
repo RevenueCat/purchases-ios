@@ -95,6 +95,10 @@ GEM
       no_proxy_fix
       octokit (~> 4.7)
       terminal-table (>= 1, < 4)
+    danger-jira (0.6.0)
+      danger-plugin-api (~> 1.0)
+    danger-plugin-api (1.0.0)
+      danger (> 2.0)
     declarative (0.0.20)
     digest-crc (0.6.4)
       rake (>= 12.0.0, < 14.0.0)
@@ -335,6 +339,7 @@ DEPENDENCIES
   cocoapods
   cocoapods-trunk
   danger
+  danger-jira
   fastlane
   fastlane-plugin-create_xcframework
   jazzy
