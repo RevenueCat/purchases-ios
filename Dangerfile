@@ -5,7 +5,7 @@ no_changelog = github.pr_title.include? "[no-changelog]"
 # Add a CHANGELOG entry for app changes
 if !git.modified_files.include?("CHANGELOG.latest.md") && !no_changelog
     fail("Please include a CHANGELOG entry. \nYou can find it at [CHANGELOG.latest.md](https://github.com/RevenueCat/purchases-ios/blob/main/CHANGELOG.latest.md).")
-    message "Note, add #trivial to the PR title if it doesn't require a changelog entry."
+    message "Note, add [no-changelog] to the PR title if it doesn't require a changelog entry."
 end
 
 jira.check(
