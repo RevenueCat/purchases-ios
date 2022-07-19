@@ -1,3 +1,6 @@
+## 4.9.0
+* Update Configuration.swift to include platformInfo. Used by PurchasesHybridCommon (#1760) via Joshua Liebowitz (@taquitos)
+
 ## 4.8.0
 ### New API
 
