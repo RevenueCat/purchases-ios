@@ -467,11 +467,13 @@ jobs:
 
 workflows:
   version: 2
+  danger:
+    jobs:
+      - danger
   build-test:
     jobs:
       - lint:
           xcode_version: '13.4.1'
-      - danger
       - run-test-ios-16:
           xcode_version: '14.0.0'
       - run-test-ios-15:
