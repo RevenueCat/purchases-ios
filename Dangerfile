@@ -7,3 +7,10 @@ jira.check(
   report_missing: true,
   skippable: true # skippable by adding [no-jira] to PR title or body
 )
+
+supported_types = ["breaking", "build", "ci", "docs", "feat", "fix", "perf", "refactor", "style", "test"]
+supported_labels_in_pr = supported_types | github.pr_labels
+no_supported_label = supported_labels_in_pr.empty
+if no_supported_label
+  warn("No supported label added")
+end
