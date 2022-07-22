@@ -121,19 +121,7 @@ lane :github_changelog do |options|
   # Temporary workaround to get around GitHub rate limit
   rate_limit_sleep = ENV["GITHUB_RATE_LIMIT_SLEEP"].to_i
 
-  supported_types = [:breaking, :build, :ci, :docs, :feat, :fix, :perf, :refactor, :style, :test]
-  labels_to_change_types = {
-    "BREAKING CHANGE" => :breaking, 
-    "build" => :build, 
-    "ci" => :ci, 
-    "docs" => :docs, 
-    "feat" => :feat,
-    "fix" => :fix,
-    "perf" => :perf, 
-    "refactor" => :refactor, 
-    "style" => :style, 
-    "test" => :test
-  }
+  supported_types = ["breaking", "build", "ci", "docs", "feat", "fix", "perf", "refactor", "style", "test"]
 
   changelog_sections = { :breaking_changes => [], :fixes => [], :new_features => [], :other => [] }
 
@@ -160,16 +148,16 @@ lane :github_changelog do |options|
       username = item["user"]["login"]
       change_types = item["labels"].map do |label|
         label_name = label["name"]
-        labels_to_change_types[label_name] || :other
+        supported_types.include? label_name || "other"
       end.uniq
 
       line = "* #{message} via #{name} (@#{username})"
 
-      if change_types.include? :breaking
+      if change_types.include? "breaking"
         section = :breaking_changes
-      elsif change_types.include? :feat
+      elsif change_types.include? "feat"
         section = :new_features
-      elsif change_types.include? :fix
+      elsif change_types.include? "fix"
         section = :fixes
       else
         section = :other
