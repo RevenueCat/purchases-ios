@@ -30,6 +30,8 @@ run_swiftlint() {
 }
 
 verify_no_included_apikeys() {
+  # readlink -f follows the link from .git/hooks/pre-commit back to scripts/pre-commit.sh
+  # if executed through there. If not it returns the same file.
   SCRIPT_DIR=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}")) && pwd)
   FILES_TO_CHECK=(
     "${SCRIPT_DIR}/../Tests/BackendIntegrationTests/Constants.swift"
