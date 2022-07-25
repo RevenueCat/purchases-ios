@@ -148,7 +148,7 @@ lane :github_changelog do |options|
       username = item["user"]["login"]
       change_types = item["labels"].map do |label|
         label_name = label["name"]
-        supported_types.include? label_name || "other"
+        (supported_types.include? label_name) ? label_name : "other"
       end.uniq
 
       line = "* #{message} via #{name} (@#{username})"
