@@ -149,11 +149,6 @@ lane :github_changelog do |options|
 
       change_types = item["labels"].map{ |label_info| label_info["name"] }.select { |label| supported_types.include? label }.uniq
 
-      if change_types.size > 1
-        # If there are more than one label, and one is "other", remove "other" so the other one is used
-        change_types.delete_if { |n| n == "other" }
-      end
-
       if change_types.include? "breaking"
         section = :breaking_changes
       elsif change_types.include? "feat"
