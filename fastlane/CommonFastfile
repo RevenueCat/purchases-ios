@@ -146,10 +146,8 @@ lane :github_changelog do |options|
       item = items.first
       message = "#{item['title']} (##{item['number']})"
       username = item["user"]["login"]
-      change_types = item["labels"].map do |label|
-        label_name = label["name"]
-        (supported_types.include? label_name) ? label_name : "other"
-      end.uniq
+
+      change_types = item["labels"].map{ |label_info| label_info["name"] }.select { |label| supported_types.include? label }.uniq
 
       if change_types.size > 1
         # If there are more than one label, and one is "other", remove "other" so the other one is used
@@ -173,9 +171,9 @@ lane :github_changelog do |options|
     end
   end
 
-  formatted = changelog_sections.reject{ |k, v| v.empty? }.map do |name, prs|
+  formatted = changelog_sections.reject{ |k, v| v.empty? }.map do |section_name, prs|
     if prs.size > 0
-      case name
+      case section_name
       when :breaking_changes
         title = "## Breaking Changes"
       when :fixes
