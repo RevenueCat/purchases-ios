@@ -150,8 +150,11 @@ lane :github_changelog do |options|
         label_name = label["name"]
         (supported_types.include? label_name) ? label_name : "other"
       end.uniq
-
-      line = "* #{message} via #{name} (@#{username})"
+      
+      if change_types.size > 1 && change_types.include? "other"
+        # If there are more than one label, and one is "other", remove "other" so the other one is used
+        change_types.delete_if { |n| n == "other" }
+      end
 
       if change_types.include? "breaking"
         section = :breaking_changes
@@ -163,6 +166,7 @@ lane :github_changelog do |options|
         section = :other
       end
 
+      line = "* #{message} via #{name} (@#{username})"
       changelog_sections[section].push(line)      
     else
       UI.user_error!("Cannot generate changelog. Multiple commits found for #{sha}")
