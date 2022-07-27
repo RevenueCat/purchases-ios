@@ -757,7 +757,7 @@ public extension Purchases {
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
-     * Use this method if you aren't using ``getOfferings(completion:)``.
+     * Use this method if you aren't using ``Purchases/getOfferings(completion:)``.
      * You should use ``getOfferings(completion:)`` though.
      *
      * - Note: `completion` may be called without ``StoreProduct``s that you are expecting. This is usually caused by
