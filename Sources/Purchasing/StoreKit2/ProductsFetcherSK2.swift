@@ -31,8 +31,13 @@ actor ProductsFetcherSK2 {
             if let cachedProducts = await self.cachedProducts(withIdentifiers: identifiers) {
                 return cachedProducts
             }
+            
+            Logger.debug(
+                Strings.offering.no_cached_requests_and_products_starting_skproduct_request(identifiers: identifiers)
+            )
 
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
+            Logger.rcSuccess(Strings.storeKit.skproductsrequest_received_response)
             let sk2StoreProducts = Set(storeKitProducts.map { SK2StoreProduct(sk2Product: $0) })
 
             await self.cache(products: sk2StoreProducts)
