@@ -754,7 +754,6 @@ public extension Purchases {
         return self.customerInfoManager.customerInfoStream
     }
 
-    // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
@@ -779,9 +778,7 @@ public extension Purchases {
     func getProducts(_ productIdentifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
-    // swiftlint:enable line_length
 
-    // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
@@ -804,7 +801,6 @@ public extension Purchases {
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await productsAsync(productIdentifiers)
     }
-    // swiftlint:enable line_length
 
     /**
      * Initiates a purchase of a ``StoreProduct``.
