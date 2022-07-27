@@ -754,7 +754,6 @@ public extension Purchases {
         return self.customerInfoManager.customerInfoStream
     }
 
-    // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
@@ -766,7 +765,7 @@ public extension Purchases {
      * Also ensure that you have an active developer program subscription and you have signed the latest paid
      * application agreements.
      * If you're having trouble, see:
-     *  [App Store Connect In-App Purchase Configuration](https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard)
+     *  [App Store Connect In-App Purchase Configuration](https://rev.cat/how-to-configure-products)
      *
      * - Parameter productIdentifiers: A set of product identifiers for in-app purchases setup via
      * [AppStoreConnect](https://appstoreconnect.apple.com/)
@@ -779,9 +778,7 @@ public extension Purchases {
     func getProducts(_ productIdentifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
-    // swiftlint:enable line_length
 
-    // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
@@ -793,7 +790,7 @@ public extension Purchases {
      * Also ensure that you have an active developer program subscription and you have signed the latest paid
      * application agreements.
      * If you're having trouble, see:
-     * [App Store Connect In-App Purchase Configuration](https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard)
+     * [App Store Connect In-App Purchase Configuration](https://rev.cat/how-to-configure-products)
      *
      * - Parameter productIdentifiers: A set of product identifiers for in-app purchases setup via
      * [AppStoreConnect](https://appstoreconnect.apple.com/)
@@ -804,7 +801,6 @@ public extension Purchases {
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await productsAsync(productIdentifiers)
     }
-    // swiftlint:enable line_length
 
     /**
      * Initiates a purchase of a ``StoreProduct``.
