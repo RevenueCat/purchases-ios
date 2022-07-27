@@ -103,6 +103,7 @@ commands:
              tar -czf xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
              rm -r << parameters.bundle_name >>.xcresult
           working_directory: << parameters.directory >>
+          when: always
 
   scan-and-archive:
     parameters:
