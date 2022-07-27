@@ -238,7 +238,7 @@ jobs:
           command: bundle exec fastlane test_tvos
           no_output_timeout: 30m
       - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
+          directory: fastlane/test_output/xctest/tvos
           bundle_name: RevenueCat
       - store_test_results:
           path: fastlane/test_output
