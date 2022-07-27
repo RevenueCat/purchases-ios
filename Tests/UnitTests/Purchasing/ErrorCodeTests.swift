@@ -181,3 +181,100 @@ class ErrorCodeTests: TestCase {
     }
 
 }
+
+import StoreKit
+
+class ErrorUtilsTests: TestCase {
+
+    private var originalLogHandler: VerboseLogHandler!
+    private var loggedMessages: [(level: LogLevel, message: String)] = []
+
+    override func setUp() {
+        super.setUp()
+
+        self.originalLogHandler = Logger.logHandler
+        Logger.logHandler = { level, message, _, _, _ in
+            self.loggedMessages.append((level, message))
+        }
+    }
+
+    override func tearDown() {
+        Logger.logHandler = self.originalLogHandler
+
+        super.tearDown()
+    }
+
+    func testPurchaseErrorsAreLoggedAsApppleErrors() {
+        let underlyingError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentInvalid.rawValue)
+        let error = ErrorUtils.purchaseNotAllowedError(error: underlyingError)
+
+        self.expectLoggedError(error, .appleError)
+    }
+
+    func testNetworkErrorsAreLogged() {
+        let error = ErrorUtils.networkError(message: Strings.network.could_not_find_cached_response.description)
+
+        self.expectLoggedError(error, .rcError)
+    }
+
+    func testLoggedErrorsWithNoMessage() throws {
+        let error = ErrorUtils.customerInfoError()
+
+        expect(self.loggedMessages).to(haveCount(1))
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+
+        expect(loggedMessage.level) == .error
+        expect(loggedMessage.message) == "\(LogIntent.rcError.prefix) \(error.localizedDescription)"
+    }
+
+    func testLoggedErrorsWithMessageIncludeErrorDescriptionAndMessage() throws {
+        let message = Strings.customerInfo.no_cached_customerinfo.description
+        _ = ErrorUtils.customerInfoError(withMessage: message)
+
+        expect(self.loggedMessages).to(haveCount(1))
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+
+        expect(loggedMessage.level) == .error
+        expect(loggedMessage.message) == [
+            LogIntent.rcError.prefix,
+            ErrorCode.customerInfoError.description,
+            message
+        ].joined(separator: " ")
+    }
+
+    func testLoggedErrorsDontDuplicateMessageIfEqualToErrorDescription() throws {
+        _ = ErrorUtils.customerInfoError(withMessage: ErrorCode.customerInfoError.description)
+
+        expect(self.loggedMessages).to(haveCount(1))
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+
+        expect(loggedMessage.level) == .error
+        expect(loggedMessage.message) == [
+            LogIntent.rcError.prefix,
+            ErrorCode.customerInfoError.description
+        ].joined(separator: " ")
+    }
+
+    // MARK: -
+
+    private func expectLoggedError(
+        _ error: Error,
+        _ intent: LogIntent,
+        file: FileString = #fileID,
+        line: UInt = #line
+    ) {
+        expect(
+            file: file,
+            line: line,
+            self.loggedMessages
+        ).to(
+            containElementSatisfying { level, message in
+                (level == .error &&
+                 message.contains(intent.prefix) &&
+                 message.contains(error.localizedDescription))
+            },
+            description: "Error not found. Logged messages: \(self.loggedMessages)"
+        )
+    }
+
+}
