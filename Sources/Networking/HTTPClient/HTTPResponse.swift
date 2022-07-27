@@ -86,7 +86,7 @@ extension ErrorResponse {
 
         return ErrorUtils.backendError(
             withBackendCode: self.code,
-            backendMessage: self.message,
+            message: self.attributeErrors.description,
             extraUserInfo: userInfo,
             fileName: file, functionName: function, line: line
         )
