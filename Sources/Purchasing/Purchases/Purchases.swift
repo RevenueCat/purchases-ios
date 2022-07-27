@@ -1017,7 +1017,7 @@ public extension Purchases {
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use ``restorePurchases(completion:)`` to cover those cases.
+     * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
      */
     @objc func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
         purchasesOrchestrator.syncPurchases {
@@ -1037,7 +1037,7 @@ public extension Purchases {
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use ``restorePurchases(completion:)`` to cover those cases.
+     * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchases() async throws -> CustomerInfo {
