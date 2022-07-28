@@ -214,7 +214,7 @@ class ErrorUtilsTests: TestCase {
     func testNetworkErrorsAreLogged() {
         let error = ErrorUtils.networkError(message: Strings.network.could_not_find_cached_response.description)
 
-        self.expectLoggedError(error, .rcError)
+        self.expectLoggedError(error, .rcError, .networkError)
     }
 
     func testLoggedErrorsWithNoMessage() throws {
@@ -260,20 +260,27 @@ class ErrorUtilsTests: TestCase {
     private func expectLoggedError(
         _ error: Error,
         _ intent: LogIntent,
+        _ code: ErrorCode? = nil,
         file: FileString = #fileID,
         line: UInt = #line
     ) {
+        let expectedMessage = [
+            intent.prefix,
+            code?.description,
+            error.localizedDescription
+        ]
+            .compactMap { $0 }
+            .joined(separator: " ")
+
         expect(
             file: file,
             line: line,
             self.loggedMessages
         ).to(
             containElementSatisfying { level, message in
-                (level == .error &&
-                 message.contains(intent.prefix) &&
-                 message.contains(error.localizedDescription))
+                level == .error && message == expectedMessage
             },
-            description: "Error not found. Logged messages: \(self.loggedMessages)"
+            description: "Error '\(expectedMessage)' not found. Logged messages: \(self.loggedMessages)"
         )
     }
 
