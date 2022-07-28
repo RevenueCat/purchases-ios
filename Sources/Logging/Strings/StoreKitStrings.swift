@@ -36,6 +36,8 @@ enum StoreKitStrings {
 
     case sk1_discount_missing_locale
 
+    case no_cached_requests_and_products_starting_skproduct_request(identifiers: Set<String>)
+
 }
 
 extension StoreKitStrings: CustomStringConvertible {
@@ -77,6 +79,10 @@ extension StoreKitStrings: CustomStringConvertible {
         case .sk1_discount_missing_locale:
             return "There is an issue with the App Store, this SKProductDiscount is missing a Locale - " +
             "The current device Locale will be used instead."
+
+        case .no_cached_requests_and_products_starting_skproduct_request(let identifiers):
+            return "No existing requests and " +
+                "products not cached, starting SKProducts request for: \(identifiers)"
         }
     }
 

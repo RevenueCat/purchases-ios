@@ -34,7 +34,7 @@ actor ProductsFetcherSK2 {
             }
 
             Logger.debug(
-                Strings.offering.no_cached_requests_and_products_starting_skproduct_request(identifiers: identifiers)
+                Strings.storeKit.no_cached_requests_and_products_starting_skproduct_request(identifiers: identifiers)
             )
 
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)

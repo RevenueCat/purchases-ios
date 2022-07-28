@@ -22,7 +22,6 @@ enum OfferingStrings {
     case fetching_offerings_error(error: String)
     case found_existing_product_request(identifiers: Set<String>)
     case no_cached_offerings_fetching_from_network
-    case no_cached_requests_and_products_starting_skproduct_request(identifiers: Set<String>)
     case offerings_stale_updated_from_network
     case offerings_stale_updating_in_background
     case offerings_stale_updating_in_foreground
@@ -61,10 +60,6 @@ extension OfferingStrings: CustomStringConvertible {
 
         case .no_cached_offerings_fetching_from_network:
             return "No cached Offerings, fetching from network"
-
-        case .no_cached_requests_and_products_starting_skproduct_request(let identifiers):
-            return "No existing requests and " +
-                "products not cached, starting SKProducts request for: \(identifiers)"
 
         case .offerings_stale_updated_from_network:
             return "Offerings updated from network."
