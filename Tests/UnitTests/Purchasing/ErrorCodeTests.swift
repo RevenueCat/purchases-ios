@@ -193,8 +193,8 @@ class ErrorUtilsTests: TestCase {
         super.setUp()
 
         self.originalLogHandler = Logger.logHandler
-        Logger.logHandler = { level, message, _, _, _ in
-            self.loggedMessages.append((level, message))
+        Logger.logHandler = { [weak self] level, message, _, _, _ in
+            self?.loggedMessages.append((level, message))
         }
     }
 
