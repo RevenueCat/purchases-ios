@@ -1,3 +1,8 @@
+PATH
+  remote: ../fastlane-plugin-revenuecat_internal
+  specs:
+    fastlane-plugin-revenuecat_internal (0.1.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -301,6 +306,7 @@ DEPENDENCIES
   cocoapods-trunk
   fastlane
   fastlane-plugin-create_xcframework
+  fastlane-plugin-revenuecat_internal!
   jazzy
 
 BUNDLED WITH
