@@ -262,6 +262,7 @@ platform :ios do
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
       number_of_retries: 3,
+      result_bundle: true,
       testplan: "CI-BackendIntegration",
       output_directory: "fastlane/test_output/xctest/ios"
     )

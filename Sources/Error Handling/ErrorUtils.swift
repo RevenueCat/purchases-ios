@@ -518,7 +518,14 @@ private extension ErrorUtils {
                                          fileName: String = #fileID,
                                          functionName: String = #function,
                                          line: UInt = #line) {
-        let formattedMessage = code.description + (message.map { " " + $0 } ?? "")
+        let formattedMessage: String
+
+        if let message = message, message != code.description {
+            // Print both ErrorCode and message only if they're different
+            formattedMessage = "\(code.description) \(message)"
+        } else {
+            formattedMessage = code.description
+        }
 
         switch code {
         case .networkError,

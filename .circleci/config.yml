@@ -307,6 +307,13 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 11 Pro (15.5)
+      - run:
+          name: Compress result bundle
+          command: |
+             tar -czf ios/xcresult.tar.gz ios/BackendIntegrationTests.xcresult && \
+             rm -r ios/BackendIntegrationTests.xcresult
+          working_directory: fastlane/test_output/xctest
+          when: always
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
