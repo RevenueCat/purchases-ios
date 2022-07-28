@@ -18,13 +18,13 @@ enum StoreKitStrings {
 
     case skrequest_failed(error: Error)
 
-    case skproductsrequest_failed(error: Error)
+    case store_products_request_failed(error: Error)
 
     case skproductsrequest_timed_out(after: Int)
 
-    case skproductsrequest_finished
+    case store_product_request_did_finish
 
-    case skproductsrequest_received_response
+    case store_product_request_received_response
 
     case skunknown_payment_mode(String)
 
@@ -46,8 +46,8 @@ extension StoreKitStrings: CustomStringConvertible {
         case .skrequest_failed(let error):
             return "SKRequest failed: \(error.localizedDescription)"
 
-        case .skproductsrequest_failed(let error):
-            return "SKProductsRequest failed! error: \(error.localizedDescription)"
+        case .store_products_request_failed(let error):
+            return "Store products request failed! error: \(error.localizedDescription)"
 
         case .skproductsrequest_timed_out(let afterTimeInSeconds):
             return "SKProductsRequest took longer than \(afterTimeInSeconds) seconds, " +
@@ -55,11 +55,11 @@ extension StoreKitStrings: CustomStringConvertible {
             "If this is happening to you consistently, you might want to try using a new Sandbox account. " +
             "More information: https://rev.cat/skproductsrequest-hangs"
 
-        case .skproductsrequest_finished:
+        case .store_product_request_did_finish:
             return "SKProductsRequest did finish"
 
-        case .skproductsrequest_received_response:
-            return "SKProductsRequest request received response"
+        case .store_product_request_received_response:
+            return "Store products request request received response"
 
         case let .skunknown_payment_mode(name):
             return "Unrecognized PaymentMode: \(name)"

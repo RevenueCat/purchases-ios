@@ -119,9 +119,9 @@ private extension ProductsManager {
             productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { result in
                 switch result {
                 case.success:
-                    Logger.debug(Strings.storeKit.skproductsrequest_finished)
+                    Logger.debug(Strings.storeKit.store_product_request_did_finish)
                 case .failure(let error):
-                    Logger.debug(Strings.storeKit.skproductsrequest_failed(error: error))
+                    Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
                 }
             })
         }
@@ -134,9 +134,10 @@ private extension ProductsManager {
             if !removedProductIdentifiers.isEmpty {
                 do {
                     _ = try await self.productsFetcherSK2.products(identifiers: removedProductIdentifiers)
-                    Logger.debug(Strings.storeKit.skproductsrequest_finished)
+
+                    Logger.debug(Strings.storeKit.store_product_request_did_finish)
                 } catch {
-                    Logger.debug(Strings.storeKit.skproductsrequest_failed(error: error))
+                    Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
                 }
             }
         }

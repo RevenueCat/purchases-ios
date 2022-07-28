@@ -29,8 +29,7 @@ actor ProductsFetcherSK2 {
     func products(identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
         do {
             if let cachedProducts = await self.cachedProducts(withIdentifiers: identifiers) {
-                let cachedIdentifiers = Set(cachedProducts.map { $0.productIdentifier })
-                Logger.debug(Strings.offering.products_already_cached(identifiers: cachedIdentifiers))
+                Logger.debug(Strings.offering.products_already_cached(identifiers: Set(cachedProducts.map { $0.productIdentifier })))
                 return cachedProducts
             }
 
@@ -39,7 +38,7 @@ actor ProductsFetcherSK2 {
             )
 
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
-            Logger.rcSuccess(Strings.storeKit.skproductsrequest_received_response)
+            Logger.rcSuccess(Strings.storeKit.store_product_request_received_response)
             let sk2StoreProducts = Set(storeKitProducts.map { SK2StoreProduct(sk2Product: $0) })
 
             await self.cache(products: sk2StoreProducts)
