@@ -106,8 +106,10 @@ private extension ProductsManager {
         _ = Task<Void, Never> {
             do {
                 let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
+                Logger.debug(Strings.storeKit.store_product_request_did_finish)
                 completion(.success(Set(products)))
             } catch {
+                Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
                 completion(.failure(error))
             }
         }
@@ -119,8 +121,10 @@ private extension ProductsManager {
             productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { result in
                 switch result {
                 case.success:
+                    // this one is duplicate, though other in ProductsFetcherSK1 is rcSuccess
                     Logger.debug(Strings.storeKit.store_product_request_did_finish)
                 case .failure(let error):
+                    // this one is duplicate, though other in ProductsFetcherSK1 is appleError
                     Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
                 }
             })
