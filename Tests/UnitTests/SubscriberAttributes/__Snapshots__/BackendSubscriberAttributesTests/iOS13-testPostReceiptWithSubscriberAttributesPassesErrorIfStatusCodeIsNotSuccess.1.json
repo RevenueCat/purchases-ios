@@ -8,7 +8,7 @@
       "attributes" : {
         "$attConsentStatus" : {
           "updated_at_ms" : 1678307200000,
-          "value" : "authorized"
+          "value" : "notDetermined"
         },
         "a key" : {
           "updated_at_ms" : 1678307200000,
