@@ -72,35 +72,35 @@ enum Logger {
 
     internal static let frameworkDescription = "Purchases"
 
-    static func debug(_ message: CustomStringConvertible,
+    static func debug(_ message: @autoclosure () -> CustomStringConvertible,
                       fileName: String? = #fileID,
                       functionName: String? = #function,
                       line: UInt = #line) {
-        log(level: .debug, intent: .info, message: message.description,
+        log(level: .debug, intent: .info, message: message().description,
             fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func info(_ message: CustomStringConvertible,
+    static func info(_ message: @autoclosure () -> CustomStringConvertible,
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        log(level: .info, intent: .info, message: message.description,
+        log(level: .info, intent: .info, message: message().description,
             fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func warn(_ message: CustomStringConvertible,
+    static func warn(_ message: @autoclosure () -> CustomStringConvertible,
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        log(level: .warn, intent: .warning, message: message.description,
+        log(level: .warn, intent: .warning, message: message().description,
             fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func error(_ message: CustomStringConvertible,
+    static func error(_ message: @autoclosure () -> CustomStringConvertible,
                       fileName: String = #fileID,
                       functionName: String = #function,
                       line: UInt = #line) {
-        log(level: .error, intent: .rcError, message: message.description,
+        log(level: .error, intent: .rcError, message: message().description,
             fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -108,62 +108,60 @@ enum Logger {
 
 extension Logger {
 
-    static func appleError(_ message: CustomStringConvertible,
+    static func appleError(_ message: @autoclosure () -> CustomStringConvertible,
                            fileName: String = #fileID,
                            functionName: String = #function,
                            line: UInt = #line) {
-        log(level: .error, intent: .appleError, message: message.description,
-            fileName: fileName,
-            functionName: functionName,
-            line: line)
+        self.log(level: .error, intent: .appleError, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func appleWarning(_ message: CustomStringConvertible,
+    static func appleWarning(_ message: @autoclosure () -> CustomStringConvertible,
                              fileName: String = #fileID,
                              functionName: String = #function,
                              line: UInt = #line) {
-        log(level: .warn, intent: .appleError, message: message.description,
-            fileName: fileName, functionName: functionName, line: line)
+        self.log(level: .warn, intent: .appleError, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func purchase(_ message: CustomStringConvertible,
+    static func purchase(_ message: @autoclosure () -> CustomStringConvertible,
                          fileName: String = #fileID,
                          functionName: String = #function,
                          line: UInt = #line) {
-        log(level: .info, intent: .purchase, message: message.description,
-            fileName: fileName, functionName: functionName, line: line)
+        self.log(level: .info, intent: .purchase, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func rcPurchaseSuccess(_ message: CustomStringConvertible,
+    static func rcPurchaseSuccess(_ message: @autoclosure () -> CustomStringConvertible,
                                   fileName: String = #fileID,
                                   functionName: String = #function,
                                   line: UInt = #line) {
-        log(level: .info, intent: .rcPurchaseSuccess, message: message.description,
-            fileName: fileName, functionName: functionName, line: line)
+        self.log(level: .info, intent: .rcPurchaseSuccess, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func rcPurchaseError(_ message: CustomStringConvertible,
+    static func rcPurchaseError(_ message: @autoclosure () -> CustomStringConvertible,
                                 fileName: String = #fileID,
                                 functionName: String = #function,
                                 line: UInt = #line) {
-        log(level: .error, intent: .purchase, message: message.description,
-            fileName: fileName, functionName: functionName, line: line)
+        self.log(level: .error, intent: .purchase, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func rcSuccess(_ message: CustomStringConvertible,
+    static func rcSuccess(_ message: @autoclosure () -> CustomStringConvertible,
                           fileName: String = #fileID,
                           functionName: String = #function,
                           line: UInt = #line) {
-        log(level: .debug, intent: .rcSuccess, message: message.description,
-            fileName: fileName, functionName: functionName, line: line)
+        self.log(level: .debug, intent: .rcSuccess, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
-    static func user(_ message: CustomStringConvertible,
+    static func user(_ message: @autoclosure () -> CustomStringConvertible,
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        log(level: .debug, intent: .user, message: message.description,
-            fileName: fileName, functionName: functionName, line: line)
+        self.log(level: .debug, intent: .user, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
 }
@@ -171,26 +169,26 @@ extension Logger {
 private extension Logger {
 
     static func log(level: LogLevel,
-                    message: String,
+                    message: @autoclosure () -> String,
                     fileName: String? = #fileID,
                     functionName: String? = #function,
                     line: UInt = #line) {
         guard self.logLevel.rawValue <= level.rawValue else { return }
-        logHandler(level, message, fileName, functionName, line)
+
+        Self.logHandler(level, message(), fileName, functionName, line)
     }
 
     static func log(level: LogLevel,
                     intent: LogIntent,
-                    message: String,
+                    message: @autoclosure () -> String,
                     fileName: String? = #fileID,
                     functionName: String? = #function,
                     line: UInt = #line) {
-        let messageWithPrefix = "\(intent.prefix) \(message)"
-        Logger.log(level: level,
-                   message: messageWithPrefix,
-                   fileName: fileName,
-                   functionName: functionName,
-                   line: line)
+        Self.log(level: level,
+                 message: "\(intent.prefix) \(message())",
+                 fileName: fileName,
+                 functionName: functionName,
+                 line: line)
     }
 
 }
