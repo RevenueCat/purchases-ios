@@ -22,7 +22,7 @@ enum StoreKitStrings {
 
     case skproductsrequest_timed_out(after: Int)
 
-    case store_product_request_did_finish
+    case store_product_request_finished
 
     case store_product_request_received_response
 
@@ -57,8 +57,8 @@ extension StoreKitStrings: CustomStringConvertible {
             "If this is happening to you consistently, you might want to try using a new Sandbox account. " +
             "More information: https://rev.cat/skproductsrequest-hangs"
 
-        case .store_product_request_did_finish:
-            return "Store products request did finish"
+        case .store_product_request_finished:
+            return "Store products request finished"
 
         case .store_product_request_received_response:
             return "Store products request request received response"

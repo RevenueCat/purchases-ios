@@ -106,7 +106,7 @@ private extension ProductsManager {
         _ = Task<Void, Never> {
             do {
                 let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
-                Logger.debug(Strings.storeKit.store_product_request_did_finish)
+                Logger.debug(Strings.storeKit.store_product_request_finished)
                 completion(.success(Set(products)))
             } catch {
                 Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
@@ -130,7 +130,7 @@ private extension ProductsManager {
                 do {
                     _ = try await self.productsFetcherSK2.products(identifiers: removedProductIdentifiers)
 
-                    Logger.debug(Strings.storeKit.store_product_request_did_finish)
+                    Logger.debug(Strings.storeKit.store_product_request_finished)
                 } catch {
                     Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
                 }

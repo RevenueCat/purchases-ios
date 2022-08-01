@@ -141,7 +141,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
     }
 
     func requestDidFinish(_ request: SKRequest) {
-        Logger.rcSuccess(Strings.storeKit.store_product_request_did_finish)
+        Logger.rcSuccess(Strings.storeKit.store_product_request_finished)
         self.cancelRequestToPreventTimeoutWarnings(request)
     }
 
