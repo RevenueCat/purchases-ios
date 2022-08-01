@@ -60,7 +60,7 @@ class ProductsFetcherSK1: NSObject {
             }
 
             Logger.debug(
-                Strings.storeKit.no_cached_requests_and_products_starting_skproduct_request(identifiers: identifiers)
+                Strings.storeKit.no_cached_products_starting_store_products_request(identifiers: identifiers)
             )
 
             self.completionHandlers[identifiers] = [completion]

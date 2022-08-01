@@ -118,16 +118,7 @@ private extension ProductsManager {
     func invalidateAndReFetchCachedSK1Products() {
         productsFetcherSK1.clearCache { [productsFetcherSK1] removedProductIdentifiers in
             guard !removedProductIdentifiers.isEmpty else { return }
-            productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { result in
-                switch result {
-                case.success:
-                    // this one is duplicate, though other in ProductsFetcherSK1 is rcSuccess
-                    Logger.debug(Strings.storeKit.store_product_request_did_finish)
-                case .failure(let error):
-                    // this one is duplicate, though other in ProductsFetcherSK1 is appleError
-                    Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
-                }
-            })
+            productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { _ in })
         }
     }
 

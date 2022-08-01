@@ -36,7 +36,7 @@ enum StoreKitStrings {
 
     case sk1_discount_missing_locale
 
-    case no_cached_requests_and_products_starting_skproduct_request(identifiers: Set<String>)
+    case no_cached_products_starting_store_products_request(identifiers: Set<String>)
 
 }
 
@@ -58,7 +58,7 @@ extension StoreKitStrings: CustomStringConvertible {
             "More information: https://rev.cat/skproductsrequest-hangs"
 
         case .store_product_request_did_finish:
-            return "SKProductsRequest did finish"
+            return "Store products request did finish"
 
         case .store_product_request_received_response:
             return "Store products request request received response"
@@ -80,9 +80,8 @@ extension StoreKitStrings: CustomStringConvertible {
             return "There is an issue with the App Store, this SKProductDiscount is missing a Locale - " +
             "The current device Locale will be used instead."
 
-        case .no_cached_requests_and_products_starting_skproduct_request(let identifiers):
-            return "No existing requests and " +
-                "products not cached, starting SKProducts request for: \(identifiers)"
+        case .no_cached_products_starting_store_products_request(let identifiers):
+            return "No existing products cached, starting store products request for: \(identifiers)"
         }
     }
 
