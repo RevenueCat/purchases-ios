@@ -13,19 +13,19 @@
 default_platform(:ios)
 
 files_with_version_number = [
-  '../RevenueCat.podspec',
-  '../Sources/Misc/SystemInfo.swift',
-  '../.jazzy.yaml',
-  '../.version',
-  '../scripts/docs/index.html',
-  '../Sources/Misc/SystemInfo.swift'
+  './RevenueCat.podspec',
+  './Sources/Misc/SystemInfo.swift',
+  './.jazzy.yaml',
+  './.version',
+  './scripts/docs/index.html',
+  './Sources/Misc/SystemInfo.swift'
 ]
 files_with_version_number_without_prerelease_modifiers = [
-  '../Sources/Info.plist',
-  '../Tests/BackendIntegrationTestApp/Info.plist',
-  '../Tests/BackendIntegrationTests/Info.plist',
-  '../Tests/UnitTests/Info.plist',
-  '../Tests/UnitTestsHostApp/Info.plist'
+  './Sources/Info.plist',
+  './Tests/BackendIntegrationTestApp/Info.plist',
+  './Tests/BackendIntegrationTests/Info.plist',
+  './Tests/UnitTests/Info.plist',
+  './Tests/UnitTestsHostApp/Info.plist'
 ]
 repo_name = 'purchases-ios'
 changelog_latest_path = './CHANGELOG.latest.md'
