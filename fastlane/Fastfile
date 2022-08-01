@@ -228,7 +228,8 @@ platform :ios do
     begin
       ensure_git_status_clean
     rescue => e
-      commmit_changes_and_push_current_branch("Update RevenueCat-Swift.h for version #{current_version_number}")
+      commit_current_changes("Update RevenueCat-Swift.h for version #{current_version_number}")
+      push_to_git_remote
     end
   end
 
