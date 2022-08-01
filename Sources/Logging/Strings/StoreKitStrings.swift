@@ -49,7 +49,7 @@ extension StoreKitStrings: CustomStringConvertible {
             return "SKRequest failed: \(error.localizedDescription)"
 
         case .store_products_request_failed(let error):
-            return "Store products request failed! error: \(error.localizedDescription)"
+            return "Store products request failed! Error: \(error.localizedDescription)"
 
         case .skproductsrequest_timed_out(let afterTimeInSeconds):
             return "SKProductsRequest took longer than \(afterTimeInSeconds) seconds, " +
