@@ -1,3 +1,23 @@
+## 4.10.0
+TEST (ignore)
+* Fixed iOS 12 snapshot (#1785) via NachoSoto (@NachoSoto)
+* `OSVersionEquivalent.current`: evaluate only once (#1784) via NachoSoto (@NachoSoto)
+* Fixed snapshots for iOS 12 and 13 (#1783) via NachoSoto (@NachoSoto)
+* `Logger`: wrap `message` in `@autoclosure` to avoid creating when `LogLevel` is disabled (#1781) via NachoSoto (@NachoSoto)
+* CircleCI: always store compressed result bundle (#1773) via NachoSoto (@NachoSoto)
+* `CustomerInfoResponseHandler`: return `CustomerInfo` instead of error if the response was successful (#1778) via NachoSoto (@NachoSoto)
+* Error logging: `logErrorIfNeeded` no longer prints message if it's the same as the error description (#1776) via NachoSoto (@NachoSoto)
+* fix another broken link in docC docs (#1777) via aboedo (@aboedo)
+* fix links to restorePurchase (#1775) via aboedo (@aboedo)
+* Lint: fixed `SubscriberAttributesManager` (#1774) via NachoSoto (@NachoSoto)
+* Integration Tests: store result bundle (#1771) via NachoSoto (@NachoSoto)
+* fix getProducts docs broken link (#1772) via aboedo (@aboedo)
+* Added pre-commit hook to ensure API keys aren't committed (#1756) via NachoSoto (@NachoSoto)
+* Integration Tests / StoreKit tests: limit execution to 3 minutes (#1770) via NachoSoto (@NachoSoto)
+* Auto retry failed tests up to 3 times (#1767) via Joshua Liebowitz (@taquitos)
+* Don't fail test when expireSubscription fails us. (#1766) via Joshua Liebowitz (@taquitos)
+* Prepare next version: 4.10.0-SNAPSHOT (#1763) via RevenueCat Releases (@revenuecat-ops)
+
 ## 4.9.0
 * Update Configuration.swift to include platformInfo. Used by PurchasesHybridCommon (#1760) via Joshua Liebowitz (@taquitos)
 
