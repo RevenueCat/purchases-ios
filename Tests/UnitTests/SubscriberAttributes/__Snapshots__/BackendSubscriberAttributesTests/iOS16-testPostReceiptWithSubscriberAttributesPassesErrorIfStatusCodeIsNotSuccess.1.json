@@ -1,0 +1,29 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer the api key"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "abc123",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "authorized"
+        },
+        "a key" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "a value"
+        },
+        "another key" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "another value"
+        }
+      },
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "is_restore" : false,
+      "observer_mode" : false
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
+}

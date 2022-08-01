@@ -31,26 +31,24 @@ enum OSVersionEquivalent: Int {
 
 extension OSVersionEquivalent {
 
-    static var current: Self {
-        get throws {
-            #if os(macOS)
-                // Not currently supported
-                // Must convert e.g.: macOS 10.15 to iOS 13
-                throw Error.unknownOS()
-            #else
-                // Note: this is either iOS/tvOS/macCatalyst
-                // They all share equivalent versions
+    static let current: Self = {
+        #if os(macOS)
+        // Not currently supported
+        // Must convert e.g.: macOS 10.15 to iOS 13
+        fatalError(Error.unknownOS().localizedDescription)
+        #else
+        // Note: this is either iOS/tvOS/macCatalyst
+        // They all share equivalent versions
 
-                let majorVersion = ProcessInfo().operatingSystemVersion.majorVersion
+        let majorVersion = ProcessInfo().operatingSystemVersion.majorVersion
 
-                if let equivalent = Self(rawValue: majorVersion) {
-                    return equivalent
-                } else {
-                    throw Error.unknownOS()
-                }
-            #endif
+        guard let equivalent = Self(rawValue: majorVersion) else {
+            fatalError(Error.unknownOS().localizedDescription)
         }
-    }
+
+        return equivalent
+        #endif
+    }()
 
 }
 

@@ -435,7 +435,8 @@ enum ErrorUtils {
 extension ErrorUtils {
 
     static func backendError(withBackendCode backendCode: BackendErrorCode,
-                             backendMessage: String?,
+                             message: String? = nil,
+                             backendMessage: String? = nil,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
                              fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
@@ -443,7 +444,7 @@ extension ErrorUtils {
         let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
         return error(with: errorCode,
-                     message: errorCode.description,
+                     message: message,
                      underlyingError: underlyingError,
                      extraUserInfo: extraUserInfo,
                      fileName: fileName, functionName: functionName, line: line)

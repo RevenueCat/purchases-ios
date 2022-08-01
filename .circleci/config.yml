@@ -89,6 +89,21 @@ commands:
       - run:
           name: Install xcbeautify
           command: brew install xcbeautify
+  
+  compress_result_bundle:
+    parameters:
+      directory:
+        type: string
+      bundle_name:
+        type: string
+    steps:
+      - run: 
+          name: Compress result bundle
+          command: |
+             tar -czf xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
+             rm -r << parameters.bundle_name >>.xcresult
+          working_directory: << parameters.directory >>
+          when: always
 
   scan-and-archive:
     parameters:
@@ -185,6 +200,9 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 13 (16.0)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -202,6 +220,9 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 13 (15.5)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -217,6 +238,9 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test_tvos
           no_output_timeout: 30m
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/tvos
+          bundle_name: RevenueCat
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -234,6 +258,9 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 8 (14.5)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -255,6 +282,9 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 8 (13.7)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -277,6 +307,9 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 6 (12.4)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -307,19 +340,14 @@ jobs:
           no_output_timeout: 30m
           environment:
             SCAN_DEVICE: iPhone 11 Pro (15.5)
-      - run:
-          name: Compress result bundle
-          command: |
-             tar -czf ios/xcresult.tar.gz ios/BackendIntegrationTests.xcresult && \
-             rm -r ios/BackendIntegrationTests.xcresult
-          working_directory: fastlane/test_output/xctest
-          when: always
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: BackendIntegrationTests
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-
 
   release-checks: 
     <<: *base-job
