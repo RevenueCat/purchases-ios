@@ -197,7 +197,7 @@ platform :ios do
   lane :replace_api_key_integration_tests do
     replace_text_in_files(
       previous_text: "REVENUECAT_API_KEY", 
-      new_text: "TEST_API_KEY",
+      new_text: ENV["REVENUECAT_API_KEY"],
       paths_of_files_to_update: [
         './Tests/BackendIntegrationTests/Constants.swift',
         './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
