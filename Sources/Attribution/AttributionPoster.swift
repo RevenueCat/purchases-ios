@@ -128,8 +128,7 @@ class AttributionPoster {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     func postAdServicesTokenIfNeeded() {
-        let latestTokenSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices)
-        guard latestTokenSent == nil else {
+        guard latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices) == nil else {
             return
         }
 

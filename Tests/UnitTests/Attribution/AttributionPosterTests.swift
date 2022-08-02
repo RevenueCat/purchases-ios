@@ -79,6 +79,11 @@ class BaseAttributionPosterTests: TestCase {
 
 class AttributionPosterTests: BaseAttributionPosterTests {
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
+    }
+
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
