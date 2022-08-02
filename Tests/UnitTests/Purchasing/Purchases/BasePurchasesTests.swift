@@ -157,6 +157,7 @@ class BasePurchasesTests: TestCase {
             currentUserProvider: self.identityManager,
             transactionsManager: self.mockTransactionsManager,
             deviceCache: self.deviceCache,
+            offeringsManager: self.mockOfferingsManager,
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper
         )

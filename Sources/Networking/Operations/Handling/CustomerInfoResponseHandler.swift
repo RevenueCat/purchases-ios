@@ -20,12 +20,15 @@ class CustomerInfoResponseHandler {
     func handle(customerInfoResponse response: HTTPResponse<Response>.Result,
                 completion: CustomerAPI.CustomerInfoResponseHandler) {
         let result: Result<CustomerInfo, BackendError> = response
-            .flatMap {
-                if $0.body.errorResponse.attributeErrors.isEmpty {
-                    return .success($0.body.customerInfo)
-                } else {
-                    return .failure(.errorResponse($0.body.errorResponse, $0.statusCode))
+            .map {
+                // If the response was successful we always want to return the `CustomerInfo`.
+                if !$0.body.errorResponse.attributeErrors.isEmpty {
+                    // If there are any, log attribute errors.
+                    // Creating the error implicitly logs it.
+                    _ = $0.body.errorResponse.asBackendError(with: $0.statusCode)
                 }
+
+                return $0.body.customerInfo
             }
             .mapError(BackendError.networkError)
 

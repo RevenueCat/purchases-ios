@@ -20,11 +20,11 @@ ENV["FILES_TO_UPDATE_VERSION_STRING"] = "
   ../Sources/Misc/SystemInfo.swift,
   ../.jazzy.yaml,
   ../.version,
-  ../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj,
-  ../Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj,
   ../scripts/docs/index.html,
+  ../Sources/Misc/SystemInfo.swift
+"
+ENV["FILES_TO_UPDATE_VERSION_WITHOUT_PRERELEASE_MODIFIERS_STRING"] = "
   ../Sources/Info.plist,
-  ../Sources/Misc/SystemInfo.swift,
   ../Tests/BackendIntegrationTestApp/Info.plist,
   ../Tests/BackendIntegrationTests/Info.plist,
   ../Tests/UnitTests/Info.plist,
@@ -70,10 +70,11 @@ platform :ios do
       step_name: "scan - iPhone", 
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       scheme: "RevenueCat",
-      testplan: "AllTests",
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
+      result_bundle: true,
+      testplan: "CI-AllTests",
       output_directory: "fastlane/test_output/xctest/ios"
     )
   end
@@ -88,6 +89,8 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
+      result_bundle: true,
+      testplan: "CI-AllTests",
       output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
@@ -261,6 +264,8 @@ platform :ios do
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
       number_of_retries: 3,
+      result_bundle: true,
+      testplan: "CI-BackendIntegration",
       output_directory: "fastlane/test_output/xctest/ios"
     )
   end

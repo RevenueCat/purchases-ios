@@ -13,10 +13,10 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
-### bump
+### bump_version_update_changelog_create_pr
 
 ```sh
-[bundle exec] fastlane bump
+[bundle exec] fastlane bump_version_update_changelog_create_pr
 ```
 
 Bump version, edit changelog, and create pull request

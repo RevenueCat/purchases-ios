@@ -18,13 +18,13 @@ enum StoreKitStrings {
 
     case skrequest_failed(error: Error)
 
-    case skproductsrequest_failed(error: Error)
+    case store_products_request_failed(error: Error)
 
     case skproductsrequest_timed_out(after: Int)
 
-    case skproductsrequest_finished
+    case store_product_request_finished
 
-    case skproductsrequest_received_response
+    case store_product_request_received_response
 
     case skunknown_payment_mode(String)
 
@@ -38,6 +38,8 @@ enum StoreKitStrings {
 
     case sk1_discount_missing_locale
 
+    case no_cached_products_starting_store_products_request(identifiers: Set<String>)
+
 }
 
 extension StoreKitStrings: CustomStringConvertible {
@@ -48,8 +50,8 @@ extension StoreKitStrings: CustomStringConvertible {
         case .skrequest_failed(let error):
             return "SKRequest failed: \(error.localizedDescription)"
 
-        case .skproductsrequest_failed(let error):
-            return "SKProductsRequest failed! error: \(error.localizedDescription)"
+        case .store_products_request_failed(let error):
+            return "Store products request failed! Error: \(error.localizedDescription)"
 
         case .skproductsrequest_timed_out(let afterTimeInSeconds):
             return "SKProductsRequest took longer than \(afterTimeInSeconds) seconds, " +
@@ -57,11 +59,11 @@ extension StoreKitStrings: CustomStringConvertible {
             "If this is happening to you consistently, you might want to try using a new Sandbox account. " +
             "More information: https://rev.cat/skproductsrequest-hangs"
 
-        case .skproductsrequest_finished:
-            return "SKProductsRequest did finish"
+        case .store_product_request_finished:
+            return "Store products request finished"
 
-        case .skproductsrequest_received_response:
-            return "SKProductsRequest request received response"
+        case .store_product_request_received_response:
+            return "Store products request request received response"
 
         case let .skunknown_payment_mode(name):
             return "Unrecognized PaymentMode: \(name)"
@@ -82,6 +84,9 @@ extension StoreKitStrings: CustomStringConvertible {
         case .sk1_discount_missing_locale:
             return "There is an issue with the App Store, this SKProductDiscount is missing a Locale - " +
             "The current device Locale will be used instead."
+
+        case .no_cached_products_starting_store_products_request(let identifiers):
+            return "No existing products cached, starting store products request for: \(identifiers)"
         }
     }
 

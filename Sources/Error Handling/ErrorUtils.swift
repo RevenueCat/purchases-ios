@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable file_length multiline_parameters
+// swiftlint:disable file_length multiline_parameters type_body_length
 
 enum ErrorUtils {
 
@@ -218,9 +218,11 @@ enum ErrorUtils {
      */
     static func configurationError(
         message: String? = nil,
+        underlyingError: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        return error(with: ErrorCode.configurationError, message: message,
+        return error(with: ErrorCode.configurationError,
+                     message: message, underlyingError: underlyingError,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -435,7 +437,8 @@ enum ErrorUtils {
 extension ErrorUtils {
 
     static func backendError(withBackendCode backendCode: BackendErrorCode,
-                             backendMessage: String?,
+                             message: String? = nil,
+                             backendMessage: String? = nil,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
                              fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
@@ -443,7 +446,7 @@ extension ErrorUtils {
         let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
         return error(with: errorCode,
-                     message: errorCode.description,
+                     message: message,
                      underlyingError: underlyingError,
                      extraUserInfo: extraUserInfo,
                      fileName: fileName, functionName: functionName, line: line)
@@ -471,6 +474,7 @@ private extension ErrorUtils {
 
         Self.logErrorIfNeeded(
             code,
+            message: message,
             fileName: fileName, functionName: functionName, line: line
         )
 
@@ -513,9 +517,19 @@ private extension ErrorUtils {
 
     // swiftlint:disable:next function_body_length
     private static func logErrorIfNeeded(_ code: ErrorCode,
+                                         message: String?,
                                          fileName: String = #fileID,
                                          functionName: String = #function,
                                          line: UInt = #line) {
+        let formattedMessage: String
+
+        if let message = message, message != code.description {
+            // Print both ErrorCode and message only if they're different
+            formattedMessage = "\(code.description) \(message)"
+        } else {
+            formattedMessage = code.description
+        }
+
         switch code {
         case .networkError,
                 .unknownError,
@@ -540,7 +554,7 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError:
                 Logger.error(
-                    code.description,
+                    formattedMessage,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -560,7 +574,7 @@ private extension ErrorUtils {
                 .paymentPendingError,
                 .productRequestTimedOut:
                 Logger.appleError(
-                    code.description,
+                    formattedMessage,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -568,7 +582,7 @@ private extension ErrorUtils {
 
         @unknown default:
             Logger.error(
-                code.description,
+                formattedMessage,
                 fileName: fileName,
                 functionName: functionName,
                 line: line

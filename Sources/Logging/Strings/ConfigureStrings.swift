@@ -41,6 +41,8 @@ enum ConfigureStrings {
 
     case invalidAPIKey
 
+    case autoSyncPurchasesDisabled
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
@@ -82,6 +84,15 @@ extension ConfigureStrings: CustomStringConvertible {
             "Ensure that you are using the public app-specific API key, " +
             " which should look like 'appl_1a2b3c4d5e6f7h'.\n" +
             "See https://rev.cat/auth for more details."
+
+        case .autoSyncPurchasesDisabled:
+            return "Automatic syncing of purchases has been disabled. \n" +
+            "RevenueCat won’t observe the StoreKit queue, and it will not sync any purchase \n" +
+            "automatically. Call syncPurchases whenever a new transaction is completed so the \n" +
+            "receipt is sent to RevenueCat’s backend. Consumables disappear from the receipt \n" +
+            "after the transaction is finished, so make sure purchases are synced before \n" +
+            "finishing any consumable transaction, otherwise RevenueCat won’t register the \n" +
+            "purchase."
         }
     }
 

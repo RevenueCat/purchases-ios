@@ -29,6 +29,28 @@ run_swiftlint() {
   fi
 }
 
+verify_no_included_apikeys() {
+  # readlink -f follows the link from .git/hooks/pre-commit back to scripts/pre-commit.sh
+  # if executed through there. If not it returns the same file.
+  SCRIPT_DIR=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}")) && pwd)
+  FILES_TO_CHECK=(
+    "${SCRIPT_DIR}/../Tests/BackendIntegrationTests/Constants.swift"
+    "${SCRIPT_DIR}/../Examples/MagicWeather/MagicWeather/Constants.swift"
+    "${SCRIPT_DIR}/../Examples/MagicWeatherSwiftUI/Shared/Constants.swift"
+  )
+  PATTERN="\"REVENUECAT_API_KEY\""
+
+  for i in "${FILES_TO_CHECK[@]}" 
+  do
+    grep -q $PATTERN $i
+    FOUND=$?
+    if [ $FOUND -ne 0 ]; then
+      echo "Leftover API Key found in '$(basename $i)'. Please remove."
+      exit $FOUND
+    fi
+  done
+}
+
 if [[ -e "${SWIFT_LINT}" ]]; then
   echo "SwiftLint version: $(${SWIFT_LINT} version)"
   # Run only if not merging
@@ -52,6 +74,8 @@ if [ $SHOULD_FAIL_PRECOMMIT -ne 0 ]; then
   echo "😵 Found formatting errors, some might have been autocorrected."
   echo ""
   echo "⚠️  Please run '${SWIFT_LINT} --autocorrect --strict' then check the changes were made and commit them. ⚠️"
-fi
 
-exit $SHOULD_FAIL_PRECOMMIT
+  exit $SHOULD_FAIL_PRECOMMIT
+else
+  verify_no_included_apikeys
+fi

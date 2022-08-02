@@ -13,7 +13,7 @@ class MockProductsManager: ProductsManager {
     var invokedProductsCount = 0
     var invokedProductsParameters: Set<String>?
     var invokedProductsParametersList = [(identifiers: Set<String>, Void)]()
-    var stubbedProductsCompletionResult: Set<StoreProduct>?
+    var stubbedProductsCompletionResult: Result<Set<StoreProduct>, Error>?
 
     override func products(withIdentifiers identifiers: Set<String>,
                            completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
@@ -21,8 +21,8 @@ class MockProductsManager: ProductsManager {
         invokedProductsCount += 1
         invokedProductsParameters = identifiers
         invokedProductsParametersList.append((identifiers, ()))
-        if let result = stubbedProductsCompletionResult {
-            completion(.success(result))
+        if let result = self.stubbedProductsCompletionResult {
+            completion(result)
         } else {
             let products: [StoreProduct] = identifiers
                 .map { (identifier) -> MockSK1Product in
@@ -44,12 +44,13 @@ class MockProductsManager: ProductsManager {
     @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
     override func products(
         withIdentifiers identifiers: Set<String>
-    ) async -> Set<StoreProduct> {
+    ) async throws -> Set<StoreProduct> {
         invokedProducts = true
         invokedProductsCount += 1
         invokedProductsParameters = identifiers
         invokedProductsParametersList.append((identifiers, ()))
-        return stubbedProductsCompletionResult ?? Set()
+
+        return try self.stubbedProductsCompletionResult?.get() ?? []
     }
 
     var invokedCacheProduct = false
@@ -82,9 +83,9 @@ class MockProductsManager: ProductsManager {
         }
     }
 
-    var invokedClearCachedProductsCount = 0
-    override func clearCachedProducts() {
-        invokedClearCachedProductsCount += 1
+    var invokedInvalidateAndReFetchCachedProductsIfAppropiateCount = 0
+    override func invalidateAndReFetchCachedProductsIfAppropiate() {
+        invokedInvalidateAndReFetchCachedProductsIfAppropiateCount += 1
     }
 
     func resetMock() {
@@ -96,6 +97,6 @@ class MockProductsManager: ProductsManager {
         invokedCacheProduct = false
         invokedCacheProductCount = 0
         invokedCacheProductParameter = nil
-        invokedClearCachedProductsCount = 0
+        invokedInvalidateAndReFetchCachedProductsIfAppropiateCount = 0
     }
 }

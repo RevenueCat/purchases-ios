@@ -60,7 +60,7 @@ class ProductsFetcherSK1: NSObject {
             }
 
             Logger.debug(
-                Strings.offering.no_cached_requests_and_products_starting_skproduct_request(identifiers: identifiers)
+                Strings.storeKit.no_cached_products_starting_store_products_request(identifiers: identifiers)
             )
 
             self.completionHandlers[identifiers] = [completion]
@@ -119,7 +119,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         queue.async { [self] in
-            Logger.rcSuccess(Strings.storeKit.skproductsrequest_received_response)
+            Logger.rcSuccess(Strings.storeKit.store_product_request_received_response)
             guard let productRequest = self.productsByRequests[request] else {
                 Logger.error("requested products not found for request: \(request)")
                 return
@@ -141,7 +141,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
     }
 
     func requestDidFinish(_ request: SKRequest) {
-        Logger.rcSuccess(Strings.storeKit.skproductsrequest_finished)
+        Logger.rcSuccess(Strings.storeKit.store_product_request_finished)
         self.cancelRequestToPreventTimeoutWarnings(request)
     }
 
@@ -151,7 +151,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         }
 
         queue.async { [self] in
-            Logger.appleError(Strings.storeKit.skproductsrequest_failed(error: error))
+            Logger.appleError(Strings.storeKit.store_products_request_failed(error: error))
 
             guard let productRequest = self.productsByRequests[request] else {
                 Logger.error(Strings.purchase.requested_products_not_found(request: request))
@@ -186,9 +186,16 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         }
     }
 
-    func clearCache() {
+    /// - Returns (via callback): The product identifiers that were removed, or empty if there were not
+    ///   cached products.
+    func clearCache(completion: ((Set<String>) -> Void)? = nil) {
         self.queue.async {
-            self.cachedProductsByIdentifier.removeAll()
+            let cachedProductIdentifiers = self.cachedProductsByIdentifier.keys
+            if !cachedProductIdentifiers.isEmpty {
+                Logger.debug(Strings.offering.product_cache_invalid_for_storefront_change)
+                self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
+            }
+            completion?(Set(cachedProductIdentifiers))
         }
     }
 

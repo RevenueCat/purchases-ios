@@ -214,10 +214,8 @@ class SubscriberAttributesManager {
         self.lock.perform {
             var unsyncedAttributes = self.unsyncedAttributesByKey(appUserID: appUserID)
 
-            for (key, attribute) in attributesToSync {
-                if unsyncedAttributes[key]?.value == attribute.value {
-                    unsyncedAttributes[key]?.isSynced = true
-                }
+            for (key, attribute) in attributesToSync where unsyncedAttributes[key]?.value == attribute.value {
+                unsyncedAttributes[key]?.isSynced = true
             }
 
             self.deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)

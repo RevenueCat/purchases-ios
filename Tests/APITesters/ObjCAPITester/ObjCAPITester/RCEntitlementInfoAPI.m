@@ -16,6 +16,8 @@
     RCEntitlementInfo *ri;
     NSString *i = ri.identifier;
     BOOL ia = [ri isActive];
+    BOOL iaae = [ri isActiveInAnyEnvironment];
+    BOOL iace = [ri isActiveInCurrentEnvironment];
     BOOL wr = [ri willRenew];
     RCPeriodType pt = [ri periodType];
     NSDate *lpd = [ri latestPurchaseDate];
@@ -29,7 +31,7 @@
     RCPurchaseOwnershipType ot = [ri ownershipType];
     NSDictionary<NSString *, id> *rawData = [ri rawData];
 
-    NSLog(i, ia, ri, wr, pt, lpd, opd, ed, s, pi, is, uda, bida, ot, rawData);
+    NSLog(i, ia, iaae, iace, ri, wr, pt, lpd, opd, ed, s, pi, is, uda, bida, ot, rawData);
 }
 
 + (void)checkEnums {

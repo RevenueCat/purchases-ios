@@ -49,6 +49,7 @@ import Foundation
     let dangerousSettings: DangerousSettings?
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
+    let platformInfo: Purchases.PlatformInfo?
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -61,6 +62,7 @@ import Foundation
         self.dangerousSettings = builder.dangerousSettings
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
+        self.platformInfo = builder.platformInfo
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -81,6 +83,7 @@ import Foundation
         private(set) var dangerousSettings: DangerousSettings?
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
+        private(set) var platformInfo: Purchases.PlatformInfo?
 
         /**
          * Create a new builder with your API key.
@@ -161,6 +164,12 @@ import Foundation
         /// Set `storeKit1Timeout`.
         @objc public func with(storeKit1Timeout: TimeInterval) -> Builder {
             self.storeKit1Timeout = clamped(timeout: storeKit1Timeout)
+            return self
+        }
+
+        /// Set `platformInfo`.
+        @objc public func with(platformInfo: Purchases.PlatformInfo) -> Builder {
+            self.platformInfo = platformInfo
             return self
         }
 

@@ -94,6 +94,15 @@ class OfferingsManager {
         return productIDsFromBackend.subtracting(productIDsFromStore)
     }
 
+    func invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: String) {
+        let cachedOfferings = self.deviceCache.cachedOfferings
+        self.deviceCache.clearCachedOfferings()
+
+        if cachedOfferings != nil {
+            self.offerings(appUserID: appUserID, completion: { _ in })
+        }
+    }
+
 }
 
 private extension OfferingsManager {
@@ -106,7 +115,7 @@ private extension OfferingsManager {
 
         guard !productIdentifiers.isEmpty else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
-            self.handleOfferingsUpdateError(.configurationError(errorMessage),
+            self.handleOfferingsUpdateError(.configurationError(errorMessage, underlyingError: nil),
                                             completion: completion)
             return
         }
@@ -115,9 +124,11 @@ private extension OfferingsManager {
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
-                let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
-                self.handleOfferingsUpdateError(.configurationError(errorMessage),
-                                                completion: completion)
+                self.handleOfferingsUpdateError(
+                    .configurationError(Strings.offering.configuration_error_skproducts_not_found.description,
+                                        underlyingError: result.error as NSError?),
+                    completion: completion
+                )
                 return
             }
 
@@ -141,7 +152,8 @@ private extension OfferingsManager {
     }
 
     func handleOfferingsUpdateError(_ error: Error, completion: ((Result<Offerings, Error>) -> Void)?) {
-        Logger.appleError(Strings.offering.fetching_offerings_error(error: error.localizedDescription))
+        Logger.appleError(Strings.offering.fetching_offerings_error(error: error,
+                                                                    underlyingError: error.underlyingError))
         deviceCache.clearOfferingsCacheTimestamp()
         dispatchCompletionOnMainThreadIfPossible(completion, result: .failure(error))
     }
@@ -162,7 +174,7 @@ extension OfferingsManager {
     enum Error: Swift.Error, Equatable {
 
         case backendError(BackendError)
-        case configurationError(String, ErrorSource)
+        case configurationError(String, NSError?, ErrorSource)
         case noOfferingsFound(ErrorSource)
 
     }
@@ -176,8 +188,9 @@ extension OfferingsManager.Error: ErrorCodeConvertible {
         case let .backendError(backendError):
             return backendError.asPurchasesError
 
-        case let .configurationError(errorMessage, source):
+        case let .configurationError(errorMessage, underlyingError, source):
             return ErrorUtils.configurationError(message: errorMessage,
+                                                 underlyingError: underlyingError,
                                                  fileName: source.file,
                                                  functionName: source.function,
                                                  line: source.line)
@@ -191,11 +204,12 @@ extension OfferingsManager.Error: ErrorCodeConvertible {
 
     static func configurationError(
         _ errorMessage: String,
+        underlyingError: NSError?,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) -> Self {
-        return .configurationError(errorMessage, .init(file: file, function: function, line: line))
+        return .configurationError(errorMessage, underlyingError, .init(file: file, function: function, line: line))
     }
 
     static func noOfferingsFound(
@@ -204,6 +218,24 @@ extension OfferingsManager.Error: ErrorCodeConvertible {
         line: UInt = #line
     ) -> Self {
         return .noOfferingsFound(.init(file: file, function: function, line: line))
+    }
+
+}
+
+extension OfferingsManager.Error: CustomNSError {
+
+    var errorUserInfo: [String: Any] {
+        return [
+            NSUnderlyingErrorKey: self.underlyingError as NSError? as Any
+        ]
+    }
+
+    fileprivate var underlyingError: Error? {
+        switch self {
+        case let .backendError(error): return error
+        case let .configurationError(_, error, _): return error
+        case .noOfferingsFound: return nil
+        }
     }
 
 }

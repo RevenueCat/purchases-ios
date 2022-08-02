@@ -14,6 +14,7 @@
 import Foundation
 @testable import RevenueCat
 
+// swiftlint:disable identifier_name
 class MockOfferingsManager: OfferingsManager {
 
     var invokedOfferings = false
@@ -61,6 +62,18 @@ class MockOfferingsManager: OfferingsManager {
         invokedUpdateOfferingsCachesParametersList.append(parameters)
 
         completion?(stubbedUpdateOfferingsCompletionResult!)
+    }
+
+    var invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = false
+    var invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount = 0
+    var invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParameters: String?
+    var invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParametersList = [String]()
+
+    override func invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: String) {
+        invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = true
+        invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount += 1
+        invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParameters = appUserID
+        invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParametersList.append(appUserID)
     }
 
 }

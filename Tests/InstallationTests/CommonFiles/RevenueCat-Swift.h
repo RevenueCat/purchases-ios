@@ -560,6 +560,7 @@ SWIFT_CLASS_NAMED("Configuration")
 
 @class NSUserDefaults;
 @class RCDangerousSettings;
+@class RCPlatformInfo;
 
 /// The Builder for <code>Configuration</code>.
 SWIFT_CLASS_NAMED("Builder")
@@ -605,6 +606,8 @@ SWIFT_CLASS_NAMED("Builder")
 - (RCConfigurationBuilder * _Nonnull)withNetworkTimeout:(NSTimeInterval)networkTimeout SWIFT_WARN_UNUSED_RESULT;
 /// Set <code>storeKit1Timeout</code>.
 - (RCConfigurationBuilder * _Nonnull)withStoreKit1Timeout:(NSTimeInterval)storeKit1Timeout SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>platformInfo</code>.
+- (RCConfigurationBuilder * _Nonnull)withPlatformInfo:(RCPlatformInfo * _Nonnull)platformInfo SWIFT_WARN_UNUSED_RESULT;
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -752,6 +755,14 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 /// The entitlement identifier configured in the RevenueCat dashboard
 @property (nonatomic, readonly, copy) NSString * _Nonnull identifier;
 /// True if the user has access to this entitlement
+/// warning:
+/// this is equivalent to <code>isActiveInAnyEnvironment</code>
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>isActiveInCurrentEnvironment</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly) BOOL isActive;
 /// True if the underlying subscription is set to renew at the end of
 /// the billing period (<code>expirationDate</code>).
@@ -798,6 +809,29 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 
 
 
+
+
+@interface RCEntitlementInfo (SWIFT_EXTENSION(RevenueCat))
+/// True if the user has access to this entitlement,
+/// note:
+/// When queried from the sandbox environment, it only returns true if active in sandbox.
+/// When queried from production, this only returns true if active in production.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>isActiveInAnyEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly) BOOL isActiveInCurrentEnvironment;
+/// True if the user has access to this entitlement in any environment.
+/// <h4>Related Symbols</h4>
+/// <ul>
+///   <li>
+///     <code>isActiveInCurrentEnvironment</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly) BOOL isActiveInAnyEnvironment;
+@end
 
 
 /// This class contains all the entitlements associated to the user.
@@ -1259,6 +1293,7 @@ SWIFT_CLASS("_TtC10RevenueCat15ProductsManager")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+
 @class RCStoreProductDiscount;
 @class RCPromotionalOfferSignedData;
 
@@ -1524,7 +1559,6 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 - (void)readyForPromotedProduct:(RCStoreProduct * _Nonnull)product purchase:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))startPurchase;
 @end
 
-@class RCPlatformInfo;
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, strong) RCPlatformInfo * _Nullable platformInfo;)
@@ -1599,6 +1633,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 @end
 
 
+
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
@@ -1635,7 +1670,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 + (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
 @end
-
 
 
 
@@ -1931,7 +1965,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 - (void)getCustomerInfoWithFetchPolicy:(enum RCCacheFetchPolicy)fetchPolicy completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// Fetches the <code>StoreProduct</code>s for your IAPs for given <code>productIdentifiers</code>.
-/// Use this method if you aren’t using <code>getOfferings(completion:)</code>.
+/// Use this method if you aren’t using <code>Purchases/getOfferings(completion:)</code>.
 /// You should use <code>getOfferings(completion:)</code> though.
 /// note:
 /// <code>completion</code> may be called without <code>StoreProduct</code>s that you are expecting. This is usually caused by
@@ -1939,7 +1973,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// Also ensure that you have an active developer program subscription and you have signed the latest paid
 /// application agreements.
 /// If you’re having trouble, see:
-/// <a href="https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard">App Store Connect In-App Purchase Configuration</a>
+/// <a href="https://rev.cat/how-to-configure-products">App Store Connect In-App Purchase Configuration</a>
 /// \param productIdentifiers A set of product identifiers for in-app purchases setup via
 /// <a href="https://appstoreconnect.apple.com/">AppStoreConnect</a>
 /// This should be either hard coded in your application, from a file, or from a custom endpoint if you want
@@ -2043,7 +2077,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// note:
 /// This method will not trigger a login prompt from App Store. However, if the receipt currently
 /// on the device does not contain subscriptions, but the user has made subscription purchases, this method
-/// won’t be able to restore them. Use <code>restorePurchases(completion:)</code> to cover those cases.
+/// won’t be able to restore them. Use <code>Purchases/restorePurchases(completion:)</code> to cover those cases.
 - (void)syncPurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// This method will post all purchases associated with the current App Store account to RevenueCat and become
 /// associated with the current <code>appUserID</code>. If the receipt is being used by an existing user, the current
