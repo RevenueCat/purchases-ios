@@ -100,7 +100,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
         var finalResults: [String: IntroEligibility] = [:]
 
-        self.mockProductsManager.stubbedProductsCompletionResult = Set(storeProducts)
+        self.mockProductsManager.stubbedProductsCompletionResult = .success(Set(storeProducts))
         trialOrIntroPriceEligibilityChecker.productsWithKnownIntroEligibilityStatus(
             productIdentifiers: productIdentifiers) { results in
             finalResults = results
@@ -114,7 +114,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
     }
 
     func testSK1EligibilityIsFetchedFromBackendIfErrorCalculatingEligibilityAndStoreKitDoesNotHaveIt() throws {
-        self.mockProductsManager.stubbedProductsCompletionResult = Set()
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([])
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
@@ -148,9 +148,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         sk1Product.mockDiscount = nil
         let storeProduct =  StoreProduct(sk1Product: sk1Product)
 
-        self.mockProductsManager.stubbedProductsCompletionResult = Set(
-            [storeProduct]
-        )
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([
+            storeProduct
+        ])
 
         let productId = "product_id"
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
@@ -171,7 +171,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
     }
 
     func testSK1ErrorFetchingFromBackendAfterErrorCalculatingEligibility() throws {
-        self.mockProductsManager.stubbedProductsCompletionResult = Set()
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([])
         let productId = "product_id"
 
         let stubbedError: BackendError = .networkError(

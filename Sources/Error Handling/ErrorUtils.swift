@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable file_length multiline_parameters
+// swiftlint:disable file_length multiline_parameters type_body_length
 
 enum ErrorUtils {
 
@@ -218,9 +218,11 @@ enum ErrorUtils {
      */
     static func configurationError(
         message: String? = nil,
+        underlyingError: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        return error(with: ErrorCode.configurationError, message: message,
+        return error(with: ErrorCode.configurationError,
+                     message: message, underlyingError: underlyingError,
                      fileName: fileName, functionName: functionName, line: line)
     }
 

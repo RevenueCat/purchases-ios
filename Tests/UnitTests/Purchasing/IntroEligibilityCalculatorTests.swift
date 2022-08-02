@@ -66,10 +66,12 @@ class IntroEligibilityCalculatorTests: TestCase {
         mockReceiptParser.stubbedParseResult = receipt
         let receiptIdentifiers = receipt.purchasedIntroOfferOrFreeTrialProductIdentifiers()
 
-        mockProductsManager.stubbedProductsCompletionResult = Set(
-            ["a", "b"]
-                .map { MockSK1Product(mockProductIdentifier: $0) }
-                .map(StoreProduct.init(sk1Product:))
+        mockProductsManager.stubbedProductsCompletionResult = .success(
+            Set(
+                ["a", "b"]
+                    .map { MockSK1Product(mockProductIdentifier: $0) }
+                    .map(StoreProduct.init(sk1Product:))
+            )
         )
 
         let candidateIdentifiers = Set(["a", "b", "c"])
@@ -98,9 +100,8 @@ class IntroEligibilityCalculatorTests: TestCase {
                                       mockSubscriptionGroupIdentifier: "group2")
         product2.mockDiscount = MockSKProductDiscount()
 
-        mockProductsManager.stubbedProductsCompletionResult = Set(
-            [product1, product2]
-                .map(StoreProduct.init(sk1Product:))
+        mockProductsManager.stubbedProductsCompletionResult = .success(
+            Set([product1, product2].map(StoreProduct.init(sk1Product:)))
         )
 
         let candidateIdentifiers = Set(["com.revenuecat.product1",
@@ -133,7 +134,7 @@ class IntroEligibilityCalculatorTests: TestCase {
         let mockProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
                                          mockSubscriptionGroupIdentifier: "group1")
         mockProduct.mockDiscount = nil
-        mockProductsManager.stubbedProductsCompletionResult = Set([StoreProduct(sk1Product: mockProduct)])
+        mockProductsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: mockProduct)])
 
         let candidateIdentifiers = Set(["com.revenuecat.product1"])
 
@@ -162,7 +163,7 @@ class IntroEligibilityCalculatorTests: TestCase {
                                          mockSubscriptionGroupIdentifier: "group1")
         mockProduct.mockDiscount = nil
         mockProduct.mockSubscriptionPeriod = nil
-        mockProductsManager.stubbedProductsCompletionResult = Set([StoreProduct(sk1Product: mockProduct)])
+        mockProductsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: mockProduct)])
 
         let candidateIdentifiers = Set(["lifetime"])
 
