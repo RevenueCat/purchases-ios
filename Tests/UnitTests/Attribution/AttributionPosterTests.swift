@@ -79,11 +79,6 @@ class BaseAttributionPosterTests: TestCase {
 
 class AttributionPosterTests: BaseAttributionPosterTests {
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
-    }
-
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
@@ -297,6 +292,11 @@ class IOSAttributionPosterTests: BaseAttributionPosterTests {
 #if canImport(AdServices)
 @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
 class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
+    }
 
     func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() {
         backend.stubbedPostAdServicesTokenCompletionResult = .success(())
