@@ -19,7 +19,7 @@ import StoreKit
 enum OfferingStrings {
 
     case cannot_find_product_configuration_error(identifiers: Set<String>)
-    case fetching_offerings_error(error: String)
+    case fetching_offerings_error(error: OfferingsManager.Error, underlyingError: Error?)
     case found_existing_product_request(identifiers: Set<String>)
     case no_cached_offerings_fetching_from_network
     case no_cached_requests_and_products_starting_skproduct_request(identifiers: Set<String>)
@@ -46,14 +46,19 @@ extension OfferingStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
-
         case .cannot_find_product_configuration_error(let identifiers):
             return "Could not find SKProduct for \(identifiers) " +
                 "\nThere is a problem with your configuration in App Store Connect. " +
                 "\nMore info here: https://errors.rev.cat/configuring-products"
 
-        case .fetching_offerings_error(let error):
-            return "Error fetching offerings - \(error)"
+        case let .fetching_offerings_error(error, underlyingError):
+            var result = "Error fetching offerings - \(error.localizedDescription)"
+
+            if let underlyingError = underlyingError {
+                result += "\nUnderlying error: \(underlyingError.localizedDescription)"
+            }
+
+            return result
 
         case .found_existing_product_request(let identifiers):
             return "Found an existing request for products: \(identifiers), appending " +

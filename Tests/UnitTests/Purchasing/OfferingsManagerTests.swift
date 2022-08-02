@@ -118,15 +118,20 @@ extension OfferingsManagerTests {
         // then
         expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
-        expect(result?.error) == .configurationError(
-            Strings.offering.configuration_error_no_products_for_offering.description
-        )
+
+        switch result?.error {
+        case let .configurationError(message, underlyingError, _):
+            expect(message) == Strings.offering.configuration_error_no_products_for_offering.description
+            expect(underlyingError).to(beNil())
+        default:
+            fail("Unexpected result")
+        }
     }
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
         // given
         mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
-        mockProductsManager.stubbedProductsCompletionResult = Set()
+        mockProductsManager.stubbedProductsCompletionResult = .success(Set())
 
         // when
         var result: Result<Offerings, OfferingsManager.Error>?
@@ -137,9 +142,40 @@ extension OfferingsManagerTests {
         // then
         expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
-        expect(result?.error) == .configurationError(
-            Strings.offering.configuration_error_skproducts_not_found.description
-        )
+
+        switch result?.error {
+        case let .configurationError(message, underlyingError, _):
+            expect(message) == Strings.offering.configuration_error_skproducts_not_found.description
+            expect(underlyingError).to(beNil())
+        default:
+            fail("Unexpected result")
+        }
+    }
+
+    func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsError() throws {
+        let error: Error = NSError(domain: SKErrorDomain, code: SKError.Code.storeProductNotAvailable.rawValue)
+
+        // given
+        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        mockProductsManager.stubbedProductsCompletionResult = .failure(error)
+
+        // when
+        var result: Result<Offerings, OfferingsManager.Error>?
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+            result = $0
+        }
+
+        // then
+        expect(result).toEventuallyNot(beNil())
+        expect(result).to(beFailure())
+
+        switch result?.error {
+        case let .configurationError(message, underlyingError, _):
+            expect(message) == Strings.offering.configuration_error_skproducts_not_found.description
+            expect(underlyingError).to(matchError(error))
+        default:
+            fail("Unexpected result")
+        }
     }
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendResponseIfOfferingsFactoryCantCreateOfferings() throws {
