@@ -13,54 +13,6 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
-### bump_version_update_changelog_create_pr
-
-```sh
-[bundle exec] fastlane bump_version_update_changelog_create_pr
-```
-
-Bump version, edit changelog, and create pull request
-
-### prepare_next_version
-
-```sh
-[bundle exec] fastlane prepare_next_version
-```
-
-Prepare next version
-
-### github_release
-
-```sh
-[bundle exec] fastlane github_release
-```
-
-Make github release
-
-### github_changelog
-
-```sh
-[bundle exec] fastlane github_changelog
-```
-
-Generate changelog from GitHub compare and PR data for mentioning GitHub usernames in release notes
-
-### bump_and_update_changelog
-
-```sh
-[bundle exec] fastlane bump_and_update_changelog
-```
-
-Increment build number and update changelog
-
-### replace_version_number
-
-```sh
-[bundle exec] fastlane replace_version_number
-```
-
-Replace version number in project
-
 ### check_pods
 
 ```sh
@@ -81,6 +33,22 @@ Replace version number in project
 ```
 
 Bump version, update swift header, edit changelog, and create pull request
+
+### ios github_release
+
+```sh
+[bundle exec] fastlane ios github_release
+```
+
+Make github release
+
+### ios prepare_next_version
+
+```sh
+[bundle exec] fastlane ios prepare_next_version
+```
+
+Creates PR changing version to next minor adding a -SNAPSHOT suffix
 
 ### ios setup_dev
 
