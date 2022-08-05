@@ -62,13 +62,12 @@ commands:
           name: Create simulator
           command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
 
-  install-dependencies:
+  bundle-install-with-cache:
     parameters:
       directory:
         type: string
         default: .
     steps:
-      # Bundler
       - restore_cache:
           keys: 
             - v1-gem-cache-{{ checksum "Gemfile.lock" }}
@@ -83,6 +82,15 @@ commands:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+
+  install-dependencies:
+    parameters:
+      directory:
+        type: string
+        default: .
+    steps:
+      - bundle-install-with-cache:
+          directory: << parameters.directory >>
       - run:
           name: Install swiftlint
           command: brew install swiftlint
@@ -480,6 +488,18 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
 
+  danger:
+    docker:
+      - image: cimg/ruby:3.1.2
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - bundle-install-with-cache
+      - run: 
+          name: Run Danger
+          command: bundle exec danger --verbose
+
 workflows:
   version: 2
   build-test:
@@ -534,3 +554,6 @@ workflows:
       - docs-deploy:
           xcode_version: '14.0.0'
           <<: *release-tags
+  danger:
+    jobs:
+      - danger
