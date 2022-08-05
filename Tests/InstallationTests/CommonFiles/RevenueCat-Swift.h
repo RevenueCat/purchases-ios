@@ -1965,7 +1965,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 ///
 - (void)getCustomerInfoWithFetchPolicy:(enum RCCacheFetchPolicy)fetchPolicy completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// Fetches the <code>StoreProduct</code>s for your IAPs for given <code>productIdentifiers</code>.
-/// Use this method if you aren’t using <code>getOfferings(completion:)</code>.
+/// Use this method if you aren’t using <code>Purchases/getOfferings(completion:)</code>.
 /// You should use <code>getOfferings(completion:)</code> though.
 /// note:
 /// <code>completion</code> may be called without <code>StoreProduct</code>s that you are expecting. This is usually caused by
@@ -1973,7 +1973,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// Also ensure that you have an active developer program subscription and you have signed the latest paid
 /// application agreements.
 /// If you’re having trouble, see:
-/// <a href="https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard">App Store Connect In-App Purchase Configuration</a>
+/// <a href="https://rev.cat/how-to-configure-products">App Store Connect In-App Purchase Configuration</a>
 /// \param productIdentifiers A set of product identifiers for in-app purchases setup via
 /// <a href="https://appstoreconnect.apple.com/">AppStoreConnect</a>
 /// This should be either hard coded in your application, from a file, or from a custom endpoint if you want
@@ -2077,7 +2077,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// note:
 /// This method will not trigger a login prompt from App Store. However, if the receipt currently
 /// on the device does not contain subscriptions, but the user has made subscription purchases, this method
-/// won’t be able to restore them. Use <code>restorePurchases(completion:)</code> to cover those cases.
+/// won’t be able to restore them. Use <code>Purchases/restorePurchases(completion:)</code> to cover those cases.
 - (void)syncPurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// This method will post all purchases associated with the current App Store account to RevenueCat and become
 /// associated with the current <code>appUserID</code>. If the receipt is being used by an existing user, the current

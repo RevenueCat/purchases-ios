@@ -55,7 +55,7 @@ extension OfferingsManagerStoreKitTests {
         mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
         var fetchedStoreProduct = try await fetchSk2StoreProduct()
         var storeProduct = StoreProduct(sk2Product: fetchedStoreProduct.underlyingSK2Product)
-        mockProductsManager.stubbedProductsCompletionResult = Set([storeProduct])
+        mockProductsManager.stubbedProductsCompletionResult = .success(Set([storeProduct]))
 
         var receivedOfferings = try await offeringsManager.offerings(appUserID: MockData.anyAppUserID)
         var receivedProduct = try XCTUnwrap(receivedOfferings.current?.availablePackages.first?.storeProduct)
@@ -66,7 +66,7 @@ extension OfferingsManagerStoreKitTests {
 
         fetchedStoreProduct = try await fetchSk2StoreProduct()
         storeProduct = StoreProduct(sk2Product: fetchedStoreProduct.underlyingSK2Product)
-        mockProductsManager.stubbedProductsCompletionResult = Set([storeProduct])
+        mockProductsManager.stubbedProductsCompletionResult = .success(Set([storeProduct]))
 
         // Note: this test passes only because the method `invalidateAndReFetchCachedOfferingsIfAppropiate`
         // is manually executed. `OfferingsManager` does not detect Storefront changes to invalidate the

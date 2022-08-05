@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable file_length multiline_parameters
+// swiftlint:disable file_length multiline_parameters type_body_length
 
 enum ErrorUtils {
 
@@ -218,9 +218,11 @@ enum ErrorUtils {
      */
     static func configurationError(
         message: String? = nil,
+        underlyingError: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
-        return error(with: ErrorCode.configurationError, message: message,
+        return error(with: ErrorCode.configurationError,
+                     message: message, underlyingError: underlyingError,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -435,7 +437,8 @@ enum ErrorUtils {
 extension ErrorUtils {
 
     static func backendError(withBackendCode backendCode: BackendErrorCode,
-                             backendMessage: String?,
+                             message: String? = nil,
+                             backendMessage: String? = nil,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
                              fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> Error {
@@ -443,7 +446,7 @@ extension ErrorUtils {
         let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
         return error(with: errorCode,
-                     message: errorCode.description,
+                     message: message,
                      underlyingError: underlyingError,
                      extraUserInfo: extraUserInfo,
                      fileName: fileName, functionName: functionName, line: line)
@@ -518,7 +521,14 @@ private extension ErrorUtils {
                                          fileName: String = #fileID,
                                          functionName: String = #function,
                                          line: UInt = #line) {
-        let formattedMessage = code.description + (message.map { " " + $0 } ?? "")
+        let formattedMessage: String
+
+        if let message = message, message != code.description {
+            // Print both ErrorCode and message only if they're different
+            formattedMessage = "\(code.description) \(message)"
+        } else {
+            formattedMessage = code.description
+        }
 
         switch code {
         case .networkError,

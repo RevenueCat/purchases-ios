@@ -167,7 +167,7 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
     }
 
     func testProductIsRemovedButPresentInTheQueuedTransaction() throws {
-        self.mockProductsManager.stubbedProductsCompletionResult = []
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([])
 
         let customerInfoBeforePurchase = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",

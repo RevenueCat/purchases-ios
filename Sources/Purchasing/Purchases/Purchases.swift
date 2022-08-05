@@ -754,11 +754,10 @@ public extension Purchases {
         return self.customerInfoManager.customerInfoStream
     }
 
-    // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
-     * Use this method if you aren't using ``getOfferings(completion:)``.
+     * Use this method if you aren't using ``Purchases/getOfferings(completion:)``.
      * You should use ``getOfferings(completion:)`` though.
      *
      * - Note: `completion` may be called without ``StoreProduct``s that you are expecting. This is usually caused by
@@ -766,7 +765,7 @@ public extension Purchases {
      * Also ensure that you have an active developer program subscription and you have signed the latest paid
      * application agreements.
      * If you're having trouble, see:
-     *  [App Store Connect In-App Purchase Configuration](https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard)
+     *  [App Store Connect In-App Purchase Configuration](https://rev.cat/how-to-configure-products)
      *
      * - Parameter productIdentifiers: A set of product identifiers for in-app purchases setup via
      * [AppStoreConnect](https://appstoreconnect.apple.com/)
@@ -779,9 +778,7 @@ public extension Purchases {
     func getProducts(_ productIdentifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
-    // swiftlint:enable line_length
 
-    // swiftlint:disable line_length
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
@@ -793,7 +790,7 @@ public extension Purchases {
      * Also ensure that you have an active developer program subscription and you have signed the latest paid
      * application agreements.
      * If you're having trouble, see:
-     * [App Store Connect In-App Purchase Configuration](https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard)
+     * [App Store Connect In-App Purchase Configuration](https://rev.cat/how-to-configure-products)
      *
      * - Parameter productIdentifiers: A set of product identifiers for in-app purchases setup via
      * [AppStoreConnect](https://appstoreconnect.apple.com/)
@@ -804,7 +801,6 @@ public extension Purchases {
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await productsAsync(productIdentifiers)
     }
-    // swiftlint:enable line_length
 
     /**
      * Initiates a purchase of a ``StoreProduct``.
@@ -1021,7 +1017,7 @@ public extension Purchases {
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use ``restorePurchases(completion:)`` to cover those cases.
+     * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
      */
     @objc func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
         purchasesOrchestrator.syncPurchases {
@@ -1041,7 +1037,7 @@ public extension Purchases {
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use ``restorePurchases(completion:)`` to cover those cases.
+     * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchases() async throws -> CustomerInfo {
