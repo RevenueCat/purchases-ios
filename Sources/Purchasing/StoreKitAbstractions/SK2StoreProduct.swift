@@ -17,9 +17,14 @@ import StoreKit
 internal struct SK2StoreProduct: StoreProductType {
 
     init(sk2Product: SK2Product) {
+        #if swift(<5.7)
         self._underlyingSK2Product = sk2Product
+        #else
+        self.underlyingSK2Product = sk2Product
+        #endif
     }
 
+    #if swift(<5.7)
     // We can't directly store instances of StoreKit.Product, since that causes
     // linking issues in iOS < 15, even with @available checks correctly in place.
     // So instead, we store the underlying product as Any and wrap it with casting.
@@ -29,6 +34,9 @@ internal struct SK2StoreProduct: StoreProductType {
         // swiftlint:disable:next force_cast
         _underlyingSK2Product as! SK2Product
     }
+    #else
+    let underlyingSK2Product: SK2Product
+    #endif
 
     private let priceFormatterProvider: PriceFormatterProvider = .init()
 
