@@ -411,7 +411,7 @@ jobs:
       - trust-github-key
       - run:
           name: Prepare next version
-          command: bundle exec fastlane prepare_next_version
+          command: bundle exec fastlane prepare_next_version branch:$CIRCLE_BRANCH
 
   installation-tests-cocoapods:
     <<: *base-job
