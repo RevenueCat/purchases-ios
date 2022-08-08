@@ -1,0 +1,12 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "aad_attribution_token" : "asdf"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/subscribers/asdf/adservices_attribution"
+  }
+}

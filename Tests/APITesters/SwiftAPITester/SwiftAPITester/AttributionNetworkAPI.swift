@@ -23,7 +23,8 @@ func checkAttributionNetworkEnums() {
          .branch,
          .tenjin,
          .facebook,
-         .mParticle:
+         .mParticle,
+         .adServices:
         print(aNetwork!)
 
     @unknown default: fatalError()

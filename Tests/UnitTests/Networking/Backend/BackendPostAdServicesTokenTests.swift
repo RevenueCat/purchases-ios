@@ -7,36 +7,36 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  BackendPostAttributionDataTests.swift
+//  BackendPostAdServicesTokenTests.swift
 //
-//  Created by Nacho Soto on 3/7/22.
+//  Created by Madeline Beyl on 4/27/22.
 
 import Foundation
+
 import Nimble
 import XCTest
 
 @testable import RevenueCat
 
-class BackendPostAttributionDataTests: BaseBackendTests {
+class BackendPostAdServicesTokenTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
     }
 
-    func testPostAttributesPutsDataInDataKey() throws {
+    func testPostAdServicesCallsHttpClient() throws {
         self.httpClient.mock(
-            requestPath: .postAttributionData(appUserID: Self.userID),
+            requestPath: .postAdServicesToken(appUserID: Self.userID),
             response: .init(statusCode: .success)
         )
 
-        let data: [String: AnyObject] = ["a": "b" as NSString, "c": "d" as NSString]
-
-        backend.post(attributionData: data,
-                     network: .adjust,
-                     appUserID: Self.userID,
-                     completion: nil)
-
+        var completionCalled = false
+        backend.post(adServicesToken: "asdf",
+                     appUserID: "asdf") { _ in
+            completionCalled = true
+        }
         expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(completionCalled).toEventually(beTrue())
     }
 
 }

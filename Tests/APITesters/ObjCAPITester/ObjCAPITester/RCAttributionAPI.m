@@ -53,6 +53,7 @@
     [a setCreative: nil];
     [a setCreative: @""];
     [a collectDeviceIdentifiers];
+    [a enableAdServicesAttributionTokenCollection];
 }
 
 @end

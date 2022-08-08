@@ -56,13 +56,14 @@ class BasePurchasesTests: TestCase {
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator()
         )
-        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
-                                       currentUserProvider: self.identityManager)
         self.attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
                                                    currentUserProvider: self.identityManager,
                                                    backend: self.backend,
                                                    attributionFetcher: self.attributionFetcher,
                                                    subscriberAttributesManager: self.subscriberAttributesManager)
+        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
+                                       currentUserProvider: self.identityManager,
+                                       attributionPoster: self.attributionPoster)
         self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
                                                        backend: self.backend,
@@ -126,14 +127,14 @@ class BasePurchasesTests: TestCase {
     var purchases: Purchases!
 
     func setupPurchases(automaticCollection: Bool = false) {
-        Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
+        Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
 
         self.initializePurchasesInstance(appUserId: self.identityManager.currentAppUserID)
     }
 
     func setupAnonPurchases() {
-        Purchases.automaticAppleSearchAdsAttributionCollection = false
+        Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = false
         self.identityManager.mockIsAnonymous = true
         self.initializePurchasesInstance(appUserId: nil)
     }
@@ -380,7 +381,6 @@ extension BasePurchasesTests {
                 completion?(result.0)
             }
         }
-
     }
 }
 

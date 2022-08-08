@@ -74,7 +74,10 @@ BOOL isAnonymous;
     [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch];
     [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch forNetworkUserId:@""];
     [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch forNetworkUserId:nil];
-        
+
+    // should have deprecation warning:
+    // 'automaticAppleSearchAdsAttributionCollection' is deprecated: Use
+    // Purchases.shared.attribution.enableAdServicesAttributionTokenCollection instead
     automaticAppleSearchAdsAttributionCollection = [RCPurchases automaticAppleSearchAdsAttributionCollection];
 
     // should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead

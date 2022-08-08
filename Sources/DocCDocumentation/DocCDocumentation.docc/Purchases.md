@@ -106,7 +106,6 @@ Most features require configuring the SDK before using it.
 - ``Purchases/finishTransactions``
 - ``Purchases/invalidateCustomerInfoCache()``
 - ``Purchases/forceUniversalAppStore``
-- ``Purchases/automaticAppleSearchAdsAttributionCollection``
 - ``Purchases/proxyURL``
 - ``Purchases/verboseLogs``
 - ``Purchases/verboseLogHandler``

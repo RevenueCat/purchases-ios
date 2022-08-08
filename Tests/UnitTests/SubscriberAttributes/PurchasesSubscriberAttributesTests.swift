@@ -94,13 +94,14 @@ class PurchasesSubscriberAttributesTests: TestCase {
             attributionDataMigrator: AttributionDataMigrator()
         )
         self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user")
-        self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
-                                       currentUserProvider: self.mockIdentityManager)
         self.mockAttributionPoster = AttributionPoster(deviceCache: mockDeviceCache,
                                                        currentUserProvider: mockIdentityManager,
                                                        backend: mockBackend,
                                                        attributionFetcher: mockAttributionFetcher,
                                                        subscriberAttributesManager: mockSubscriberAttributesManager)
+        self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
+                                       currentUserProvider: self.mockIdentityManager,
+                                       attributionPoster: self.mockAttributionPoster)
         self.customerInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
                                                        deviceCache: mockDeviceCache,
                                                        backend: mockBackend,
@@ -134,7 +135,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
     }
 
     func setupPurchases(automaticCollection: Bool = false) {
-        Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
+        Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
+
         self.mockIdentityManager.mockIsAnonymous = false
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
                                                           storeKitWrapper: mockStoreKitWrapper,

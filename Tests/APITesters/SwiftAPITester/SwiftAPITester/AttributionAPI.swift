@@ -71,4 +71,6 @@ func checkAttributionAPI() {
     attribution.setCreative(nil)
 
     attribution.collectDeviceIdentifiers()
+
+    attribution.enableAdServicesAttributionTokenCollection()
 }

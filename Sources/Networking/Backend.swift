@@ -68,6 +68,14 @@ class Backend {
                            completion: completion)
     }
 
+    func post(adServicesToken: String,
+              appUserID: String,
+              completion: CustomerAPI.SimpleResponseHandler?) {
+        self.customer.post(adServicesToken: adServicesToken,
+                           appUserID: appUserID,
+                           completion: completion)
+    }
+
     func getCustomerInfo(appUserID: String, completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.getCustomerInfo(appUserID: appUserID, completion: completion)
     }

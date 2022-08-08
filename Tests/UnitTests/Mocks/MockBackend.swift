@@ -113,11 +113,29 @@ class MockBackend: Backend {
         }
     }
 
+    var invokedPostAdServicesToken = false
+    var invokedPostAdServicesTokenCount = 0
+    var invokedPostAdServicesTokenParameters: (token: String, appUserID: String?)?
+    var invokedPostAdServicesTokenParametersList = [(token: String, appUserID: String?)]()
+    var stubbedPostAdServicesTokenCompletionResult: Result<Void, BackendError>?
+
+    override func post(adServicesToken: String,
+                       appUserID: String,
+                       completion: CustomerAPI.SimpleResponseHandler?) {
+        invokedPostAdServicesToken = true
+        invokedPostAdServicesTokenCount += 1
+        invokedPostAdServicesTokenParameters = (adServicesToken, appUserID)
+        invokedPostAdServicesTokenParametersList.append((adServicesToken, appUserID))
+        if let result = stubbedPostAdServicesTokenCompletionResult {
+            completion?(result.error)
+        }
+    }
+
     var invokedPostSubscriberAttributes = false
     var invokedPostSubscriberAttributesCount = 0
     var invokedPostSubscriberAttributesParameters: (subscriberAttributes: [String: SubscriberAttribute]?, appUserID: String?)?
     var invokedPostSubscriberAttributesParametersList: [InvokedPostSubscriberAttributesParams] = []
-    var stubbedPostSubscriberAttributesCompletionResult: (BackendError?, Void)?
+    var stubbedPostSubscriberAttributesCompletionResult: Result<Void, BackendError>?
 
     override func post(subscriberAttributes: SubscriberAttribute.Dictionary,
                        appUserID: String,
@@ -129,7 +147,7 @@ class MockBackend: Backend {
             InvokedPostSubscriberAttributesParams(subscriberAttributes: subscriberAttributes, appUserID: appUserID)
         )
         if let result = stubbedPostSubscriberAttributesCompletionResult {
-            completion?(result.0)
+            completion?(result.error)
         } else {
             completion?(nil)
         }

@@ -64,6 +64,17 @@ class CustomerAPI {
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
+    func post(adServicesToken: String,
+              appUserID: String,
+              completion: SimpleResponseHandler?) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let postAttributionDataOperation = PostAdServicesTokenOperation(configuration: config,
+                                                                        token: adServicesToken,
+                                                                        responseHandler: completion)
+        self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
+    }
+
     // swiftlint:disable:next function_parameter_count
     func post(receiptData: Data,
               appUserID: String,

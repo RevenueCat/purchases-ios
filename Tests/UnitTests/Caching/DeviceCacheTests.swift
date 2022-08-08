@@ -404,4 +404,27 @@ class DeviceCacheTests: TestCase {
         expect(mockCachedObject.invokedClearCache) == true
     }
 
+    func testSetLatestAdvertisingIdsByNetworkSentMapsAttributionNetworksToStringKeys() {
+        let userId = "asdf"
+        let token = "token"
+        let latestAdIdsByNetworkSent = [AttributionNetwork.adServices: token]
+        self.deviceCache.set(latestAdvertisingIdsByNetworkSent: latestAdIdsByNetworkSent, appUserID: userId)
+
+        let key = "com.revenuecat.userdefaults.attribution." + userId
+        expect(self.mockUserDefaults.object(forKey: key) as? [String: String] ?? [:]) ==
+            [String(AttributionNetwork.adServices.rawValue): token]
+    }
+
+    func testSetLatestAdvertisingIdsByNetworkSentMapsStringKeysToAttributionNetworks() {
+        let userId = "asdf"
+        let token = "token"
+        let key = "com.revenuecat.userdefaults.attribution." + userId
+        let cachedValue = [String(AttributionNetwork.adServices.rawValue): token]
+
+        self.mockUserDefaults.mockValues = [key: cachedValue]
+
+        expect(self.deviceCache.latestAdvertisingIdsByNetworkSent(appUserID: userId)) ==
+            [AttributionNetwork.adServices: token]
+    }
+
 }

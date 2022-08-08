@@ -15,6 +15,7 @@
 + (void)checkEnums {
     RCAttributionNetwork network = RCAttributionNetworkAdjust;
     switch(network) {
+        case RCAttributionNetworkAdServices:
         case RCAttributionNetworkAppleSearchAds:
         case RCAttributionNetworkAdjust:
         case RCAttributionNetworkAppsFlyer:

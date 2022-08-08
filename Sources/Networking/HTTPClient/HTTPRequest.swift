@@ -68,6 +68,7 @@ extension HTTPRequest {
         case postOfferForSigning
         case postReceiptData
         case postSubscriberAttributes(appUserID: String)
+        case postAdServicesToken(appUserID: String)
 
     }
 
@@ -93,6 +94,9 @@ extension HTTPRequest.Path: CustomStringConvertible {
 
         case let .postAttributionData(appUserID):
             return "subscribers/\(appUserID)/attribution"
+
+        case let .postAdServicesToken(appUserID):
+            return "subscribers/\(appUserID)/adservices_attribution"
 
         case .postOfferForSigning:
             return "offers"

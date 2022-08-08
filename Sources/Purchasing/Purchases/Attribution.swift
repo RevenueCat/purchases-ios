@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /**
  * This class is responsible for all explicit attribution APIs as well as subscriber attributes that RevenueCat offers.
  * The attributes are additional structured information on a user. Since attributes are writable using a public key
@@ -25,17 +27,44 @@ import Foundation
 
     private let subscriberAttributesManager: SubscriberAttributesManager
     private let currentUserProvider: CurrentUserProvider
+    private let attributionPoster: AttributionPoster
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
+    private var automaticAdServicesAttributionTokenCollection: Bool = false
 
     weak var delegate: AttributionDelegate?
 
-    init(subscriberAttributesManager: SubscriberAttributesManager, currentUserProvider: CurrentUserProvider) {
+    init(subscriberAttributesManager: SubscriberAttributesManager,
+         currentUserProvider: CurrentUserProvider,
+         attributionPoster: AttributionPoster) {
         self.subscriberAttributesManager = subscriberAttributesManager
         self.currentUserProvider = currentUserProvider
+        self.attributionPoster = attributionPoster
 
         super.init()
 
         self.subscriberAttributesManager.delegate = self
+    }
+
+}
+
+// should match OS availability in https://developer.apple.com/documentation/ad_services
+@available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+public extension Attribution {
+
+    /**
+     * Enable automatic collection of AdServices attribution token.
+     */
+    @objc func enableAdServicesAttributionTokenCollection() {
+        self.automaticAdServicesAttributionTokenCollection = true
+        self.postAdServicesTokenIfNeeded()
+    }
+
+    internal func postAdServicesTokenIfNeeded() {
+        if self.automaticAdServicesAttributionTokenCollection {
+            self.attributionPoster.postAdServicesTokenIfNeeded()
+        }
     }
 
 }

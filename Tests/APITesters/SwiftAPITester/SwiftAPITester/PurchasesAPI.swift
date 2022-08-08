@@ -79,7 +79,6 @@ private func checkStaticMethods() {
 
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
-    let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
     let logLevel: LogLevel = Purchases.logLevel
     let proxyUrl: URL? = Purchases.proxyURL
     let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
@@ -87,8 +86,8 @@ private func checkStaticMethods() {
     let sharedPurchases: Purchases = Purchases.shared
     let isPurchasesConfigured: Bool = Purchases.isConfigured
 
-    print(canI, version, automaticAppleSearchAdsAttributionCollection, logLevel, proxyUrl!,
-          forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isPurchasesConfigured)
+    print(canI, version, logLevel, proxyUrl!, forceUniversalAppStore, simulatesAskToBuyInSandbox,
+          sharedPurchases, isPurchasesConfigured)
 }
 
 private func checkTypealiases(
@@ -263,6 +262,8 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
 
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
+    let _: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
+    Purchases.automaticAppleSearchAdsAttributionCollection = false
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
 

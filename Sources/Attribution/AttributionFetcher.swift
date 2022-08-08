@@ -19,10 +19,16 @@ import UIKit
 import WatchKit
 #endif
 
+#if canImport(AdServices)
+import AdServices
+#endif
+
 enum AttributionFetcherError: Error {
 
     case identifierForAdvertiserUnavailableForPlatform
     case identifierForAdvertiserFrameworksUnavailable
+    case adServicesNotAvailable
+    case adServicesTokenFetchError
 
 }
 
@@ -79,6 +85,23 @@ class AttributionFetcher {
         afficheClientProxy.requestAttributionDetails(completion)
 #else
         completion(nil, AttributionFetcherError.identifierForAdvertiserUnavailableForPlatform)
+#endif
+    }
+
+    // should match OS availability in https://developer.apple.com/documentation/ad_services
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    var adServicesToken: String? {
+#if canImport(AdServices)
+        do {
+            return try AAAttribution.attributionToken()
+        } catch {
+            let message = Strings.attribution.adservices_token_fetch_failed(error: error)
+            Logger.appleWarning(message)
+            return nil
+        }
+#else
+        Logger.warn(Strings.attribution.adservices_not_supported)
+        return nil
 #endif
     }
 

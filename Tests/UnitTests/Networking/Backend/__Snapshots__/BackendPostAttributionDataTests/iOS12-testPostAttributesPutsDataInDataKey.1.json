@@ -8,7 +8,7 @@
         "a" : "b",
         "c" : "d"
       },
-      "network" : 0
+      "network" : 1
     },
     "method" : "POST",
     "url" : "https:\/\/api.revenuecat.com\/v1\/subscribers\/user\/attribution"

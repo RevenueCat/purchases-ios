@@ -34,6 +34,8 @@ enum StoreKitStrings {
 
     case sk1_no_known_product_type
 
+    case unknown_sk2_product_discount_type(rawValue: String)
+
     case sk1_discount_missing_locale
 
     case no_cached_products_starting_store_products_request(identifiers: Set<String>)
@@ -75,6 +77,9 @@ extension StoreKitStrings: CustomStringConvertible {
         case .sk1_no_known_product_type:
             return "This StoreProduct represents an SK1 product, the type of product cannot be determined, " +
             "the value will be undefined. Use `StoreProduct.productCategory` instead."
+
+        case .unknown_sk2_product_discount_type(let rawValue):
+            return "Failed to create StoreProductDiscount.DiscountType with unknown value: \(rawValue)"
 
         case .sk1_discount_missing_locale:
             return "There is an issue with the App Store, this SKProductDiscount is missing a Locale - " +

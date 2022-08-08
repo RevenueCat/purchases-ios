@@ -22,37 +22,43 @@ import Foundation
     /**
      Apple's search ads
      */
-    case appleSearchAds
+    @available(*, deprecated, message: "use adServices")
+    case appleSearchAds = 0
 
     /**
      Adjust https://www.adjust.com/
      */
-    case adjust
+    case adjust = 1
 
     /**
      AppsFlyer https://www.appsflyer.com/
      */
-    case appsFlyer
+    case appsFlyer = 2
 
     /**
      Branch https://www.branch.io/
      */
-    case branch
+    case branch = 3
 
     /**
      Tenjin https://www.tenjin.io/
      */
-    case tenjin
+    case tenjin = 4
 
     /**
      Facebook https://developers.facebook.com/
      */
-    case facebook
+    case facebook = 5
 
     /**
     mParticle https://www.mparticle.com/
     */
-    case mParticle
+    case mParticle = 6
+
+    /**
+     AdServices token
+     */
+    case adServices = 7
 
 }
 
@@ -61,6 +67,17 @@ extension AttributionNetwork: Encodable {
     // swiftlint:disable:next missing_docs
     public func encode(to encoder: Encoder) throws {
         try self.rawValue.encode(to: encoder)
+    }
+
+}
+
+extension AttributionNetwork {
+
+    var isAppleSearchAdds: Bool {
+        switch self {
+        case .appleSearchAds: return true
+        default: return false
+        }
     }
 
 }

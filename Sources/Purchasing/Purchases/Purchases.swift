@@ -92,11 +92,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let operationDispatcher: OperationDispatcher
 
     /**
-     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
-     */
-    @objc public static var automaticAppleSearchAdsAttributionCollection: Bool = false
-
-    /**
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
      *
      * #### Related Symbols
@@ -308,13 +303,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID)
-        let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
-                                               currentUserProvider: identityManager)
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
                                                   attributionFetcher: attributionFetcher,
                                                   subscriberAttributesManager: subscriberAttributesManager)
+        let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
+                                               currentUserProvider: identityManager,
+                                               attributionPoster: attributionPoster)
         let productsRequestFactory = ProductsRequestFactory()
         let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
                                               systemInfo: systemInfo,
@@ -466,9 +462,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         } else {
             Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
-        subscribeToAppStateNotifications()
-        attributionPoster.postPostponedAttributionDataIfNeeded()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        self.subscribeToAppStateNotifications()
+        self.attributionPoster.postPostponedAttributionDataIfNeeded()
+
+        (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
@@ -481,7 +479,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeKitWrapper.delegate = nil
         customerInfoObservationDisposable?()
         privateDelegate = nil
-        Self.automaticAppleSearchAdsAttributionCollection = false
         Self.proxyURL = nil
     }
 
@@ -510,7 +507,8 @@ extension Purchases {
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
     }
 
-    private func postAppleSearchAddsAttributionCollectionIfNeeded() {
+    @available(*, deprecated)
+    fileprivate func postAppleSearchAddsAttributionCollectionIfNeeded() {
         guard Self.automaticAppleSearchAdsAttributionCollection else {
             return
         }
@@ -1657,7 +1655,14 @@ private extension Purchases {
         Logger.debug(Strings.configure.application_active)
         self.updateAllCachesIfNeeded()
         self.dispatchSyncSubscriberAttributes()
-        self.postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
+
+#if os(iOS) || os(macOS)
+        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
+            self.attribution.postAdServicesTokenIfNeeded()
+        }
+#endif
     }
 
     @objc func applicationWillResignActive(notification: Notification) {
@@ -1710,3 +1715,14 @@ private extension Purchases {
     }
 
 }
+
+// MARK: - Deprecations
+
+/// Protocol to be able to call `Purchases.postAppleSearchAddsAttributionCollectionIfNeeded` without warnings
+private protocol DeprecatedSearchAdsAttribution {
+
+    func postAppleSearchAddsAttributionCollectionIfNeeded()
+
+}
+
+extension Purchases: DeprecatedSearchAdsAttribution {}
