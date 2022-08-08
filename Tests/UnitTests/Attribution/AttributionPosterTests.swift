@@ -184,6 +184,11 @@ class AttributionPosterTests: BaseAttributionPosterTests {
 @available(*, deprecated)
 class IOSAttributionPosterTests: BaseAttributionPosterTests {
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
+    }
+
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfATTFrameworkNotIncludedOnNewOS() throws {
         systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
