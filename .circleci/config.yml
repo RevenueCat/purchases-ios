@@ -62,12 +62,13 @@ commands:
           name: Create simulator
           command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
 
-  bundle-install-with-cache:
+  install-dependencies:
     parameters:
       directory:
         type: string
         default: .
     steps:
+      # Bundler
       - restore_cache:
           keys: 
             - v1-gem-cache-{{ checksum "Gemfile.lock" }}
@@ -82,15 +83,6 @@ commands:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
-
-  install-dependencies:
-    parameters:
-      directory:
-        type: string
-        default: .
-    steps:
-      - bundle-install-with-cache:
-          directory: << parameters.directory >>
       - run:
           name: Install swiftlint
           command: brew install swiftlint
