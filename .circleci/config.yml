@@ -487,7 +487,16 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - bundle-install-with-cache
+      - restore_cache:
+          keys: 
+            - v1-danger-gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: 
+          name: Bundle install
+          command: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: v1-danger-gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
       - run: 
           name: Run Danger
           command: bundle exec danger --verbose
