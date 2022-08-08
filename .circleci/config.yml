@@ -71,7 +71,7 @@ commands:
       # Bundler
       - restore_cache:
           keys: 
-            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
+            - v2-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: 
           name: Bundle install
           working_directory: << parameters.directory >>
@@ -80,7 +80,7 @@ commands:
               bundle config set --local path 'vendor/bundle'
               bundle install
       - save_cache:
-          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
       - run:
@@ -357,10 +357,10 @@ jobs:
       # Bundler
       - restore_cache:
           keys: 
-            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
+            - v2-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
       - update-spm-installation-commit
