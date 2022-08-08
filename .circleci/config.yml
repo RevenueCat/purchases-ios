@@ -62,15 +62,16 @@ commands:
           name: Create simulator
           command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
 
-  bundle-install-with-cache:
+  install-dependencies:
     parameters:
       directory:
         type: string
         default: .
     steps:
+      # Bundler
       - restore_cache:
           keys: 
-            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
+            - v2-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: 
           name: Bundle install
           working_directory: << parameters.directory >>
@@ -79,18 +80,9 @@ commands:
               bundle config set --local path 'vendor/bundle'
               bundle install
       - save_cache:
-          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
-
-  install-dependencies:
-    parameters:
-      directory:
-        type: string
-        default: .
-    steps:
-      - bundle-install-with-cache:
-          directory: << parameters.directory >>
       - run:
           name: Install swiftlint
           command: brew install swiftlint
@@ -365,10 +357,10 @@ jobs:
       # Bundler
       - restore_cache:
           keys: 
-            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
+            - v2-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
       - update-spm-installation-commit
@@ -495,7 +487,16 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - bundle-install-with-cache
+      - restore_cache:
+          keys: 
+            - v1-danger-gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: 
+          name: Bundle install
+          command: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: v1-danger-gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
       - run: 
           name: Run Danger
           command: bundle exec danger --verbose
