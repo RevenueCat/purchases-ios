@@ -13,7 +13,7 @@
 
 import Foundation
 
-internal final class Lock: Sendable {
+internal final class Lock {
 
     private let recursiveLock: NSRecursiveLock = {
         let lock = NSRecursiveLock()
@@ -31,3 +31,10 @@ internal final class Lock: Sendable {
     }
 
 }
+
+#if swift(>=5.7)
+extension Lock: Sendable {}
+#else
+// `NSRecursiveLock` isn't `Sendable` until iOS 16.0 / Swift 5.7
+extension Lock: @unchecked Sendable {}
+#endif
