@@ -15,9 +15,9 @@ import Foundation
 
 /// A `NumberFormatter` provider class for prices.
 /// This provider caches the formatter to improve the performance.
-class PriceFormatterProvider {
+final class PriceFormatterProvider: Sendable {
 
-    private var cachedPriceFormatterForSK1: NumberFormatter?
+    private let cachedPriceFormatterForSK1: Atomic<NumberFormatter?> = nil
 
     func priceFormatterForSK1(with locale: Locale) -> NumberFormatter {
         func makePriceFormatterForSK1(with locale: Locale) -> NumberFormatter {
@@ -27,18 +27,23 @@ class PriceFormatterProvider {
             return formatter
         }
 
-        if self.cachedPriceFormatterForSK1 == nil || self.cachedPriceFormatterForSK1?.locale != locale {
-            self.cachedPriceFormatterForSK1 = makePriceFormatterForSK1(with: locale)
-        }
+        return self.cachedPriceFormatterForSK1.modify { formatter in
+            guard let formatter = formatter, formatter.locale == locale else {
+                let newFormatter =  makePriceFormatterForSK1(with: locale)
+                formatter = newFormatter
 
-        return self.cachedPriceFormatterForSK1!
+                return newFormatter
+            }
+
+            return formatter
+        }
     }
 
-    private var cachedPriceFormatterForSK2: NumberFormatter?
+    private let cachedPriceFormatterForSK2: Atomic<NumberFormatter?> = nil
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func priceFormatterForSK2(withCurrencyCode currencyCode: String) -> NumberFormatter {
-        func makePriceFormatterForSK2(withCurrencyCode currencyCode: String) -> NumberFormatter {
+        func makePriceFormatterForSK2(with currencyCode: String) -> NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
             formatter.locale = .autoupdatingCurrent
@@ -46,11 +51,16 @@ class PriceFormatterProvider {
             return formatter
         }
 
-        if self.cachedPriceFormatterForSK2 == nil || self.cachedPriceFormatterForSK2?.currencyCode != currencyCode {
-            self.cachedPriceFormatterForSK2 = makePriceFormatterForSK2(withCurrencyCode: currencyCode)
-        }
+        return self.cachedPriceFormatterForSK2.modify { formatter in
+            guard let formatter = formatter, formatter.currencyCode == currencyCode else {
+                let newFormatter = makePriceFormatterForSK2(with: currencyCode)
+                formatter = newFormatter
 
-        return self.cachedPriceFormatterForSK2!
+                return newFormatter
+            }
+
+            return formatter
+        }
     }
 
 }

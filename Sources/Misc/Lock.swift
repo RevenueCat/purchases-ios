@@ -13,7 +13,7 @@
 
 import Foundation
 
-internal final class Lock {
+internal final class Lock: Sendable {
 
     private let recursiveLock: NSRecursiveLock = {
         let lock = NSRecursiveLock()
