@@ -30,7 +30,7 @@ import StoreKit
 // swiftlint:disable file_length type_body_length
 class PurchasesOrchestrator {
 
-    var finishTransactions: Bool { systemInfo.finishTransactions }
+    var finishTransactions: Bool { self.systemInfo.finishTransactions }
     var allowSharingAppStoreAccount: Bool {
         get {
             return _allowSharingAppStoreAccount ?? self.currentUserProvider.currentUserIsAnonymous
@@ -619,7 +619,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
     func transactionsUpdated() async throws {
         // Need to restore if using observer mode (which is inverse of finishTransactions)
-        let isRestore = !systemInfo.finishTransactions
+        let isRestore = !self.systemInfo.finishTransactions
 
         _ = try await syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore)
     }

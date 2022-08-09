@@ -223,8 +223,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
      */
     @objc public var finishTransactions: Bool {
-        get { systemInfo.finishTransactions }
-        set { systemInfo.finishTransactions = newValue }
+        get { self.systemInfo.finishTransactions }
+        set { self.systemInfo.finishTransactions = newValue }
     }
 
     private let attributionFetcher: AttributionFetcher

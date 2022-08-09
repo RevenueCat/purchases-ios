@@ -29,14 +29,19 @@ class SystemInfo {
     static var forceUniversalAppStore: Bool = false
 
     let storeKit2Setting: StoreKit2Setting
-    var finishTransactions: Bool
     let operationDispatcher: OperationDispatcher
     let platformFlavor: String
     let platformFlavorVersion: String?
     let bundle: Bundle
     let dangerousSettings: DangerousSettings
 
+    var finishTransactions: Bool {
+        get { return self._finishTransactions.value }
+        set { self._finishTransactions.value = newValue }
+    }
+
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let _finishTransactions: Atomic<Bool>
 
     var isSandbox: Bool {
         return self.sandboxEnvironmentDetector.isSandbox
@@ -106,7 +111,7 @@ class SystemInfo {
         self.platformFlavorVersion = platformInfo?.version
         self.bundle = bundle
 
-        self.finishTransactions = finishTransactions
+        self._finishTransactions = .init(finishTransactions)
         self.operationDispatcher = operationDispatcher
         self.storeKit2Setting = storeKit2Setting
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
