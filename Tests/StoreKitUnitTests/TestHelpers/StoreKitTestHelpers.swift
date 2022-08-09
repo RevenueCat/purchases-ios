@@ -66,12 +66,7 @@ extension StoreKitConfigTestCase {
         _ new: String,
         file: FileString = #fileID,
         line: UInt = #line
-    ) async throws {
-        guard #unavailable(iOS 16.0) else {
-            // See https://github.com/RevenueCat/purchases-ios/pull/1701
-            throw XCTSkip("Changing Storefront is currently not working in iOS 16.0")
-        }
-
+    ) async {
         self.testSession.storefront = new
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
