@@ -43,7 +43,7 @@ import Foundation
  * foo.value = MyClass()
  * ```
  **/
-internal final class Atomic<T>: @unchecked Sendable {
+internal final class Atomic<T> {
 
     private let lock: Lock
     private var _value: T
@@ -81,3 +81,6 @@ extension Atomic: ExpressibleByNilLiteral where T: OptionalType {
     }
 
 }
+
+// `@unchecked` because of the mutable `_value`, but it's thread-safety is guaranteed with `Lock`.
+extension Atomic: @unchecked Sendable {}
