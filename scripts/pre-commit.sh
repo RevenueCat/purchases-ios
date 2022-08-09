@@ -18,13 +18,13 @@ run_swiftlint() {
   local filename="${1}"
   if [[ "${filename##*.}" == "swift" ]]; then
     if [[ "${filename#*.}" != "generated.swift" ]]; then
-    ${SWIFT_LINT} --strict --path "${filename}"
+    ${SWIFT_LINT} --strict "${filename}"
     retVal=$?
     if [ $retVal -ne 0 ]; then
       SHOULD_FAIL_PRECOMMIT=$retVal
     fi
 
-    ${SWIFT_LINT} --autocorrect --strict --path "${filename}"
+    ${SWIFT_LINT} --autocorrect --strict "${filename}"
     fi
   fi
 }
