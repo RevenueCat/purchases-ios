@@ -43,7 +43,7 @@ import Foundation
  * foo.value = MyClass()
  * ```
  **/
-internal final class Atomic<T> {
+internal final class Atomic<T>: @unchecked Sendable {
 
     private let lock: Lock
     private var _value: T
