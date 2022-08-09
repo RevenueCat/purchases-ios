@@ -73,3 +73,11 @@ internal final class Atomic<T> {
     }
 
 }
+
+extension Atomic: ExpressibleByNilLiteral where T: OptionalType {
+
+    convenience init(nilLiteral: ()) {
+        self.init(.init(optional: nil))
+    }
+
+}
