@@ -143,8 +143,9 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         Purchases.deprecated.addAttributionData(data, from: .adjust, forNetworkUserId: "newuser")
 
         self.setupPurchases(automaticCollection: true)
-        expect(self.backend.invokedPostAttributionDataParametersList.count) == 1
-        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParametersList.count) == 1
+
+        expect(self.backend.invokedPostAttributionDataParametersList).toEventually(haveCount(1))
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParametersList).to(haveCount(1))
     }
 
 }
