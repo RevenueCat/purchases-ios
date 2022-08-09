@@ -18,11 +18,14 @@ internal protocol OptionalType {
 
     associatedtype Wrapped
 
+    init(optional: Wrapped?)
     var asOptional: Wrapped? { get }
 
 }
 
 extension Optional: OptionalType {
+
+    init(optional: Wrapped?) { self = optional }
 
     var asOptional: Wrapped? { return self }
 
