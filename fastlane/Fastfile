@@ -71,8 +71,7 @@ platform :ios do
       repo_name: repo_name,
       github_pr_token: ENV["GITHUB_PULL_REQUEST_API_TOKEN"],
       files_to_update: files_with_version_number,
-      files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers,
-      branch: options[:branch] || 'main'
+      files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers
     )
   end
 
