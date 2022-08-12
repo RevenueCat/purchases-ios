@@ -500,6 +500,27 @@ jobs:
       - run: 
           name: Run Danger
           command: bundle exec danger --verbose
+  
+  tag-release-branch:
+    docker:
+      - image: cimg/ruby:3.1.2
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - restore_cache:
+          keys: 
+            - v1-danger-gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: 
+          name: Bundle install
+          command: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: v1-danger-gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      - run: 
+          name: Tag branch
+          command: bundle exec faslante tag_current_branch
 
 workflows:
   version: 2
@@ -546,6 +567,13 @@ workflows:
           <<: *release-tags-and-branches
   deploy:
     jobs:
+      - hold:
+          type: approval
+          <<: *release-branches
+      - tag-release-branch:
+          requires:
+            - hold
+          <<: *release-branches
       - make-release:
           xcode_version: '13.4.1'
           <<: *release-tags
