@@ -1227,8 +1227,15 @@ public extension Purchases {
     }
 
 #if os(iOS)
+
     /**
      * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
+     *
+     * - Important: Even though the docs in `SKPaymentQueue.presentCodeRedemptionSheet`
+     * say that it's available on Catalyst 14.0, there is a note:
+     * "`This function doesn’t affect Mac apps built with Mac Catalyst.`"
+     * when, in fact, it crashes when called both from Catalyst and also when running as "Designed for iPad".
+     * This is why RevenueCat's SDK makes it unavailable in mac catalyst.
      */
     @available(iOS 14.0, *)
     @available(watchOS, unavailable)
