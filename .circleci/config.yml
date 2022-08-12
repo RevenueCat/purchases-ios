@@ -526,45 +526,46 @@ workflows:
   version: 2
   build-test:
     jobs:
-      - lint:
-          xcode_version: '13.4.1'
-      - run-test-ios-16:
-          xcode_version: '14.0.0'
-      - run-test-ios-15:
-          xcode_version: '13.4.1'
-      - run-test-tvos:
-          xcode_version: '13.4.1'
-      - run-test-ios-14:
-          xcode_version: '13.4.1'
-      - run-test-ios-13:
-          xcode_version: '13.4.1'
-          <<: *release-branches-and-main
-      - run-test-ios-12:
-          xcode_version: '13.4.1'
-          <<: *release-branches-and-main
-      - build-tv-watch-and-macos:
-          xcode_version: '13.4.1'
-      - release-checks:
-          xcode_version: '13.4.1'
-          <<: *release-branches
-      - backend-integration-tests:
-          xcode_version: '13.4.1'
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
-      - installation-tests-cocoapods:
-          xcode_version: '13.4.1'
-          <<: *release-tags-and-branches
-      - installation-tests-swift-package-manager:
-          xcode_version: '13.4.1'
-          <<: *release-tags-and-branches
-      - installation-tests-carthage:
-          xcode_version: '13.4.1'
-          <<: *release-tags-and-branches
-      - installation-tests-xcode-direct-integration:
-          xcode_version: '13.4.1'
-          <<: *release-tags-and-branches
+      - tag-release-branch
+      # - lint:
+      #     xcode_version: '13.4.1'
+      # - run-test-ios-16:
+      #     xcode_version: '14.0.0'
+      # - run-test-ios-15:
+      #     xcode_version: '13.4.1'
+      # - run-test-tvos:
+      #     xcode_version: '13.4.1'
+      # - run-test-ios-14:
+      #     xcode_version: '13.4.1'
+      # - run-test-ios-13:
+      #     xcode_version: '13.4.1'
+      #     <<: *release-branches-and-main
+      # - run-test-ios-12:
+      #     xcode_version: '13.4.1'
+      #     <<: *release-branches-and-main
+      # - build-tv-watch-and-macos:
+      #     xcode_version: '13.4.1'
+      # - release-checks:
+      #     xcode_version: '13.4.1'
+      #     <<: *release-branches
+      # - backend-integration-tests:
+      #     xcode_version: '13.4.1'
+      #     filters:
+      #         branches:
+      #           # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+      #           ignore: /pull\/[0-9]+/
+      # - installation-tests-cocoapods:
+      #     xcode_version: '13.4.1'
+      #     <<: *release-tags-and-branches
+      # - installation-tests-swift-package-manager:
+      #     xcode_version: '13.4.1'
+      #     <<: *release-tags-and-branches
+      # - installation-tests-carthage:
+      #     xcode_version: '13.4.1'
+      #     <<: *release-tags-and-branches
+      # - installation-tests-xcode-direct-integration:
+      #     xcode_version: '13.4.1'
+      #     <<: *release-tags-and-branches
   deploy:
     jobs:
       - hold:

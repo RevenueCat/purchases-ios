@@ -227,10 +227,10 @@ platform :ios do
   lane :tag_current_branch do |options|
     version_number = current_version_number
     add_git_tag(
-      tag: version_number
+      tag: "test"
     )
     push_git_tags(
-      tag: version_number
+      tag: "test"
     )
   end
 
