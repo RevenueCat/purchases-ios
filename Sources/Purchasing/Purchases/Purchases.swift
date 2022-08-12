@@ -1228,7 +1228,7 @@ public extension Purchases {
 
 #if os(iOS)
 
-     /**
+    /**
      * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
      *
      * - Important: Even though the docs in `SKPaymentQueue.presentCodeRedemptionSheet`
