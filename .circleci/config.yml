@@ -520,7 +520,7 @@ jobs:
             - vendor/bundle
       - run: 
           name: Tag branch
-          command: bundle exec faslante tag_current_branch
+          command: bundle exec fastlane tag_current_branch
 
 workflows:
   version: 2
