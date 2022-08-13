@@ -31,3 +31,10 @@ internal final class Lock {
     }
 
 }
+
+#if swift(>=5.7)
+extension Lock: Sendable {}
+#else
+// `NSRecursiveLock` isn't `Sendable` until iOS 16.0 / Swift 5.7
+extension Lock: @unchecked Sendable {}
+#endif

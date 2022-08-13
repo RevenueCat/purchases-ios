@@ -83,3 +83,6 @@ extension Atomic: ExpressibleByNilLiteral where T: OptionalType {
     }
 
 }
+
+// `@unchecked` because of the mutable `_value`, but it's thread-safety is guaranteed with `Lock`.
+extension Atomic: @unchecked Sendable {}

@@ -29,9 +29,9 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     func testReturnsCachedPriceFormatterForSK1() {
         let locale = Locale(identifier: "en_US")
-        let firstPriceFormatter = priceFormatterProvider.priceFormatterForSK1(with: locale)
+        let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForSK1(with: locale)
 
-        let secondPriceFormatter = priceFormatterProvider.priceFormatterForSK1(with: locale)
+        let secondPriceFormatter = self.priceFormatterProvider.priceFormatterForSK1(with: locale)
 
         expect(firstPriceFormatter) === secondPriceFormatter
     }
@@ -41,9 +41,9 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let currencyCode = "USD"
-        let firstPriceFormatter = priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
+        let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
 
-        let secondPriceFormatter = priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
+        let secondPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
 
         expect(firstPriceFormatter) === secondPriceFormatter
     }
@@ -52,7 +52,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     func testSk1PriceFormatterUsesCurrentStorefront() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        testSession.locale = Locale(identifier: "es_ES")
+        self.testSession.locale = Locale(identifier: "es_ES")
         await self.changeStorefront("ESP")
 
         let sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
@@ -62,7 +62,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         expect(priceFormatter.currencyCode) == "EUR"
 
-        testSession.locale = Locale(identifier: "en_EN")
+        self.testSession.locale = Locale(identifier: "en_EN")
         await self.changeStorefront("USA")
 
         // Note: this test passes only because the cache is manually
@@ -81,7 +81,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     func testSk2PriceFormatterUsesCurrentStorefront() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        testSession.locale = Locale(identifier: "es_ES")
+        self.testSession.locale = Locale(identifier: "es_ES")
         await self.changeStorefront("ESP")
 
         let sk2Fetcher = ProductsFetcherSK2()
@@ -91,7 +91,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         expect(priceFormatter.currencyCode) == "EUR"
 
-        testSession.locale = Locale(identifier: "en_EN")
+        self.testSession.locale = Locale(identifier: "en_EN")
         await self.changeStorefront("USA")
 
         // Note: this test passes only because the cache is manually
