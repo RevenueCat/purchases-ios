@@ -6,6 +6,7 @@
 import Foundation
 
 class InAppPurchaseBuilder {
+
     private let containerBuilder: ASN1ContainerBuilder
     private let typeContainerIndex = 0
     private let versionContainerIndex = 1 // unused
@@ -96,4 +97,9 @@ class InAppPurchaseBuilder {
                              webOrderLineItemId: webOrderLineItemId,
                              promotionalOfferIdentifier: promotionalOfferIdentifier)
     }
+
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension InAppPurchaseBuilder: @unchecked Sendable {}

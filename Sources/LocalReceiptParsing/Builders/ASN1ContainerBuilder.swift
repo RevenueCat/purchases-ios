@@ -44,6 +44,10 @@ class ASN1ContainerBuilder {
     }
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension ASN1ContainerBuilder: @unchecked Sendable {}
+
 private extension ASN1ContainerBuilder {
 
     func buildInternalContainers(payload: ArraySlice<UInt8>) throws -> [ASN1Container] {

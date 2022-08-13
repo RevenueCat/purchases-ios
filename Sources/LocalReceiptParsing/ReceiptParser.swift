@@ -16,14 +16,11 @@ import Foundation
 
 class ReceiptParser {
 
-    private let objectIdentifierBuilder: ASN1ObjectIdentifierBuilder
     private let containerBuilder: ASN1ContainerBuilder
     private let receiptBuilder: AppleReceiptBuilder
 
-    init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder = ASN1ObjectIdentifierBuilder(),
-         containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
+    init(containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
          receiptBuilder: AppleReceiptBuilder = AppleReceiptBuilder()) {
-        self.objectIdentifierBuilder = objectIdentifierBuilder
         self.containerBuilder = containerBuilder
         self.receiptBuilder = receiptBuilder
     }
@@ -53,6 +50,12 @@ class ReceiptParser {
     }
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension ReceiptParser: @unchecked Sendable {}
+
+// MARK: -
+
 private extension ReceiptParser {
 
     func findASN1Container(withObjectId objectId: ASN1ObjectIdentifier,
@@ -60,7 +63,7 @@ private extension ReceiptParser {
         if container.encodingType == .constructed {
             for (index, internalContainer) in container.internalContainers.enumerated() {
                 if internalContainer.containerIdentifier == .objectIdentifier {
-                    let objectIdentifier = try objectIdentifierBuilder.build(
+                    let objectIdentifier = try ASN1ObjectIdentifierBuilder.build(
                         fromPayload: internalContainer.internalPayload)
                     if objectIdentifier == objectId && index < container.internalContainers.count - 1 {
                         // the container that holds the data comes right after the one with the object identifier
