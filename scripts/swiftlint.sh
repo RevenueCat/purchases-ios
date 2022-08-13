@@ -22,7 +22,8 @@ if which swiftlint >/dev/null; then
   echo "linter command: ${lint_command}"
   
   pushd "${source_path}"
-  $lint_command
+  # Run swiftlint but filter out "Linting ..." to clean up output
+  $lint_command 2>&1 | grep -v 'Linting '
   popd
 else
   echo "Warning: SwiftLint not installed in ${HOMEBREW_BINARY_DESTINATION}, download from https://github.com/realm/SwiftLint"
