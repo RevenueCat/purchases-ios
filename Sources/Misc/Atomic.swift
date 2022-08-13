@@ -74,6 +74,8 @@ internal final class Atomic<T> {
 
 }
 
+// Syntactic sugar that allows initializing an `Atomic` optional value by directly assigning `nil`,
+// i.e.: `let foo: Atomic<Foo?> = nil` instead of the more indirect `let foo: Atomic<Foo?> = .init(nil)`
 extension Atomic: ExpressibleByNilLiteral where T: OptionalType {
 
     convenience init(nilLiteral: ()) {
