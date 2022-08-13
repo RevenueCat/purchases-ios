@@ -53,18 +53,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// - ``isConfigured``
     @objc(sharedPurchases)
     public static var shared: Purchases {
-        guard let purchases = purchases else {
+        guard let purchases = Self.purchases.value else {
             fatalError(Strings.purchase.purchases_nil.description)
         }
 
         return purchases
     }
 
-    private static var purchases: Purchases?
+    private static let purchases: Atomic<Purchases?> = nil
 
     /// Returns `true` if RevenueCat has already been initialized through ``configure(withAPIKey:)``
     /// or one of is overloads.
-    @objc public static var isConfigured: Bool { purchases != nil }
+    @objc public static var isConfigured: Bool { Self.purchases.value != nil }
 
     /**
      * Delegate for ``Purchases`` instance. The delegate is responsible for handling promotional product purchases and
@@ -244,8 +244,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let storeKitWrapper: StoreKitWrapper
     private let systemInfo: SystemInfo
     private var customerInfoObservationDisposable: (() -> Void)?
-
-    fileprivate static let initLock = NSLock()
 
     // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
@@ -483,22 +481,23 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     static func clearSingleton() {
-        Self.purchases = nil
+        Self.purchases.value = nil
     }
 
     static func setDefaultInstance(_ purchases: Purchases) {
-        initLock.lock()
-        if isConfigured {
-            Logger.info(Strings.configure.purchase_instance_already_set)
-        }
+        self.purchases.modify { currentInstance in
+            if currentInstance != nil {
+                Logger.info(Strings.configure.purchase_instance_already_set)
+            }
 
-        Self.purchases = purchases
-        initLock.unlock()
+            currentInstance = purchases
+        }
     }
 
 }
 
-// MARK: Attribution.
+// MARK: Attribution
+
 extension Purchases {
 
     private func post(attributionData data: [String: Any],
@@ -518,6 +517,7 @@ extension Purchases {
 }
 
 // MARK: Identity
+
 public extension Purchases {
 
     /**
@@ -1410,6 +1410,7 @@ public extension Purchases {
 }
 
 // MARK: Configuring Purchases
+
 public extension Purchases {
 
     /**
@@ -1624,6 +1625,7 @@ public extension Purchases {
 }
 
 // MARK: Internal
+
 internal extension Purchases {
 
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
@@ -1656,6 +1658,7 @@ internal extension Purchases {
 }
 
 // MARK: Private
+
 private extension Purchases {
 
     @objc func applicationDidBecomeActive(notification: Notification) {
