@@ -76,7 +76,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(unwrappedFirstProduct.currencyCode) == "USD"
 
         testSession.locale = Locale(identifier: "es_ES")
-        try await changeStorefront("ESP")
+        await changeStorefront("ESP")
 
         // Note: this test passes only because the method `invalidateAndReFetchCachedProductsIfAppropiate`
         // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
@@ -106,7 +106,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(unwrappedFirstProduct.currencyCode) == "USD"
 
         testSession.locale = Locale(identifier: "es_ES")
-        try await changeStorefront("ESP")
+        await changeStorefront("ESP")
 
         // Note: this test passes only because the method `invalidateAndReFetchCachedProductsIfAppropiate`
         // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
