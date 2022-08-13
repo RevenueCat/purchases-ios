@@ -13,19 +13,39 @@
 
 import Foundation
 
+/// A lock abstraction over an instance of `NSLocking`
 internal final class Lock {
 
-    private let recursiveLock: NSRecursiveLock = {
-        let lock = NSRecursiveLock()
+    #if swift(>=5.7)
+    typealias UnderlyingType = NSLocking & Sendable
+    #else
+    // `NSRecursiveLock` and `NSLock` aren't `Sendable` until iOS 16.0 / Swift 5.7
+    typealias UnderlyingType = NSLocking
+    #endif
+
+    private let lock: UnderlyingType
+    private init(_ lock: UnderlyingType) { self.lock = lock }
+
+    /// Initializes an instance backed by a non-recursive `NSLock`
+    convenience init() {
+        let lock = NSLock()
         lock.name = "com.revenuecat.purchases.lock"
 
-        return lock
-    }()
+        self.init(lock)
+    }
+
+    /// Creates an instance backed by an `NSRecursiveLock`
+    static func createRecursive() -> Self {
+        let lock = NSRecursiveLock()
+        lock.name = "com.revenuecat.purchases.recursive_lock"
+
+        return .init(lock)
+    }
 
     @discardableResult
     func perform<T>(_ block: () throws -> T) rethrows -> T {
-        recursiveLock.lock()
-        defer { recursiveLock.unlock() }
+        self.lock.lock()
+        defer { self.lock.unlock() }
 
         return try block()
     }
@@ -35,6 +55,6 @@ internal final class Lock {
 #if swift(>=5.7)
 extension Lock: Sendable {}
 #else
-// `NSRecursiveLock` isn't `Sendable` until iOS 16.0 / Swift 5.7
+// `Lock.UnderlyingType` isn't `Sendable` until Swift 5.7
 extension Lock: @unchecked Sendable {}
 #endif

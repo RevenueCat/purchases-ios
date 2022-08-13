@@ -25,11 +25,11 @@ class Data {
 }
 ```
 
-It's implemented using `NSRecursiveLock`, which also means that the lock is _reentrant_: calling `perform` recursively won't cause deadlocks:
+If you need the lock to be _reentrant_ (so that calling `perform` recursively won't cause deadlocks), you can use `Lock.createRecursive()`:
 
 ```swift
 class Data {
-    private let lock = Lock()
+    private let lock = Lock.createRecursive()
 
     private var calls = 0
 
