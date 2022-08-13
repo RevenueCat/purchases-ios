@@ -308,7 +308,7 @@ extension EntitlementInfo: Identifiable {
 
 private extension EntitlementInfo {
 
-    struct Contents: Equatable, Hashable, Sendable {
+    struct Contents: Equatable, Hashable {
 
         let identifier: String
         let isActive: Bool
@@ -327,3 +327,11 @@ private extension EntitlementInfo {
     }
 
 }
+
+#if swift(>=5.7)
+extension EntitlementInfo.Contents: Sendable {}
+#else
+// `@unchecked` because:
+// - `Date` is not `Sendable` until Swift 5.7
+extension EntitlementInfo.Contents: @unchecked Sendable {}
+#endif
