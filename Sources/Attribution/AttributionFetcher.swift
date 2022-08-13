@@ -23,15 +23,6 @@ import WatchKit
 import AdServices
 #endif
 
-enum AttributionFetcherError: Error {
-
-    case identifierForAdvertiserUnavailableForPlatform
-    case identifierForAdvertiserFrameworksUnavailable
-    case adServicesNotAvailable
-    case adServicesTokenFetchError
-
-}
-
 class AttributionFetcher {
 
     private let attributionFactory: AttributionTypeFactory
@@ -73,18 +64,18 @@ class AttributionFetcher {
         return nil
     }
 
-    func afficheClientAttributionDetails(completion: @escaping ([String: NSObject]?, Error?) -> Void) {
+    func afficheClientAttributionDetails(completion: @escaping ([String: NSObject]?, Swift.Error?) -> Void) {
         // Should match available platforms in
         // https://developer.apple.com/documentation/iad/adclient?language=swift
 #if os(iOS)
         guard let afficheClientProxy = attributionFactory.afficheClientProxy() else {
             Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_ad_framework)
-            completion(nil, AttributionFetcherError.identifierForAdvertiserFrameworksUnavailable)
+            completion(nil, Error.identifierForAdvertiserFrameworksUnavailable)
             return
         }
         afficheClientProxy.requestAttributionDetails(completion)
 #else
-        completion(nil, AttributionFetcherError.identifierForAdvertiserUnavailableForPlatform)
+        completion(nil, Error.identifierForAdvertiserUnavailableForPlatform)
 #endif
     }
 
@@ -125,6 +116,17 @@ class AttributionFetcher {
             return .notDetermined
         }
         return self.fetchAuthorizationStatus
+    }
+
+}
+
+private extension AttributionFetcher {
+
+    enum Error: Swift.Error {
+
+        case identifierForAdvertiserUnavailableForPlatform
+        case identifierForAdvertiserFrameworksUnavailable
+
     }
 
 }
