@@ -15,6 +15,8 @@ import Foundation
 
 class CustomerInfoManager {
 
+    typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
+
     private(set) var lastSentCustomerInfo: CustomerInfo?
     private let operationDispatcher: OperationDispatcher
     private let deviceCache: DeviceCache
@@ -34,7 +36,7 @@ class CustomerInfoManager {
 
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
-                                   completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
+                                   completion: CustomerInfoCompletion?) {
         self.backend.getCustomerInfo(appUserID: appUserID,
                                      withRandomDelay: isAppBackgrounded) { result in
             switch result {
@@ -48,7 +50,7 @@ class CustomerInfoManager {
             }
 
             if let completion = completion {
-                self.operationDispatcher.dispatchOnMainThread {
+                self.operationDispatcher.dispatchOnMainActor {
                     completion(result)
                 }
             }
@@ -58,7 +60,7 @@ class CustomerInfoManager {
 
     func fetchAndCacheCustomerInfoIfStale(appUserID: String,
                                           isAppBackgrounded: Bool,
-                                          completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
+                                          completion: CustomerInfoCompletion?) {
         let cachedCustomerInfo = self.cachedCustomerInfo(appUserID: appUserID)
         let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
                                                                      isAppBackgrounded: isAppBackgrounded)
@@ -74,7 +76,7 @@ class CustomerInfoManager {
         }
 
         if let completion = completion {
-            self.operationDispatcher.dispatchOnMainThread {
+            self.operationDispatcher.dispatchOnMainActor {
                 completion(.success(customerInfo))
             }
         }
@@ -91,13 +93,15 @@ class CustomerInfoManager {
     func customerInfo(
         appUserID: String,
         fetchPolicy: CacheFetchPolicy,
-        completion: ((Result<CustomerInfo, BackendError>) -> Void)?
+        completion: CustomerInfoCompletion?
     ) {
         switch fetchPolicy {
         case .fromCacheOnly:
-            completion?(
-                Result(self.cachedCustomerInfo(appUserID: appUserID), .missingCachedCustomerInfo())
-            )
+            self.operationDispatcher.dispatchOnMainActor {
+                completion?(
+                    Result(self.cachedCustomerInfo(appUserID: appUserID), .missingCachedCustomerInfo())
+                )
+            }
 
         case .fetchCurrent:
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
@@ -114,7 +118,7 @@ class CustomerInfoManager {
                 Logger.debug(Strings.customerInfo.vending_cache)
                 if let completion = completion {
                     completionCalled = true
-                    self.operationDispatcher.dispatchOnMainThread {
+                    self.operationDispatcher.dispatchOnMainActor {
                         completion(.success(infoFromCache))
                     }
                 }
@@ -139,7 +143,7 @@ class CustomerInfoManager {
                 if let infoFromCache = infoFromCache, !isCacheStale {
                     Logger.debug(Strings.customerInfo.vending_cache)
                     if let completion = completion {
-                        self.operationDispatcher.dispatchOnMainThread {
+                        self.operationDispatcher.dispatchOnMainActor {
                             completion(.success(infoFromCache))
                         }
                     }
@@ -153,7 +157,7 @@ class CustomerInfoManager {
     }
 
     func cachedCustomerInfo(appUserID: String) -> CustomerInfo? {
-        guard let customerInfoData = deviceCache.cachedCustomerInfoData(appUserID: appUserID) else {
+        guard let customerInfoData = self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) else {
             return nil
         }
 
@@ -174,17 +178,17 @@ class CustomerInfoManager {
     func cache(customerInfo: CustomerInfo, appUserID: String) {
         do {
             let jsonData = try JSONEncoder.default.encode(customerInfo)
-            deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
-            sendUpdateIfChanged(customerInfo: customerInfo)
+            self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
+            self.sendUpdateIfChanged(customerInfo: customerInfo)
         } catch {
             Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
         }
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
-        customerInfoCacheLock.perform {
-            deviceCache.clearCustomerInfoCache(appUserID: appUserID)
-            lastSentCustomerInfo = nil
+        self.customerInfoCacheLock.perform {
+            self.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
+            self.lastSentCustomerInfo = nil
         }
     }
 
@@ -226,9 +230,9 @@ class CustomerInfoManager {
     }
 
     private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
-        customerInfoCacheLock.perform {
+        self.customerInfoCacheLock.perform {
             guard !self.customerInfoObserversByIdentifier.isEmpty,
-                  lastSentCustomerInfo != customerInfo else {
+                  self.lastSentCustomerInfo != customerInfo else {
                       return
                   }
 
@@ -259,8 +263,13 @@ extension CustomerInfoManager {
         return try await withCheckedThrowingContinuation { continuation in
             return self.customerInfo(appUserID: appUserID,
                                      fetchPolicy: fetchPolicy,
-                                     completion: continuation.resume)
+                                     completion: { @Sendable in continuation.resume(with: $0) })
         }
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+// - It has mutable state, but it's made thread-safe through `customerInfoCacheLock`.
+extension CustomerInfoManager: @unchecked Sendable {}

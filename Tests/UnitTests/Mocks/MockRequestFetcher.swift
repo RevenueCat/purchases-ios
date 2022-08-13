@@ -8,9 +8,11 @@
 class MockRequestFetcher: StoreKitRequestFetcher {
     var refreshReceiptCalled = false
 
-    override func fetchReceiptData(_ completion: @escaping () -> Void) {
+    override func fetchReceiptData(_ completion: @MainActor @Sendable @escaping () -> Void) {
         refreshReceiptCalled = true
-        completion()
+        OperationDispatcher.dispatchOnMainActor {
+            completion()
+        }
     }
 
     convenience init() {

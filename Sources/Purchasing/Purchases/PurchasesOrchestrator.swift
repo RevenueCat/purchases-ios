@@ -28,23 +28,20 @@ import StoreKit
 }
 
 // swiftlint:disable file_length type_body_length
-class PurchasesOrchestrator {
+final class PurchasesOrchestrator {
 
     var finishTransactions: Bool { self.systemInfo.finishTransactions }
     var allowSharingAppStoreAccount: Bool {
-        get {
-            return _allowSharingAppStoreAccount ?? self.currentUserProvider.currentUserIsAnonymous
-        }
-        set {
-            _allowSharingAppStoreAccount = newValue
-        }
+        get { self._allowSharingAppStoreAccount.value ?? self.currentUserProvider.currentUserIsAnonymous }
+        set { self._allowSharingAppStoreAccount.value = newValue }
     }
 
+    /// - Note: this is not thread-safe
     @objc weak var delegate: PurchasesOrchestratorDelegate?
 
-    private var _allowSharingAppStoreAccount: Bool?
-    private var presentedOfferingIDsByProductID: Atomic<[String: String]> = .init([:])
-    private var purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
+    private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
+    private let presentedOfferingIDsByProductID: Atomic<[String: String]> = .init([:])
+    private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttribute.Dictionary {
@@ -161,11 +158,11 @@ class PurchasesOrchestrator {
         self.beginRefundRequestHelper = beginRefundRequestHelper
     }
 
-    func restorePurchases(completion: ((Result<CustomerInfo, Error>) -> Void)?) {
+    func restorePurchases(completion: (@Sendable (Result<CustomerInfo, Error>) -> Void)?) {
         syncPurchases(receiptRefreshPolicy: .always, isRestore: true, completion: completion)
     }
 
-    func syncPurchases(completion: ((Result<CustomerInfo, Error>) -> Void)? = nil) {
+    func syncPurchases(completion: (@Sendable (Result<CustomerInfo, Error>) -> Void)? = nil) {
         syncPurchases(receiptRefreshPolicy: .never,
                       isRestore: allowSharingAppStoreAccount,
                       completion: completion)
@@ -313,8 +310,16 @@ class PurchasesOrchestrator {
          */
 
         guard let productIdentifier = payment.extractProductIdentifier() else {
-            let message = Strings.purchase.could_not_purchase_product_id_not_found.description
-            completion(nil, nil, ErrorUtils.storeProblemError(withMessage: message), false)
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(
+                    nil,
+                    nil,
+                    ErrorUtils.storeProblemError(
+                        withMessage: Strings.purchase.could_not_purchase_product_id_not_found.description
+                    ),
+                    false
+                )
+            }
             return
         }
 
@@ -564,7 +569,14 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
 }
 
+// @unchecked because:
+// - It has a mutable `delegate` because it needs to be, as `weak`.
+// - It has mutable `_storeKit2TransactionListener` and `_storeKit2StorefrontListener`, which are necessary
+// due to the availability annotations
+extension PurchasesOrchestrator: @unchecked Sendable {}
+
 // MARK: Transaction state updates.
+
 private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: StoreTransaction,
@@ -589,7 +601,8 @@ private extension PurchasesOrchestrator {
         if let error = transaction.error,
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {
             let purchasesError = ErrorUtils.purchasesError(withSKError: error)
-            operationDispatcher.dispatchOnMainThread {
+
+            self.operationDispatcher.dispatchOnMainActor {
                 completion(storeTransaction,
                            nil,
                            purchasesError,
@@ -608,7 +621,7 @@ private extension PurchasesOrchestrator {
             return
         }
 
-        operationDispatcher.dispatchOnMainThread {
+        self.operationDispatcher.dispatchOnMainActor {
             completion(
                 storeTransaction,
                 nil,
@@ -652,14 +665,24 @@ private extension PurchasesOrchestrator {
         completion: @escaping PurchaseCompletedBlock
     ) -> Bool {
         guard !productIdentifier.trimmingWhitespacesAndNewLines.isEmpty else {
-            let message = Strings.purchase.could_not_purchase_product_id_not_found.description
-            completion(nil, nil, ErrorUtils.storeProblemError(withMessage: message), false)
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(
+                    nil,
+                    nil,
+                    ErrorUtils.storeProblemError(
+                        withMessage: Strings.purchase.could_not_purchase_product_id_not_found.description
+                    ),
+                    false
+                )
+            }
             return false
         }
 
         return self.purchaseCompleteCallbacksByProductID.modify { callbacks in
             guard callbacks[productIdentifier] == nil else {
-                completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
+                }
                 return false
             }
 
@@ -729,7 +752,7 @@ private extension PurchasesOrchestrator {
     func handleReceiptPost(withTransaction transaction: StoreTransaction,
                            result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary?) {
-        self.operationDispatcher.dispatchOnMainThread {
+        self.operationDispatcher.dispatchOnMainActor {
             let appUserID = self.appUserID
             self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
                                     appUserID: appUserID,
@@ -778,7 +801,7 @@ private extension PurchasesOrchestrator {
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
-                       completion: ((Result<CustomerInfo, Error>) -> Void)?) {
+                       completion: (@Sendable (Result<CustomerInfo, Error>) -> Void)?) {
         if !self.allowSharingAppStoreAccount {
             Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
         }
@@ -835,7 +858,7 @@ private extension PurchasesOrchestrator {
 
     func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary,
-                           completion: ((Result<CustomerInfo, Error>) -> Void)?) {
+                           completion: (@Sendable (Result<CustomerInfo, Error>) -> Void)?) {
         operationDispatcher.dispatchOnMainThread {
             if let customerInfo = result.value {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)

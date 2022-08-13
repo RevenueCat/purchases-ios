@@ -29,7 +29,7 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
-public typealias PurchaseCompletedBlock = (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void
+public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void
 
 /**
  Block for starting purchases in ``PurchasesDelegate/purchases(_:readyForPromotedProduct:purchase:)``
@@ -43,7 +43,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
  *  - Warning: Only one instance of Purchases should be instantiated at a time! Use a configure method to let the
  *  framework handle the singleton instance for you.
  */
-@objc(RCPurchases) public class Purchases: NSObject {
+@objc(RCPurchases) public final class Purchases: NSObject {
 
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
@@ -69,11 +69,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /**
      * Delegate for ``Purchases`` instance. The delegate is responsible for handling promotional product purchases and
      * changes to customer information.
+     * - Note: this is not thread-safe.
      */
     @objc public var delegate: PurchasesDelegate? {
-        get { privateDelegate }
+        get { self.privateDelegate }
         set {
-            guard newValue !== privateDelegate else {
+            guard newValue !== self.privateDelegate else {
                 Logger.warn(Strings.purchase.purchases_delegate_set_multiple_times)
                 return
             }
@@ -82,7 +83,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 Logger.info(Strings.purchase.purchases_delegate_set_to_nil)
             }
 
-            privateDelegate = newValue
+            self.privateDelegate = newValue
             Logger.debug(Strings.configure.delegate_set)
 
             // Sends cached customer info (if exists) to delegate as latest
@@ -477,10 +478,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     deinit {
-        notificationCenter.removeObserver(self)
-        storeKitWrapper.delegate = nil
-        customerInfoObservationDisposable?()
-        privateDelegate = nil
+        self.notificationCenter.removeObserver(self)
+        self.storeKitWrapper.delegate = nil
+        self.customerInfoObservationDisposable?()
+        self.privateDelegate = nil
         Self.proxyURL = nil
     }
 
@@ -669,7 +670,7 @@ public extension Purchases {
      * -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
      */
     @objc func getOfferings(completion: @escaping (Offerings?, Error?) -> Void) {
-        offeringsManager.offerings(appUserID: appUserID) { result in
+        self.offeringsManager.offerings(appUserID: appUserID) { result in
             completion(result.value, result.error?.asPurchasesError)
         }
     }
@@ -1628,6 +1629,16 @@ public extension Purchases {
 
 }
 
+// @unchecked because:
+// - It contains `NotificationCenter`, which isn't thread-safe as of Swift 5.7.
+// - It has a mutable `privateDelegate` (this isn't actually thread-safe!)
+// - It has a mutable `customerInfoObservationDisposable` because it's late-initialized in the constructor
+//
+// One could argue this warrants making this class non-Sendable, but the annotation allows its usage in
+// async contexts in a much more simple way without errors like:
+// "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
+extension Purchases: @unchecked Sendable {}
+
 // MARK: Internal
 
 internal extension Purchases {
@@ -1637,8 +1648,8 @@ internal extension Purchases {
     /// - Returns: the number of attributes that will be synced
     @discardableResult
     func syncSubscriberAttributes(
-        syncedAttribute: ((Error?) -> Void)? = nil,
-        completion: (() -> Void)? = nil
+        syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+        completion: (@Sendable () -> Void)? = nil
     ) -> Int {
         return self.attribution.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
                                                           syncedAttribute: syncedAttribute,

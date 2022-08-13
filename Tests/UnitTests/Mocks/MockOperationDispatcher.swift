@@ -14,15 +14,27 @@ class MockOperationDispatcher: OperationDispatcher {
     var shouldInvokeDispatchOnMainThreadBlock = true
     var forwardToOriginalDispatchOnMainThread = false
 
-    override func dispatchOnMainThread(_ block: @escaping () -> Void) {
-        invokedDispatchOnMainThread = true
-        invokedDispatchOnMainThreadCount += 1
-        if forwardToOriginalDispatchOnMainThread {
+    override func dispatchOnMainThread(_ block: @escaping @Sendable () -> Void) {
+        self.invokedDispatchOnMainThread = true
+        self.invokedDispatchOnMainThreadCount += 1
+
+        if self.forwardToOriginalDispatchOnMainThread {
             super.dispatchOnMainThread(block)
-            return
-        }
-        if shouldInvokeDispatchOnMainThreadBlock {
+        } else if self.shouldInvokeDispatchOnMainThreadBlock {
             block()
+        }
+    }
+
+    override func dispatchOnMainActor(_ block: @escaping @Sendable @MainActor () -> Void) {
+        self.invokedDispatchOnMainThread = true
+        self.invokedDispatchOnMainThreadCount += 1
+
+        if self.forwardToOriginalDispatchOnMainThread {
+            super.dispatchOnMainActor(block)
+        } else {
+            OperationDispatcher.dispatchOnMainActor {
+                block()
+            }
         }
     }
 
@@ -32,7 +44,7 @@ class MockOperationDispatcher: OperationDispatcher {
     var forwardToOriginalDispatchOnWorkerThread = false
     var invokedDispatchOnWorkerThreadRandomDelayParam: Bool?
 
-    public override func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping () -> Void) {
+    public override func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping @Sendable () -> Void) {
         invokedDispatchOnWorkerThreadRandomDelayParam = withRandomDelay
         invokedDispatchOnWorkerThread = true
         invokedDispatchOnWorkerThreadCount += 1

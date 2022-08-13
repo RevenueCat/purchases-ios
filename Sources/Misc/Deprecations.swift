@@ -387,7 +387,7 @@ extension CustomerInfo {
     }
 
     @available(*, deprecated, message: "Use NonSubscriptionTransaction")
-    private struct BackendParsedTransaction: StoreTransactionType {
+    private struct BackendParsedTransaction: StoreTransactionType, @unchecked Sendable {
 
         let productIdentifier: String
         let purchaseDate: Date

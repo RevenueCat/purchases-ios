@@ -13,7 +13,7 @@
 
 import Foundation
 
-class CustomerAPI {
+final class CustomerAPI {
 
     typealias CustomerInfoResponseHandler = (Result<CustomerInfo, BackendError>) -> Void
     typealias SimpleResponseHandler = (BackendError?) -> Void
@@ -117,3 +117,5 @@ class CustomerAPI {
     }
 
 }
+
+extension CustomerAPI: Sendable {}

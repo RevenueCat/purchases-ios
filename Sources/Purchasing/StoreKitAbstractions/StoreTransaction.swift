@@ -67,7 +67,7 @@ public typealias SK2Transaction = StoreKit.Transaction
 }
 
 /// Information that represents the customer’s purchase of a product.
-internal protocol StoreTransactionType {
+internal protocol StoreTransactionType: Sendable {
 
     /// The product identifier.
     var productIdentifier: String { get }

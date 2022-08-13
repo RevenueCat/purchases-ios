@@ -40,9 +40,12 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
         )
 
+        var product: SK1Product!
+
         self.purchases.getOfferings { (newOfferings, _) in
             let storeProduct = newOfferings!["base"]!.monthly!.storeProduct
-            let product = storeProduct.sk1Product!
+            product = storeProduct.sk1Product!
+
             self.purchases.purchase(product: storeProduct) { (_, _, _, _) in }
 
             let transaction = MockTransaction()
@@ -55,16 +58,17 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
-            expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postedReceiptData).toNot(beNil())
-
-            expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(product.price as Decimal))
-            expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
-
-            expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
+
+        expect(product).toEventuallyNot(beNil())
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.backend.postedReceiptData).toNot(beNil())
+
+        expect(self.backend.postedProductID) == product.productIdentifier
+        expect(self.backend.postedPrice) == product.price as Decimal
+        expect(self.backend.postedCurrencyCode) == product.priceLocale.currencyCode
+
+        expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
     }
 
     func testInvalidateCustomerInfoCacheDoesntClearOfferingsCache() {

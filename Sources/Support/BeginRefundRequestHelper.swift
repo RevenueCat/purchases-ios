@@ -98,6 +98,13 @@ class BeginRefundRequestHelper {
 #endif
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+// - It has mutable `_sk2Helper` which is necessary due to the availability annotations.
+extension BeginRefundRequestHelper: @unchecked Sendable {}
+
+// MARK: - Private
+
 #if os(iOS)
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
@@ -151,7 +158,7 @@ private extension BeginRefundRequestHelper {
 #endif
 
 /// Status codes for refund requests.
-@objc(RCRefundRequestStatus) public enum RefundRequestStatus: Int {
+@objc(RCRefundRequestStatus) public enum RefundRequestStatus: Int, Sendable {
 
     /// User canceled submission of the refund request.
     @objc(RCRefundRequestUserCancelled) case userCancelled = 0

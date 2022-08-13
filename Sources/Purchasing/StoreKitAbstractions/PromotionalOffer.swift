@@ -41,13 +41,15 @@ public final class PromotionalOffer: NSObject {
 
 }
 
+extension PromotionalOffer: Sendable {}
+
 // MARK: - SignedData
 
 @objc public extension PromotionalOffer {
 
     /// Contains the details of a promotional offer discount that you want to apply to a payment.
     @objc(RCPromotionalOfferSignedData)
-    class SignedData: NSObject {
+    final class SignedData: NSObject {
         /// The subscription offer identifier.
         @objc public let identifier: String
         /// The key identifier of the subscription key.
@@ -69,6 +71,14 @@ public final class PromotionalOffer: NSObject {
     }
 
 }
+
+#if swift(>=5.7)
+extension PromotionalOffer.SignedData: Sendable {}
+#else
+// `@unchecked` because:
+// - `UUID` is not `Sendable` until Swift 5.7
+extension PromotionalOffer.SignedData: @unchecked Sendable {}
+#endif
 
 extension PromotionalOffer.SignedData {
 

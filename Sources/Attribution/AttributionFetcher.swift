@@ -120,6 +120,12 @@ class AttributionFetcher {
 
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension AttributionFetcher: @unchecked Sendable {}
+
+// MARK: - Private
+
 private extension AttributionFetcher {
 
     enum Error: Swift.Error {

@@ -14,28 +14,34 @@
 import Foundation
 @testable import RevenueCat
 
+// Note: this class is implicitly `@unchecked Sendable` through its parent
+// even though it's not actually thread safe.
 // swiftlint:disable identifier_name
 class MockOfferingsManager: OfferingsManager {
 
+typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) -> Void
+
     var invokedOfferings = false
     var invokedOfferingsCount = 0
-    var invokedOfferingsParameters: (appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?)?
-    var invokedOfferingsParametersList = [(appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?)]()
+    var invokedOfferingsParameters: (appUserID: String, completion: OfferingsCompletion?)?
+    var invokedOfferingsParametersList = [(appUserID: String, completion: OfferingsCompletion??)]()
     var stubbedOfferingsCompletionResult: Result<Offerings, Error>?
 
-    override func offerings(appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?) {
-        invokedOfferings = true
-        invokedOfferingsCount += 1
-        invokedOfferingsParameters = (appUserID, completion)
-        invokedOfferingsParametersList.append((appUserID, completion))
+    override func offerings(appUserID: String, completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?) {
+        self.invokedOfferings = true
+        self.invokedOfferingsCount += 1
+        self.invokedOfferingsParameters = (appUserID, completion)
+        self.invokedOfferingsParametersList.append((appUserID, completion))
 
-        completion?(stubbedOfferingsCompletionResult!)
+        OperationDispatcher.dispatchOnMainActor { [result = self.stubbedOfferingsCompletionResult] in
+            completion?(result!)
+        }
     }
 
     struct InvokedUpdateOfferingsCacheParameters {
         let appUserID: String
         let isAppBackgrounded: Bool
-        let completion: ((Result<Offerings, Error>) -> Void)?
+        let completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     }
 
     var invokedUpdateOfferingsCache = false
@@ -47,10 +53,10 @@ class MockOfferingsManager: OfferingsManager {
     override func updateOfferingsCache(
         appUserID: String,
         isAppBackgrounded: Bool,
-        completion: ((Result<Offerings, Error>) -> Void)?
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        invokedUpdateOfferingsCache = true
-        invokedUpdateOfferingsCacheCount += 1
+        self.invokedUpdateOfferingsCache = true
+        self.invokedUpdateOfferingsCacheCount += 1
 
         let parameters = InvokedUpdateOfferingsCacheParameters(
             appUserID: appUserID,
@@ -58,10 +64,12 @@ class MockOfferingsManager: OfferingsManager {
             completion: completion
         )
 
-        invokedUpdateOfferingsCacheParameters = parameters
-        invokedUpdateOfferingsCachesParametersList.append(parameters)
+        self.invokedUpdateOfferingsCacheParameters = parameters
+        self.invokedUpdateOfferingsCachesParametersList.append(parameters)
 
-        completion?(stubbedUpdateOfferingsCompletionResult!)
+        OperationDispatcher.dispatchOnMainActor { [result = self.stubbedUpdateOfferingsCompletionResult] in
+            completion?(result!)
+        }
     }
 
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = false

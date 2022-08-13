@@ -63,3 +63,7 @@ class InMemoryCachedObject<T> {
         return self.content.value.cachedObject
     }
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension InMemoryCachedObject: @unchecked Sendable {}

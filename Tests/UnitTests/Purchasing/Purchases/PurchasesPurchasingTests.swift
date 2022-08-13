@@ -465,11 +465,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     func testPurchasingNilProductIdentifierRetrunsError() {
         let product = StoreProduct(sk1Product: SK1Product())
         var receivedError: Error?
+
         self.purchases.purchase(product: product) { (_, _, error, _) in
             receivedError = error
         }
 
-        expect(receivedError).to(matchError(ErrorCode.storeProblemError))
+        expect(receivedError).toEventually(matchError(ErrorCode.storeProblemError))
     }
 
     func testPostsOfferingIfPurchasingPackage() throws {
@@ -477,8 +478,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
         )
 
+        var package: Package!
+
         self.purchases.getOfferings { (newOfferings, _) in
-            let package = newOfferings!["base"]!.monthly!
+            package = newOfferings!["base"]!.monthly!
             self.purchases.purchase(package: package) { (_, _, _, _) in }
 
             let transaction = MockTransaction()
@@ -491,15 +494,17 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
-            expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postedReceiptData).toNot(beNil())
-
-            expect(self.backend.postedProductID).to(equal(package.storeProduct.productIdentifier))
-            expect(self.backend.postedPrice) == package.storeProduct.price
-            expect(self.backend.postedOfferingIdentifier).to(equal("base"))
-            expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
+
+        expect(package).toEventuallyNot(beNil())
+
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.backend.postedReceiptData).toNot(beNil())
+
+        expect(self.backend.postedProductID).to(equal(package.storeProduct.productIdentifier))
+        expect(self.backend.postedPrice) == package.storeProduct.price
+        expect(self.backend.postedOfferingIdentifier).to(equal("base"))
+        expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
     }
 
     func testPurchasingPackageDoesntThrowPurchaseAlreadyInProgressIfCallbackMakesANewPurchase() throws {
@@ -576,7 +581,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         var callCount = 0
 
-        self.purchases.purchase(product: product) { (_, _, _, _) in
+        self.purchases.purchase(product: product) { @MainActor @Sendable (_, _, _, _) in
             callCount += 1
         }
 

@@ -78,3 +78,10 @@ extension SKPaymentTransaction {
     }
 
 }
+
+#if swift(<5.7)
+// `@unchecked` because:
+// - `Date` is not `Sendable` until Swift 5.7
+// - `SK1Transaction` is not `Sendable` until Swift 5.7
+extension SK1StoreTransaction: @unchecked Sendable {}
+#endif

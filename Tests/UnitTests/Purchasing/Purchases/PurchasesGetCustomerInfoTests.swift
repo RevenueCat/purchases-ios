@@ -43,7 +43,7 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
             receivedInfo = info
         }
 
-        expect(receivedInfo).toNot(beNil())
+        expect(receivedInfo).toEventuallyNot(beNil())
         expect(receivedInfo?.schemaVersion).toNot(beNil())
     }
 
@@ -79,7 +79,7 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
             receivedInfo = info
         }
 
-        expect(receivedInfo).toNot(beNil())
+        expect(receivedInfo).toEventuallyNot(beNil())
     }
 
     func testCustomerInfoCompletionBlockCalledExactlyOnceWhenInfoCached() throws {

@@ -45,7 +45,7 @@ import Foundation
 
 }
 
-extension IntroEligibilityStatus: CaseIterable {}
+extension IntroEligibilityStatus: CaseIterable, Sendable {}
 
 private extension IntroEligibilityStatus {
 

@@ -26,7 +26,7 @@ import Foundation
  * - ``Offering``
  * - ``Package``
  */
-@objc(RCOfferings) public class Offerings: NSObject {
+@objc(RCOfferings) public final class Offerings: NSObject {
 
     /**
      Dictionary of all Offerings (``Offering``) objects keyed by their identifier. This dictionary can also be accessed
@@ -81,3 +81,5 @@ import Foundation
     }
 
 }
+
+extension Offerings: Sendable {}

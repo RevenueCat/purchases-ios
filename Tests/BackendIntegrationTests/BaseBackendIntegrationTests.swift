@@ -26,6 +26,7 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate {
 
 }
 
+@MainActor
 class BaseBackendIntegrationTests: XCTestCase {
 
     private var userDefaults: UserDefaults!

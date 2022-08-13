@@ -113,6 +113,10 @@ class Backend {
 
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension Backend: @unchecked Sendable {}
+
 extension Backend {
 
     enum QueueProvider {

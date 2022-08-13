@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
@@ -65,6 +67,12 @@ extension HTTPClient {
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension HTTPClient: @unchecked Sendable {}
+
+// MARK: - Private
 
 private extension HTTPClient {
 
@@ -311,6 +319,8 @@ private extension HTTPClient {
     }
 
 }
+
+// MARK: - Extensions
 
 extension HTTPRequest.Path {
 

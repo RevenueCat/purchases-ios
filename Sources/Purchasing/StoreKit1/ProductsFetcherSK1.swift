@@ -14,17 +14,19 @@
 import Foundation
 import StoreKit
 
-class ProductsFetcherSK1: NSObject {
+final class ProductsFetcherSK1: NSObject {
 
     typealias Callback = (Result<Set<SK1Product>, Error>) -> Void
 
     let requestTimeout: TimeInterval
     private let productsRequestFactory: ProductsRequestFactory
 
+    // Note: these 3 must be used only inside `queue` to be thread-safe.
     private var cachedProductsByIdentifier: [String: SK1Product] = [:]
-    private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: ProductRequest] = [:]
     private var completionHandlers: [Set<String>: [Callback]] = [:]
+
+    private let queue = DispatchQueue(label: "ProductsFetcherSK1")
 
     private static let numberOfRetries: Int = 10
 
@@ -44,7 +46,8 @@ class ProductsFetcherSK1: NSObject {
             completion(.success([]))
             return
         }
-        queue.async { [self] in
+
+        self.queue.async { [self] in
             let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
             if productsAlreadyCached.count == identifiers.count {
                 let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
@@ -70,6 +73,7 @@ class ProductsFetcherSK1: NSObject {
         }
     }
 
+    // Note: this isn't thread-safe and must therefore be used inside of `queue` only.
     @discardableResult
     private func startRequest(forIdentifiers identifiers: Set<String>, retriesLeft: Int) -> SKProductsRequest {
         let request = self.productsRequestFactory.request(productIdentifiers: identifiers)
@@ -93,7 +97,7 @@ class ProductsFetcherSK1: NSObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK1StoreProduct> {
         return try await withCheckedThrowingContinuation { continuation in
-            products(withIdentifiers: identifiers) { result in
+            self.products(withIdentifiers: identifiers) { result in
                 continuation.resume(with: result)
             }
         }
@@ -118,7 +122,7 @@ private extension ProductsFetcherSK1 {
 extension ProductsFetcherSK1: SKProductsRequestDelegate {
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
-        queue.async { [self] in
+        self.queue.async { [self] in
             Logger.rcSuccess(Strings.storeKit.store_product_request_received_response)
             guard let productRequest = self.productsByRequests[request] else {
                 Logger.error("requested products not found for request: \(request)")
@@ -150,7 +154,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
             self.cancelRequestToPreventTimeoutWarnings(request)
         }
 
-        queue.async { [self] in
+        self.queue.async { [self] in
             Logger.appleError(Strings.storeKit.store_products_request_failed(error: error))
 
             guard let productRequest = self.productsByRequests[request] else {
@@ -172,7 +176,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                 }
             } else {
                 let delayInSeconds = Int((self.requestTimeout / 10).rounded())
-                queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
+                self.queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
                     self.startRequest(forIdentifiers: productRequest.identifiers,
                                       retriesLeft: productRequest.retriesLeft - 1)
                 }
@@ -181,7 +185,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
     }
 
     func cacheProduct(_ product: SK1Product) {
-        queue.async {
+        self.queue.async {
             self.cachedProductsByIdentifier[product.productIdentifier] = product
         }
     }
@@ -204,7 +208,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
 private extension ProductsFetcherSK1 {
 
     func cacheProducts(_ products: [SK1Product]) {
-        queue.async {
+        self.queue.async {
             let productsByIdentifier = products.dictionaryAllowingDuplicateKeys {
                 $0.productIdentifier
             }
@@ -227,7 +231,7 @@ private extension ProductsFetcherSK1 {
     // So we schedule a cancellation just in case, and skip it if all goes as expected.
     // More information: https://rev.cat/skproductsrequest-hangs
     func scheduleCancellationInCaseOfTimeout(for request: SKProductsRequest) {
-        queue.asyncAfter(deadline: .now() + self.requestTimeout) { [weak self] in
+        self.queue.asyncAfter(deadline: .now() + self.requestTimeout) { [weak self] in
             guard let self = self,
                   let productRequest = self.productsByRequests[request] else { return }
 
@@ -250,3 +254,7 @@ private extension ProductsFetcherSK1 {
     }
 
 }
+
+// @unchecked because:
+// - It has mutable state, but it's made thread-safe through `queue`.
+extension ProductsFetcherSK1: @unchecked Sendable {}

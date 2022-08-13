@@ -27,19 +27,19 @@ class StoreKitRequestFetcher: NSObject {
 
     private let requestFactory: ReceiptRefreshRequestFactory
     private var receiptRefreshRequest: SKRequest?
-    private var receiptRefreshCompletionHandlers: [() -> Void]
+    private var receiptRefreshCompletionHandlers: [@MainActor @Sendable () -> Void]
     private let operationDispatcher: OperationDispatcher
 
     init(requestFactory: ReceiptRefreshRequestFactory = ReceiptRefreshRequestFactory(),
          operationDispatcher: OperationDispatcher) {
         self.requestFactory = requestFactory
         self.operationDispatcher = operationDispatcher
-        receiptRefreshRequest = nil
-        receiptRefreshCompletionHandlers = []
+        self.receiptRefreshRequest = nil
+        self.receiptRefreshCompletionHandlers = []
     }
 
-    func fetchReceiptData(_ completion: @escaping () -> Void) {
-        operationDispatcher.dispatchOnWorkerThread {
+    func fetchReceiptData(_ completion: @MainActor @Sendable @escaping () -> Void) {
+        self.operationDispatcher.dispatchOnWorkerThread {
             self.receiptRefreshCompletionHandlers.append(completion)
 
             if self.receiptRefreshRequest == nil {
@@ -57,7 +57,7 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
     func requestDidFinish(_ request: SKRequest) {
         guard request is SKReceiptRefreshRequest else { return }
 
-        finishReceiptRequest(request)
+        self.finishReceiptRequest(request)
         request.cancel()
     }
 
@@ -65,23 +65,36 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
         guard request is SKReceiptRefreshRequest else { return }
 
         Logger.appleError(Strings.storeKit.skrequest_failed(error: error))
-        finishReceiptRequest(request)
+        self.finishReceiptRequest(request)
         request.cancel()
     }
 
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension ReceiptRefreshRequestFactory: @unchecked Sendable {}
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+// - It has mutable state, but it's made thread-safe through `operationDispatcher`.
+extension StoreKitRequestFetcher: @unchecked Sendable {}
+
+// MARK: -
+
 private extension StoreKitRequestFetcher {
 
     func finishReceiptRequest(_ request: SKRequest?) {
-        operationDispatcher.dispatchOnWorkerThread {
+        self.operationDispatcher.dispatchOnWorkerThread {
             self.receiptRefreshRequest = nil
             let completionHandlers = self.receiptRefreshCompletionHandlers
             self.receiptRefreshCompletionHandlers = []
 
             self.operationDispatcher.dispatchOnWorkerThread {
                 for handler in completionHandlers {
-                    handler()
+                    self.operationDispatcher.dispatchOnMainActor {
+                        handler()
+                    }
                 }
             }
         }

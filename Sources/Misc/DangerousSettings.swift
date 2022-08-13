@@ -11,7 +11,7 @@ import Foundation
 /**
  Only use a Dangerous Setting if suggested by RevenueCat support team.
  */
-@objc(RCDangerousSettings) public class DangerousSettings: NSObject {
+@objc(RCDangerousSettings) public final class DangerousSettings: NSObject {
 
     /**
      * Disable or enable subscribing to the StoreKit queue. If this is disabled, RevenueCat won't observe
@@ -39,3 +39,5 @@ import Foundation
     }
 
 }
+
+extension DangerousSettings: Sendable {}

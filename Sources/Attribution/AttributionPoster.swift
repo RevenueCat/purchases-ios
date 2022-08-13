@@ -13,7 +13,7 @@
 
 import Foundation
 
-class AttributionPoster {
+final class AttributionPoster {
 
     private let deviceCache: DeviceCache
     private let currentUserProvider: CurrentUserProvider
@@ -234,3 +234,5 @@ class AttributionPoster {
     }
 
 }
+
+extension AttributionPoster: Sendable {}

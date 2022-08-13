@@ -73,8 +73,8 @@ extension XCTestCase {
 /// Similar to `XCTUnrap` but it allows an `async` closure.
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func XCTAsyncUnwrap<T>(
-    _ expression: @autoclosure () async throws -> T?,
-    _ message: @autoclosure () -> String = "",
+    _ expression: @autoclosure @Sendable () async throws -> T?,
+    _ message: @autoclosure @Sendable () -> String = "",
     file: StaticString = #filePath,
     line: UInt = #line
 ) async throws -> T {

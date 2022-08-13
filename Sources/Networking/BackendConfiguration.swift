@@ -51,3 +51,7 @@ extension BackendConfiguration {
     }
 
 }
+
+// @unchecked because:
+// - `OperationQueue` is not `Sendable` as of Swift 5.7
+extension BackendConfiguration: @unchecked Sendable {}

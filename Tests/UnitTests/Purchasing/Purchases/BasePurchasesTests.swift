@@ -17,6 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
+@MainActor
 class BasePurchasesTests: TestCase {
 
     private static let userDefaultsSuiteName = "TestDefaults"

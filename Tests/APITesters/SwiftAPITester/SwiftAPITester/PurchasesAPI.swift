@@ -149,7 +149,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let customerInfo: CustomerInfo? = nil
     purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)
 
-    let purchaseBlock = { (_: (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void) in }
+    let purchaseBlock = { (_: @MainActor @Sendable (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void) in }
     purchases.delegate?.purchases?(purchases, readyForPromotedProduct: storeProduct, purchase: purchaseBlock)
 }
 

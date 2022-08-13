@@ -49,17 +49,18 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
         return self.paymentQueue.storefront.map(SK1Storefront.init)
     }
 
+    /// - Note: this is not thread-safe
     weak var delegate: StoreKitWrapperDelegate? {
         didSet {
-            if delegate != nil {
-                paymentQueue.add(self)
+            if self.delegate != nil {
+                self.paymentQueue.add(self)
             } else {
-                paymentQueue.remove(self)
+                self.paymentQueue.remove(self)
             }
         }
     }
 
-    private var paymentQueue: SKPaymentQueue
+    private let paymentQueue: SKPaymentQueue
 
     init(paymentQueue: SKPaymentQueue) {
         self.paymentQueue = paymentQueue
@@ -70,16 +71,16 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
     }
 
     deinit {
-        paymentQueue.remove(self)
+        self.paymentQueue.remove(self)
     }
 
     func add(_ payment: SKPayment) {
-        paymentQueue.add(payment)
+        self.paymentQueue.add(payment)
     }
 
     func finishTransaction(_ transaction: SKPaymentTransaction) {
         Logger.purchase(Strings.purchase.finishing_transaction(transaction: transaction))
-        paymentQueue.finishTransaction(transaction)
+        self.paymentQueue.finishTransaction(transaction)
     }
 
     static func canMakePayments() -> Bool {
@@ -96,9 +97,9 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
         // say that it's available on Catalyst 14.0, there is a note:
         // This function doesn’t affect Mac apps built with Mac Catalyst.
         // It crashes when called both from Catalyst and also when running as "Designed for iPad".
-        if paymentQueue.responds(to: #selector(SKPaymentQueue.presentCodeRedemptionSheet)) {
+        if self.paymentQueue.responds(to: #selector(SKPaymentQueue.presentCodeRedemptionSheet)) {
             Logger.debug(Strings.purchase.presenting_code_redemption_sheet)
-            paymentQueue.presentCodeRedemptionSheet()
+            self.paymentQueue.presentCodeRedemptionSheet()
         } else {
             Logger.appleError(Strings.purchase.unable_to_present_redemption_sheet)
         }
@@ -123,7 +124,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
 #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     func showPriceConsentIfNeeded() {
-        paymentQueue.showPriceConsentIfNeeded()
+        self.paymentQueue.showPriceConsentIfNeeded()
     }
 #endif
 
@@ -134,7 +135,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
             Logger.debug(Strings.purchase.paymentqueue_updatedtransaction(transaction: transaction))
-            delegate?.storeKitWrapper(self, updatedTransaction: transaction)
+            self.delegate?.storeKitWrapper(self, updatedTransaction: transaction)
         }
     }
 
@@ -142,7 +143,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
             Logger.debug(Strings.purchase.paymentqueue_removedtransaction(transaction: transaction))
-            delegate?.storeKitWrapper(self, removedTransaction: transaction)
+            self.delegate?.storeKitWrapper(self, removedTransaction: transaction)
         }
     }
 
@@ -151,7 +152,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     func paymentQueue(_ queue: SKPaymentQueue,
                       shouldAddStorePayment payment: SKPayment,
                       for product: SK1Product) -> Bool {
-        return delegate?.storeKitWrapper(self, shouldAddStorePayment: payment, for: product) ?? false
+        return self.delegate?.storeKitWrapper(self, shouldAddStorePayment: payment, for: product) ?? false
     }
 
     // Sent when access to a family shared subscription is revoked from a family member or canceled the subscription.
@@ -163,19 +164,23 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
                 productIdentifiers: productIdentifiers
             )
         )
-        delegate?.storeKitWrapper(self, didRevokeEntitlementsForProductIdentifiers: productIdentifiers)
+        self.delegate?.storeKitWrapper(self, didRevokeEntitlementsForProductIdentifiers: productIdentifiers)
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
-        return delegate?.storeKitWrapperShouldShowPriceConsent ?? true
+        return self.delegate?.storeKitWrapperShouldShowPriceConsent ?? true
     }
     #endif
 
     // Sent when the storefront for the payment queue has changed.
     func paymentQueueDidChangeStorefront(_ queue: SKPaymentQueue) {
-        delegate?.storeKitWrapperDidChangeStorefront(self)
+        self.delegate?.storeKitWrapperDidChangeStorefront(self)
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension StoreKitWrapper: @unchecked Sendable {}

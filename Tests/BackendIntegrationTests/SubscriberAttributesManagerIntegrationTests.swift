@@ -227,11 +227,11 @@ private extension SubscriberAttributesManagerIntegrationTests {
 
     func syncAttributes() async -> [Error?] {
         return await withCheckedContinuation { continuation in
-            var errors: [Error?] = []
+            let errors: Atomic<[Error?]> = .init([])
 
             Purchases.shared.syncSubscriberAttributes(
-                syncedAttribute: { errors.append($0) },
-                completion: { continuation.resume(returning: errors) }
+                syncedAttribute: { error in errors.modify { $0.append(error) } },
+                completion: { continuation.resume(returning: errors.value) }
             )
         }
     }
