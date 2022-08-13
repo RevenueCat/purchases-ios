@@ -137,7 +137,7 @@ class HTTPClientTests: TestCase {
         let headerName = "X-Is-Sandbox"
         self.systemInfo.stubbedIsSandbox = true
 
-        let header: Atomic<String?> = .init(nil)
+        let header: Atomic<String?> = nil
 
         stub(condition: hasHeaderNamed(headerName)) { request in
             header.value = request.value(forHTTPHeaderField: headerName)
@@ -156,7 +156,7 @@ class HTTPClientTests: TestCase {
         let headerName = "X-Is-Sandbox"
         self.systemInfo.stubbedIsSandbox = false
 
-        let header: Atomic<String?> = .init(nil)
+        let header: Atomic<String?> = nil
 
         stub(condition: hasHeaderNamed(headerName)) { request in
             header.value = request.value(forHTTPHeaderField: headerName)
@@ -222,7 +222,7 @@ class HTTPClientTests: TestCase {
     func testHandlesRealErrorConditions() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let receivedError: Atomic<NetworkError?> = .init(nil)
+        let receivedError: Atomic<NetworkError?> = nil
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath(request.path)) { _ in
@@ -249,7 +249,7 @@ class HTTPClientTests: TestCase {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = HTTPStatusCode.invalidRequest.rawValue + Int.random(in: 0..<50)
-        let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
+        let result: Atomic<HTTPResponse<Data>.Result?> = nil
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"code\": 7101, \"message\": \"something is broken up in the cloud\"}"
@@ -278,7 +278,7 @@ class HTTPClientTests: TestCase {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = 500 + Int.random(in: 0..<50)
-        let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
+        let result: Atomic<HTTPResponse<Data>.Result?> = nil
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
@@ -309,7 +309,7 @@ class HTTPClientTests: TestCase {
         let statusCode = HTTPStatusCode.success
         let data = "{this is not JSON.csdsd".data(using: String.Encoding.utf8)!
 
-        let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
+        let result: Atomic<HTTPResponse<Data>.Result?> = nil
 
         stub(condition: isPath(request.path)) { _ in
             return HTTPStubsResponse(
@@ -336,7 +336,7 @@ class HTTPClientTests: TestCase {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let errorCode = HTTPStatusCode.success.rawValue
-        let result: Atomic<HTTPResponse<CustomResponse>.Result?> = .init(nil)
+        let result: Atomic<HTTPResponse<CustomResponse>.Result?> = nil
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{this is not JSON.csdsd"
@@ -369,7 +369,7 @@ class HTTPClientTests: TestCase {
 
         let responseData = "{\"message\": \"something is great up in the cloud\"}".data(using: String.Encoding.utf8)!
 
-        let result: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
+        let result: Atomic<HTTPResponse<Data>.Result?> = nil
 
         stub(condition: isPath(request.path)) { _ in
             return HTTPStubsResponse(data: responseData,
@@ -396,7 +396,7 @@ class HTTPClientTests: TestCase {
         let response = CustomResponse(message: "Something is great up in the cloud")
         let responseData = try JSONEncoder.default.encode(response)
 
-        let result: Atomic<HTTPResponse<CustomResponse>.Result?> = .init(nil)
+        let result: Atomic<HTTPResponse<CustomResponse>.Result?> = nil
 
         stub(condition: isPath(request.path)) { _ in
             return HTTPStubsResponse(data: responseData,
@@ -687,7 +687,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() throws {
-        let response: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
+        let response: Atomic<HTTPResponse<Data>.Result?> = nil
 
         self.client.perform(.init(method: .invalidBody(), path: .mockPath)) { (result: HTTPResponse<Data>.Result) in
             response.value = result
@@ -748,7 +748,7 @@ class HTTPClientTests: TestCase {
             "test": "data"
         ])
 
-        let response: Atomic<HTTPResponse<Data>.Result?> = .init(nil)
+        let response: Atomic<HTTPResponse<Data>.Result?> = nil
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
@@ -865,7 +865,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        let obtainedError: Atomic<NetworkError?> = .init(nil)
+        let obtainedError: Atomic<NetworkError?> = nil
         self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
             obtainedError.value = result.error
         }
@@ -899,7 +899,7 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        let obtainedError: Atomic<NetworkError?> = .init(nil)
+        let obtainedError: Atomic<NetworkError?> = nil
         self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
             obtainedError.value = result.error
         }
