@@ -16,28 +16,28 @@ import Foundation
 
 enum MockDNSChecker: DNSCheckerType {
 
-    static let invokedIsBlockedAPIError: Atomic<Bool> = .init(false)
-    static let stubbedIsBlockedAPIErrorResult: Atomic<Bool> = .init(false)
+    static let invokedIsBlockedAPIError: Atomic<Bool> = false
+    static let stubbedIsBlockedAPIErrorResult: Atomic<Bool> = false
     static func isBlockedAPIError(_ error: Error?) -> Bool {
         Self.invokedIsBlockedAPIError.value = true
         return Self.stubbedIsBlockedAPIErrorResult.value
     }
 
-    static let invokedErrorWithBlockedHostFromError: Atomic<Bool> = .init(false)
+    static let invokedErrorWithBlockedHostFromError: Atomic<Bool> = false
     static let stubbedErrorWithBlockedHostFromErrorResult: Atomic<NetworkError?> = nil
     static func errorWithBlockedHostFromError(_ error: Error?) -> NetworkError? {
         Self.invokedErrorWithBlockedHostFromError.value = true
         return Self.stubbedErrorWithBlockedHostFromErrorResult.value
     }
 
-    static let invokedIsBlockedURL: Atomic<Bool> = .init(false)
-    static let stubbedIsBlockedURLResult: Atomic<Bool> = .init(false)
+    static let invokedIsBlockedURL: Atomic<Bool> = false
+    static let stubbedIsBlockedURLResult: Atomic<Bool> = false
     static func isBlockedURL(_ url: URL) -> Bool {
         Self.invokedIsBlockedURL.value = true
         return Self.stubbedIsBlockedURLResult.value
     }
 
-    static let invokedResolvedHostFromURL: Atomic<Bool> = .init(false)
+    static let invokedResolvedHostFromURL: Atomic<Bool> = false
     static let stubbedResolvedHostFromURLResult: Atomic<String?> = nil
     static func resolvedHost(fromURL url: URL) -> String? {
         Self.invokedResolvedHostFromURL.value = true

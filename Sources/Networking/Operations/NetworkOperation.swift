@@ -36,7 +36,7 @@ class NetworkOperation: Operation {
 
     let httpClient: HTTPClient
 
-    private var _isExecuting: Atomic<Bool> = .init(false)
+    private var _isExecuting: Atomic<Bool> = false
     private(set) override final var isExecuting: Bool {
         get {
             return self._isExecuting.value
@@ -48,7 +48,7 @@ class NetworkOperation: Operation {
         }
     }
 
-    private var _isFinished: Atomic<Bool> = .init(false)
+    private var _isFinished: Atomic<Bool> = false
     private(set) override final var isFinished: Bool {
         get {
             return self._isFinished.value
@@ -60,7 +60,7 @@ class NetworkOperation: Operation {
         }
     }
 
-    private var _isCancelled: Atomic<Bool> = .init(false)
+    private var _isCancelled: Atomic<Bool> = false
     private(set) override final var isCancelled: Bool {
         get {
             return self._isCancelled.value

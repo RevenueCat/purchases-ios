@@ -84,5 +84,15 @@ extension Atomic: ExpressibleByNilLiteral where T: OptionalType {
 
 }
 
+// Syntactic sugar that allows initializing an `Atomic` `Bool` by directly assigning its value,
+// i.e.: `let foo: Atomic<Bool> = false` instead of the more indirect `let foo: Atomic<Bool> = .init(false)`
+extension Atomic: ExpressibleByBooleanLiteral where T == Bool {
+
+    convenience init(booleanLiteral value: BooleanLiteralType) {
+        self.init(value)
+    }
+
+}
+
 // `@unchecked` because of the mutable `_value`, but it's thread-safety is guaranteed with `Lock`.
 extension Atomic: @unchecked Sendable {}
