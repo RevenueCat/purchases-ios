@@ -16,7 +16,7 @@ import Foundation
 /// A `UserDefaults` wrapper to synchronize access and writes.
 ///
 /// - SeeAlso: `Atomic`.
-internal class SynchronizedUserDefaults {
+internal final class SynchronizedUserDefaults {
 
     private let atomic: Atomic<UserDefaults>
 
@@ -45,3 +45,5 @@ internal class SynchronizedUserDefaults {
     }
 
 }
+
+extension SynchronizedUserDefaults: Sendable {}
