@@ -23,7 +23,7 @@ import Foundation
 /// - ``Offering``
 /// - ``Offerings``
 ///
-@objc(RCPackage) public class Package: NSObject {
+@objc(RCPackage) public final class Package: NSObject {
 
     /// The identifier for this Package.
     @objc public let identifier: String
@@ -105,3 +105,5 @@ extension Package: Identifiable {
     public var id: String { return self.identifier }
 
 }
+
+extension Package: Sendable {}
