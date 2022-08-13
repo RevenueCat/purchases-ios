@@ -40,3 +40,5 @@ public final class NonSubscriptionTransaction: NSObject {
     }
 
 }
+
+extension NonSubscriptionTransaction: Sendable {}

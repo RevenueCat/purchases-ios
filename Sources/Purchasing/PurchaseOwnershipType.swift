@@ -35,6 +35,7 @@ import Foundation
 }
 
 extension PurchaseOwnershipType: CaseIterable {}
+extension PurchaseOwnershipType: Sendable {}
 
 extension PurchaseOwnershipType: DefaultValueProvider {
 

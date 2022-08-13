@@ -43,6 +43,7 @@ import Foundation
 }
 
 extension Store: CaseIterable {}
+extension Store: Sendable {}
 
 extension Store: DefaultValueProvider {
 
@@ -66,6 +67,7 @@ extension Store: DefaultValueProvider {
 }
 
 extension PeriodType: CaseIterable {}
+extension PeriodType: Sendable {}
 
 extension PeriodType: DefaultValueProvider {
 
@@ -76,7 +78,7 @@ extension PeriodType: DefaultValueProvider {
 /**
  The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
  */
-@objc(RCEntitlementInfo) public class EntitlementInfo: NSObject {
+@objc(RCEntitlementInfo) public final class EntitlementInfo: NSObject {
 
     /**
      The entitlement identifier configured in the RevenueCat dashboard
@@ -243,6 +245,10 @@ extension PeriodType: DefaultValueProvider {
 
 extension EntitlementInfo: RawDataContainer {}
 
+// @unchecked because:
+// - `rawData` is `[String: Any]` which can't be `Sendable`
+extension EntitlementInfo: @unchecked Sendable {}
+
 public extension EntitlementInfo {
 
     /// True if the user has access to this entitlement,
@@ -302,7 +308,7 @@ extension EntitlementInfo: Identifiable {
 
 private extension EntitlementInfo {
 
-    struct Contents: Equatable, Hashable {
+    struct Contents: Equatable, Hashable, Sendable {
 
         let identifier: String
         let isActive: Bool

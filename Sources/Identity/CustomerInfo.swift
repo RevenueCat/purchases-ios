@@ -24,13 +24,10 @@ import Foundation
     @objc public let entitlements: EntitlementInfos
 
     /// All *subscription* product identifiers with expiration dates in the future.
-    @objc public var activeSubscriptions: Set<String> { activeKeys(dates: expirationDatesByProductId) }
+    @objc public var activeSubscriptions: Set<String> { self.activeKeys(dates: expirationDatesByProductId) }
 
     /// All product identifiers purchases by the user regardless of expiration.
-    @objc public private(set) lazy var allPurchasedProductIdentifiers: Set<String> = {
-        return Set(self.expirationDatesByProductId.keys)
-            .union(self.nonSubscriptions.map { $0.productIdentifier })
-    }()
+    @objc public let allPurchasedProductIdentifiers: Set<String>
 
     /// Returns the latest expiration date of all products, nil if there are none.
     @objc public var latestExpirationDate: Date? {
@@ -192,14 +189,15 @@ import Foundation
         self.originalPurchaseDate = subscriber.originalPurchaseDate
         self.originalApplicationVersion = subscriber.originalApplicationVersion
         self.managementURL = subscriber.managementUrl
+
+        self.expirationDatesByProductId = Self.extractExpirationDates(subscriber)
+        self.purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
+        self.allPurchasedProductIdentifiers = Set(self.expirationDatesByProductId.keys)
+            .union(self.nonSubscriptions.map { $0.productIdentifier })
     }
 
-    private lazy var expirationDatesByProductId: [String: Date?] = {
-        return self.extractExpirationDates()
-    }()
-    private lazy var purchaseDatesByProductId: [String: Date?] = {
-        return self.extractPurchaseDates()
-    }()
+    private let expirationDatesByProductId: [String: Date?]
+    private let purchaseDatesByProductId: [String: Date?]
 }
 
 // MARK: - Internal
@@ -232,6 +230,8 @@ extension CustomerInfo: RawDataContainer {
     }
 
 }
+
+extension CustomerInfo: Sendable {}
 
 /// `CustomerInfo`'s `Codable` implementation relies on `Data`
 extension CustomerInfo: Codable {
@@ -317,12 +317,12 @@ private extension CustomerInfo {
 
     func isAfterReferenceDate(date: Date) -> Bool { date.timeIntervalSince(self.requestDate) > 0 }
 
-    func extractExpirationDates() -> [String: Date?] {
-        return self.subscriber.subscriptions.mapValues { $0.expiresDate }
+    static func extractExpirationDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
+        return subscriber.subscriptions.mapValues { $0.expiresDate }
     }
 
-    func extractPurchaseDates() -> [String: Date?] {
-        return self.subscriber.allTransactionsByProductId.mapValues { $0.purchaseDate }
+    static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
+        return subscriber.allTransactionsByProductId.mapValues { $0.purchaseDate }
     }
 
 }

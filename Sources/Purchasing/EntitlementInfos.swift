@@ -17,7 +17,7 @@ import Foundation
 /**
  This class contains all the entitlements associated to the user.
  */
-@objc(RCEntitlementInfos) public class EntitlementInfos: NSObject {
+@objc(RCEntitlementInfos) public final class EntitlementInfos: NSObject {
     /**
      Dictionary of all EntitlementInfo (``EntitlementInfo``) objects (active and inactive) keyed by entitlement
      identifier. This dictionary can also be accessed by using an index subscript on ``EntitlementInfos``, e.g.
@@ -124,3 +124,5 @@ extension EntitlementInfos {
     }
 
 }
+
+extension EntitlementInfos: Sendable {}
