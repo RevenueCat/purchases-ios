@@ -90,6 +90,19 @@ commands:
           name: Install xcbeautify
           command: brew install xcbeautify
   
+  install-rubydocker-dependencies:
+    steps:
+      - restore_cache:
+          keys: 
+            - v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: 
+          name: Bundle install
+          command: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+
   compress_result_bundle:
     parameters:
       directory:
@@ -160,7 +173,15 @@ commands:
           directory: << parameters.directory >>
       - scan-and-archive:
           directory: << parameters.directory >>
-
+  
+  setup-git-credentials:
+     steps:
+       - run:
+           name: Setup Git config
+           command: |
+             git config user.email $GIT_EMAIL
+             git config user.name $GIT_USERNAME
+  
   trust-github-key:
     steps:
       - run:
@@ -487,19 +508,24 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - restore_cache:
-          keys: 
-            - v1-danger-gem-cache-{{ checksum "Gemfile.lock" }}
-      - run: 
-          name: Bundle install
-          command: bundle install --clean --path vendor/bundle
-      - save_cache:
-          key: v1-danger-gem-cache-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      - install-rubydocker-dependencies
       - run: 
           name: Run Danger
           command: bundle exec danger --verbose
+  
+  tag-release-branch:
+    docker:
+      - image: cimg/ruby:3.1.2
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-rubydocker-dependencies
+      - run: 
+          name: Tag branch
+          command: bundle exec fastlane tag_current_branch
 
 workflows:
   version: 2
@@ -546,6 +572,13 @@ workflows:
           <<: *release-tags-and-branches
   deploy:
     jobs:
+      - hold:
+          type: approval
+          <<: *release-branches
+      - tag-release-branch:
+          requires:
+            - hold
+          <<: *release-branches
       - make-release:
           xcode_version: '13.4.1'
           <<: *release-tags
