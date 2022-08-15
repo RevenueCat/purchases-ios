@@ -13,21 +13,18 @@
 
 import Foundation
 
-class BackendConfiguration {
+final class BackendConfiguration {
 
     let httpClient: HTTPClient
 
-    let callbackQueue: DispatchQueue
     let operationQueue: OperationQueue
     let dateProvider: DateProvider
 
     init(httpClient: HTTPClient,
          operationQueue: OperationQueue,
-         callbackQueue: DispatchQueue = DispatchQueue(label: "Backend callbackQueue"),
          dateProvider: DateProvider = DateProvider()) {
         self.httpClient = httpClient
         self.operationQueue = operationQueue
-        self.callbackQueue = callbackQueue
         self.dateProvider = dateProvider
     }
 

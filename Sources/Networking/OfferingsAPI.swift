@@ -24,7 +24,7 @@ class OfferingsAPI {
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
-        self.offeringsCallbacksCache = CallbackCache<OfferingsCallback>(callbackQueue: self.backendConfig.callbackQueue)
+        self.offeringsCallbacksCache = CallbackCache<OfferingsCallback>()
     }
 
     func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
