@@ -102,6 +102,46 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(self.identityManager.invokedLogOutCount) == 1
     }
 
+    // MARK: - Update offerings cache
+
+    func testLogInUpdatesOfferingsCache() throws {
+        let isAppBackgrounded: Bool = .random()
+
+        self.systemInfo.stubbedIsApplicationBackgrounded = isAppBackgrounded
+
+        self.identityManager.mockAppUserID = Self.mockLoggedInInfo.originalAppUserId
+        self.identityManager.mockIsAnonymous = false
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
+
+        var finished = false
+        self.purchases.logIn(Self.appUserID) { _, _, _ in
+            finished = true
+        }
+
+        expect(finished).toEventually(beTrue())
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 2
+
+        let parameters = try XCTUnwrap(self.mockOfferingsManager.invokedUpdateOfferingsCacheParameters)
+        expect(parameters.appUserID) == Self.mockLoggedInInfo.originalAppUserId
+        expect(parameters.isAppBackgrounded) == isAppBackgrounded
+    }
+
+    func testLogInFailureDoesNotUpdateOfferingsCache() {
+        self.identityManager.mockLogInResult = .failure(.networkError(.offlineConnection()))
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
+
+        var finished = false
+        self.purchases.logIn(Self.appUserID) { _, _, _ in
+            finished = true
+        }
+
+        expect(finished).toEventually(beTrue())
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
+    }
+
 }
 
 // MARK: -
