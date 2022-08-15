@@ -45,7 +45,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testUsesTheCorrectHost() throws {
-        let hostCorrect: Atomic<Bool> = .init(false)
+        let hostCorrect: Atomic<Bool> = false
 
         let host = try XCTUnwrap(SystemInfo.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
@@ -60,7 +60,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testPassesHeaders() {
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("Authorization")) { _ in
             headerPresent.value = true
@@ -74,7 +74,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testAlwaysSetsContentTypeHeader() {
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("content-type", value: "application/json")) { _ in
             headerPresent.value = true
@@ -89,7 +89,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testAlwaysPassesPlatformHeader() {
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("X-Platform", value: SystemInfo.platformHeader)) { _ in
             headerPresent.value = true
@@ -104,7 +104,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testAlwaysPassesVersionHeader() {
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion)) { _ in
             headerPresent.value = true
@@ -119,7 +119,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testAlwaysPassesPlatformVersion() {
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { _ in
             headerPresent.value = true
@@ -174,7 +174,7 @@ class HTTPClientTests: TestCase {
     func testCallsTheGivenPath() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let pathHit: Atomic<Bool> = .init(false)
+        let pathHit: Atomic<Bool> = false
 
         stub(condition: isPath(request.path)) { _ in
             pathHit.value = true
@@ -188,7 +188,7 @@ class HTTPClientTests: TestCase {
 
     func testSendsBodyData() throws {
         let body = ["arg": "value"]
-        let pathHit: Atomic<Bool> = .init(false)
+        let pathHit: Atomic<Bool> = false
 
         let bodyData = try JSONSerialization.data(withJSONObject: body)
 
@@ -206,7 +206,7 @@ class HTTPClientTests: TestCase {
     func testCallsCompletionHandlerWhenFinished() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let completionCalled: Atomic<Bool> = .init(false)
+        let completionCalled: Atomic<Bool> = false
 
         stub(condition: isPath(request.path)) { _ in
             return .emptySuccessResponse
@@ -417,7 +417,7 @@ class HTTPClientTests: TestCase {
     func testAlwaysPassesClientVersion() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         let version = SystemInfo.appVersion
 
@@ -434,7 +434,7 @@ class HTTPClientTests: TestCase {
     func testAlwaysPassesClientBuildVersion() throws {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         let version = try XCTUnwrap(Bundle.main.infoDictionary!["CFBundleVersion"] as? String)
 
@@ -452,7 +452,7 @@ class HTTPClientTests: TestCase {
     func testAlwaysPassesAppleDeviceIdentifierWhenIsSandbox() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
         systemInfo.stubbedIsSandbox = true
 
         let idfv = systemInfo.identifierForVendor!
@@ -480,7 +480,7 @@ class HTTPClientTests: TestCase {
     func testAlwaysPassesAppleDeviceIdentifier() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         let idfv = systemInfo.identifierForVendor!
 
@@ -498,7 +498,7 @@ class HTTPClientTests: TestCase {
     func testDefaultsPlatformFlavorToNative() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { _ in
             headerPresent.value = true
@@ -513,7 +513,7 @@ class HTTPClientTests: TestCase {
     func testPassesPlatformFlavorHeader() throws {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { _ in
             headerPresent.value = true
@@ -532,7 +532,7 @@ class HTTPClientTests: TestCase {
     func testPassesPlatformFlavorVersionHeader() throws {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor-Version", value: "1.2.3")) { _ in
             headerPresent.value = true
@@ -551,7 +551,7 @@ class HTTPClientTests: TestCase {
     func testPassesObserverModeHeaderCorrectlyWhenEnabled() throws {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "false")) { _ in
             headerPresent.value = true
@@ -568,7 +568,7 @@ class HTTPClientTests: TestCase {
     func testPassesObserverModeHeaderCorrectlyWhenDisabled() throws {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        let headerPresent: Atomic<Bool> = .init(false)
+        let headerPresent: Atomic<Bool> = false
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "true")) { _ in
             headerPresent.value = true
@@ -610,8 +610,8 @@ class HTTPClientTests: TestCase {
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
         let path: HTTPRequest.Path = .mockPath
 
-        let firstRequestFinished: Atomic<Bool> = .init(false)
-        let secondRequestFinished: Atomic<Bool> = .init(false)
+        let firstRequestFinished: Atomic<Bool> = false
+        let secondRequestFinished: Atomic<Bool> = false
 
         stub(condition: isPath(path)) { request in
             usleep(30)
@@ -642,9 +642,9 @@ class HTTPClientTests: TestCase {
     func testPerformSerialRequestWaitsUntilRequestsAreDoneBeforeStartingNext() {
         let path: HTTPRequest.Path = .mockPath
 
-        let firstRequestFinished: Atomic<Bool> = .init(false)
-        let secondRequestFinished: Atomic<Bool> = .init(false)
-        let thirdRequestFinished: Atomic<Bool> = .init(false)
+        let firstRequestFinished: Atomic<Bool> = false
+        let secondRequestFinished: Atomic<Bool> = false
+        let thirdRequestFinished: Atomic<Bool> = false
 
         stub(condition: isPath(path)) { request in
             let requestNumber = self.extractRequestNumber(from: request)
@@ -702,8 +702,8 @@ class HTTPClientTests: TestCase {
     func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
         let path: HTTPRequest.Path = .mockPath
 
-        let completionCalled: Atomic<Bool> = .init(false)
-        let httpCallMade: Atomic<Bool> = .init(false)
+        let completionCalled: Atomic<Bool> = false
+        let httpCallMade: Atomic<Bool> = false
 
         stub(condition: isPath(path)) { _ in
             httpCallMade.value = true
@@ -721,9 +721,9 @@ class HTTPClientTests: TestCase {
     func testRequestIsRetriedIfResponseFromETagManagerIsNil() {
         let path: HTTPRequest.Path = .mockPath
 
-        let completionCalled: Atomic<Bool> = .init(false)
+        let completionCalled: Atomic<Bool> = false
 
-        let firstTimeCalled: Atomic<Bool> = .init(false)
+        let firstTimeCalled: Atomic<Bool> = false
         stub(condition: isPath(path)) { _ in
             if firstTimeCalled.value {
                 self.eTagManager.shouldReturnResultFromBackend = true
