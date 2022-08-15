@@ -15,7 +15,8 @@ import Foundation
 
 class IdentityAPI {
 
-    typealias LogInResponseHandler = (Result<(info: CustomerInfo, created: Bool), BackendError>) -> Void
+    typealias LogInResponse = Result<(info: CustomerInfo, created: Bool), BackendError>
+    typealias LogInResponseHandler = (LogInResponse) -> Void
 
     private let logInCallbacksCache: CallbackCache<LogInCallback>
     private let backendConfig: BackendConfiguration
