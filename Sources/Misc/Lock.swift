@@ -17,10 +17,10 @@ import Foundation
 internal final class Lock {
 
     #if swift(>=5.7)
-    typealias UnderlyingType = NSLocking & Sendable
+    private typealias UnderlyingType = NSLocking & Sendable
     #else
     // `NSRecursiveLock` and `NSLock` aren't `Sendable` until iOS 16.0 / Swift 5.7
-    typealias UnderlyingType = NSLocking
+    private typealias UnderlyingType = NSLocking
     #endif
 
     private let lock: UnderlyingType
