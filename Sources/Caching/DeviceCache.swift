@@ -17,7 +17,6 @@ import Foundation
 // swiftlint:disable file_length
 class DeviceCache {
 
-    // Thread-safe, but don't call from anywhere inside this class.
     var cachedAppUserID: String? {
         self.userDefaults.read(Self.cachedAppUserID)
     }
@@ -26,7 +25,7 @@ class DeviceCache {
             $0.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
         }
     }
-    var cachedOfferings: Offerings? { offeringsCachedObject.cachedInstance() }
+    var cachedOfferings: Offerings? { self.offeringsCachedObject.cachedInstance() }
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let userDefaults: SynchronizedUserDefaults
@@ -35,7 +34,7 @@ class DeviceCache {
 
     /// Keeps track of whether user ID has been set to detect users clearing `UserDefaults`
     /// cleared from under the SDK
-    private var appUserIDHasBeenSet: Bool = false
+    private let appUserIDHasBeenSet: Atomic<Bool> = false
 
     convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
                      userDefaults: UserDefaults = UserDefaults.standard) {
@@ -54,7 +53,7 @@ class DeviceCache {
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default
         self.userDefaults = .init(userDefaults: userDefaults)
-        self.appUserIDHasBeenSet = userDefaults.string(forKey: .appUserDefaults) != nil
+        self.appUserIDHasBeenSet.value = userDefaults.string(forKey: .appUserDefaults) != nil
 
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.handleUserDefaultsChanged),
@@ -67,13 +66,13 @@ class DeviceCache {
             return
         }
 
-        if appUserIDHasBeenSet && Self.cachedAppUserID(userDefaults) == nil {
+        if self.appUserIDHasBeenSet.value && Self.cachedAppUserID(userDefaults) == nil {
             fatalError(Strings.purchase.cached_app_user_id_deleted.description)
         }
     }
 
     deinit {
-        notificationCenter.removeObserver(self)
+        self.notificationCenter.removeObserver(self)
     }
 
     // MARK: - appUserID
@@ -81,7 +80,7 @@ class DeviceCache {
     func cache(appUserID: String) {
         self.userDefaults.write {
             $0.setValue(appUserID, forKey: CacheKeys.appUserDefaults)
-            self.appUserIDHasBeenSet = true
+            self.appUserIDHasBeenSet.value = true
         }
     }
 
@@ -107,11 +106,12 @@ class DeviceCache {
 
             // Cache new appUserID.
             userDefaults.setValue(newUserID, forKey: CacheKeys.appUserDefaults)
-            self.appUserIDHasBeenSet = true
+            self.appUserIDHasBeenSet.value = true
         }
     }
 
-    // MARK: - customerInfo
+    // MARK: - CustomerInfo
+
     func cachedCustomerInfoData(appUserID: String) -> Data? {
         return self.userDefaults.read {
             $0.data(forKey: CacheKeyBases.customerInfoAppUserDefaults + appUserID)
@@ -337,6 +337,13 @@ class DeviceCache {
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+// - It contains `NotificationCenter`, which isn't thread-safe as of Swift 5.7.
+extension DeviceCache: @unchecked Sendable {}
+
+// MARK: - Private
 
 // All methods that modify or read from the UserDefaults data source but require external mechanisms for ensuring
 // mutual exclusion.
