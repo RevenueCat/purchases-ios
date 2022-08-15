@@ -83,9 +83,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             }
 
             privateDelegate = newValue
-
             Logger.debug(Strings.configure.delegate_set)
-            customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+
+            if let info = customerInfoManager.cachedCustomerInfo(appUserID: appUserID) {
+                operationDispatcher.dispatchOnMainThread { [weak self] in
+                    guard let self = self else { return }
+                    self.privateDelegate?.purchases?(self, receivedUpdated: info)
+                }
+            }
         }
     }
 

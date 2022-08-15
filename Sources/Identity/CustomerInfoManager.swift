@@ -220,8 +220,6 @@ class CustomerInfoManager {
             .map { $0 + 1 } // Next index
             ?? 0 // Or default to 0
 
-        print("nextIdentifier: \(nextIdentifier)")
-
         self.customerInfoObserversByIdentifier[nextIdentifier] = changes
 
         return { [weak self] in
