@@ -83,8 +83,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             }
 
             privateDelegate = newValue
-            customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
             Logger.debug(Strings.configure.delegate_set)
+
+            // Sends cached customer info (if exists) to delegate as latest
+            // customer info may have already been observed and sent by the monitor
+            sendCachedCustomerInfoToDelegateIfExists()
         }
     }
 
@@ -1711,6 +1714,18 @@ private extension Purchases {
             self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
                                                        isAppBackgrounded: isAppBackgrounded,
                                                        completion: nil)
+        }
+    }
+
+    // Used when delegate is being set
+    func sendCachedCustomerInfoToDelegateIfExists() {
+        guard let info = customerInfoManager.cachedCustomerInfo(appUserID: appUserID) else {
+            return
+        }
+
+        operationDispatcher.dispatchOnMainThread { [weak self] in
+            guard let self = self else { return }
+            self.delegate?.purchases?(self, receivedUpdated: info)
         }
     }
 
