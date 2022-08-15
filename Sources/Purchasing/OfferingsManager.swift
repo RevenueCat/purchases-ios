@@ -38,7 +38,7 @@ class OfferingsManager {
     }
 
     func offerings(appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?) {
-        guard let cachedOfferings = deviceCache.cachedOfferings else {
+        guard let cachedOfferings = self.deviceCache.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
             systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(appUserID: appUserID,
@@ -71,16 +71,15 @@ class OfferingsManager {
         isAppBackgrounded: Bool,
         completion: ((Result<Offerings, Error>) -> Void)?
     ) {
-        deviceCache.setOfferingsCacheTimestampToNow()
-        operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
-            self.backend.offerings.getOfferings(appUserID: appUserID) { result in
-                switch result {
-                case let .success(response):
-                    self.handleOfferingsBackendResult(with: response, completion: completion)
+        self.deviceCache.setOfferingsCacheTimestampToNow()
 
-                case let .failure(error):
-                    self.handleOfferingsUpdateError(.backendError(error), completion: completion)
-                }
+        self.backend.offerings.getOfferings(appUserID: appUserID, withRandomDelay: isAppBackgrounded) { result in
+            switch result {
+            case let .success(response):
+                self.handleOfferingsBackendResult(with: response, completion: completion)
+
+            case let .failure(error):
+                self.handleOfferingsUpdateError(.backendError(error), completion: completion)
             }
         }
     }

@@ -46,6 +46,7 @@ class BasePurchasesTests: TestCase {
         let apiKey = "mockAPIKey"
         let httpClient = MockHTTPClient(apiKey: apiKey, systemInfo: self.systemInfo, eTagManager: MockETagManager())
         let config = BackendConfiguration(httpClient: httpClient,
+                                          operationDispatcher: self.mockOperationDispatcher,
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
@@ -258,7 +259,9 @@ extension BasePurchasesTests {
         var badOfferingsResponse = false
         var gotOfferings = 0
 
-        override func getOfferings(appUserID: String, completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
+        override func getOfferings(appUserID: String,
+                                   withRandomDelay randomDelay: Bool,
+                                   completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
             self.gotOfferings += 1
             if self.failOfferings {
                 completion(.failure(.unexpectedBackendResponse(.getOfferUnexpectedResponse)))
@@ -309,6 +312,7 @@ extension BasePurchasesTests {
         )
 
         override func getCustomerInfo(appUserID: String,
+                                      withRandomDelay randomDelay: Bool,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.getSubscriberCallCount += 1
             self.userID = appUserID

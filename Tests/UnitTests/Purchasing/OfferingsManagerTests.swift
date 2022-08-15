@@ -216,6 +216,8 @@ extension OfferingsManagerTests {
         // given
         mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
         mockOfferingsFactory.emptyOfferings = true
+        mockSystemInfo.stubbedIsApplicationBackgrounded = false
+
         let expectedCallCount = 1
 
         // when
@@ -225,11 +227,14 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
         expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount).toEventually(equal(expectedCallCount))
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == false
     }
 
     func testUpdateOfferingsCacheOK() {
         // given
         mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        mockSystemInfo.stubbedIsApplicationBackgrounded = true
+
         let expectedCallCount = 1
 
         // when
@@ -239,6 +244,7 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
         expect(self.mockDeviceCache.cacheOfferingsCount).toEventually(equal(expectedCallCount))
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == true
     }
 
     func testGetMissingProductIDs() {

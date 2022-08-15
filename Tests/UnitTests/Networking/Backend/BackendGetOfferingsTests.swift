@@ -31,12 +31,30 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         var result: Result<OfferingsResponse, BackendError>?
 
-        self.offerings.getOfferings(appUserID: Self.userID) {
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
             result = $0
         }
 
-        expect(self.httpClient.calls.count).toEventuallyNot(equal(0))
-        expect(result).toEventuallyNot(beNil())
+        expect(self.httpClient.calls.count).toEventually(equal(1))
+        expect(result).toEventually(beSuccess())
+        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == false
+    }
+
+    func testGetOfferingsCallsHTTPMethodWithRandomDelay() {
+        self.httpClient.mock(
+            requestPath: .getOfferings(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
+        )
+
+        var result: Result<OfferingsResponse, BackendError>?
+
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: true) {
+            result = $0
+        }
+
+        expect(self.httpClient.calls.count).toEventually(equal(1))
+        expect(result).toEventually(beSuccess())
+        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == true
     }
 
     func testGetOfferingsCachesForSameUserID() {
@@ -44,8 +62,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
         )
-        self.offerings.getOfferings(appUserID: Self.userID) { _ in }
-        self.offerings.getOfferings(appUserID: Self.userID) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -58,8 +76,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
         self.httpClient.mock(requestPath: .getOfferings(appUserID: Self.userID), response: response)
         self.httpClient.mock(requestPath: .getOfferings(appUserID: userID2), response: response)
 
-        self.offerings.getOfferings(appUserID: Self.userID, completion: { _ in })
-        self.offerings.getOfferings(appUserID: userID2, completion: { _ in })
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false, completion: { _ in })
+        self.offerings.getOfferings(appUserID: userID2, withRandomDelay: false, completion: { _ in })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -71,7 +89,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         var result: Result<OfferingsResponse, BackendError>?
-        self.offerings.getOfferings(appUserID: Self.userID) {
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
             result = $0
         }
 
@@ -101,7 +119,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         var result: Result<OfferingsResponse, BackendError>?
 
-        self.offerings.getOfferings(appUserID: Self.userID) {
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
             result = $0
         }
 
@@ -118,7 +136,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         var result: Result<OfferingsResponse, BackendError>?
-        self.offerings.getOfferings(appUserID: Self.userID) {
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
             result = $0
         }
 
@@ -130,7 +148,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
         var completionCalled = false
 
-        self.offerings.getOfferings(appUserID: "") { _ in
+        self.offerings.getOfferings(appUserID: "", withRandomDelay: false) { _ in
             completionCalled = true
         }
 
@@ -141,7 +159,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
     func testGetOfferingsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
         var receivedError: BackendError?
 
-        self.offerings.getOfferings(appUserID: "") { result in
+        self.offerings.getOfferings(appUserID: "", withRandomDelay: false) { result in
             receivedError = result.error
         }
 

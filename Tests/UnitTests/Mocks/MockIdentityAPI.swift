@@ -25,6 +25,7 @@ class MockIdentityAPI: IdentityAPI {
                                         eTagManager: MockETagManager(),
                                         requestTimeout: 7)
         let backendConfig = BackendConfiguration(httpClient: httpClient,
+                                                 operationDispatcher: MockOperationDispatcher(),
                                                  operationQueue: Backend.QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.init(backendConfig: backendConfig)

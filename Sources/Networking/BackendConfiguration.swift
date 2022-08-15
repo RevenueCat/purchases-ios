@@ -17,19 +17,37 @@ final class BackendConfiguration {
 
     let httpClient: HTTPClient
 
+    let operationDispatcher: OperationDispatcher
     let operationQueue: OperationQueue
     let dateProvider: DateProvider
 
     init(httpClient: HTTPClient,
+         operationDispatcher: OperationDispatcher,
          operationQueue: OperationQueue,
          dateProvider: DateProvider = DateProvider()) {
         self.httpClient = httpClient
+        self.operationDispatcher = operationDispatcher
         self.operationQueue = operationQueue
         self.dateProvider = dateProvider
     }
 
     func clearCache() {
         self.httpClient.clearCaches()
+    }
+
+}
+
+extension BackendConfiguration {
+
+    /// Adds the `operation` to the `OperationQueue` (based on `CallbackCacheStatus`) potentially adding a random delay.
+    func addCacheableOperation(
+        _ operation: CacheableNetworkOperation,
+        withRandomDelay randomDelay: Bool,
+        cacheStatus: CallbackCacheStatus
+    ) {
+        self.operationDispatcher.dispatchOnWorkerThread(withRandomDelay: randomDelay) {
+            self.operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
+        }
     }
 
 }

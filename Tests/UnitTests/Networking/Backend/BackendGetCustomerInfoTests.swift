@@ -29,8 +29,8 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        backend.getCustomerInfo(appUserID: Self.userID) { _ in }
-        backend.getCustomerInfo(appUserID: Self.userID) { _ in }
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { _ in }
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -41,8 +41,8 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: Self.userID), response: response)
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID2), response: response)
 
-        backend.getCustomerInfo(appUserID: Self.userID) { _ in }
-        backend.getCustomerInfo(appUserID: userID2) { _ in }
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { _ in }
+        backend.getCustomerInfo(appUserID: userID2, withRandomDelay: false) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -53,7 +53,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         self.httpClient.mock(requestPath: path, response: response)
 
-        backend.getCustomerInfo(appUserID: Self.userID) { _ in }
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { _ in }
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
@@ -65,7 +65,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         var customerInfo: Result<CustomerInfo, BackendError>?
 
-        backend.getCustomerInfo(appUserID: Self.userID) { result in
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
             customerInfo = result
         }
 
@@ -84,7 +84,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         var customerInfo: Result<CustomerInfo, BackendError>?
 
-        backend.getCustomerInfo(appUserID: encodeableUserID) { result in
+        backend.getCustomerInfo(appUserID: encodeableUserID, withRandomDelay: false) { result in
             customerInfo = result
         }
 
@@ -102,7 +102,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         var result: Result<CustomerInfo, BackendError>?
 
-        backend.getCustomerInfo(appUserID: Self.userID) {
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
             result = $0
         }
 
@@ -119,7 +119,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         var result: Result<CustomerInfo, BackendError>?
 
-        backend.getCustomerInfo(appUserID: Self.userID) {
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
             result = $0
         }
 
@@ -147,11 +147,11 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         var firstResult: Result<CustomerInfo, BackendError>?
         var secondResult: Result<CustomerInfo, BackendError>?
 
-        backend.getCustomerInfo(appUserID: Self.userID) {
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
             firstResult = $0
         }
 
-        backend.getCustomerInfo(appUserID: Self.userID) {
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
             secondResult = $0
         }
 

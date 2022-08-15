@@ -38,6 +38,7 @@ class MockBackend: Backend {
                                         eTagManager: MockETagManager(),
                                         requestTimeout: 7)
         let backendConfig = BackendConfiguration(httpClient: httpClient,
+                                                 operationDispatcher: MockOperationDispatcher(),
                                                  operationQueue: QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         let identity = MockIdentityAPI(backendConfig: backendConfig)
@@ -77,17 +78,22 @@ class MockBackend: Backend {
 
     var invokedGetSubscriberData = false
     var invokedGetSubscriberDataCount = 0
-    var invokedGetSubscriberDataParameters: (appUserID: String?, completion: CustomerAPI.CustomerInfoResponseHandler?)?
+    var invokedGetSubscriberDataParameters: (appUserID: String?,
+                                             randomDelay: Bool,
+                                             completion: CustomerAPI.CustomerInfoResponseHandler?)?
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
+                                                   randomDelay: Bool,
                                                    completion: CustomerAPI.CustomerInfoResponseHandler?)]()
 
     var stubbedGetCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
-    override func getCustomerInfo(appUserID: String, completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+    override func getCustomerInfo(appUserID: String,
+                                  withRandomDelay randomDelay: Bool,
+                                  completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
-        invokedGetSubscriberDataParameters = (appUserID, completion)
-        invokedGetSubscriberDataParametersList.append((appUserID, completion))
+        invokedGetSubscriberDataParameters = (appUserID, randomDelay, completion)
+        invokedGetSubscriberDataParametersList.append((appUserID, randomDelay, completion))
 
         completion(self.stubbedGetCustomerInfoResult)
     }

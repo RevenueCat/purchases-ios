@@ -281,6 +281,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                               systemInfo: systemInfo,
                               httpClientTimeout: networkTimeout,
                               eTagManager: eTagManager,
+                              operationDispatcher: operationDispatcher,
                               attributionFetcher: attributionFetcher)
         let storeKitWrapper = StoreKitWrapper()
         let offeringsFactory = OfferingsFactory()

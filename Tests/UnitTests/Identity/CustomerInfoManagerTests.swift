@@ -62,31 +62,24 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testFetchAndCacheCustomerInfoCallsBackendWithRandomDelayIfAppBackgrounded() {
-        mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
+        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
+                                                           isAppBackgrounded: true,
+                                                           completion: nil)
 
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
-                                                      isAppBackgrounded: true,
-                                                      completion: nil)
-
-        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThread).toEventually(beTrue())
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
-        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == true
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.randomDelay) == true
     }
 
     func testFetchAndCacheCustomerInfoCallsBackendWithoutRandomDelayIfAppForegrounded() {
-        mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
+        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
+                                                           isAppBackgrounded: false,
+                                                           completion: nil)
 
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
-                                                      isAppBackgrounded: false,
-                                                      completion: nil)
-
-        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThread).toEventually(beTrue())
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
-        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == false
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.randomDelay) == false
     }
 
     func testFetchAndCacheCustomerInfoPassesBackendErrors() throws {
-        mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
         let mockError: BackendError = .missingAppUserID()
         mockBackend.stubbedGetCustomerInfoResult = .failure(mockError)
 
@@ -101,7 +94,6 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testFetchAndCacheCustomerInfoClearsCustomerInfoTimestampIfBackendError() {
-        mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
         mockBackend.stubbedGetCustomerInfoResult = .failure(.missingAppUserID())
 
         var completionCalled = false
@@ -114,8 +106,6 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testFetchAndCacheCustomerInfoCachesIfSuccessful() {
-        mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
-        mockOperationDispatcher.shouldInvokeDispatchOnMainThreadBlock = true
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
         var receivedCustomerInfo: CustomerInfo?
@@ -133,8 +123,6 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testFetchAndCacheCustomerInfoCallsCompletionOnMainThread() {
-        mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
-        mockOperationDispatcher.shouldInvokeDispatchOnMainThreadBlock = true
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
         var completionCalled = false
