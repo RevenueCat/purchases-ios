@@ -84,14 +84,13 @@ private extension CallbackCache where T == CustomerInfoCallback {
     }
 
     private func callbacks(ofType type: NetworkOperation.Type) -> Int {
-        return self.callbackQueue.sync {
-            self
-                .cachedCallbacksByKey
-                .lazy
-                .flatMap(\.value)
-                .filter { $0.source == type }
-                .count
-        }
+        return self
+            .cachedCallbacksByKey
+            .value
+            .lazy
+            .flatMap(\.value)
+            .filter { $0.source == type }
+            .count
     }
 
 }

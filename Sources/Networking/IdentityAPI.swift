@@ -22,7 +22,7 @@ class IdentityAPI {
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
-        self.logInCallbacksCache = CallbackCache<LogInCallback>(callbackQueue: backendConfig.callbackQueue)
+        self.logInCallbacksCache = CallbackCache<LogInCallback>()
     }
 
     func logIn(currentAppUserID: String,

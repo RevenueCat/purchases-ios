@@ -25,7 +25,7 @@ class CustomerAPI {
     init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
         self.backendConfig = backendConfig
         self.attributionFetcher = attributionFetcher
-        self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>(callbackQueue: backendConfig.callbackQueue)
+        self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
     }
 
     func getCustomerInfo(appUserID: String, completion: @escaping CustomerInfoResponseHandler) {
