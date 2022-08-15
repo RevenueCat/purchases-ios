@@ -126,11 +126,14 @@ class BasePurchasesTests: TestCase {
 
     var purchases: Purchases!
 
-    func setupPurchases(automaticCollection: Bool = false) {
+    func setupPurchases(automaticCollection: Bool = false, withDelegate: Bool = true) {
         Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
 
-        self.initializePurchasesInstance(appUserId: self.identityManager.currentAppUserID)
+        self.initializePurchasesInstance(
+            appUserId: self.identityManager.currentAppUserID,
+            withDelegate: withDelegate
+        )
     }
 
     func setupAnonPurchases() {
@@ -144,7 +147,7 @@ class BasePurchasesTests: TestCase {
         self.initializePurchasesInstance(appUserId: nil)
     }
 
-    func initializePurchasesInstance(appUserId: String?) {
+    func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             storeKitWrapper: self.storeKitWrapper,
@@ -191,7 +194,10 @@ class BasePurchasesTests: TestCase {
                                    trialOrIntroPriceEligibilityChecker: self.trialOrIntroPriceEligibilityChecker)
 
         self.purchasesOrchestrator.delegate = self.purchases
-        self.purchases.delegate = self.purchasesDelegate
+
+        if withDelegate {
+            self.purchases.delegate = self.purchasesDelegate
+        }
 
         Purchases.setDefaultInstance(self.purchases)
     }
