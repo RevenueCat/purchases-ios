@@ -47,12 +47,32 @@ class MockIdentityManager: IdentityManager {
         return mockIsAnonymous
     }
 
+    // MARK: - LogIn
+
+    var mockLogInResult: IdentityAPI.LogInResponse!
+    var invokedLogIn = false
+    var invokedLogInCount = 0
+    var invokedLogInParametersList: [String] = []
+
     override func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
-        fatalError("Logging in not supported on mock")
+        self.invokedLogIn = true
+        self.invokedLogInCount += 1
+        self.invokedLogInParametersList.append(appUserID)
+
+        completion(self.mockLogInResult)
     }
 
+    // MARK: - LogOut
+
+    var mockLogOutError: BackendError?
+    var invokedLogOut = false
+    var invokedLogOutCount = 0
+
     override func logOut(completion: @escaping (Error?) -> Void) {
-        fatalError("Logging out not supported on mock")
+        self.invokedLogOut = true
+        self.invokedLogOutCount += 1
+
+        completion(self.mockLogOutError)
     }
 
 }
