@@ -111,20 +111,52 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() throws {
         self.systemInfo.stubbedIsApplicationBackgrounded = true
-        let info = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
 
+        let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
         let object = try info.asData()
+
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         self.setupPurchases()
+
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        expect(self.purchasesDelegate.customerInfo) == info
+    }
+
+    func testSettingTheDelegateAfterInitializationSendsCachedCustomerInfo() throws {
+        let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
+        let object = try info.asData()
+
+        self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
+
+        self.setupPurchases(withDelegate: false)
+        expect(self.purchasesDelegate.customerInfoReceivedCount) == 0
+
+        self.purchases.delegate = self.purchasesDelegate
+        expect(self.purchasesDelegate.customerInfoReceivedCount) == 1
+        expect(self.purchasesDelegate.customerInfo) == info
+    }
+
+    func testSettingTheDelegateLaterPastInitializationSendsCachedCustomerInfo() throws {
+        let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
+        let object = try info.asData()
+
+        self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
+
+        self.setupPurchases(withDelegate: false)
+        expect(self.purchasesDelegate.customerInfoReceivedCount) == 0
+
+        let expectation = XCTestExpectation()
+
+        DispatchQueue.main.async {
+            self.purchases.delegate = self.purchasesDelegate
+            expect(self.purchasesDelegate.customerInfoReceivedCount) == 1
+            expect(self.purchasesDelegate.customerInfo) == info
+
+            expectation.fulfill()
+        }
+
+        self.wait(for: [expectation], timeout: 5)
     }
 
     func testFirstInitializationFromBackgroundDoesntUpdateCustomerInfoCache() {
