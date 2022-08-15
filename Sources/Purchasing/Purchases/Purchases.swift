@@ -83,8 +83,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             }
 
             privateDelegate = newValue
-            customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
+
             Logger.debug(Strings.configure.delegate_set)
+            customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
         }
     }
 
