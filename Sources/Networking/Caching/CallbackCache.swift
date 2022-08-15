@@ -21,7 +21,7 @@ import Foundation
  This way the results from the initial API call will be surfaced to the waiting completion blocks from the duplicate
  API calls that were not sent. After being called these blocks are removed from the cache.
  */
-class CallbackCache<T> where T: CacheKeyProviding {
+final class CallbackCache<T> where T: CacheKeyProviding {
 
     let cachedCallbacksByKey: Atomic<[String: [T]]> = .init([:])
 
@@ -49,6 +49,8 @@ class CallbackCache<T> where T: CacheKeyProviding {
     }
 
 }
+
+extension CallbackCache: Sendable where T: Sendable {}
 
 /**
  For use with `CallbackCache`. We store a list of callback objects in the cache and the key used for the list of
