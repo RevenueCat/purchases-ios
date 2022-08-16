@@ -41,6 +41,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector()
     }
 
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
@@ -61,6 +62,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.configurePurchases()
     }
 
+    @MainActor
     override func tearDown() {
         Purchases.clearSingleton()
 

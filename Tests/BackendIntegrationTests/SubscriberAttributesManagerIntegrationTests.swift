@@ -25,6 +25,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
     private static let testEmail = "test@revenuecat.com"
 
+    @MainActor
     override func setUp() {
         super.setUp()
 
