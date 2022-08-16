@@ -163,7 +163,7 @@ These types replace native StoreKit types in all public API methods that used th
 #### PurchasesDelegate
 | v3 | v4 |
 | ------------ | ------------------------------------- | 
-| purchases:didReceiveUpdatedPurchaserInfo: | purchases:didReceiveUpdatedCustomerInfo: |
+| purchases:didReceiveUpdatedPurchaserInfo: | purchases:receivedUpdatedCustomerInfo: |
 
 ### API changes
 
