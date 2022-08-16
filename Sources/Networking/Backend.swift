@@ -25,6 +25,7 @@ class Backend {
                      systemInfo: SystemInfo,
                      httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      eTagManager: ETagManager,
+                     operationDispatcher: OperationDispatcher,
                      attributionFetcher: AttributionFetcher,
                      dateProvider: DateProvider = DateProvider()) {
         let httpClient = HTTPClient(apiKey: apiKey,
@@ -32,6 +33,7 @@ class Backend {
                                     eTagManager: eTagManager,
                                     requestTimeout: httpClientTimeout)
         let config = BackendConfiguration(httpClient: httpClient,
+                                          operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
                                           dateProvider: dateProvider)
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
@@ -76,8 +78,12 @@ class Backend {
                            completion: completion)
     }
 
-    func getCustomerInfo(appUserID: String, completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        self.customer.getCustomerInfo(appUserID: appUserID, completion: completion)
+    func getCustomerInfo(appUserID: String,
+                         withRandomDelay randomDelay: Bool,
+                         completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        self.customer.getCustomerInfo(appUserID: appUserID,
+                                      withRandomDelay: randomDelay,
+                                      completion: completion)
     }
 
     // swiftlint:disable:next function_parameter_count

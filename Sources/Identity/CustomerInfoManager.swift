@@ -35,26 +35,26 @@ class CustomerInfoManager {
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
                                    completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
-        deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
-        operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
-            self.backend.getCustomerInfo(appUserID: appUserID) { result in
-                switch result {
-                case let .failure(error):
-                    self.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
-                    Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error: error))
+        self.deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
 
-                case let .success(info):
-                    self.cache(customerInfo: info, appUserID: appUserID)
-                    Logger.rcSuccess(Strings.customerInfo.customerinfo_updated_from_network)
-                }
+        self.backend.getCustomerInfo(appUserID: appUserID,
+                                     withRandomDelay: isAppBackgrounded) { result in
+            switch result {
+            case let .failure(error):
+                self.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
+                Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error: error))
 
-                if let completion = completion {
-                    self.operationDispatcher.dispatchOnMainThread {
-                        completion(result)
-                    }
-                }
-
+            case let .success(info):
+                self.cache(customerInfo: info, appUserID: appUserID)
+                Logger.rcSuccess(Strings.customerInfo.customerinfo_updated_from_network)
             }
+
+            if let completion = completion {
+                self.operationDispatcher.dispatchOnMainThread {
+                    completion(result)
+                }
+            }
+
         }
     }
 

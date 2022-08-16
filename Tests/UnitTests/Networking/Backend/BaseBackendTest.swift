@@ -22,6 +22,7 @@ class BaseBackendTests: TestCase {
 
     private(set) var systemInfo: SystemInfo!
     private(set) var httpClient: MockHTTPClient!
+    private(set) var operationDispatcher: MockOperationDispatcher!
     private(set) var backend: Backend!
     private(set) var offerings: OfferingsAPI!
     private(set) var identity: IdentityAPI!
@@ -34,9 +35,12 @@ class BaseBackendTests: TestCase {
 
         self.systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
         self.httpClient = self.createClient()
+        self.operationDispatcher = MockOperationDispatcher()
+
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
         let backendConfig = BackendConfiguration(httpClient: self.httpClient,
+                                                 operationDispatcher: operationDispatcher,
                                                  operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
 

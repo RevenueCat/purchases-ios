@@ -56,6 +56,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                                     systemInfo: self.systemInfo)
 
         let config = BackendConfiguration(httpClient: mockHTTPClient,
+                                          operationDispatcher: MockOperationDispatcher(),
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           dateProvider: dateProvider)
 

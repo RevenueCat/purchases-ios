@@ -399,7 +399,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
         var callOrder: (initialGet: Bool,
                         postResponse: Bool,
                         updatedGet: Bool) = (false, false, false)
-        backend.getCustomerInfo(appUserID: Self.userID) { result in
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
             originalSubscriberInfo = result.value
             callOrder.initialGet = true
 
@@ -418,7 +418,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
             postSubscriberInfo = result.value
         }
 
-        backend.getCustomerInfo(appUserID: Self.userID) { result in
+        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
             expect(callOrder) == (true, true, false)
             updatedSubscriberInfo = result.value
             callOrder.updatedGet = true

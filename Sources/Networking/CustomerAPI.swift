@@ -28,7 +28,9 @@ class CustomerAPI {
         self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
     }
 
-    func getCustomerInfo(appUserID: String, completion: @escaping CustomerInfoResponseHandler) {
+    func getCustomerInfo(appUserID: String,
+                         withRandomDelay randomDelay: Bool,
+                         completion: @escaping CustomerInfoResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
@@ -37,7 +39,9 @@ class CustomerAPI {
 
         let callback = CustomerInfoCallback(operation: operation, completion: completion)
         let cacheStatus = self.customerInfoCallbackCache.add(callback: callback)
-        self.backendConfig.operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
+        self.backendConfig.addCacheableOperation(operation,
+                                                 withRandomDelay: randomDelay,
+                                                 cacheStatus: cacheStatus)
     }
 
     func post(subscriberAttributes: SubscriberAttribute.Dictionary,
