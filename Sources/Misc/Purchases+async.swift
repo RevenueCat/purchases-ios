@@ -211,6 +211,8 @@ extension Purchases {
 
 private extension Error {
 
+    /// This allows `async` APIs to return `userCancelled` in ``PurchaseResultData`` instead of throwing errors.
+    /// - Returns: `nil` if `cancelled` is `true`
     func ignoreIfPurchaseCancelled(_ cancelled: Bool) -> Self? {
         return cancelled ? nil : self
     }
