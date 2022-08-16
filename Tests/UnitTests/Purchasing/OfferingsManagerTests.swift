@@ -224,7 +224,6 @@ extension OfferingsManagerTests {
         offeringsManager.offerings(appUserID: MockData.anyAppUserID, completion: nil)
 
         // then
-        expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
         expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount).toEventually(equal(expectedCallCount))
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == false
@@ -241,7 +240,6 @@ extension OfferingsManagerTests {
         offeringsManager.offerings(appUserID: MockData.anyAppUserID, completion: nil)
 
         // then
-        expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
         expect(self.mockDeviceCache.cacheOfferingsCount).toEventually(equal(expectedCallCount))
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == true

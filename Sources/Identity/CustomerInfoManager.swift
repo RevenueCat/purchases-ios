@@ -35,8 +35,6 @@ class CustomerInfoManager {
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
                                    completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
-        self.deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
-
         self.backend.getCustomerInfo(appUserID: appUserID,
                                      withRandomDelay: isAppBackgrounded) { result in
             switch result {

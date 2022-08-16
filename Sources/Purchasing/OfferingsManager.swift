@@ -71,8 +71,6 @@ class OfferingsManager {
         isAppBackgrounded: Bool,
         completion: ((Result<Offerings, Error>) -> Void)?
     ) {
-        self.deviceCache.setOfferingsCacheTimestampToNow()
-
         self.backend.offerings.getOfferings(appUserID: appUserID, withRandomDelay: isAppBackgrounded) { result in
             switch result {
             case let .success(response):
