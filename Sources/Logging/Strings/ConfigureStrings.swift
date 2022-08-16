@@ -76,7 +76,7 @@ extension ConfigureStrings: CustomStringConvertible {
             return "SDK Version - \(sdkVersion)"
         case .legacyAPIKey:
             return "Looks like you're using a legacy API key.\n" +
-            "This is still supported, but it's recomended to migrate to using platform-specific API key, " +
+            "This is still supported, but it's recommended to migrate to using platform-specific API key, " +
             "which should look like 'appl_1a2b3c4d5e6f7h'.\n" +
             "See https://rev.cat/auth for more details."
         case .invalidAPIKey:
