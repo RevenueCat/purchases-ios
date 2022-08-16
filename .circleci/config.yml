@@ -530,6 +530,9 @@ jobs:
 workflows:
   version: 2
   build-test:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - lint:
           xcode_version: '13.4.1'
@@ -571,6 +574,9 @@ workflows:
           xcode_version: '13.4.1'
           <<: *release-tags-and-branches
   deploy:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - hold:
           type: approval
@@ -591,3 +597,10 @@ workflows:
   danger:
     jobs:
       - danger
+  weekly-run-workflow:
+    when:
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ "release-train", << pipeline.schedule.name >> ]
+    jobs:
+      - automatic-dependency-update 
