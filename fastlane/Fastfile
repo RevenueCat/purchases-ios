@@ -59,7 +59,8 @@ platform :ios do
       repo_name: repo_name,
       github_rate_limit: options[:github_rate_limit]
     )
-    bump(next_version: next_version)
+    options[:next_version] = next_version
+    bump(options)
   end
 
   desc "Make github release"
