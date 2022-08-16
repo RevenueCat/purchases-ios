@@ -366,9 +366,11 @@ class PurchasesOrchestrator {
                 let result: PurchaseResultData = try await self.purchase(sk2Product: product,
                                                                          promotionalOffer: promotionalOffer)
 
-                Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
-                    productIdentifier: product.id
-                ))
+                if !result.userCancelled {
+                    Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
+                        productIdentifier: product.id
+                    ))
+                }
 
                 DispatchQueue.main.async {
                     completion(result.transaction, result.customerInfo, nil, result.userCancelled)
