@@ -34,6 +34,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Bump version, update swift header, edit changelog, and create pull request
 
+### ios automatic_bump
+
+```sh
+[bundle exec] fastlane ios automatic_bump
+```
+
+Automatically bumps version, update swift header, edit changelog, and create pull request
+
 ### ios github_release
 
 ```sh
