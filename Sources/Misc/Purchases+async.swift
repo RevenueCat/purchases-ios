@@ -66,7 +66,7 @@ extension Purchases {
     func purchaseAsync(product: StoreProduct) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(with: Result(customerInfo, error)
+                continuation.resume(with: Result(customerInfo, error?.ignoreIfPurchaseCancelled(userCancelled))
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
@@ -76,7 +76,7 @@ extension Purchases {
     func purchaseAsync(package: Package) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(with: Result(customerInfo, error)
+                continuation.resume(with: Result(customerInfo, error?.ignoreIfPurchaseCancelled(userCancelled))
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
@@ -87,7 +87,7 @@ extension Purchases {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
                      promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(with: Result(customerInfo, error)
+                continuation.resume(with: Result(customerInfo, error?.ignoreIfPurchaseCancelled(userCancelled))
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
@@ -98,7 +98,7 @@ extension Purchases {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package,
                      promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(with: Result(customerInfo, error)
+                continuation.resume(with: Result(customerInfo, error?.ignoreIfPurchaseCancelled(userCancelled))
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
@@ -206,5 +206,13 @@ extension Purchases {
     }
 
 #endif
+
+}
+
+private extension Error {
+
+    func ignoreIfPurchaseCancelled(_ cancelled: Bool) -> Self? {
+        return cancelled ? nil : self
+    }
 
 }
