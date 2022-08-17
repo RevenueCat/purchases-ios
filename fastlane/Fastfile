@@ -55,11 +55,14 @@ platform :ios do
 
   desc "Automatically bumps version, update swift header, edit changelog, and create pull request"
   lane :automatic_bump do |options|
-    next_version = determine_next_version_using_labels(
+    next_version, type_of_bump = determine_next_version_using_labels(
       repo_name: repo_name,
       github_rate_limit: options[:github_rate_limit]
     )
     options[:next_version] = next_version
+    if type_of_bump == :major
+      UI.user_error!("Skipping automatic bump since the next version should be a major release")
+    end
     bump(options)
   end
 
