@@ -60,9 +60,7 @@ platform :ios do
       github_rate_limit: options[:github_rate_limit]
     )
     options[:next_version] = next_version
-    if type_of_bump == :major
-      UI.user_error!("Skipping automatic bump since the next version should be a major release")
-    end
+    UI.user_error!('Skipping automatic bump since the next version is a major release') if type_of_bump == :major
     bump(options)
   end
 
