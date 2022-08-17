@@ -128,7 +128,6 @@ platform :ios do
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV (15.2)",
       scheme: "RevenueCat",
-      testplan: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
       number_of_retries: 5,
