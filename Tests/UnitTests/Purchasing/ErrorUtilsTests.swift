@@ -89,6 +89,47 @@ class ErrorUtilsTests: TestCase {
         ].joined(separator: " ")
     }
 
+    func testLoggedErrorResponseWithAttributeErrors() throws {
+        let errorResponse = ErrorResponse(code: .invalidSubscriberAttributes,
+                                          message: "Invalid Attributes",
+                                          attributeErrors: [
+                                            "$email": "invalid"
+                                          ])
+
+        let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
+        _ = error.asPurchasesError
+
+        expect(self.loggedMessages).to(haveCount(1))
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+
+        expect(loggedMessage.level) == .error
+        expect(loggedMessage.message) == [
+            LogIntent.rcError.prefix,
+            errorResponse.code.toPurchasesErrorCode().description,
+            errorResponse.attributeErrors.description
+        ]
+            .joined(separator: " ")
+    }
+
+    func testLoggedErrorResponseWithNoAttributeErrors() throws {
+        let errorResponse = ErrorResponse(code: .invalidAPIKey,
+                                          message: "Invalid API key",
+                                          attributeErrors: [:])
+
+        let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
+        _ = error.asPurchasesError
+
+        expect(self.loggedMessages).to(haveCount(1))
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+
+        expect(loggedMessage.level) == .error
+        expect(loggedMessage.message) == [
+            LogIntent.rcError.prefix,
+            errorResponse.code.toPurchasesErrorCode().description
+        ]
+            .joined(separator: " ")
+    }
+
     // MARK: -
 
     private func expectLoggedError(

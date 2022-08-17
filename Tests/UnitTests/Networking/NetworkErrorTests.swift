@@ -70,8 +70,8 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
     }
 
     func testErrorResponse() throws {
-        let errorResponse = ErrorResponse(code: .invalidAPIKey,
-                                          message: "Invalid API key",
+        let errorResponse = ErrorResponse(code: .invalidSubscriberAttributes,
+                                          message: "Invalid Attributes",
                                           attributeErrors: [
                                             "$email": "invalid"
                                           ])
@@ -83,12 +83,37 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
             ])
 
         verifyPurchasesError(error,
-                             expectedCode: .invalidCredentialsError,
+                             expectedCode: .invalidSubscriberAttributesError,
                              underlyingError: underlyingError,
                              userInfoKeys: [.attributeErrors,
                                             .statusCode])
 
-        expect((error.asPurchasesError as NSError).subscriberAttributesErrors) == errorResponse.attributeErrors
+        let nsError = error.asPurchasesError as NSError
+
+        expect(nsError.subscriberAttributesErrors) == errorResponse.attributeErrors
+        expect(nsError.localizedDescription) == errorResponse.attributeErrors.description
+    }
+
+    func testErrorResponseWithNoAttributeErrors() throws {
+        let errorResponse = ErrorResponse(code: .invalidAPIKey,
+                                          message: "Invalid API key",
+                                          attributeErrors: [:])
+
+        let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
+        let underlyingError = errorResponse.code
+            .addingUserInfo([
+                NSLocalizedDescriptionKey: errorResponse.message ?? ""
+            ])
+
+        verifyPurchasesError(error,
+                             expectedCode: .invalidCredentialsError,
+                             underlyingError: underlyingError,
+                             userInfoKeys: [.statusCode])
+
+        let nsError = error.asPurchasesError as NSError
+
+        expect(nsError.subscriberAttributesErrors).to(beNil())
+        expect(nsError.localizedDescription) == errorResponse.code.toPurchasesErrorCode().description
     }
 
 }
