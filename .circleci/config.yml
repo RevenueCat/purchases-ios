@@ -526,10 +526,27 @@ jobs:
       - run: 
           name: Tag branch
           command: bundle exec fastlane tag_current_branch
+  
+  release-train:
+    docker:
+      - image: cimg/ruby:3.1.2
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-rubydocker-dependencies
+      - run: 
+          name: Create automatic PR
+          command: bundle exec fastlane automatic_bump
 
 workflows:
   version: 2
   build-test:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - lint:
           xcode_version: '13.4.1'
@@ -571,6 +588,9 @@ workflows:
           xcode_version: '13.4.1'
           <<: *release-tags-and-branches
   deploy:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - hold:
           type: approval
@@ -591,3 +611,10 @@ workflows:
   danger:
     jobs:
       - danger
+  weekly-run-workflow:
+    when:
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ "release-train", << pipeline.schedule.name >> ]
+    jobs:
+      - release-train
