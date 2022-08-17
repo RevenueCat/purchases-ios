@@ -135,11 +135,8 @@ import Foundation
 
         /**
          * Set `usesStoreKit2IfAvailable`.
-         * - Parameter usesStoreKit2IfAvailable: EXPERIMENTAL. opt in to using StoreKit 2 on devices that support it.
+         * - Parameter usesStoreKit2IfAvailable: opt in to using StoreKit 2 on devices that support it.
          * Purchases will be made using StoreKit 2 under the hood automatically.
-         *
-         * - Important: Support for purchases using StoreKit 2 is currently in an experimental phase.
-         * We recommend setting this value to `false` (default) for production apps.
          */
         @objc public func with(usesStoreKit2IfAvailable: Bool) -> Builder {
             self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
