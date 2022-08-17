@@ -21,7 +21,7 @@ class BaseErrorTests: TestCase {
 
     /// Compares the result of calling `asPurchasesError` on a `ErrorCodeConvertible`
     /// against the expected `ErrorCode`.
-    func verifyPurchasesError(
+    final func verifyPurchasesError(
         _ error: ErrorCodeConvertible,
         expectedCode: ErrorCode,
         underlyingError: Error? = nil,
