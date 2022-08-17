@@ -42,18 +42,19 @@ struct PaywallView: View {
                                 isPurchasing = true
                                 
                                 /// - Purchase a package
-                                Purchases.shared.purchase(package: package) { (transaction, info, error, userCancelled) in
-                                    
+                                do {
+                                    let result = try await Purchases.shared.purchase(package: package)
+
                                     /// - Set 'isPurchasing' state to `false`
-                                    isPurchasing = false
-                                    
-                                    /// - If the user didn't cancel and there wasn't an error with the purchase, close the paywall
-                                    if !userCancelled, error == nil {
-                                        isPresented = false
-                                    } else if let error = error {
-                                        self.error = error as NSError
-                                        self.displayError = true
+                                    self.isPurchasing = false
+
+                                    if !result.userCancelled {
+                                        self.isPresented = false
                                     }
+                                } catch {
+                                    self.isPurchasing = false
+                                    self.error = error as NSError
+                                    self.displayError = true
                                 }
                             }
                         }
@@ -89,10 +90,22 @@ struct PaywallView: View {
 
 /* The cell view for each package */
 struct PackageCellView: View {
+
     let package: Package
-    let onSelection: (Package) -> Void
+    let onSelection: (Package) async -> Void
     
     var body: some View {
+        Button {
+            Task {
+                await self.onSelection(self.package)
+            }
+        } label: {
+            self.buttonLabel
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var buttonLabel: some View {
         HStack {
             VStack {
                 HStack {
@@ -118,10 +131,8 @@ struct PackageCellView: View {
                 .bold()
         }
         .contentShape(Rectangle()) // Make the whole cell tappable
-        .onTapGesture {
-            onSelection(package)
-        }
     }
+
 }
 
 extension NSError: LocalizedError {
