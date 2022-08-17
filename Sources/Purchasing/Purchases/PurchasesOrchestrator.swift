@@ -373,7 +373,11 @@ class PurchasesOrchestrator {
                 }
 
                 DispatchQueue.main.async {
-                    completion(result.transaction, result.customerInfo, nil, result.userCancelled)
+                    completion(result.transaction,
+                               result.customerInfo,
+                               // Forward an error if purchase was cancelled to match SK1 behavior.
+                               result.userCancelled ? ErrorUtils.purchaseCancelledError() : nil,
+                               result.userCancelled)
                 }
             } catch let error {
                 Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
