@@ -8,7 +8,7 @@ Sign up for a free RevenueCat account [here](https://www.revenuecat.com).
 
 This sample uses:
 
-- Xcode 12.2
+- Xcode 13.4.1
 - iOS 14
 - Swift 5
 
