@@ -1,3 +1,7 @@
+## 4.10.1
+### Bugfixes
+* Directly send delegate customer info when delegate is set (always sends cached CustomerInfo value) (#1828) via Josh Holtz (@joshdholtz)
+
 ## 4.10.0
 ### New Features
 * New AdServices Integration (#1727) via Josh Holtz (@joshdholtz)
