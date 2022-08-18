@@ -18,3 +18,4 @@ Sometimes you might need to release a patch on a version that's not the latest. 
 1. When the PR is approved, **DO NOT MERGE IT**. Approve the hold job in CircleCI as you would do for any other release. If there is no hold job because the release is older than when we introduced that job, manually tag the last commit in `release/3.9.1` with `3.9.1`.
 1. CircleCI will start the deployment process
 1. Close the PR after the release has been completed and delete both `release/3.9.0` and `release/3.9.1` branches.
+1. Remember to edit the CHANGELOG.md in `main` to include the version that has been just released

@@ -539,7 +539,7 @@ jobs:
       - install-rubydocker-dependencies
       - run: 
           name: Create automatic PR
-          command: bundle exec fastlane automatic_bump
+          command: bundle exec fastlane automatic_bump github_rate_limit:10
 
 workflows:
   version: 2
