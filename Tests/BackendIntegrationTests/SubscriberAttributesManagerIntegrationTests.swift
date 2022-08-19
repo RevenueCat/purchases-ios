@@ -88,11 +88,10 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
         self.attribution.setEmail(invalidEmail)
 
         let errors = await self.syncAttributes()
-        expect(errors).to(haveCount(1))
+        let error = try XCTUnwrap(errors.onlyElement ?? nil) as NSError
 
         self.verifySyncedAttribute(self.userID, [reserved(.email): invalidEmail])
 
-        let error = try XCTUnwrap(errors.first ?? nil) as NSError
         expect(error.domain) == RCPurchasesErrorCodeDomain
         expect(error.code) == ErrorCode.invalidSubscriberAttributesError.rawValue
         expect(error.subscriberAttributesErrors) == [

@@ -67,9 +67,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         product.mockDiscount = discount
 
         let storeProduct = StoreProduct(sk1Product: product)
-        expect(storeProduct.discounts).to(haveCount(1))
 
-        let storeDiscount = try XCTUnwrap(storeProduct.discounts.first)
+        let storeDiscount = try XCTUnwrap(storeProduct.discounts.onlyElement)
         expect(storeDiscount.currencyCode).to(beNil())
         expect(storeDiscount.localizedPriceString) == "$2.00"
     }
@@ -94,9 +93,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(result).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout + .seconds(5))
 
         let products = try result.get()
-        expect(products).to(haveCount(1))
 
-        let sk1Product = try XCTUnwrap(products.first)
+        let sk1Product = try XCTUnwrap(products.onlyElement)
         let storeProduct = StoreProduct.from(product: sk1Product)
 
         expect(storeProduct.sk1Product) === sk1Product.underlyingSK1Product

@@ -65,9 +65,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
 
         let receipt = try self.parser.parse(from: data)
 
-        expect(receipt.inAppPurchases.count) == 1
-
-        let firstPurchase = try XCTUnwrap(receipt.inAppPurchases.first)
+        let firstPurchase = try XCTUnwrap(receipt.inAppPurchases.onlyElement)
 
         expect(firstPurchase.quantity) == 1
         expect(firstPurchase.productId) == product.id

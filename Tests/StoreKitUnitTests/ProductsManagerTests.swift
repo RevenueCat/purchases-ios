@@ -31,9 +31,8 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         expect(receivedProducts).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
-        expect(unwrappedProducts).to(haveCount(1))
 
-        let product = try XCTUnwrap(unwrappedProducts.first).product
+        let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
 
         expect(product).to(beAnInstanceOf(SK1StoreProduct.self))
         expect(product.productIdentifier) == identifier
@@ -55,9 +54,8 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         expect(receivedProducts).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
-        expect(unwrappedProducts).to(haveCount(1))
 
-        let product = try XCTUnwrap(unwrappedProducts.first).product
+        let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
 
         expect(product).to(beAnInstanceOf(SK2StoreProduct.self))
         expect(product.productIdentifier) == identifier

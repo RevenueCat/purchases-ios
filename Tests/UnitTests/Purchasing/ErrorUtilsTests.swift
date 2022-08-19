@@ -54,8 +54,7 @@ class ErrorUtilsTests: TestCase {
     func testLoggedErrorsWithNoMessage() throws {
         let error = ErrorUtils.customerInfoError()
 
-        expect(self.loggedMessages).to(haveCount(1))
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == "\(LogIntent.rcError.prefix) \(error.localizedDescription)"
@@ -65,8 +64,7 @@ class ErrorUtilsTests: TestCase {
         let message = Strings.customerInfo.no_cached_customerinfo.description
         _ = ErrorUtils.customerInfoError(withMessage: message)
 
-        expect(self.loggedMessages).to(haveCount(1))
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -79,8 +77,7 @@ class ErrorUtilsTests: TestCase {
     func testLoggedErrorsDontDuplicateMessageIfEqualToErrorDescription() throws {
         _ = ErrorUtils.customerInfoError(withMessage: ErrorCode.customerInfoError.description)
 
-        expect(self.loggedMessages).to(haveCount(1))
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -99,8 +96,7 @@ class ErrorUtilsTests: TestCase {
         let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
         _ = error.asPurchasesError
 
-        expect(self.loggedMessages).to(haveCount(1))
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
@@ -119,8 +115,7 @@ class ErrorUtilsTests: TestCase {
         let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
         _ = error.asPurchasesError
 
-        expect(self.loggedMessages).to(haveCount(1))
-        let loggedMessage = try XCTUnwrap(self.loggedMessages.first)
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
