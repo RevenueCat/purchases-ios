@@ -47,8 +47,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.continueAfterFailure = false
 
         guard Constants.apiKey != "REVENUECAT_API_KEY", Constants.proxyURL != "REVENUECAT_PROXY_URL" else {
-            XCTFail("Must set configuration in `Constants.swift`")
-            throw ErrorCode.configurationError
+            throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
 
         userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
