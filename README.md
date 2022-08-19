@@ -1,4 +1,4 @@
-<h3 align="center">😻 In-App Subscriptions Made Easy 😻</h1>
+<h3 align="center">😻 In-App Subscriptions Made Easy 😻</h3>
 
 [![License](https://img.shields.io/cocoapods/l/RevenueCat.svg?style=flat)](http://cocoapods.org/pods/RevenueCat)
 [![Version](https://img.shields.io/cocoapods/v/RevenueCat.svg?style=flat)](https://cocoapods.org/pods/RevenueCat)
@@ -43,9 +43,21 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
 
-Or browse our iOS sample apps:
+Please follow the [Quickstart Guide](https://docs.revenuecat.com/docs/) for more information on how to install the SDK.
+
+Or view our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
+
+## Requirements
+- Xcode 13.2+
+
+| Platform | Minimum target |
+| --- | --- |
+| iOS | 11.0+ |
+| tvOS | 11.0+ |
+| macOS | 10.13+ |
+| watchOS | 6.2+ |
 
 ## SDK Reference
 Our full SDK reference [can be found here](https://revenuecat.github.io/purchases-ios-docs).

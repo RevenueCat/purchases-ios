@@ -33,16 +33,18 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
     - You must sign the [Paid Applications Agreement](https://docs.revenuecat.com/docs/getting-started#3-store-setup) and complete your [bank/tax information](https://docs.revenuecat.com/docs/getting-started#3-store-setup) to test In-App Purchases.
 - Be sure to set up a [Sandbox Tester Account](https://help.apple.com/app-store-connect/#/dev8b997bee1) for testing purposes.
 - Add your [App-Specific Shared Secret](https://docs.revenuecat.com/docs/itunesconnect-app-specific-shared-secret) to RevenueCat. If you don't have a RevenueCat account yet, sign up for free [here](https://app.revenuecat.com/signup).
-- Be sure to set up at least one subscription on the App Store and link it to RevenueCat:
+- Be sure to set up at least one subscription on the App Store following our [guide](https://docs.revenuecat.com/docs/apple-app-store) and link it to RevenueCat:
     - Add the [product](https://docs.revenuecat.com/docs/entitlements#products) (e.g. `rc_3999_1y`) to RevenueCat's dashboard. It should match the product ID on the App Store.
     - Attach the product to an [entitlement](https://docs.revenuecat.com/docs/entitlements#creating-an-entitlement), e.g. `premium`.
     - Attach the product to a [package](https://docs.revenuecat.com/docs/entitlements#adding-packages) (e.g. `Annual`) inside an [offering](https://docs.revenuecat.com/docs/entitlements#creating-an-offering) (e.g. `sale` or `default`).
-- If you're testing on a simulator instead of a physical device, be sure to set up your [StoreKit configuration files](https://docs.revenuecat.com/docs/apple-app-store#ios-14-only-testing-on-the-simulator).
 - Get your [API key](https://docs.revenuecat.com/docs/authentication#obtaining-api-keys) from your RevenueCat project.
 
 ### Steps to Run
-1. Open the file `MagicWeather.xcodeproj` in Xcode.
-2. On the **General** tab of the project editor, match the bundle ID to your bundle ID in App Store Connect and RevenueCat.
+1. Download or clone this repository
+    >git clone https://github.com/RevenueCat/purchases-ios.git
+
+2. Navigate to the `Examples` directory and open the file `MagicWeather.xcodeproj` in Xcode.
+3. On the **General** tab of the project editor, match the bundle ID to your bundle ID in App Store Connect and RevenueCat.
     
     <img src="https://i.imgur.com/1z32GRo.png" alt="General tab in Xcode" width="250px" />
 4. On the **Signing & Capabilities** tab of the project editor, select the correct development team from the **Team** dropdown.  
