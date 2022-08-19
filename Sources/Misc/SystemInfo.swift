@@ -197,11 +197,12 @@ private extension SystemInfo {
     #elseif os(macOS)
         return false
     #elseif os(watchOS)
-        return WKExtension.shared().applicationState == WKApplicationState.background
+        return self.isApplicationBackgroundedWatchOS
     #endif
     }
 
     #if os(iOS) || os(tvOS)
+
     // iOS/tvOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
@@ -211,7 +212,30 @@ private extension SystemInfo {
         }
 
         guard let sharedUIApplication = self.sharedUIApplication else { return false }
-        return sharedUIApplication.applicationState == UIApplication.State.background
+        return sharedUIApplication.applicationState == .background
+    }
+
+    #elseif os(watchOS)
+
+    var isApplicationBackgroundedWatchOS: Bool {
+        // In Xcode 13 and earlier the system divides a watchOS app into two sections:
+        // - WatchKit app
+        // - WatchKit extension
+        // In Xcode 14 and later, you can produce watchOS apps with a single watchOS app target.
+        // These single-target watchOS apps can run on watchOS 7 and later.
+        // Calling `WKExtension.shared` on these single-target apps crashes.
+        //
+        // `WKApplication` provides a more accurate value if it's available, and it avoids that crash.
+        #if swift(>=5.7)
+        if #available(watchOS 7.0, *) {
+            return WKApplication.shared().applicationState == .background
+        } else {
+            return WKExtension.shared().applicationState == .background
+        }
+        #else
+        // Before Xcode 14, single-target extensions aren't supported (and WKApplication isn't available)
+        return WKExtension.shared().applicationState == .background
+        #endif
     }
 
     #endif
