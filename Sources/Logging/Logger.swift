@@ -52,7 +52,9 @@ enum Logger {
     #else
     static var logLevel: LogLevel = .info
     #endif
-    static var logHandler: VerboseLogHandler = { level, message, file, functionName, line in
+    static var logHandler: VerboseLogHandler = Self.defaultLogHandler
+
+    static let defaultLogHandler: VerboseLogHandler = { level, message, file, functionName, line in
         let fileContext: String
         if Logger.verbose, let file = file, let functionName = functionName {
             let fileName = (file as NSString)

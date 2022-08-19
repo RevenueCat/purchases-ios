@@ -74,12 +74,3 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
         return (false, mockTransaction.value)
     }
 }
-
-// Workaround for https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825
-final class Box<T> {
-
-    var value: T
-
-    init(_ value: T) { self.value = value }
-
-}

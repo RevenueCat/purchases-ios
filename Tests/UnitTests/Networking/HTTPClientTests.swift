@@ -886,12 +886,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedErrorWithBlockedHostFromErrorResult.value = expectedDNSError
         let expectedMessage = "\(LogIntent.rcError.prefix) \(expectedDNSError.description)"
 
-        var loggedMessages = [String]()
-        let originalLogHandler = Logger.logHandler
-        Logger.logHandler = { _, message, _, _, _ in
-            loggedMessages.append(message)
-        }
-        defer { Logger.logHandler = originalLogHandler }
+        let logHandler = TestLogHandler()
 
         stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse.emptySuccessResponse
@@ -907,7 +902,8 @@ class HTTPClientTests: TestCase {
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
         expect(obtainedError.value).toEventually(equal(expectedDNSError))
-        expect(loggedMessages).toEventually(contain(expectedMessage))
+        expect(logHandler.messages.map(\.message))
+            .toEventually(contain(expectedMessage))
     }
 
     func testErrorIsntLoggedWhenGETRequestFailedWithUnknownError() {
@@ -920,11 +916,7 @@ class HTTPClientTests: TestCase {
         )
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
-        var loggedMessages = [String]()
-        let originalLogHandler = Logger.logHandler
-        Logger.logHandler = { _, message, _, _, _ in
-            loggedMessages.append(message)
-        }
+        let logHandler = TestLogHandler()
 
         stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse.emptySuccessResponse
@@ -936,8 +928,8 @@ class HTTPClientTests: TestCase {
 
         expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
-        expect(loggedMessages).toNotEventually(contain(unexpectedDNSError.description))
-        Logger.logHandler = originalLogHandler
+        expect(logHandler.messages.map(\.message))
+            .toNotEventually(contain(unexpectedDNSError.description))
     }
 
 }
