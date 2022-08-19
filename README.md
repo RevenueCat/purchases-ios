@@ -39,7 +39,6 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it
 💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)
 📮 | Great support - [Help Center](https://community.revenuecat.com)
-🤩 | Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)  
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
