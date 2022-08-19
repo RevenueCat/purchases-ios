@@ -51,7 +51,13 @@ Or view our iOS sample apps:
 
 ## Requirements
 - Xcode 13.2+
-- Minimum target: iOS 11.0+
+
+| Platform | Minimum target |
+| --- | --- |
+| iOS | 11.0+ |
+| tvOS | 11.0+ |
+| macOS | 10.13+ |
+| watchOS | 6.2+ |
 
 ## SDK Reference
 Our full SDK reference [can be found here](https://revenuecat.github.io/purchases-ios-docs).
