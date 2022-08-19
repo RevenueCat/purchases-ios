@@ -50,8 +50,8 @@ Or view our iOS sample apps:
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
 
 ## Requirements
-- XCode 10.2+
-- Minimum target: iOS 9.0+
+- Xcode 13.2+
+- Minimum target: iOS 11.0+
 
 ## SDK Reference
 Our full SDK reference [can be found here](https://revenuecat.github.io/purchases-ios-docs).
