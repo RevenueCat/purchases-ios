@@ -226,11 +226,16 @@ private extension SystemInfo {
         // Calling `WKExtension.shared` on these single-target apps crashes.
         //
         // `WKApplication` provides a more accurate value if it's available, and it avoids that crash.
+        #if swift(>=5.7)
         if #available(watchOS 7.0, *) {
             return WKApplication.shared().applicationState == .background
         } else {
             return WKExtension.shared().applicationState == .background
         }
+        #else
+        // Before Xcode 14, single-target extensions aren't supported (and WKApplication isn't available)
+        return WKExtension.shared().applicationState == .background
+        #endif
     }
 
     #endif
