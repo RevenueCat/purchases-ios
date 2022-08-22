@@ -20,7 +20,7 @@ class CustomerInfoManager {
     private let deviceCache: DeviceCache
     private let backend: Backend
     private let systemInfo: SystemInfo
-    private let customerInfoCacheLock = Lock()
+    private let customerInfoCacheLock = Lock(.nonRecursive)
 
     init(operationDispatcher: OperationDispatcher,
          deviceCache: DeviceCache,

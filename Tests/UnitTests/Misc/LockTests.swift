@@ -19,7 +19,7 @@ import XCTest
 class LockTests: TestCase {
 
     func testClosureIsCalled() {
-        let lock = Lock()
+        let lock = Lock(.nonRecursive)
 
         var called = false
         lock.perform { called = true }
@@ -35,7 +35,7 @@ class RecursiveLockTests: TestCase {
     override func setUp() {
         super.setUp()
 
-        self.lock = Lock.createRecursive()
+        self.lock = Lock(.recursive)
     }
 
     func testClosureIsCalled() {
