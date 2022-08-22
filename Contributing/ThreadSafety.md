@@ -12,7 +12,7 @@ To aid with that task there are several abstractions available:
 This type is a building block to guarantee such synchronization. Its only method `perform` can be used to do that:
 ```swift
 class Data {
-    private let lock = Lock()
+    private let lock = Lock(.nonRecursive)
 
     private var calls = 0
 
@@ -29,7 +29,7 @@ If you need the lock to be _reentrant_ (so that calling `perform` recursively wo
 
 ```swift
 class Data {
-    private let lock = Lock.createRecursive()
+    private let lock = Lock(.recursive)
 
     private var calls = 0
 
