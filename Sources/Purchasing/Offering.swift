@@ -26,7 +26,7 @@ import Foundation
  * - ``Offerings``
  * - ``Package``
  */
-@objc(RCOffering) public class Offering: NSObject {
+@objc(RCOffering) public final class Offering: NSObject {
 
     /**
      Unique identifier defined in RevenueCat dashboard.
@@ -46,37 +46,37 @@ import Foundation
     /**
      Lifetime ``Package`` type configured in the RevenueCat dashboard, if available.
      */
-    @objc private(set) public var lifetime: Package?
+    @objc public let lifetime: Package?
 
     /**
      Annual ``Package`` type configured in the RevenueCat dashboard, if available.
      */
-    @objc private(set) public var annual: Package?
+    @objc public let annual: Package?
 
     /**
      Six month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
-    @objc private(set) public var sixMonth: Package?
+    @objc public let sixMonth: Package?
 
     /**
      Three month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
-    @objc private(set) public var threeMonth: Package?
+    @objc public let threeMonth: Package?
 
     /**
      Two month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
-    @objc private(set) public var twoMonth: Package?
+    @objc public let twoMonth: Package?
 
     /**
      Monthly ``Package`` type configured in the RevenueCat dashboard, if available.
      */
-    @objc private(set) public var monthly: Package?
+    @objc public let monthly: Package?
 
     /**
      Weekly ``Package`` type configured in the RevenueCat dashboard, if available.
      */
-    @objc private(set) public var weekly: Package?
+    @objc public let weekly: Package?
 
     public override var description: String {
         return """
@@ -114,55 +114,50 @@ import Foundation
         self.serverDescription = serverDescription
         self.availablePackages = availablePackages
 
+        var foundPackages: [PackageType: Package] = [:]
+
+        var lifetime: Package?
+        var annual: Package?
+        var sixMonth: Package?
+        var threeMonth: Package?
+        var twoMonth: Package?
+        var monthly: Package?
+        var weekly: Package?
+
         for package in availablePackages {
+            Self.checkForNilAndLogReplacement(previousPackages: foundPackages, newPackage: package)
+
             switch package.packageType {
-            case .lifetime:
-                Self.checkForNilAndLogReplacement(package: self.lifetime, newPackage: package)
-                self.lifetime = package
-            case .annual:
-                Self.checkForNilAndLogReplacement(package: self.annual, newPackage: package)
-                self.annual = package
-            case .sixMonth:
-                Self.checkForNilAndLogReplacement(package: self.sixMonth, newPackage: package)
-                self.sixMonth = package
-            case .threeMonth:
-                Self.checkForNilAndLogReplacement(package: self.threeMonth, newPackage: package)
-                self.threeMonth = package
-            case .twoMonth:
-                Self.checkForNilAndLogReplacement(package: self.twoMonth, newPackage: package)
-                self.twoMonth = package
-            case .monthly:
-                Self.checkForNilAndLogReplacement(package: self.monthly, newPackage: package)
-                self.monthly = package
-            case .weekly:
-                Self.checkForNilAndLogReplacement(package: self.weekly, newPackage: package)
-                self.weekly = package
+            case .lifetime: lifetime = package
+            case .annual: annual = package
+            case .sixMonth: sixMonth = package
+            case .threeMonth: threeMonth = package
+            case .twoMonth: twoMonth = package
+            case .monthly: monthly = package
+            case .weekly: weekly = package
             case .custom where package.storeProduct.productCategory == .nonSubscription:
                 // Non-subscription product, ignoring
-                break
+                continue
             case .unknown, .custom:
                 Logger.warn(
                     "Unknown subscription length for package '\(package.offeringIdentifier)': " +
                     "\(package.packageType). Ignoring."
                 )
+                continue
             }
-        }
-    }
 
-    private static func checkForNilAndLogReplacement(package: Package?, newPackage: Package) {
-        guard let package = package else {
-            return
+            foundPackages[package.packageType] = package
         }
 
-        Logger.warn("Package: \(package.identifier) already exists, overwriting with:\(newPackage.identifier)")
-    }
+        self.lifetime = lifetime
+        self.annual = annual
+        self.sixMonth = sixMonth
+        self.threeMonth = threeMonth
+        self.twoMonth = twoMonth
+        self.monthly = monthly
+        self.weekly = weekly
 
-    private func valueOrEmpty<T: CustomStringConvertible>(_ value: T?) -> String {
-        if let value = value {
-            return value.description
-        } else {
-            return ""
-        }
+        super.init()
     }
 
 }
@@ -172,4 +167,22 @@ extension Offering: Identifiable {
     /// The stable identity of the entity associated with this instance.
     public var id: String { return self.identifier }
 
+}
+
+extension Offering: Sendable {}
+
+// MARK: - Private
+
+private extension Offering {
+
+    static func checkForNilAndLogReplacement(previousPackages: [PackageType: Package], newPackage: Package) {
+        if let package = previousPackages[newPackage.packageType] {
+            Logger.warn("Package: \(package.identifier) already exists, overwriting with: \(newPackage.identifier)")
+        }
+    }
+
+}
+
+private func valueOrEmpty<T: CustomStringConvertible>(_ value: T?) -> String {
+    return value?.description ?? ""
 }

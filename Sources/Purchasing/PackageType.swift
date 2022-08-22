@@ -44,6 +44,8 @@ import Foundation
 
 extension PackageType: CaseIterable {}
 
+extension PackageType: Sendable {}
+
 extension PackageType: CustomDebugStringConvertible {
 
     /// A textual description of the type suitable for debugging.

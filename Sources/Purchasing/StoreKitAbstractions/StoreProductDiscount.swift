@@ -98,6 +98,10 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
 }
 
+extension StoreProductDiscount: Sendable {}
+extension StoreProductDiscount.PaymentMode: Sendable {}
+extension StoreProductDiscount.DiscountType: Sendable {}
+
 public extension StoreProductDiscount {
 
     /// The discount price of the product in the local currency.
@@ -136,7 +140,7 @@ extension StoreProductDiscount {
 }
 
 /// The details of an introductory offer or a promotional offer for an auto-renewable subscription.
-internal protocol StoreProductDiscountType {
+internal protocol StoreProductDiscountType: Sendable {
 
     // Note: this is only `nil` for SK1 products before iOS 12.2.
     // It can become `String` once it's not longer supported.
