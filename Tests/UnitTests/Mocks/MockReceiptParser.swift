@@ -23,8 +23,7 @@ class MockReceiptParser: ReceiptParser {
                                           inAppPurchases: [])
 
     convenience init() {
-        self.init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
-                  containerBuilder: MockASN1ContainerBuilder(),
+        self.init(containerBuilder: MockASN1ContainerBuilder(),
                   receiptBuilder: MockAppleReceiptBuilder())
     }
 

@@ -14,10 +14,10 @@
 
 import Foundation
 
-class ASN1ObjectIdentifierBuilder {
+enum ASN1ObjectIdentifierBuilder {
 
     // info on the format: https://docs.microsoft.com/en-us/windows/win32/seccertenroll/about-object-identifier
-    func build(fromPayload payload: ArraySlice<UInt8>) throws -> ASN1ObjectIdentifier? {
+    static func build(fromPayload payload: ArraySlice<UInt8>) throws -> ASN1ObjectIdentifier? {
         guard let firstByte = payload.first else { return nil }
 
         var objectIdentifierNumbers: [UInt] = []
@@ -37,7 +37,7 @@ class ASN1ObjectIdentifierBuilder {
 private extension ASN1ObjectIdentifierBuilder {
 
     // https://en.wikipedia.org/wiki/Variable-length_quantity
-    func decodeVariableLengthQuantity(payload: ArraySlice<UInt8>) throws -> [UInt] {
+    static func decodeVariableLengthQuantity(payload: ArraySlice<UInt8>) throws -> [UInt] {
         var decodedNumbers = [UInt]()
 
         var currentBuffer: UInt = 0
