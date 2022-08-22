@@ -213,6 +213,15 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(eligibility) == .eligible
     }
 
+    func testNoIntroOfferIfProductHasNoIntro() async throws {
+        let product = try await XCTAsyncUnwrap(
+            await Purchases.shared.products(["com.revenuecat.weekly_1.99.no_intro"]).onlyElement
+        )
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        expect(eligibility) == .noIntroOfferExists
+    }
+
     func testIneligibleForIntroAfterPurchase() async throws {
         let product = try await self.monthlyPackage.storeProduct
 

@@ -101,27 +101,27 @@ class TrialOrIntroPriceEligibilityChecker {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2CheckEligibility(_ productIdentifiers: [String]) async throws -> [String: IntroEligibility] {
         let identifiers = Set(productIdentifiers)
-        var introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
-            resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
+        var introDictionary: [String: IntroEligibility] = identifiers.dictionaryWithValues { _ in
+                .init(eligibilityStatus: .unknown)
         }
 
-        let products = try await productsManager.sk2StoreProducts(withIdentifiers: identifiers)
+        let products = try await self.productsManager.sk2StoreProducts(withIdentifiers: identifiers)
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
 
             let eligibilityStatus: IntroEligibilityStatus
 
-            if let subscription = sk2Product.subscription {
+            if let subscription = sk2Product.subscription, subscription.introductoryOffer != nil {
                 let isEligible = await subscription.isEligibleForIntroOffer
                 eligibilityStatus = isEligible ? .eligible : .ineligible
             } else {
                 eligibilityStatus = .noIntroOfferExists
             }
 
-            introDict[sk2StoreProduct.productIdentifier] =
-            IntroEligibility(eligibilityStatus: eligibilityStatus)
+            introDictionary[sk2StoreProduct.productIdentifier] = .init(eligibilityStatus: eligibilityStatus)
         }
-        return introDict
+
+        return introDictionary
     }
 
 }
