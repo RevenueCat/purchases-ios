@@ -19,19 +19,35 @@ import XCTest
 class LockTests: TestCase {
 
     func testClosureIsCalled() {
-        let lock = Lock()
+        let lock = Lock(.nonRecursive)
 
         var called = false
         lock.perform { called = true }
         expect(called) == true
     }
 
-    func testLockIsReentrant() {
-        let lock = Lock()
+}
 
+class RecursiveLockTests: TestCase {
+
+    private var lock: Lock!
+
+    override func setUp() {
+        super.setUp()
+
+        self.lock = Lock(.recursive)
+    }
+
+    func testClosureIsCalled() {
         var called = false
-        lock.perform {
-            lock.perform { called = true }
+        self.lock.perform { called = true }
+        expect(called) == true
+    }
+
+    func testLockIsReentrant() {
+        var called = false
+        self.lock.perform {
+            self.lock.perform { called = true }
         }
         expect(called) == true
     }

@@ -54,8 +54,8 @@ internal final class Atomic<T> {
     }
 
     init(_ value: T) {
-        _value = value
-        lock = Lock()
+        self._value = value
+        self.lock = Lock()
     }
 
     @discardableResult
