@@ -20,7 +20,7 @@ class SubscriberAttributesManager {
     private let operationDispatcher: OperationDispatcher
     private let attributionFetcher: AttributionFetcher
     private let attributionDataMigrator: AttributionDataMigrator
-    private let lock = Lock(.nonRecursive)
+    private let lock = Lock()
 
     weak var delegate: SubscriberAttributesManagerDelegate?
 

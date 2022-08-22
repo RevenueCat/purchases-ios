@@ -76,6 +76,6 @@ class MockETagManager: ETagManager {
         }
     }
 
-    private let lock = Lock(.nonRecursive)
+    private let lock = Lock()
 
 }

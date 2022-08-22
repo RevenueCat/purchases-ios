@@ -26,7 +26,7 @@ class StoreKitConfigTestCase: TestCase {
     }
 
     private static var hasWaited = false
-    private static let waitLock = Lock(.nonRecursive)
+    private static let waitLock = Lock()
     private static let waitTimeInSeconds: Double? = {
         ProcessInfo.processInfo.environment["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"]
             .flatMap(Double.init)

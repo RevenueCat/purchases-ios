@@ -37,7 +37,7 @@ internal final class Lock {
     private init(_ lock: UnderlyingType) { self.lock = lock }
 
     /// Creates an instance based on `LockType`
-    convenience init(_ type: LockType) {
+    convenience init(_ type: LockType = .nonRecursive) {
         self.init(type.create())
     }
 
