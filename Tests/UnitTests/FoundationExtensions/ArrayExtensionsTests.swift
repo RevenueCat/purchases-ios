@@ -18,6 +18,8 @@ import XCTest
 
 class ArrayExtensionsTests: TestCase {
 
+    // MARK: - popFirst
+
     func testPopFirstWithEmptyArray() {
         var array: [Int] = []
 
@@ -39,6 +41,20 @@ class ArrayExtensionsTests: TestCase {
 
         expect(element) == 3
         expect(array) == [2, 1]
+    }
+
+    // MARK: - onlyElement
+
+    func testOnlyElementWithEmptyArray() {
+        expect([].onlyElement).to(beNil())
+    }
+
+    func testOnlyElementWithMultipleElements() {
+        expect([1, 2].onlyElement).to(beNil())
+    }
+
+    func testOnlyElementWithSingleElement() {
+        expect([1].onlyElement) == 1
     }
 
 }

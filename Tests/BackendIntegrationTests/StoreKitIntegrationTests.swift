@@ -146,9 +146,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         self.assertNoPurchases(try XCTUnwrap(self.purchasesDelegate.customerInfo))
 
-        let transactions = self.testSession.allTransactions()
-        expect(transactions).to(haveCount(1))
-        let transaction = transactions.first!
+        let transaction = try XCTUnwrap(self.testSession.allTransactions().onlyElement)
 
         try self.testSession.approveAskToBuyTransaction(identifier: transaction.identifier)
 
@@ -289,9 +287,9 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         let offerings = try await Purchases.shared.offerings()
         let product = try XCTUnwrap(offerings.current?.monthly?.storeProduct)
+        let discount = try XCTUnwrap(product.discounts.onlyElement)
 
-        expect(product.discounts).to(haveCount(1))
-        expect(product.discounts.first?.offerIdentifier) == "com.revenuecat.monthly_4.99.1_free_week"
+        expect(discount.offerIdentifier) == "com.revenuecat.monthly_4.99.1_free_week"
 
         let offers = await product.eligiblePromotionalOffers()
         expect(offers).to(beEmpty())
@@ -327,9 +325,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 3. Get eligible offer
 
-        let offers = await product.eligiblePromotionalOffers()
-        expect(offers).to(haveCount(1))
-        let offer = try XCTUnwrap(offers.first)
+        let offer = try await XCTAsyncUnwrap(await product.eligiblePromotionalOffers().onlyElement)
 
         // 4. Purchase with offer
 
@@ -351,8 +347,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
             .filter { $0.productID == product.productIdentifier }
             .extractValues()
 
-        expect(transactions).to(haveCount(1))
-        let transaction = try XCTUnwrap(transactions.first)
+        let transaction = try XCTUnwrap(transactions.onlyElement)
 
         expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
         expect(transaction.offerID) == offer.discount.offerIdentifier
