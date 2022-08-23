@@ -214,7 +214,6 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
       - run:
           name: SPM Build
           command: swift build
