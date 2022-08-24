@@ -72,7 +72,7 @@ extension SKPaymentTransaction {
     }
 
     fileprivate var quantity: Int {
-        // Note: multi-quanity purchases aren't supported.
+        // Note: multi-quantity purchases aren't supported.
         // Defaulting to `1` if `self.payment` is `nil` (which shouldn't happen) as a reasonable default.
         return self.paymentIfPresent?.quantity ?? 1
     }
