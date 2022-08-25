@@ -1,1 +1,1 @@
-danger.import_dangerfile "RevenueCat/Dangerfile"
+danger.import_dangerfile(github: 'RevenueCat/Dangerfile')
