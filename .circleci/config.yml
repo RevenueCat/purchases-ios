@@ -537,15 +537,12 @@ jobs:
           command: bundle exec fastlane tag_current_branch
   
   release-train:
-    docker:
-      - image: cimg/ruby:3.1.2
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - setup-git-credentials
       - trust-github-key
-      - install-rubydocker-dependencies
+      - install-dependencies
       - run: 
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
