@@ -625,4 +625,5 @@ workflows:
         - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
         - equal: [ "release-train", << pipeline.schedule.name >> ]
     jobs:
-      - release-train
+      - release-train:
+          xcode_version: '13.4.1'
