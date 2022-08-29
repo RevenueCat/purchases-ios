@@ -36,7 +36,7 @@ public extension Purchases {
         forProduct productID: String,
         completion: @escaping (Result<RefundRequestStatus, Error>) -> Void
     ) {
-        call(completion) {
+        call(with: completion) {
             try await self.beginRefundRequest(forProduct: productID)
         }
     }
@@ -59,7 +59,7 @@ public extension Purchases {
         forEntitlement entitlementID: String,
         completion: @escaping (Result<RefundRequestStatus, Error>) -> Void
     ) {
-        call(completion) {
+        call(with: completion) {
             try await self.beginRefundRequest(forEntitlement: entitlementID)
         }
     }
@@ -84,7 +84,7 @@ public extension Purchases {
     func beginRefundRequestForActiveEntitlement(
         completion: @escaping (Result<RefundRequestStatus, Error>) -> Void
     ) {
-        call(completion) {
+        call(with: completion) {
             try await self.beginRefundRequestForActiveEntitlement()
         }
     }
@@ -96,7 +96,7 @@ public extension Purchases {
 /// Invokes an `async throws` method and calls `completion` with the result.
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private func call<T>(
-    _ completion: @escaping (Result<T, Error>) -> Void,
+    with completion: @escaping (Result<T, Error>) -> Void,
     asyncMethod method: @escaping () async throws -> T
 ) {
     _ = Task {
