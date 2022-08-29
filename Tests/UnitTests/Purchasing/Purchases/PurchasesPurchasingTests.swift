@@ -327,6 +327,37 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUnderlyingError?.code) == SKError.Code.paymentCancelled.rawValue
     }
 
+    @MainActor
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testUserCancelledTrueIfSK1AsyncPurchaseCancelled() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+
+        var receivedError: NSError?
+
+        _ = Task {
+            do {
+                _ = try await self.purchases.purchase(
+                    product: product
+                )
+            } catch {
+                receivedError = error as NSError
+            }
+        }
+
+        expect(self.storeKitWrapper.payment).toEventuallyNot(beNil())
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = try XCTUnwrap(self.storeKitWrapper.payment)
+        transaction.mockState = .failed
+        transaction.mockError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
+    }
+
     func testDoNotSendEmptyReceiptWhenMakingPurchase() {
         self.receiptFetcher.shouldReturnReceipt = false
 
