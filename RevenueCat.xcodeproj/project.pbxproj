@@ -207,6 +207,7 @@
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
 		570FAF4B2864EC2300D3C769 /* NonSubscriptionTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */; };
 		571E7AD4279F2D0C003B3606 /* StoreKitTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */; };
+		5721360F28B4602C006C46BE /* Purchases+nonasync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5721360E28B4602C006C46BE /* Purchases+nonasync.swift */; };
 		572247D127BEC28E00C524A7 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572247D027BEC28E00C524A7 /* Array+Extensions.swift */; };
 		572247F727BF1ADF00C524A7 /* ArrayExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */; };
 		5722482727C2BD3200C524A7 /* LockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5722482627C2BD3200C524A7 /* LockTests.swift */; };
@@ -707,6 +708,7 @@
 		570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ObjCAPITester.xcodeproj; path = Tests/APITesters/ObjCAPITester/ObjCAPITester.xcodeproj; sourceTree = "<group>"; };
 		570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransaction.swift; sourceTree = "<group>"; };
 		571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitTestHelpers.swift; sourceTree = "<group>"; };
+		5721360E28B4602C006C46BE /* Purchases+nonasync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+nonasync.swift"; sourceTree = "<group>"; };
 		572247D027BEC28E00C524A7 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtensionsTests.swift; sourceTree = "<group>"; };
 		5722482627C2BD3200C524A7 /* LockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockTests.swift; sourceTree = "<group>"; };
@@ -1243,6 +1245,7 @@
 				2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */,
 				F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */,
 				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
+				5721360E28B4602C006C46BE /* Purchases+nonasync.swift */,
 				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
 				57CFB98327FE2258002A6730 /* StoreKit2Setting.swift */,
 				57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */,
@@ -2328,6 +2331,7 @@
 				B3B5FBBC269D121B00104A0C /* Offerings.swift in Sources */,
 				9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */,
 				57CFB98427FE2258002A6730 /* StoreKit2Setting.swift in Sources */,
+				5721360F28B4602C006C46BE /* Purchases+nonasync.swift in Sources */,
 				57DE806D28074976008D6C6F /* Storefront.swift in Sources */,
 				B3B5FBB6269CED6400104A0C /* ErrorDetails.swift in Sources */,
 				2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */,

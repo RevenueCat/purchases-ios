@@ -37,6 +37,8 @@ func checkPurchasesAPI() {
         _ = Task.init {
             await checkAsyncMethods(purchases: purch)
         }
+
+        checkNonAsyncMethods(purch)
     }
 }
 
@@ -232,10 +234,17 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
         let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
 
-        // Deprecated
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
     } catch {}
+}
+
+func checkNonAsyncMethods(_ purchases: Purchases) {
+    #if os(iOS)
+    purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, Error>) in }
+    purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, Error>) in }
+    purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, Error>) in }
+    #endif
 }
 
 private func checkConfigure() -> Purchases {
