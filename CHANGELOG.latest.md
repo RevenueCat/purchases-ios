@@ -1,18 +1,6 @@
 ### Bugfixes
-* `TrialOrIntroPriceEligibilityChecker`: return `.noIntroOfferExists` if the product has no introductory offer (#1859) via NachoSoto (@NachoSoto)
-* `watchOS`: fixed crash on single-target apps (#1849) via NachoSoto (@NachoSoto)
+* Fixed crash on `async` SK1 cancelled purchase (#1869) via NachoSoto (@NachoSoto)
+### New Features
+* Added `beginRefundRequest` overload with completion block (#1861) via NachoSoto (@NachoSoto)
 ### Other Changes
-* Update fastlane-plugin-revenuecat_internal and fix release-train job (#1866) via Cesar de la Vega (@vegaro)
-* fix typo in comment (#1863) via Andy Boedo (@aboedo)
-* Use Dangerfile repository (#1864) via Cesar de la Vega (@vegaro)
-* `CircleCI`: added job for building SDK with `SPM` (#1860) via NachoSoto (@NachoSoto)
-* `Lock`: changed default implementation to use `NSLock` (#1819) via NachoSoto (@NachoSoto)
-* `Offering`/`StoreProductType`: `Sendable` conformance (#1826) via NachoSoto (@NachoSoto)
-* `ReceiptParser: Sendable` conformance (#1825) via NachoSoto (@NachoSoto)
-* `CustomerInfo: Sendable` conformance (#1824) via NachoSoto (@NachoSoto)
-* Added `Collection.onlyElement` (#1857) via NachoSoto (@NachoSoto)
-* README updates (#1856) via rglanz-rc (@rglanz-rc)
-* `IntegrationTests`: actually fail test if tests aren't configured (#1855) via NachoSoto (@NachoSoto)
-* `Configuration.with(usesStoreKit2IfAvailable:)`: removed "experimental" warning (#1845) via NachoSoto (@NachoSoto)
-* Build fix- Update package requirements for MagicWeather (#1852) via Joshua Liebowitz (@taquitos)
-* `Fastfile`: `test_tvos` lane had duplicate parameter (#1846) via NachoSoto (@NachoSoto)
+* Skip release if needed and adds automatic release to PR title and body (#1870) via Cesar de la Vega (@vegaro)
