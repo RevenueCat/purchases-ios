@@ -189,9 +189,9 @@ extension OfferingsManager {
 
 }
 
-extension OfferingsManager.Error: ErrorCodeConvertible {
+extension OfferingsManager.Error: PurchasesErrorConvertible {
 
-    var asPurchasesError: Error {
+    var asPurchasesError: PurchasesError {
         switch self {
         case let .backendError(backendError):
             return backendError.asPurchasesError

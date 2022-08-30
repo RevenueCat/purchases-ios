@@ -75,7 +75,7 @@ extension ErrorResponse {
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         var userInfo: [NSError.UserInfoKey: Any] = [
             .statusCode: statusCode.rawValue
         ]

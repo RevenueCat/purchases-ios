@@ -31,11 +31,11 @@ class ManageSubscriptionsHelper {
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
+    func showManageSubscriptions(completion: @escaping (Result<Void, PurchasesError>) -> Void) {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
         self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
                                               fetchPolicy: .cachedOrFetched) { result in
-            let result: Result<URL, Error> = result
+            let result: Result<URL, PurchasesError> = result
                 .mapError { error in
                     let message = Strings.failed_to_get_management_url_error_unknown(error: error)
                     return ErrorUtils.customerInfoError(withMessage: message.description, error: error)
@@ -79,7 +79,7 @@ extension ManageSubscriptionsHelper: @unchecked Sendable {}
 private extension ManageSubscriptionsHelper {
 
     func showAppleManageSubscriptions(managementURL: URL,
-                                      completion: @escaping (Result<Void, Error>) -> Void) {
+                                      completion: @escaping (Result<Void, PurchasesError>) -> Void) {
 #if os(iOS) && !targetEnvironment(macCatalyst)
         if #available(iOS 15.0, *),
            // showManageSubscriptions doesn't work on iOS apps running on Apple Silicon
@@ -95,7 +95,7 @@ private extension ManageSubscriptionsHelper {
         openURL(managementURL, completion: completion)
     }
 
-    func openURL(_ url: URL, completion: @escaping (Result<Void, Error>) -> Void) {
+    func openURL(_ url: URL, completion: @escaping (Result<Void, PurchasesError>) -> Void) {
 #if os(iOS)
         openURLIfNotAppExtension(url: url)
 #elseif os(macOS)
@@ -124,7 +124,7 @@ private extension ManageSubscriptionsHelper {
     @MainActor
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
-    func showSK2ManageSubscriptions() async -> Result<Void, Error> {
+    func showSK2ManageSubscriptions() async -> Result<Void, PurchasesError> {
         guard let application = systemInfo.sharedUIApplication,
               let windowScene = application.currentWindowScene else {
                   let message = Strings.failed_to_get_window_scene

@@ -375,7 +375,7 @@ extension Attribution {
     /// - Returns: the number of attributes that will be synced
     @discardableResult
     func syncSubscriberAttributes(
-        syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+        syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
         completion: (@Sendable () -> Void)? = nil
     ) -> Int {
         return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
@@ -389,7 +389,7 @@ extension Attribution {
 
     @discardableResult
     func syncAttributesForAllUsers(currentAppUserID: String,
-                                   syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+                                   syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
                                    completion: (@Sendable () -> Void)? = nil) -> Int {
         self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
                                                                    syncedAttribute: syncedAttribute,

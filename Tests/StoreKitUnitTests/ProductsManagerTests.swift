@@ -23,7 +23,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let manager = try createManager(storeKit2Setting: .disabled)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        var receivedProducts: Result<Set<StoreProduct>, Error>?
+        var receivedProducts: Result<Set<StoreProduct>, PurchasesError>?
 
         manager.products(withIdentifiers: Set([identifier])) { products in
             receivedProducts = products
@@ -46,7 +46,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let manager = try createManager(storeKit2Setting: .enabledForCompatibleDevices)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        var receivedProducts: Result<Set<StoreProduct>, Error>?
+        var receivedProducts: Result<Set<StoreProduct>, PurchasesError>?
 
         manager.products(withIdentifiers: Set([identifier])) { products in
             receivedProducts = products

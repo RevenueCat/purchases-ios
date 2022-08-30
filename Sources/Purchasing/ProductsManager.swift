@@ -53,7 +53,7 @@ class ProductsManager: NSObject {
     }
 
     func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
+                  completion: @escaping (Result<Set<StoreProduct>, PurchasesError>) -> Void) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             self.sk2Products(withIdentifiers: identifiers) { result in
@@ -75,9 +75,10 @@ class ProductsManager: NSObject {
         }
     }
 
+    /// - Throws: `ProductsFetcherSK2.Error`
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2StoreProducts(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        let products = try await productsFetcherSK2.products(identifiers: identifiers)
+        let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
 
         return Set(products)
     }
@@ -100,13 +101,13 @@ class ProductsManager: NSObject {
 private extension ProductsManager {
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
-                     completion: @escaping (Result<Set<SK1Product>, Error>) -> Void) {
+                     completion: @escaping (Result<Set<SK1Product>, PurchasesError>) -> Void) {
         return self.productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2Products(withIdentifiers identifiers: Set<String>,
-                     completion: @escaping (Result<Set<SK2StoreProduct>, Error>) -> Void) {
+                     completion: @escaping (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void) {
         _ = Task<Void, Never> {
             do {
                 let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
@@ -114,7 +115,7 @@ private extension ProductsManager {
                 completion(.success(Set(products)))
             } catch {
                 Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
-                completion(.failure(error))
+                completion(.failure(ErrorUtils.storeProblemError(error: error)))
             }
         }
     }

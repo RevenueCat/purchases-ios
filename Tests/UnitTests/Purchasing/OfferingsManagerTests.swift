@@ -154,7 +154,7 @@ extension OfferingsManagerTests {
     }
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsError() throws {
-        let error: Error = NSError(domain: SKErrorDomain, code: SKError.Code.storeProductNotAvailable.rawValue)
+        let error = ErrorUtils.unknownError()
 
         // given
         mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)

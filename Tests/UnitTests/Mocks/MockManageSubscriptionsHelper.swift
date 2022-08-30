@@ -16,12 +16,12 @@ import Foundation
 
 class MockManageSubscriptionsHelper: ManageSubscriptionsHelper {
 
-    var mockError: Error?
+    var mockError: PurchasesError?
 
 #if os(iOS) || os(macOS)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    override func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
+    override func showManageSubscriptions(completion: @escaping (Result<Void, PurchasesError>) -> Void) {
         if let error = mockError {
             completion(.failure(error))
         } else {

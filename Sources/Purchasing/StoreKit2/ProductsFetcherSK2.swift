@@ -26,6 +26,7 @@ actor ProductsFetcherSK2 {
     /// Getter is declared as `internal` for testing purposes only.
     private(set) var cachedProductsByIdentifier: [String: SK2StoreProduct] = [:]
 
+    /// - Throws: `ProductsFetcherSK2.Error`
     func products(identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
         do {
             if let cachedProducts = await self.cachedProducts(withIdentifiers: identifiers) {

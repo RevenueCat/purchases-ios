@@ -19,10 +19,10 @@ import XCTest
 
 class BaseErrorTests: TestCase {
 
-    /// Compares the result of calling `asPurchasesError` on a `ErrorCodeConvertible`
+    /// Compares the result of calling `asPurchasesError` on a `PurchasesErrorConvertible`
     /// against the expected `ErrorCode`.
     final func verifyPurchasesError(
-        _ error: ErrorCodeConvertible,
+        _ error: PurchasesErrorConvertible,
         expectedCode: ErrorCode,
         underlyingError: Error? = nil,
         userInfoKeys: [NSError.UserInfoKey]? = nil,
