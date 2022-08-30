@@ -82,15 +82,27 @@ private extension IntroEligibilityStatus {
 /**
  Holds the introductory price status
  */
-@objc(RCIntroEligibility) public class IntroEligibility: NSObject {
+@objc(RCIntroEligibility) public final class IntroEligibility: NSObject {
 
     /**
      The introductory price eligibility status
      */
     @objc public let status: IntroEligibilityStatus
 
+    init(eligibilityStatus status: IntroEligibilityStatus) {
+        self.status = status
+    }
+
+    @objc private override init() {
+        self.status = .unknown
+    }
+
+}
+
+extension IntroEligibility {
+
     public override var description: String {
-        switch status {
+        switch self.status {
         case .eligible:
             return "Eligible for trial or introductory price."
         case .ineligible:
@@ -104,12 +116,6 @@ private extension IntroEligibilityStatus {
         }
     }
 
-    init(eligibilityStatus status: IntroEligibilityStatus) {
-        self.status = status
-    }
-
-    @objc private override init() {
-        self.status = .unknown
-    }
-
 }
+
+extension IntroEligibility: Sendable {}

@@ -39,6 +39,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         self.parser = ReceiptParser()
     }
 
+    @MainActor
     func testReceiptParserParsesEmptyReceipt() async throws {
         let data = try await XCTAsyncUnwrap(await self.receiptFetcher.receiptData(refreshPolicy: .always))
 
@@ -61,7 +62,8 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         let product = try await fetchSk2Product()
         _ = try await product.purchase()
 
-        let data = try await XCTAsyncUnwrap(await receiptFetcher.receiptData(refreshPolicy: .always))
+        let receiptData = await self.receiptFetcher.receiptData(refreshPolicy: .always)
+        let data = try XCTUnwrap(receiptData)
 
         let receipt = try self.parser.parse(from: data)
 

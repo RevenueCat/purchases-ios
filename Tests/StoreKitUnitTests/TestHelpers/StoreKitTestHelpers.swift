@@ -28,6 +28,7 @@ extension StoreKitConfigTestCase {
         return product
     }
 
+    @MainActor
     func createTransactionWithPurchase() async throws -> Transaction {
         let product = try await self.simulateAnyPurchase()
 
