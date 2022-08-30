@@ -38,6 +38,13 @@ class ErrorUtilsTests: TestCase {
         super.tearDown()
     }
 
+    func testErrorsCanBeConvertedToErrorCode() throws {
+        let error = ErrorUtils.customerInfoError()
+        let errorCode = try XCTUnwrap(error as? ErrorCode, "Error couldn't be converted to ErrorCode")
+
+        expect(errorCode).to(matchError(error))
+    }
+
     func testPurchaseErrorsAreLoggedAsApppleErrors() {
         let underlyingError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentInvalid.rawValue)
         let error = ErrorUtils.purchaseNotAllowedError(error: underlyingError)
