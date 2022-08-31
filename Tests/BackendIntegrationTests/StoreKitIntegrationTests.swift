@@ -455,7 +455,11 @@ private extension StoreKit1IntegrationTests {
             description: "Expected Entitlement. Got: \(entitlements)"
         )
 
-        return try XCTUnwrap(entitlements[Self.entitlementIdentifier])
+        let entitlement = try XCTUnwrap(entitlements[Self.entitlementIdentifier])
+        expect(file: file, line: line, entitlement.isActive)
+            .to(beTrue(), description: "Entitlement is not active")
+
+        return entitlement
     }
 
     func assertNoActiveSubscription(
