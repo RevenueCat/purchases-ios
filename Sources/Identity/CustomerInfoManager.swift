@@ -239,8 +239,8 @@ class CustomerInfoManager {
             }
 
             self.lastSentCustomerInfo = customerInfo
-            operationDispatcher.dispatchOnMainThread {
-                for closure in self.customerInfoObserversByIdentifier.values {
+            self.operationDispatcher.dispatchOnMainThread { [observers = self.customerInfoObserversByIdentifier] in
+                for closure in observers.values {
                     closure(customerInfo)
                 }
             }
