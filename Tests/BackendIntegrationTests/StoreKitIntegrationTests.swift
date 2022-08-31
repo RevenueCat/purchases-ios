@@ -56,8 +56,12 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(receivedOfferings.all).toNot(beEmpty())
     }
 
-    func testCanMakePurchase() async throws {
+    func testCanPurchasePackage() async throws {
         try await self.purchaseMonthlyOffering()
+    }
+
+    func testCanPurchaseProduct() async throws {
+        try await self.purchaseMonthlyProduct()
     }
 
     func testSubscriptionIsSandbox() async throws {
@@ -399,6 +403,20 @@ private extension StoreKit1IntegrationTests {
         line: UInt = #line
     ) async throws -> PurchaseResultData {
         let data = try await Purchases.shared.purchase(package: self.monthlyPackage)
+
+        try self.verifyEntitlementWentThrough(data.customerInfo,
+                                              file: file,
+                                              line: line)
+
+        return data
+    }
+
+    @discardableResult
+    func purchaseMonthlyProduct(
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let data = try await Purchases.shared.purchase(product: self.monthlyPackage.storeProduct)
 
         try self.verifyEntitlementWentThrough(data.customerInfo,
                                               file: file,
