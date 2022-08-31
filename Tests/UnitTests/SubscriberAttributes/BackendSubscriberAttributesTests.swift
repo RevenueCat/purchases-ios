@@ -170,13 +170,7 @@ class BackendSubscriberAttributesTests: TestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        var loggedMessages = [String]()
-        let originalLogHandler = Logger.logHandler
-        defer { Logger.logHandler = originalLogHandler }
-
-        Logger.logHandler = { _, message, _, _, _ in
-            loggedMessages.append(message)
-        }
+        let logHandler = TestLogHandler()
 
         var receivedCustomerInfo: CustomerInfo?
         backend.post(receiptData: receiptData,
@@ -190,6 +184,8 @@ class BackendSubscriberAttributesTests: TestCase {
         }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
+
+        let loggedMessages = logHandler.messages.map(\.message)
 
         expect(receivedCustomerInfo) == CustomerInfo(testData: self.validSubscriberResponse)
         expect(loggedMessages).to(

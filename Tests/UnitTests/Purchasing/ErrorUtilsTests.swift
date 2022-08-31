@@ -20,20 +20,16 @@ import StoreKit
 
 class ErrorUtilsTests: TestCase {
 
-    private var originalLogHandler: VerboseLogHandler!
-    private var loggedMessages: [(level: LogLevel, message: String)] = []
+    private var testLogHandler: TestLogHandler!
 
     override func setUp() {
         super.setUp()
 
-        self.originalLogHandler = Logger.logHandler
-        Logger.logHandler = { [weak self] level, message, _, _, _ in
-            self?.loggedMessages.append((level, message))
-        }
+        self.testLogHandler = TestLogHandler()
     }
 
     override func tearDown() {
-        Logger.logHandler = self.originalLogHandler
+        self.testLogHandler = nil
 
         super.tearDown()
     }
@@ -134,6 +130,10 @@ class ErrorUtilsTests: TestCase {
 
     // MARK: -
 
+    private var loggedMessages: [TestLogHandler.MessageData] {
+        return self.testLogHandler.messages
+    }
+
     private func expectLoggedError(
         _ error: Error,
         _ intent: LogIntent,
@@ -149,15 +149,17 @@ class ErrorUtilsTests: TestCase {
             .compactMap { $0 }
             .joined(separator: " ")
 
+        let messages = self.loggedMessages
+
         expect(
             file: file,
             line: line,
-            self.loggedMessages
+            messages
         ).to(
             containElementSatisfying { level, message in
                 level == .error && message == expectedMessage
             },
-            description: "Error '\(expectedMessage)' not found. Logged messages: \(self.loggedMessages)"
+            description: "Error '\(expectedMessage)' not found. Logged messages: \(messages)"
         )
     }
 
