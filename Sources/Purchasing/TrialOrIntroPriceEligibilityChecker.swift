@@ -142,11 +142,9 @@ fileprivate extension TrialOrIntroPriceEligibilityChecker {
                                              completion: completion)
                     return
                 }
-                var convertedEligibility: [String: IntroEligibility] = [:]
-                for (key, value) in receivedEligibility {
-                    let introEligibility = IntroEligibility(eligibilityStatus: value)
-                    convertedEligibility[key] = introEligibility
-                }
+
+                let convertedEligibility = receivedEligibility.mapValues(IntroEligibility.init)
+
                 self.operationDispatcher.dispatchOnMainThread {
                     completion(convertedEligibility)
                 }
@@ -207,14 +205,16 @@ extension TrialOrIntroPriceEligibilityChecker {
         self.backend.offerings.getIntroEligibility(appUserID: self.appUserID,
                                                    receiptData: receiptData,
                                                    productIdentifiers: productIdentifiers) { backendResult, error in
-            var result = backendResult
-            if let error = error {
-                Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
-                let resultWithUnknowns = productIdentifiers.reduce(into: [:]) { resultDict, productId in
-                    resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
+            let result: [String: IntroEligibility] = {
+                if let error = error {
+                    Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
+                    return Set(productIdentifiers)
+                        .dictionaryWithValues { _ in IntroEligibility(eligibilityStatus: .unknown) }
+                } else {
+                    return backendResult
                 }
-                result = resultWithUnknowns
-            }
+            }()
+
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result)
             }
@@ -222,3 +222,7 @@ extension TrialOrIntroPriceEligibilityChecker {
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension TrialOrIntroPriceEligibilityChecker: @unchecked Sendable {}

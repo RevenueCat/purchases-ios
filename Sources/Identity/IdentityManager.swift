@@ -13,16 +13,16 @@
 
 import Foundation
 
-protocol CurrentUserProvider {
+protocol CurrentUserProvider: Sendable {
 
     var currentAppUserID: String { get }
     var currentUserIsAnonymous: Bool { get }
 
 }
 
-protocol AttributeSyncing {
+protocol AttributeSyncing: Sendable {
 
-    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping (() -> Void))
+    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping @Sendable () -> Void)
 }
 
 class IdentityManager: CurrentUserProvider {
@@ -141,6 +141,12 @@ private extension IdentityManager {
         completion(nil)
     }
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension IdentityManager: @unchecked Sendable {}
+
+// MARK: - Private
 
 private extension IdentityManager {
 

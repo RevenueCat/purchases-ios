@@ -33,3 +33,5 @@ public enum CacheFetchPolicy: Int {
     public static let `default`: Self = .cachedOrFetched
 
 }
+
+extension CacheFetchPolicy: Sendable {}

@@ -19,7 +19,7 @@ class MockAttributeSyncing: AttributeSyncing {
     var invokedSyncAttributesCount = 0
     var invokedSyncAttributesUserIDs: [String] = []
 
-    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping (() -> Void)) {
+    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping @Sendable () -> Void) {
         self.invokedSyncAttributes = true
         self.invokedSyncAttributesCount += 1
         self.invokedSyncAttributesUserIDs.append(currentAppUserID)
@@ -28,3 +28,7 @@ class MockAttributeSyncing: AttributeSyncing {
     }
 
 }
+
+// `AttributeSyncing` requires types to be `Sendable`.
+// This type isn't, but it's only meant for testing.
+extension MockAttributeSyncing: @unchecked Sendable {}

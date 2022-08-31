@@ -14,7 +14,7 @@
 import Foundation
 
 /// A type that can determine if the current environment is sandbox.
-protocol SandboxEnvironmentDetector {
+protocol SandboxEnvironmentDetector: Sendable {
 
     var isSandbox: Bool { get }
 
@@ -45,3 +45,8 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
     #endif
 
 }
+
+#if swift(<5.8)
+// `Bundle` is not `Sendable` as of Swift 5.7, but this class performs no mutations.
+extension BundleSandboxEnvironmentDetector: @unchecked Sendable {}
+#endif

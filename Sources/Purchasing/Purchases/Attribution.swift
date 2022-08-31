@@ -23,7 +23,7 @@ import Foundation
  * Key names starting with "$" are reserved names used by RevenueCat. For a full list of key restrictions refer
  * [to our guide](https://docs.revenuecat.com/docs/subscriber-attributes)
  */
-@objc(RCAttribution) public class Attribution: NSObject {
+@objc(RCAttribution) public final class Attribution: NSObject {
 
     private let subscriberAttributesManager: SubscriberAttributesManager
     private let currentUserProvider: CurrentUserProvider
@@ -352,6 +352,10 @@ public extension Attribution {
 
 }
 
+// @unchecked because:
+// - It contains mutable state (`weak var delegate`).
+extension Attribution: @unchecked Sendable {}
+
 extension Attribution: SubscriberAttributesManagerDelegate {
 
     func subscriberAttributesManager(
@@ -371,8 +375,8 @@ extension Attribution {
     /// - Returns: the number of attributes that will be synced
     @discardableResult
     func syncSubscriberAttributes(
-        syncedAttribute: ((Error?) -> Void)? = nil,
-        completion: (() -> Void)? = nil
+        syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+        completion: (@Sendable () -> Void)? = nil
     ) -> Int {
         return self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
                                                                           syncedAttribute: syncedAttribute,
@@ -385,8 +389,8 @@ extension Attribution {
 
     @discardableResult
     func syncAttributesForAllUsers(currentAppUserID: String,
-                                   syncedAttribute: ((Error?) -> Void)? = nil,
-                                   completion: (() -> Void)? = nil) -> Int {
+                                   syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+                                   completion: (@Sendable () -> Void)? = nil) -> Int {
         self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
                                                                    syncedAttribute: syncedAttribute,
                                                                    completion: completion)
@@ -398,7 +402,7 @@ extension Attribution {
 
 }
 
-protocol AttributionDelegate: AnyObject {
+protocol AttributionDelegate: AnyObject, Sendable {
 
     func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
                      forUserID userID: String)

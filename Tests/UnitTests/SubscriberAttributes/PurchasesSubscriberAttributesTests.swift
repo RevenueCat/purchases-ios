@@ -721,15 +721,15 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.mockBackend.stubbedPostReceiptResult = .failure(
             .networkError(.errorResponse(
                 .init(code: .invalidAPIKey, message: "Invalid credentials"),
-                400)
-            )
+                400
+            ))
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        expect(self.mockBackend.invokedPostReceiptData) == true
-        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
+        expect(self.mockBackend.invokedPostReceiptData).toEventually(equal(true))
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes).toEventually(equal(true))
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.syncedAttributes) == mockAttributes
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID

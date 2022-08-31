@@ -43,6 +43,10 @@ class AttributionDataMigrator {
 
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension AttributionDataMigrator: @unchecked Sendable {}
+
 private extension AttributionDataMigrator {
 
     // This implementation follows the backend mapping of the attribution data to subscriber attributes

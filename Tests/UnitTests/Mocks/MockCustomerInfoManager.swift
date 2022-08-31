@@ -8,20 +8,23 @@ import Foundation
 
 // swiftlint:disable large_tuple
 // swiftlint:disable line_length
+// Note: this class is implicitly `@unchecked Sendable` through its parent
+// even though it's not actually thread safe.
 class MockCustomerInfoManager: CustomerInfoManager {
+
     var invokedDelegateGetter = false
     var invokedDelegateGetterCount = 0
 
     var invokedFetchAndCacheCustomerInfo = false
     var invokedFetchAndCacheCustomerInfoCount = 0
-    var invokedFetchAndCacheCustomerInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((Result<CustomerInfo, BackendError>) -> Void)?)?
+    var invokedFetchAndCacheCustomerInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: CustomerInfoCompletion?)?
     var invokedFetchAndCacheCustomerInfoParametersList = [(appUserID: String,
                                                            isAppBackgrounded: Bool,
-                                                           completion: ((Result<CustomerInfo, BackendError>) -> Void)?)]()
+                                                           completion: CustomerInfoCompletion?)]()
 
     override func fetchAndCacheCustomerInfo(appUserID: String,
                                             isAppBackgrounded: Bool,
-                                            completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
+                                            completion: CustomerInfoCompletion?) {
         invokedFetchAndCacheCustomerInfo = true
         invokedFetchAndCacheCustomerInfoCount += 1
         invokedFetchAndCacheCustomerInfoParameters = (appUserID, isAppBackgrounded, completion)
@@ -30,18 +33,18 @@ class MockCustomerInfoManager: CustomerInfoManager {
 
     var invokedFetchAndCacheCustomerInfoIfStale = false
     var invokedFetchAndCacheCustomerInfoIfStaleCount = 0
-    var invokedFetchAndCacheCustomerInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((Result<CustomerInfo, BackendError>) -> Void)?)?
+    var invokedFetchAndCacheCustomerInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: CustomerInfoCompletion?)?
     var invokedFetchAndCacheCustomerInfoIfStaleParametersList = [(appUserID: String,
                                                                   isAppBackgrounded: Bool,
-                                                                  completion: ((Result<CustomerInfo, BackendError>) -> Void)?)]()
+                                                                  completion: CustomerInfoCompletion?)]()
 
     override func fetchAndCacheCustomerInfoIfStale(appUserID: String,
                                                    isAppBackgrounded: Bool,
-                                                   completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
-        invokedFetchAndCacheCustomerInfoIfStale = true
-        invokedFetchAndCacheCustomerInfoIfStaleCount += 1
-        invokedFetchAndCacheCustomerInfoIfStaleParameters = (appUserID, isAppBackgrounded, completion)
-        invokedFetchAndCacheCustomerInfoIfStaleParametersList.append((appUserID, isAppBackgrounded, completion))
+                                                   completion: CustomerInfoCompletion?) {
+        self.invokedFetchAndCacheCustomerInfoIfStale = true
+        self.invokedFetchAndCacheCustomerInfoIfStaleCount += 1
+        self.invokedFetchAndCacheCustomerInfoIfStaleParameters = (appUserID, isAppBackgrounded, completion)
+        self.invokedFetchAndCacheCustomerInfoIfStaleParametersList.append((appUserID, isAppBackgrounded, completion))
     }
 
     var invokedSendCachedCustomerInfoIfAvailable = false
@@ -50,31 +53,34 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var invokedSendCachedCustomerInfoIfAvailableParametersList = [(appUserID: String, Void)]()
 
     override func sendCachedCustomerInfoIfAvailable(appUserID: String) {
-        invokedSendCachedCustomerInfoIfAvailable = true
-        invokedSendCachedCustomerInfoIfAvailableCount += 1
-        invokedSendCachedCustomerInfoIfAvailableParameters = (appUserID, ())
-        invokedSendCachedCustomerInfoIfAvailableParametersList.append((appUserID, ()))
+        self.invokedSendCachedCustomerInfoIfAvailable = true
+        self.invokedSendCachedCustomerInfoIfAvailableCount += 1
+        self.invokedSendCachedCustomerInfoIfAvailableParameters = (appUserID, ())
+        self.invokedSendCachedCustomerInfoIfAvailableParametersList.append((appUserID, ()))
     }
 
     var invokedCustomerInfo = false
     var invokedCustomerInfoCount = 0
     var invokedCustomerInfoParameters: (appUserID: String,
                                         fetchPolicy: CacheFetchPolicy,
-                                        completion: ((Result<CustomerInfo, BackendError>) -> Void)?)?
+                                        completion: CustomerInfoCompletion?)?
     var invokedCustomerInfoParametersList: [(appUserID: String,
                                              fetchPolicy: CacheFetchPolicy,
-                                             completion: ((Result<CustomerInfo, BackendError>) -> Void)?)] = []
+                                             completion: CustomerInfoCompletion?)] = []
 
     var stubbedCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
     override func customerInfo(appUserID: String,
                                fetchPolicy: CacheFetchPolicy,
-                               completion: ((Result<CustomerInfo, BackendError>) -> Void)?) {
-        invokedCustomerInfo = true
-        invokedCustomerInfoCount += 1
-        invokedCustomerInfoParameters = (appUserID, fetchPolicy, completion)
-        invokedCustomerInfoParametersList.append((appUserID, fetchPolicy, completion))
-        completion?(self.stubbedCustomerInfoResult)
+                               completion: CustomerInfoCompletion?) {
+        self.invokedCustomerInfo = true
+        self.invokedCustomerInfoCount += 1
+        self.invokedCustomerInfoParameters = (appUserID, fetchPolicy, completion)
+        self.invokedCustomerInfoParametersList.append((appUserID, fetchPolicy, completion))
+
+        OperationDispatcher.dispatchOnMainActor {
+            completion?(self.stubbedCustomerInfoResult)
+        }
     }
 
     var invokedCachedCustomerInfo = false
@@ -84,11 +90,12 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var stubbedCachedCustomerInfoResult: CustomerInfo!
 
     override func cachedCustomerInfo(appUserID: String) -> CustomerInfo {
-        invokedCachedCustomerInfo = true
-        invokedCachedCustomerInfoCount += 1
-        invokedCachedCustomerInfoParameters = (appUserID, ())
-        invokedCachedCustomerInfoParametersList.append((appUserID, ()))
-        return stubbedCachedCustomerInfoResult
+        self.invokedCachedCustomerInfo = true
+        self.invokedCachedCustomerInfoCount += 1
+        self.invokedCachedCustomerInfoParameters = (appUserID, ())
+        self.invokedCachedCustomerInfoParametersList.append((appUserID, ()))
+
+        return self.stubbedCachedCustomerInfoResult
     }
 
     var invokedCacheCustomerInfo = false
@@ -97,10 +104,10 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var invokedCacheCustomerInfoParametersList = [(info: CustomerInfo, appUserID: String)]()
 
     override func cache(customerInfo: CustomerInfo, appUserID: String) {
-        invokedCacheCustomerInfo = true
-        invokedCacheCustomerInfoCount += 1
-        invokedCacheCustomerInfoParameters = (customerInfo, appUserID)
-        invokedCacheCustomerInfoParametersList.append((customerInfo, appUserID))
+        self.invokedCacheCustomerInfo = true
+        self.invokedCacheCustomerInfoCount += 1
+        self.invokedCacheCustomerInfoParameters = (customerInfo, appUserID)
+        self.invokedCacheCustomerInfoParametersList.append((customerInfo, appUserID))
     }
 
     var invokedClearCustomerInfoCache = false
@@ -109,9 +116,9 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var invokedClearCustomerInfoCacheParametersList = [(appUserID: String, Void)]()
 
     override func clearCustomerInfoCache(forAppUserID appUserID: String) {
-        invokedClearCustomerInfoCache = true
-        invokedClearCustomerInfoCacheCount += 1
-        invokedClearCustomerInfoCacheParameters = (appUserID, ())
-        invokedClearCustomerInfoCacheParametersList.append((appUserID, ()))
+        self.invokedClearCustomerInfoCache = true
+        self.invokedClearCustomerInfoCacheCount += 1
+        self.invokedClearCustomerInfoCacheParameters = (appUserID, ())
+        self.invokedClearCustomerInfoCacheParametersList.append((appUserID, ()))
     }
 }

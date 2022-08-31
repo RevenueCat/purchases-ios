@@ -26,6 +26,7 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate {
 
 }
 
+@MainActor
 class BaseBackendIntegrationTests: XCTestCase {
 
     private var userDefaults: UserDefaults!
@@ -40,6 +41,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector()
     }
 
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
@@ -60,6 +62,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.configurePurchases()
     }
 
+    @MainActor
     override func tearDown() {
         Purchases.clearSingleton()
 

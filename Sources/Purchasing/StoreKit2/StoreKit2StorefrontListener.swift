@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-protocol StoreKit2StorefrontListenerDelegate: AnyObject {
+protocol StoreKit2StorefrontListenerDelegate: AnyObject, Sendable {
 
     func storefrontDidUpdate()
 
@@ -40,9 +40,9 @@ class StoreKit2StorefrontListener {
     func listenForStorefrontChanges() {
         self.taskHandle = Task { [weak self] in
             for await _ in StoreKit.Storefront.updates {
-                guard let self = self else { break }
-                await MainActor.run {
-                    self.delegate?.storefrontDidUpdate()
+                guard let delegate = self?.delegate else { break }
+                await MainActor.run { @Sendable in
+                    delegate.storefrontDidUpdate()
                 }
             }
         }

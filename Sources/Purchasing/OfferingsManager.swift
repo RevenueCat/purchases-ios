@@ -37,7 +37,7 @@ class OfferingsManager {
         self.productsManager = productsManager
     }
 
-    func offerings(appUserID: String, completion: ((Result<Offerings, Error>) -> Void)?) {
+    func offerings(appUserID: String, completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?) {
         guard let cachedOfferings = self.deviceCache.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
             systemInfo.isApplicationBackgrounded { isAppBackgrounded in
@@ -69,7 +69,7 @@ class OfferingsManager {
     func updateOfferingsCache(
         appUserID: String,
         isAppBackgrounded: Bool,
-        completion: ((Result<Offerings, Error>) -> Void)?
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         self.backend.offerings.getOfferings(appUserID: appUserID, withRandomDelay: isAppBackgrounded) { result in
             switch result {
@@ -106,7 +106,7 @@ private extension OfferingsManager {
 
     func handleOfferingsBackendResult(
         with response: OfferingsResponse,
-        completion: ((Result<Offerings, Error>) -> Void)?
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         let productIdentifiers = response.productIdentifiers
 
@@ -117,7 +117,7 @@ private extension OfferingsManager {
             return
         }
 
-        productsManager.products(withIdentifiers: productIdentifiers) { result in
+        self.productsManager.products(withIdentifiers: productIdentifiers) { result in
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
@@ -148,23 +148,34 @@ private extension OfferingsManager {
         }
     }
 
-    func handleOfferingsUpdateError(_ error: Error, completion: ((Result<Offerings, Error>) -> Void)?) {
+    func handleOfferingsUpdateError(
+        _ error: Error,
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+    ) {
         Logger.appleError(Strings.offering.fetching_offerings_error(error: error,
                                                                     underlyingError: error.underlyingError))
-        deviceCache.clearOfferingsCacheTimestamp()
-        dispatchCompletionOnMainThreadIfPossible(completion, result: .failure(error))
+        self.deviceCache.clearOfferingsCacheTimestamp()
+        self.dispatchCompletionOnMainThreadIfPossible(completion, result: .failure(error))
     }
 
-    func dispatchCompletionOnMainThreadIfPossible(_ completion: ((Result<Offerings, Error>) -> Void)?,
-                                                  result: Result<Offerings, Error>) {
+    func dispatchCompletionOnMainThreadIfPossible(
+        _ completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?,
+        result: Result<Offerings, Error>
+    ) {
         if let completion = completion {
-            operationDispatcher.dispatchOnMainThread {
+            self.operationDispatcher.dispatchOnMainActor {
                 completion(result)
             }
         }
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension OfferingsManager: @unchecked Sendable {}
+
+// MARK: - Errors
 
 extension OfferingsManager {
 

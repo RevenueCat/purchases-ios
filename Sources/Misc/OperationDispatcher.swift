@@ -16,27 +16,52 @@ import Foundation
 
 class OperationDispatcher {
 
-    private let mainQueue = DispatchQueue.main
-    private let workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
+    private let mainQueue: DispatchQueue = .main
+    private let workerQueue: DispatchQueue = .init(label: "OperationDispatcherWorkerQueue")
     private let maxJitterInSeconds: Double = 5
 
     static let `default`: OperationDispatcher = .init()
 
-    func dispatchOnMainThread(_ block: @escaping () -> Void) {
+    func dispatchOnMainThread(_ block: @escaping @Sendable () -> Void) {
         if Thread.isMainThread {
             block()
         } else {
-            mainQueue.async(execute: block)
+            self.mainQueue.async(execute: block)
         }
     }
 
-    func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping () -> Void) {
+    func dispatchOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
+        Self.dispatchOnMainActor(block)
+    }
+
+    func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping @Sendable () -> Void) {
         if withRandomDelay {
-            let delay = Double.random(in: 0..<maxJitterInSeconds)
-            workerQueue.asyncAfter(deadline: .now() + delay, execute: block)
+            let delay = Double.random(in: 0..<self.maxJitterInSeconds)
+            self.workerQueue.asyncAfter(deadline: .now() + delay, execute: block)
         } else {
-            workerQueue.async(execute: block)
+            self.workerQueue.async(execute: block)
         }
     }
 
 }
+
+extension OperationDispatcher {
+
+    static func dispatchOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
+        if #available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) {
+            _ = Task {
+                await MainActor.run {
+                    block()
+                }
+            }
+        } else {
+            DispatchQueue.main.async(execute: block)
+        }
+    }
+
+}
+
+#if swift(<5.8)
+// `DispatchQueue` is not `Sendable` as of Swift 5.7, but this class performs no mutations.
+extension OperationDispatcher: @unchecked Sendable {}
+#endif

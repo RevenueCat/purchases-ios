@@ -21,7 +21,7 @@ import StoreKit
 /// to the user in your app. Storefront information may not be used to develop or enhance a user profile,
 /// or track customers for advertising or marketing purposes.
 @objc(RCStorefront)
-public class Storefront: NSObject, StorefrontType {
+public final class Storefront: NSObject, StorefrontType {
 
     private let storefront: StorefrontType
 
@@ -69,6 +69,8 @@ public class Storefront: NSObject, StorefrontType {
 
 }
 
+extension Storefront: Sendable {}
+
 public extension Storefront {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
@@ -108,7 +110,7 @@ public extension Storefront {
 // MARK: -
 
 /// A type containing the location and unique identifier of an Apple App Store storefront.
-internal protocol StorefrontType {
+internal protocol StorefrontType: Sendable {
 
     /// The three-letter code representing the country or region
     /// associated with the App Store storefront.

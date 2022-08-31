@@ -28,3 +28,7 @@ public class MockPurchasesDelegate: NSObject, PurchasesDelegate {
     }
 
 }
+
+// `PurchasesDelegate` requires types to be `Sendable`.
+// This type isn't, but it's only meant for testing.
+extension MockPurchasesDelegate: @unchecked Sendable {}

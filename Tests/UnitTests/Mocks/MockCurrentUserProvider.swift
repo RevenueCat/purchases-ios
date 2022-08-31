@@ -35,3 +35,7 @@ final class MockCurrentUserProvider: CurrentUserProvider {
     private let mockAnonymousID = IdentityManager.generateRandomID()
 
 }
+
+// `CurrentUserProvider` requires types to be `Sendable`.
+// This type isn't, but it's only meant for testing.
+extension MockCurrentUserProvider: @unchecked Sendable {}

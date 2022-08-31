@@ -66,6 +66,12 @@ class OfferingsFactory {
 
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension OfferingsFactory: @unchecked Sendable {}
+
+// MARK: - Private
+
 private extension Package {
 
     convenience init(

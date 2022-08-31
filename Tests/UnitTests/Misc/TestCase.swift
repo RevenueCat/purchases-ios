@@ -30,6 +30,26 @@ class TestCase: XCTestCase {
         XCTestObservationCenter.shared.removeTestObserver(CurrentTestCaseTracker.shared)
     }
 
+    // MARK: - MainActor overrides
+
+    // Note: these arent't required for Xcode 14+, but solve warnings prior to that.
+
+    #if swift(<5.7)
+
+    @MainActor
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+    }
+
+    @MainActor
+    override func tearDown() {
+        super.tearDown()
+    }
+
+    #endif
+
+    // MARK: -
+
 }
 
 private enum SnapshotTests {

@@ -3,6 +3,7 @@ import XCTest
 
 @testable import RevenueCat
 
+@MainActor
 class BaseCustomerInfoManagerTests: TestCase {
     fileprivate static let appUserID = "app_user_id"
 

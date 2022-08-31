@@ -24,7 +24,11 @@ class ProductsManager: NSObject {
 
     private let systemInfo: SystemInfo
 
+    #if swift(>=5.7)
+    private let _productsFetcherSK2: (any Sendable)?
+    #else
     private let _productsFetcherSK2: Any?
+    #endif
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private var productsFetcherSK2: ProductsFetcherSK2 {
@@ -79,7 +83,7 @@ class ProductsManager: NSObject {
     }
 
     func cacheProduct(_ product: SK1Product) {
-        productsFetcherSK1.cacheProduct(product)
+        self.productsFetcherSK1.cacheProduct(product)
     }
 
     func invalidateAndReFetchCachedProductsIfAppropiate() {
@@ -97,7 +101,7 @@ private extension ProductsManager {
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK1Product>, Error>) -> Void) {
-        return productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
+        return self.productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -116,7 +120,7 @@ private extension ProductsManager {
     }
 
     func invalidateAndReFetchCachedSK1Products() {
-        productsFetcherSK1.clearCache { [productsFetcherSK1] removedProductIdentifiers in
+        self.productsFetcherSK1.clearCache { [productsFetcherSK1] removedProductIdentifiers in
             guard !removedProductIdentifiers.isEmpty else { return }
             productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { _ in })
         }
@@ -139,3 +143,8 @@ private extension ProductsManager {
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+// However it contains no mutable state, and its members are all `Sendable`.
+extension ProductsManager: @unchecked Sendable {}

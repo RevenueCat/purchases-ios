@@ -75,6 +75,12 @@ class IntroEligibilityCalculator {
     }
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension IntroEligibilityCalculator: @unchecked Sendable {}
+
+// MARK: - Private
+
 @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 private extension IntroEligibilityCalculator {
 

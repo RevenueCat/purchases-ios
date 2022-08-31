@@ -68,6 +68,12 @@ class ManageSubscriptionsHelper {
 
 }
 
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension ManageSubscriptionsHelper: @unchecked Sendable {}
+
+// MARK: - Private
+
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension ManageSubscriptionsHelper {

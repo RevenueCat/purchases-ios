@@ -64,7 +64,7 @@ class SystemInfo {
     }
 
     static var platformHeader: String {
-        return Self.forceUniversalAppStore ? "iOS" : platformHeaderConstant
+        return Self.forceUniversalAppStore ? "iOS" : self.platformHeaderConstant
     }
 
     var identifierForVendor: String? {
@@ -144,6 +144,11 @@ class SystemInfo {
 }
 
 extension SystemInfo: SandboxEnvironmentDetector {}
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+// - It includes `Bundle`, which isn't `Sendable` as of Swift 5.7.
+extension SystemInfo: @unchecked Sendable {}
 
 extension SystemInfo {
 

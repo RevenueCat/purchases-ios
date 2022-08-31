@@ -139,8 +139,8 @@ class SubscriberAttributesManager {
     /// - Returns: the number of attributes that will be synced
     @discardableResult
     func syncAttributesForAllUsers(currentAppUserID: String,
-                                   syncedAttribute: ((Error?) -> Void)? = nil,
-                                   completion: (() -> Void)? = nil) -> Int {
+                                   syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+                                   completion: (@Sendable () -> Void)? = nil) -> Int {
         let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
         let total = unsyncedAttributesForAllUsers.count
 
@@ -235,7 +235,7 @@ class SubscriberAttributesManager {
 
 extension SubscriberAttributesManager: AttributeSyncing {
 
-    func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping (() -> Void)) {
+    func syncSubscriberAttributes(currentAppUserID: String, completion: @Sendable @escaping () -> Void) {
         self.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
                                        syncedAttribute: nil,
                                        completion: completion)
@@ -294,7 +294,14 @@ private extension SubscriberAttributesManager {
 
 }
 
-protocol SubscriberAttributesManagerDelegate: AnyObject {
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+// - It has a mutable `delegate` because it needs to be, as `weak`.
+extension SubscriberAttributesManager: @unchecked Sendable {}
+
+// MARK: -
+
+protocol SubscriberAttributesManagerDelegate: AnyObject, Sendable {
 
     func subscriberAttributesManager(_ manager: SubscriberAttributesManager,
                                      didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
