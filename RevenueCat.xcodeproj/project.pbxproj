@@ -205,6 +205,7 @@
 		37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3521731D8DC16873F55F3 /* AttributionFetcher.swift */; };
 		37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3507939634ED5A9280544 /* Strings.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
+		57032ABF28C13CE4004FF47A /* StoreKit2SettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */; };
 		57057FF828B0048900995F21 /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
 		57057FF928B0048900995F21 /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
 		5705800328B0085200995F21 /* Box.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5705800228B0085200995F21 /* Box.swift */; };
@@ -703,6 +704,7 @@
 		37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemInfoTests.swift; sourceTree = "<group>"; };
 		37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsRequestFactory.swift; sourceTree = "<group>"; };
 		37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DateFormatter+ExtensionsTests.swift"; sourceTree = "<group>"; };
+		57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2SettingTests.swift; sourceTree = "<group>"; };
 		57057FF728B0048900995F21 /* TestLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestLogHandler.swift; sourceTree = "<group>"; };
 		5705800228B0085200995F21 /* Box.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Box.swift; sourceTree = "<group>"; };
 		570814C128A308050018BAE3 /* BackendIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = BackendIntegrationTests.xctestplan; path = Tests/TestPlans/BackendIntegrationTests.xctestplan; sourceTree = "<group>"; };
@@ -1466,6 +1468,7 @@
 				5766AA59283D4CAB00FA6091 /* IgnoreHashableTests.swift */,
 				57ACB12328174B9F000DCC9F /* CustomerInfo+TestExtensions.swift */,
 				57FDAABD28493A29009A48F1 /* SandboxEnvironmentDetectorTests.swift */,
+				57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -2629,6 +2632,7 @@
 				57CFB96C27FE0E79002A6730 /* MockCurrentUserProvider.swift in Sources */,
 				57ACB13728184CF1000DCC9F /* DecoderExtensionTests.swift in Sources */,
 				351B516126D44BEB00BD2BD7 /* IdentityManagerTests.swift in Sources */,
+				57032ABF28C13CE4004FF47A /* StoreKit2SettingTests.swift in Sources */,
 				351B51C126D450E800BD2BD7 /* OfferingsManagerTests.swift in Sources */,
 				5796A39927D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift in Sources */,
 				35D8330A262FBA9A00E60AC5 /* MockUserDefaults.swift in Sources */,
