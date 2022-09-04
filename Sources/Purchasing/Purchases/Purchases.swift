@@ -1688,6 +1688,11 @@ internal extension Purchases {
         return self.systemInfo.isSandbox
     }
 
+    /// For testing purposes
+    var isStoreKit1Configured: Bool {
+        return self.storeKitWrapper != nil
+    }
+
 }
 
 // MARK: Private
