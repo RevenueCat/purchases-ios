@@ -27,33 +27,25 @@ class StoreKit2SettingTests: TestCase {
     }
 
     func testShouldOnlyUseStoreKitFalseIfNotAvailable() throws {
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            throw XCTSkip("Test only for older devices")
-        }
+        try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
 
         expect(StoreKit2Setting.enabledForCompatibleDevices.shouldOnlyUseStoreKit2) == false
     }
 
     func testShouldOnlyUseStoreKitTrueIfAvailable() throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
-            throw XCTSkip("Test only for newer devices")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         expect(StoreKit2Setting.enabledForCompatibleDevices.shouldOnlyUseStoreKit2) == true
     }
 
     func testStoreKit2NotAvailableOnOlderDevices() throws {
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            throw XCTSkip("Test only for older devices")
-        }
+        try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
 
         expect(StoreKit2Setting.isStoreKit2Available) == false
     }
 
     func testStoreKit2AvailableOnNewerDevices() throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
-            throw XCTSkip("Test only for newer devices")
-        }
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         expect(StoreKit2Setting.isStoreKit2Available) == true
     }
