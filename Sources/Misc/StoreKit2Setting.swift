@@ -38,6 +38,27 @@ extension StoreKit2Setting {
 
 }
 
+extension StoreKit2Setting {
+
+    /// - Returns: `true` if SK2 is available in this device.
+    static var isStoreKit2Available: Bool {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /// - Returns: `true` iff SK2 is enabled and it's available.
+    var shouldOnlyUseStoreKit2: Bool {
+        switch self {
+        case .disabled, .enabledOnlyForOptimizations: return false
+        case .enabledForCompatibleDevices: return Self.isStoreKit2Available
+        }
+    }
+
+}
+
 extension StoreKit2Setting: CustomDebugStringConvertible {
 
     var debugDescription: String {
