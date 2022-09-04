@@ -246,12 +246,9 @@ final class PurchasesOrchestrator {
         Self.logPurchase(product: product, package: package)
 
         if let sk1Product = product.sk1Product {
-            guard let storeKitWrapper = self.storeKitWrapper else {
-                // TODO: throw error instead?
-                fatalError("")
-            }
+            guard let storeKitWrapper = self.storeKitWrapper(orFailWith: completion) else { return }
 
-            let payment = storeKitWrapper.payment(withProduct: sk1Product)
+            let payment = storeKitWrapper.payment(with: sk1Product)
 
             self.purchase(sk1Product: sk1Product,
                           payment: payment,
@@ -276,22 +273,18 @@ final class PurchasesOrchestrator {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
 
         if let sk1Product = product.sk1Product {
-            // TODO: avoid repetition
-            guard let storeKitWrapper = self.storeKitWrapper else {
-                // TODO: throw error instead?
-                fatalError("")
-            }
+            guard let storeKitWrapper = self.storeKitWrapper(orFailWith: completion) else { return }
 
-            purchase(sk1Product: sk1Product,
-                     promotionalOffer: promotionalOffer,
-                     package: package,
-                     wrapper: storeKitWrapper,
-                     completion: completion)
+            self.purchase(sk1Product: sk1Product,
+                          promotionalOffer: promotionalOffer,
+                          package: package,
+                          wrapper: storeKitWrapper,
+                          completion: completion)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
-            purchase(sk2Product: sk2Product,
-                     promotionalOffer: promotionalOffer,
-                     completion: completion)
+            self.purchase(sk2Product: sk2Product,
+                          promotionalOffer: promotionalOffer,
+                          completion: completion)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -304,7 +297,7 @@ final class PurchasesOrchestrator {
                   wrapper: StoreKitWrapper,
                   completion: @escaping PurchaseCompletedBlock) {
         let discount = promotionalOffer.signedData.sk1PromotionalOffer
-        let payment = wrapper.payment(withProduct: sk1Product, discount: discount)
+        let payment = wrapper.payment(with: sk1Product, discount: discount)
         self.purchase(sk1Product: sk1Product,
                       payment: payment,
                       package: package,
@@ -517,6 +510,29 @@ final class PurchasesOrchestrator {
     }
 
 #endif
+
+}
+
+// MARK: - Private
+
+extension PurchasesOrchestrator {
+
+    /// - Returns: `StoreKitWrapper` if it's set, otherwise forwards an error to `completion` and returns `nil`
+    private func storeKitWrapper(orFailWith completion: @escaping PurchaseCompletedBlock) -> StoreKitWrapper? {
+        guard let storeKitWrapper = self.storeKitWrapper else {
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(nil,
+                           nil,
+                           ErrorUtils.configurationError(
+                            message: Strings.storeKit.sk1_product_with_sk2_enabled.description
+                           ).asPublicError,
+                           false)
+            }
+            return nil
+        }
+
+        return storeKitWrapper
+    }
 
 }
 
@@ -907,7 +923,7 @@ private extension PurchasesOrchestrator {
         wrapper: StoreKitWrapper,
         completion: @escaping PurchaseCompletedBlock
     ) {
-        let payment = wrapper.payment(withProduct: sk1Product)
+        let payment = wrapper.payment(with: sk1Product)
         purchase(sk1Product: sk1Product,
                  payment: payment,
                  package: package,

@@ -87,7 +87,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
         return SKPaymentQueue.canMakePayments()
     }
 
-    func payment(withProduct product: SK1Product) -> SKMutablePayment {
+    func payment(with product: SK1Product) -> SKMutablePayment {
         let payment = SKMutablePayment(product: product)
 
         if #available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *) {
@@ -97,8 +97,8 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func payment(withProduct product: SK1Product, discount: SKPaymentDiscount) -> SKMutablePayment {
-        let payment = self.payment(withProduct: product)
+    func payment(with product: SK1Product, discount: SKPaymentDiscount?) -> SKMutablePayment {
+        let payment = self.payment(with: product)
         payment.paymentDiscount = discount
         return payment
     }

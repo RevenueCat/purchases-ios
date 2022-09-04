@@ -28,6 +28,8 @@ enum StoreKitStrings {
 
     case skunknown_payment_mode(String)
 
+    case sk1_product_with_sk2_enabled
+
     case sk2_purchasing_added_promotional_offer_option(String)
 
     case sk2_unknown_product_type(String)
@@ -67,6 +69,9 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case let .skunknown_payment_mode(name):
             return "Unrecognized PaymentMode: \(name)"
+
+        case .sk1_product_with_sk2_enabled:
+            return "This StoreProduct represents an SK1 product, but SK2 was expected."
 
         case let .sk2_purchasing_added_promotional_offer_option(discountIdentifier):
             return "Adding Product.PurchaseOption for discount '\(discountIdentifier)'"

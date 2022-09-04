@@ -175,7 +175,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let payment = storeKitWrapper.payment(withProduct: product)
+        let payment = storeKitWrapper.payment(with: product)
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
@@ -271,7 +271,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let payment = self.storeKitWrapper.payment(withProduct: product)
+        let payment = self.storeKitWrapper.payment(with: product)
         payment.productIdentifier = ""
 
         let (transaction, customerInfo, error, cancelled) =
