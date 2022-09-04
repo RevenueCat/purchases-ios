@@ -48,4 +48,9 @@ final class PaymentQueueWrapper {
     }
 }
 
+#if swift(>=5.7)
 extension PaymentQueueWrapper: Sendable {}
+#else
+// `SKPaymentQueue` is not `Sendable` until Swift 5.7
+extension PaymentQueueWrapper: @unchecked Sendable {}
+#endif
