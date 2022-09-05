@@ -448,6 +448,23 @@ class HTTPClientTests: TestCase {
         expect(headerPresent.value).toEventually(equal(true))
     }
 
+    func testAlwaysPassesClientBundleID() throws {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        let headerPresent: Atomic<Bool> = false
+
+        let bundleID = try XCTUnwrap(Bundle.main.bundleIdentifier)
+
+        stub(condition: hasHeaderNamed("X-Client-Bundle-ID", value: bundleID)) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse
+        }
+
+        self.client.perform(request) { (_: HTTPResponse<Data>.Result) in }
+
+        expect(headerPresent.value).toEventually(equal(true))
+    }
+
     #if os(macOS) || targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifierWhenIsSandbox() {
         let request = HTTPRequest(method: .get, path: .mockPath)

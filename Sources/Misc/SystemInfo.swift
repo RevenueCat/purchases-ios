@@ -63,6 +63,10 @@ class SystemInfo {
         return Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
     }
 
+    static var bundleIdentifier: String {
+        return Bundle.main.bundleIdentifier ?? ""
+    }
+
     static var platformHeader: String {
         return Self.forceUniversalAppStore ? "iOS" : self.platformHeaderConstant
     }

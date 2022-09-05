@@ -35,7 +35,9 @@ enum ConfigureStrings {
 
     case no_singleton_instance
 
-    case sdk_version(sdkVersion: String)
+    case sdk_version(String)
+
+    case bundle_id(String)
 
     case legacyAPIKey
 
@@ -72,8 +74,10 @@ extension ConfigureStrings: CustomStringConvertible {
         case .no_singleton_instance:
             return "There is no singleton instance. Make sure you configure Purchases before " +
                 "trying to get the default instance. More info here: https://errors.rev.cat/configuring-sdk"
-        case .sdk_version(let sdkVersion):
+        case let .sdk_version(sdkVersion):
             return "SDK Version - \(sdkVersion)"
+        case let .bundle_id(bundleID):
+            return "Bundle ID - \(bundleID)"
         case .legacyAPIKey:
             return "Looks like you're using a legacy API key.\n" +
             "This is still supported, but it's recommended to migrate to using platform-specific API key, " +
