@@ -13,6 +13,8 @@
 
 @testable import RevenueCat
 
+import Nimble
+
 /// Provides a `Logger.VerboseLogHandler` that wraps the default implementation
 /// and allows introspecting logged messages.
 ///
@@ -71,6 +73,52 @@ final class TestLogHandler {
 }
 
 extension TestLogHandler: Sendable {}
+
+extension TestLogHandler {
+
+    func verifyMessageWasLogged(
+        _ message: CustomStringConvertible,
+        level: LogLevel? = nil,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        expect(
+            file: file,
+            line: line,
+            self.messages
+        )
+        .to(containElementSatisfying(Self.entryCondition(message: message, level: level)))
+    }
+
+    func verifyMessageWasNotLogged(
+        _ message: CustomStringConvertible,
+        level: LogLevel? = nil,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        expect(
+            file: file,
+            line: line,
+            self.messages
+        )
+        .toNot(containElementSatisfying(Self.entryCondition(message: message, level: level)))
+    }
+
+    private static func entryCondition(message: CustomStringConvertible, level: LogLevel?) -> (MessageData) -> Bool {
+        return { entry in
+            guard entry.message.contains(message.description) else {
+                return false
+            }
+
+            if let level = level, entry.level != level {
+                return false
+            }
+
+            return true
+        }
+    }
+
+}
 
 // MARK: - Private
 

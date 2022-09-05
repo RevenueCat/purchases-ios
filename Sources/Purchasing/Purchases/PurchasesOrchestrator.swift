@@ -802,7 +802,9 @@ private extension PurchasesOrchestrator {
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        if !self.allowSharingAppStoreAccount {
+        // Don't log anything unless the flag was explicitly set.
+        let allowSharingAppStoreAccountSet = self._allowSharingAppStoreAccount.value != nil
+        if allowSharingAppStoreAccountSet, !self.allowSharingAppStoreAccount {
             Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
         }
 
