@@ -162,6 +162,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.storeKitWrapper.delegate = self.orchestrator
     }
 
+    // MARK: - tests
+
     func testPurchaseSK1PackageSendsReceiptToBackendIfSuccessful() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
@@ -655,6 +657,59 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             expect(error).to(matchError(expectedError))
             expect(error.localizedDescription).to(equal(expectedError.localizedDescription))
         }
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testRestorePurchasesDoesNotLogWarningIfAllowSharingAppStoreAccountIsNotDefined() async throws {
+        let logger = TestLogHandler()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+
+        _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
+                                                       isRestore: false)
+
+        logger.verifyMessageWasNotLogged(
+            Strings
+                .restore
+                .restorepurchases_called_with_allow_sharing_appstore_account_false_warning
+        )
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testRestorePurchasesDoesNotLogWarningIfAllowSharingAppStoreAccountIsTrue() async throws {
+        let logger = TestLogHandler()
+
+        self.orchestrator.allowSharingAppStoreAccount = true
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+
+        _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
+                                                       isRestore: false)
+
+        logger.verifyMessageWasNotLogged(
+            Strings
+                .restore
+                .restorepurchases_called_with_allow_sharing_appstore_account_false_warning
+        )
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testRestorePurchasesLogsWarningIfAllowSharingAppStoreAccountIsFalse() async throws {
+        let logger = TestLogHandler()
+
+        self.orchestrator.allowSharingAppStoreAccount = false
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+
+        _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
+                                                       isRestore: false)
+
+        logger.verifyMessageWasLogged(
+            Strings
+                .restore
+                .restorepurchases_called_with_allow_sharing_appstore_account_false_warning,
+            level: .warn
+        )
     }
 
 }
