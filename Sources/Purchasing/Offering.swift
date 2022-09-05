@@ -109,6 +109,7 @@ import Foundation
         return package(identifier: key)
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     init(identifier: String, serverDescription: String, availablePackages: [Package]) {
         self.identifier = identifier
         self.serverDescription = serverDescription
@@ -138,11 +139,13 @@ import Foundation
             case .custom where package.storeProduct.productCategory == .nonSubscription:
                 // Non-subscription product, ignoring
                 continue
-            case .unknown, .custom:
-                Logger.warn(
-                    "Unknown subscription length for package '\(package.offeringIdentifier)': " +
-                    "\(package.packageType). Ignoring."
-                )
+
+            case .custom:
+                Logger.debug(Strings.offering.custom_package_type(package))
+                continue
+
+            case .unknown:
+                Logger.warn(Strings.offering.unknown_package_type(package))
                 continue
             }
 
