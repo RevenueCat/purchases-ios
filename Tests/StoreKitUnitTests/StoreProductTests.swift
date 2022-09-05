@@ -84,7 +84,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     }
 
     func testSk1DetailsWrapsCorrectly() throws {
-        var result: Result<Set<SK1StoreProduct>, Swift.Error>!
+        var result: Result<Set<SK1StoreProduct>, PurchasesError>!
 
         self.sk1Fetcher.products(withIdentifiers: Set([Self.productID])) { products in
             result = products

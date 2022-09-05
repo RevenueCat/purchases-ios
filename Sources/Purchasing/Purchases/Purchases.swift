@@ -29,7 +29,10 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
-public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction?, CustomerInfo?, Error?, Bool) -> Void
+public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction?,
+                                                                CustomerInfo?,
+                                                                PublicError?,
+                                                                Bool) -> Void
 
 /**
  Block for starting purchases in ``PurchasesDelegate/purchases(_:readyForPromotedProduct:purchase:)``
@@ -560,10 +563,10 @@ public extension Purchases {
      * - ``Purchases/appUserID``
      */
     @objc(logIn:completion:)
-    func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
+    func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
         self.identityManager.logIn(appUserID: appUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
-                completion(result.value?.info, result.value?.created ?? false, result.error)
+                completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
 
             guard case .success = result else {
@@ -620,12 +623,12 @@ public extension Purchases {
      * - ``isAnonymous``
      * - ``Purchases/appUserID``
      */
-    @objc func logOut(completion: ((CustomerInfo?, Error?) -> Void)?) {
+    @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         self.identityManager.logOut { error in
             guard error == nil else {
                 if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
-                        completion(nil, error)
+                        completion(nil, error?.asPublicError)
                     }
                 }
                 return
@@ -669,9 +672,9 @@ public extension Purchases {
      * #### Related Articles
      * -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
      */
-    @objc func getOfferings(completion: @escaping (Offerings?, Error?) -> Void) {
+    @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.offeringsManager.offerings(appUserID: appUserID) { result in
-            completion(result.value, result.error?.asPurchasesError)
+            completion(result.value, result.error?.asPublicError)
         }
     }
 
@@ -704,7 +707,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when customer info is available and not stale.
      * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil if an error occurred.
      */
-    @objc func getCustomerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
+    @objc func getCustomerInfo(completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
         self.getCustomerInfo(fetchPolicy: .default, completion: completion)
     }
 
@@ -714,10 +717,13 @@ public extension Purchases {
      * - Parameter fetchPolicy: The behavior for what to do regarding caching.
      * - Parameter completion: A completion block called when customer info is available and not stale.
      */
-    @objc func getCustomerInfo(fetchPolicy: CacheFetchPolicy, completion: @escaping (CustomerInfo?, Error?) -> Void) {
+    @objc func getCustomerInfo(
+        fetchPolicy: CacheFetchPolicy,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    ) {
         self.customerInfoManager.customerInfo(appUserID: self.appUserID,
                                               fetchPolicy: fetchPolicy) { result in
-            completion(result.value, result.error?.asPurchasesError)
+            completion(result.value, result.error?.asPublicError)
         }
     }
 
@@ -872,7 +878,7 @@ public extension Purchases {
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      *
-     * If the purchase was not successful, there will be an `Error`.
+     * If the purchase was not successful, there will be an `NSError`.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -921,7 +927,7 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
-     * If the purchase was not successful, there will be an `Error`.
+     * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `true`.
      *
      * #### Related Symbols
@@ -977,7 +983,7 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
-     * If the purchase was not successful, there will be an `Error`.
+     * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
@@ -1022,9 +1028,9 @@ public extension Purchases {
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
      * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
      */
-    @objc func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
-        purchasesOrchestrator.syncPurchases {
-            completion?($0.value, $0.error)
+    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        self.purchasesOrchestrator.syncPurchases {
+            completion?($0.value, $0.error?.asPublicError)
         }
     }
 
@@ -1060,9 +1066,9 @@ public extension Purchases {
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
-    @objc func restorePurchases(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
+    @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
         purchasesOrchestrator.restorePurchases {
-            completion?($0.value, $0.error)
+            completion?($0.value, $0.error?.asPublicError)
         }
     }
 
@@ -1268,10 +1274,10 @@ public extension Purchases {
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct,
-                             completion: @escaping (PromotionalOffer?, Error?) -> Void) {
-        purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
-                                               product: product) { result in
-            completion(result.value, result.error)
+                             completion: @escaping (PromotionalOffer?, PublicError?) -> Void) {
+        self.purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
+                                                    product: product) { result in
+            completion(result.value, result.error?.asPublicError)
         }
     }
 
@@ -1326,8 +1332,10 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(iOS 13.0, macOS 10.15, *)
-    @objc func showManageSubscriptions(completion: @escaping (Error?) -> Void) {
-        purchasesOrchestrator.showManageSubscription(completion: completion)
+    @objc func showManageSubscriptions(completion: @escaping (PublicError?) -> Void) {
+        self.purchasesOrchestrator.showManageSubscription { error in
+            completion(error?.asPublicError)
+        }
     }
 
     /**
@@ -1648,11 +1656,11 @@ internal extension Purchases {
     /// - Returns: the number of attributes that will be synced
     @discardableResult
     func syncSubscriberAttributes(
-        syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+        syncedAttribute: (@Sendable (PublicError?) -> Void)? = nil,
         completion: (@Sendable () -> Void)? = nil
     ) -> Int {
         return self.attribution.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
-                                                          syncedAttribute: syncedAttribute,
+                                                          syncedAttribute: { syncedAttribute?($0?.asPublicError) },
                                                           completion: completion)
     }
 
@@ -1726,11 +1734,11 @@ private extension Purchases {
         }
     }
 
-    func updateAllCaches(completion: ((Result<CustomerInfo, Error>) -> Void)?) {
+    func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
                                                                isAppBackgrounded: isAppBackgrounded) {
-                completion?($0.mapError { $0.asPurchasesError })
+                completion?($0.mapError { $0.asPublicError })
             }
 
             self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,

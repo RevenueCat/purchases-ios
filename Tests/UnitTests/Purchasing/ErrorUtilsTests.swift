@@ -34,11 +34,11 @@ class ErrorUtilsTests: TestCase {
         super.tearDown()
     }
 
-    func testErrorsCanBeConvertedToErrorCode() throws {
-        let error = ErrorUtils.customerInfoError()
+    func testPublicErrorsCanBeConvertedToErrorCode() throws {
+        let error = ErrorUtils.customerInfoError().asPublicError
         let errorCode = try XCTUnwrap(error as? ErrorCode, "Error couldn't be converted to ErrorCode")
 
-        expect(errorCode).to(matchError(error))
+        expect(errorCode).to(matchError(error as Error))
     }
 
     func testPurchaseErrorsAreLoggedAsApppleErrors() {

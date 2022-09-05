@@ -72,9 +72,9 @@ extension BackendError {
 
 }
 
-extension BackendError: ErrorCodeConvertible {
+extension BackendError: PurchasesErrorConvertible {
 
-    var asPurchasesError: Error {
+    var asPurchasesError: PurchasesError {
         switch self {
         case let .networkError(error):
             return error.asPurchasesError
@@ -84,8 +84,10 @@ extension BackendError: ErrorCodeConvertible {
                                                     functionName: source.function,
                                                     line: source.line)
 
-        case .emptySubscriberAttributes:
-            return ErrorCode.emptySubscriberAttributes
+        case let .emptySubscriberAttributes(source):
+            return ErrorUtils.emptySubscriberAttributesError(fileName: source.file,
+                                                             functionName: source.function,
+                                                             line: source.line)
 
         case let .missingReceiptFile(source):
             return ErrorUtils.missingReceiptFileError(fileName: source.file,

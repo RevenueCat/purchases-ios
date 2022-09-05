@@ -296,7 +296,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
 
     override func syncAttributesForAllUsers(
         currentAppUserID: String,
-        syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+        syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
         completion: (@Sendable () -> Void)? = nil
     ) -> Int {
         invokedSyncAttributesForAllUsers = true

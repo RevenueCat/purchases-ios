@@ -14,9 +14,9 @@
 import Foundation
 import StoreKit
 
-extension SKError: ErrorCodeConvertible {
+extension SKError: PurchasesErrorConvertible {
 
-    var asPurchasesError: Error {
+    var asPurchasesError: PurchasesError {
         switch self.code {
         case .cloudServiceNetworkConnectionFailed,
              .cloudServiceRevoked,

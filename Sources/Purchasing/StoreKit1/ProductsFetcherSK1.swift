@@ -16,7 +16,7 @@ import StoreKit
 
 final class ProductsFetcherSK1: NSObject {
 
-    typealias Callback = (Result<Set<SK1Product>, Error>) -> Void
+    typealias Callback = (Result<Set<SK1Product>, PurchasesError>) -> Void
 
     let requestTimeout: TimeInterval
     private let productsRequestFactory: ProductsRequestFactory
@@ -85,7 +85,7 @@ final class ProductsFetcherSK1: NSObject {
     }
 
     func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Result<Set<SK1StoreProduct>, Error>) -> Void) {
+                  completion: @escaping (Result<Set<SK1StoreProduct>, PurchasesError>) -> Void) {
         self.sk1Products(withIdentifiers: identifiers) { skProducts in
             let result = skProducts
                 .map { Set($0.map(SK1StoreProduct.init)) }
@@ -172,7 +172,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                 self.completionHandlers.removeValue(forKey: productRequest.identifiers)
                 self.productsByRequests.removeValue(forKey: request)
                 for completion in completionBlocks {
-                    completion(.failure(error))
+                    completion(.failure(ErrorUtils.purchasesError(withSKError: error)))
                 }
             } else {
                 let delayInSeconds = Int((self.requestTimeout / 10).rounded())

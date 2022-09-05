@@ -55,7 +55,7 @@ class ManageSubscriptionsHelperTests: TestCase {
 
     func testShowManageSubscriptions() throws {
         // given
-        var receivedResult: Result<Void, Error>?
+        var receivedResult: Result<Void, PurchasesError>?
         customerInfoManager.stubbedCustomerInfoResult = .success(try CustomerInfo(data: mockCustomerInfoData))
 
         // when
@@ -75,7 +75,7 @@ class ManageSubscriptionsHelperTests: TestCase {
         )
 
         // given
-        var receivedResult: Result<Void, Error>?
+        var receivedResult: Result<Void, PurchasesError>?
         customerInfoManager.stubbedCustomerInfoResult = .failure(error)
 
         // when
@@ -86,7 +86,7 @@ class ManageSubscriptionsHelperTests: TestCase {
         // then
         expect(receivedResult).toEventuallyNot(beNil())
 
-        let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
+        let nonNilReceivedResult = try XCTUnwrap(receivedResult)
         let expectedErrorMessage = "Failed to get managementURL from CustomerInfo. " +
         "Details: The operation couldn’t be completed"
         let expectedError = ErrorUtils.customerInfoError(withMessage: expectedErrorMessage,

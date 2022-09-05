@@ -19,8 +19,8 @@ import XCTest
 
 class PurchasesLogInTests: BasePurchasesTests {
 
-    private typealias LogInResult = Result<(customerInfo: CustomerInfo, created: Bool), Error>
-    private typealias LogOutResult = Result<CustomerInfo, Error>
+    private typealias LogInResult = Result<(customerInfo: CustomerInfo, created: Bool), PublicError>
+    private typealias LogOutResult = Result<CustomerInfo, PublicError>
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -60,7 +60,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(result).toEventuallyNot(beNil())
 
         expect(result).to(beFailure())
-        expect(result.error).to(matchError(error))
+        expect(result.error).to(matchError(error.asPurchasesError))
         expect(self.identityManager.invokedLogInCount) == 1
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
     }
@@ -85,7 +85,7 @@ class PurchasesLogInTests: BasePurchasesTests {
     }
 
     func testLogOutWithFailure() {
-        let error: BackendError = .networkError(.offlineConnection())
+        let error = BackendError.networkError(.offlineConnection()).asPurchasesError
 
         self.identityManager.mockLogOutError = error
 
@@ -176,7 +176,7 @@ private extension PurchasesLogInTests {
     ]
 
     /// Converts the result of `Purchases.logIn` into `LogInResult`
-    private static func logInResult(_ info: CustomerInfo?, _ created: Bool, _ error: Error?) -> LogInResult {
+    private static func logInResult(_ info: CustomerInfo?, _ created: Bool, _ error: PublicError?) -> LogInResult {
         return .init(info.map { ($0, created) }, error)
     }
 

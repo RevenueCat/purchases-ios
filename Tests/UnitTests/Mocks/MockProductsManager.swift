@@ -13,10 +13,10 @@ class MockProductsManager: ProductsManager {
     var invokedProductsCount = 0
     var invokedProductsParameters: Set<String>?
     var invokedProductsParametersList = [(identifiers: Set<String>, Void)]()
-    var stubbedProductsCompletionResult: Result<Set<StoreProduct>, Error>?
+    var stubbedProductsCompletionResult: Result<Set<StoreProduct>, PurchasesError>?
 
     override func products(withIdentifiers identifiers: Set<String>,
-                           completion: @escaping (Result<Set<StoreProduct>, Error>) -> Void) {
+                           completion: @escaping (Result<Set<StoreProduct>, PurchasesError>) -> Void) {
         invokedProducts = true
         invokedProductsCount += 1
         invokedProductsParameters = identifiers

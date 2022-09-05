@@ -33,7 +33,7 @@ enum ErrorUtils {
         withUnderlyingError underlyingError: Error? = nil,
         extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
 
         let errorCode: ErrorCode
         if case NetworkError.dnsError(_, _, _)? = underlyingError {
@@ -54,7 +54,7 @@ enum ErrorUtils {
      */
     static func offlineConnectionError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: .offlineConnectionError,
                      fileName: fileName, functionName: functionName, line: line)
     }
@@ -73,7 +73,7 @@ enum ErrorUtils {
     static func backendError(
         withBackendCode backendCode: BackendErrorCode, backendMessage: String?,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return backendError(withBackendCode: backendCode, backendMessage: backendMessage, extraUserInfo: nil,
                             fileName: fileName, functionName: functionName, line: line)
     }
@@ -86,7 +86,7 @@ enum ErrorUtils {
     static func unexpectedBackendResponseError(
         extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: ErrorCode.unexpectedBackendResponseError, extraUserInfo: extraUserInfo,
                      fileName: fileName, functionName: functionName, line: line)
     }
@@ -102,7 +102,7 @@ enum ErrorUtils {
         withSubError subError: Error?,
         extraContext: String? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return backendResponseError(withSubError: subError,
                                     extraContext: extraContext,
                                     fileName: fileName, functionName: functionName, line: line)
@@ -116,8 +116,18 @@ enum ErrorUtils {
      */
     static func missingReceiptFileError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: ErrorCode.missingReceiptFileError,
+                     fileName: fileName, functionName: functionName, line: line)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/emptySubscriberAttributes`` code.
+     */
+    static func emptySubscriberAttributesError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return error(with: .emptySubscriberAttributes,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -129,7 +139,7 @@ enum ErrorUtils {
      */
     static func missingAppUserIDError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: ErrorCode.invalidAppUserIdError,
                      fileName: fileName, functionName: functionName, line: line)
     }
@@ -142,7 +152,7 @@ enum ErrorUtils {
      */
     static func productDiscountMissingIdentifierError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: ErrorCode.productDiscountMissingIdentifierError,
                      fileName: fileName, functionName: functionName, line: line)
     }
@@ -155,7 +165,7 @@ enum ErrorUtils {
      */
     static func productDiscountMissingSubscriptionGroupIdentifierError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError,
                      fileName: fileName, functionName: functionName, line: line)
     }
@@ -168,7 +178,7 @@ enum ErrorUtils {
      */
     static func logOutAnonymousUserError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: ErrorCode.logOutAnonymousUserError,
                      fileName: fileName, functionName: functionName, line: line)
     }
@@ -181,7 +191,7 @@ enum ErrorUtils {
      */
     static func paymentDeferredError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: ErrorCode.paymentPendingError, message: "The payment is deferred.",
                      fileName: fileName, functionName: functionName, line: line)
     }
@@ -192,7 +202,7 @@ enum ErrorUtils {
     static func unknownError(
         message: String? = nil, error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return ErrorUtils.error(with: ErrorCode.unknownError, message: message, underlyingError: error,
                                 fileName: fileName, functionName: functionName, line: line)
     }
@@ -205,7 +215,7 @@ enum ErrorUtils {
      */
     static func operationAlreadyInProgressError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return error(with: ErrorCode.operationAlreadyInProgressForProductError,
                      fileName: fileName, functionName: functionName, line: line)
     }
@@ -220,10 +230,10 @@ enum ErrorUtils {
         message: String? = nil,
         underlyingError: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
-        return error(with: ErrorCode.configurationError,
-                     message: message, underlyingError: underlyingError,
-                     fileName: fileName, functionName: functionName, line: line)
+    ) -> PurchasesError {
+        return self.error(with: ErrorCode.configurationError,
+                          message: message, underlyingError: underlyingError,
+                          fileName: fileName, functionName: functionName, line: line)
     }
 
     /**
@@ -234,7 +244,7 @@ enum ErrorUtils {
     static func purchasesError(
         withSKError error: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         switch error {
         case let skError as SKError:
             return skError.asPurchasesError
@@ -257,12 +267,33 @@ enum ErrorUtils {
     static func purchasesError(
         withStoreKitError error: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         switch error {
         case let storeKitError as StoreKitError:
             return storeKitError.asPurchasesError
         case let purchasesError as Product.PurchaseError:
             return purchasesError.asPurchasesError
+        default:
+            return ErrorUtils.unknownError(
+                error: error,
+                fileName: fileName, functionName: functionName, line: line
+            )
+        }
+    }
+
+    /**
+     * Maps an untyped `Error` into a `PurchasesError`.
+     * If the error is already a `PurchasesError`, this simply returns the same value,
+     * otherwise it wraps it into a ``ErrorCode/unknownError``.
+     */
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    static func purchasesError(
+        withUntypedError error: Error,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        switch error {
+        case let purchasesError as PurchasesError:
+            return purchasesError
         default:
             return ErrorUtils.unknownError(
                 error: error,
@@ -279,7 +310,7 @@ enum ErrorUtils {
     static func purchaseCancelledError(
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         let errorCode = ErrorCode.purchaseCancelledError
         return ErrorUtils.error(with: errorCode,
                                 message: errorCode.description,
@@ -296,7 +327,7 @@ enum ErrorUtils {
     static func productNotAvailableForPurchaseError(
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return ErrorUtils.error(with: .productNotAvailableForPurchaseError,
                                 underlyingError: error)
     }
@@ -307,7 +338,7 @@ enum ErrorUtils {
     static func productAlreadyPurchasedError(
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return ErrorUtils.error(with: .productAlreadyPurchasedError,
                                 underlyingError: error)
     }
@@ -318,7 +349,7 @@ enum ErrorUtils {
     static func purchaseNotAllowedError(
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return ErrorUtils.error(with: .purchaseNotAllowedError,
                                 underlyingError: error)
     }
@@ -329,7 +360,7 @@ enum ErrorUtils {
     static func purchaseInvalidError(
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return ErrorUtils.error(with: .purchaseInvalidError,
                                 underlyingError: error)
     }
@@ -340,7 +371,7 @@ enum ErrorUtils {
     static func ineligibleError(
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return ErrorUtils.error(with: .ineligibleError,
                                 underlyingError: error)
     }
@@ -351,7 +382,7 @@ enum ErrorUtils {
     static func invalidPromotionalOfferError(
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return ErrorUtils.error(with: .invalidPromotionalOfferError,
                                 underlyingError: error)
     }
@@ -364,7 +395,7 @@ enum ErrorUtils {
     static func storeProblemError(
         withMessage message: String? = nil, error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         let errorCode = ErrorCode.storeProblemError
         return ErrorUtils.error(with: errorCode,
                                 message: message,
@@ -380,7 +411,7 @@ enum ErrorUtils {
     static func customerInfoError(
         withMessage message: String? = nil, error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         let errorCode = ErrorCode.customerInfoError
         return ErrorUtils.error(with: errorCode,
                                 message: message,
@@ -396,7 +427,7 @@ enum ErrorUtils {
     static func systemInfoError(
         withMessage message: String, error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         let errorCode = ErrorCode.systemInfoError
         return ErrorUtils.error(with: errorCode,
                                 message: message,
@@ -412,7 +443,7 @@ enum ErrorUtils {
     static func beginRefundRequestError(
         withMessage message: String, error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         let errorCode = ErrorCode.beginRefundRequestError
         return ErrorUtils.error(with: errorCode,
                                 message: message,
@@ -427,7 +458,7 @@ enum ErrorUtils {
      */
     static func productRequestTimedOutError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         return ErrorUtils.error(with: .productRequestTimedOut,
                                 fileName: fileName, functionName: functionName, line: line)
     }
@@ -441,7 +472,7 @@ extension ErrorUtils {
                              backendMessage: String? = nil,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
                              fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         let errorCode = backendCode.toPurchasesErrorCode()
         let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
@@ -462,7 +493,7 @@ private extension ErrorUtils {
                       extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
                       fileName: String = #fileID,
                       functionName: String = #function,
-                      line: UInt = #line) -> Error {
+                      line: UInt = #line) -> PurchasesError {
         var userInfo = extraUserInfo ?? [:]
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = message ?? code.description
         if let underlyingError = underlyingError {
@@ -478,18 +509,14 @@ private extension ErrorUtils {
             fileName: fileName, functionName: functionName, line: line
         )
 
-        let nsError = code as NSError
-        let nsErrorWithUserInfo = NSError(domain: nsError.domain,
-                                          code: nsError.code,
-                                          userInfo: userInfo as [String: Any])
-        return nsErrorWithUserInfo as Error
+        return .init(error: code, userInfo: userInfo)
     }
 
     static func backendResponseError(
         withSubError subError: Error?,
         extraContext: String?,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> Error {
+    ) -> PurchasesError {
         var userInfo: [NSError.UserInfoKey: Any] = [:]
         let describableSubError = subError as? DescribableError
         let errorDescription = describableSubError?.description ?? ErrorCode.unexpectedBackendResponseError.description
@@ -500,19 +527,13 @@ private extension ErrorUtils {
         userInfo[.file] = "\(fileName):\(line)"
         userInfo[.function] = functionName
 
-        let nsError = ErrorCode.unexpectedBackendResponseError as NSError
-        let nsErrorWithUserInfo = NSError(domain: nsError.domain,
-                                          code: nsError.code,
-                                          userInfo: userInfo as [String: Any])
-        return nsErrorWithUserInfo as Error
+        return .init(error: .unexpectedBackendResponseError, userInfo: userInfo)
     }
 
-    static func backendUnderlyingError(backendCode: BackendErrorCode, backendMessage: String?) -> Error {
-        let userInfo = [
+    static func backendUnderlyingError(backendCode: BackendErrorCode, backendMessage: String?) -> NSError {
+        return backendCode.addingUserInfo([
             NSLocalizedDescriptionKey: backendMessage ?? ""
-        ]
-
-        return backendCode.addingUserInfo(userInfo)
+        ])
     }
 
     // swiftlint:disable:next function_body_length
@@ -593,12 +614,16 @@ private extension ErrorUtils {
 
 extension Error {
 
-    func addingUserInfo(_ userInfo: [String: Any]) -> Error {
+    @_disfavoredOverload
+    func addingUserInfo<Result: NSError>(_ userInfo: [NSError.UserInfoKey: Any]) -> Result {
+        return self.addingUserInfo(userInfo as [String: Any])
+    }
+
+    func addingUserInfo<Result: NSError>(_ userInfo: [String: Any]) -> Result {
         let nsError = self as NSError
-        let nsErrorWithUserInfo = NSError(domain: nsError.domain,
-                                          code: nsError.code,
-                                          userInfo: nsError.userInfo + userInfo)
-        return nsErrorWithUserInfo as Error
+        return Result.init(domain: nsError.domain,
+                           code: nsError.code,
+                           userInfo: nsError.userInfo + userInfo)
     }
 
 }

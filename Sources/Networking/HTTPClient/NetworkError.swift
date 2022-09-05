@@ -88,9 +88,9 @@ extension NetworkError {
 
 }
 
-extension NetworkError: ErrorCodeConvertible {
+extension NetworkError: PurchasesErrorConvertible {
 
-    var asPurchasesError: Error {
+    var asPurchasesError: PurchasesError {
         switch self {
         case let .decoding(error, source):
             return ErrorUtils.unexpectedBackendResponse(

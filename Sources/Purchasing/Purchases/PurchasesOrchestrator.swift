@@ -158,14 +158,14 @@ final class PurchasesOrchestrator {
         self.beginRefundRequestHelper = beginRefundRequestHelper
     }
 
-    func restorePurchases(completion: (@Sendable (Result<CustomerInfo, Error>) -> Void)?) {
-        syncPurchases(receiptRefreshPolicy: .always, isRestore: true, completion: completion)
+    func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+        self.syncPurchases(receiptRefreshPolicy: .always, isRestore: true, completion: completion)
     }
 
-    func syncPurchases(completion: (@Sendable (Result<CustomerInfo, Error>) -> Void)? = nil) {
-        syncPurchases(receiptRefreshPolicy: .never,
-                      isRestore: allowSharingAppStoreAccount,
-                      completion: completion)
+    func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
+        self.syncPurchases(receiptRefreshPolicy: .never,
+                           isRestore: allowSharingAppStoreAccount,
+                           completion: completion)
     }
 
     func products(withIdentifiers identifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
@@ -200,7 +200,7 @@ final class PurchasesOrchestrator {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                           product: StoreProductType,
-                          completion: @escaping (Result<PromotionalOffer, Error>) -> Void) {
+                          completion: @escaping (Result<PromotionalOffer, PurchasesError>) -> Void) {
         guard let discountIdentifier = productDiscount.offerIdentifier else {
             completion(.failure(ErrorUtils.productDiscountMissingIdentifierError()))
             return
@@ -223,7 +223,7 @@ final class PurchasesOrchestrator {
                                         subscriptionGroup: subscriptionGroupIdentifier,
                                         receiptData: receiptData,
                                         appUserID: self.appUserID) { result in
-                let result: Result<PromotionalOffer, Error> = result
+                let result: Result<PromotionalOffer, PurchasesError> = result
                     .map { data in
                         let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
                                                                      keyIdentifier: data.keyIdentifier,
@@ -316,7 +316,7 @@ final class PurchasesOrchestrator {
                     nil,
                     ErrorUtils.storeProblemError(
                         withMessage: Strings.purchase.could_not_purchase_product_id_not_found.description
-                    ),
+                    ).asPublicError,
                     false
                 )
             }
@@ -381,7 +381,7 @@ final class PurchasesOrchestrator {
                     completion(result.transaction,
                                result.customerInfo,
                                // Forward an error if purchase was cancelled to match SK1 behavior.
-                               result.userCancelled ? ErrorUtils.purchaseCancelledError() : nil,
+                               result.userCancelled ? ErrorUtils.purchaseCancelledError().asPublicError : nil,
                                result.userCancelled)
                 }
             } catch let error {
@@ -391,7 +391,7 @@ final class PurchasesOrchestrator {
                 ))
 
                 DispatchQueue.main.async {
-                    completion(nil, nil, error, false)
+                    completion(nil, nil, ErrorUtils.purchasesError(withUntypedError: error).asPublicError, false)
                 }
             }
         }
@@ -462,7 +462,7 @@ final class PurchasesOrchestrator {
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscription(completion: @escaping (Error?) -> Void) {
+    func showManageSubscription(completion: @escaping (PurchasesError?) -> Void) {
         self.manageSubscriptionsHelper.showManageSubscriptions { result in
             switch result {
             case .failure(let error):
@@ -605,7 +605,7 @@ private extension PurchasesOrchestrator {
             self.operationDispatcher.dispatchOnMainActor {
                 completion(storeTransaction,
                            nil,
-                           purchasesError,
+                           purchasesError.asPublicError,
                            purchasesError.isCancelledError)
             }
         }
@@ -625,7 +625,7 @@ private extension PurchasesOrchestrator {
             completion(
                 storeTransaction,
                 nil,
-                ErrorUtils.paymentDeferredError(),
+                ErrorUtils.paymentDeferredError().asPublicError,
                 userCancelled
             )
         }
@@ -671,7 +671,7 @@ private extension PurchasesOrchestrator {
                     nil,
                     ErrorUtils.storeProblemError(
                         withMessage: Strings.purchase.could_not_purchase_product_id_not_found.description
-                    ),
+                    ).asPublicError,
                     false
                 )
             }
@@ -681,7 +681,7 @@ private extension PurchasesOrchestrator {
         return self.purchaseCompleteCallbacksByProductID.modify { callbacks in
             guard callbacks[productIdentifier] == nil else {
                 self.operationDispatcher.dispatchOnMainActor {
-                    completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
+                    completion(nil, nil, ErrorUtils.operationAlreadyInProgressError().asPublicError, false)
                 }
                 return false
             }
@@ -770,7 +770,7 @@ private extension PurchasesOrchestrator {
                 self.finishTransactionIfNeeded(transaction)
 
             case let .failure(error):
-                let purchasesError = error.asPurchasesError
+                let purchasesError = error.asPublicError
 
                 completion?(transaction, nil, purchasesError, false)
 
@@ -801,7 +801,7 @@ private extension PurchasesOrchestrator {
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
-                       completion: (@Sendable (Result<CustomerInfo, Error>) -> Void)?) {
+                       completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         if !self.allowSharingAppStoreAccount {
             Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
         }
@@ -858,7 +858,7 @@ private extension PurchasesOrchestrator {
 
     func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary,
-                           completion: (@Sendable (Result<CustomerInfo, Error>) -> Void)?) {
+                           completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         operationDispatcher.dispatchOnMainThread {
             if let customerInfo = result.value {
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
@@ -931,9 +931,13 @@ private extension Error {
             default: return false
             }
 
+        case let purchasesError as PurchasesError:
+            return purchasesError.error.isCancelledError
+
         case let error as NSError:
             switch (error.domain, error.code) {
             case (SKErrorDomain, SKError.paymentCancelled.rawValue): return true
+
             default: return false
             }
 

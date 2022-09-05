@@ -85,7 +85,7 @@ class IdentityManager: CurrentUserProvider {
         }
     }
 
-    func logOut(completion: @escaping (Error?) -> Void) {
+    func logOut(completion: @escaping (PurchasesError?) -> Void) {
         self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
             self.performLogOut(completion: completion)
         }
@@ -128,7 +128,7 @@ private extension IdentityManager {
         }
     }
 
-    func performLogOut(completion: (Error?) -> Void) {
+    func performLogOut(completion: (PurchasesError?) -> Void) {
         Logger.info(Strings.identity.log_out_called_for_user)
 
         if self.currentUserIsAnonymous {

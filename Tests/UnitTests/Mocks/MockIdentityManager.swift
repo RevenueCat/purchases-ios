@@ -64,11 +64,11 @@ class MockIdentityManager: IdentityManager {
 
     // MARK: - LogOut
 
-    var mockLogOutError: BackendError?
+    var mockLogOutError: PurchasesError?
     var invokedLogOut = false
     var invokedLogOutCount = 0
 
-    override func logOut(completion: @escaping (Error?) -> Void) {
+    override func logOut(completion: @escaping (PurchasesError?) -> Void) {
         self.invokedLogOut = true
         self.invokedLogOutCount += 1
 

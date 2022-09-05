@@ -27,7 +27,7 @@ class ProductsFetcherSK1Tests: TestCase {
 
     func testProductsWithIdentifiersCallsCompletionCorrectly() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        var receivedProducts: Result<Set<SK1Product>, Error>?
+        var receivedProducts: Result<Set<SK1Product>, PurchasesError>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             receivedProducts = products
@@ -98,7 +98,7 @@ class ProductsFetcherSK1Tests: TestCase {
         let fetcher = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
                                          requestTimeout: timeout.seconds)
 
-        var receivedResult: Result<Set<SK1Product>, Error>?
+        var receivedResult: Result<Set<SK1Product>, PurchasesError>?
 
         fetcher.sk1Products(withIdentifiers: productIdentifiers) { result in
             receivedResult = result
@@ -117,7 +117,7 @@ class ProductsFetcherSK1Tests: TestCase {
         mockProducts.forEach { productsFetcherSK1.cacheProduct($0) }
 
         var completionCallCount = 0
-        var receivedProducts: Result<Set<SK1Product>, Error>?
+        var receivedProducts: Result<Set<SK1Product>, PurchasesError>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             receivedProducts = products
@@ -141,7 +141,7 @@ class ProductsFetcherSK1Tests: TestCase {
                                                 requestTimeout: tolerance.seconds)
 
         var completionCallCount = 0
-        var receivedResult: Result<Set<SKProduct>, Error>?
+        var receivedResult: Result<Set<SKProduct>, PurchasesError>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { result in
             receivedResult = result
@@ -152,8 +152,8 @@ class ProductsFetcherSK1Tests: TestCase {
                                                  timeout: productsRequestResponseTime + .milliseconds(30))
         expect(self.productsRequestFactory.invokedRequestCount) == 1
 
-        let error = try XCTUnwrap(receivedResult?.error as? ErrorCode)
-        expect(error) == ErrorCode.productRequestTimedOut
+        expect(receivedResult).to(beFailure())
+        expect(receivedResult?.error).to(matchError(ErrorCode.productRequestTimedOut))
         expect(request.cancelCalled) == true
     }
 
@@ -169,7 +169,7 @@ class ProductsFetcherSK1Tests: TestCase {
                                                 requestTimeout: tolerance.seconds)
 
         var completionCallCount = 0
-        var receivedResult: Result<Set<SKProduct>, Error>?
+        var receivedResult: Result<Set<SKProduct>, PurchasesError>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { result in
             receivedResult = result

@@ -139,7 +139,7 @@ class SubscriberAttributesManager {
     /// - Returns: the number of attributes that will be synced
     @discardableResult
     func syncAttributesForAllUsers(currentAppUserID: String,
-                                   syncedAttribute: (@Sendable (Error?) -> Void)? = nil,
+                                   syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
                                    completion: (@Sendable () -> Void)? = nil) -> Int {
         let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
         let total = unsyncedAttributesForAllUsers.count
@@ -176,7 +176,7 @@ class SubscriberAttributesManager {
         return total
     }
 
-    func handleAttributesSynced(syncingAppUserId: String, currentAppUserId: String, error: Error?) {
+    func handleAttributesSynced(syncingAppUserId: String, currentAppUserId: String, error: BackendError?) {
         if error == nil {
             Logger.rcSuccess(Strings.attribution.attributes_sync_success(appUserID: syncingAppUserId))
             if syncingAppUserId != currentAppUserId {
