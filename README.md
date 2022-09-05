@@ -35,7 +35,7 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 🖥 | iOS, tvOS, macOS and watchOS support
 🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web
 📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn
-📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date
+📝 | [Online documentation](https://docs.revenuecat.com/docs) and [SDK Reference](http://revenuecat.github.io/purchases-ios-docs/) up to date
 🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it
 💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)
 📮 | Great support - [Help Center](https://community.revenuecat.com)
