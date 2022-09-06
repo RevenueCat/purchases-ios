@@ -25,7 +25,7 @@ enum CustomerInfoStrings {
     case customerinfo_stale_updating_in_background
     case customerinfo_stale_updating_in_foreground
     case customerinfo_updated_from_network
-    case customerinfo_updated_from_network_error(error: Error)
+    case customerinfo_updated_from_network_error(BackendError)
     case sending_latest_customerinfo_to_delegate
     case sending_updated_customerinfo_to_delegate
     case vending_cache
@@ -53,8 +53,14 @@ extension CustomerInfoStrings: CustomStringConvertible {
             return "CustomerInfo cache is stale, updating from network in foreground."
         case .customerinfo_updated_from_network:
             return "CustomerInfo updated from network."
-        case .customerinfo_updated_from_network_error(let error):
-            return "Attempt to update CustomerInfo from network failed.\n\(error.localizedDescription)"
+        case let .customerinfo_updated_from_network_error(error):
+            var result = "Attempt to update CustomerInfo from network failed.\n\(error.localizedDescription)"
+
+            if let underlyingError = error.underlyingError {
+                result += "\nUnderlying error: \(underlyingError.localizedDescription)"
+            }
+
+            return result
         case .sending_latest_customerinfo_to_delegate:
             return "Sending latest CustomerInfo to delegate."
         case .sending_updated_customerinfo_to_delegate:

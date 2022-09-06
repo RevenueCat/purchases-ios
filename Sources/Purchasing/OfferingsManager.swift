@@ -240,6 +240,7 @@ extension OfferingsManager.Error: CustomNSError {
 
     fileprivate var underlyingError: Error? {
         switch self {
+        case let .backendError(.networkError(error)): return error
         case let .backendError(error): return error
         case let .configurationError(_, error, _): return error
         case .noOfferingsFound: return nil
