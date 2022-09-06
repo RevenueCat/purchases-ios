@@ -175,12 +175,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let payment = storeKitWrapper.payment(withProduct: product)
+        let payment = storeKitWrapper.payment(with: product)
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
                                   payment: payment,
-                                  package: package) { transaction, customerInfo, error, userCancelled in
+                                  package: package,
+                                  wrapper: self.storeKitWrapper) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -249,7 +250,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
                                   promotionalOffer: offer,
-                                  package: package) { transaction, customerInfo, error, userCancelled in
+                                  package: package,
+                                  wrapper: self.storeKitWrapper) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -269,14 +271,17 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let payment = self.storeKitWrapper.payment(withProduct: product)
+        let payment = self.storeKitWrapper.payment(with: product)
         payment.productIdentifier = ""
 
         let (transaction, customerInfo, error, cancelled) =
         try await withCheckedThrowingContinuation { continuation in
-            self.orchestrator.purchase(sk1Product: product,
-                                       payment: payment,
-                                       package: package) { transaction, customerInfo, error, userCancelled in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKitWrapper
+            ) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }

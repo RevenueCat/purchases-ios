@@ -218,7 +218,7 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
 
         let productId = "mySuperProduct"
         let mockProduct = MockSK1Product(mockProductIdentifier: productId)
-        let payment = wrapper.payment(withProduct: mockProduct)
+        let payment = wrapper.payment(with: mockProduct)
         expect(payment.productIdentifier) == productId
     }
 
@@ -229,11 +229,11 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
         let mockProduct = MockSK1Product(mockProductIdentifier: "mySuperProduct")
 
         StoreKitWrapper.simulatesAskToBuyInSandbox = false
-        let payment1 = wrapper.payment(withProduct: mockProduct)
+        let payment1 = wrapper.payment(with: mockProduct)
         expect(payment1.simulatesAskToBuyInSandbox) == false
 
         StoreKitWrapper.simulatesAskToBuyInSandbox = true
-        let payment2 = wrapper.payment(withProduct: mockProduct)
+        let payment2 = wrapper.payment(with: mockProduct)
         expect(payment2.simulatesAskToBuyInSandbox) == true
     }
 
@@ -248,7 +248,7 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
 
         let mockProduct = MockSK1Product(mockProductIdentifier: productId)
         let mockDiscount = MockPaymentDiscount(mockIdentifier: discountId)
-        let payment = wrapper.payment(withProduct: mockProduct, discount: mockDiscount)
+        let payment = wrapper.payment(with: mockProduct, discount: mockDiscount)
         expect(payment.productIdentifier) == productId
         expect(payment.paymentDiscount) == mockDiscount
     }
@@ -263,11 +263,11 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
         let mockDiscount = MockPaymentDiscount(mockIdentifier: "mySuperDiscount")
 
         StoreKitWrapper.simulatesAskToBuyInSandbox = false
-        let payment1 = wrapper.payment(withProduct: mockProduct, discount: mockDiscount)
+        let payment1 = wrapper.payment(with: mockProduct, discount: mockDiscount)
         expect(payment1.simulatesAskToBuyInSandbox) == false
 
         StoreKitWrapper.simulatesAskToBuyInSandbox = true
-        let payment2 = wrapper.payment(withProduct: mockProduct)
+        let payment2 = wrapper.payment(with: mockProduct)
         expect(payment2.simulatesAskToBuyInSandbox) == true
     }
 

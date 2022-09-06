@@ -182,6 +182,7 @@ class BasePurchasesTests: TestCase {
                                    attributionPoster: self.attributionPoster,
                                    backend: self.backend,
                                    storeKitWrapper: self.storeKitWrapper,
+                                   paymentQueueWrapper: .init(),
                                    notificationCenter: self.notificationCenter,
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,

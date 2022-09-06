@@ -236,4 +236,22 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.storeKitWrapper.delegate) === self.purchasesOrchestrator
     }
 
+    func testSetsSelfAsStoreKitWrapperDelegateForSK1() {
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(usesStoreKit2IfAvailable: false)
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
+        expect(purchases.isStoreKit1Configured) == true
+    }
+
+    func testDoesNotInitializeSK1IfSK2Enabled() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(usesStoreKit2IfAvailable: true)
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
+        expect(purchases.isStoreKit1Configured) == false
+    }
+
 }

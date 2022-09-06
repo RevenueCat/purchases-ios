@@ -49,7 +49,7 @@ final class PurchasesOrchestrator {
     }
 
     private let productsManager: ProductsManager
-    private let storeKitWrapper: StoreKitWrapper
+    private let storeKitWrapper: StoreKitWrapper?
     private let systemInfo: SystemInfo
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
@@ -83,7 +83,7 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     convenience init(productsManager: ProductsManager,
-                     storeKitWrapper: StoreKitWrapper,
+                     storeKitWrapper: StoreKitWrapper?,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
@@ -129,7 +129,7 @@ final class PurchasesOrchestrator {
     }
 
     init(productsManager: ProductsManager,
-         storeKitWrapper: StoreKitWrapper,
+         storeKitWrapper: StoreKitWrapper?,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -246,17 +246,20 @@ final class PurchasesOrchestrator {
         Self.logPurchase(product: product, package: package)
 
         if let sk1Product = product.sk1Product {
-            let payment = storeKitWrapper.payment(withProduct: sk1Product)
+            guard let storeKitWrapper = self.storeKitWrapper(orFailWith: completion) else { return }
 
-            purchase(sk1Product: sk1Product,
-                     payment: payment,
-                     package: package,
-                     completion: completion)
+            let payment = storeKitWrapper.payment(with: sk1Product)
+
+            self.purchase(sk1Product: sk1Product,
+                          payment: payment,
+                          package: package,
+                          wrapper: storeKitWrapper,
+                          completion: completion)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
-            purchase(sk2Product: sk2Product,
-                     promotionalOffer: nil,
-                     completion: completion)
+            self.purchase(sk2Product: sk2Product,
+                          promotionalOffer: nil,
+                          completion: completion)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -270,15 +273,18 @@ final class PurchasesOrchestrator {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
 
         if let sk1Product = product.sk1Product {
-            purchase(sk1Product: sk1Product,
-                     promotionalOffer: promotionalOffer,
-                     package: package,
-                     completion: completion)
+            guard let storeKitWrapper = self.storeKitWrapper(orFailWith: completion) else { return }
+
+            self.purchase(sk1Product: sk1Product,
+                          promotionalOffer: promotionalOffer,
+                          package: package,
+                          wrapper: storeKitWrapper,
+                          completion: completion)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
-            purchase(sk2Product: sk2Product,
-                     promotionalOffer: promotionalOffer,
-                     completion: completion)
+            self.purchase(sk2Product: sk2Product,
+                          promotionalOffer: promotionalOffer,
+                          completion: completion)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -288,18 +294,21 @@ final class PurchasesOrchestrator {
     func purchase(sk1Product: SK1Product,
                   promotionalOffer: PromotionalOffer,
                   package: Package?,
+                  wrapper: StoreKitWrapper,
                   completion: @escaping PurchaseCompletedBlock) {
         let discount = promotionalOffer.signedData.sk1PromotionalOffer
-        let payment = self.storeKitWrapper.payment(withProduct: sk1Product, discount: discount)
+        let payment = wrapper.payment(with: sk1Product, discount: discount)
         self.purchase(sk1Product: sk1Product,
                       payment: payment,
                       package: package,
+                      wrapper: wrapper,
                       completion: completion)
     }
 
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   package: Package?,
+                  wrapper: StoreKitWrapper,
                   completion: @escaping PurchaseCompletedBlock) {
         /**
          * Note: this only extracts the product identifier from `SKPayment`, ignoring the `SK1Product.identifier`
@@ -358,7 +367,7 @@ final class PurchasesOrchestrator {
         )
 
         if addPayment {
-            self.storeKitWrapper.add(payment)
+            wrapper.add(payment)
         }
     }
 
@@ -503,6 +512,31 @@ final class PurchasesOrchestrator {
 #endif
 
 }
+
+// MARK: - Private
+
+extension PurchasesOrchestrator {
+
+    /// - Returns: `StoreKitWrapper` if it's set, otherwise forwards an error to `completion` and returns `nil`
+    private func storeKitWrapper(orFailWith completion: @escaping PurchaseCompletedBlock) -> StoreKitWrapper? {
+        guard let storeKitWrapper = self.storeKitWrapper else {
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(nil,
+                           nil,
+                           ErrorUtils.configurationError(
+                            message: Strings.storeKit.sk1_product_with_sk2_enabled.description
+                           ).asPublicError,
+                           false)
+            }
+            return nil
+        }
+
+        return storeKitWrapper
+    }
+
+}
+
+// MARK: - StoreKitWrapperDelegate
 
 extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
@@ -883,11 +917,17 @@ private extension PurchasesOrchestrator {
         deviceCache.setOfferingsCacheTimestampToNow()
     }
 
-    func purchase(sk1Product: SK1Product, package: Package, completion: @escaping PurchaseCompletedBlock) {
-        let payment = storeKitWrapper.payment(withProduct: sk1Product)
+    func purchase(
+        sk1Product: SK1Product,
+        package: Package,
+        wrapper: StoreKitWrapper,
+        completion: @escaping PurchaseCompletedBlock
+    ) {
+        let payment = wrapper.payment(with: sk1Product)
         purchase(sk1Product: sk1Product,
                  payment: payment,
                  package: package,
+                 wrapper: wrapper,
                  completion: completion)
     }
 
@@ -897,8 +937,8 @@ private extension PurchasesOrchestrator {
     }
 
     func finishTransactionIfNeeded(_ transaction: StoreTransaction) {
-        if self.finishTransactions {
-            transaction.finish(self.storeKitWrapper)
+        if self.finishTransactions, let wrapper = self.storeKitWrapper {
+            transaction.finish(wrapper)
         }
     }
 

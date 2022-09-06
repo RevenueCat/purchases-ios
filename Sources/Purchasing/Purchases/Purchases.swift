@@ -248,7 +248,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
-    private let storeKitWrapper: StoreKitWrapper
+    private let storeKitWrapper: StoreKitWrapper?
+    private let paymentQueueWrapper: PaymentQueueWrapper
     private let systemInfo: SystemInfo
     private var customerInfoObservationDisposable: (() -> Void)?
 
@@ -287,7 +288,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                               eTagManager: eTagManager,
                               operationDispatcher: operationDispatcher,
                               attributionFetcher: attributionFetcher)
-        let storeKitWrapper = StoreKitWrapper()
+        let storeKitWrapper: StoreKitWrapper? = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+        ? nil
+        : StoreKitWrapper()
+        let paymentQueueWrapper = storeKitWrapper?.createPaymentQueueWrapper() ?? .init()
+
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
         let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
@@ -388,6 +393,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   attributionPoster: attributionPoster,
                   backend: backend,
                   storeKitWrapper: storeKitWrapper,
+                  paymentQueueWrapper: paymentQueueWrapper,
                   notificationCenter: NotificationCenter.default,
                   systemInfo: systemInfo,
                   offeringsFactory: offeringsFactory,
@@ -409,7 +415,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          attributionFetcher: AttributionFetcher,
          attributionPoster: AttributionPoster,
          backend: Backend,
-         storeKitWrapper: StoreKitWrapper,
+         storeKitWrapper: StoreKitWrapper?,
+         paymentQueueWrapper: PaymentQueueWrapper,
          notificationCenter: NotificationCenter,
          systemInfo: SystemInfo,
          offeringsFactory: OfferingsFactory,
@@ -438,6 +445,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.attributionPoster = attributionPoster
         self.backend = backend
         self.storeKitWrapper = storeKitWrapper
+        self.paymentQueueWrapper = paymentQueueWrapper
         self.offeringsFactory = offeringsFactory
         self.deviceCache = deviceCache
         self.identityManager = identityManager
@@ -466,7 +474,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
-            storeKitWrapper.delegate = purchasesOrchestrator
+            storeKitWrapper?.delegate = purchasesOrchestrator
         } else {
             Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
@@ -484,7 +492,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     deinit {
         self.notificationCenter.removeObserver(self)
-        self.storeKitWrapper.delegate = nil
+        self.storeKitWrapper?.delegate = nil
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
         Self.proxyURL = nil
@@ -1220,7 +1228,7 @@ public extension Purchases {
      */
     @available(iOS 13.4, macCatalyst 13.4, *)
     @objc func showPriceConsentIfNeeded() {
-        self.storeKitWrapper.showPriceConsentIfNeeded()
+        self.paymentQueueWrapper.showPriceConsentIfNeeded()
     }
 #endif
 
@@ -1256,7 +1264,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     @objc func presentCodeRedemptionSheet() {
-        self.storeKitWrapper.presentCodeRedemptionSheet()
+        self.paymentQueueWrapper.presentCodeRedemptionSheet()
     }
 #endif
 
@@ -1678,6 +1686,11 @@ internal extension Purchases {
 
     var isSandbox: Bool {
         return self.systemInfo.isSandbox
+    }
+
+    /// For testing purposes
+    var isStoreKit1Configured: Bool {
+        return self.storeKitWrapper != nil
     }
 
 }
