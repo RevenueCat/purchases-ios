@@ -49,15 +49,15 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             self.purchases.purchase(product: storeProduct) { (_, _, _, _) in }
 
             let transaction = MockTransaction()
-            transaction.mockPayment = self.storeKitWrapper.payment!
+            transaction.mockPayment = self.storeKit1Wrapper.payment!
 
             transaction.mockState = SKPaymentTransactionState.purchasing
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
             self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
 
             transaction.mockState = SKPaymentTransactionState.purchased
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
         }
 
         expect(product).toEventuallyNot(beNil())
@@ -68,7 +68,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.backend.postedPrice) == product.price as Decimal
         expect(self.backend.postedCurrencyCode) == product.priceLocale.currencyCode
 
-        expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
     func testInvalidateCustomerInfoCacheDoesntClearOfferingsCache() {

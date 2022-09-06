@@ -162,8 +162,8 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 
         expect(self.backend.postReceiptDataCalled) == false
-        (self.purchasesOrchestrator as StoreKitWrapperDelegate)
-            .storeKitWrapper(self.storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
+        (self.purchasesOrchestrator as StoreKit1WrapperDelegate)
+            .storeKit1Wrapper(self.storeKit1Wrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
 
         expect(self.backend.postReceiptDataCalled) == true
     }

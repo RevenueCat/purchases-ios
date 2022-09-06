@@ -20,7 +20,7 @@ import XCTest
 class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     private var productsManager: MockProductsManager!
-    private var storeKitWrapper: MockStoreKitWrapper!
+    private var storeKit1Wrapper: MockStoreKit1Wrapper!
     private var systemInfo: MockSystemInfo!
     private var subscriberAttributesManager: MockSubscriberAttributesManager!
     private var attribution: Attribution!
@@ -87,7 +87,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                     customerInfoManager: customerInfoManager,
                                                                     currentUserProvider: currentUserProvider)
-        setupStoreKitWrapper()
+        setupStoreKit1Wrapper()
         setUpOrchestrator()
         setUpStoreKit2Listener()
     }
@@ -114,15 +114,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              storeKit2Setting: storeKit2Setting)
     }
 
-    fileprivate func setupStoreKitWrapper() {
-        storeKitWrapper = MockStoreKitWrapper()
-        storeKitWrapper.mockAddPaymentTransactionState = .purchased
-        storeKitWrapper.mockCallUpdatedTransactionInstantly = true
+    fileprivate func setupStoreKit1Wrapper() {
+        storeKit1Wrapper = MockStoreKit1Wrapper()
+        storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        storeKit1Wrapper.mockCallUpdatedTransactionInstantly = true
     }
 
     fileprivate func setUpOrchestrator() {
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
-                                             storeKitWrapper: storeKitWrapper,
+                                             storeKit1Wrapper: storeKit1Wrapper,
                                              systemInfo: systemInfo,
                                              subscriberAttributes: attribution,
                                              operationDispatcher: operationDispatcher,
@@ -135,7 +135,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              offeringsManager: mockOfferingsManager,
                                              manageSubscriptionsHelper: mockManageSubsHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
-        storeKitWrapper.delegate = orchestrator
+        storeKit1Wrapper.delegate = orchestrator
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -144,7 +144,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         storeKit2StorefrontListener: StoreKit2StorefrontListener
     ) {
         self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
-                                                  storeKitWrapper: self.storeKitWrapper,
+                                                  storeKit1Wrapper: self.storeKit1Wrapper,
                                                   systemInfo: self.systemInfo,
                                                   subscriberAttributes: self.attribution,
                                                   operationDispatcher: self.operationDispatcher,
@@ -159,7 +159,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
                                                   storeKit2TransactionListener: storeKit2TransactionListener,
                                                   storeKit2StorefrontListener: storeKit2StorefrontListener)
-        self.storeKitWrapper.delegate = self.orchestrator
+        self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
     // MARK: - tests
@@ -175,13 +175,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let payment = storeKitWrapper.payment(with: product)
+        let payment = storeKit1Wrapper.payment(with: product)
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
                                   payment: payment,
                                   package: package,
-                                  wrapper: self.storeKitWrapper) { transaction, customerInfo, error, userCancelled in
+                                  wrapper: self.storeKit1Wrapper) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -251,7 +251,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             orchestrator.purchase(sk1Product: product,
                                   promotionalOffer: offer,
                                   package: package,
-                                  wrapper: self.storeKitWrapper) { transaction, customerInfo, error, userCancelled in
+                                  wrapper: self.storeKit1Wrapper) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -271,7 +271,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let payment = self.storeKitWrapper.payment(with: product)
+        let payment = self.storeKit1Wrapper.payment(with: product)
         payment.productIdentifier = ""
 
         let (transaction, customerInfo, error, cancelled) =
@@ -280,7 +280,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                 sk1Product: product,
                 payment: payment,
                 package: package,
-                wrapper: self.storeKitWrapper
+                wrapper: self.storeKit1Wrapper
             ) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
@@ -514,7 +514,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func testClearCachedProductsAndOfferingsAfterStorefrontChangesWithSK1() async throws {
-        self.orchestrator.storeKitWrapperDidChangeStorefront(storeKitWrapper)
+        self.orchestrator.storeKit1WrapperDidChangeStorefront(storeKit1Wrapper)
 
         expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
         expect(self.productsManager.invokedInvalidateAndReFetchCachedProductsIfAppropiateCount) == 1

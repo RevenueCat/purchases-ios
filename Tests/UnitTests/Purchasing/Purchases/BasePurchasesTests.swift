@@ -101,7 +101,7 @@ class BasePurchasesTests: TestCase {
     var requestFetcher: MockRequestFetcher!
     var mockProductsManager: MockProductsManager!
     var backend: MockBackend!
-    let storeKitWrapper = MockStoreKitWrapper()
+    let storeKit1Wrapper = MockStoreKit1Wrapper()
     let notificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
@@ -152,7 +152,7 @@ class BasePurchasesTests: TestCase {
     func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
-            storeKitWrapper: self.storeKitWrapper,
+            storeKit1Wrapper: self.storeKit1Wrapper,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
@@ -181,7 +181,7 @@ class BasePurchasesTests: TestCase {
                                    attributionFetcher: self.attributionFetcher,
                                    attributionPoster: self.attributionPoster,
                                    backend: self.backend,
-                                   storeKitWrapper: self.storeKitWrapper,
+                                   storeKit1Wrapper: self.storeKit1Wrapper,
                                    paymentQueueWrapper: .init(),
                                    notificationCenter: self.notificationCenter,
                                    systemInfo: self.systemInfo,
@@ -212,10 +212,10 @@ class BasePurchasesTests: TestCase {
         purchases.purchase(product: product) { _, _, _, _ in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
         transaction.mockState = SKPaymentTransactionState.purchased
 
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
     }
 
 }

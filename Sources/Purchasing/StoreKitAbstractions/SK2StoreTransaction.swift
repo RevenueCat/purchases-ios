@@ -32,7 +32,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let transactionIdentifier: String
     let quantity: Int
 
-    func finish(_ wrapper: StoreKitWrapper) {
+    func finish(_ wrapper: StoreKit1Wrapper) {
         Task<Void, Never> {
             await self.underlyingSK2Transaction.finish()
         }

@@ -74,16 +74,16 @@ class PurchasesGetProductsBackgroundTests: BasePurchasesTests {
         let product = StoreProduct(sk1Product: sk1Product)
 
         let transaction = MockTransaction()
-        self.storeKitWrapper.payment = SKPayment(product: sk1Product)
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        self.storeKit1Wrapper.payment = SKPayment(product: sk1Product)
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
         transaction.mockState = SKPaymentTransactionState.purchasing
 
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.mockProductsManager.invokedProductsParameters).toEventually(contain([product.productIdentifier]))
 

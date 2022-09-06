@@ -137,15 +137,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      */
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     @objc public static var simulatesAskToBuyInSandbox: Bool {
-        get { StoreKitWrapper.simulatesAskToBuyInSandbox }
-        set { StoreKitWrapper.simulatesAskToBuyInSandbox = newValue }
+        get { StoreKit1Wrapper.simulatesAskToBuyInSandbox }
+        set { StoreKit1Wrapper.simulatesAskToBuyInSandbox = newValue }
     }
 
     /**
      * Indicates whether the user is allowed to make payments.
      * [More information on when this might be `false` here](https://rev.cat/can-make-payments-apple)
      */
-    @objc public static func canMakePayments() -> Bool { StoreKitWrapper.canMakePayments() }
+    @objc public static func canMakePayments() -> Bool { StoreKit1Wrapper.canMakePayments() }
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
@@ -248,7 +248,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
-    private let storeKitWrapper: StoreKitWrapper?
+    private let storeKit1Wrapper: StoreKit1Wrapper?
     private let paymentQueueWrapper: PaymentQueueWrapper
     private let systemInfo: SystemInfo
     private var customerInfoObservationDisposable: (() -> Void)?
@@ -288,10 +288,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                               eTagManager: eTagManager,
                               operationDispatcher: operationDispatcher,
                               attributionFetcher: attributionFetcher)
-        let storeKitWrapper: StoreKitWrapper? = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+        let storeKit1Wrapper: StoreKit1Wrapper? = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
         ? nil
-        : StoreKitWrapper()
-        let paymentQueueWrapper = storeKitWrapper?.createPaymentQueueWrapper() ?? .init()
+        : StoreKit1Wrapper()
+        let paymentQueueWrapper = storeKit1Wrapper?.createPaymentQueueWrapper() ?? .init()
 
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
@@ -343,7 +343,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return .init(
                     productsManager: productsManager,
-                    storeKitWrapper: storeKitWrapper,
+                    storeKit1Wrapper: storeKit1Wrapper,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,
@@ -362,7 +362,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             } else {
                 return .init(
                     productsManager: productsManager,
-                    storeKitWrapper: storeKitWrapper,
+                    storeKit1Wrapper: storeKit1Wrapper,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,
@@ -392,7 +392,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   attributionFetcher: attributionFetcher,
                   attributionPoster: attributionPoster,
                   backend: backend,
-                  storeKitWrapper: storeKitWrapper,
+                  storeKit1Wrapper: storeKit1Wrapper,
                   paymentQueueWrapper: paymentQueueWrapper,
                   notificationCenter: NotificationCenter.default,
                   systemInfo: systemInfo,
@@ -415,7 +415,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          attributionFetcher: AttributionFetcher,
          attributionPoster: AttributionPoster,
          backend: Backend,
-         storeKitWrapper: StoreKitWrapper?,
+         storeKit1Wrapper: StoreKit1Wrapper?,
          paymentQueueWrapper: PaymentQueueWrapper,
          notificationCenter: NotificationCenter,
          systemInfo: SystemInfo,
@@ -444,7 +444,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.attributionFetcher = attributionFetcher
         self.attributionPoster = attributionPoster
         self.backend = backend
-        self.storeKitWrapper = storeKitWrapper
+        self.storeKit1Wrapper = storeKit1Wrapper
         self.paymentQueueWrapper = paymentQueueWrapper
         self.offeringsFactory = offeringsFactory
         self.deviceCache = deviceCache
@@ -474,7 +474,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
-            storeKitWrapper?.delegate = purchasesOrchestrator
+            storeKit1Wrapper?.delegate = purchasesOrchestrator
         } else {
             Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
@@ -492,7 +492,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     deinit {
         self.notificationCenter.removeObserver(self)
-        self.storeKitWrapper?.delegate = nil
+        self.storeKit1Wrapper?.delegate = nil
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
         Self.proxyURL = nil
@@ -1690,7 +1690,7 @@ internal extension Purchases {
 
     /// For testing purposes
     var isStoreKit1Configured: Bool {
-        return self.storeKitWrapper != nil
+        return self.storeKit1Wrapper != nil
     }
 
 }

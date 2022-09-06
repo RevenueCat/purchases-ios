@@ -28,11 +28,11 @@ class PurchasesDelegateTests: BasePurchasesTests {
     func testDoesntSetWrapperDelegateToNilIfDelegateNil() {
         self.purchases.delegate = nil
 
-        expect(self.storeKitWrapper.delegate).toNot(beNil())
+        expect(self.storeKit1Wrapper.delegate).toNot(beNil())
 
         self.purchases.delegate = self.purchasesDelegate
 
-        expect(self.storeKitWrapper.delegate).toNot(beNil())
+        expect(self.storeKit1Wrapper.delegate).toNot(beNil())
     }
 
     func testSubscribesToUIApplicationDidBecomeActive() throws {
