@@ -6,7 +6,7 @@
 @testable import RevenueCat
 import StoreKit
 
-class MockStoreKitWrapper: StoreKitWrapper {
+class MockStoreKit1Wrapper: StoreKit1Wrapper {
     var payment: SKPayment?
     var addPaymentCallCount = 0
 
@@ -21,7 +21,7 @@ class MockStoreKitWrapper: StoreKitWrapper {
             let transaction = MockTransaction()
             transaction.mockPayment = newPayment
             transaction.mockState = mockAddPaymentTransactionState
-            delegate?.storeKitWrapper(self, updatedTransaction: transaction)
+            delegate?.storeKit1Wrapper(self, updatedTransaction: transaction)
         }
     }
 
@@ -31,8 +31,8 @@ class MockStoreKitWrapper: StoreKitWrapper {
         finishCalled = true
     }
 
-    weak var mockDelegate: StoreKitWrapperDelegate?
-    override var delegate: StoreKitWrapperDelegate? {
+    weak var mockDelegate: StoreKit1WrapperDelegate?
+    override var delegate: StoreKit1WrapperDelegate? {
         get {
             return mockDelegate
         }

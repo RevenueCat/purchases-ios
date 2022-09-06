@@ -49,7 +49,7 @@ final class PurchasesOrchestrator {
     }
 
     private let productsManager: ProductsManager
-    private let storeKitWrapper: StoreKitWrapper?
+    private let storeKit1Wrapper: StoreKit1Wrapper?
     private let systemInfo: SystemInfo
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
@@ -83,7 +83,7 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     convenience init(productsManager: ProductsManager,
-                     storeKitWrapper: StoreKitWrapper?,
+                     storeKit1Wrapper: StoreKit1Wrapper?,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
@@ -101,7 +101,7 @@ final class PurchasesOrchestrator {
     ) {
         self.init(
             productsManager: productsManager,
-            storeKitWrapper: storeKitWrapper,
+            storeKit1Wrapper: storeKit1Wrapper,
             systemInfo: systemInfo,
             subscriberAttributes: subscriberAttributes,
             operationDispatcher: operationDispatcher,
@@ -129,7 +129,7 @@ final class PurchasesOrchestrator {
     }
 
     init(productsManager: ProductsManager,
-         storeKitWrapper: StoreKitWrapper?,
+         storeKit1Wrapper: StoreKit1Wrapper?,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -143,7 +143,7 @@ final class PurchasesOrchestrator {
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper) {
         self.productsManager = productsManager
-        self.storeKitWrapper = storeKitWrapper
+        self.storeKit1Wrapper = storeKit1Wrapper
         self.systemInfo = systemInfo
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
@@ -246,14 +246,14 @@ final class PurchasesOrchestrator {
         Self.logPurchase(product: product, package: package)
 
         if let sk1Product = product.sk1Product {
-            guard let storeKitWrapper = self.storeKitWrapper(orFailWith: completion) else { return }
+            guard let storeKit1Wrapper = self.storeKit1Wrapper(orFailWith: completion) else { return }
 
-            let payment = storeKitWrapper.payment(with: sk1Product)
+            let payment = storeKit1Wrapper.payment(with: sk1Product)
 
             self.purchase(sk1Product: sk1Product,
                           payment: payment,
                           package: package,
-                          wrapper: storeKitWrapper,
+                          wrapper: storeKit1Wrapper,
                           completion: completion)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
@@ -273,12 +273,12 @@ final class PurchasesOrchestrator {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
 
         if let sk1Product = product.sk1Product {
-            guard let storeKitWrapper = self.storeKitWrapper(orFailWith: completion) else { return }
+            guard let storeKit1Wrapper = self.storeKit1Wrapper(orFailWith: completion) else { return }
 
             self.purchase(sk1Product: sk1Product,
                           promotionalOffer: promotionalOffer,
                           package: package,
-                          wrapper: storeKitWrapper,
+                          wrapper: storeKit1Wrapper,
                           completion: completion)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
@@ -294,7 +294,7 @@ final class PurchasesOrchestrator {
     func purchase(sk1Product: SK1Product,
                   promotionalOffer: PromotionalOffer,
                   package: Package?,
-                  wrapper: StoreKitWrapper,
+                  wrapper: StoreKit1Wrapper,
                   completion: @escaping PurchaseCompletedBlock) {
         let discount = promotionalOffer.signedData.sk1PromotionalOffer
         let payment = wrapper.payment(with: sk1Product, discount: discount)
@@ -308,11 +308,11 @@ final class PurchasesOrchestrator {
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   package: Package?,
-                  wrapper: StoreKitWrapper,
+                  wrapper: StoreKit1Wrapper,
                   completion: @escaping PurchaseCompletedBlock) {
         /**
          * Note: this only extracts the product identifier from `SKPayment`, ignoring the `SK1Product.identifier`
-         * because `storeKitWrapper(_:, updatedTransaction:)` only has a transaction and not the product.
+         * because `storeKit1Wrapper(_:, updatedTransaction:)` only has a transaction and not the product.
          * If the transaction is mising a product id, then we wouldn't be able to find the callback
          * in `purchaseCompleteCallbacksByProductID`, and therefore
          * we wouldn't be able to notify of the purchase result.
@@ -517,9 +517,9 @@ final class PurchasesOrchestrator {
 
 extension PurchasesOrchestrator {
 
-    /// - Returns: `StoreKitWrapper` if it's set, otherwise forwards an error to `completion` and returns `nil`
-    private func storeKitWrapper(orFailWith completion: @escaping PurchaseCompletedBlock) -> StoreKitWrapper? {
-        guard let storeKitWrapper = self.storeKitWrapper else {
+    /// - Returns: `StoreKit1Wrapper` if it's set, otherwise forwards an error to `completion` and returns `nil`
+    private func storeKit1Wrapper(orFailWith completion: @escaping PurchaseCompletedBlock) -> StoreKit1Wrapper? {
+        guard let storeKit1Wrapper = self.storeKit1Wrapper else {
             self.operationDispatcher.dispatchOnMainActor {
                 completion(nil,
                            nil,
@@ -531,22 +531,22 @@ extension PurchasesOrchestrator {
             return nil
         }
 
-        return storeKitWrapper
+        return storeKit1Wrapper
     }
 
 }
 
-// MARK: - StoreKitWrapperDelegate
+// MARK: - StoreKit1WrapperDelegate
 
-extension PurchasesOrchestrator: StoreKitWrapperDelegate {
+extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, updatedTransaction transaction: SKPaymentTransaction) {
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper, updatedTransaction transaction: SKPaymentTransaction) {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
         switch transaction.transactionState {
         case .restored, // for observer mode
              .purchased:
-            self.handlePurchasedTransaction(storeTransaction, storefront: storeKitWrapper.currentStorefront)
+            self.handlePurchasedTransaction(storeTransaction, storefront: storeKit1Wrapper.currentStorefront)
         case .purchasing:
             break
         case .failed:
@@ -558,14 +558,14 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         }
     }
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                         removedTransaction transaction: SKPaymentTransaction) {
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
+                          removedTransaction transaction: SKPaymentTransaction) {
         // unused for now
     }
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                         shouldAddStorePayment payment: SKPayment,
-                         for product: SK1Product) -> Bool {
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
+                          shouldAddStorePayment payment: SKPayment,
+                          for product: SK1Product) -> Bool {
         self.productsManager.cacheProduct(product)
         guard let delegate = self.delegate else { return false }
 
@@ -576,13 +576,13 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         let storeProduct = StoreProduct(sk1Product: product)
         delegate.readyForPromotedProduct(storeProduct) { completion in
             self.purchaseCompleteCallbacksByProductID.modify { $0[productIdentifier] = completion }
-            storeKitWrapper.add(payment)
+            storeKit1Wrapper.add(payment)
         }
         return false
     }
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                         didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
+                          didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
         Logger.debug(Strings.purchase.entitlements_revoked_syncing_purchases(productIdentifiers: productIdentifiers))
         syncPurchases { _ in
             Logger.debug(Strings.purchase.purchases_synced)
@@ -593,11 +593,11 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    var storeKitWrapperShouldShowPriceConsent: Bool {
+    var storeKit1WrapperShouldShowPriceConsent: Bool {
         return delegate?.shouldShowPriceConsent ?? true
     }
 
-    func storeKitWrapperDidChangeStorefront(_ storeKitWrapper: StoreKitWrapper) {
+    func storeKit1WrapperDidChangeStorefront(_ storeKit1Wrapper: StoreKit1Wrapper) {
         handleStorefrontChange()
     }
 
@@ -920,7 +920,7 @@ private extension PurchasesOrchestrator {
     func purchase(
         sk1Product: SK1Product,
         package: Package,
-        wrapper: StoreKitWrapper,
+        wrapper: StoreKit1Wrapper,
         completion: @escaping PurchaseCompletedBlock
     ) {
         let payment = wrapper.payment(with: sk1Product)
@@ -937,7 +937,7 @@ private extension PurchasesOrchestrator {
     }
 
     func finishTransactionIfNeeded(_ transaction: StoreTransaction) {
-        if self.finishTransactions, let wrapper = self.storeKitWrapper {
+        if self.finishTransactions, let wrapper = self.storeKit1Wrapper {
             transaction.finish(wrapper)
         }
     }

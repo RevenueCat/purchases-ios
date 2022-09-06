@@ -30,13 +30,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.backend.postedIsRestore) == false
@@ -47,8 +47,8 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
-        expect(self.storeKitWrapper.payment).toNot(beNil())
-        expect(self.storeKitWrapper.payment?.productIdentifier).to(equal(product.productIdentifier))
+        expect(self.storeKit1Wrapper.payment).toNot(beNil())
+        expect(self.storeKit1Wrapper.payment?.productIdentifier).to(equal(product.productIdentifier))
     }
 
     func testPurchaseProductCachesProduct() {
@@ -65,13 +65,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.backend.postedIsRestore) == false
@@ -84,13 +84,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.backend.postedIsRestore) == true
@@ -101,18 +101,18 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
     func testDoesntFinishTransactionsIfFinishingDisabled() throws {
@@ -121,18 +121,18 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
     func testAfterSendingDoesntFinishTransactionIfBackendError() {
@@ -140,7 +140,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
                 .init(code: .unknownBackendError, message: nil),
@@ -149,10 +149,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKitWrapper.finishCalled) == false
+        expect(self.storeKit1Wrapper.finishCalled) == false
     }
 
     func testAfterSendingFinishesFromBackendErrorIfAppropriate() {
@@ -160,7 +160,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
@@ -170,17 +170,17 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
     func testNotifiesIfTransactionFailsFromBackend() {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
@@ -190,10 +190,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKitWrapper.finishCalled) == false
+        expect(self.storeKit1Wrapper.finishCalled) == false
     }
 
     func testNotifiesIfTransactionFailsFromStoreKit() {
@@ -205,15 +205,15 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         let transaction = MockTransaction()
         transaction.mockError = NSError.init(domain: SKErrorDomain, code: 2, userInfo: nil)
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         self.backend.postReceiptResult = .failure(.missingTransactionProductIdentifier())
 
         transaction.mockState = SKPaymentTransactionState.failed
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == false
-        expect(self.storeKitWrapper.finishCalled) == true
+        expect(self.storeKit1Wrapper.finishCalled) == true
         expect(receivedError).toEventuallyNot(beNil())
     }
 
@@ -227,14 +227,14 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
 
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(callCount).toEventually(equal(1))
     }
@@ -248,9 +248,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventually(beFalse())
     }
@@ -281,10 +281,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
         transaction.mockState = .failed
         transaction.mockError = unknownError
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventually(beFalse())
         expect(receivedError).toEventuallyNot(beNil())
@@ -312,10 +312,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = try XCTUnwrap(self.storeKitWrapper.payment)
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         transaction.mockState = .failed
         transaction.mockError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventuallyNot(beNil())
 
@@ -346,13 +346,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             }
         }
 
-        expect(self.storeKitWrapper.payment).toEventuallyNot(beNil())
+        expect(self.storeKit1Wrapper.payment).toEventuallyNot(beNil())
 
         let transaction = MockTransaction()
-        transaction.mockPayment = try XCTUnwrap(self.storeKitWrapper.payment)
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         transaction.mockState = .failed
         transaction.mockError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
@@ -371,9 +371,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventually(beFalse())
         expect(receivedError).toEventuallyNot(beNil())
@@ -388,18 +388,18 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
     func testNoCrashIfPaymentIsMissing() {
@@ -408,10 +408,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         let transaction = SKPaymentTransaction()
 
         transaction.setValue(SKPaymentTransactionState.purchasing.rawValue, forKey: "transactionState")
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.setValue(SKPaymentTransactionState.purchased.rawValue, forKey: "transactionState")
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
     }
 
     func testNoCrashIfPaymentDoesNotHaveProductIdenfier() {
@@ -419,10 +419,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         transaction.mockPayment = SKPayment()
 
         transaction.setValue(SKPaymentTransactionState.purchasing.rawValue, forKey: "transactionState")
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.setValue(SKPaymentTransactionState.purchased.rawValue, forKey: "transactionState")
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
     }
 
     func testReceiptsSendsObserverModeOffWhenObserverModeOff() {
@@ -430,13 +430,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.backend.postedObserverMode) == false
@@ -450,13 +450,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.deferred
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == false
-        expect(self.storeKitWrapper.finishCalled) == false
+        expect(self.storeKit1Wrapper.finishCalled) == false
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
@@ -485,15 +485,15 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             self.purchases.purchase(package: package) { (_, _, _, _) in }
 
             let transaction = MockTransaction()
-            transaction.mockPayment = self.storeKitWrapper.payment!
+            transaction.mockPayment = self.storeKit1Wrapper.payment!
 
             transaction.mockState = SKPaymentTransactionState.purchasing
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
             self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
 
             transaction.mockState = SKPaymentTransactionState.purchased
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
         }
 
         expect(package).toEventuallyNot(beNil())
@@ -504,7 +504,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedProductID).to(equal(package.storeProduct.productIdentifier))
         expect(self.backend.postedPrice) == package.storeProduct.price
         expect(self.backend.postedOfferingIdentifier).to(equal("base"))
-        expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
     func testPurchasingPackageDoesntThrowPurchaseAlreadyInProgressIfCallbackMakesANewPurchase() throws {
@@ -564,10 +564,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(customerInfo).toEventually(equal(customerInfoAfterPurchase))
         expect(receivedError).toEventually(beNil())
@@ -592,7 +592,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         transaction.mockState = SKPaymentTransactionState.purchased
 
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(callCount).toEventually(equal(0))
     }
@@ -618,7 +618,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedInfo).to(beNil())
         expect(receivedError?.domain) == RCPurchasesErrorCodeDomain
         expect(receivedError?.code) == ErrorCode.operationAlreadyInProgressForProductError.rawValue
-        expect(self.storeKitWrapper.addPaymentCallCount) == 1
+        expect(self.storeKit1Wrapper.addPaymentCallCount) == 1
         expect(receivedUserCancelled) == false
     }
 
@@ -627,10 +627,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
         transaction.mockState = SKPaymentTransactionState.purchasing
 
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled).to(beFalse())
     }
@@ -659,13 +659,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = try XCTUnwrap(self.storeKitWrapper.payment)
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = .purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.deviceCache.cacheCustomerInfoCount).toEventually(equal(2))
@@ -704,10 +704,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
         transaction.mockState = .failed
         transaction.mockError = unknownError
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventuallyNot(beNil())
         expect(receivedUserCancelled) == true
@@ -722,15 +722,15 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             self.purchases.purchase(product: newProducts[0]) { (_, _, _, _) in }
 
             let transaction = MockTransaction()
-            transaction.mockPayment = self.storeKitWrapper.payment!
+            transaction.mockPayment = self.storeKit1Wrapper.payment!
 
             transaction.mockState = SKPaymentTransactionState.purchasing
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
             self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
 
             transaction.mockState = SKPaymentTransactionState.purchased
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
             expect(self.backend.postReceiptDataCalled).to(beTrue())
             expect(self.backend.postedReceiptData).toNot(beNil())
@@ -761,7 +761,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
             expect(self.backend.postedCurrencyCode) == product.priceFormatter!.currencyCode
 
-            expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+            expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
         }
     }
 
@@ -769,13 +769,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
     private func performTransaction() {
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
         self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
     }
 
 }
@@ -789,13 +789,13 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.backend.postedIsRestore) == true
@@ -810,13 +810,13 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.backend.postedIsRestore) == false
@@ -832,19 +832,19 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(
-            self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(
+            self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == false
-        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOff() throws {
@@ -857,19 +857,19 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == false
         // Sync purchases never finishes transactions
-        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
     func testDoesntFinishTransactionsIfObserverModeIsSet() throws {
@@ -879,18 +879,18 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
     func testReceiptsSendsObserverModeWhenObserverMode() throws {
@@ -900,13 +900,13 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.backend.postedObserverMode) == true
@@ -919,13 +919,13 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = self.storeKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.restored
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
 }

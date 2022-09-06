@@ -29,9 +29,9 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    private var delegate: StoreKitWrapperDelegate {
+    private var delegate: StoreKit1WrapperDelegate {
         get throws {
-            return try XCTUnwrap(self.storeKitWrapper.delegate)
+            return try XCTUnwrap(self.storeKit1Wrapper.delegate)
         }
     }
 
@@ -65,10 +65,10 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
         transaction.mockPayment = payment
 
         transaction.mockState = .purchasing
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = .purchased
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
@@ -94,15 +94,15 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
         transaction.mockPayment = payment
         transaction.mockState = .purchasing
 
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(customerInfo1)
         transaction.mockState = .purchased
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(customerInfo2)
         transaction.mockState = .purchased
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
@@ -137,15 +137,15 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
         transaction.mockPayment = payment
         transaction.mockState = .purchasing
 
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(customerInfo1)
         transaction.mockState = .purchased
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(customerInfo2)
         transaction.mockState = .purchased
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(3))
@@ -161,7 +161,7 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
         transaction.mockPayment = payment
         transaction.mockState = .purchased
 
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
@@ -194,10 +194,10 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
         transaction.mockPayment = payment
 
         transaction.mockState = .purchasing
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         transaction.mockState = .purchased
-        try self.delegate.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))

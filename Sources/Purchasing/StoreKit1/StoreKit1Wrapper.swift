@@ -7,36 +7,36 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RCStoreKitWrapper.swift
+//  RCStoreKit1Wrapper.swift
 //
 //  Created by RevenueCat.
 //
 
 import StoreKit
 
-protocol StoreKitWrapperDelegate: AnyObject {
+protocol StoreKit1WrapperDelegate: AnyObject {
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, updatedTransaction transaction: SKPaymentTransaction)
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper, updatedTransaction transaction: SKPaymentTransaction)
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, removedTransaction transaction: SKPaymentTransaction)
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper, removedTransaction transaction: SKPaymentTransaction)
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                         shouldAddStorePayment payment: SKPayment,
-                         for product: SK1Product) -> Bool
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
+                          shouldAddStorePayment payment: SKPayment,
+                          for product: SK1Product) -> Bool
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                         didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String])
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
+                          didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String])
 
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
-    var storeKitWrapperShouldShowPriceConsent: Bool { get }
+    var storeKit1WrapperShouldShowPriceConsent: Bool { get }
     #endif
 
-    func storeKitWrapperDidChangeStorefront(_ storeKitWrapper: StoreKitWrapper)
+    func storeKit1WrapperDidChangeStorefront(_ storeKit1Wrapper: StoreKit1Wrapper)
 
 }
 
-class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
+class StoreKit1Wrapper: NSObject, SKPaymentTransactionObserver {
 
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     static var simulatesAskToBuyInSandbox = false
@@ -50,7 +50,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
     }
 
     /// - Note: this is not thread-safe
-    weak var delegate: StoreKitWrapperDelegate? {
+    weak var delegate: StoreKit1WrapperDelegate? {
         didSet {
             if self.delegate != nil {
                 self.paymentQueue.add(self)
@@ -105,12 +105,12 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
 
 }
 
-extension StoreKitWrapper: SKPaymentQueueDelegate {
+extension StoreKit1Wrapper: SKPaymentQueueDelegate {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
             Logger.debug(Strings.purchase.paymentqueue_updatedtransaction(transaction: transaction))
-            self.delegate?.storeKitWrapper(self, updatedTransaction: transaction)
+            self.delegate?.storeKit1Wrapper(self, updatedTransaction: transaction)
         }
     }
 
@@ -118,7 +118,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
             Logger.debug(Strings.purchase.paymentqueue_removedtransaction(transaction: transaction))
-            self.delegate?.storeKitWrapper(self, removedTransaction: transaction)
+            self.delegate?.storeKit1Wrapper(self, removedTransaction: transaction)
         }
     }
 
@@ -127,7 +127,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     func paymentQueue(_ queue: SKPaymentQueue,
                       shouldAddStorePayment payment: SKPayment,
                       for product: SK1Product) -> Bool {
-        return self.delegate?.storeKitWrapper(self, shouldAddStorePayment: payment, for: product) ?? false
+        return self.delegate?.storeKit1Wrapper(self, shouldAddStorePayment: payment, for: product) ?? false
     }
 
     // Sent when access to a family shared subscription is revoked from a family member or canceled the subscription.
@@ -139,24 +139,24 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
                 productIdentifiers: productIdentifiers
             )
         )
-        self.delegate?.storeKitWrapper(self, didRevokeEntitlementsForProductIdentifiers: productIdentifiers)
+        self.delegate?.storeKit1Wrapper(self, didRevokeEntitlementsForProductIdentifiers: productIdentifiers)
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
-        return self.delegate?.storeKitWrapperShouldShowPriceConsent ?? true
+        return self.delegate?.storeKit1WrapperShouldShowPriceConsent ?? true
     }
     #endif
 
     // Sent when the storefront for the payment queue has changed.
     func paymentQueueDidChangeStorefront(_ queue: SKPaymentQueue) {
-        self.delegate?.storeKitWrapperDidChangeStorefront(self)
+        self.delegate?.storeKit1WrapperDidChangeStorefront(self)
     }
 
 }
 
-extension StoreKitWrapper {
+extension StoreKit1Wrapper {
 
     /// Creates a `PaymentQueueWrapper` backed by the same `SKPaymentQueue`.
     func createPaymentQueueWrapper() -> PaymentQueueWrapper {
@@ -167,4 +167,4 @@ extension StoreKitWrapper {
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
-extension StoreKitWrapper: @unchecked Sendable {}
+extension StoreKit1Wrapper: @unchecked Sendable {}

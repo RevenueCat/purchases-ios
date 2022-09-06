@@ -230,13 +230,13 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchases.isAnonymous).to(beFalse())
     }
 
-    func testSetsSelfAsStoreKitWrapperDelegate() {
+    func testSetsSelfAsStoreKit1WrapperDelegate() {
         self.setupPurchases()
 
-        expect(self.storeKitWrapper.delegate) === self.purchasesOrchestrator
+        expect(self.storeKit1Wrapper.delegate) === self.purchasesOrchestrator
     }
 
-    func testSetsSelfAsStoreKitWrapperDelegateForSK1() {
+    func testSetsSelfAsStoreKit1WrapperDelegateForSK1() {
         let configurationBuilder = Configuration.Builder(withAPIKey: "")
             .with(usesStoreKit2IfAvailable: false)
         let purchases = Purchases.configure(with: configurationBuilder.build())

@@ -1,5 +1,5 @@
 //
-//  StoreKitWrapperTests.swift
+//  StoreKit1WrapperTests.swift
 //  PurchasesTests
 //
 //  Created by RevenueCat.
@@ -46,51 +46,51 @@ class MockPaymentQueue: SKPaymentQueue {
 
 }
 
-class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
+class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     let paymentQueue = MockPaymentQueue()
 
-    var wrapper: StoreKitWrapper?
+    var wrapper: StoreKit1Wrapper?
 
     override func setUp() {
         super.setUp()
-        wrapper = StoreKitWrapper.init(paymentQueue: paymentQueue)
+        wrapper = StoreKit1Wrapper.init(paymentQueue: paymentQueue)
         wrapper?.delegate = self
     }
 
     var updatedTransactions: [SKPaymentTransaction] = []
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, updatedTransaction transaction: SKPaymentTransaction) {
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper, updatedTransaction transaction: SKPaymentTransaction) {
         updatedTransactions.append(transaction)
     }
 
     var removedTransactions: [SKPaymentTransaction] = []
 
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, removedTransaction transaction: SKPaymentTransaction) {
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper, removedTransaction transaction: SKPaymentTransaction) {
         removedTransactions.append(transaction)
     }
 
     var promoPayment: SKPayment?
     var promoProduct: SK1Product?
     var shouldAddPromo = false
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                         shouldAddStorePayment payment: SKPayment,
-                         for product: SK1Product) -> Bool {
+    func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
+                          shouldAddStorePayment payment: SKPayment,
+                          for product: SK1Product) -> Bool {
         promoPayment = payment
         promoProduct = product
         return shouldAddPromo
     }
 
     var storefrontChangesCount: Int = 0
-    func storeKitWrapperDidChangeStorefront(_ storeKitWrapper: StoreKitWrapper) {
+    func storeKit1WrapperDidChangeStorefront(_ storeKit1Wrapper: StoreKit1Wrapper) {
         storefrontChangesCount += 1
     }
 
-    var storeKitWrapperShouldShowPriceConsent = true
+    var storeKit1WrapperShouldShowPriceConsent = true
 
     var productIdentifiersWithRevokedEntitlements: [String]?
 
-    func storeKitWrapper(
-        _ storeKitWrapper: StoreKitWrapper,
+    func storeKit1Wrapper(
+        _ storeKit1Wrapper: StoreKit1Wrapper,
         didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]
     ) {
         productIdentifiersWithRevokedEntitlements = productIdentifiers
@@ -228,11 +228,11 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
 
         let mockProduct = MockSK1Product(mockProductIdentifier: "mySuperProduct")
 
-        StoreKitWrapper.simulatesAskToBuyInSandbox = false
+        StoreKit1Wrapper.simulatesAskToBuyInSandbox = false
         let payment1 = wrapper.payment(with: mockProduct)
         expect(payment1.simulatesAskToBuyInSandbox) == false
 
-        StoreKitWrapper.simulatesAskToBuyInSandbox = true
+        StoreKit1Wrapper.simulatesAskToBuyInSandbox = true
         let payment2 = wrapper.payment(with: mockProduct)
         expect(payment2.simulatesAskToBuyInSandbox) == true
     }
@@ -262,11 +262,11 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
         let mockProduct = MockSK1Product(mockProductIdentifier: "mySuperProduct")
         let mockDiscount = MockPaymentDiscount(mockIdentifier: "mySuperDiscount")
 
-        StoreKitWrapper.simulatesAskToBuyInSandbox = false
+        StoreKit1Wrapper.simulatesAskToBuyInSandbox = false
         let payment1 = wrapper.payment(with: mockProduct, discount: mockDiscount)
         expect(payment1.simulatesAskToBuyInSandbox) == false
 
-        StoreKitWrapper.simulatesAskToBuyInSandbox = true
+        StoreKit1Wrapper.simulatesAskToBuyInSandbox = true
         let payment2 = wrapper.payment(with: mockProduct)
         expect(payment2.simulatesAskToBuyInSandbox) == true
     }
@@ -276,9 +276,9 @@ class StoreKitWrapperTests: TestCase, StoreKitWrapperDelegate {
         guard #available(iOS 13.4, macCatalyst 13.4, *) else {
             throw XCTSkip()
         }
-        expect(self.storeKitWrapperShouldShowPriceConsent) == true
+        expect(self.storeKit1WrapperShouldShowPriceConsent) == true
 
-        self.storeKitWrapperShouldShowPriceConsent = false
+        self.storeKit1WrapperShouldShowPriceConsent = false
 
         let consentStatuses = self.paymentQueue.simulatePaymentQueueShouldShowPriceConsent()
         expect(consentStatuses) == [false]

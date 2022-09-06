@@ -22,7 +22,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     let mockRequestFetcher = MockRequestFetcher()
     var mockProductsManager: MockProductsManager!
     let mockBackend = MockBackend()
-    let mockStoreKitWrapper = MockStoreKitWrapper()
+    let mockStoreKit1Wrapper = MockStoreKit1Wrapper()
     let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let mockOfferingsFactory = MockOfferingsFactory()
@@ -139,7 +139,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.mockIdentityManager.mockIsAnonymous = false
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
-                                                          storeKitWrapper: mockStoreKitWrapper,
+                                                          storeKit1Wrapper: mockStoreKit1Wrapper,
                                                           systemInfo: systemInfo,
                                                           subscriberAttributes: attribution,
                                                           operationDispatcher: mockOperationDispatcher,
@@ -167,7 +167,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               attributionFetcher: mockAttributionFetcher,
                               attributionPoster: mockAttributionPoster,
                               backend: mockBackend,
-                              storeKitWrapper: mockStoreKitWrapper,
+                              storeKit1Wrapper: mockStoreKit1Wrapper,
                               paymentQueueWrapper: .init(),
                               notificationCenter: mockNotificationCenter,
                               systemInfo: systemInfo,
@@ -688,18 +688,18 @@ class PurchasesSubscriberAttributesTests: TestCase {
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.mockStoreKitWrapper.payment!
+        transaction.mockPayment = self.mockStoreKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+        self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
         self.mockBackend.stubbedPostReceiptResult = .success(CustomerInfo(testData: emptyCustomerInfoData)!)
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+        self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.mockBackend.invokedPostReceiptData).to(beTrue())
-        expect(self.mockStoreKitWrapper.finishCalled).toEventually(beTrue())
+        expect(self.mockStoreKit1Wrapper.finishCalled).toEventually(beTrue())
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) ==
@@ -714,10 +714,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.mockStoreKitWrapper.payment!
+        transaction.mockPayment = self.mockStoreKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+        self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
         self.mockBackend.stubbedPostReceiptResult = .failure(
             .networkError(.errorResponse(
@@ -727,7 +727,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+        self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.mockBackend.invokedPostReceiptData).toEventually(equal(true))
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes).toEventually(equal(true))
@@ -744,10 +744,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.mockStoreKitWrapper.payment!
+        transaction.mockPayment = self.mockStoreKit1Wrapper.payment!
 
         transaction.mockState = SKPaymentTransactionState.purchasing
-        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+        self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
         self.mockBackend.stubbedPostReceiptResult = .failure(
             .networkError(.errorResponse(
@@ -757,7 +757,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+        self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.mockBackend.invokedPostReceiptData).to(beTrue())
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == false

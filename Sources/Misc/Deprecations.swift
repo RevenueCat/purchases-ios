@@ -403,7 +403,7 @@ extension CustomerInfo {
             self.quantity = 1
         }
 
-        func finish(_ wrapper: StoreKitWrapper) {
+        func finish(_ wrapper: StoreKit1Wrapper) {
             // Nothing to do
         }
 
