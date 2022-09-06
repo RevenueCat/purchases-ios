@@ -38,6 +38,8 @@ enum OfferingStrings {
     case configuration_error_no_products_for_offering
     case offering_empty(offeringIdentifier: String)
     case product_details_empty_title(productIdentifier: String)
+    case unknown_package_type(Package)
+    case custom_package_type(Package)
 
 }
 
@@ -126,6 +128,11 @@ extension OfferingStrings: CustomStringConvertible {
         case let .product_details_empty_title(identifier):
             return "Empty Product titles are not supported. Found in product with identifier: \(identifier)"
 
+        case let .unknown_package_type(package):
+            return "Unknown subscription length for package '\(package.offeringIdentifier)'. Ignoring."
+
+        case let .custom_package_type(package):
+            return "Package '\(package.offeringIdentifier)' has a custom duration. Ignoring."
         }
     }
 
