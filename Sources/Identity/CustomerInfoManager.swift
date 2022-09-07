@@ -42,7 +42,7 @@ class CustomerInfoManager {
             switch result {
             case let .failure(error):
                 self.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
-                Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error: error))
+                Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error))
 
             case let .success(info):
                 self.cache(customerInfo: info, appUserID: appUserID)

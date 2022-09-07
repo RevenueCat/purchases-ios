@@ -153,6 +153,27 @@ extension BackendError {
 
 extension BackendError {
 
+    var underlyingError: Error? {
+        switch self {
+        case let .networkError(error):
+            return error
+
+        case .missingAppUserID,
+                .emptySubscriberAttributes,
+                .missingReceiptFile,
+                .missingTransactionProductIdentifier,
+                .missingCachedCustomerInfo:
+            return nil
+
+        case let .unexpectedBackendResponse(error, _, _):
+            return error
+        }
+    }
+
+}
+
+extension BackendError {
+
     enum UnexpectedBackendResponseError: Error, Equatable {
 
         /// Login call failed due to a problem with the response.
