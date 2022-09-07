@@ -26,7 +26,7 @@ aliases:
       branches:
         only: /^release\/.*/
   release-tags: &release-tags
-    filters: 
+    filters:
       tags:
         ignore: /^.*-SNAPSHOT/
       branches:
@@ -39,6 +39,12 @@ aliases:
         only:
           - main
           - /^release\/.*/
+  only-main-branch: &only-main-branch
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only: main
 
 commands:
   install-and-create-sim:
@@ -70,9 +76,9 @@ commands:
     steps:
       # Bundler
       - restore_cache:
-          keys: 
+          keys:
             - v2-gem-cache-{{ checksum "Gemfile.lock" }}
-      - run: 
+      - run:
           name: Bundle install
           working_directory: << parameters.directory >>
           command: |
@@ -89,13 +95,13 @@ commands:
       - run:
           name: Install xcbeautify
           command: brew install xcbeautify
-  
+
   install-rubydocker-dependencies:
     steps:
       - restore_cache:
-          keys: 
+          keys:
             - v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}
-      - run: 
+      - run:
           name: Bundle install
           command: bundle install --clean --path vendor/bundle
       - save_cache:
@@ -110,7 +116,7 @@ commands:
       bundle_name:
         type: string
     steps:
-      - run: 
+      - run:
           name: Compress result bundle
           command: |
              tar -czf xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
@@ -123,7 +129,7 @@ commands:
       directory:
         type: string
     steps:
-      - run: 
+      - run:
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
       - run:
@@ -163,7 +169,7 @@ commands:
           working_directory: << parameters.directory >>
           command: |
               bundle exec fastlane archive_all_platforms
-  
+
   install-dependencies-scan-and-archive:
     parameters:
       directory:
@@ -173,7 +179,7 @@ commands:
           directory: << parameters.directory >>
       - scan-and-archive:
           directory: << parameters.directory >>
-  
+
   setup-git-credentials:
      steps:
        - run:
@@ -181,7 +187,7 @@ commands:
            command: |
              git config user.email $GIT_EMAIL
              git config user.name $GIT_USERNAME
-  
+
   trust-github-key:
     steps:
       - run:
@@ -379,14 +385,14 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  release-checks: 
+  release-checks:
     <<: *base-job
     steps:
       - checkout
       - trust-github-key
       # Bundler
       - restore_cache:
-          keys: 
+          keys:
             - v2-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: bundle install --clean --path vendor/bundle
       - save_cache:
@@ -404,7 +410,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
-          
+
   docs-deploy:
     <<: *base-job
     steps:
@@ -413,7 +419,7 @@ jobs:
       - run:
           name: Build docs
           command: bundle exec fastlane generate_docs
-  
+
   make-release:
     <<: *base-job
     steps:
@@ -449,7 +455,7 @@ jobs:
               pod install
       - scan-and-archive:
           directory: Tests/InstallationTests/CocoapodsInstallation
-      
+
   installation-tests-swift-package-manager:
     <<: *base-job
     steps:
@@ -477,7 +483,7 @@ jobs:
               ./carthage.sh update --no-build
               rm -rf Carthage/Checkouts/purchases-root/Tests/InstallationTests/
               ./carthage.sh build --use-xcframeworks
-      
+
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
 
@@ -518,10 +524,10 @@ jobs:
     steps:
       - checkout
       - install-rubydocker-dependencies
-      - run: 
+      - run:
           name: Run Danger
           command: bundle exec danger --verbose
-  
+
   tag-release-branch:
     docker:
       - image: cimg/ruby:3.1.2
@@ -532,10 +538,10 @@ jobs:
       - setup-git-credentials
       - trust-github-key
       - install-rubydocker-dependencies
-      - run: 
+      - run:
           name: Tag branch
           command: bundle exec fastlane tag_current_branch
-  
+
   release-train:
     <<: *base-job
     steps:
@@ -543,7 +549,7 @@ jobs:
       - setup-git-credentials
       - trust-github-key
       - install-dependencies
-      - run: 
+      - run:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
@@ -610,12 +616,17 @@ workflows:
       - make-release:
           xcode_version: '13.4.1'
           <<: *release-tags
-      - prepare-next-version:
-          xcode_version: '13.4.1'
-          <<: *release-tags
       - docs-deploy:
           xcode_version: '14.0.0'
           <<: *release-tags
+  snapshot-bump:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+    jobs:
+      - prepare-next-version:
+          xcode_version: '13.4.1'
+          <<: *only-main-branch
   danger:
     jobs:
       - danger
