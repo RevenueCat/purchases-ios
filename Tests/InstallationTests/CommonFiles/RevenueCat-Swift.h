@@ -229,6 +229,7 @@ SWIFT_CLASS_NAMED("Attribution")
 
 
 
+
 SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(maccatalyst,introduced=14.3) SWIFT_AVAILABILITY(macos,introduced=11.1) SWIFT_AVAILABILITY(ios,introduced=14.3)
 @interface RCAttribution (SWIFT_EXTENSION(RevenueCat))
 /// Enable automatic collection of AdServices attribution token.
@@ -752,6 +753,7 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 @end
 
 
+
 enum RCPeriodType : NSInteger;
 enum RCStore : NSInteger;
 enum RCPurchaseOwnershipType : NSInteger;
@@ -991,9 +993,14 @@ SWIFT_CLASS_NAMED("IntroEligibility")
 @interface RCIntroEligibility : NSObject
 /// The introductory price eligibility status
 @property (nonatomic, readonly) enum RCIntroEligibilityStatus status;
-@property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
+
+
+@interface RCIntroEligibility (SWIFT_EXTENSION(RevenueCat))
+@property (nonatomic, readonly, copy) NSString * _Nonnull description;
 @end
 
 /// Enum of different possible states for intro price eligibility status.
@@ -1150,6 +1157,7 @@ SWIFT_CLASS_NAMED("Offerings")
 @end
 
 
+
 enum RCPackageType : NSInteger;
 @class RCStoreProduct;
 
@@ -1295,6 +1303,7 @@ SWIFT_CLASS("_TtC10RevenueCat18ProductsFetcherSK1")
 
 
 
+
 @class SKProductsRequest;
 @class SKProductsResponse;
 @class SKRequest;
@@ -1311,6 +1320,7 @@ SWIFT_CLASS("_TtC10RevenueCat15ProductsManager")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
 
 
 @class RCStoreProductDiscount;
@@ -1354,6 +1364,7 @@ SWIFT_CLASS_NAMED("PromotionalOffer")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
 
 
 @interface RCPromotionalOffer (SWIFT_EXTENSION(RevenueCat))
@@ -1430,6 +1441,8 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly) BOOL isConfigured;)
 + (BOOL)isConfigured SWIFT_WARN_UNUSED_RESULT;
 /// Delegate for <code>Purchases</code> instance. The delegate is responsible for handling promotional product purchases and
 /// changes to customer information.
+/// note:
+/// this is not thread-safe.
 @property (nonatomic, strong) id <RCPurchasesDelegate> _Nullable delegate;
 /// Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
 /// <h4>Related Symbols</h4>
@@ -1550,6 +1563,8 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 
 
 
+
+@class NSError;
 
 SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @protocol PurchasesOrchestratorDelegate
@@ -1969,7 +1984,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)identify:(NSString * _Nonnull)appUserID completionBlock:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,obsoleted=1,message="'identify' has been renamed to 'logIn'") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'identify' has been renamed to 'logIn'") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'identify' has been renamed to 'logIn'") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'identify' has been renamed to 'logIn'");
 /// Resets the Purchases client clearing the saved appUserID.
 /// This will generate a random user id and save it in the cache.
-- (void)resetWithCompletionBlock:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,obsoleted=1,message="'reset' has been renamed to 'logOutWithCompletion:'") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'reset' has been renamed to 'logOutWithCompletion:'") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'reset' has been renamed to 'logOutWithCompletion:'") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'reset' has been renamed to 'logOutWithCompletion:'");
+- (void)resetWithCompletionBlock:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,obsoleted=1,message="'reset' has been renamed to 'logOut'") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'reset' has been renamed to 'logOut'") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'reset' has been renamed to 'logOut'") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'reset' has been renamed to 'logOut'");
 @end
 
 
@@ -2031,7 +2046,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will
 /// handle this for you.
 /// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
-/// If the purchase was not successful, there will be an <code>Error</code>.
+/// If the purchase was not successful, there will be an <code>NSError</code>.
 /// If the user cancelled, <code>userCancelled</code> will be <code>true</code>.
 /// \param package The <code>Package</code> the user intends to purchase
 ///
@@ -2050,7 +2065,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will handle
 /// this for you.
 /// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
-/// If the purchase was not successful, there will be an <code>Error</code>.
+/// If the purchase was not successful, there will be an <code>NSError</code>.
 /// If the user cancelled, <code>userCancelled</code> will be <code>true</code>.
 /// <h4>Related Symbols</h4>
 /// <ul>
@@ -2079,7 +2094,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 /// You do not need to finish the transaction yourself in the completion callback, Purchases will handle
 /// this for you.
 /// If the purchase was successful there will be a <code>StoreTransaction</code> and a <code>CustomerInfo</code>.
-/// If the purchase was not successful, there will be an <code>Error</code>.
+/// If the purchase was not successful, there will be an <code>NSError</code>.
 /// If the user cancelled, <code>userCancelled</code> will be <code>true</code>.
 /// \param package The <code>Package</code> the user intends to purchase
 ///
@@ -2275,6 +2290,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCRefundRequestStatus, "RefundRequestStatus"
 
 
 
+
 /// Enum of supported stores
 typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
 /// For entitlements granted via Apple App Store.
@@ -2294,6 +2310,26 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
 };
 
 
+SWIFT_CLASS("_TtC10RevenueCat16StoreKit1Wrapper")
+@interface StoreKit1Wrapper : NSObject <SKPaymentTransactionObserver>
+- (nonnull instancetype)init;
+@end
+
+
+
+@class SKPaymentQueue;
+@class SKPaymentTransaction;
+@class SKPayment;
+
+@interface StoreKit1Wrapper (SWIFT_EXTENSION(RevenueCat)) <SKPaymentQueueDelegate>
+- (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue updatedTransactions:(NSArray<SKPaymentTransaction *> * _Nonnull)transactions;
+- (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue removedTransactions:(NSArray<SKPaymentTransaction *> * _Nonnull)transactions;
+- (BOOL)paymentQueue:(SKPaymentQueue * _Nonnull)queue shouldAddStorePayment:(SKPayment * _Nonnull)payment forProduct:(SKProduct * _Nonnull)product SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,unavailable);
+- (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> * _Nonnull)productIdentifiers SWIFT_AVAILABILITY(watchos,introduced=7.0) SWIFT_AVAILABILITY(tvos,introduced=14.0) SWIFT_AVAILABILITY(macos,introduced=11.0) SWIFT_AVAILABILITY(ios,introduced=14.0);
+- (void)paymentQueueDidChangeStorefront:(SKPaymentQueue * _Nonnull)queue;
+@end
+
+
 SWIFT_CLASS("_TtC10RevenueCat22StoreKitRequestFetcher")
 @interface StoreKitRequestFetcher : NSObject
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -2302,27 +2338,10 @@ SWIFT_CLASS("_TtC10RevenueCat22StoreKitRequestFetcher")
 
 
 
+
 @interface StoreKitRequestFetcher (SWIFT_EXTENSION(RevenueCat)) <SKRequestDelegate>
 - (void)requestDidFinish:(SKRequest * _Nonnull)request;
 - (void)request:(SKRequest * _Nonnull)request didFailWithError:(NSError * _Nonnull)error;
-@end
-
-
-SWIFT_CLASS("_TtC10RevenueCat15StoreKitWrapper")
-@interface StoreKitWrapper : NSObject <SKPaymentTransactionObserver>
-- (nonnull instancetype)init;
-@end
-
-@class SKPaymentQueue;
-@class SKPaymentTransaction;
-@class SKPayment;
-
-@interface StoreKitWrapper (SWIFT_EXTENSION(RevenueCat)) <SKPaymentQueueDelegate>
-- (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue updatedTransactions:(NSArray<SKPaymentTransaction *> * _Nonnull)transactions;
-- (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue removedTransactions:(NSArray<SKPaymentTransaction *> * _Nonnull)transactions;
-- (BOOL)paymentQueue:(SKPaymentQueue * _Nonnull)queue shouldAddStorePayment:(SKPayment * _Nonnull)payment forProduct:(SKProduct * _Nonnull)product SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,unavailable);
-- (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> * _Nonnull)productIdentifiers SWIFT_AVAILABILITY(watchos,introduced=7.0) SWIFT_AVAILABILITY(tvos,introduced=14.0) SWIFT_AVAILABILITY(macos,introduced=11.0) SWIFT_AVAILABILITY(ios,introduced=14.0);
-- (void)paymentQueueDidChangeStorefront:(SKPaymentQueue * _Nonnull)queue;
 @end
 
 enum RCStoreProductType : NSInteger;
@@ -2539,6 +2558,7 @@ SWIFT_CLASS_NAMED("Storefront")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
 
 @class SKStorefront;
 
