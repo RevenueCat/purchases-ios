@@ -52,7 +52,7 @@ class SystemInfo {
     }
 
     static var systemVersion: String {
-        return ProcessInfo().operatingSystemVersionString
+        return ProcessInfo.processInfo.operatingSystemVersionString
     }
 
     static var appVersion: String {
@@ -227,22 +227,36 @@ private extension SystemInfo {
     #elseif os(watchOS)
 
     var isApplicationBackgroundedWatchOS: Bool {
-        // In Xcode 13 and earlier the system divides a watchOS app into two sections:
-        // - WatchKit app
-        // - WatchKit extension
+        var isSingleTargetApplication: Bool {
+            return Bundle.main.infoDictionary?.keys.contains("WKApplication") == true
+        }
+
         // In Xcode 14 and later, you can produce watchOS apps with a single watchOS app target.
         // These single-target watchOS apps can run on watchOS 7 and later.
-        // Calling `WKExtension.shared` on these single-target apps crashes.
-        //
-        // `WKApplication` provides a more accurate value if it's available, and it avoids that crash.
         #if swift(>=5.7)
-        if #available(watchOS 7.0, *) {
+        if #available(watchOS 7.0, *), self.isOperatingSystemAtLeast(.init(majorVersion: 9,
+                                                                           minorVersion: 0,
+                                                                           patchVersion: 0)) {
+            // `WKApplication` works on both dual-target and single-target apps
+            // When running on watchOS 9.0+
             return WKApplication.shared().applicationState == .background
         } else {
-            return WKExtension.shared().applicationState == .background
+            if isSingleTargetApplication {
+                // Before watchOS 9.0, single-target apps don't allow using `WKExtension` or `WKApplication`
+                // (see https://github.com/RevenueCat/purchases-ios/issues/1891)
+                // So we can't detect if it's running in the background
+                return false
+            } else {
+                return WKExtension.shared().applicationState == .background
+            }
         }
         #else
-        // Before Xcode 14, single-target extensions aren't supported (and WKApplication isn't available)
+        // In Xcode 13 and earlier the system divides a watchOS app into two sections
+        // (single-target apps are not supported):
+        // - WatchKit app
+        // - WatchKit extension
+
+        // Before Xcode 14, single-target extensions aren't supported (and `WKApplication` isn't available)
         return WKExtension.shared().applicationState == .background
         #endif
     }
