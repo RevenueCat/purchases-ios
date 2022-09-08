@@ -22,8 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
         RCPurchases.proxyURL = [NSURL URLWithString:proxyURL];
     }
 
-    [RCPurchases configureWithAPIKey:@"REVENUECAT_API_KEY"
-                           appUserID:@"integrationTest"];
+    [RCPurchases configureWithConfiguration:[[[RCConfiguration builderWithAPIKey:@"REVENUECAT_API_KEY"]
+                                              withAppUserID:@"integrationTest"]
+                                             build]];
 }
 
 - (void)getCustomerInfoWithCompletion:(void (^)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion {
