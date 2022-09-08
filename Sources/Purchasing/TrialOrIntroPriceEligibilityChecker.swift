@@ -54,8 +54,8 @@ class TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        // Note: this uses SK2 (unless it's explicitly disabled) because its implementation is more accurate.
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *), self.systemInfo.storeKit2Setting != .disabled {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+            self.systemInfo.storeKit2Setting  == .enabledForCompatibleDevices {
             _ = Task<Void, Never> {
                 do {
                     completion(try await sk2CheckEligibility(productIdentifiers))
