@@ -1,5 +1,6 @@
 ## 4.12.0
 ### Bugfixes
+* `watchOS`: fixed crash when ran on single-target apps with Xcode 14 and before `watchOS 9.0` (#1895) via NachoSoto (@NachoSoto)
 * `CustomerInfoManager`/`OfferingsManager`: improved display of underlying errors (#1888) via NachoSoto (@NachoSoto)
 * `Offering`: improved confusing log for `PackageType.custom` (#1884) via NachoSoto (@NachoSoto)
 * `PurchasesOrchestrator`: don't log warning if `allowSharingAppStoreAccount` setting was never explicitly set (#1885) via NachoSoto (@NachoSoto)
