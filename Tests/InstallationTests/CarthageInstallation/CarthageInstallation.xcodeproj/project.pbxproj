@@ -18,6 +18,7 @@
 		2D6C03212549FF4F0039CB92 /* RCInstallationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C02F02549FE2C0039CB92 /* RCInstallationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D6C0393254A04300039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0392254A04300039CB92 /* Dummy.swift */; };
 		2DC19168255F1D100039389A /* InstallationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19167255F1D0F0039389A /* InstallationTests.swift */; };
+		57CFCF3028CA6DD400B4BF4D /* RCInstallationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02E72549FE2C0039CB92 /* RCInstallationRunner.m */; };
 		B33EDF7326E2D53F00F379EA /* RevenueCat.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B33EDF7226E2D53F00F379EA /* RevenueCat.xcframework */; };
 /* End PBXBuildFile section */
 
@@ -209,7 +210,6 @@
 					2D6C02972549F7700039CB92 = {
 						CreatedOnToolsVersion = 12.1;
 						LastSwiftMigration = 1210;
-						TestTargetID = 2D6C027C2549F76E0039CB92;
 					};
 				};
 			};
@@ -270,6 +270,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57CFCF3028CA6DD400B4BF4D /* RCInstallationRunner.m in Sources */,
 				2DC19168255F1D100039389A /* InstallationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -473,7 +474,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -491,7 +491,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CarthageInstallation.app/CarthageInstallation";
 			};
 			name = Debug;
 		};
@@ -499,7 +498,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -516,7 +514,6 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageInstallationTests/CarthageInstallationTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CarthageInstallation.app/CarthageInstallation";
 			};
 			name = Release;
 		};
