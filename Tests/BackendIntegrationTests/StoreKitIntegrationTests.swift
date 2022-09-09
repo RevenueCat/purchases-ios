@@ -432,9 +432,14 @@ private extension StoreKit1IntegrationTests {
     ) async throws -> PurchaseResultData {
         let data = try await Purchases.shared.purchase(package: self.weeklyPackage)
 
-        try self.verifyEntitlementWentThrough(data.customerInfo,
-                                              file: file,
-                                              line: line)
+        try self.verifyEntitlementWentThrough(
+            data.customerInfo,
+            // Weekly subscriptions expire in 1 second with this `SKTestTimeRate`.
+            // This short interval can lead to false negatives.
+            verifyEntitlementIsActive: false,
+            file: file,
+            line: line
+        )
 
         return data
     }
@@ -442,6 +447,7 @@ private extension StoreKit1IntegrationTests {
     @discardableResult
     func verifyEntitlementWentThrough(
         _ customerInfo: CustomerInfo,
+        verifyEntitlementIsActive: Bool = true,
         file: FileString = #file,
         line: UInt = #line
     ) throws -> EntitlementInfo {
@@ -455,7 +461,14 @@ private extension StoreKit1IntegrationTests {
             description: "Expected Entitlement. Got: \(entitlements)"
         )
 
-        return try XCTUnwrap(entitlements[Self.entitlementIdentifier])
+        let entitlement = try XCTUnwrap(entitlements[Self.entitlementIdentifier])
+
+        if verifyEntitlementIsActive {
+            expect(file: file, line: line, entitlement.isActive)
+                .to(beTrue(), description: "Entitlement is not active")
+        }
+
+        return entitlement
     }
 
     func assertNoActiveSubscription(
