@@ -435,6 +435,7 @@ private extension StoreKit1IntegrationTests {
         try self.verifyEntitlementWentThrough(
             data.customerInfo,
             // Weekly subscriptions expire in 1 second with this `SKTestTimeRate`.
+            // This short interval can lead to false negatives.
             verifyEntitlementIsActive: false,
             file: file,
             line: line
