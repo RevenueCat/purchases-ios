@@ -11,7 +11,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
