@@ -284,10 +284,9 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
         expect(created) == true
 
-        try await self.purchaseWeeklyOffering()
-        var customerInfo = try await Purchases.shared.syncPurchases()
+        var customerInfo = try await self.purchaseWeeklyOffering().customerInfo
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all[Self.entitlementIdentifier])
 
-        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
         try await self.expireSubscription(entitlement)
 
         customerInfo = try await Purchases.shared.syncPurchases()
