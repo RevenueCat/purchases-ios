@@ -82,6 +82,16 @@ extension PromotionalOffer.SignedData: @unchecked Sendable {}
 
 extension PromotionalOffer.SignedData {
 
+    // TODO: test create from SK1 and get SK2
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
+    convenience init(sk1PaymentDiscount discount: SKPaymentDiscount) {
+        self.init(identifier: discount.identifier,
+                  keyIdentifier: discount.keyIdentifier,
+                  nonce: discount.nonce,
+                  signature: discount.signature,
+                  timestamp: discount.timestamp.intValue)
+    }
+
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     var sk1PromotionalOffer: SKPaymentDiscount {
         return SKPaymentDiscount(identifier: self.identifier,

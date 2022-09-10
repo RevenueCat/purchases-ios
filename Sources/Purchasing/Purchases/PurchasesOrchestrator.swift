@@ -268,7 +268,7 @@ final class PurchasesOrchestrator {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(product: StoreProduct,
                   package: Package?,
-                  promotionalOffer: PromotionalOffer,
+                  promotionalOffer: PromotionalOffer.SignedData,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
 
@@ -292,11 +292,11 @@ final class PurchasesOrchestrator {
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(sk1Product: SK1Product,
-                  promotionalOffer: PromotionalOffer,
+                  promotionalOffer: PromotionalOffer.SignedData,
                   package: Package?,
                   wrapper: StoreKit1Wrapper,
                   completion: @escaping PurchaseCompletedBlock) {
-        let discount = promotionalOffer.signedData.sk1PromotionalOffer
+        let discount = promotionalOffer.sk1PromotionalOffer
         let payment = wrapper.payment(with: sk1Product, discount: discount)
         self.purchase(sk1Product: sk1Product,
                       payment: payment,
@@ -373,7 +373,7 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(sk2Product product: SK2Product,
-                  promotionalOffer: PromotionalOffer?,
+                  promotionalOffer: PromotionalOffer.SignedData?,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
             do {
@@ -409,13 +409,13 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(
         sk2Product: SK2Product,
-        promotionalOffer: PromotionalOffer?
+        promotionalOffer: PromotionalOffer.SignedData?
     ) async throws -> PurchaseResultData {
         var options: Set<Product.PurchaseOption> = [
             .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
         ]
 
-        if let signedData = promotionalOffer?.signedData {
+        if let signedData = promotionalOffer {
             Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier))
             options.insert(signedData.sk2PurchaseOption)
         }
@@ -599,6 +599,44 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
 
     func storeKit1WrapperDidChangeStorefront(_ storeKit1Wrapper: StoreKit1Wrapper) {
         handleStorefrontChange()
+    }
+
+}
+
+extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
+
+    func paymentQueueWrapper(
+        _ wrapper: PaymentQueueWrapper,
+        shouldAddStorePayment payment: SKPayment,
+        for product: SK1Product
+    ) -> Bool {
+        // `PurchasesOrchestrator` becomes `PaymentQueueWrapperDelegate` only
+        // when `StoreKit1Wrapper` is not initialized, which means that promoted purchases
+        // need to be handled as a SK2 purchase.
+        // This method converts the `SKPayment` into an SK2 purchase by fetching the product again.
+        assert(self.storeKit1Wrapper == nil, "This method should not be invoked if SK1 is enabled")
+
+        guard let delegate = self.delegate else { return false }
+
+        let productIdentifier = product.productIdentifier
+
+        self.productsManager.products(withIdentifiers: [productIdentifier]) { result in
+            guard let product = result.value?.first(where: { $0.productIdentifier == productIdentifier }) else {
+                // TODO: warning
+                return
+            }
+
+            // TODO: optionally use promotionalOffer: payment.paymentDiscount.map(PromotionalOffer.SignedData.init)
+
+            delegate.readyForPromotedProduct(product) { completion in
+                self.purchase(product: product,
+                              package: nil) { transaction, customerInfo, error, cancelled in
+                    completion(transaction, customerInfo, error, cancelled)
+                }
+            }
+        }
+
+        return false
     }
 
 }
@@ -946,15 +984,15 @@ private extension PurchasesOrchestrator {
 
 private extension PurchasesOrchestrator {
 
-    static func logPurchase(product: StoreProduct, package: Package?, offer: PromotionalOffer? = nil) {
+    static func logPurchase(product: StoreProduct, package: Package?, offer: PromotionalOffer.SignedData? = nil) {
         let string: PurchaseStrings = {
             switch (package, offer) {
             case (nil, nil): return .purchasing_product(product)
             case let (package?, nil): return .purchasing_product_from_package(product, package)
-            case let (nil, offer?): return .purchasing_product_with_offer(product, offer.discount)
+            case let (nil, offer?): return .purchasing_product_with_offer(product, offer)
             case let (package?, offer?): return .purchasing_product_from_package_with_offer(product,
                                                                                             package,
-                                                                                            offer.discount)
+                                                                                            offer)
             }
         }()
 

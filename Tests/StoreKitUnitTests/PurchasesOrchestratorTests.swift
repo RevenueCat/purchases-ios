@@ -233,20 +233,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: storeProduct,
                               offeringIdentifier: "offering")
 
-        let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
-                                                currencyCode: storeProduct.currencyCode,
-                                                price: 11.1,
-                                                localizedPriceString: "$11.10",
-                                                paymentMode: .payAsYouGo,
-                                                subscriptionPeriod: .init(value: 1, unit: .month),
-                                                numberOfPeriods: 2,
-                                                type: .promotional)
-        let offer = PromotionalOffer(discount: discount,
-                                     signedData: .init(identifier: "",
-                                                       keyIdentifier: "",
-                                                       nonce: UUID(),
-                                                       signature: "",
-                                                       timestamp: 0))
+        let offer = PromotionalOffer.SignedData(identifier: "",
+                                                keyIdentifier: "",
+                                                nonce: UUID(),
+                                                signature: "",
+                                                timestamp: 0)
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
@@ -381,21 +372,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await fetchSk2Product()
-        let storeProduct = StoreProduct(sk2Product: product)
-        let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
-                                                currencyCode: storeProduct.currencyCode,
-                                                price: 11.1,
-                                                localizedPriceString: "$11.10",
-                                                paymentMode: .payAsYouGo,
-                                                subscriptionPeriod: .init(value: 1, unit: .month),
-                                                numberOfPeriods: 4,
-                                                type: .promotional)
-        let offer = PromotionalOffer(discount: discount,
-                                     signedData: .init(identifier: "",
-                                                       keyIdentifier: "",
-                                                       nonce: UUID(),
-                                                       signature: "",
-                                                       timestamp: 0))
+        let offer = PromotionalOffer.SignedData(identifier: "",
+                                                keyIdentifier: "",
+                                                nonce: UUID(),
+                                                signature: "",
+                                                timestamp: 0)
 
         do {
             _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: offer)
