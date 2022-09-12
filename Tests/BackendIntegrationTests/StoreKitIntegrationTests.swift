@@ -11,7 +11,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
@@ -291,6 +291,26 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         customerInfo = try await Purchases.shared.syncPurchases()
         self.assertNoActiveSubscription(customerInfo)
+    }
+
+    func testResubscribeAfterExpiration() async throws {
+        @discardableResult
+        func subscribe() async throws -> CustomerInfo {
+            return try await self.purchaseWeeklyOffering().customerInfo
+        }
+
+        let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
+        expect(created) == true
+
+        // 1. Subscribe
+        let customerInfo = try await subscribe()
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+
+        // 2. Expire subscription
+        try await self.expireSubscription(entitlement)
+
+        // 3. Resubscribe
+        try await subscribe()
     }
 
     func testUserHasNoEligibleOffersByDefault() async throws {
