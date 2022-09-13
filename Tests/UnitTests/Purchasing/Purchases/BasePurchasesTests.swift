@@ -102,6 +102,7 @@ class BasePurchasesTests: TestCase {
     var mockProductsManager: MockProductsManager!
     var backend: MockBackend!
     let storeKit1Wrapper = MockStoreKit1Wrapper()
+    let paymentQueueWrapper = MockPaymentQueueWrapper()
     let notificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
@@ -150,9 +151,14 @@ class BasePurchasesTests: TestCase {
     }
 
     func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
+        // Note: this logic must match `Purchases`.
+        let storeKit1Wrapper = self.systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+        ? nil
+        : self.storeKit1Wrapper
+
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
-            storeKit1Wrapper: self.storeKit1Wrapper,
+            storeKit1Wrapper: storeKit1Wrapper,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
@@ -175,14 +181,15 @@ class BasePurchasesTests: TestCase {
             operationDispatcher: self.mockOperationDispatcher,
             productsManager: self.mockProductsManager
         )
+
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
                                    receiptFetcher: self.receiptFetcher,
                                    attributionFetcher: self.attributionFetcher,
                                    attributionPoster: self.attributionPoster,
                                    backend: self.backend,
-                                   storeKit1Wrapper: self.storeKit1Wrapper,
-                                   paymentQueueWrapper: .init(),
+                                   storeKit1Wrapper: storeKit1Wrapper,
+                                   paymentQueueWrapper: self.paymentQueueWrapper,
                                    notificationCenter: self.notificationCenter,
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,

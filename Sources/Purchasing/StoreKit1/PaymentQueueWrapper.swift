@@ -21,7 +21,7 @@ protocol PaymentQueueWrapperDelegate: AnyObject, Sendable {
                              for product: SK1Product) -> Bool
 }
 
-final class PaymentQueueWrapper: NSObject {
+class PaymentQueueWrapper: NSObject {
 
     private let paymentQueue: SKPaymentQueue
 
@@ -83,10 +83,8 @@ extension PaymentQueueWrapper: SKPaymentQueueDelegate {
 
 }
 
-#if swift(>=5.7)
-// `@unchecked` because of `weak var`: https://twitter.com/dgregor79/status/1557166717721161728
-extension PaymentQueueWrapper: @unchecked Sendable {}
-#else
+// `@unchecked` because:
+// `weak var` requires it: https://twitter.com/dgregor79/status/1557166717721161728
 // `SKPaymentQueue` is not `Sendable` until Swift 5.7
+// - Not-final since it's mocked in tests.
 extension PaymentQueueWrapper: @unchecked Sendable {}
-#endif

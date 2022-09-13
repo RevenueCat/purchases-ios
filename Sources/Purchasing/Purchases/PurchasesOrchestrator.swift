@@ -622,18 +622,31 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
 
         self.productsManager.products(withIdentifiers: [productIdentifier]) { result in
             guard let product = result.value?.first(where: { $0.productIdentifier == productIdentifier }) else {
-                // TODO: warning
+                Logger.warn(Strings.purchase.promo_purchase_product_not_found(productIdentifier: productIdentifier))
                 return
             }
 
-            // TODO: optionally use promotionalOffer: payment.paymentDiscount.map(PromotionalOffer.SignedData.init)
+            let startPurchase: StartPurchaseBlock
 
-            delegate.readyForPromotedProduct(product) { completion in
-                self.purchase(product: product,
-                              package: nil) { transaction, customerInfo, error, cancelled in
-                    completion(transaction, customerInfo, error, cancelled)
+            if #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *),
+               let discount = payment.paymentDiscount.map(PromotionalOffer.SignedData.init) {
+                startPurchase = { completion in
+                    self.purchase(product: product,
+                                  package: nil,
+                                  promotionalOffer: discount) { transaction, customerInfo, error, cancelled in
+                        completion(transaction, customerInfo, error, cancelled)
+                    }
+                }
+            } else {
+                startPurchase = { completion in
+                    self.purchase(product: product,
+                                  package: nil) { transaction, customerInfo, error, cancelled in
+                        completion(transaction, customerInfo, error, cancelled)
+                    }
                 }
             }
+
+            delegate.readyForPromotedProduct(product, purchase: startPurchase)
         }
 
         return false

@@ -140,3 +140,39 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
     }
 
 }
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
+
+    private var paymentQueueWrapperDelegate: PaymentQueueWrapperDelegate!
+    private var product: MockSK1Product!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.systemInfo = MockSystemInfo(finishTransactions: false, storeKit2Setting: .enabledForCompatibleDevices)
+
+        self.setupPurchases()
+
+        self.product = MockSK1Product(mockProductIdentifier: "mock_product")
+        self.paymentQueueWrapperDelegate = self.paymentQueueWrapper.delegate
+    }
+
+    func testDeferBlockMakesPayment() throws {
+        let payment = SKPayment(product: self.product)
+
+        _ = self.paymentQueueWrapperDelegate.paymentQueueWrapper(
+            self.paymentQueueWrapper,
+            shouldAddStorePayment: payment,
+            for: self.product
+        )
+
+        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
+
+        expect(self.purchasesDelegate.promoProduct) == StoreProduct(sk1Product: self.product)
+        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
+    }
+
+}

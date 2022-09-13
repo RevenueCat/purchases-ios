@@ -44,6 +44,7 @@ enum PurchaseStrings {
     case purchases_delegate_set_multiple_times
     case purchases_delegate_set_to_nil
     case requested_products_not_found(request: SKRequest)
+    case promo_purchase_product_not_found(productIdentifier: String)
     case callback_not_found_for_request(request: SKRequest)
     case unable_to_get_intro_eligibility_for_user(error: Error)
     case duplicate_refund_request(details: String)
@@ -192,6 +193,9 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .requested_products_not_found(let request):
             return "requested products not found for request: \(request)"
+
+        case let .promo_purchase_product_not_found(productIdentifier):
+            return "Unable to perform promotional purchase from App Store: product '\(productIdentifier)' not found"
 
         case .callback_not_found_for_request(let request):
             return "callback not found for failing request: \(request)"

@@ -23,7 +23,7 @@ public class MockPurchasesDelegate: NSObject, PurchasesDelegate {
     public func purchases(_ purchases: Purchases,
                           readyForPromotedProduct product: StoreProduct,
                           purchase startPurchase: @escaping StartPurchaseBlock) {
-        promoProduct = product
+        self.promoProduct = product
         self.makeDeferredPurchase = startPurchase
     }
 

@@ -254,4 +254,24 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.isStoreKit1Configured) == false
     }
 
+    func testSetsPaymentQueueWrapperDelegateToPurchasesOrchestratorIfSK1IsEnabled() {
+        self.systemInfo = MockSystemInfo(finishTransactions: false,
+                                         storeKit2Setting: .disabled)
+
+        self.setupPurchases()
+
+        expect(self.paymentQueueWrapper.delegate).to(beNil())
+    }
+
+    func testSetsPaymentQueueWrapperDelegateToPaymentQueueWrapperIfSK1IsNotEnabled() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.systemInfo = MockSystemInfo(finishTransactions: false,
+                                         storeKit2Setting: .enabledForCompatibleDevices)
+
+        self.setupPurchases()
+
+        expect(self.paymentQueueWrapper.delegate) === self.purchasesOrchestrator
+    }
+
 }
