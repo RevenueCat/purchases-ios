@@ -13,7 +13,7 @@
 
 import Nimble
 @testable import RevenueCat
-import StoreKitTest
+import StoreKit
 import XCTest
 
 class PromotionalOfferTests: TestCase {
