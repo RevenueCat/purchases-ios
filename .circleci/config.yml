@@ -222,7 +222,7 @@ jobs:
       - checkout
       - run:
           name: SPM Build
-          command: swift build
+          command: swift build -c release
           no_output_timeout: 30m
 
   run-test-ios-16:
