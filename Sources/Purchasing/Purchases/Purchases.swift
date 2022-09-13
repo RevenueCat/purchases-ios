@@ -1674,12 +1674,18 @@ internal extension Purchases {
                                                           completion: completion)
     }
 
-    // Used for testing
+}
+
+#if DEBUG
+
+// MARK: - Exposed data for testing
+
+internal extension Purchases {
+
     var networkTimeout: TimeInterval {
         return self.backend.networkTimeout
     }
 
-    // Used for testing
     var storeKitTimeout: TimeInterval {
         return self.productsManager.requestTimeout
     }
@@ -1688,12 +1694,13 @@ internal extension Purchases {
         return self.systemInfo.isSandbox
     }
 
-    /// For testing purposes
     var isStoreKit1Configured: Bool {
         return self.storeKit1Wrapper != nil
     }
 
 }
+
+#endif
 
 // MARK: Private
 
