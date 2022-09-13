@@ -16,7 +16,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class StorefrontTests: StoreKitConfigTestCase {
 
     @MainActor

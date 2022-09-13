@@ -16,6 +16,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class StoreProductTests: StoreKitConfigTestCase {
 
     private var sk1Fetcher: ProductsFetcherSK1!
@@ -211,10 +212,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedPriceString) == "$4.99"
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testSk1PriceFormatterFormatsCorrectly() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let storeProduct = try await self.sk1Fetcher.product(withIdentifier: Self.productID)
 
         let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
@@ -224,10 +222,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedPriceString) == "$4.99"
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testSk1PriceFormatterUsesCurrentStorefront() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         testSession.locale = Locale(identifier: "es_ES")
         await self.changeStorefront("ESP")
 
@@ -354,6 +349,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
 }
 
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 private extension StoreProductTests {
 
     func expectEqualProducts(_ productA: StoreProductType, _ productB: StoreProductType) {
