@@ -61,7 +61,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(product.productIdentifier) == identifier
     }
 
-    func testInvalidateAndReFetchCachedProductsAfterStorefrontChangesSK1() async throws {
+    func testClearCacheAfterStorefrontChangesSK1() async throws {
         let manager = try createManager(storeKit2Setting: .disabled)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
@@ -76,10 +76,10 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         await changeStorefront("ESP")
 
-        // Note: this test passes only because the method `invalidateAndReFetchCachedProductsIfAppropiate`
+        // Note: this test passes only because the method `clearCache`
         // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
         // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
-        manager.invalidateAndReFetchCachedProductsIfAppropiate()
+        manager.clearCache()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
 
@@ -106,10 +106,10 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         await changeStorefront("ESP")
 
-        // Note: this test passes only because the method `invalidateAndReFetchCachedProductsIfAppropiate`
+        // Note: this test passes only because the method `clearCache`
         // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
         // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
-        manager.invalidateAndReFetchCachedProductsIfAppropiate()
+        manager.clearCache()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
 

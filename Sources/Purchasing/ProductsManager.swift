@@ -15,20 +15,48 @@
 import Foundation
 import StoreKit
 
-class ProductsManager: NSObject {
+/// Protocol for a type that can fetch and cache ``StoreProduct``s.
+/// The basic interface only has a completion-blocked based API, but default `async` overloads are provided.
+protocol ProductsManagerType: Sendable {
 
-    let productsFetcherSK1: ProductsFetcherSK1
-    var requestTimeout: TimeInterval {
-        return productsFetcherSK1.requestTimeout
-    }
+    typealias Completion = (Result<Set<StoreProduct>, PurchasesError>) -> Void
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    typealias SK2Completion = (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void
+
+    /// Fetches the ``StoreProduct``s with the given identifiers
+    /// The returned products will be SK1 or SK2 backed depending on the implementation and configuration.
+    func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion)
+
+    /// Fetches the `SK2StoreProduct`s with the given identifiers.
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion)
+
+    /// Adds the products to the internal cache
+    /// If the type implementing this protocol doesn't have a caching mechanism then this method does nothing.
+    func cache(_ product: StoreProductType)
+
+    /// Removes all elements from its internal cache
+    /// If the type implementing this protocol doesn't have a caching mechanism then this method does nothing.
+    func clearCache()
+
+    var requestTimeout: TimeInterval { get }
+
+}
+
+// MARK: -
+
+/// Basic implemenation of a `ProductsManagerType`
+class ProductsManager: NSObject, ProductsManagerType {
+
+    private let productsFetcherSK1: ProductsFetcherSK1
     private let systemInfo: SystemInfo
 
-    #if swift(>=5.7)
+#if swift(>=5.7)
     private let _productsFetcherSK2: (any Sendable)?
-    #else
+#else
     private let _productsFetcherSK2: Any?
-    #endif
+#endif
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private var productsFetcherSK2: ProductsFetcherSK2 {
@@ -52,8 +80,7 @@ class ProductsManager: NSObject {
         }
     }
 
-    func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Result<Set<StoreProduct>, PurchasesError>) -> Void) {
+    func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             self.sk2Products(withIdentifiers: identifiers) { result in
@@ -66,28 +93,40 @@ class ProductsManager: NSObject {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
-    func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.products(withIdentifiers: identifiers) { result in
-                continuation.resume(with: result)
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
+        Async.call(with: completion) {
+            do {
+                let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
+
+                Logger.debug(Strings.storeKit.store_product_request_finished)
+                return Set(products)
+            } catch {
+                Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
+                throw ErrorUtils.storeProblemError(error: error)
             }
         }
     }
 
-    /// - Throws: `ProductsFetcherSK2.Error`
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2StoreProducts(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
+    func cache(_ product: StoreProductType) {
+        switch product {
+        case let sk1Product as SK1Product:
+            self.productsFetcherSK1.cacheProduct(sk1Product)
 
-        return Set(products)
+        case let product as StoreProduct:
+            if let sk1Product = product.sk1Product {
+                self.productsFetcherSK1.cacheProduct(sk1Product)
+            }
+
+        default:
+            // Ignoring otherwise.
+            // This is temporary, as the caching logic is going away from here
+            // in favor of the new `CachingProductsManager`
+            break
+        }
     }
 
-    func cacheProduct(_ product: SK1Product) {
-        self.productsFetcherSK1.cacheProduct(product)
-    }
-
-    func invalidateAndReFetchCachedProductsIfAppropiate() {
+    func clearCache() {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             self.invalidateAndReFetchCachedSK2Products()
@@ -96,28 +135,19 @@ class ProductsManager: NSObject {
         }
     }
 
+    var requestTimeout: TimeInterval {
+        return self.productsFetcherSK1.requestTimeout
+    }
+
 }
+
+// MARK: - private
 
 private extension ProductsManager {
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK1Product>, PurchasesError>) -> Void) {
         return self.productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>,
-                     completion: @escaping (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void) {
-        Async.call(with: completion) {
-            do {
-                let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
-                Logger.debug(Strings.storeKit.store_product_request_finished)
-                return Set(products)
-            } catch {
-                Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
-                throw ErrorUtils.storeProblemError(error: error)
-            }
-        }
     }
 
     func invalidateAndReFetchCachedSK1Products() {
@@ -144,6 +174,34 @@ private extension ProductsManager {
     }
 
 }
+
+// MARK: - ProductsManagerType async
+
+extension ProductsManagerType {
+
+    /// `async` overload for `products(withIdentifiers:)`
+    @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
+    func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.products(withIdentifiers: identifiers) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    /// `async` overload for `sk2Products(withIdentifiers:)`
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2Products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.sk2Products(withIdentifiers: identifiers) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+}
+
+// MARK: -
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.

@@ -136,7 +136,8 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
         self.storeKit1WrapperDelegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.mockProductsManager.invokedCacheProduct) == true
-        expect(self.mockProductsManager.invokedCacheProductParameter) == self.product
+        expect(self.mockProductsManager.invokedCacheProductParameter.map(StoreProduct.from(product:)))
+        == StoreProduct(sk1Product: self.product)
     }
 
 }

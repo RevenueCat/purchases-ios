@@ -21,14 +21,14 @@ class OfferingsManager {
     private let systemInfo: SystemInfo
     private let backend: Backend
     private let offeringsFactory: OfferingsFactory
-    private let productsManager: ProductsManager
+    private let productsManager: ProductsManagerType
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
          systemInfo: SystemInfo,
          backend: Backend,
          offeringsFactory: OfferingsFactory,
-         productsManager: ProductsManager) {
+         productsManager: ProductsManagerType) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
