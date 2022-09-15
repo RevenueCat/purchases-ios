@@ -578,6 +578,10 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
             self.purchaseCompleteCallbacksByProductID.modify { $0[productIdentifier] = completion }
             storeKit1Wrapper.add(payment)
         }
+
+        // See `SKPaymentTransactionObserver.paymentQueue(_:shouldAddStorePayment:for:)`
+        // Returns `false` to indicate that the app will defer the purchase and be handled
+        // when the user calls the purchase callback.
         return false
     }
 
@@ -649,6 +653,9 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
             delegate.readyForPromotedProduct(product, purchase: startPurchase)
         }
 
+        // See `SKPaymentTransactionObserver.paymentQueue(_:shouldAddStorePayment:for:)`
+        // Returns `false` to indicate that the app will defer the purchase and be handled
+        // when the user calls the purchase callback.
         return false
     }
 
