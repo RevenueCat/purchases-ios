@@ -1668,6 +1668,10 @@ extension Purchases: @unchecked Sendable {}
 
 internal extension Purchases {
 
+    var isStoreKit1Configured: Bool {
+        return self.storeKit1Wrapper != nil
+    }
+
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
@@ -1699,10 +1703,6 @@ internal extension Purchases {
 
     var isSandbox: Bool {
         return self.systemInfo.isSandbox
-    }
-
-    var isStoreKit1Configured: Bool {
-        return self.storeKit1Wrapper != nil
     }
 
 }
