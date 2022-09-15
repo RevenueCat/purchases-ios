@@ -221,8 +221,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: SPM Build
-          command: swift build
+          name: SPM Release Build
+          command: swift build -c release
           no_output_timeout: 30m
 
   run-test-ios-16:
