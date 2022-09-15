@@ -24,12 +24,11 @@ class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
     private var mockManager: MockProductsManager!
     private var cachingManager: CachingProductsManager!
 
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
-        // `CachingProductsManager` is available on iOS 12, but tests
-        // make use of `async` APIs for simplicity.
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let systemInfo = MockSystemInfo(finishTransactions: false)
 

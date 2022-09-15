@@ -22,6 +22,7 @@ class CachingProductsManagerTests: TestCase {
     private var mockManager: MockProductsManager!
     private var cachingManager: CachingProductsManager!
 
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 

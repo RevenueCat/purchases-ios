@@ -26,8 +26,8 @@ final class CachingProductsManager {
     private let _sk2ProductCache: (any Sendable)?
     private let _sk2RequestCache: (any Sendable)?
     #else
-    private let _sk2ProductCache: any
-    private let _sk2RequestCache: any
+    private let _sk2ProductCache: Any?
+    private let _sk2RequestCache: Any?
     #endif
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
