@@ -58,11 +58,4 @@ private extension PromotionalOfferTests {
         timestamp: Int.random(in: 0..<1000)
     )
 
-    func setUpPurchases(enableStoreKit2: Bool) {
-        Purchases.configure(
-            with: .init(withAPIKey: "")
-                .with(usesStoreKit2IfAvailable: enableStoreKit2)
-        )
-    }
-
 }
