@@ -16,7 +16,9 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable:next type_name
+// swiftlint:disable type_name
+
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
     var receiptFetcher: MockReceiptFetcher!

@@ -17,6 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     private var priceFormatterProvider: PriceFormatterProvider!
@@ -48,10 +49,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(firstPriceFormatter) === secondPriceFormatter
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testSk1PriceFormatterUsesCurrentStorefront() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.testSession.locale = Locale(identifier: "es_ES")
         await self.changeStorefront("ESP")
 

@@ -16,6 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
 
     var mockDeviceCache: MockDeviceCache!
@@ -46,6 +47,7 @@ class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
 
 }
 
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 extension OfferingsManagerStoreKitTests {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -80,6 +82,7 @@ extension OfferingsManagerStoreKitTests {
 
 }
 
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 private extension OfferingsManagerStoreKitTests {
 
     enum MockData {

@@ -17,6 +17,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
+/// Available from iOS 14.0 because that's when `SKTestSession was introduced`.
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class StoreKitConfigTestCase: TestCase {
 
@@ -36,16 +37,20 @@ class StoreKitConfigTestCase: TestCase {
     var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
-        testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
-        testSession.resetToDefaultState()
-        testSession.disableDialogs = true
-        testSession.clearTransactions()
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
+
+        self.testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
+        self.testSession.resetToDefaultState()
+        self.testSession.disableDialogs = true
+        self.testSession.clearTransactions()
 
         self.waitForStoreKitTestIfNeeded()
 
         let suiteName = "StoreKitConfigTests"
-        userDefaults = UserDefaults(suiteName: suiteName)
-        userDefaults.removePersistentDomain(forName: suiteName)
+        self.userDefaults = UserDefaults(suiteName: suiteName)
+        self.userDefaults.removePersistentDomain(forName: suiteName)
     }
 
     override func tearDown() {
@@ -76,6 +81,7 @@ class StoreKitConfigTestCase: TestCase {
 
 }
 
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 private extension StoreKitConfigTestCase {
 
     func waitForStoreKitTestIfNeeded() {

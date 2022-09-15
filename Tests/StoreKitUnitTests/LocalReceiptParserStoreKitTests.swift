@@ -17,6 +17,7 @@ import Nimble
 import StoreKit
 import XCTest
 
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
 
     private let operationDispatcher: OperationDispatcher = .default
