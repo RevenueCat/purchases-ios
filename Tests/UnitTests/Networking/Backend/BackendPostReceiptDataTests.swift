@@ -432,8 +432,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
 
         expect(self.httpClient.calls.map { $0.request.path }) == [
             getCustomerInfoPath,
-            .postReceiptData,
-            getCustomerInfoPath
+            .postReceiptData
         ]
     }
 
