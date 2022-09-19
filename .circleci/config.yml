@@ -579,6 +579,8 @@ workflows:
           xcode_version: '14.0.0'
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
+          # This is the only job not using Xcode 14 yet
+          # because it does not contain the new macOS SDK until Ventura is release.
           xcode_version: '13.4.1'
       - release-checks:
           xcode_version: '14.0.0'
