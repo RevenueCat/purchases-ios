@@ -619,6 +619,9 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
         // need to be handled as a SK2 purchase.
         // This method converts the `SKPayment` into an SK2 purchase by fetching the product again.
         assert(self.storeKit1Wrapper == nil, "This method should not be invoked if SK1 is enabled")
+        if self.storeKit1Wrapper != nil {
+            Logger.warn("Unexpectedly received PaymentQueueWrapperDelegate call with SK1 enabled")
+        }
 
         guard let delegate = self.delegate else { return false }
 
