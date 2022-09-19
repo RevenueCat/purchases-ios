@@ -29,17 +29,6 @@ struct CustomerInfoCallback: CacheKeyProviding {
 
 }
 
-extension CustomerInfoCallback {
-
-    func withNewCacheKey(_ newKey: String) -> Self {
-        var copy = self
-        copy.cacheKey = newKey
-
-        return copy
-    }
-
-}
-
 // MARK: - CallbackCache helpers
 
 extension CallbackCache where T == CustomerInfoCallback {
@@ -61,8 +50,15 @@ extension CallbackCache where T == CustomerInfoCallback {
             .filter { $0.source == type }
     }
 
-    private func callbackCount(ofType type: NetworkOperation.Type) -> Int {
-        return self.callbacks(ofType: type).count
+}
+
+private extension CustomerInfoCallback {
+
+    func withNewCacheKey(_ newKey: String) -> Self {
+        var copy = self
+        copy.cacheKey = newKey
+
+        return copy
     }
 
 }
