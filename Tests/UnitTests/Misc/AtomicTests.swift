@@ -17,6 +17,7 @@ import XCTest
 @testable import RevenueCat
 
 class AtomicTests: TestCase {
+
     func testInitialValue() {
         let value = Int.random(in: 0..<100)
         let atomic = Atomic(value)
@@ -43,6 +44,16 @@ class AtomicTests: TestCase {
         let result: Int = atomic.withValue { $0 + 10 }
 
         expect(result) == 20
+    }
+
+    func testModifyValueDirectly() {
+        let atomic: Atomic<[String: Int]> = .init([:])
+
+        atomic.value = ["0": 0]
+        expect(atomic.value) == ["0": 0]
+
+        atomic.value += ["1": 1, "2": 2]
+        expect(atomic.value) == ["0": 0, "1": 1, "2": 2]
     }
 
 }
