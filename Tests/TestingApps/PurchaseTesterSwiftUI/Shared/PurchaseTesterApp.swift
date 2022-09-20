@@ -20,6 +20,10 @@ struct PurchaseTesterApp: App {
             .with(usesStoreKit2IfAvailable: true)
             .build()
 
+        if let proxyURL = Constants.proxyURL {
+            Purchases.proxyURL = URL(string: proxyURL)!
+        }
+
         Purchases.logLevel = .debug
         Purchases.configure(with: configuration)
         Purchases.shared.delegate = self.delegate

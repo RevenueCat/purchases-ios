@@ -11,4 +11,7 @@ enum Constants {
     #error("Must define your Public SDK key here")
     static let apiKey = "REVENUECAT_API_KEY"
 
+    // Server URL. Can be set to something else to use a proxy.
+    static let proxyURL: String? = nil
+
 }

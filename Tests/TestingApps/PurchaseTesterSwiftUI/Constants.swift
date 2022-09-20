@@ -19,4 +19,7 @@ struct Constants {
     #error("Modify this property to reflect your app's API key, then comment this line out.")
     static let apiKey = "REVENUECAT_API_KEY"
 
+    // Server URL. Can be set to something else to use a proxy.
+    static let proxyURL: String? = nil
+    
 }
