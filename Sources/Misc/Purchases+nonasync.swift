@@ -13,21 +13,15 @@
 
 import Foundation
 
+// Docs inherited from `PurchasesSwiftType`.
+// swiftlint:disable missing_docs
+
 /// This extension holds the biolerplate logic to convert async methods to completion blocks APIs.
 /// Because `async` APIs are implicitly available in Objective-C, these can be Swift only.
 public extension Purchases {
 
     #if os(iOS)
-    /**
-     * Presents a refund request sheet in the current window scene for
-     * the latest transaction associated with the `productID`
-     *
-     * - Parameter productID: The `productID` to begin a refund request for.
-     * - Parameter completion: A completion block that is called when the ``RefundRequestStatus`` is returned.
-     * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
-     * If the request was unsuccessful, no active entitlements could be found for the user,
-     * or multiple active entitlements were found for the user, an `Error` will be thrown.
-     */
+
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
@@ -41,16 +35,6 @@ public extension Purchases {
         }
     }
 
-    /**
-     * Presents a refund request sheet in the current window scene for
-     * the latest transaction associated with the entitlement ID.
-     *
-     * - Parameter entitlementID: The entitlementID to begin a refund request for.
-     * - Parameter completion: A completion block that is called when the ``RefundRequestStatus`` is returned.
-     * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
-     * If the request was unsuccessful, no active entitlements could be found for the user,
-     * or multiple active entitlements were found for the user, an `Error` will be thrown.
-     */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
@@ -64,19 +48,6 @@ public extension Purchases {
         }
     }
 
-    /**
-     * Presents a refund request sheet in the current window scene for
-     * the latest transaction associated with the active entitlement.
-     *
-     * - Parameter completion: A completion block that is called when the ``RefundRequestStatus`` is returned.
-     * Keep in mind the status could be ``RefundRequestStatus/userCancelled``
-     * If the request was unsuccessful, no active entitlements could be found for the user,
-     * or multiple active entitlements were found for the user, an `Error` will be thrown.
-     *
-     * - Important: This method should only be used if your user can only
-     * have a single active entitlement at a given time.
-     * If a user could have more than one entitlement at a time, use ``beginRefundRequest(forEntitlement:)`` instead.
-     */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)

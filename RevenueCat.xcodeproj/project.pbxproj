@@ -336,6 +336,7 @@
 		57EAE52B274332830060EB74 /* Obsoletions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE52A274332830060EB74 /* Obsoletions.swift */; };
 		57EAE52D274468900060EB74 /* RawDataContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE52C274468900060EB74 /* RawDataContainer.swift */; };
 		57EFDC6B27BC1F370057EC39 /* ProductType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EFDC6A27BC1F370057EC39 /* ProductType.swift */; };
+		57FD7B1528DA4037009CA4E4 /* PurchasesType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FD7B1428DA4037009CA4E4 /* PurchasesType.swift */; };
 		57FDAA962846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDAA952846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift */; };
 		57FDAA9A2846C2BD009A48F1 /* PurchasesDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDAA992846C2BD009A48F1 /* PurchasesDelegateTests.swift */; };
 		57FDAABA284937A0009A48F1 /* SandboxEnvironmentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDAAB9284937A0009A48F1 /* SandboxEnvironmentDetector.swift */; };
@@ -833,6 +834,7 @@
 		57EAE52A274332830060EB74 /* Obsoletions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obsoletions.swift; sourceTree = "<group>"; };
 		57EAE52C274468900060EB74 /* RawDataContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDataContainer.swift; sourceTree = "<group>"; };
 		57EFDC6A27BC1F370057EC39 /* ProductType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductType.swift; sourceTree = "<group>"; };
+		57FD7B1428DA4037009CA4E4 /* PurchasesType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesType.swift; sourceTree = "<group>"; };
 		57FDAA952846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesTransactionHandlingTests.swift; sourceTree = "<group>"; };
 		57FDAA992846C2BD009A48F1 /* PurchasesDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegateTests.swift; sourceTree = "<group>"; };
 		57FDAAB9284937A0009A48F1 /* SandboxEnvironmentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SandboxEnvironmentDetector.swift; sourceTree = "<group>"; };
@@ -1880,6 +1882,7 @@
 			isa = PBXGroup;
 			children = (
 				B3843BCA285149A0009F4854 /* Attribution.swift */,
+				57FD7B1428DA4037009CA4E4 /* PurchasesType.swift */,
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
@@ -2514,6 +2517,7 @@
 				2D9F4A5526C30CA800B07B43 /* PurchasesOrchestrator.swift in Sources */,
 				57C2931528BFEF4F0054EDFC /* PurchasesError.swift in Sources */,
 				37E3529267833EA8ED9F06BE /* DateFormatter+Extensions.swift in Sources */,
+				57FD7B1528DA4037009CA4E4 /* PurchasesType.swift in Sources */,
 				57C381DA2796153D009E3940 /* SK1StoreProductDiscount.swift in Sources */,
 				57DE807328074C76008D6C6F /* SK2Storefront.swift in Sources */,
 				57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */,
