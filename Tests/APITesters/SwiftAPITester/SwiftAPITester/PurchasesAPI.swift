@@ -241,9 +241,9 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
     #if os(iOS)
-    purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, Error>) in }
-    purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, Error>) in }
-    purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, Error>) in }
+    purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
+    purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
+    purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
     #endif
 }
 
