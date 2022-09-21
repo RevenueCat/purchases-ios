@@ -578,7 +578,8 @@ workflows:
       - run-test-tvos:
           xcode_version: '14.0.0'
       - run-test-ios-14:
-          xcode_version: '14.0.0'
+          # Simulator fails to install on Xcode 14
+          xcode_version: '13.4.1'
       - run-test-ios-13:
           # Simulator fails to install on Xcode 14
           xcode_version: '13.4.1'
