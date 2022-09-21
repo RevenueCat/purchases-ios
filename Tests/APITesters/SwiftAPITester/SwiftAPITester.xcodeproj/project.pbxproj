@@ -3,11 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2C396F5C281C64AF00669657 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C396F5B281C64AF00669657 /* AdServices.framework */; };
+		2C396F5C281C64AF00669657 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C396F5B281C64AF00669657 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); };
 		2DD778E4270E23460079CBD4 /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */; };
 		2DD778E5270E23460079CBD4 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */; };
 		2DD778E6270E23460079CBD4 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */; };

@@ -15,6 +15,8 @@ import Foundation
 @testable import RevenueCat
 import StoreKit
 
+#if os(iOS) || targetEnvironment(macCatalyst)
+
 @available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
@@ -63,3 +65,5 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
     }
 
 }
+
+#endif

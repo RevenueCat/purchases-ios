@@ -120,9 +120,7 @@
 		2DE61A84264190830021CEA0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE61A83264190830021CEA0 /* Constants.swift */; };
 		2DEAC2DD26EFE46E006914ED /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DEAC2DC26EFE46E006914ED /* AppDelegate.swift */; };
 		2DEAC2E126EFE46E006914ED /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E026EFE46E006914ED /* ViewController.swift */; };
-		2DEAC2E426EFE46E006914ED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E226EFE46E006914ED /* Main.storyboard */; };
 		2DEAC2E626EFE470006914ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E526EFE470006914ED /* Assets.xcassets */; };
-		2DEAC2E926EFE470006914ED /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E726EFE470006914ED /* LaunchScreen.storyboard */; };
 		2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B517926D44FF000BD2BD7 /* MockRequestFetcher.swift */; };
 		351B513D26D4491E00BD2BD7 /* MockDeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513C26D4491E00BD2BD7 /* MockDeviceCache.swift */; };
 		351B513F26D4496000BD2BD7 /* MockIdentityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513E26D4496000BD2BD7 /* MockIdentityManager.swift */; };
@@ -616,9 +614,7 @@
 		2DEAC2DA26EFE46E006914ED /* UnitTestsHostApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTestsHostApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DEAC2DC26EFE46E006914ED /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2DEAC2E026EFE46E006914ED /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		2DEAC2E326EFE46E006914ED /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2DEAC2E526EFE470006914ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2DEAC2E826EFE470006914ED /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2DEAC2EA26EFE470006914ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DEC0CFB24A2A1B100B0E5BB /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
 		33FFC8744F2BAE7BD8889A4C /* Pods_RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1434,9 +1430,7 @@
 			children = (
 				2DEAC2DC26EFE46E006914ED /* AppDelegate.swift */,
 				2DEAC2E026EFE46E006914ED /* ViewController.swift */,
-				2DEAC2E226EFE46E006914ED /* Main.storyboard */,
 				2DEAC2E526EFE470006914ED /* Assets.xcassets */,
-				2DEAC2E726EFE470006914ED /* LaunchScreen.storyboard */,
 				2DEAC2EA26EFE470006914ED /* Info.plist */,
 			);
 			path = UnitTestsHostApp;
@@ -2242,10 +2236,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DEAC2E926EFE470006914ED /* LaunchScreen.storyboard in Resources */,
 				2D735F7E26EFF198004E82A7 /* UnitTestsConfiguration.storekit in Resources */,
 				2DEAC2E626EFE470006914ED /* Assets.xcassets in Resources */,
-				2DEAC2E426EFE46E006914ED /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2787,25 +2779,6 @@
 		};
 /* End PBXTargetDependency section */
 
-/* Begin PBXVariantGroup section */
-		2DEAC2E226EFE46E006914ED /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2DEAC2E326EFE46E006914ED /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		2DEAC2E726EFE470006914ED /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2DEAC2E826EFE470006914ED /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
-
 /* Begin XCBuildConfiguration section */
 		2DAC5F7926F13C9800C5258F /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2827,11 +2800,12 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UnitTestsHostApp.app/UnitTestsHostApp";
 			};
 			name = Debug;
@@ -2855,10 +2829,11 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UnitTestsHostApp.app/UnitTestsHostApp";
 			};
 			name = Release;
@@ -3118,9 +3093,10 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitUnitTestsHostApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 			};
 			name = Debug;
 		};
@@ -3140,8 +3116,9 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitUnitTestsHostApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 			};
 			name = Release;
 		};

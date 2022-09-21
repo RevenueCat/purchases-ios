@@ -545,6 +545,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(transactionListener.invokedListenForTransactionsCount) == 1
     }
 
+    #if os(iOS) || targetEnvironment(macCatalyst)
+
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
     func testShowManageSubscriptionsCallsCompletionWithErrorIfThereIsAFailure() {
         let message = "Failed to get managementURL from CustomerInfo. Details: customerInfo is nil."
         mockManageSubsHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
@@ -645,6 +649,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             expect(error.localizedDescription).to(equal(expectedError.localizedDescription))
         }
     }
+
+    #endif
 
     func testRestorePurchasesDoesNotLogWarningIfAllowSharingAppStoreAccountIsNotDefined() async throws {
         let logger = TestLogHandler()

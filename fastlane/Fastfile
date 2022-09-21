@@ -121,6 +121,7 @@ platform :ios do
     scan(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
+      ensure_devices_found: true,
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
@@ -135,7 +136,8 @@ platform :ios do
   lane :test_tvos do |options|
     scan(
       step_name: "scan - Apple TV",
-      device: ENV['SCAN_DEVICE'] || "Apple TV (15.2)",
+      device: ENV['SCAN_DEVICE'] || "Apple TV",
+      ensure_devices_found: true,
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',

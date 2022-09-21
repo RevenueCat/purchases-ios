@@ -3,11 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2C396F5E281C64B700669657 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C396F5D281C64B700669657 /* AdServices.framework */; };
+		2C396F5E281C64B700669657 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C396F5D281C64B700669657 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); };
 		2DD77909270E23870079CBD4 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
 		2DD7790B270E23870079CBD4 /* RCCustomerInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */; };
 		2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */; };
