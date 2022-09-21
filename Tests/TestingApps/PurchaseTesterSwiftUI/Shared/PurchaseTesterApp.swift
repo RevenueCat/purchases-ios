@@ -15,11 +15,13 @@ struct PurchaseTesterApp: App {
     private let delegate = Delegate()
 
     init() {
-        Purchases.logLevel = .debug
-        Purchases.configure(with: Configuration
+        let configuration: Configuration =
             .builder(withAPIKey: Constants.apiKey)
             .with(usesStoreKit2IfAvailable: true)
-            .build())
+            .build()
+
+        Purchases.logLevel = .debug
+        Purchases.configure(with: configuration)
         Purchases.shared.delegate = self.delegate
     }
 
