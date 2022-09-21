@@ -286,7 +286,6 @@ enum ErrorUtils {
      * If the error is already a `PurchasesError`, this simply returns the same value,
      * otherwise it wraps it into a ``ErrorCode/unknownError``.
      */
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     static func purchasesError(
         withUntypedError error: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
