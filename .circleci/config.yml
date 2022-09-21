@@ -290,11 +290,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - install-and-create-sim:
-          install-name: iOS 14.5 Simulator
-          sim-device-type: iPhone-8
-          sim-device-runtime: iOS-14-5
-          sim-name: iPhone 8 (14.5)
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
