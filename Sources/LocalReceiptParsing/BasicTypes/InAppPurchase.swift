@@ -82,3 +82,6 @@ struct InAppPurchase: Equatable {
     }
 
 }
+
+extension InAppPurchaseProductType: Codable {}
+extension InAppPurchase: Codable {}
