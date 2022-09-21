@@ -138,7 +138,7 @@ public protocol PurchasesType: AnyObject {
     func getCustomerInfo(completion: @escaping ((CustomerInfo?, PublicError?) -> Void))
 
     /**
-     * Get latest available customer  info.
+     * Get latest available customer info.
      *
      * - Parameter fetchPolicy: The behavior for what to do regarding caching.
      * - Parameter completion: A completion block called when customer info is available and not stale.
