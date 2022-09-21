@@ -9,6 +9,6 @@
 enum Constants {
     
     #error("Must define your Public SDK key here")
-    static let apiKey = "<your_public_sdk_key_here>"
-    
+    static let apiKey = "REVENUECAT_API_KEY"
+
 }
