@@ -20,6 +20,7 @@ extension OperationQueue {
         case .firstCallbackAddedToList:
             self.addOperation(operation)
         case .addedToExistingInFlightList:
+            Logger.debug(Strings.network.reusing_existing_request_for_operation(operation))
             return
         }
     }

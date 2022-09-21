@@ -87,7 +87,10 @@ extension TestLogHandler {
             line: line,
             self.messages
         )
-        .to(containElementSatisfying(Self.entryCondition(message: message, level: level)))
+        .to(
+            containElementSatisfying(Self.entryCondition(message: message, level: level)),
+            description: "Message not found. Logged messages: \(self.messages)"
+        )
     }
 
     func verifyMessageWasNotLogged(
