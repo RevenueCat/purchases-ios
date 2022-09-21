@@ -76,7 +76,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         try await self.purchaseMonthlyOffering()
 
         let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
-        try self.verifyEntitlementWentThrough(customerInfo)
+        try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
     func testPurchaseFailuresAreReportedCorrectly() async throws {
@@ -99,7 +99,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         let (identifiedCustomerInfo, created) = try await Purchases.shared.logIn(identifiedUserID)
         expect(created) == true
-        try verifyEntitlementWentThrough(identifiedCustomerInfo)
+        try await self.verifyEntitlementWentThrough(identifiedCustomerInfo)
     }
 
     func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() async throws {
@@ -121,7 +121,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         self.assertNoPurchases(customerInfo)
 
         let restoredCustomerInfo = try await Purchases.shared.restorePurchases()
-        try self.verifyEntitlementWentThrough(restoredCustomerInfo)
+        try await self.verifyEntitlementWentThrough(restoredCustomerInfo)
     }
 
     func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() async throws {
@@ -134,7 +134,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         self.assertNoPurchases(customerInfo)
 
         customerInfo = try await Purchases.shared.restorePurchases()
-        try self.verifyEntitlementWentThrough(customerInfo)
+        try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
     func testPurchaseWithAskToBuyPostsReceipt() async throws {
@@ -249,7 +249,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let product = try await self.weeklyPackage.storeProduct
 
         let customerInfo = try await self.purchaseWeeklyOffering().customerInfo
-        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
+        let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         try await self.expireSubscription(entitlement)
 
@@ -267,7 +267,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let productWithIntro = try await self.weeklyPackage.storeProduct
 
         let customerInfo = try await Purchases.shared.purchase(product: productWithNoIntro).customerInfo
-        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
+        let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         try await self.expireSubscription(entitlement)
 
@@ -346,7 +346,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         _ = try await Purchases.shared.purchase(product: product)
         var customerInfo = try await Purchases.shared.syncPurchases()
 
-        var entitlement = try self.verifyEntitlementWentThrough(customerInfo)
+        var entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         // 2. Expire subscription
 
@@ -366,7 +366,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 5. Verify offer was applied
 
-        entitlement = try self.verifyEntitlementWentThrough(customerInfo)
+        entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         let transactions: [Transaction] = await Transaction
             .currentEntitlements
@@ -423,9 +423,9 @@ private extension StoreKit1IntegrationTests {
     ) async throws -> PurchaseResultData {
         let data = try await Purchases.shared.purchase(package: self.monthlyPackage)
 
-        try self.verifyEntitlementWentThrough(data.customerInfo,
-                                              file: file,
-                                              line: line)
+        try await self.verifyEntitlementWentThrough(data.customerInfo,
+                                                    file: file,
+                                                    line: line)
 
         return data
     }
@@ -437,9 +437,9 @@ private extension StoreKit1IntegrationTests {
     ) async throws -> PurchaseResultData {
         let data = try await Purchases.shared.purchase(product: self.monthlyPackage.storeProduct)
 
-        try self.verifyEntitlementWentThrough(data.customerInfo,
-                                              file: file,
-                                              line: line)
+        try await self.verifyEntitlementWentThrough(data.customerInfo,
+                                                    file: file,
+                                                    line: line)
 
         return data
     }
@@ -451,7 +451,7 @@ private extension StoreKit1IntegrationTests {
     ) async throws -> PurchaseResultData {
         let data = try await Purchases.shared.purchase(package: self.weeklyPackage)
 
-        try self.verifyEntitlementWentThrough(
+        try await self.verifyEntitlementWentThrough(
             data.customerInfo,
             // Weekly subscriptions expire in 1 second with this `SKTestTimeRate`.
             // This short interval can lead to false negatives.
@@ -469,8 +469,12 @@ private extension StoreKit1IntegrationTests {
         verifyEntitlementIsActive: Bool = true,
         file: FileString = #file,
         line: UInt = #line
-    ) throws -> EntitlementInfo {
+    ) async throws -> EntitlementInfo {
         let entitlements = customerInfo.entitlements.all
+
+        if entitlements.isEmpty {
+            await self.printReceiptContent()
+        }
 
         expect(
             file: file, line: line,
@@ -480,11 +484,25 @@ private extension StoreKit1IntegrationTests {
             description: "Expected Entitlement. Got: \(entitlements)"
         )
 
-        let entitlement = try XCTUnwrap(entitlements[Self.entitlementIdentifier])
+        let entitlement: EntitlementInfo
+
+        do {
+            entitlement = try XCTUnwrap(
+                entitlements[Self.entitlementIdentifier],
+                file: file, line: line
+            )
+        } catch {
+            await self.printReceiptContent()
+            throw error
+        }
 
         if verifyEntitlementIsActive {
             expect(file: file, line: line, entitlement.isActive)
                 .to(beTrue(), description: "Entitlement is not active")
+
+            if !entitlement.isActive {
+                await self.printReceiptContent()
+            }
         }
 
         return entitlement
@@ -552,7 +570,25 @@ private extension StoreKit1IntegrationTests {
 
 }
 
-extension AsyncSequence {
+// MARK: - Private
+
+private extension StoreKit1IntegrationTests {
+
+    func printReceiptContent() async {
+        do {
+            let receipt = try await Purchases.shared.fetchReceipt(.always)
+                .map { $0.description }
+            ?? "<null>"
+
+            Logger.appleWarning("Receipt content:\n\(receipt)")
+        } catch {
+            Logger.error("Error parsing local receipt: \(error)")
+        }
+    }
+
+}
+
+private extension AsyncSequence {
 
     func extractValues() async rethrows -> [Element] {
         return try await self.reduce(into: [Element]()) {

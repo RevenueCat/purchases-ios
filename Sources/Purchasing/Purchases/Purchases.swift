@@ -1051,6 +1051,20 @@ internal extension Purchases {
         return self.storeKit1Wrapper != nil
     }
 
+    #if DEBUG
+
+    /// Returns the parsed `AppleReceipt`
+    ///
+    /// - Warning: this is only meant for integration tests, as a way to debug purchase failures.
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func fetchReceipt(_ policy: ReceiptRefreshPolicy) async throws -> AppleReceipt? {
+        let receipt = await self.receiptFetcher.receiptData(refreshPolicy: policy)
+
+        return try receipt.map { try ReceiptParser().parse(from: $0) }
+    }
+
+    #endif
+
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
