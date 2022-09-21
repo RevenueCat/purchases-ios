@@ -72,3 +72,5 @@ struct AppleReceipt: Equatable {
     }
 
 }
+
+extension AppleReceipt: Codable {}

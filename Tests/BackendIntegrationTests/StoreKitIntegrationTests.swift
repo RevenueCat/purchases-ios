@@ -9,6 +9,7 @@
 import Nimble
 @testable import RevenueCat
 import StoreKitTest
+import UniformTypeIdentifiers
 import XCTest
 
 // swiftlint:disable file_length type_body_length
@@ -577,10 +578,17 @@ private extension StoreKit1IntegrationTests {
     func printReceiptContent() async {
         do {
             let receipt = try await Purchases.shared.fetchReceipt(.always)
-                .map { $0.description }
-            ?? "<null>"
+            let description = receipt.map { $0.description } ?? "<null>"
 
-            Logger.appleWarning("Receipt content:\n\(receipt)")
+            Logger.appleWarning("Receipt content:\n\(description)")
+
+            if let receipt = receipt {
+                let attachment = XCTAttachment(data: try receipt.prettyPrintedData,
+                                               uniformTypeIdentifier: UTType.json.identifier)
+                attachment.lifetime = .keepAlways
+
+                self.add(attachment)
+            }
         } catch {
             Logger.error("Error parsing local receipt: \(error)")
         }
@@ -596,4 +604,22 @@ private extension AsyncSequence {
         }
     }
 
+}
+
+private extension AppleReceipt {
+
+    var prettyPrintedData: Data {
+        get throws {
+            let encoder: JSONEncoder = {
+                let encoder = JSONEncoder()
+                encoder.keyEncodingStrategy = .convertToSnakeCase
+                encoder.outputFormatting = .prettyPrinted
+                encoder.dateEncodingStrategy = .iso8601
+
+                return encoder
+            }()
+
+            return try encoder.encode(self)
+        }
+    }
 }
