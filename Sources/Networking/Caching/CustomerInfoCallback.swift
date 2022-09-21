@@ -17,14 +17,48 @@ struct CustomerInfoCallback: CacheKeyProviding {
 
     typealias Completion = (Result<CustomerInfo, BackendError>) -> Void
 
-    let cacheKey: String
-    let source: NetworkOperation.Type
-    let completion: Completion
+    var cacheKey: String
+    var source: NetworkOperation.Type
+    var completion: Completion
 
     init(operation: CacheableNetworkOperation, completion: @escaping Completion) {
         self.cacheKey = operation.cacheKey
         self.source = type(of: operation)
         self.completion = completion
+    }
+
+}
+
+// MARK: - CallbackCache helpers
+
+extension CallbackCache where T == CustomerInfoCallback {
+
+    func addOrAppendToPostReceiptDataOperation(callback: CustomerInfoCallback) -> CallbackCacheStatus {
+        if let existing = self.callbacks(ofType: PostReceiptDataOperation.self).last {
+            return self.add(callback: callback.withNewCacheKey(existing.cacheKey))
+        } else {
+            return self.add(callback: callback)
+        }
+    }
+
+    private func callbacks(ofType type: NetworkOperation.Type) -> [T] {
+        return self
+            .cachedCallbacksByKey
+            .value
+            .lazy
+            .flatMap(\.value)
+            .filter { $0.source == type }
+    }
+
+}
+
+private extension CustomerInfoCallback {
+
+    func withNewCacheKey(_ newKey: String) -> Self {
+        var copy = self
+        copy.cacheKey = newKey
+
+        return copy
     }
 
 }

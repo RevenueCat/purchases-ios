@@ -38,7 +38,7 @@ final class CustomerAPI {
                                                  customerInfoCallbackCache: self.customerInfoCallbackCache)
 
         let callback = CustomerInfoCallback(operation: operation, completion: completion)
-        let cacheStatus = self.customerInfoCallbackCache.add(callback: callback)
+        let cacheStatus = self.customerInfoCallbackCache.addOrAppendToPostReceiptDataOperation(callback: callback)
         self.backendConfig.addCacheableOperation(operation,
                                                  withRandomDelay: randomDelay,
                                                  cacheStatus: cacheStatus)
