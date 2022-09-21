@@ -1053,7 +1053,7 @@ internal extension Purchases {
 
     #if DEBUG
 
-    /// Returns the parsed `AppleReceipt`
+    /// - Returns: the parsed `AppleReceipt`
     ///
     /// - Warning: this is only meant for integration tests, as a way to debug purchase failures.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
