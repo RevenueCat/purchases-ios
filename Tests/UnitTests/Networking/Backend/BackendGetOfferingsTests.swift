@@ -68,6 +68,24 @@ class BackendGetOfferingsTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
+    func testRepeatedRequestsLogDebugMessage() {
+        let logger = TestLogHandler()
+
+        self.httpClient.mock(
+            requestPath: .getOfferings(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
+        )
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
+
+        expect(self.httpClient.calls).toEventually(haveCount(1))
+
+        logger.verifyMessageWasLogged(
+            "Network operation '\(GetOfferingsOperation.self)' found with the same cache key",
+            level: .debug
+        )
+    }
+
     func testGetEntitlementsDoesntCacheForMultipleUserID() {
         let response = MockHTTPClient.Response(statusCode: .success,
                                                response: Self.noOfferingsResponse as [String: Any])
