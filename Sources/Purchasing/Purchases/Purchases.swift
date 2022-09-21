@@ -479,6 +479,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
 
+        /// If SK1 is not enabled, `PaymentQueueWrapper` needs to handle transactions
+        /// for promotional offers to work.
+        if !self.isStoreKit1Configured {
+            self.paymentQueueWrapper.delegate = purchasesOrchestrator
+        }
+
         self.subscribeToAppStateNotifications()
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
 
@@ -493,6 +499,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     deinit {
         self.notificationCenter.removeObserver(self)
         self.storeKit1Wrapper?.delegate = nil
+        self.paymentQueueWrapper.delegate = nil
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
         Self.proxyURL = nil
@@ -952,7 +959,7 @@ public extension Purchases {
                   completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: product,
                                        package: nil,
-                                       promotionalOffer: promotionalOffer,
+                                       promotionalOffer: promotionalOffer.signedData,
                                        completion: completion)
     }
 
@@ -1001,7 +1008,7 @@ public extension Purchases {
     func purchase(package: Package, promotionalOffer: PromotionalOffer, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: package.storeProduct,
                                        package: package,
-                                       promotionalOffer: promotionalOffer,
+                                       promotionalOffer: promotionalOffer.signedData,
                                        completion: completion)
     }
 
@@ -1661,6 +1668,10 @@ extension Purchases: @unchecked Sendable {}
 
 internal extension Purchases {
 
+    var isStoreKit1Configured: Bool {
+        return self.storeKit1Wrapper != nil
+    }
+
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
@@ -1692,10 +1703,6 @@ internal extension Purchases {
 
     var isSandbox: Bool {
         return self.systemInfo.isSandbox
-    }
-
-    var isStoreKit1Configured: Bool {
-        return self.storeKit1Wrapper != nil
     }
 
 }

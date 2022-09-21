@@ -50,6 +50,7 @@ extension PromotionalOffer: Sendable {}
     /// Contains the details of a promotional offer discount that you want to apply to a payment.
     @objc(RCPromotionalOfferSignedData)
     final class SignedData: NSObject {
+
         /// The subscription offer identifier.
         @objc public let identifier: String
         /// The key identifier of the subscription key.
@@ -68,6 +69,25 @@ extension PromotionalOffer: Sendable {}
             self.signature = signature
             self.timestamp = timestamp
         }
+
+        public override func isEqual(_ object: Any?) -> Bool {
+            guard let other = object as? Self else { return false }
+
+            return self == other
+        }
+
+        // swiftlint:disable:next missing_docs
+        public static func == (
+            lhs: PromotionalOffer.SignedData,
+            rhs: PromotionalOffer.SignedData
+        ) -> Bool {
+            return (lhs.identifier == rhs.identifier &&
+                    lhs.keyIdentifier == rhs.keyIdentifier &&
+                    lhs.nonce == rhs.nonce &&
+                    lhs.signature == rhs.signature &&
+                    lhs.timestamp == rhs.timestamp)
+        }
+
     }
 
 }
@@ -81,6 +101,15 @@ extension PromotionalOffer.SignedData: @unchecked Sendable {}
 #endif
 
 extension PromotionalOffer.SignedData {
+
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
+    convenience init(sk1PaymentDiscount discount: SKPaymentDiscount) {
+        self.init(identifier: discount.identifier,
+                  keyIdentifier: discount.keyIdentifier,
+                  nonce: discount.nonce,
+                  signature: discount.signature,
+                  timestamp: discount.timestamp.intValue)
+    }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     var sk1PromotionalOffer: SKPaymentDiscount {
