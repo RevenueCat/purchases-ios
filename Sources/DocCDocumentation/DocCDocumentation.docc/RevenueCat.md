@@ -146,9 +146,3 @@ Or browse our iOS sample apps:
 - ``Purchases/setMixpanelDistinctID(_:)``
 - ``Purchases/setMparticleID(_:)``
 - ``Purchases/setOnesignalID(_:)``
-
-### Configuring the SDK with parameters (deprecated)
-- ``Purchases/configure(withAPIKey:appUserID:)``
-- ``Purchases/configure(withAPIKey:appUserID:observerMode:)``
-- ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:)``
-- ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)``
