@@ -18,6 +18,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
+        if let proxyURL = Constants.proxyURL {
+            Purchases.proxyURL = URL(string: proxyURL)!
+        }
+
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
                             observerMode: false,
