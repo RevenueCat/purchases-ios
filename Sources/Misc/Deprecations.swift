@@ -93,7 +93,7 @@ public extension Purchases {
             appUserID: appUserID,
             observerMode: observerMode,
             userDefaults: userDefaults,
-            useStoreKit2IfAvailable: false
+            useStoreKit2IfAvailable: StoreKit2Setting.default.usesStoreKit2IfAvailable
         )
     }
 

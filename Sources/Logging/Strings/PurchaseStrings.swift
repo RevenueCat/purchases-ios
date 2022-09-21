@@ -161,16 +161,16 @@ extension PurchaseStrings: CustomStringConvertible {
             "a transaction date - this is an issue with the App Store. Unix Epoch will be used instead. \n" +
             "Transactions in the backend and in webhooks are unaffected and will have the correct timestamps. " +
             "This is a bug in StoreKit 1. To prevent running into this issue on devices running " +
-            "iOS 15+, watchOS 8+, macOS 12+, and tvOS 15+, " +
-            "you can set `usesStoreKit2IfAvailable` to true when calling `configure`."
+            "iOS 15+, watchOS 8+, macOS 12+, and tvOS 15+, make sure " +
+            "`usesStoreKit2IfAvailable` is set to true when calling `configure`."
 
         case .sktransaction_missing_transaction_identifier:
             return "There is a problem with the SKPaymentTransaction missing " +
             "a transaction identifier - this is an issue with the App Store." +
             "Transactions in the backend and in webhooks are unaffected and will have the correct identifier. " +
             "This is a bug in StoreKit 1. To prevent running into this issue on devices running " +
-            "iOS 15+, watchOS 8+, macOS 12+, and tvOS 15+, " +
-            "you can set `usesStoreKit2IfAvailable` to true when calling `configure`."
+            "iOS 15+, watchOS 8+, macOS 12+, and tvOS 15+, make sure " +
+            "`usesStoreKit2IfAvailable` is set to true when calling `configure`."
 
         case .could_not_purchase_product_id_not_found:
             return "makePurchase - Could not purchase SKProduct. " +

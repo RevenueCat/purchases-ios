@@ -34,7 +34,7 @@ extension StoreKit2Setting {
             : .enabledOnlyForOptimizations
     }
 
-    static let `default`: Self = .enabledOnlyForOptimizations
+    static let `default`: Self = .enabledForCompatibleDevices
 
 }
 
@@ -46,6 +46,15 @@ extension StoreKit2Setting {
             return true
         } else {
             return false
+        }
+    }
+
+    /// Returns: `true` if SK2 is enabled.
+    var usesStoreKit2IfAvailable: Bool {
+        switch self {
+        case .disabled: return false
+        case .enabledOnlyForOptimizations: return false
+        case .enabledForCompatibleDevices: return true
         }
     }
 
