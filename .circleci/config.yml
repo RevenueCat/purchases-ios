@@ -581,11 +581,11 @@ workflows:
           xcode_version: '13.4.1'
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
-          # This is the only job not using Xcode 14 yet
-          # because it does not contain the new macOS SDK until Ventura is release.
+          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
       - release-checks:
-          xcode_version: '14.0.0'
+          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+          xcode_version: '13.4.1'
           <<: *release-branches
       - backend-integration-tests:
           xcode_version: '14.0.0'
@@ -600,7 +600,8 @@ workflows:
           xcode_version: '14.0.0'
           <<: *release-tags-and-branches
       - installation-tests-carthage:
-          xcode_version: '14.0.0'
+          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+          xcode_version: '13.4.1'
           <<: *release-tags-and-branches
       - installation-tests-xcode-direct-integration:
           xcode_version: '14.0.0'
@@ -618,10 +619,12 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
-          xcode_version: '14.0.0'
+          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+          xcode_version: '13.4.1'
           <<: *release-tags
       - docs-deploy:
-          xcode_version: '14.0.0'
+          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+          xcode_version: '13.4.1'
           <<: *release-tags
   snapshot-bump:
     when:
@@ -629,7 +632,8 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - prepare-next-version:
-          xcode_version: '14.0.0'
+          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+          xcode_version: '13.4.1'
           <<: *only-main-branch
   danger:
     jobs:
@@ -641,4 +645,5 @@ workflows:
         - equal: [ "release-train", << pipeline.schedule.name >> ]
     jobs:
       - release-train:
-          xcode_version: '14.0.0'
+          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+          xcode_version: '13.4.1'
