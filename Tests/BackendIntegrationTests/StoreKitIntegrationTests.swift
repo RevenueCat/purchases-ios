@@ -498,12 +498,12 @@ private extension StoreKit1IntegrationTests {
         }
 
         if verifyEntitlementIsActive {
-            expect(file: file, line: line, entitlement.isActive)
-                .to(beTrue(), description: "Entitlement is not active")
-
             if !entitlement.isActive {
                 await self.printReceiptContent()
             }
+
+            expect(file: file, line: line, entitlement.isActive)
+                .to(beTrue(), description: "Entitlement is not active")
         }
 
         return entitlement
