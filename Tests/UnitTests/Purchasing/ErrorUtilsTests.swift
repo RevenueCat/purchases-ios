@@ -41,6 +41,37 @@ class ErrorUtilsTests: TestCase {
         expect(errorCode).to(matchError(error as Error))
     }
 
+    func testPublicErrorsCanBeCaughtAsErrorCode() throws {
+        func throwing() throws {
+            throw ErrorUtils.customerInfoError().asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as ErrorCode {
+            expect(error).to(matchError(ErrorCode.customerInfoError))
+        } catch let error {
+            fail("Invalid error: \(error)")
+        }
+    }
+
+    func testPublicErrorsContainUnderlyingError() throws {
+        let underlyingError = ErrorUtils.offlineConnectionError().asPublicError
+
+        func throwing() throws {
+            throw ErrorUtils.customerInfoError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            expect(error).to(matchError(ErrorCode.customerInfoError))
+            expect(error.userInfo[NSUnderlyingErrorKey] as? NSError) == underlyingError
+        }
+    }
+
     func testPurchaseErrorsAreLoggedAsApppleErrors() {
         let underlyingError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentInvalid.rawValue)
         let error = ErrorUtils.purchaseNotAllowedError(error: underlyingError)
