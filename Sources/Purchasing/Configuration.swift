@@ -79,7 +79,7 @@ import Foundation
         private(set) var appUserID: String?
         private(set) var observerMode: Bool = false
         private(set) var userDefaults: UserDefaults?
-        private(set) var storeKit2Setting: StoreKit2Setting = .init(useStoreKit2IfAvailable: false)
+        private(set) var storeKit2Setting: StoreKit2Setting = .default
         private(set) var dangerousSettings: DangerousSettings?
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
@@ -135,8 +135,8 @@ import Foundation
 
         /**
          * Set `usesStoreKit2IfAvailable`.
-         * - Parameter usesStoreKit2IfAvailable: opt in to using StoreKit 2 on devices that support it.
-         * Purchases will be made using StoreKit 2 under the hood automatically.
+         * - Parameter usesStoreKit2IfAvailable: opt out of using StoreKit 2 on devices that support it.
+         * Defaults to  `true`.
          */
         @objc public func with(usesStoreKit2IfAvailable: Bool) -> Builder {
             self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)

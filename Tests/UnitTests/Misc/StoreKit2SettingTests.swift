@@ -18,6 +18,16 @@ import XCTest
 
 class StoreKit2SettingTests: TestCase {
 
+    func testInitWithTrue() {
+        expect(StoreKit2Setting(useStoreKit2IfAvailable: true)) == .enabledForCompatibleDevices
+        expect(StoreKit2Setting(useStoreKit2IfAvailable: true).usesStoreKit2IfAvailable) == true
+    }
+
+    func testInitWithFalse() {
+        expect(StoreKit2Setting(useStoreKit2IfAvailable: false)) == .enabledOnlyForOptimizations
+        expect(StoreKit2Setting(useStoreKit2IfAvailable: false).usesStoreKit2IfAvailable) == false
+    }
+
     func testStoreKit2NotAvailableWhenDisabled() {
         expect(StoreKit2Setting.disabled.shouldOnlyUseStoreKit2) == false
     }
