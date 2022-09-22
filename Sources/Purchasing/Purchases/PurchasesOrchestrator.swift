@@ -697,11 +697,25 @@ private extension PurchasesOrchestrator {
            let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: storeTransaction) {
             let purchasesError = ErrorUtils.purchasesError(withSKError: error)
 
-            self.operationDispatcher.dispatchOnMainActor {
-                completion(storeTransaction,
-                           nil,
-                           purchasesError.asPublicError,
-                           purchasesError.isCancelledError)
+            let isCancelled = purchasesError.isCancelledError
+
+            if isCancelled {
+                self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                      fetchPolicy: .cachedOrFetched) { customerInfo in
+                    self.operationDispatcher.dispatchOnMainActor {
+                        completion(storeTransaction,
+                                   customerInfo.value,
+                                   purchasesError.asPublicError,
+                                   true)
+                    }
+                }
+            } else {
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(storeTransaction,
+                               nil,
+                               purchasesError.asPublicError,
+                               false)
+                }
             }
         }
 

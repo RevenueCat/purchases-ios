@@ -320,7 +320,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUserCancelled).toEventuallyNot(beNil())
 
         expect(receivedTransaction).toNot(beNil())
-        expect(receivedCustomerInfo).to(beNil())
+        expect(receivedCustomerInfo).toNot(beNil())
         expect(receivedUserCancelled) == true
         expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
         expect(receivedUnderlyingError?.domain) == SKErrorDomain
@@ -334,13 +334,13 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
+        var result: PurchaseResultData?
         var receivedError: NSError?
 
-        _ = Task {
+        // Need to do this async so the code below can invoke the `updatedTransaction` delegate method.
+        _ = Task<Void, Never> {
             do {
-                _ = try await self.purchases.purchase(
-                    product: product
-                )
+                result = try await self.purchases.purchase(product: product)
             } catch {
                 receivedError = error as NSError
             }
@@ -354,8 +354,11 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         transaction.mockError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
+        expect(result).toEventuallyNot(beNil())
+        expect(result?.customerInfo).toNot(beNil())
+        expect(result?.transaction).toNot(beNil())
+        expect(result?.userCancelled) == true
+        expect(receivedError).to(beNil())
     }
 
     func testDoNotSendEmptyReceiptWhenMakingPurchase() {
