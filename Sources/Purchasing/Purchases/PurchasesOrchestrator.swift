@@ -640,10 +640,10 @@ private extension PurchasesOrchestrator {
 
             if isCancelled {
                 self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                      fetchPolicy: .cachedOrFetched) { result in
+                                                      fetchPolicy: .cachedOrFetched) { customerInfo in
                     self.operationDispatcher.dispatchOnMainActor {
                         completion(storeTransaction,
-                                   result.value,
+                                   customerInfo.value,
                                    purchasesError.asPublicError,
                                    true)
                     }
