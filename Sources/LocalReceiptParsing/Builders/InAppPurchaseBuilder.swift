@@ -7,6 +7,26 @@ import Foundation
 
 class InAppPurchaseBuilder {
 
+    // swiftlint:disable:next line_length
+    // https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ReceiptFields.html
+    enum AttributeType: Int {
+
+        case quantity = 1701,
+             productId = 1702,
+             transactionId = 1703,
+             purchaseDate = 1704,
+             originalTransactionId = 1705,
+             originalPurchaseDate = 1706,
+             productType = 1707,
+             expiresDate = 1708,
+             webOrderLineItemId = 1711,
+             cancellationDate = 1712,
+             isInTrialPeriod = 1713,
+             isInIntroOfferPeriod = 1719,
+             promotionalOfferIdentifier = 1721
+
+    }
+
     private let containerBuilder: ASN1ContainerBuilder
     private let typeContainerIndex = 0
     private let versionContainerIndex = 1 // unused
@@ -23,7 +43,7 @@ class InAppPurchaseBuilder {
         var productId: String?
         var transactionId: String?
         var originalTransactionId: String?
-        var productType: InAppPurchaseProductType?
+        var productType: InAppPurchase.ProductType?
         var purchaseDate: Date?
         var originalPurchaseDate: Date?
         var expiresDate: Date?
@@ -40,7 +60,7 @@ class InAppPurchaseBuilder {
             let typeContainer = internalContainer.internalContainers[typeContainerIndex]
             let valueContainer = internalContainer.internalContainers[attributeTypeContainerIndex]
 
-            guard let attributeType = InAppPurchaseAttributeType(rawValue: typeContainer.internalPayload.toInt())
+            guard let attributeType = AttributeType(rawValue: typeContainer.internalPayload.toInt())
                 else { continue }
 
             let internalContainer = try containerBuilder.build(fromPayload: valueContainer.internalPayload)
@@ -52,7 +72,7 @@ class InAppPurchaseBuilder {
             case .webOrderLineItemId:
                 webOrderLineItemId = internalContainer.internalPayload.toInt64()
             case .productType:
-                productType = InAppPurchaseProductType(rawValue: internalContainer.internalPayload.toInt())
+                productType = .init(rawValue: internalContainer.internalPayload.toInt())
             case .isInIntroOfferPeriod:
                 isInIntroOfferPeriod = internalContainer.internalPayload.toBool()
             case .isInTrialPeriod:

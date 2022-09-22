@@ -63,9 +63,10 @@ class AppleReceiptBuilderTests: TestCase {
 
     func testBuildGetsExpiresDate() throws {
         let expirationDate = try Date.from(year: 2020, month: 7, day: 4, hour: 5, minute: 3, second: 2)
-        let expirationDateContainer =
-            containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.expirationDate,
-                                                       expirationDate)
+        let expirationDateContainer = containerFactory.receiptAttributeContainer(
+            attributeType: AppleReceipt.Attribute.AttributeType.expirationDate,
+            expirationDate
+        )
         let receiptContainer =
             containerFactory.receiptContainerFromContainers(containers: minimalAttributes() + [expirationDateContainer])
 
@@ -76,7 +77,9 @@ class AppleReceiptBuilderTests: TestCase {
     func testBuildGetsInAppPurchases() throws {
         let totalInAppPurchases = Int.random(in: 5..<20)
         let inAppContainers = (Int(0)..<totalInAppPurchases).map { _ in
-            containerFactory.receiptDataAttributeContainer(attributeType: ReceiptAttributeType.inAppPurchase)
+            containerFactory.receiptDataAttributeContainer(
+                attributeType: AppleReceipt.Attribute.AttributeType.inAppPurchase
+            )
         }
 
         let receiptContainer = containerFactory
@@ -192,30 +195,34 @@ private extension AppleReceiptBuilderTests {
 private extension AppleReceiptBuilderTests {
 
     func creationDateContainer() -> ASN1Container {
-        containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.creationDate,
+        containerFactory.receiptAttributeContainer(attributeType: AppleReceipt.Attribute.AttributeType.creationDate,
                                                    creationDate)
     }
 
     func sha1HashContainer() -> ASN1Container {
-        containerFactory.receiptDataAttributeContainer(attributeType: ReceiptAttributeType.sha1Hash)
+        containerFactory.receiptDataAttributeContainer(attributeType: AppleReceipt.Attribute.AttributeType.sha1Hash)
     }
 
     func opaqueValueContainer() -> ASN1Container {
-        containerFactory.receiptDataAttributeContainer(attributeType: ReceiptAttributeType.opaqueValue)
+        containerFactory.receiptDataAttributeContainer(attributeType: AppleReceipt.Attribute.AttributeType.opaqueValue)
     }
 
     func originalAppVersionContainer() -> ASN1Container {
-        containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.originalApplicationVersion,
-                                                   originalApplicationVersion)
+        containerFactory.receiptAttributeContainer(
+            attributeType: AppleReceipt.Attribute.AttributeType.originalApplicationVersion,
+            originalApplicationVersion
+        )
     }
 
     func appVersionContainer() -> ASN1Container {
-        containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.applicationVersion,
-                                                   applicationVersion)
+        containerFactory.receiptAttributeContainer(
+            attributeType: AppleReceipt.Attribute.AttributeType.applicationVersion,
+            applicationVersion
+        )
     }
 
     func bundleIdContainer() -> ASN1Container {
-        containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.bundleId,
+        containerFactory.receiptAttributeContainer(attributeType: AppleReceipt.Attribute.AttributeType.bundleId,
                                                    bundleId)
     }
 }

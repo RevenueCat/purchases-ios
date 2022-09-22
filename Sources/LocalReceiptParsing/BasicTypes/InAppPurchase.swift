@@ -14,42 +14,23 @@
 
 import Foundation
 
-// https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ReceiptFields.html
-enum InAppPurchaseAttributeType: Int {
-
-    case quantity = 1701,
-         productId = 1702,
-         transactionId = 1703,
-         purchaseDate = 1704,
-         originalTransactionId = 1705,
-         originalPurchaseDate = 1706,
-         productType = 1707,
-         expiresDate = 1708,
-         webOrderLineItemId = 1711,
-         cancellationDate = 1712,
-         isInTrialPeriod = 1713,
-         isInIntroOfferPeriod = 1719,
-         promotionalOfferIdentifier = 1721
-
-}
-
-enum InAppPurchaseProductType: Int {
-
-    case unknown = -1,
-         nonConsumable,
-         consumable,
-         nonRenewingSubscription,
-         autoRenewableSubscription
-
-}
-
 struct InAppPurchase: Equatable {
+
+    enum ProductType: Int {
+
+        case unknown = -1,
+        nonConsumable,
+        consumable,
+        nonRenewingSubscription,
+        autoRenewableSubscription
+
+    }
 
     let quantity: Int
     let productId: String
     let transactionId: String
     let originalTransactionId: String?
-    let productType: InAppPurchaseProductType?
+    let productType: ProductType?
     let purchaseDate: Date
     let originalPurchaseDate: Date?
     let expiresDate: Date?
@@ -83,5 +64,5 @@ struct InAppPurchase: Equatable {
 
 }
 
-extension InAppPurchaseProductType: Codable {}
+extension InAppPurchase.ProductType: Codable {}
 extension InAppPurchase: Codable {}

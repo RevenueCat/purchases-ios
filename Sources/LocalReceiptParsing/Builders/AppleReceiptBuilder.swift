@@ -61,13 +61,14 @@ class AppleReceiptBuilder {
             }
             let typeContainer = receiptAttribute.internalContainers[typeContainerIndex]
             let valueContainer = receiptAttribute.internalContainers[attributeTypeContainerIndex]
-            let attributeType = ReceiptAttributeType(rawValue: typeContainer.internalPayload.toInt())
-            guard let nonOptionalType = attributeType else {
-                continue
-            }
+
+            guard let attributeType = AppleReceipt.Attribute.AttributeType(
+                rawValue: typeContainer.internalPayload.toInt()
+            ) else { continue }
+
             let payload = valueContainer.internalPayload
 
-            switch nonOptionalType {
+            switch attributeType {
             case .opaqueValue:
                 opaqueValue = payload.toData()
             case .sha1Hash:
