@@ -16,20 +16,27 @@ class MockHTTPClient: HTTPClient {
     struct Response {
 
         let response: HTTPResponse<Data>.Result
+        let delay: DispatchTimeInterval
 
-        private init(response: HTTPResponse<Data>.Result) {
+        private init(response: HTTPResponse<Data>.Result, delay: DispatchTimeInterval) {
             self.response = response
+            self.delay = delay
         }
 
-        init(statusCode: HTTPStatusCode, response: [String: Any] = [:]) {
+        init(
+            statusCode: HTTPStatusCode,
+            response: [String: Any] = [:],
+            delay: DispatchTimeInterval = .never
+        ) {
             // swiftlint:disable:next force_try
             let data = try! JSONSerialization.data(withJSONObject: response)
 
-            self.init(response: .success(.init(statusCode: statusCode, body: data)))
+            self.init(response: .success(.init(statusCode: statusCode, body: data)),
+                      delay: delay)
         }
 
-        init(error: NetworkError) {
-            self.init(response: .failure(error))
+        init(error: NetworkError, delay: DispatchTimeInterval = .never) {
+            self.init(response: .failure(error), delay: delay)
         }
 
     }
@@ -71,9 +78,15 @@ class MockHTTPClient: HTTPClient {
             let mock = self.mocks[request.path] ?? .init(statusCode: .success)
 
             if let completionHandler = completionHandler {
-                completionHandler(
-                    mock.response.parseResponse()
-                )
+                let response: HTTPResponse<Value>.Result = mock.response.parseResponse()
+
+                if mock.delay != .never {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + mock.delay) {
+                        completionHandler(response)
+                    }
+                } else {
+                    completionHandler(response)
+                }
             }
         }
     }

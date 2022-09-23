@@ -128,6 +128,7 @@ platform :ios do
       number_of_retries: 5,
       result_bundle: true,
       testplan: "CI-AllTests",
+      configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios"
     )
   end
@@ -144,6 +145,7 @@ platform :ios do
       number_of_retries: 5,
       result_bundle: true,
       testplan: "CI-AllTests",
+      configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
@@ -342,6 +344,7 @@ platform :ios do
       number_of_retries: 3,
       result_bundle: true,
       testplan: "CI-BackendIntegration",
+      configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios"
     )
   end

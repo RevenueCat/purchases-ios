@@ -209,17 +209,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(SystemInfo.serverHostURL) == defaultHostURL
     }
 
-    @available(*, deprecated) // Ignore deprecation warnings
-    func testSetDebugLogsEnabledSetsTheCorrectValue() {
-        Logger.logLevel = .warn
-
-        Purchases.debugLogsEnabled = true
-        expect(Logger.logLevel) == .debug
-
-        Purchases.debugLogsEnabled = false
-        expect(Logger.logLevel) == .info
-    }
-
     func testIsAnonymous() {
         setupAnonPurchases()
         expect(self.purchases.isAnonymous).to(beTrue())

@@ -60,7 +60,9 @@ class BackendGetOfferingsTests: BaseBackendTests {
     func testGetOfferingsCachesForSameUserID() {
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
+            response: .init(statusCode: .success,
+                            response: Self.noOfferingsResponse as [String: Any],
+                            delay: .seconds(2))
         )
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
@@ -73,7 +75,9 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
+            response: .init(statusCode: .success,
+                            response: Self.noOfferingsResponse as [String: Any],
+                            delay: .seconds(2))
         )
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
