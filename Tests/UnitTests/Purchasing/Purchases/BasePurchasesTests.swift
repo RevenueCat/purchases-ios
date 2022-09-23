@@ -229,7 +229,7 @@ class BasePurchasesTests: TestCase {
 
     var storeKit2Setting: StoreKit2Setting {
         // Even though the new default is StoreKit 2, most of the tests from this parent class
-        // we written for SK1. Therefore we want to default to it being disabled.
+        // were written for SK1. Therefore we want to default to it being disabled.
         return .enabledOnlyForOptimizations
     }
 
