@@ -26,7 +26,7 @@ class BasePurchasesTests: TestCase {
         try super.setUpWithError()
 
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
-        self.systemInfo = MockSystemInfo(finishTransactions: true)
+        self.systemInfo = MockSystemInfo(finishTransactions: true, storeKit2Setting: self.storeKit2Setting)
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                            userDefaults: self.userDefaults)
         self.requestFetcher = MockRequestFetcher()
@@ -146,7 +146,9 @@ class BasePurchasesTests: TestCase {
     }
 
     func setupPurchasesObserverModeOn() throws {
-        self.systemInfo = try MockSystemInfo(platformInfo: nil, finishTransactions: false)
+        self.systemInfo = try MockSystemInfo(platformInfo: nil,
+                                             finishTransactions: false,
+                                             storeKit2Setting: self.storeKit2Setting)
         self.initializePurchasesInstance(appUserId: nil)
     }
 
@@ -223,6 +225,12 @@ class BasePurchasesTests: TestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
 
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+    }
+
+    var storeKit2Setting: StoreKit2Setting {
+        // Even though the new default is StoreKit 2, most of the tests from this parent class
+        // were written for SK1. Therefore we want to default to it being disabled.
+        return .enabledOnlyForOptimizations
     }
 
 }
