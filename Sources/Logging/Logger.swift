@@ -48,7 +48,7 @@ public typealias LogHandler = (_ level: LogLevel,
 
 enum Logger {
 
-    static var logLevel: LogLevel = Self.debugLogLevel
+    static var logLevel: LogLevel = Self.defaultLogLevel
     static var logHandler: VerboseLogHandler = Self.defaultLogHandler
 
     static let defaultLogHandler: VerboseLogHandler = { level, message, file, functionName, line in
@@ -69,7 +69,7 @@ enum Logger {
 
     static var verbose: Bool = false
 
-    private static let debugLogLevel: LogLevel = {
+    private static let defaultLogLevel: LogLevel = {
         #if DEBUG
         return .debug
         #else
