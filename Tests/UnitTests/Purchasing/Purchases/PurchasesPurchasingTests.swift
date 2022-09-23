@@ -25,12 +25,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    func testDelegateIsNotCalledWhenPurchasingIfBlockPassed() {
+    func testDelegateIsNotCalledWhenPurchasingIfBlockPassed() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -60,12 +60,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.mockProductsManager.invokedCacheProductParameter) == sk1Product
     }
 
-    func testTransitioningToPurchasedSendsToBackend() {
+    func testTransitioningToPurchasedSendsToBackend() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -77,14 +77,14 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == false
     }
 
-    func testReceiptsSendsAsRestoreWhenNotAnonymousAndAllowingSharingAppStoreAccount() {
+    func testReceiptsSendsAsRestoreWhenNotAnonymousAndAllowingSharingAppStoreAccount() throws {
         var deprecated = purchases.deprecated
         deprecated.allowSharingAppStoreAccount = true
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -101,7 +101,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -121,7 +121,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -135,12 +135,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
-    func testAfterSendingDoesntFinishTransactionIfBackendError() {
+    func testAfterSendingDoesntFinishTransactionIfBackendError() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
                 .init(code: .unknownBackendError, message: nil),
@@ -155,12 +155,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled) == false
     }
 
-    func testAfterSendingFinishesFromBackendErrorIfAppropriate() {
+    func testAfterSendingFinishesFromBackendErrorIfAppropriate() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
@@ -176,11 +176,11 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
-    func testNotifiesIfTransactionFailsFromBackend() {
+    func testNotifiesIfTransactionFailsFromBackend() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
@@ -196,7 +196,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled) == false
     }
 
-    func testNotifiesIfTransactionFailsFromStoreKit() {
+    func testNotifiesIfTransactionFailsFromStoreKit() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedError: Error?
         self.purchases.purchase(product: product) { (_, _, error, _) in
@@ -204,8 +204,8 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockError = NSError.init(domain: SKErrorDomain, code: 2, userInfo: nil)
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockError = NSError(domain: SKErrorDomain, code: 2, userInfo: nil)
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         self.backend.postReceiptResult = .failure(.missingTransactionProductIdentifier())
 
@@ -227,7 +227,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
@@ -239,7 +239,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(callCount).toEventually(equal(1))
     }
 
-    func testUserCancelledFalseIfPurchaseSuccessful() {
+    func testUserCancelledFalseIfPurchaseSuccessful() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
 
@@ -248,14 +248,14 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventually(beFalse())
     }
 
-    func testUnknownErrorCurrentlySubscribedIsParsedCorrectly() {
+    func testUnknownErrorCurrentlySubscribedIsParsedCorrectly() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
         var receivedError: NSError?
@@ -281,7 +281,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         transaction.mockState = .failed
         transaction.mockError = unknownError
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -361,7 +361,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).to(beNil())
     }
 
-    func testDoNotSendEmptyReceiptWhenMakingPurchase() {
+    func testDoNotSendEmptyReceiptWhenMakingPurchase() throws {
         self.receiptFetcher.shouldReturnReceipt = false
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
@@ -374,7 +374,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
@@ -391,7 +391,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -428,12 +428,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
     }
 
-    func testReceiptsSendsObserverModeOffWhenObserverModeOff() {
+    func testReceiptsSendsObserverModeOffWhenObserverModeOff() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -445,7 +445,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedObserverMode) == false
     }
 
-    func testNotifiesIfTransactionIsDeferredFromStoreKit() {
+    func testNotifiesIfTransactionIsDeferredFromStoreKit() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedError: NSError?
         self.purchases.purchase(product: product) { (_, _, error, _) in
@@ -453,7 +453,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.deferred
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -567,7 +567,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -625,12 +625,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUserCancelled) == false
     }
 
-    func testTransitioningToPurchasing() {
+    func testTransitioningToPurchasing() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         transaction.mockState = SKPaymentTransactionState.purchasing
 
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -684,7 +684,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
     }
 
-    func testPaymentSheetCancelledErrorIsParsedCorrectly() {
+    func testPaymentSheetCancelledErrorIsParsedCorrectly() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
         var receivedError: NSError?
@@ -707,7 +707,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         transaction.mockState = .failed
         transaction.mockError = unknownError
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -717,7 +717,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
     }
 
-    func testSendsProductDataIfProductIsCached() throws {
+    func testSendsProductDataIfProductIsCached() {
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
 
         self.purchases.getProducts(productIdentifiers) { newProducts in
@@ -785,14 +785,14 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
 class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
 
-    func testReceiptsSendsAsRestoreWhenAnon() {
+    func testReceiptsSendsAsRestoreWhenAnon() throws {
         self.setupAnonPurchases()
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -804,7 +804,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == true
     }
 
-    func testReceiptsSendsAsNotRestoreWhenAnonymousAndNotAllowingSharingAppStoreAccount() {
+    func testReceiptsSendsAsNotRestoreWhenAnonymousAndNotAllowingSharingAppStoreAccount() throws {
         self.setupAnonPurchases()
 
         var deprecated = purchases.deprecated
@@ -813,7 +813,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -828,6 +828,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOffInObserverMode() throws {
         self.systemInfo = try MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
+                                             storeKit2Setting: .enabledOnlyForOptimizations,
                                              dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
@@ -835,7 +836,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(
@@ -853,6 +854,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOff() throws {
         self.systemInfo = try MockSystemInfo(platformInfo: nil,
                                              finishTransactions: true,
+                                             storeKit2Setting: .enabledOnlyForOptimizations,
                                              dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
@@ -860,7 +862,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -882,7 +884,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -903,7 +905,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
@@ -922,7 +924,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKit1Wrapper.payment!
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
         transaction.mockState = SKPaymentTransactionState.restored
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
