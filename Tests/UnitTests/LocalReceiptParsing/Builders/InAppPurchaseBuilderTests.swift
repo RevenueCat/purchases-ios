@@ -10,12 +10,13 @@ import XCTest
 @testable import RevenueCat
 
 class InAppPurchaseBuilderTests: TestCase {
+
     // swiftlint:disable force_try
     let quantity = 2
     let productId = "com.revenuecat.sampleProduct"
     let transactionId = "089230953203"
     let originalTransactionId = "089230953101"
-    let productType = InAppPurchaseProductType.autoRenewableSubscription
+    let productType = InAppPurchase.ProductType.autoRenewableSubscription
     let purchaseDate = try! Date.from(year: 2019, month: 5, day: 3, hour: 1, minute: 55, second: 1)
     let originalPurchaseDate = try! Date.from(year: 2018, month: 6, day: 22, hour: 1, minute: 55, second: 1)
     let expiresDate = try! Date.from(year: 2018, month: 6, day: 22, hour: 1, minute: 55, second: 1)
@@ -269,92 +270,93 @@ private extension InAppPurchaseBuilderTests {
 
     func quantityContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.quantity,
+            attributeType: InAppPurchaseBuilder.AttributeType.quantity,
             quantity
         )
     }
 
     func productIdContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.productId,
+            attributeType: InAppPurchaseBuilder.AttributeType.productId,
             productId
         )
     }
 
     func transactionIdContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.transactionId,
+            attributeType: InAppPurchaseBuilder.AttributeType.transactionId,
             transactionId
         )
     }
 
     func originalTransactionIdContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.originalTransactionId,
+            attributeType: InAppPurchaseBuilder.AttributeType.originalTransactionId,
             originalTransactionId
         )
     }
 
     func productTypeContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.productType,
+            attributeType: InAppPurchaseBuilder.AttributeType.productType,
             productType.rawValue
         )
     }
 
     func purchaseDateContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.purchaseDate,
+            attributeType: InAppPurchaseBuilder.AttributeType.purchaseDate,
             purchaseDate
         )
     }
 
     func originalPurchaseDateContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.originalPurchaseDate,
+            attributeType: InAppPurchaseBuilder.AttributeType.originalPurchaseDate,
             originalPurchaseDate
         )
     }
 
     func expiresDateContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.expiresDate,
+            attributeType: InAppPurchaseBuilder.AttributeType.expiresDate,
             expiresDate
         )
     }
 
     func cancellationDateContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.cancellationDate,
+            attributeType: InAppPurchaseBuilder.AttributeType.cancellationDate,
             cancellationDate
         )
     }
 
     func isInTrialPeriodContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.isInTrialPeriod,
+            attributeType: InAppPurchaseBuilder.AttributeType.isInTrialPeriod,
             isInTrialPeriod
         )
     }
 
     func isInIntroOfferPeriodContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.isInIntroOfferPeriod,
+            attributeType: InAppPurchaseBuilder.AttributeType.isInIntroOfferPeriod,
             isInIntroOfferPeriod
         )
     }
 
     func webOrderLineItemIdContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.webOrderLineItemId,
+            attributeType: InAppPurchaseBuilder.AttributeType.webOrderLineItemId,
             webOrderLineItemId
         )
     }
 
     func promotionalOfferIdentifierContainer() -> ASN1Container {
         return containerFactory.receiptAttributeContainer(
-            attributeType: InAppPurchaseAttributeType.promotionalOfferIdentifier,
+            attributeType: InAppPurchaseBuilder.AttributeType.promotionalOfferIdentifier,
             promotionalOfferIdentifier
         )
     }
+
 }
