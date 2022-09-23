@@ -147,12 +147,14 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
     private var paymentQueueWrapperDelegate: PaymentQueueWrapperDelegate!
     private var product: MockSK1Product!
 
+    override var storeKit2Setting: StoreKit2Setting {
+        return .enabledForCompatibleDevices
+    }
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        self.systemInfo = MockSystemInfo(finishTransactions: false, storeKit2Setting: .enabledForCompatibleDevices)
 
         self.setupPurchases()
 
