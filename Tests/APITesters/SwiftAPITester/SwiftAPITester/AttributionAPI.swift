@@ -72,5 +72,7 @@ func checkAttributionAPI() {
 
     attribution.collectDeviceIdentifiers()
 
+    #if !os(tvOS)
     attribution.enableAdServicesAttributionTokenCollection()
+    #endif
 }

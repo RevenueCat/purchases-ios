@@ -119,6 +119,8 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
+    #if !os(tvOS)
+
     @available(*, deprecated)
     func testAdClientAttributionDataIsAutomaticallyCollected() throws {
         self.setupPurchases(automaticCollection: true)
@@ -132,11 +134,6 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(obtainedVersionData["iad-campaign-id"]).toNot(beNil())
     }
 
-    func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
-        self.setupPurchases(automaticCollection: false)
-        expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
-    }
-
     func testAttributionDataPostponesMultiple() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
@@ -146,6 +143,13 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
 
         expect(self.backend.invokedPostAttributionDataParametersList).toEventually(haveCount(1))
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParametersList).to(haveCount(1))
+    }
+
+    #endif
+
+    func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
+        self.setupPurchases(automaticCollection: false)
+        expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
     }
 
 }

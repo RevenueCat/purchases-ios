@@ -112,7 +112,7 @@ class SubscriptionPeriodTests: TestCase {
 
     /// Necessary since SKProductSubscriptionPeriod.debugDescription & SKProductSubscriptionPeriod.description
     /// return the object's address in memory.
-    @available(iOS 11.2, *)
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     private func description(for skProductSubscriptionPeriod: SKProductSubscriptionPeriod) -> String {
 
         let periodUnit: String
