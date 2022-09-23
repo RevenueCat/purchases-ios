@@ -3,6 +3,8 @@
 * `Purchases.beginRefundRequest`: ensured errors are `PublicError` (#1913) via NachoSoto (@NachoSoto)
 * `PurchaseTesterSwiftUI`: fixed macOS target (#1915) via NachoSoto (@NachoSoto)
 ### Other Changes
+* Fixed `tvOS` tests (#1928) via NachoSoto (@NachoSoto)
+* `SnapshotTesting`: require version 1.9.0 to keep supporting iOS 12/13 tests (#1931) via NachoSoto (@NachoSoto)
 * `pre-commit` hook: also verify leftover API keys in `PurchaseTester` (#1914) via NachoSoto (@NachoSoto)
 * `CircleCI`: changed iOS 12/13 to use Xcode 13 (#1918) via NachoSoto (@NachoSoto)
 * `PurchaseTesterSwiftUI`: removed unnecessary `UIApplicationDelegate` (#1916) via NachoSoto (@NachoSoto)
