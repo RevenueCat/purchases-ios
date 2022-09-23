@@ -47,11 +47,8 @@ public typealias LogHandler = (_ level: LogLevel,
                                _ message: String) -> Void
 
 enum Logger {
-    #if DEBUG
-    static var logLevel: LogLevel = .debug
-    #else
-    static var logLevel: LogLevel = .info
-    #endif
+
+    static var logLevel: LogLevel = Self.defaultLogLevel
     static var logHandler: VerboseLogHandler = Self.defaultLogHandler
 
     static let defaultLogHandler: VerboseLogHandler = { level, message, file, functionName, line in
@@ -71,6 +68,14 @@ enum Logger {
     }
 
     static var verbose: Bool = false
+
+    private static let defaultLogLevel: LogLevel = {
+        #if DEBUG
+        return .debug
+        #else
+        return .info
+        #endif
+    }()
 
     internal static let frameworkDescription = "Purchases"
 
