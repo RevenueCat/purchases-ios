@@ -37,7 +37,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
                                          operationDispatcher: operationDispatcher,
                                          storeKit2Setting: .disabled)
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfo)
-        self.parser = ReceiptParser()
+        self.parser = .default
     }
 
     @MainActor

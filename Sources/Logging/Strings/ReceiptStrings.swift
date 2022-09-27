@@ -28,6 +28,7 @@ enum ReceiptStrings {
     case parsing_receipt
     case refreshing_empty_receipt
     case unable_to_load_receipt
+    case posting_receipt(content: String)
 
 }
 
@@ -73,6 +74,9 @@ extension ReceiptStrings: CustomStringConvertible {
 
         case .unable_to_load_receipt:
             return "Unable to load receipt, ensure you are logged in to a valid Apple account."
+
+        case let .posting_receipt(content):
+            return "Posting receipt: \(content)"
 
         }
     }

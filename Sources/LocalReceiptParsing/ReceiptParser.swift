@@ -16,6 +16,8 @@ import Foundation
 
 class ReceiptParser {
 
+    static let `default`: ReceiptParser = .init()
+
     private let containerBuilder: ASN1ContainerBuilder
     private let receiptBuilder: AppleReceiptBuilder
 

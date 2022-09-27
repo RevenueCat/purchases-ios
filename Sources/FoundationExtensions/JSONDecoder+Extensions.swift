@@ -134,6 +134,15 @@ extension JSONEncoder {
         return encoder
     }()
 
+    static let prettyPrinted: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = .prettyPrinted
+
+        return encoder
+    }()
+
 }
 
 extension JSONDecoder {

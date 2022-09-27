@@ -610,16 +610,7 @@ private extension AppleReceipt {
 
     var prettyPrintedData: Data {
         get throws {
-            let encoder: JSONEncoder = {
-                let encoder = JSONEncoder()
-                encoder.keyEncodingStrategy = .convertToSnakeCase
-                encoder.outputFormatting = .prettyPrinted
-                encoder.dateEncodingStrategy = .iso8601
-
-                return encoder
-            }()
-
-            return try encoder.encode(self)
+            return try JSONEncoder.prettyPrinted.encode(self)
         }
     }
 }
