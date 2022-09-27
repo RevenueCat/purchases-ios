@@ -53,6 +53,10 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
+        if Logger.logLevel == .debug {
+            self.printReceiptData()
+        }
+
         self.post(completion: completion)
     }
 
@@ -70,6 +74,24 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
     }
 
 }
+
+// MARK: - Private
+
+private extension PostReceiptDataOperation {
+
+    func printReceiptData() {
+        do {
+            self.log(Strings.receipt.posting_receipt(
+                try ReceiptParser.default.parse(from: self.postData.receiptData)
+            ))
+        } catch {
+            Logger.appleError(Strings.receipt.parse_receipt_locally_error(error: error))
+        }
+    }
+
+}
+
+// MARK: - Request Data
 
 extension PostReceiptDataOperation.PostData: Encodable {
 

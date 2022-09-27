@@ -275,7 +275,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
         let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
-        let receiptParser = ReceiptParser()
+        let receiptParser = ReceiptParser.default
         let transactionsManager = TransactionsManager(storeKit2Setting: systemInfo.storeKit2Setting,
                                                       receiptParser: receiptParser)
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
@@ -1060,7 +1060,7 @@ internal extension Purchases {
     func fetchReceipt(_ policy: ReceiptRefreshPolicy) async throws -> AppleReceipt? {
         let receipt = await self.receiptFetcher.receiptData(refreshPolicy: policy)
 
-        return try receipt.map { try ReceiptParser().parse(from: $0) }
+        return try receipt.map { try ReceiptParser.default.parse(from: $0) }
     }
 
     #endif

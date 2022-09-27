@@ -40,29 +40,15 @@ struct InAppPurchase: Equatable {
     let webOrderLineItemId: Int64?
     let promotionalOfferIdentifier: String?
 
-    var asDict: [String: Any] {
-        return [
-            "quantity": quantity,
-            "productId": productId,
-            "transactionId": transactionId,
-            "originalTransactionId": originalTransactionId ?? "<unknown>",
-            "promotionalOfferIdentifier": promotionalOfferIdentifier ?? "",
-            "purchaseDate": purchaseDate,
-            "productType": productType?.rawValue ?? "",
-            "originalPurchaseDate": originalPurchaseDate ?? "<unknown>",
-            "expiresDate": expiresDate ?? "",
-            "cancellationDate": cancellationDate ?? "",
-            "isInTrialPeriod": isInTrialPeriod ?? "",
-            "isInIntroOfferPeriod": isInIntroOfferPeriod ?? "<unknown>",
-            "webOrderLineItemId": webOrderLineItemId ?? "<unknown>"
-        ]
-    }
-
-    var description: String {
-        return String(describing: self.asDict)
-    }
-
 }
 
 extension InAppPurchase.ProductType: Codable {}
 extension InAppPurchase: Codable {}
+
+extension InAppPurchase: CustomDebugStringConvertible {
+
+    var debugDescription: String {
+        return (try? self.prettyPrintedJSON) ?? "<null>"
+    }
+
+}
