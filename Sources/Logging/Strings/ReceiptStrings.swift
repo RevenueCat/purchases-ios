@@ -75,8 +75,8 @@ extension ReceiptStrings: CustomStringConvertible {
         case .unable_to_load_receipt:
             return "Unable to load receipt, ensure you are logged in to a valid Apple account."
 
-        case let .posting_receipt(content):
-            return "Posting receipt: \(content.debugDescription)"
+        case let .posting_receipt(receipt):
+            return "Posting receipt: \(receipt.debugDescription)"
 
         }
     }
