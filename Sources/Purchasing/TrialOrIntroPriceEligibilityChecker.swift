@@ -56,26 +56,25 @@ class TrialOrIntroPriceEligibilityChecker {
 
         // Note: this uses SK2 (unless it's explicitly disabled) because its implementation is more accurate.
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *), self.systemInfo.storeKit2Setting != .disabled {
-            _ = Task<Void, Never> {
+            Async.call(with: completion) {
                 do {
-                    completion(try await sk2CheckEligibility(productIdentifiers))
+                    return try await self.sk2CheckEligibility(productIdentifiers)
                 } catch {
                     Logger.appleError(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
 
-                    let introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                    return productIdentifiers.reduce(into: [:]) { resultDict, productId in
                         resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
                     }
-                    completion(introDict)
                 }
             }
         } else {
-            sk1CheckEligibility(productIdentifiers, completion: completion)
+            self.sk1CheckEligibility(productIdentifiers, completion: completion)
         }
     }
 
     func checkEligibility(product: StoreProductType,
                           completion: @escaping (IntroEligibilityStatus) -> Void) {
-        checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
+        self.checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
             completion(eligibility[product.productIdentifier]?.status ?? .unknown)
         }
     }

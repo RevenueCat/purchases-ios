@@ -85,9 +85,8 @@ private extension ManageSubscriptionsHelper {
            // showManageSubscriptions doesn't work on iOS apps running on Apple Silicon
            // https://developer.apple.com/documentation/storekit/appstore/3803198-showmanagesubscriptions#
            !ProcessInfo().isiOSAppOnMac {
-            _ = Task<Void, Never> {
-                let result = await self.showSK2ManageSubscriptions()
-                completion(result)
+            Async.call(with: completion) {
+                return await self.showSK2ManageSubscriptions()
             }
             return
         }
@@ -134,7 +133,7 @@ private extension ManageSubscriptionsHelper {
 #if os(iOS)
         // Note: we're ignoring the result of AppStore.showManageSubscriptions(in:) because as of
         // iOS 15.2, it only returns after the sheet is dismissed, which isn't desired.
-        _ = Task.init {
+        _ = Task<Void, Never> {
             do {
                 try await AppStore.showManageSubscriptions(in: windowScene)
                 Logger.info(Strings.susbscription_management_sheet_dismissed)
