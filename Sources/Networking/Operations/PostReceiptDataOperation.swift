@@ -81,12 +81,9 @@ private extension PostReceiptDataOperation {
 
     func printReceiptData() {
         do {
-            let receiptData = try JSONEncoder.prettyPrinted.encode(
+            self.log(Strings.receipt.posting_receipt(
                 try ReceiptParser.default.parse(from: self.postData.receiptData)
-            )
-            let receiptContent = String(data: receiptData, encoding: .utf8) ?? "<nil>"
-
-            self.log(Strings.receipt.posting_receipt(content: receiptContent))
+            ))
         } catch {
             Logger.appleError(Strings.receipt.parse_receipt_locally_error(error: error))
         }

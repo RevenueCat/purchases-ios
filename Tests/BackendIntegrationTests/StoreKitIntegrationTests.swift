@@ -578,7 +578,7 @@ private extension StoreKit1IntegrationTests {
     func printReceiptContent() async {
         do {
             let receipt = try await Purchases.shared.fetchReceipt(.always)
-            let description = receipt.map { $0.description } ?? "<null>"
+            let description = receipt.map { $0.debugDescription } ?? "<null>"
 
             Logger.appleWarning("Receipt content:\n\(description)")
 
@@ -604,13 +604,4 @@ private extension AsyncSequence {
         }
     }
 
-}
-
-private extension AppleReceipt {
-
-    var prettyPrintedData: Data {
-        get throws {
-            return try JSONEncoder.prettyPrinted.encode(self)
-        }
-    }
 }

@@ -58,23 +58,14 @@ struct AppleReceipt: Equatable {
         return Set(productIdentifiers)
     }
 
-    var asDict: [String: Any] {
-        return [
-            "bundleId": bundleId,
-            "applicationVersion": applicationVersion,
-            "originalApplicationVersion": originalApplicationVersion ?? "<unknown>",
-            "opaqueValue": opaqueValue,
-            "sha1Hash": sha1Hash,
-            "creationDate": creationDate,
-            "expirationDate": expirationDate ?? "",
-            "inAppPurchases": inAppPurchases.map { $0.asDict }
-        ]
-    }
-
-    var description: String {
-        return String(describing: self.asDict)
-    }
-
 }
 
 extension AppleReceipt: Codable {}
+
+extension AppleReceipt: CustomDebugStringConvertible {
+
+    var debugDescription: String {
+        return (try? self.prettyPrintedJSON) ?? "<null>"
+    }
+
+}
