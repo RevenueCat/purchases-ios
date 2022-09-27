@@ -39,7 +39,7 @@ class AppleReceiptBuilder {
         var sha1Hash: Data?
         var creationDate: Date?
         var expirationDate: Date?
-        var inAppPurchases: [InAppPurchase] = []
+        var inAppPurchases: [AppleReceipt.InAppPurchase] = []
 
         guard let internalContainer = container.internalContainers.first else {
             throw ReceiptReadingError.receiptParsingError

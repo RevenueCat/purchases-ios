@@ -85,19 +85,19 @@ class AppleReceiptBuilderTests: TestCase {
         let receiptContainer = containerFactory
             .receiptContainerFromContainers(containers: minimalAttributes() + inAppContainers)
 
-        mockInAppPurchaseBuilder.stubbedBuildResult = InAppPurchase(quantity: 2,
-                                                                    productId: "com.revenuecat.sometest",
-                                                                    transactionId: "8923532523",
-                                                                    originalTransactionId: "235325322",
-                                                                    productType: .nonRenewingSubscription,
-                                                                    purchaseDate: Date(),
-                                                                    originalPurchaseDate: Date(),
-                                                                    expiresDate: nil,
-                                                                    cancellationDate: nil,
-                                                                    isInTrialPeriod: false,
-                                                                    isInIntroOfferPeriod: false,
-                                                                    webOrderLineItemId: Int64(658464),
-                                                                    promotionalOfferIdentifier: nil)
+        mockInAppPurchaseBuilder.stubbedBuildResult = .init(quantity: 2,
+                                                            productId: "com.revenuecat.sometest",
+                                                            transactionId: "8923532523",
+                                                            originalTransactionId: "235325322",
+                                                            productType: .nonRenewingSubscription,
+                                                            purchaseDate: Date(),
+                                                            originalPurchaseDate: Date(),
+                                                            expiresDate: nil,
+                                                            cancellationDate: nil,
+                                                            isInTrialPeriod: false,
+                                                            isInIntroOfferPeriod: false,
+                                                            webOrderLineItemId: Int64(658464),
+                                                            promotionalOfferIdentifier: nil)
 
         let receipt = try self.appleReceiptBuilder.build(fromContainer: receiptContainer)
         expect(receipt.inAppPurchases.count) == totalInAppPurchases
