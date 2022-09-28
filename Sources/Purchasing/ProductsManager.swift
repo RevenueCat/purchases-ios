@@ -108,31 +108,11 @@ class ProductsManager: NSObject, ProductsManagerType {
         }
     }
 
-    func cache(_ product: StoreProductType) {
-        switch product {
-        case let sk1Product as SK1Product:
-            self.productsFetcherSK1.cacheProduct(sk1Product)
-
-        case let product as StoreProduct:
-            if let sk1Product = product.sk1Product {
-                self.productsFetcherSK1.cacheProduct(sk1Product)
-            }
-
-        default:
-            // Ignoring otherwise.
-            // This is temporary, as the caching logic is going away from here
-            // in favor of the new `CachingProductsManager`
-            break
-        }
-    }
-
+    // This class does not implement caching.
+    // See `CachingProductsManager`.
+    func cache(_ product: StoreProductType) {}
     func clearCache() {
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
-            self.invalidateAndReFetchCachedSK2Products()
-        } else {
-            self.invalidateAndReFetchCachedSK1Products()
-        }
+        self.productsFetcherSK1.clearCache()
     }
 
     var requestTimeout: TimeInterval {
@@ -148,29 +128,6 @@ private extension ProductsManager {
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK1Product>, PurchasesError>) -> Void) {
         return self.productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
-    }
-
-    func invalidateAndReFetchCachedSK1Products() {
-        self.productsFetcherSK1.clearCache { [productsFetcherSK1] removedProductIdentifiers in
-            guard !removedProductIdentifiers.isEmpty else { return }
-            productsFetcherSK1.products(withIdentifiers: removedProductIdentifiers, completion: { _ in })
-        }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func invalidateAndReFetchCachedSK2Products() {
-        Task<Void, Never> {
-            let removedProductIdentifiers = await productsFetcherSK2.clearCache()
-            if !removedProductIdentifiers.isEmpty {
-                do {
-                    _ = try await self.productsFetcherSK2.products(identifiers: removedProductIdentifiers)
-
-                    Logger.debug(Strings.storeKit.store_product_request_finished)
-                } catch {
-                    Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
-                }
-            }
-        }
     }
 
 }

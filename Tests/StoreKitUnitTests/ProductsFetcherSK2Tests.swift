@@ -21,23 +21,18 @@ class ProductsFetcherSK2Tests: StoreKitConfigTestCase {
 
     private var productsFetcherSK2: ProductsFetcherSK2!
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         self.productsFetcherSK2 = ProductsFetcherSK2()
     }
 
-    func testCachedProductsAreEmptyAfterClearingCachedProductCorrectly() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    func testItFetchesProducts() async throws {
+        let result = try await self.productsFetcherSK2.product(withIdentifier: Self.productID)
+        expect(result.productIdentifier) == Self.productID
 
-        _ = try await productsFetcherSK2.product(withIdentifier: Self.productID)
-
-        var cachedProducts = await productsFetcherSK2.cachedProductsByIdentifier
-        expect(cachedProducts).notTo(beEmpty())
-
-        await productsFetcherSK2.clearCache()
-
-        cachedProducts = await productsFetcherSK2.cachedProductsByIdentifier
-        expect(cachedProducts).to(beEmpty())
     }
 
 }
