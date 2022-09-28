@@ -14,9 +14,9 @@
 import Foundation
 
 /// This extension holds the biolerplate logic to convert methods with completion blocks into async / await syntax.
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Purchases {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             logIn(appUserID) { customerInfo, created, error in
@@ -26,7 +26,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOutAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             logOut { customerInfo, error in
@@ -35,7 +34,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offeringsAsync() async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
             getOfferings { offerings, error in
@@ -44,7 +42,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             getCustomerInfo(fetchPolicy: fetchPolicy) { customerInfo, error in
@@ -53,7 +50,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func productsAsync(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await withCheckedContinuation { continuation in
             getProducts(productIdentifiers) { result in
@@ -62,7 +58,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchaseAsync(product: StoreProduct) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product) { transaction, customerInfo, error, userCancelled in
@@ -72,7 +67,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchaseAsync(package: Package) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package) { transaction, customerInfo, error, userCancelled in
@@ -82,7 +76,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
@@ -93,7 +86,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchaseAsync(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package,
@@ -104,7 +96,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             syncPurchases { customerInfo, error in
@@ -113,7 +104,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             restorePurchases { customerInfo, error in
@@ -122,7 +112,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
     -> IntroEligibilityStatus {
         return await withCheckedContinuation { continuation in
@@ -132,7 +121,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ productIdentifiers: [String]) async
     -> [String: IntroEligibility] {
         return await withCheckedContinuation { continuation in
@@ -142,7 +130,6 @@ extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func promotionalOfferAsync(forProductDiscount discount: StoreProductDiscount,
                                product: StoreProduct) async throws -> PromotionalOffer {
         return try await withCheckedThrowingContinuation { continuation in
@@ -152,7 +139,6 @@ extension Purchases {
          }
      }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func eligiblePromotionalOffersAsync(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         let discounts = product.discounts
 
