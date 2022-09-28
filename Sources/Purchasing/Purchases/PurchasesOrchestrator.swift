@@ -48,6 +48,9 @@ final class PurchasesOrchestrator {
         self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
 
+    static let receiptRetryCount: Int = 3
+    static let receiptRetrySleepDuration: DispatchTimeInterval = .seconds(5)
+
     private let productsManager: ProductsManagerType
     private let storeKit1Wrapper: StoreKit1Wrapper?
     private let systemInfo: SystemInfo
@@ -744,8 +747,8 @@ private extension PurchasesOrchestrator {
     private func refreshRequestPolicy(forProductIdentifier productIdentifier: String) -> ReceiptRefreshPolicy {
         if self.systemInfo.isSandbox {
             return .retryUntilProductIsFound(productIdentifier: productIdentifier,
-                                             maximumRetries: 3,
-                                             sleepDuration: .seconds(5))
+                                             maximumRetries: Self.receiptRetryCount,
+                                             sleepDuration: Self.receiptRetrySleepDuration)
         } else {
             return .always
         }

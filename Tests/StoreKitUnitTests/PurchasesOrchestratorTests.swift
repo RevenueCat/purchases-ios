@@ -113,6 +113,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.systemInfo = try MockSystemInfo(platformInfo: platformInfo,
                                              finishTransactions: finishTransactions,
                                              storeKit2Setting: storeKit2Setting)
+        self.systemInfo.stubbedIsSandbox = true
     }
 
     fileprivate func setupStoreKit1Wrapper() {
@@ -183,6 +184,42 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                   payment: payment,
                                   package: package,
                                   wrapper: self.storeKit1Wrapper) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .retryUntilProductIsFound(
+            productIdentifier: product.productIdentifier,
+            maximumRetries: PurchasesOrchestrator.receiptRetryCount,
+            sleepDuration: PurchasesOrchestrator.receiptRetrySleepDuration
+        )
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+    }
+
+    func testPurchaseDoesNotRetryReceiptFetchIfNotInSandbox() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.systemInfo.stubbedIsSandbox = false
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = try await self.fetchSk1StoreProduct()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -353,6 +390,35 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockListener.mockTransaction.value = try await self.createTransactionWithPurchase()
 
         let product = try await fetchSk2Product()
+
+        _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .retryUntilProductIsFound(
+            productIdentifier: product.id,
+            maximumRetries: PurchasesOrchestrator.receiptRetryCount,
+            sleepDuration: PurchasesOrchestrator.receiptRetrySleepDuration
+        )
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageDoesNotRetryReceiptFetchIfNotInSandbox() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.systemInfo.stubbedIsSandbox = false
+
+        mockListener.mockTransaction.value = try await self.createTransactionWithPurchase()
+
+        let product = try await self.fetchSk2Product()
 
         _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
 

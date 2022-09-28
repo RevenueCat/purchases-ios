@@ -41,7 +41,7 @@ class MockSystemInfo: SystemInfo {
     }
 
     override var isSandbox: Bool {
-        return stubbedIsSandbox ?? super.isSandbox
+        return self.stubbedIsSandbox ?? super.isSandbox
     }
 
 }
