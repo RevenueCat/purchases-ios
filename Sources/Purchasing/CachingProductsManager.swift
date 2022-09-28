@@ -125,7 +125,10 @@ private extension CachingProductsManager {
             completion(.success(cachedProducts))
         } else {
             let requestInProgress = Self.save(completion, for: identifiers, requestCache: requestCache)
-            guard !requestInProgress else { return }
+            guard !requestInProgress else {
+                Logger.debug(Strings.offering.found_existing_product_request(identifiers: identifiers))
+                return
+            }
 
             Logger.debug(
                 Strings.storeKit.no_cached_products_starting_store_products_request(identifiers: identifiers)
