@@ -25,20 +25,24 @@ class ReceiptFetcher {
     }
 
     func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?) -> Void) {
-        if refreshPolicy == .always {
+        switch refreshPolicy {
+        case .always:
             Logger.debug(Strings.receipt.force_refreshing_receipt)
-            refreshReceipt(completion)
-            return
-        }
+            self.refreshReceipt(completion)
 
-        let receiptData = receiptData()
-        let isReceiptEmpty = receiptData?.isEmpty ?? true
+        case .onlyIfEmpty:
+            let receiptData = self.receiptData()
+            let isReceiptEmpty = receiptData?.isEmpty ?? true
 
-        if isReceiptEmpty && refreshPolicy == .onlyIfEmpty {
-            Logger.debug(Strings.receipt.refreshing_empty_receipt)
-            refreshReceipt(completion)
-        } else {
-            completion(receiptData)
+            if isReceiptEmpty {
+                Logger.debug(Strings.receipt.refreshing_empty_receipt)
+                self.refreshReceipt(completion)
+            } else {
+                completion(receiptData)
+            }
+
+        case .never:
+            completion(self.receiptData())
         }
     }
 
