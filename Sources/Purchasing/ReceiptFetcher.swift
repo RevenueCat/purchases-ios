@@ -161,6 +161,11 @@ private extension ReceiptFetcher {
                     let receipt = try self.receiptParser.parse(from: data)
                     if receipt.containsActivePurchase(forProductIdentifier: productIdentifier) {
                         return data
+                    } else {
+                        Logger.appleWarning(Strings.receipt.local_receipt_missing_purchase(
+                            receipt,
+                            forProductIdentifier: productIdentifier
+                        ))
                     }
                 } catch {
                     Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
