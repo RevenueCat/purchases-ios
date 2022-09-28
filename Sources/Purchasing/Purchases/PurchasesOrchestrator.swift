@@ -676,9 +676,10 @@ private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: StoreTransaction,
                                     storefront: StorefrontType?) {
-        self.receiptFetcher.receiptData(refreshPolicy: .always) { receiptData in
-            if let receiptData = receiptData,
-               !receiptData.isEmpty {
+        self.receiptFetcher.receiptData(
+            refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
+        ) { receiptData in
+            if let receiptData = receiptData, !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction,
                                                  receiptData: receiptData,
                                                  storefront: storefront)
@@ -740,6 +741,15 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    private func refreshRequestPolicy(forProductIdentifier productIdentifier: String) -> ReceiptRefreshPolicy {
+        if self.systemInfo.isSandbox {
+            return .retryUntilProductIsFound(productIdentifier: productIdentifier,
+                                             maximumRetries: 3,
+                                             sleepDuration: .seconds(5))
+        } else {
+            return .always
+        }
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

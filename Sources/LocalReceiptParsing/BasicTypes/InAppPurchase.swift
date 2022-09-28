@@ -14,7 +14,45 @@
 
 import Foundation
 
-struct InAppPurchase: Equatable {
+extension AppleReceipt {
+
+    struct InAppPurchase: Equatable {
+
+        let quantity: Int
+        let productId: String
+        let transactionId: String
+        let originalTransactionId: String?
+        let productType: ProductType?
+        let purchaseDate: Date
+        let originalPurchaseDate: Date?
+        let expiresDate: Date?
+        let cancellationDate: Date?
+        let isInTrialPeriod: Bool?
+        let isInIntroOfferPeriod: Bool?
+        let webOrderLineItemId: Int64?
+        let promotionalOfferIdentifier: String?
+
+    }
+
+}
+
+extension AppleReceipt.InAppPurchase {
+
+    func isActivePurchase(forProductIdentifier identifier: String) -> Bool {
+        return self.productId == identifier && self.isActive
+    }
+
+    private var isActive: Bool {
+        guard let expiration = self.expiresDate else {
+            return true
+        }
+
+        return expiration > Date()
+    }
+
+}
+
+extension AppleReceipt.InAppPurchase {
 
     enum ProductType: Int {
 
@@ -26,26 +64,14 @@ struct InAppPurchase: Equatable {
 
     }
 
-    let quantity: Int
-    let productId: String
-    let transactionId: String
-    let originalTransactionId: String?
-    let productType: ProductType?
-    let purchaseDate: Date
-    let originalPurchaseDate: Date?
-    let expiresDate: Date?
-    let cancellationDate: Date?
-    let isInTrialPeriod: Bool?
-    let isInIntroOfferPeriod: Bool?
-    let webOrderLineItemId: Int64?
-    let promotionalOfferIdentifier: String?
-
 }
 
-extension InAppPurchase.ProductType: Codable {}
-extension InAppPurchase: Codable {}
+// MARK: -
 
-extension InAppPurchase: CustomDebugStringConvertible {
+extension AppleReceipt.InAppPurchase.ProductType: Codable {}
+extension AppleReceipt.InAppPurchase: Codable {}
+
+extension AppleReceipt.InAppPurchase: CustomDebugStringConvertible {
 
     var debugDescription: String {
         return (try? self.prettyPrintedJSON) ?? "<null>"

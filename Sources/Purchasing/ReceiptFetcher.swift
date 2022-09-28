@@ -17,35 +17,61 @@ import Foundation
 class ReceiptFetcher {
 
     private let requestFetcher: StoreKitRequestFetcher
+    private let receiptParser: ReceiptParser
+    private let fileReader: FileReader
+
     let systemInfo: SystemInfo
 
-    init(requestFetcher: StoreKitRequestFetcher, systemInfo: SystemInfo) {
+    init(
+        requestFetcher: StoreKitRequestFetcher,
+        systemInfo: SystemInfo,
+        receiptParser: ReceiptParser = .default,
+        fileReader: FileReader = DefaultFileReader()
+    ) {
         self.requestFetcher = requestFetcher
         self.systemInfo = systemInfo
+        self.receiptParser = receiptParser
+        self.fileReader = fileReader
     }
 
     func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?) -> Void) {
-        if refreshPolicy == .always {
+        switch refreshPolicy {
+        case .always:
             Logger.debug(Strings.receipt.force_refreshing_receipt)
-            refreshReceipt(completion)
-            return
-        }
+            self.refreshReceipt(completion)
 
-        let receiptData = receiptData()
-        let isReceiptEmpty = receiptData?.isEmpty ?? true
+        case .onlyIfEmpty:
+            let receiptData = self.receiptData()
+            let isReceiptEmpty = receiptData?.isEmpty ?? true
 
-        if isReceiptEmpty && refreshPolicy == .onlyIfEmpty {
-            Logger.debug(Strings.receipt.refreshing_empty_receipt)
-            refreshReceipt(completion)
-        } else {
-            completion(receiptData)
+            if isReceiptEmpty {
+                Logger.debug(Strings.receipt.refreshing_empty_receipt)
+                self.refreshReceipt(completion)
+            } else {
+                completion(receiptData)
+            }
+
+        case let .retryUntilProductIsFound(productIdentifier, maximumRetries, sleepDuration):
+            if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+                Async.call(with: completion) {
+                    await self.refreshReceipt(untilProductIsFound: productIdentifier,
+                                              maximumRetries: maximumRetries,
+                                              sleepDuration: sleepDuration)
+                }
+            } else {
+                Logger.warn(Strings.receipt.recepit_retrying_mechanism_not_available)
+                self.receiptData(refreshPolicy: .always, completion: completion)
+            }
+
+        case .never:
+            completion(self.receiptData())
         }
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func receiptData(refreshPolicy: ReceiptRefreshPolicy) async -> Data? {
         return await withCheckedContinuation { continuation in
-            receiptData(refreshPolicy: refreshPolicy) { result in
+            self.receiptData(refreshPolicy: refreshPolicy) { result in
                 continuation.resume(returning: result)
             }
         }
@@ -83,7 +109,7 @@ private extension ReceiptFetcher {
             return nil
         }
 
-        guard let data: Data = try? Data(contentsOf: receiptURL) else {
+        guard let data = self.fileReader.contents(of: receiptURL) else {
             Logger.debug(Strings.receipt.unable_to_load_receipt)
             return nil
         }
@@ -94,7 +120,7 @@ private extension ReceiptFetcher {
     }
 
     func refreshReceipt(_ completion: @escaping (Data) -> Void) {
-        requestFetcher.fetchReceiptData {
+        self.requestFetcher.fetchReceiptData {
             let data = self.receiptData()
             guard let receiptData = data,
                   !receiptData.isEmpty else {
@@ -105,6 +131,52 @@ private extension ReceiptFetcher {
 
             completion(receiptData)
         }
+    }
+
+    /// `async` version of `refreshReceipt(_:)`
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func refreshReceipt() async -> Data {
+        await withCheckedContinuation { continuation in
+            self.refreshReceipt {
+                continuation.resume(returning: $0)
+            }
+        }
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    @MainActor
+    private func refreshReceipt(
+        untilProductIsFound productIdentifier: String,
+        maximumRetries: Int,
+        sleepDuration: DispatchTimeInterval
+    ) async -> Data {
+        var retries = 0
+
+        repeat {
+            retries += 1
+            let data = await self.refreshReceipt()
+
+            if !data.isEmpty {
+                do {
+                    let receipt = try self.receiptParser.parse(from: data)
+                    if receipt.containsActivePurchase(forProductIdentifier: productIdentifier) {
+                        return data
+                    } else {
+                        Logger.appleWarning(Strings.receipt.local_receipt_missing_purchase(
+                            receipt,
+                            forProductIdentifier: productIdentifier
+                        ))
+                    }
+                } catch {
+                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
+                }
+            }
+
+            Logger.debug(Strings.receipt.retrying_receipt_fetch_after(sleepDuration: sleepDuration))
+            try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
+        } while retries <= maximumRetries && !Task.isCancelled
+
+        return Data()
     }
 
 }

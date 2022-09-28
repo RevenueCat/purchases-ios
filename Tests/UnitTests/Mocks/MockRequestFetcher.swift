@@ -6,10 +6,13 @@
 @testable import RevenueCat
 
 class MockRequestFetcher: StoreKitRequestFetcher {
+    var refreshReceiptCalledCount = 0
     var refreshReceiptCalled = false
 
     override func fetchReceiptData(_ completion: @MainActor @Sendable @escaping () -> Void) {
-        refreshReceiptCalled = true
+        self.refreshReceiptCalledCount += 1
+        self.refreshReceiptCalled = true
+
         OperationDispatcher.dispatchOnMainActor {
             completion()
         }
