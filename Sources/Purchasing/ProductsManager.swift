@@ -108,14 +108,14 @@ private extension ProductsManager {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void) {
-        _ = Task<Void, Never> {
+        Async.call(with: completion) {
             do {
                 let products = try await self.sk2StoreProducts(withIdentifiers: identifiers)
                 Logger.debug(Strings.storeKit.store_product_request_finished)
-                completion(.success(Set(products)))
+                return Set(products)
             } catch {
                 Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
-                completion(.failure(ErrorUtils.storeProblemError(error: error)))
+                throw ErrorUtils.storeProblemError(error: error)
             }
         }
     }

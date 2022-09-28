@@ -207,6 +207,8 @@
 		57057FF928B0048900995F21 /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
 		5705800328B0085200995F21 /* Box.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5705800228B0085200995F21 /* Box.swift */; };
 		5705800428B0085200995F21 /* Box.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5705800228B0085200995F21 /* Box.swift */; };
+		57069A5428E3918400B86355 /* AsyncExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57069A5328E3918400B86355 /* AsyncExtensions.swift */; };
+		57069A5E28E398E100B86355 /* AsyncExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57069A5D28E398E100B86355 /* AsyncExtensionsTests.swift */; };
 		570FAF4B2864EC2300D3C769 /* NonSubscriptionTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */; };
 		571E7AD4279F2D0C003B3606 /* StoreKitTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */; };
 		5721360F28B4602C006C46BE /* Purchases+nonasync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5721360E28B4602C006C46BE /* Purchases+nonasync.swift */; };
@@ -709,6 +711,8 @@
 		57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2SettingTests.swift; sourceTree = "<group>"; };
 		57057FF728B0048900995F21 /* TestLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestLogHandler.swift; sourceTree = "<group>"; };
 		5705800228B0085200995F21 /* Box.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Box.swift; sourceTree = "<group>"; };
+		57069A5328E3918400B86355 /* AsyncExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncExtensions.swift; sourceTree = "<group>"; };
+		57069A5D28E398E100B86355 /* AsyncExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncExtensionsTests.swift; sourceTree = "<group>"; };
 		570814C128A308050018BAE3 /* BackendIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = BackendIntegrationTests.xctestplan; path = Tests/TestPlans/BackendIntegrationTests.xctestplan; sourceTree = "<group>"; };
 		570896B227595C8100296F1C /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = AllTests.xctestplan; path = Tests/TestPlans/AllTests.xctestplan; sourceTree = "<group>"; };
 		570896B327595C8100296F1C /* RevenueCat.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat.xctestplan; path = Tests/TestPlans/RevenueCat.xctestplan; sourceTree = "<group>"; };
@@ -1030,6 +1034,7 @@
 			isa = PBXGroup;
 			children = (
 				572247D027BEC28E00C524A7 /* Array+Extensions.swift */,
+				57069A5328E3918400B86355 /* AsyncExtensions.swift */,
 				2CD72941268A823900BFC976 /* Data+Extensions.swift */,
 				2CD72943268A826F00BFC976 /* Date+Extensions.swift */,
 				37E353FD94A8FD5CD8796530 /* DateFormatter+Extensions.swift */,
@@ -1620,6 +1625,7 @@
 			isa = PBXGroup;
 			children = (
 				572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */,
+				57069A5D28E398E100B86355 /* AsyncExtensionsTests.swift */,
 				37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */,
 				57ACB13628184CF1000DCC9F /* DecoderExtensionTests.swift */,
 				2DD269162522A20A006AC4BC /* DictionaryExtensionsTests.swift */,
@@ -2391,6 +2397,7 @@
 				570FAF4B2864EC2300D3C769 /* NonSubscriptionTransaction.swift in Sources */,
 				2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */,
 				2CD72944268A826F00BFC976 /* Date+Extensions.swift in Sources */,
+				57069A5428E3918400B86355 /* AsyncExtensions.swift in Sources */,
 				B34605C5279A6E380031CA74 /* CustomerInfoResponseHandler.swift in Sources */,
 				5796A3A927D7C43500653165 /* Deprecations.swift in Sources */,
 				B3AA6238268B926F00894871 /* SystemInfo.swift in Sources */,
@@ -2542,6 +2549,7 @@
 				5766C620282DA3D50067D886 /* GetIntroEligibilityDecodingTests.swift in Sources */,
 				57C381E2279627B7009E3940 /* MockStoreProductDiscount.swift in Sources */,
 				2DDF41E824F6F61B005BC22D /* MockSKProductDiscount.swift in Sources */,
+				57069A5E28E398E100B86355 /* AsyncExtensionsTests.swift in Sources */,
 				35272E2226D0048D00F22C3B /* HTTPClientTests.swift in Sources */,
 				2DDF41CB24F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift in Sources */,
 				5766AA5A283D4CAB00FA6091 /* IgnoreHashableTests.swift in Sources */,
