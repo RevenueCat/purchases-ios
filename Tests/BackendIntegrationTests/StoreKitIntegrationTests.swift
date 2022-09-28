@@ -25,8 +25,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     private var testSession: SKTestSession!
 
     override func setUp() async throws {
-        try await super.setUp()
-
         self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
         self.testSession.resetToDefaultState()
         self.testSession.disableDialogs = true
@@ -36,6 +34,11 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         } else {
             self.testSession.timeRate = .oneSecondIsOneDay
         }
+
+        // Initialize `Purchases` *after* the fresh new session has been created
+        // (and transactions has been cleared), to avoid the SDK posting receipts from
+        // a previous test.
+        try await super.setUp()
 
         // SDK initialization begins with an initial request to offerings
         // Which results in a get-create of the initial anonymous user.
