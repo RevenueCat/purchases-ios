@@ -252,15 +252,17 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
         let product = try await self.weeklyPackage.storeProduct
 
+        // 1. Purchase weekly offering
         let customerInfo = try await self.purchaseWeeklyOffering().customerInfo
-        let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
+        // 2. Expire subscription
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
         try await self.expireSubscription(entitlement)
 
-        let info = try await Purchases.shared.syncPurchases()
+        // 3. Sync purchases
+        _ = try await Purchases.shared.syncPurchases()
 
-        self.assertNoActiveSubscription(info)
-
+        // 4. Check eligibility
         let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .ineligible
     }
