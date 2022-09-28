@@ -32,7 +32,7 @@ internal enum Async {
     }
 
     /// Invokes an `async throws` method and calls `completion` with the result.
-    /// /// Ensures that the returned error is `PurchasesError`.
+    /// Ensures that the returned error is `PurchasesError`.
     static func call<T>(
         with completion: @escaping (Result<T, PurchasesError>) -> Void,
         asyncMethod method: @escaping () async throws -> T
