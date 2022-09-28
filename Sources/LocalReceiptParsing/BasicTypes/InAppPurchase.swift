@@ -38,6 +38,22 @@ extension AppleReceipt {
 
 extension AppleReceipt.InAppPurchase {
 
+    func isActivePurchase(forProductIdentifier identifier: String) -> Bool {
+        return self.productId == identifier && self.isActive
+    }
+
+    private var isActive: Bool {
+        guard let expiration = self.expiresDate else {
+            return true
+        }
+
+        return expiration > Date()
+    }
+
+}
+
+extension AppleReceipt.InAppPurchase {
+
     enum ProductType: Int {
 
         case unknown = -1,

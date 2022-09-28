@@ -29,6 +29,8 @@ enum ReceiptStrings {
     case refreshing_empty_receipt
     case unable_to_load_receipt
     case posting_receipt(AppleReceipt)
+    case recepit_retrying_mechanism_not_available
+    case retrying_receipt_fetch_after(sleepDuration: DispatchTimeInterval)
 
 }
 
@@ -77,6 +79,12 @@ extension ReceiptStrings: CustomStringConvertible {
 
         case let .posting_receipt(receipt):
             return "Posting receipt: \(receipt.debugDescription)"
+
+        case .recepit_retrying_mechanism_not_available:
+            return "Receipt retrying mechanism is not available in iOS 12. Will only attempt to fetch once."
+
+        case let .retrying_receipt_fetch_after(sleepDuration):
+            return String(format: "Retrying Receipt fetch after %2.f seconds", sleepDuration.seconds)
 
         }
     }

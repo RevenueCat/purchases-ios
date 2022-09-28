@@ -60,6 +60,19 @@ struct AppleReceipt: Equatable {
 
 }
 
+// MARK: - Extensions
+
+extension AppleReceipt {
+
+    func containsActivePurchase(forProductIdentifier identifier: String) -> Bool {
+        return self.inAppPurchases
+            .contains { $0.isActivePurchase(forProductIdentifier: identifier) }
+    }
+
+}
+
+// MARK: - Conformances
+
 extension AppleReceipt: Codable {}
 
 extension AppleReceipt: CustomDebugStringConvertible {

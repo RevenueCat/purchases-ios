@@ -14,10 +14,16 @@
 
 import Foundation
 
-enum ReceiptRefreshPolicy: Int {
+/// Determines the behavior when fetching receipts with `ReceiptFetcher`.
+enum ReceiptRefreshPolicy {
 
-    case always = 0
+    case always
     case onlyIfEmpty
+    case retryUntilProductIsFound(productIdentifier: String,
+                                  maximumRetries: Int,
+                                  sleepDuration: DispatchTimeInterval = .never)
     case never
 
 }
+
+extension ReceiptRefreshPolicy: Equatable {}
