@@ -52,8 +52,8 @@ class BaseBackendIntegrationTests: XCTestCase {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
 
-        userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
-        userDefaults?.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
+        self.userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
+        self.userDefaults?.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
         if !Constants.proxyURL.isEmpty {
             Purchases.proxyURL = URL(string: Constants.proxyURL)
         }
@@ -79,6 +79,7 @@ private extension BaseBackendIntegrationTests {
         guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.path) else { return }
 
         do {
+            Logger.info("Removing receipt from url: \(url)")
             try manager.removeItem(at: url)
         } catch {
             Logger.appleWarning("Error attempting to remove receipt URL '\(url)': \(error)")
