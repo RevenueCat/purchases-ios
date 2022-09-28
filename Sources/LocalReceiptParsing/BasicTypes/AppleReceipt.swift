@@ -65,8 +65,8 @@ struct AppleReceipt: Equatable {
 extension AppleReceipt {
 
     func containsActivePurchase(forProductIdentifier identifier: String) -> Bool {
-        return self.inAppPurchases
-            .contains { $0.isActivePurchase(forProductIdentifier: identifier) }
+        return (self.inAppPurchases.contains { $0.isActiveSubscription } ||
+                self.inAppPurchases.contains { $0.productId == identifier })
     }
 
 }

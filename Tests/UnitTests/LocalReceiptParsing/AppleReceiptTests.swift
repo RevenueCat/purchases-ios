@@ -23,18 +23,18 @@ final class AppleReceiptTests: TestCase {
         expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == false
     }
 
-    func testReceiptWithPurchaseDoesNotContainActivePurchaseForDifferentIdentifier() {
+    func testReceiptWithPurchaseContainsActivePurchaseWithDifferentProductIdentifier() {
         let receipt = Self.create(with: [
-            "different_product": Date()
+            "different_product": Date().addingTimeInterval(1000)
         ])
-        expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == false
+        expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == true
     }
 
-    func testReceiptWithExpiredPurchaseDoesNotContainActivePurchase() {
+    func testReceiptWithExpiredPurchaseContainsActivePurchase() {
         let receipt = Self.create(with: [
             Self.productIdentifier: Date().addingTimeInterval(-1000)
         ])
-        expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == false
+        expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == true
     }
 
     func testReceiptWithNonExpiringPurchaseContainsActivePurchase() {
@@ -49,6 +49,20 @@ final class AppleReceiptTests: TestCase {
             Self.productIdentifier: Date().addingTimeInterval(1000)
         ])
         expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == true
+    }
+
+    func testReceiptWithSubscriptionActiveForDifferentProductContainsActivePurchase() {
+        let receipt = Self.create(with: [
+            "different_product": Date().addingTimeInterval(1000)
+        ])
+        expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == true
+    }
+
+    func testReceiptWithNonConsumablePurchaseForDifferentProductDoesNotContainActivePurchase() {
+        let receipt = Self.create(with: [
+            "different_product": nil
+        ])
+        expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == false
     }
 
     // MARK: -
@@ -75,7 +89,9 @@ private extension AppleReceiptTests {
                     productId: identifier,
                     transactionId: "transaction-\(identifier)",
                     originalTransactionId: nil,
-                    productType: .autoRenewableSubscription,
+                    productType: expiration == nil
+                        ? .nonConsumable
+                        : .autoRenewableSubscription,
                     purchaseDate: Date(),
                     originalPurchaseDate: nil,
                     expiresDate: expiration,

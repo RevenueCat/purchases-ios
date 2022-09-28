@@ -38,14 +38,9 @@ extension AppleReceipt {
 
 extension AppleReceipt.InAppPurchase {
 
-    func isActivePurchase(forProductIdentifier identifier: String) -> Bool {
-        return self.productId == identifier && self.isActive
-    }
-
-    private var isActive: Bool {
-        guard let expiration = self.expiresDate else {
-            return true
-        }
+    var isActiveSubscription: Bool {
+        guard self.productType?.isSubscription == true else { return false }
+        guard let expiration = self.expiresDate else { return true }
 
         return expiration > Date()
     }
@@ -62,6 +57,18 @@ extension AppleReceipt.InAppPurchase {
         nonRenewingSubscription,
         autoRenewableSubscription
 
+    }
+
+}
+
+private extension AppleReceipt.InAppPurchase.ProductType {
+
+    var isSubscription: Bool {
+        switch self {
+        case .unknown: return false
+        case .nonConsumable, .consumable: return false
+        case .nonRenewingSubscription, .autoRenewableSubscription: return true
+        }
     }
 
 }
