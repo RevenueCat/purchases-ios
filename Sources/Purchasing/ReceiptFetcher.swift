@@ -151,17 +151,16 @@ private extension ReceiptFetcher {
         sleepDuration: DispatchTimeInterval
     ) async -> Data {
         var retries = 0
-        var result: Data = .init()
 
         repeat {
             retries += 1
-            result = await self.refreshReceipt()
+            let data = await self.refreshReceipt()
 
-            if !result.isEmpty {
+            if !data.isEmpty {
                 do {
-                    let receipt = try self.receiptParser.parse(from: result)
+                    let receipt = try self.receiptParser.parse(from: data)
                     if receipt.containsActivePurchase(forProductIdentifier: productIdentifier) {
-                        break // Valid receipt found
+                        return data
                     }
                 } catch {
                     Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
@@ -170,10 +169,9 @@ private extension ReceiptFetcher {
 
             Logger.debug(Strings.receipt.retrying_receipt_fetch_after(sleepDuration: sleepDuration))
             try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
-
         } while retries <= maximumRetries && !Task.isCancelled
 
-        return result
+        return Data()
     }
 
 }

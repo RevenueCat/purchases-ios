@@ -190,7 +190,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         self.mock(receipt: Self.receiptWithoutPurchases)
 
         let data = await self.fetch(productIdentifier: Self.productID, retries: 0)
-        expect(data) == Self.receiptWithoutPurchases.asData
+        expect(data) == Data()
 
         expect(self.mockReceiptParser.invokedParseParametersList) == [
             Self.receiptWithoutPurchases.asData
@@ -203,7 +203,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         let invalidData = Self.receiptWithoutPurchases.asData
 
         let data = await self.fetch(productIdentifier: Self.productID, retries: 2)
-        expect(data) == invalidData
+        expect(data) == Data()
 
         expect(self.mockReceiptParser.invokedParseParametersList) == [
             invalidData,
@@ -235,6 +235,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
 
         expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
         expect(self.mockReceiptParser.invokedParseParametersList) == [
+            Self.validReceipt.asData,
             Self.validReceipt.asData
         ]
     }
@@ -277,8 +278,9 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         precondition(!receipts.isEmpty)
 
         self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockFileReader.mockedURLContents[self.mockBundle.appStoreReceiptURL!] = receipts
+            .compactMap { $0.value?.asData }
         self.mockReceiptParser.stubbedParseResults = receipts
-        self.mockFileReader.mockedURLContents[self.mockBundle.appStoreReceiptURL!] = receipts.map { $0.value?.asData }
     }
 
     private static let productID = "com.revenuecat.test_product"
