@@ -57,7 +57,8 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 
         expect(self.mockProductsManager.invokedCacheProduct) == true
-        expect(self.mockProductsManager.invokedCacheProductParameter) == sk1Product
+        expect(self.mockProductsManager.invokedCacheProductParameter.map(StoreProduct.from(product:)))
+        == StoreProduct(sk1Product: sk1Product)
     }
 
     func testTransitioningToPurchasedSendsToBackend() throws {

@@ -221,7 +221,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let notificationCenter: NotificationCenter
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
-    private let productsManager: ProductsManager
+    private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker
     private let purchasesOrchestrator: PurchasesOrchestrator
@@ -302,9 +302,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                currentUserProvider: identityManager,
                                                attributionPoster: attributionPoster)
         let productsRequestFactory = ProductsRequestFactory()
-        let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
-                                              systemInfo: systemInfo,
-                                              requestTimeout: storeKitTimeout)
+        let productsManager = CachingProductsManager(
+            manager: ProductsManager(productsRequestFactory: productsRequestFactory,
+                                     systemInfo: systemInfo,
+                                     requestTimeout: storeKitTimeout)
+        )
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -404,7 +406,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
          customerInfoManager: CustomerInfoManager,
-         productsManager: ProductsManager,
+         productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker

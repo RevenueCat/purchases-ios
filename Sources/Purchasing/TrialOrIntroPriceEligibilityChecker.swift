@@ -26,7 +26,7 @@ class TrialOrIntroPriceEligibilityChecker {
     private let backend: Backend
     private let currentUserProvider: CurrentUserProvider
     private let operationDispatcher: OperationDispatcher
-    private let productsManager: ProductsManager
+    private let productsManager: ProductsManagerType
 
     init(
         systemInfo: SystemInfo,
@@ -35,7 +35,7 @@ class TrialOrIntroPriceEligibilityChecker {
         backend: Backend,
         currentUserProvider: CurrentUserProvider,
         operationDispatcher: OperationDispatcher,
-        productsManager: ProductsManager
+        productsManager: ProductsManagerType
     ) {
         self.systemInfo = systemInfo
         self.receiptFetcher = receiptFetcher
@@ -104,7 +104,7 @@ class TrialOrIntroPriceEligibilityChecker {
                 .init(eligibilityStatus: .unknown)
         }
 
-        let products = try await self.productsManager.sk2StoreProducts(withIdentifiers: identifiers)
+        let products = try await self.productsManager.sk2Products(withIdentifiers: identifiers)
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
 

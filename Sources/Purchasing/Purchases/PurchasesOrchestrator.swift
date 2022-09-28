@@ -48,7 +48,7 @@ final class PurchasesOrchestrator {
         self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
 
-    private let productsManager: ProductsManager
+    private let productsManager: ProductsManagerType
     private let storeKit1Wrapper: StoreKit1Wrapper?
     private let systemInfo: SystemInfo
     private let attribution: Attribution
@@ -82,7 +82,7 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    convenience init(productsManager: ProductsManager,
+    convenience init(productsManager: ProductsManagerType,
                      storeKit1Wrapper: StoreKit1Wrapper?,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
@@ -128,7 +128,7 @@ final class PurchasesOrchestrator {
         }
     }
 
-    init(productsManager: ProductsManager,
+    init(productsManager: ProductsManagerType,
          storeKit1Wrapper: StoreKit1Wrapper?,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
@@ -175,7 +175,7 @@ final class PurchasesOrchestrator {
             return
         }
 
-        productsManager.products(withIdentifiers: productIdentifiersSet) { products in
+        self.productsManager.products(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(Array(products.value ?? []))
             }
@@ -344,7 +344,7 @@ final class PurchasesOrchestrator {
 
         }
 
-        self.productsManager.cacheProduct(sk1Product)
+        self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
 
         let addPayment: Bool = self.addPurchaseCompletedCallback(
             productIdentifier: productIdentifier,
@@ -566,7 +566,7 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
     func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
                           shouldAddStorePayment payment: SKPayment,
                           for product: SK1Product) -> Bool {
-        self.productsManager.cacheProduct(product)
+        self.productsManager.cache(StoreProduct(sk1Product: product))
         guard let delegate = self.delegate else { return false }
 
         guard let productIdentifier = payment.extractProductIdentifier() else {
@@ -1007,7 +1007,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handleStorefrontChange() {
-        self.productsManager.invalidateAndReFetchCachedProductsIfAppropiate()
+        self.productsManager.clearCache()
         self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
     }
 

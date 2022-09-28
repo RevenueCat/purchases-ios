@@ -121,7 +121,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.unknown,
                         "lifetime": IntroEligibilityStatus.unknown]
 
-        mockProductsManager?.stubbedSk2StoreProductsThrowsError = true
+        self.mockProductsManager?.stubbedSk2StoreProductsResult = .failure(ErrorUtils.productRequestTimedOutError())
 
         var eligibilities: [String: IntroEligibility]?
         trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { receivedEligibilities in

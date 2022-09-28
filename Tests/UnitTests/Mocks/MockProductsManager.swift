@@ -12,17 +12,24 @@ class MockProductsManager: ProductsManager {
     var invokedProducts = false
     var invokedProductsCount = 0
     var invokedProductsParameters: Set<String>?
-    var invokedProductsParametersList = [(identifiers: Set<String>, Void)]()
+    var invokedProductsParametersList = [Set<String>]()
     var stubbedProductsCompletionResult: Result<Set<StoreProduct>, PurchasesError>?
+    var productResultDelay: TimeInterval?
 
     override func products(withIdentifiers identifiers: Set<String>,
                            completion: @escaping (Result<Set<StoreProduct>, PurchasesError>) -> Void) {
-        invokedProducts = true
-        invokedProductsCount += 1
-        invokedProductsParameters = identifiers
-        invokedProductsParametersList.append((identifiers, ()))
+        self.invokedProducts = true
+        self.invokedProductsCount += 1
+        self.invokedProductsParameters = identifiers
+        self.invokedProductsParametersList.append(identifiers)
         if let result = self.stubbedProductsCompletionResult {
-            completion(result)
+            if let delay = self.productResultDelay {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    completion(result)
+                }
+            } else {
+                completion(result)
+            }
         } else {
             let products: [StoreProduct] = identifiers
                 .map { (identifier) -> MockSK1Product in
@@ -41,23 +48,11 @@ class MockProductsManager: ProductsManager {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
-    override func products(
-        withIdentifiers identifiers: Set<String>
-    ) async throws -> Set<StoreProduct> {
-        invokedProducts = true
-        invokedProductsCount += 1
-        invokedProductsParameters = identifiers
-        invokedProductsParametersList.append((identifiers, ()))
-
-        return try self.stubbedProductsCompletionResult?.get() ?? []
-    }
-
     var invokedCacheProduct = false
     var invokedCacheProductCount = 0
-    var invokedCacheProductParameter: SK1Product?
+    var invokedCacheProductParameter: StoreProductType?
 
-    override func cacheProduct(_ product: SK1Product) {
+    override func cache(_ product: StoreProductType) {
         invokedCacheProduct = true
         invokedCacheProductCount += 1
         invokedCacheProductParameter = product
@@ -66,37 +61,51 @@ class MockProductsManager: ProductsManager {
     var invokedSk2StoreProducts = false
     var invokedSk2StoreProductsCount = 0
     var invokedSk2StoreProductsParameter: Set<String>?
+    var invokedSk2StoreProductsParameterList: [Set<String>] = []
 
-    var stubbedSk2StoreProductsThrowsError = false
-    struct MockSk2StoreProductsError: Error {}
+    // values must be `SK2StoreProduct` (can't use the type because it requires an @available
+    var stubbedSk2StoreProductsResult: Result<Set<AnyHashable>, PurchasesError>?
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2StoreProducts(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        invokedSk2StoreProducts = true
-        invokedSk2StoreProductsCount += 1
-        invokedSk2StoreProductsParameter = identifiers
+    override func sk2Products(
+        withIdentifiers identifiers: Set<String>,
+        completion: @escaping (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void
+    ) {
+        self.invokedSk2StoreProducts = true
+        self.invokedSk2StoreProductsCount += 1
+        self.invokedSk2StoreProductsParameter = identifiers
+        self.invokedSk2StoreProductsParameterList.append(identifiers)
 
-        if stubbedSk2StoreProductsThrowsError {
-            throw MockSk2StoreProductsError()
+        if let result = self.stubbedSk2StoreProductsResult {
+            // swiftlint:disable:next force_cast
+            let storeProducts = result.map { Set($0.map { $0 as! SK2StoreProduct }) }
+
+            if let delay = self.productResultDelay {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    completion(storeProducts)
+                }
+            } else {
+                completion(storeProducts)
+            }
         } else {
-            return try await super.sk2StoreProducts(withIdentifiers: identifiers)
+            super.sk2Products(withIdentifiers: identifiers, completion: completion)
         }
     }
 
-    var invokedInvalidateAndReFetchCachedProductsIfAppropiateCount = 0
-    override func invalidateAndReFetchCachedProductsIfAppropiate() {
-        invokedInvalidateAndReFetchCachedProductsIfAppropiateCount += 1
+    var invokedClearCacheCount = 0
+    override func clearCache() {
+        self.invokedClearCacheCount += 1
     }
 
     func resetMock() {
-        invokedProducts = false
-        invokedProductsCount = 0
-        invokedProductsParameters = nil
-        invokedProductsParametersList = []
-        stubbedProductsCompletionResult = nil
-        invokedCacheProduct = false
-        invokedCacheProductCount = 0
-        invokedCacheProductParameter = nil
-        invokedInvalidateAndReFetchCachedProductsIfAppropiateCount = 0
+        self.invokedProducts = false
+        self.invokedProductsCount = 0
+        self.invokedProductsParameters = nil
+        self.invokedProductsParametersList = []
+        self.stubbedProductsCompletionResult = nil
+        self.invokedCacheProduct = false
+        self.invokedCacheProductCount = 0
+        self.invokedCacheProductParameter = nil
+        self.invokedClearCacheCount = 0
     }
 }
