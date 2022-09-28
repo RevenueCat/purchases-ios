@@ -7,6 +7,8 @@ import Foundation
 
 class InAppPurchaseBuilder {
 
+    typealias InAppPurchase = AppleReceipt.InAppPurchase
+
     // swiftlint:disable:next line_length
     // https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ReceiptFields.html
     enum AttributeType: Int {

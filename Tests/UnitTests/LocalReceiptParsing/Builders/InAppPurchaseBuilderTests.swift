@@ -16,7 +16,7 @@ class InAppPurchaseBuilderTests: TestCase {
     let productId = "com.revenuecat.sampleProduct"
     let transactionId = "089230953203"
     let originalTransactionId = "089230953101"
-    let productType = InAppPurchase.ProductType.autoRenewableSubscription
+    let productType = AppleReceipt.InAppPurchase.ProductType.autoRenewableSubscription
     let purchaseDate = try! Date.from(year: 2019, month: 5, day: 3, hour: 1, minute: 55, second: 1)
     let originalPurchaseDate = try! Date.from(year: 2018, month: 6, day: 22, hour: 1, minute: 55, second: 1)
     let expiresDate = try! Date.from(year: 2018, month: 6, day: 22, hour: 1, minute: 55, second: 1)
