@@ -26,16 +26,17 @@ class HTTPClientTests: TestCase {
     override func setUp() {
         super.setUp()
 
-        userDefaults = MockUserDefaults()
-        eTagManager = MockETagManager(userDefaults: userDefaults)
-        operationDispatcher = OperationDispatcher()
+        self.userDefaults = MockUserDefaults()
+        self.eTagManager = MockETagManager(userDefaults: userDefaults)
+        self.operationDispatcher = OperationDispatcher()
+
         MockDNSChecker.resetData()
 
-        client = HTTPClient(apiKey: apiKey,
-                            systemInfo: systemInfo,
-                            eTagManager: eTagManager,
-                            dnsChecker: MockDNSChecker.self,
-                            requestTimeout: 3)
+        self.client = HTTPClient(apiKey: apiKey,
+                                 systemInfo: systemInfo,
+                                 eTagManager: eTagManager,
+                                 dnsChecker: MockDNSChecker.self,
+                                 requestTimeout: 3)
     }
 
     override func tearDown() {
@@ -169,6 +170,28 @@ class HTTPClientTests: TestCase {
 
         expect(header.value).toEventuallyNot(beNil())
         expect(header.value) == "false"
+    }
+
+    func testPassesAdditionalRequestHeaders() {
+        let headerName = "X-User-Initiated"
+        let value = "yes"
+        let header: Atomic<String?> = nil
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse
+        }
+
+        let request = HTTPRequest(method: .post([:]),
+                                  path: .mockPath,
+                                  additionalHeaders: [
+                                    headerName: value
+                                  ])
+
+        self.client.perform(request) { (_: EmptyResponse) in }
+
+        expect(header.value).toEventuallyNot(beNil())
+        expect(header.value) == value
     }
 
     func testCallsTheGivenPath() {

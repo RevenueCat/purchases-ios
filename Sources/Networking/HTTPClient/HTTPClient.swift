@@ -17,7 +17,7 @@ import Foundation
 
 class HTTPClient {
 
-    typealias RequestHeaders = [String: String]
+    typealias RequestHeaders = HTTPRequest.Headers
     typealias Completion<Value: HTTPResponseBody> = (HTTPResponse<Value>.Result) -> Void
 
     let systemInfo: SystemInfo
@@ -50,7 +50,7 @@ class HTTPClient {
 
     func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
         perform(request: .init(httpRequest: request,
-                               headers: self.authHeaders,
+                               authHeaders: self.authHeaders,
                                completionHandler: completionHandler))
     }
 
@@ -91,10 +91,10 @@ private extension HTTPClient {
         var retried: Bool = false
 
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
-                                      headers: HTTPClient.RequestHeaders,
+                                      authHeaders: HTTPClient.RequestHeaders,
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest
-            self.headers = headers
+            self.headers = httpRequest.additionalHeaders + authHeaders
 
             if let completionHandler = completionHandler {
                 self.completionHandler = { result in
@@ -158,7 +158,7 @@ private extension HTTPClient {
             headers["X-Platform-Flavor-Version"] = platformFlavorVersion
         }
 
-        if let idfv = systemInfo.identifierForVendor {
+        if let idfv = self.systemInfo.identifierForVendor {
             headers["X-Apple-Device-Identifier"] = idfv
         }
         return headers

@@ -14,8 +14,11 @@
 /// A request to be made by ``HTTPClient``
 struct HTTPRequest {
 
-    let method: Method
-    let path: Path
+    typealias Headers = [String: String]
+
+    var method: Method
+    var path: Path
+    var additionalHeaders: Headers = [:]
 
 }
 
