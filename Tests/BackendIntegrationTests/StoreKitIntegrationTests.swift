@@ -259,10 +259,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
         try await self.expireSubscription(entitlement)
 
-        // 3. Sync purchases
-        _ = try await Purchases.shared.syncPurchases()
-
-        // 4. Check eligibility
+        // 3. Check eligibility
         let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .ineligible
     }
