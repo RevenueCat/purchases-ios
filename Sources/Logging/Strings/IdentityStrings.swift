@@ -20,6 +20,8 @@ enum IdentityStrings {
 
     case logging_in_with_same_appuserid
 
+    case logging_in_with_static_string
+
     case login_success
 
     case log_out_called_for_user
@@ -44,6 +46,10 @@ extension IdentityStrings: CustomStringConvertible {
         case .logging_in_with_same_appuserid:
             return "The appUserID passed to logIn is the same as the one " +
                 "already cached. No action will be taken."
+        case .logging_in_with_static_string:
+            return "The appUserID passed to logIn is a constant string known at compile time. " +
+            "This is likely a programmer error. This ID is used to identify the current user. " +
+            "See https://docs.revenuecat.com/docs/user-ids for more information."
         case .login_success:
             return "Log in successful"
         case .log_out_called_for_user:

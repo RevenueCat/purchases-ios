@@ -524,6 +524,13 @@ public extension Purchases {
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
 
+    func logIn(_ appUserID: StaticString, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
+        Logger.warn(Strings.identity.logging_in_with_static_string)
+
+        self.logIn("\(appUserID)", completion: completion)
+    }
+
+    @_disfavoredOverload // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
         self.identityManager.logIn(appUserID: appUserID) { result in
@@ -545,8 +552,16 @@ public extension Purchases {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func logIn(_ appUserID: StaticString) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+        Logger.warn(Strings.identity.logging_in_with_static_string)
+
+        return try await self.logIn("\(appUserID)")
+    }
+
+    @_disfavoredOverload // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        return try await logInAsync(appUserID)
+        return try await self.logInAsync(appUserID)
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
