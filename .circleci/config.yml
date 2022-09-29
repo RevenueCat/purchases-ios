@@ -1,5 +1,6 @@
 orbs:
-   macos: circleci/macos@2.0.1
+  macos: circleci/macos@2.0.1
+  slack: circleci/slack@4.10.1
 
 version: 2.1
 
@@ -45,6 +46,12 @@ aliases:
         ignore: /.*/
       branches:
         only: main
+  non-patch-branches: &non-patch-branches
+    filters: 
+      tags:
+        ignore: /.*/
+      branches:
+        only: /^release\/.*\.0$/
 
 commands:
   install-and-create-sim:
@@ -629,6 +636,81 @@ workflows:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
           <<: *release-tags
+      - slack/on-hold:
+          <<: *non-patch-branches
+          context: slack-secrets
+          custom: |
+              {
+                "text": "CircleCI job on hold, waiting for approval.",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "AWAITING APPROVAL - Public facing changes detected :raised_hand:",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Approve `docs-have-been-updated` if *public docs* have been updated"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Approve `sdk-parity-sheet-has-been-updated` if the *SDK parity spreadsheet* has been updated"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Branch*: $CIRCLE_BRANCH"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Author*: $CIRCLE_USERNAME"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "View Workflow"
+                        },
+                        "url": "${SLACK_PARAM_CIRCLECI_HOST}/workflow-run/${CIRCLE_WORKFLOW_ID}"
+                      }
+                    ]
+                  }
+                ]
+              }
+          requires:
+            - docs-deploy
+      - docs-have-been-updated:
+          <<: *non-patch-branches
+          type: approval
+          requires:
+            - docs-deploy
+            - slack/on-hold
+      - sdk-parity-sheet-has-been-updated:
+          <<: *non-patch-branches
+          type: approval
+          requires:
+            - docs-deploy
+            - slack/on-hold
   snapshot-bump:
     when:
       not:
