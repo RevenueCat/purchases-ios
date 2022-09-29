@@ -89,7 +89,7 @@ extension ReceiptStrings: CustomStringConvertible {
             "\((try? receipt.prettyPrintedJSON) ?? "<null>")"
 
         case let .retrying_receipt_fetch_after(sleepDuration):
-            return String(format: "Retrying Receipt fetch after %2.f seconds", sleepDuration.seconds)
+            return String(format: "Retrying receipt fetch after %2.f seconds", sleepDuration.seconds)
 
         }
     }
