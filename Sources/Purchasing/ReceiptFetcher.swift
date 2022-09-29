@@ -59,7 +59,7 @@ class ReceiptFetcher {
                                               sleepDuration: sleepDuration)
                 }
             } else {
-                Logger.warn(Strings.receipt.recepit_retrying_mechanism_not_available)
+                Logger.warn(Strings.receipt.receipt_retrying_mechanism_not_available)
                 self.receiptData(refreshPolicy: .always, completion: completion)
             }
 
