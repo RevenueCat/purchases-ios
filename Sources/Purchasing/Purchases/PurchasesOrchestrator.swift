@@ -745,7 +745,7 @@ private extension PurchasesOrchestrator {
     }
 
     private func refreshRequestPolicy(forProductIdentifier productIdentifier: String) -> ReceiptRefreshPolicy {
-        if self.systemInfo.isSandbox {
+        if self.systemInfo.dangerousSettings.internalSettings.enableReceiptFetchRetry {
             return .retryUntilProductIsFound(productIdentifier: productIdentifier,
                                              maximumRetries: Self.receiptRetryCount,
                                              sleepDuration: Self.receiptRetrySleepDuration)

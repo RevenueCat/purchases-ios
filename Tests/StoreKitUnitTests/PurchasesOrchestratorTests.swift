@@ -88,9 +88,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
                                                                     customerInfoManager: customerInfoManager,
                                                                     currentUserProvider: currentUserProvider)
-        setupStoreKit1Wrapper()
-        setUpOrchestrator()
-        setUpStoreKit2Listener()
+        self.setupStoreKit1Wrapper()
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
     }
 
     fileprivate func setUpStoreKit2Listener() {
@@ -184,42 +184,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                   payment: payment,
                                   package: package,
                                   wrapper: self.storeKit1Wrapper) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
-            }
-        }
-
-        expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .retryUntilProductIsFound(
-            productIdentifier: product.productIdentifier,
-            maximumRetries: PurchasesOrchestrator.receiptRetryCount,
-            sleepDuration: PurchasesOrchestrator.receiptRetrySleepDuration
-        )
-
-        expect(self.backend.invokedPostReceiptDataCount) == 1
-        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
-    }
-
-    func testPurchaseDoesNotRetryReceiptFetchIfNotInSandbox() async throws {
-        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
-        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        self.systemInfo.stubbedIsSandbox = false
-
-        let product = try await self.fetchSk1Product()
-        let storeProduct = try await self.fetchSk1StoreProduct()
-        let package = Package(identifier: "package",
-                              packageType: .monthly,
-                              storeProduct: storeProduct,
-                              offeringIdentifier: "offering")
-
-        let payment = self.storeKit1Wrapper.payment(with: product)
-
-        _ = await withCheckedContinuation { continuation in
-            self.orchestrator.purchase(
-                sk1Product: product,
-                payment: payment,
-                package: package,
-                wrapper: self.storeKit1Wrapper
-            ) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -394,19 +358,26 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .retryUntilProductIsFound(
-            productIdentifier: product.id,
-            maximumRetries: PurchasesOrchestrator.receiptRetryCount,
-            sleepDuration: PurchasesOrchestrator.receiptRetrySleepDuration
-        )
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPurchaseSK2PackageDoesNotRetryReceiptFetchIfNotInSandbox() async throws {
+    func testPurchaseSK2PackageRetriesReceiptFetchIfEnabled() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.systemInfo = try .init(
+            platformInfo: nil,
+            finishTransactions: false,
+            storeKit2Setting: .enabledForCompatibleDevices,
+            dangerousSettings: .init(autoSyncPurchases: true,
+                                     internalSettings: .init(enableReceiptFetchRetry: true))
+        )
+
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
 
         let mockListener = try XCTUnwrap(
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
@@ -414,7 +385,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        self.systemInfo.stubbedIsSandbox = false
 
         mockListener.mockTransaction.value = try await self.createTransactionWithPurchase()
 
@@ -423,7 +393,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .retryUntilProductIsFound(
+            productIdentifier: product.id,
+            maximumRetries: PurchasesOrchestrator.receiptRetryCount,
+            sleepDuration: PurchasesOrchestrator.receiptRetrySleepDuration
+        )
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())

@@ -81,6 +81,13 @@ class SystemInfoTests: TestCase {
         )) == false
     }
 
+    func testReceiptFetchRetryIsDisabledByDefault() throws {
+        let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
+        let settings = systemInfo.dangerousSettings.internalSettings
+
+        expect(settings.enableReceiptFetchRetry) == false
+    }
+
 }
 
 private extension SystemInfo {

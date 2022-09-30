@@ -97,9 +97,14 @@ private extension BaseBackendIntegrationTests {
                             storeKit2Setting: Self.storeKit2Setting,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
                             networkTimeout: Configuration.networkTimeoutDefault,
-                            dangerousSettings: nil)
+                            dangerousSettings: self.dangerousSettings)
         Purchases.logLevel = .debug
         Purchases.shared.delegate = self.purchasesDelegate
+    }
+
+    private var dangerousSettings: DangerousSettings {
+        return .init(autoSyncPurchases: true,
+                     internalSettings: .init(enableReceiptFetchRetry: true))
     }
 
 }
