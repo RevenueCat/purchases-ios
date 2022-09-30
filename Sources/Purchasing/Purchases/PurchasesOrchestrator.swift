@@ -598,7 +598,7 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     var storeKit1WrapperShouldShowPriceConsent: Bool {
-        return delegate?.shouldShowPriceConsent ?? true
+        return self.delegate?.shouldShowPriceConsent ?? true
     }
 
     func storeKit1WrapperDidChangeStorefront(_ storeKit1Wrapper: StoreKit1Wrapper) {
@@ -608,6 +608,13 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
 }
 
 extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    var paymentQueueWrapperShouldShowPriceConsent: Bool {
+        return self.storeKit1WrapperShouldShowPriceConsent
+    }
+    #endif
 
     func paymentQueueWrapper(
         _ wrapper: PaymentQueueWrapper,
