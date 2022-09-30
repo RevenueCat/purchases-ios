@@ -46,7 +46,7 @@ aliases:
         ignore: /.*/
       branches:
         only: main
-  non-patch-branches: &non-patch-branches
+  non-patch-release-branches: &non-patch-release-branches
     filters: 
       tags:
         ignore: /.*/
@@ -637,7 +637,7 @@ workflows:
           xcode_version: '13.4.1'
           <<: *release-tags
       - slack/notify:
-          <<: *non-patch-branches
+          <<: *non-patch-release-branches
           context: slack-secrets
           custom: |
               {
