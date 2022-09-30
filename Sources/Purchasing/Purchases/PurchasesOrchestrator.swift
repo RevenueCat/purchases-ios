@@ -1038,32 +1038,6 @@ private extension PurchasesOrchestrator {
 
 }
 
-private extension Error {
-
-    var isCancelledError: Bool {
-        switch self {
-        case let error as ErrorCode:
-            switch error {
-            case .purchaseCancelledError: return true
-            default: return false
-            }
-
-        case let purchasesError as PurchasesError:
-            return purchasesError.error.isCancelledError
-
-        case let error as NSError:
-            switch (error.domain, error.code) {
-            case (SKErrorDomain, SKError.paymentCancelled.rawValue): return true
-
-            default: return false
-            }
-
-        default: return false
-        }
-    }
-
-}
-
 // MARK: - Async extensions
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
