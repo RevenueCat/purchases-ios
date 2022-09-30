@@ -36,7 +36,7 @@ protocol StoreKit1WrapperDelegate: AnyObject {
 
 }
 
-class StoreKit1Wrapper: NSObject, SKPaymentTransactionObserver {
+class StoreKit1Wrapper: NSObject {
 
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
     static var simulatesAskToBuyInSandbox = false
@@ -105,7 +105,7 @@ class StoreKit1Wrapper: NSObject, SKPaymentTransactionObserver {
 
 }
 
-extension StoreKit1Wrapper: SKPaymentQueueDelegate {
+extension StoreKit1Wrapper: SKPaymentTransactionObserver {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
@@ -142,17 +142,21 @@ extension StoreKit1Wrapper: SKPaymentQueueDelegate {
         self.delegate?.storeKit1Wrapper(self, didRevokeEntitlementsForProductIdentifiers: productIdentifiers)
     }
 
+    // Sent when the storefront for the payment queue has changed.
+    func paymentQueueDidChangeStorefront(_ queue: SKPaymentQueue) {
+        self.delegate?.storeKit1WrapperDidChangeStorefront(self)
+    }
+
+}
+
+extension StoreKit1Wrapper: SKPaymentQueueDelegate {
+
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
         return self.delegate?.storeKit1WrapperShouldShowPriceConsent ?? true
     }
     #endif
-
-    // Sent when the storefront for the payment queue has changed.
-    func paymentQueueDidChangeStorefront(_ queue: SKPaymentQueue) {
-        self.delegate?.storeKit1WrapperDidChangeStorefront(self)
-    }
 
 }
 
