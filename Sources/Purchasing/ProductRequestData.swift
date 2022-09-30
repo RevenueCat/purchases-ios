@@ -20,6 +20,20 @@ import StoreKit
 /// - SeeAlso: `Backend/post(receiptData:appUserID:isRestore:productData:...`
 struct ProductRequestData {
 
+    /// Determins what triggered a receipt to be posted
+    enum InitiationSource: CaseIterable {
+
+        /// From a call to restore purchases
+        case restore
+
+        /// From a purchase
+        case purchase
+
+        /// From a transaction in the queue
+        case queue
+
+    }
+
     let productIdentifier: String
     let paymentMode: StoreProductDiscount.PaymentMode?
     let currencyCode: String?

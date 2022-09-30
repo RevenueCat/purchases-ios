@@ -86,6 +86,7 @@ final class CustomerAPI {
               productData: ProductRequestData?,
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
+              initiationSource: ProductRequestData.InitiationSource,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let attributionStatus = self.attributionFetcher.authorizationStatus
@@ -104,6 +105,7 @@ final class CustomerAPI {
                                                          productData: productData,
                                                          presentedOfferingIdentifier: offeringIdentifier,
                                                          observerMode: observerMode,
+                                                         initiationSource: initiationSource,
                                                          subscriberAttributesByKey: subscriberAttributesByKey)
         let postReceiptOperation = PostReceiptDataOperation(configuration: config,
                                                             postData: postData,

@@ -21,7 +21,8 @@
       },
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
       "is_restore" : false,
-      "observer_mode" : false
+      "observer_mode" : false,
+      "user_initiated" : false
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

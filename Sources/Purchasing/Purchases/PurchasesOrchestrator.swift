@@ -159,12 +159,16 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        self.syncPurchases(receiptRefreshPolicy: .always, isRestore: true, completion: completion)
+        self.syncPurchases(receiptRefreshPolicy: .always,
+                           isRestore: true,
+                           initiationSource: .restore,
+                           completion: completion)
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
         self.syncPurchases(receiptRefreshPolicy: .never,
                            isRestore: allowSharingAppStoreAccount,
+                           initiationSource: .restore,
                            completion: completion)
     }
 
@@ -681,6 +685,7 @@ private extension PurchasesOrchestrator {
                !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction,
                                                  receiptData: receiptData,
+                                                 initiationSource: .purchase,
                                                  storefront: storefront)
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
@@ -749,7 +754,9 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         // Need to restore if using observer mode (which is inverse of finishTransactions)
         let isRestore = !self.systemInfo.finishTransactions
 
-        _ = try await syncPurchases(receiptRefreshPolicy: .always, isRestore: isRestore)
+        _ = try await self.syncPurchases(receiptRefreshPolicy: .always,
+                                         isRestore: isRestore,
+                                         initiationSource: .queue)
     }
 
 }
@@ -808,9 +815,11 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    /// Called as a result a purchase.
     func fetchProductsAndPostReceipt(
         withTransaction transaction: StoreTransaction,
         receiptData: Data,
+        initiationSource: ProductRequestData.InitiationSource,
         storefront: StorefrontType?
     ) {
         if let productIdentifier = transaction.productIdentifier.notEmpty {
@@ -818,6 +827,7 @@ private extension PurchasesOrchestrator {
                 self.postReceipt(withTransaction: transaction,
                                  receiptData: receiptData,
                                  products: Set(products),
+                                 initiationSource: initiationSource,
                                  storefront: storefront)
             }
         } else {
@@ -830,6 +840,7 @@ private extension PurchasesOrchestrator {
     func postReceipt(withTransaction transaction: StoreTransaction,
                      receiptData: Data,
                      products: Set<StoreProduct>,
+                     initiationSource: ProductRequestData.InitiationSource,
                      storefront: StorefrontType?) {
         var productData: ProductRequestData?
         var presentedOfferingID: String?
@@ -850,7 +861,8 @@ private extension PurchasesOrchestrator {
                           isRestore: allowSharingAppStoreAccount,
                           productData: productData,
                           presentedOfferingIdentifier: presentedOfferingID,
-                          observerMode: !finishTransactions,
+                          observerMode: !self.finishTransactions,
+                          initiationSource: initiationSource,
                           subscriberAttributes: unsyncedAttributes) { result in
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result,
@@ -910,6 +922,7 @@ private extension PurchasesOrchestrator {
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
+                       initiationSource: ProductRequestData.InitiationSource,
                        completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         // Don't log anything unless the flag was explicitly set.
         let allowSharingAppStoreAccountSet = self._allowSharingAppStoreAccount.value != nil
@@ -958,6 +971,7 @@ private extension PurchasesOrchestrator {
                                   productData: nil,
                                   presentedOfferingIdentifier: nil,
                                   observerMode: !self.finishTransactions,
+                                  initiationSource: initiationSource,
                                   subscriberAttributes: unsyncedAttributes) { result in
                     self.handleReceiptPost(result: result,
                                            subscriberAttributes: unsyncedAttributes,
@@ -1059,9 +1073,12 @@ extension PurchasesOrchestrator {
     }
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
-                       isRestore: Bool) async throws -> CustomerInfo {
+                       isRestore: Bool,
+                       initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy, isRestore: isRestore) { result in
+            self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
+                               isRestore: isRestore,
+                               initiationSource: initiationSource) { result in
                 continuation.resume(with: result)
             }
         }

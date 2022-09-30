@@ -658,7 +658,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
         _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
-                                                       isRestore: false)
+                                                       isRestore: false,
+                                                       initiationSource: .restore)
 
         logger.verifyMessageWasNotLogged(
             Strings
@@ -675,7 +676,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
         _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
-                                                       isRestore: false)
+                                                       isRestore: false,
+                                                       initiationSource: .restore)
 
         logger.verifyMessageWasNotLogged(
             Strings
@@ -692,7 +694,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
         _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
-                                                       isRestore: false)
+                                                       isRestore: false,
+                                                       initiationSource: .restore)
 
         logger.verifyMessageWasLogged(
             Strings

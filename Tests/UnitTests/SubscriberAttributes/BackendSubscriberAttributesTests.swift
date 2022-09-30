@@ -83,12 +83,13 @@ class BackendSubscriberAttributesTests: TestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        backend.post(receiptData: receiptData,
-                     appUserID: appUserID,
+        backend.post(receiptData: self.receiptData,
+                     appUserID: self.appUserID,
                      isRestore: false,
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
+                     initiationSource: .restore,
                      subscriberAttributes: subscriberAttributesByKey,
                      completion: { _ in
             completionCallCount += 1
@@ -113,6 +114,7 @@ class BackendSubscriberAttributesTests: TestCase {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
+                     initiationSource: .queue,
                      subscriberAttributes: subscriberAttributesByKey) {
             receivedResult = $0
         }
@@ -136,6 +138,7 @@ class BackendSubscriberAttributesTests: TestCase {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
+                     initiationSource: .purchase,
                      subscriberAttributes: nil) { _ in
             completionCallCount += 1
         }
@@ -179,6 +182,7 @@ class BackendSubscriberAttributesTests: TestCase {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
+                     initiationSource: .queue,
                      subscriberAttributes: subscriberAttributesByKey) { result in
             receivedCustomerInfo = result.value
         }
@@ -226,6 +230,7 @@ class BackendSubscriberAttributesTests: TestCase {
                      productData: nil,
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
+                     initiationSource: .restore,
                      subscriberAttributes: subscriberAttributesByKey) { result in
             receivedError = result.error
         }

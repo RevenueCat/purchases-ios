@@ -23,6 +23,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
         let observerMode: Bool
+        let initiationSource: ProductRequestData.InitiationSource
         let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
 
     }
@@ -101,6 +102,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case appUserID
         case isRestore
         case observerMode
+        case initiationSource
         case attributes
         case presentedOfferingIdentifier
 
@@ -113,6 +115,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encode(self.appUserID, forKey: .appUserID)
         try container.encode(self.isRestore, forKey: .isRestore)
         try container.encode(self.observerMode, forKey: .observerMode)
+        try container.encode(self.initiationSource, forKey: .initiationSource)
 
         if let productData = self.productData {
             try productData.encode(to: encoder)
@@ -128,5 +131,29 @@ extension PostReceiptDataOperation.PostData: Encodable {
             forKey: .attributes
         )
     }
+
+}
+
+// MARK: - InitiationSource
+
+extension ProductRequestData.InitiationSource: Encodable, RawRepresentable {
+
+    var rawValue: String {
+        switch self {
+        case .restore: return "restore"
+        case .purchase: return "purchase"
+        case .queue: return "queue"
+        }
+    }
+
+    init?(rawValue: String) {
+        guard let value = Self.codes[rawValue] else { return nil }
+
+        self = value
+    }
+
+    private static let codes: [String: ProductRequestData.InitiationSource] = Self
+        .allCases
+        .dictionaryWithKeys { $0.rawValue }
 
 }
