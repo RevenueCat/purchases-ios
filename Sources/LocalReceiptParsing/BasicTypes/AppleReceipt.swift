@@ -52,7 +52,7 @@ struct AppleReceipt: Equatable {
     let inAppPurchases: [InAppPurchase]
 
     func purchasedIntroOfferOrFreeTrialProductIdentifiers() -> Set<String> {
-        let productIdentifiers = inAppPurchases
+        let productIdentifiers = self.inAppPurchases
             .filter { $0.isInIntroOfferPeriod == true || $0.isInTrialPeriod == true }
             .map { $0.productId }
         return Set(productIdentifiers)
@@ -65,8 +65,10 @@ struct AppleReceipt: Equatable {
 extension AppleReceipt {
 
     func containsActivePurchase(forProductIdentifier identifier: String) -> Bool {
-        return (self.inAppPurchases.contains { $0.isActiveSubscription } ||
-                self.inAppPurchases.contains { $0.productId == identifier })
+        return (
+            self.inAppPurchases.contains { $0.isActiveSubscription } ||
+            self.inAppPurchases.contains { $0.productType?.isSubscription != true && $0.productId == identifier }
+        )
     }
 
 }

@@ -30,11 +30,11 @@ final class AppleReceiptTests: TestCase {
         expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == true
     }
 
-    func testReceiptWithExpiredPurchaseContainsActivePurchase() {
+    func testReceiptWithExpiredPurchaseDoesNotContainActivePurchase() {
         let receipt = Self.create(with: [
             Self.productIdentifier: Date().addingTimeInterval(-1000)
         ])
-        expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == true
+        expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == false
     }
 
     func testReceiptWithNonExpiringPurchaseContainsActivePurchase() {

@@ -61,7 +61,7 @@ extension AppleReceipt.InAppPurchase {
 
 }
 
-private extension AppleReceipt.InAppPurchase.ProductType {
+extension AppleReceipt.InAppPurchase.ProductType {
 
     var isSubscription: Bool {
         switch self {
