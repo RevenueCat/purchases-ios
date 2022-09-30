@@ -122,13 +122,14 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
         }
     }
 
+    #if !os(watchOS)
     // Sent when a user initiated an in-app purchase from the App Store.
-    @available(watchOS, unavailable)
     func paymentQueue(_ queue: SKPaymentQueue,
                       shouldAddStorePayment payment: SKPayment,
                       for product: SK1Product) -> Bool {
         return self.delegate?.storeKit1Wrapper(self, shouldAddStorePayment: payment, for: product) ?? false
     }
+    #endif
 
     // Sent when access to a family shared subscription is revoked from a family member or canceled the subscription.
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
