@@ -636,18 +636,18 @@ workflows:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
           <<: *release-tags
-      - slack/on-hold:
+      - slack/notify:
           <<: *non-patch-branches
           context: slack-secrets
           custom: |
               {
-                "text": "CircleCI job on hold, waiting for approval.",
+                "text": "Public facing changes detected",
                 "blocks": [
                   {
                     "type": "header",
                     "text": {
                       "type": "plain_text",
-                      "text": "AWAITING APPROVAL - Public facing changes detected :raised_hand:",
+                      "text": "REMINDER :raised_hand:",
                       "emoji": true
                     }
                   },
@@ -655,14 +655,14 @@ workflows:
                     "type": "section",
                     "text": {
                       "type": "mrkdwn",
-                      "text": "Approve `docs-have-been-updated` if *public docs* have been updated"
+                      "text": "Do *public docs* need to be updated?"
                     }
                   },
                   {
                     "type": "section",
                     "text": {
                       "type": "mrkdwn",
-                      "text": "Approve `sdk-parity-sheet-has-been-updated` if the *SDK parity spreadsheet* has been updated"
+                      "text": "Does the *SDK parity spreadsheet* need to be updated?"
                     }
                   },
                   {
@@ -681,36 +681,9 @@ workflows:
                         "text": "*Author*: $CIRCLE_USERNAME"
                       }
                     ]
-                  },
-                  {
-                    "type": "actions",
-                    "elements": [
-                      {
-                        "type": "button",
-                        "text": {
-                          "type": "plain_text",
-                          "text": "View Workflow"
-                        },
-                        "url": "${SLACK_PARAM_CIRCLECI_HOST}/workflow-run/${CIRCLE_WORKFLOW_ID}"
-                      }
-                    ]
                   }
                 ]
               }
-          requires:
-            - docs-deploy
-      - docs-have-been-updated:
-          <<: *non-patch-branches
-          type: approval
-          requires:
-            - docs-deploy
-            - slack/on-hold
-      - sdk-parity-sheet-has-been-updated:
-          <<: *non-patch-branches
-          type: approval
-          requires:
-            - docs-deploy
-            - slack/on-hold
   snapshot-bump:
     when:
       not:
