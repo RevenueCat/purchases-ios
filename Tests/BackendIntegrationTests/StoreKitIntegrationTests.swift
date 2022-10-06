@@ -68,6 +68,27 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         try await self.purchaseMonthlyProduct()
     }
 
+    func testCanPurchaseConsumable() async throws {
+        let info = try await self.purchaseConsumablePackage().customerInfo
+
+        expect(info.allPurchasedProductIdentifiers).to(contain(Self.consumable10Coins))
+    }
+
+    func testCanPurchaseConsumableMultipleTimes() async throws {
+        let count = 2
+
+        for _ in 0..<count {
+            try await self.purchaseConsumablePackage()
+        }
+
+        let info = try await Purchases.shared.customerInfo()
+        expect(info.nonSubscriptions).to(haveCount(count))
+        expect(info.nonSubscriptions.map(\.productIdentifier)) == [
+            Self.consumable10Coins,
+            Self.consumable10Coins
+        ]
+    }
+
     func testSubscriptionIsSandbox() async throws {
         let info = try await self.purchaseMonthlyOffering().customerInfo
 
@@ -394,6 +415,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 private extension StoreKit1IntegrationTests {
 
     static let entitlementIdentifier = "premium"
+    static let consumable10Coins = "consumable.10_coins"
 
     private var currentOffering: Offering {
         get async throws {
@@ -464,6 +486,17 @@ private extension StoreKit1IntegrationTests {
         )
 
         return data
+    }
+
+    @discardableResult
+    func purchaseConsumablePackage(
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let offering = try await XCTAsyncUnwrap(try await Purchases.shared.offerings().offering(identifier: "coins"))
+        let package = try XCTUnwrap(offering.package(identifier: "10.coins"))
+
+        return try await Purchases.shared.purchase(package: package)
     }
 
     @discardableResult

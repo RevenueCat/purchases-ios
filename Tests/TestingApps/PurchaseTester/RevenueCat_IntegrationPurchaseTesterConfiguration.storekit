@@ -18,6 +18,21 @@
       "productID" : "lifetime",
       "referenceName" : "lifetime",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "67E2FE0B",
+      "localizations" : [
+        {
+          "description" : "10 Coins",
+          "displayName" : "10 Coins",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "consumable.10_coins",
+      "referenceName" : "10 coins",
+      "type" : "Consumable"
     }
   ],
   "settings" : {
