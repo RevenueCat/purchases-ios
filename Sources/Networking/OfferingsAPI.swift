@@ -36,7 +36,7 @@ class OfferingsAPI {
                                                           offeringsCallbackCache: self.offeringsCallbacksCache)
 
         let offeringsCallback = OfferingsCallback(cacheKey: getOfferingsOperation.cacheKey, completion: completion)
-        let cacheStatus = self.offeringsCallbacksCache.add(callback: offeringsCallback)
+        let cacheStatus = self.offeringsCallbacksCache.add(offeringsCallback)
 
         self.backendConfig.addCacheableOperation(getOfferingsOperation,
                                                  withRandomDelay: randomDelay,

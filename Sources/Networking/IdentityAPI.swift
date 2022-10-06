@@ -36,7 +36,7 @@ class IdentityAPI {
                                             loginCallbackCache: self.logInCallbacksCache)
 
         let loginCallback = LogInCallback(cacheKey: loginOperation.cacheKey, completion: completion)
-        let cacheStatus = self.logInCallbacksCache.add(callback: loginCallback)
+        let cacheStatus = self.logInCallbacksCache.add(loginCallback)
 
         self.backendConfig.operationQueue.addCacheableOperation(loginOperation, cacheStatus: cacheStatus)
     }

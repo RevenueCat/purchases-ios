@@ -35,9 +35,9 @@ extension CallbackCache where T == CustomerInfoCallback {
 
     func addOrAppendToPostReceiptDataOperation(callback: CustomerInfoCallback) -> CallbackCacheStatus {
         if let existing = self.callbacks(ofType: PostReceiptDataOperation.self).last {
-            return self.add(callback: callback.withNewCacheKey(existing.cacheKey))
+            return self.add(callback.withNewCacheKey(existing.cacheKey))
         } else {
-            return self.add(callback: callback)
+            return self.add(callback)
         }
     }
 

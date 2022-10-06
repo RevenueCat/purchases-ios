@@ -25,7 +25,7 @@ final class CallbackCache<T> where T: CacheKeyProviding {
 
     let cachedCallbacksByKey: Atomic<[String: [T]]> = .init([:])
 
-    func add(callback: T) -> CallbackCacheStatus {
+    func add(_ callback: T) -> CallbackCacheStatus {
         return self.cachedCallbacksByKey.modify { cachedCallbacksByKey in
             var values = cachedCallbacksByKey[callback.cacheKey] ?? []
             let cacheStatus: CallbackCacheStatus = !values.isEmpty ?
