@@ -139,20 +139,16 @@ extension ProductsManagerType {
     /// `async` overload for `products(withIdentifiers:)`
     @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.products(withIdentifiers: identifiers) { result in
-                continuation.resume(with: result)
-            }
+        return try await Async.call { completion in
+            self.products(withIdentifiers: identifiers, completion: completion)
         }
     }
 
     /// `async` overload for `sk2Products(withIdentifiers:)`
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2Products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.sk2Products(withIdentifiers: identifiers) { result in
-                continuation.resume(with: result)
-            }
+        return try await Async.call { completion in
+            self.sk2Products(withIdentifiers: identifiers, completion: completion)
         }
     }
 

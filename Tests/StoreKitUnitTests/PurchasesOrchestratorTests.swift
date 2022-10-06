@@ -211,11 +211,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                             numberOfPeriods: 2,
                                                             type: .promotional)
 
-        _ = try await withCheckedThrowingContinuation { continuation in
+        _ = try await Async.call { completion in
             orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
-                                          product: StoreProduct(sk1Product: product)) { result in
-                continuation.resume(with: result)
-            }
+                                          product: StoreProduct(sk1Product: product),
+                                          completion: completion)
         }
 
         expect(self.offerings.invokedPostOfferCount) == 1

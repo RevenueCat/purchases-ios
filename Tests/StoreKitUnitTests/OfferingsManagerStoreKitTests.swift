@@ -106,10 +106,8 @@ private extension OfferingsManager {
 
     @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
     func offerings(appUserID: String) async throws -> Offerings {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.offerings(appUserID: appUserID) { result in
-                continuation.resume(with: result)
-            }
+        return try await Async.call { completion in
+            self.offerings(appUserID: appUserID, completion: completion)
         }
     }
 
