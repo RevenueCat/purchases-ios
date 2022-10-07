@@ -1,5 +1,6 @@
 orbs:
-   macos: circleci/macos@2.0.1
+  macos: circleci/macos@2.0.1
+  slack: circleci/slack@4.10.1
 
 version: 2.1
 
@@ -45,6 +46,12 @@ aliases:
         ignore: /.*/
       branches:
         only: main
+  non-patch-release-branches: &non-patch-release-branches
+    filters: 
+      tags:
+        ignore: /.*/
+      branches:
+        only: /^release\/.*\.0$/
 
 commands:
   install-and-create-sim:
@@ -555,6 +562,57 @@ jobs:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
+  notify-on-non-patch-release-branches:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          custom: |
+              {
+                "text": "Public facing changes detected",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "REMINDER :raised_hand:",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Do *public docs* need to be updated?"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Does the *SDK parity spreadsheet* need to be updated?"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Branch*: $CIRCLE_BRANCH"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Author*: $CIRCLE_USERNAME"
+                      }
+                    ]
+                  }
+                ]
+              }
+
 workflows:
   version: 2
   build-test:
@@ -629,6 +687,9 @@ workflows:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
           <<: *release-tags
+      - notify-on-non-patch-release-branches:
+          <<: *non-patch-release-branches
+          context: slack-secrets
   snapshot-bump:
     when:
       not:
