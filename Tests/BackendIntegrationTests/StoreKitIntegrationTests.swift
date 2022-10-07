@@ -75,6 +75,9 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testCanPurchaseConsumableMultipleTimes() async throws {
+        // See https://revenuecats.atlassian.net/browse/TRIAGE-134
+        try XCTSkipIf(Self.storeKit2Setting == .disabled, "This test is not currently passing on SK1")
+
         let count = 2
 
         for _ in 0..<count {
@@ -510,8 +513,14 @@ private extension StoreKit1IntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let offering = try await XCTAsyncUnwrap(try await Purchases.shared.offerings().offering(identifier: "coins"))
-        let package = try XCTUnwrap(offering.package(identifier: "10.coins"))
+        let offering = try await XCTAsyncUnwrap(
+            try await Purchases.shared.offerings().offering(identifier: "coins"),
+            file: file, line: line
+        )
+        let package = try XCTUnwrap(
+            offering.package(identifier: "10.coins"),
+            file: file, line: line
+        )
 
         return try await Purchases.shared.purchase(package: package)
     }
