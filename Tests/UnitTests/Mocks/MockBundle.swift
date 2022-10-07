@@ -13,21 +13,23 @@
 
 import Foundation
 
-class MockBundle: Bundle {
+@testable import RevenueCat
+
+final class MockBundle: Bundle {
+
     enum ReceiptURLResult {
+
         case receiptWithData
         case emptyReceipt
         case sandboxReceipt
         case nilURL
+
     }
 
     var receiptURLResult: ReceiptURLResult = .receiptWithData
 
-    private static let mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
-    private static let mockSandboxReceiptFileName = "base64encoded_sandboxReceipt"
-
     override var appStoreReceiptURL: URL? {
-        let testBundle = Bundle(for: type(of: self))
+        let testBundle = Bundle(for: Self.self)
 
         switch self.receiptURLResult {
         case .receiptWithData:
@@ -40,6 +42,39 @@ class MockBundle: Bundle {
                 .url(forResource: Self.mockSandboxReceiptFileName, withExtension: "txt")
         case .nilURL:
             return nil
+        }
+    }
+
+    // MARK: -
+
+    private static let mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
+    private static let mockSandboxReceiptFileName = "base64encoded_sandboxReceipt"
+
+}
+
+final class MockFileReader: FileReader {
+
+    var mockedURLContents: [URL: [Data?]] = [:]
+
+    func mock(url: URL, with data: Data) {
+        self.mockedURLContents[url] = [data]
+    }
+
+    var invokedContentsOfURL: [URL: Int] = [:]
+
+    func contents(of url: URL) -> Data? {
+        let previouslyInvokedContentsOfURL = self.invokedContentsOfURL[url] ?? 0
+
+        self.invokedContentsOfURL[url, default: 0] += 1
+
+        guard let mockedData = self.mockedURLContents[url] else { return nil }
+
+        if mockedData.isEmpty {
+            return nil
+        } else if let data = mockedData.onlyElement {
+            return data
+        } else {
+            return mockedData[previouslyInvokedContentsOfURL]
         }
     }
 

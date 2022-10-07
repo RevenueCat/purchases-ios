@@ -13,6 +13,15 @@ import Foundation
  */
 @objc(RCDangerousSettings) public final class DangerousSettings: NSObject {
 
+    /// Dangerous settings not exposed outside of the SDK.
+    internal struct InternalSettings {
+
+        /// Whether `ReceiptFetcher` can retry fetching receipts.
+        let enableReceiptFetchRetry: Bool
+
+        static let `default`: Self = .init(enableReceiptFetchRetry: false)
+    }
+
     /**
      * Disable or enable subscribing to the StoreKit queue. If this is disabled, RevenueCat won't observe
      * the StoreKit queue, and it will not sync any purchase automatically.
@@ -22,6 +31,8 @@ import Foundation
      * Auto syncing of purchases is enabled by default.
      */
     @objc public let autoSyncPurchases: Bool
+
+    internal let internalSettings: InternalSettings
 
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
@@ -34,8 +45,14 @@ import Foundation
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
      */
-    @objc public init(autoSyncPurchases: Bool) {
+    @objc public convenience init(autoSyncPurchases: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases, internalSettings: .default)
+    }
+
+    /// Designated initializer
+    internal init(autoSyncPurchases: Bool, internalSettings: InternalSettings) {
         self.autoSyncPurchases = autoSyncPurchases
+        self.internalSettings = internalSettings
     }
 
 }

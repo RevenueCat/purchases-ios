@@ -48,6 +48,9 @@ final class PurchasesOrchestrator {
         self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
 
+    static let receiptRetryCount: Int = 3
+    static let receiptRetrySleepDuration: DispatchTimeInterval = .seconds(5)
+
     private let productsManager: ProductsManagerType
     private let storeKit1Wrapper: StoreKit1Wrapper?
     private let systemInfo: SystemInfo
@@ -618,9 +621,9 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
         // when `StoreKit1Wrapper` is not initialized, which means that promoted purchases
         // need to be handled as a SK2 purchase.
         // This method converts the `SKPayment` into an SK2 purchase by fetching the product again.
-        assert(self.storeKit1Wrapper == nil, "This method should not be invoked if SK1 is enabled")
         if self.storeKit1Wrapper != nil {
             Logger.warn("Unexpectedly received PaymentQueueWrapperDelegate call with SK1 enabled")
+            assertionFailure("This method should not be invoked if SK1 is enabled")
         }
 
         guard let delegate = self.delegate else { return false }
@@ -676,9 +679,10 @@ private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: StoreTransaction,
                                     storefront: StorefrontType?) {
-        self.receiptFetcher.receiptData(refreshPolicy: .always) { receiptData in
-            if let receiptData = receiptData,
-               !receiptData.isEmpty {
+        self.receiptFetcher.receiptData(
+            refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
+        ) { receiptData in
+            if let receiptData = receiptData, !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction,
                                                  receiptData: receiptData,
                                                  storefront: storefront)
@@ -740,6 +744,15 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    private func refreshRequestPolicy(forProductIdentifier productIdentifier: String) -> ReceiptRefreshPolicy {
+        if self.systemInfo.dangerousSettings.internalSettings.enableReceiptFetchRetry {
+            return .retryUntilProductIsFound(productIdentifier: productIdentifier,
+                                             maximumRetries: Self.receiptRetryCount,
+                                             sleepDuration: Self.receiptRetrySleepDuration)
+        } else {
+            return .always
+        }
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -1034,32 +1047,6 @@ private extension PurchasesOrchestrator {
         }()
 
         Logger.purchase(string)
-    }
-
-}
-
-private extension Error {
-
-    var isCancelledError: Bool {
-        switch self {
-        case let error as ErrorCode:
-            switch error {
-            case .purchaseCancelledError: return true
-            default: return false
-            }
-
-        case let purchasesError as PurchasesError:
-            return purchasesError.error.isCancelledError
-
-        case let error as NSError:
-            switch (error.domain, error.code) {
-            case (SKErrorDomain, SKError.paymentCancelled.rawValue): return true
-
-            default: return false
-            }
-
-        default: return false
-        }
     }
 
 }

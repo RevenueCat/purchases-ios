@@ -15,7 +15,8 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
 
-    convenience init(finishTransactions: Bool, storeKit2Setting: StoreKit2Setting = .default) {
+    convenience init(finishTransactions: Bool,
+                     storeKit2Setting: StoreKit2Setting = .default) {
         // swiftlint:disable:next force_try
         try! self.init(platformInfo: nil,
                        finishTransactions: finishTransactions,
@@ -41,7 +42,7 @@ class MockSystemInfo: SystemInfo {
     }
 
     override var isSandbox: Bool {
-        return stubbedIsSandbox ?? super.isSandbox
+        return self.stubbedIsSandbox ?? super.isSandbox
     }
 
 }
