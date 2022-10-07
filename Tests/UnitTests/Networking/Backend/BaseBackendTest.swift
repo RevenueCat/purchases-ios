@@ -26,6 +26,7 @@ class BaseBackendTests: TestCase {
     private(set) var backend: Backend!
     private(set) var offerings: OfferingsAPI!
     private(set) var identity: IdentityAPI!
+    private(set) var internalAPI: InternalAPI!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -47,10 +48,13 @@ class BaseBackendTests: TestCase {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
+        self.internalAPI = InternalAPI(backendConfig: backendConfig)
+
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
                                identityAPI: self.identity,
-                               offeringsAPI: self.offerings)
+                               offeringsAPI: self.offerings,
+                               internalAPI: self.internalAPI)
     }
 
     func createClient() -> MockHTTPClient {

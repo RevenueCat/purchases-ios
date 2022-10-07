@@ -17,9 +17,10 @@ class Backend {
 
     let identity: IdentityAPI
     let offerings: OfferingsAPI
+    let customer: CustomerAPI
+    let internalAPI: InternalAPI
 
     private let config: BackendConfiguration
-    private let customer: CustomerAPI
 
     convenience init(apiKey: String,
                      systemInfo: SystemInfo,
@@ -43,17 +44,26 @@ class Backend {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
-        self.init(backendConfig: backendConfig, customerAPI: customer, identityAPI: identity, offeringsAPI: offerings)
+        let internalAPI = InternalAPI(backendConfig: backendConfig)
+
+        self.init(backendConfig: backendConfig,
+                  customerAPI: customer,
+                  identityAPI: identity,
+                  offeringsAPI: offerings,
+                  internalAPI: internalAPI)
     }
 
     required init(backendConfig: BackendConfiguration,
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,
-                  offeringsAPI: OfferingsAPI) {
+                  offeringsAPI: OfferingsAPI,
+                  internalAPI: InternalAPI) {
         self.config = backendConfig
+
         self.customer = customerAPI
         self.identity = identityAPI
         self.offerings = offeringsAPI
+        self.internalAPI = internalAPI
     }
 
     func clearHTTPClientCaches() {

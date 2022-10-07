@@ -31,7 +31,11 @@ class HTTPRequestTests: TestCase {
         .postAttributionData(appUserID: userID),
         .postOfferForSigning,
         .postReceiptData,
-        .postSubscriberAttributes(appUserID: userID)
+        .postSubscriberAttributes(appUserID: userID),
+        .health
+    ]
+    private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
+        .health
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -43,6 +47,24 @@ class HTTPRequestTests: TestCase {
     func testPathsHaveValidURLs() {
         for path in Self.paths {
             expect(path.url).toNot(beNil())
+        }
+    }
+
+    func testPathIsAuthenticated() {
+        for path in Self.paths where !Self.unauthenticatedPaths.contains(path) {
+            expect(path.authenticated).to(
+                beTrue(),
+                description: "Path '\(path)' should be authenticated"
+            )
+        }
+    }
+
+    func testPathIsNotAuthenticated() {
+        for path in Self.unauthenticatedPaths {
+            expect(path.authenticated).to(
+                beFalse(),
+                description: "Path '\(path)' should be authenticated"
+            )
         }
     }
 

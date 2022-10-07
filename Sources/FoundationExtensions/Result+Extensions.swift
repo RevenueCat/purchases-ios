@@ -41,6 +41,19 @@ extension Result {
 
 }
 
+extension Result where Success == Void {
+
+    /// Creates a `Result<Void, Error>` with an optional `Error`.
+    init(_ error: Failure?) {
+        if let error = error {
+            self = .failure(error)
+        } else {
+            self = .success(())
+        }
+    }
+
+}
+
 extension Result where Success: OptionalType {
 
     /// Converts a `Result<Success?, Error>` into `Result<Success, Error>?`

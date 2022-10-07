@@ -40,7 +40,13 @@ class MockBackend: Backend {
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
-        self.init(backendConfig: backendConfig, customerAPI: customer, identityAPI: identity, offeringsAPI: offerings)
+        let internalAPI = InternalAPI(backendConfig: backendConfig)
+
+        self.init(backendConfig: backendConfig,
+                  customerAPI: customer,
+                  identityAPI: identity,
+                  offeringsAPI: offerings,
+                  internalAPI: internalAPI)
     }
 
     override func post(receiptData: Data,
