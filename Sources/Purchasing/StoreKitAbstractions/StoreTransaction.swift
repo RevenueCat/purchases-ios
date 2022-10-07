@@ -42,7 +42,9 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
     @objc public var quantity: Int { self.transaction.quantity }
 
-    internal func finish(_ wrapper: StoreKit1Wrapper) { self.transaction.finish(wrapper) }
+    func finish(_ wrapper: PaymentQueueWrapperType) {
+        self.transaction.finish(wrapper)
+    }
 
     // swiftlint:enable missing_docs
 
@@ -85,7 +87,7 @@ internal protocol StoreTransactionType: Sendable {
 
     /// Indicates to the App Store that the app delivered the purchased content
     /// or enabled the service to finish the transaction.
-    func finish(_ wrapper: StoreKit1Wrapper)
+    func finish(_ wrapper: PaymentQueueWrapperType)
 
 }
 

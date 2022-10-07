@@ -78,11 +78,6 @@ class StoreKit1Wrapper: NSObject {
         self.paymentQueue.add(payment)
     }
 
-    func finishTransaction(_ transaction: SKPaymentTransaction) {
-        Logger.purchase(Strings.purchase.finishing_transaction(transaction: transaction))
-        self.paymentQueue.finishTransaction(transaction)
-    }
-
     static func canMakePayments() -> Bool {
         return SKPaymentQueue.canMakePayments()
     }
@@ -102,6 +97,29 @@ class StoreKit1Wrapper: NSObject {
         payment.paymentDiscount = discount
         return payment
     }
+
+}
+
+extension StoreKit1Wrapper: PaymentQueueWrapperType {
+
+    @objc
+    func finishTransaction(_ transaction: SKPaymentTransaction) {
+        self.paymentQueue.finishTransaction(transaction)
+    }
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    func showPriceConsentIfNeeded() {
+        self.paymentQueue.showPriceConsentIfNeeded()
+    }
+    #endif
+
+    #if os(iOS)
+    @available(iOS 14.0, *)
+    func presentCodeRedemptionSheet() {
+        self.paymentQueue.presentCodeRedemptionSheetIfAvailable()
+    }
+    #endif
 
 }
 
@@ -158,15 +176,6 @@ extension StoreKit1Wrapper: SKPaymentQueueDelegate {
         return self.delegate?.storeKit1WrapperShouldShowPriceConsent ?? true
     }
     #endif
-
-}
-
-extension StoreKit1Wrapper {
-
-    /// Creates a `PaymentQueueWrapper` backed by the same `SKPaymentQueue`.
-    func createPaymentQueueWrapper() -> PaymentQueueWrapper {
-        return .init(paymentQueue: self.paymentQueue)
-    }
 
 }
 

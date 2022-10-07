@@ -154,13 +154,13 @@ class BasePurchasesTests: TestCase {
 
     func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
         // Note: this logic must match `Purchases`.
-        let storeKit1Wrapper = self.systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
-        ? nil
-        : self.storeKit1Wrapper
+        let paymentQueueWrapper: EitherPaymentQueueWrapper = self.systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+            ? .right(self.paymentQueueWrapper)
+            : .left(self.storeKit1Wrapper)
 
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
-            storeKit1Wrapper: storeKit1Wrapper,
+            paymentQueueWrapper: paymentQueueWrapper,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
@@ -190,8 +190,7 @@ class BasePurchasesTests: TestCase {
                                    attributionFetcher: self.attributionFetcher,
                                    attributionPoster: self.attributionPoster,
                                    backend: self.backend,
-                                   storeKit1Wrapper: storeKit1Wrapper,
-                                   paymentQueueWrapper: self.paymentQueueWrapper,
+                                   paymentQueueWrapper: paymentQueueWrapper,
                                    notificationCenter: self.notificationCenter,
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,

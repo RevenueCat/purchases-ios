@@ -52,7 +52,7 @@ final class PurchasesOrchestrator {
     static let receiptRetrySleepDuration: DispatchTimeInterval = .seconds(5)
 
     private let productsManager: ProductsManagerType
-    private let storeKit1Wrapper: StoreKit1Wrapper?
+    private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
@@ -86,7 +86,7 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     convenience init(productsManager: ProductsManagerType,
-                     storeKit1Wrapper: StoreKit1Wrapper?,
+                     paymentQueueWrapper: EitherPaymentQueueWrapper,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
@@ -104,7 +104,7 @@ final class PurchasesOrchestrator {
     ) {
         self.init(
             productsManager: productsManager,
-            storeKit1Wrapper: storeKit1Wrapper,
+            paymentQueueWrapper: paymentQueueWrapper,
             systemInfo: systemInfo,
             subscriberAttributes: subscriberAttributes,
             operationDispatcher: operationDispatcher,
@@ -132,7 +132,7 @@ final class PurchasesOrchestrator {
     }
 
     init(productsManager: ProductsManagerType,
-         storeKit1Wrapper: StoreKit1Wrapper?,
+         paymentQueueWrapper: EitherPaymentQueueWrapper,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -146,7 +146,7 @@ final class PurchasesOrchestrator {
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper) {
         self.productsManager = productsManager
-        self.storeKit1Wrapper = storeKit1Wrapper
+        self.paymentQueueWrapper = paymentQueueWrapper
         self.systemInfo = systemInfo
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
@@ -525,7 +525,7 @@ extension PurchasesOrchestrator {
 
     /// - Returns: `StoreKit1Wrapper` if it's set, otherwise forwards an error to `completion` and returns `nil`
     private func storeKit1Wrapper(orFailWith completion: @escaping PurchaseCompletedBlock) -> StoreKit1Wrapper? {
-        guard let storeKit1Wrapper = self.storeKit1Wrapper else {
+        guard let storeKit1Wrapper = self.paymentQueueWrapper.storeKit1Wrapper else {
             self.operationDispatcher.dispatchOnMainActor {
                 completion(nil,
                            nil,
@@ -631,7 +631,7 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
         // when `StoreKit1Wrapper` is not initialized, which means that promoted purchases
         // need to be handled as a SK2 purchase.
         // This method converts the `SKPayment` into an SK2 purchase by fetching the product again.
-        if self.storeKit1Wrapper != nil {
+        if self.paymentQueueWrapper.storeKit1Wrapper != nil {
             Logger.warn("Unexpectedly received PaymentQueueWrapperDelegate call with SK1 enabled")
             assertionFailure("This method should not be invoked if SK1 is enabled")
         }
@@ -1045,8 +1045,8 @@ private extension PurchasesOrchestrator {
     }
 
     func finishTransactionIfNeeded(_ transaction: StoreTransaction) {
-        if self.finishTransactions, let wrapper = self.storeKit1Wrapper {
-            transaction.finish(wrapper)
+        if self.finishTransactions {
+            transaction.finish(self.paymentQueueWrapper.paymentQueueWrapperType)
         }
     }
 

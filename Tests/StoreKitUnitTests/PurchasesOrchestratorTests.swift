@@ -123,21 +123,21 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     fileprivate func setUpOrchestrator() {
-        orchestrator = PurchasesOrchestrator(productsManager: productsManager,
-                                             storeKit1Wrapper: storeKit1Wrapper,
-                                             systemInfo: systemInfo,
-                                             subscriberAttributes: attribution,
-                                             operationDispatcher: operationDispatcher,
-                                             receiptFetcher: receiptFetcher,
-                                             customerInfoManager: customerInfoManager,
-                                             backend: backend,
-                                             currentUserProvider: currentUserProvider,
-                                             transactionsManager: transactionsManager,
-                                             deviceCache: deviceCache,
-                                             offeringsManager: mockOfferingsManager,
-                                             manageSubscriptionsHelper: mockManageSubsHelper,
-                                             beginRefundRequestHelper: mockBeginRefundRequestHelper)
-        storeKit1Wrapper.delegate = orchestrator
+        self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
+                                                  paymentQueueWrapper: .left(self.storeKit1Wrapper),
+                                                  systemInfo: self.systemInfo,
+                                                  subscriberAttributes: self.attribution,
+                                                  operationDispatcher: self.operationDispatcher,
+                                                  receiptFetcher: self.receiptFetcher,
+                                                  customerInfoManager: self.customerInfoManager,
+                                                  backend: self.backend,
+                                                  currentUserProvider: self.currentUserProvider,
+                                                  transactionsManager: self.transactionsManager,
+                                                  deviceCache: self.deviceCache,
+                                                  offeringsManager: self.mockOfferingsManager,
+                                                  manageSubscriptionsHelper: self.mockManageSubsHelper,
+                                                  beginRefundRequestHelper: self.mockBeginRefundRequestHelper)
+        self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -146,7 +146,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         storeKit2StorefrontListener: StoreKit2StorefrontListener
     ) {
         self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
-                                                  storeKit1Wrapper: self.storeKit1Wrapper,
+                                                  paymentQueueWrapper: .left(self.storeKit1Wrapper),
                                                   systemInfo: self.systemInfo,
                                                   subscriberAttributes: self.attribution,
                                                   operationDispatcher: self.operationDispatcher,
