@@ -403,7 +403,7 @@ extension CustomerInfo {
             self.quantity = 1
         }
 
-        func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping () -> Void) {
+        func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
             completion()
         }
 
