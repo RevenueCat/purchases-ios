@@ -620,40 +620,40 @@ workflows:
       not:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
-      - lint:
-          xcode_version: '14.0.0'
-      - run-test-ios-16:
-          xcode_version: '14.0.0'
-      - spm-build:
-          xcode_version: '14.0.0'
-      - run-test-ios-15:
-          xcode_version: '14.0.0'
-      - run-test-tvos:
-          xcode_version: '14.0.0'
-      - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-      - run-test-ios-13:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-          <<: *release-branches-and-main
-      - run-test-ios-12:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-          <<: *release-branches-and-main
-      - build-tv-watch-and-macos:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
-      - release-checks:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
-          <<: *release-branches
-      - backend-integration-tests:
-          xcode_version: '14.0.0'
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
+      # - lint:
+      #     xcode_version: '14.0.0'
+      # - run-test-ios-16:
+      #     xcode_version: '14.0.0'
+      # - spm-build:
+      #     xcode_version: '14.0.0'
+      # - run-test-ios-15:
+      #     xcode_version: '14.0.0'
+      # - run-test-tvos:
+      #     xcode_version: '14.0.0'
+      # - run-test-ios-14:
+      #     # Simulator fails to install on Xcode 14
+      #     xcode_version: '13.4.1'
+      # - run-test-ios-13:
+      #     # Simulator fails to install on Xcode 14
+      #     xcode_version: '13.4.1'
+      #     <<: *release-branches-and-main
+      # - run-test-ios-12:
+      #     # Simulator fails to install on Xcode 14
+      #     xcode_version: '13.4.1'
+      #     <<: *release-branches-and-main
+      # - build-tv-watch-and-macos:
+      #     # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+      #     xcode_version: '13.4.1'
+      # - release-checks:
+      #     # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+      #     xcode_version: '13.4.1'
+      #     <<: *release-branches
+      # - backend-integration-tests:
+      #     xcode_version: '14.0.0'
+      #     filters:
+      #         branches:
+      #           # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+      #           ignore: /pull\/[0-9]+/
       - installation-tests-cocoapods:
           xcode_version: '14.0.0'
           <<: *release-tags-and-branches
@@ -667,47 +667,47 @@ workflows:
       - installation-tests-xcode-direct-integration:
           xcode_version: '14.0.0'
           <<: *release-tags-and-branches
-  deploy:
-    when:
-      not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-    jobs:
-      - hold:
-          type: approval
-          <<: *release-branches
-      - tag-release-branch:
-          requires:
-            - hold
-          <<: *release-branches
-      - make-release:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
-          <<: *release-tags
-      - docs-deploy:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
-          <<: *release-tags
-      - notify-on-non-patch-release-branches:
-          <<: *non-patch-release-branches
-          context: slack-secrets
-  snapshot-bump:
-    when:
-      not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-    jobs:
-      - prepare-next-version:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
-          <<: *only-main-branch
-  danger:
-    jobs:
-      - danger
-  weekly-run-workflow:
-    when:
-      and:
-        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-        - equal: [ "release-train", << pipeline.schedule.name >> ]
-    jobs:
-      - release-train:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
+  # deploy:
+  #   when:
+  #     not:
+  #       equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+  #   jobs:
+  #     - hold:
+  #         type: approval
+  #         <<: *release-branches
+  #     - tag-release-branch:
+  #         requires:
+  #           - hold
+  #         <<: *release-branches
+  #     - make-release:
+  #         # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+  #         xcode_version: '13.4.1'
+  #         <<: *release-tags
+  #     - docs-deploy:
+  #         # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+  #         xcode_version: '13.4.1'
+  #         <<: *release-tags
+  #     - notify-on-non-patch-release-branches:
+  #         <<: *non-patch-release-branches
+  #         context: slack-secrets
+  # snapshot-bump:
+  #   when:
+  #     not:
+  #       equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+  #   jobs:
+  #     - prepare-next-version:
+  #         # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+  #         xcode_version: '13.4.1'
+  #         <<: *only-main-branch
+  # danger:
+  #   jobs:
+  #     - danger
+  # weekly-run-workflow:
+  #   when:
+  #     and:
+  #       - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+  #       - equal: [ "release-train", << pipeline.schedule.name >> ]
+  #   jobs:
+  #     - release-train:
+  #         # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+  #         xcode_version: '13.4.1'
