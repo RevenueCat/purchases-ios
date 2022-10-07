@@ -48,6 +48,9 @@ final class PurchasesOrchestrator {
         self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
 
+    static let receiptRetryCount: Int = 3
+    static let receiptRetrySleepDuration: DispatchTimeInterval = .seconds(5)
+
     private let productsManager: ProductsManagerType
     private let storeKit1Wrapper: StoreKit1Wrapper?
     private let systemInfo: SystemInfo
@@ -676,9 +679,10 @@ private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: StoreTransaction,
                                     storefront: StorefrontType?) {
-        self.receiptFetcher.receiptData(refreshPolicy: .always) { receiptData in
-            if let receiptData = receiptData,
-               !receiptData.isEmpty {
+        self.receiptFetcher.receiptData(
+            refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
+        ) { receiptData in
+            if let receiptData = receiptData, !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction,
                                                  receiptData: receiptData,
                                                  storefront: storefront)
@@ -740,6 +744,15 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    private func refreshRequestPolicy(forProductIdentifier productIdentifier: String) -> ReceiptRefreshPolicy {
+        if self.systemInfo.dangerousSettings.internalSettings.enableReceiptFetchRetry {
+            return .retryUntilProductIsFound(productIdentifier: productIdentifier,
+                                             maximumRetries: Self.receiptRetryCount,
+                                             sleepDuration: Self.receiptRetrySleepDuration)
+        } else {
+            return .always
+        }
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
