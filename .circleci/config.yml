@@ -562,6 +562,57 @@ jobs:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
+  notify-on-non-patch-release-branches:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          custom: |
+              {
+                "text": "Public facing changes detected",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "REMINDER :raised_hand:",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Do *public docs* need to be updated?"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Does the *SDK parity spreadsheet* need to be updated?"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Branch*: $CIRCLE_BRANCH"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Author*: $CIRCLE_USERNAME"
+                      }
+                    ]
+                  }
+                ]
+              }
+
 workflows:
   version: 2
   build-test:
@@ -636,54 +687,9 @@ workflows:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
           <<: *release-tags
-      - slack/notify:
+      - notify-on-non-patch-release-branches:
           <<: *non-patch-release-branches
           context: slack-secrets
-          custom: |
-              {
-                "text": "Public facing changes detected",
-                "blocks": [
-                  {
-                    "type": "header",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "REMINDER :raised_hand:",
-                      "emoji": true
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "Do *public docs* need to be updated?"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "Does the *SDK parity spreadsheet* need to be updated?"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "fields": [
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                      },
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Branch*: $CIRCLE_BRANCH"
-                      },
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Author*: $CIRCLE_USERNAME"
-                      }
-                    ]
-                  }
-                ]
-              }
   snapshot-bump:
     when:
       not:
