@@ -89,6 +89,23 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         ]
     }
 
+    func testCanPurchaseConsumableWithMultipleUsers() async throws {
+        func verifyPurchase(_ info: CustomerInfo) {
+            expect(info.nonSubscriptions).to(haveCount(1))
+            expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
+        }
+
+        _ = try await Purchases.shared.logIn("user_1.\(UUID().uuidString)")
+        let info1 = try await self.purchaseConsumablePackage().customerInfo
+        verifyPurchase(info1)
+
+        let user2 = try await Purchases.shared.logIn("user_1.\(UUID().uuidString)").customerInfo
+        expect(user2.nonSubscriptions).to(beEmpty())
+
+        let info2 = try await self.purchaseConsumablePackage().customerInfo
+        verifyPurchase(info2)
+    }
+
     func testSubscriptionIsSandbox() async throws {
         let info = try await self.purchaseMonthlyOffering().customerInfo
 
