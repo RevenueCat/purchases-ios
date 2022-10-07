@@ -12,6 +12,7 @@
         }
       },
       "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
+      "initiation_source" : "queue",
       "is_restore" : true,
       "observer_mode" : false,
       "presented_offering_identifier" : "offering_b"

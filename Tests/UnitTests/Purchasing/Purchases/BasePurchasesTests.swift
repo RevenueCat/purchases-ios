@@ -352,6 +352,7 @@ extension BasePurchasesTests {
         var postedDiscounts: [StoreProductDiscount]?
         var postedOfferingIdentifier: String?
         var postedObserverMode: Bool?
+        var postedInitiationSource: ProductRequestData.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
 
         override func post(receiptData: Data,
@@ -360,6 +361,7 @@ extension BasePurchasesTests {
                            productData: ProductRequestData?,
                            presentedOfferingIdentifier: String?,
                            observerMode: Bool,
+                           initiationSource: ProductRequestData.InitiationSource,
                            subscriberAttributes: [String: SubscriberAttribute]?,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
@@ -380,6 +382,8 @@ extension BasePurchasesTests {
 
             self.postedOfferingIdentifier = presentedOfferingIdentifier
             self.postedObserverMode = observerMode
+            self.postedInitiationSource = initiationSource
+
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
         }
 

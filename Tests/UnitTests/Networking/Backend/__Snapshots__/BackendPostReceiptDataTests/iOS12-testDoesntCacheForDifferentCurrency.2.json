@@ -13,6 +13,7 @@
       },
       "currency" : "USD",
       "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
+      "initiation_source" : "purchase",
       "is_restore" : false,
       "observer_mode" : true,
       "price" : "15.99",

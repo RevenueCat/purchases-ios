@@ -8,25 +8,21 @@
 // swiftlint:disable large_tuple force_try line_length
 class MockBackend: Backend {
 
+    typealias PostReceiptParameters = (data: Data?,
+                                       appUserID: String?,
+                                       isRestore: Bool,
+                                       productData: ProductRequestData?,
+                                       offeringIdentifier: String?,
+                                       observerMode: Bool,
+                                       initiationSource: ProductRequestData.InitiationSource,
+                                       subscriberAttributesByKey: [String: SubscriberAttribute]?,
+                                       completion: CustomerAPI.CustomerInfoResponseHandler?)
+
     var invokedPostReceiptData = false
     var invokedPostReceiptDataCount = 0
     var stubbedPostReceiptResult: Result<CustomerInfo, BackendError>?
-    var invokedPostReceiptDataParameters: (data: Data?,
-                                           appUserID: String?,
-                                           isRestore: Bool,
-                                           productData: ProductRequestData?,
-                                           offeringIdentifier: String?,
-                                           observerMode: Bool,
-                                           subscriberAttributesByKey: [String: SubscriberAttribute]?,
-                                           completion: CustomerAPI.CustomerInfoResponseHandler?)?
-    var invokedPostReceiptDataParametersList = [(data: Data?,
-        appUserID: String?,
-        isRestore: Bool,
-        productData: ProductRequestData?,
-        offeringIdentifier: String?,
-        observerMode: Bool,
-        subscriberAttributesByKey: [String: SubscriberAttribute]?,
-        completion: CustomerAPI.CustomerInfoResponseHandler?)]()
+    var invokedPostReceiptDataParameters: PostReceiptParameters?
+    var invokedPostReceiptDataParametersList: [PostReceiptParameters] = []
 
     public convenience init() {
         let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
@@ -53,6 +49,7 @@ class MockBackend: Backend {
                        productData: ProductRequestData?,
                        presentedOfferingIdentifier offeringIdentifier: String?,
                        observerMode: Bool,
+                       initiationSource: ProductRequestData.InitiationSource,
                        subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
@@ -63,6 +60,7 @@ class MockBackend: Backend {
                                             productData,
                                             offeringIdentifier,
                                             observerMode,
+                                            initiationSource,
                                             subscriberAttributesByKey,
                                             completion)
         invokedPostReceiptDataParametersList.append((receiptData,
@@ -71,6 +69,7 @@ class MockBackend: Backend {
                                                      productData,
                                                      offeringIdentifier,
                                                      observerMode,
+                                                     initiationSource,
                                                      subscriberAttributesByKey,
                                                      completion))
         completion(stubbedPostReceiptResult ?? .failure(.missingAppUserID()))

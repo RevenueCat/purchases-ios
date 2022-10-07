@@ -93,6 +93,7 @@ class Backend {
               productData: ProductRequestData?,
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
+              initiationSource: ProductRequestData.InitiationSource,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.post(receiptData: receiptData,
@@ -101,6 +102,7 @@ class Backend {
                            productData: productData,
                            presentedOfferingIdentifier: offeringIdentifier,
                            observerMode: observerMode,
+                           initiationSource: initiationSource,
                            subscriberAttributes: subscriberAttributesByKey,
                            completion: completion)
     }
