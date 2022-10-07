@@ -19,6 +19,12 @@ protocol PaymentQueueWrapperDelegate: AnyObject, Sendable {
     func paymentQueueWrapper(_ wrapper: PaymentQueueWrapper,
                              shouldAddStorePayment payment: SKPayment,
                              for product: SK1Product) -> Bool
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    var paymentQueueWrapperShouldShowPriceConsent: Bool { get }
+    #endif
+
 }
 
 class PaymentQueueWrapper: NSObject {
@@ -72,6 +78,13 @@ class PaymentQueueWrapper: NSObject {
 }
 
 extension PaymentQueueWrapper: SKPaymentQueueDelegate {
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
+        return self.delegate?.paymentQueueWrapperShouldShowPriceConsent ?? true
+    }
+    #endif
 
 }
 
