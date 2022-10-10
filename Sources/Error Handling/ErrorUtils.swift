@@ -293,6 +293,8 @@ enum ErrorUtils {
         switch error {
         case let purchasesError as PurchasesError:
             return purchasesError
+        case let convertible as PurchasesErrorConvertible:
+            return convertible.asPurchasesError
         default:
             return ErrorUtils.unknownError(
                 error: error,
