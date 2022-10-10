@@ -55,6 +55,11 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         expect(Purchases.shared.isSandbox) == true
     }
 
+    func testSDKTester() async throws {
+        let tester = SDKTester.default
+        try await tester.test()
+    }
+
     func testCanGetOfferings() async throws {
         let receivedOfferings = try await Purchases.shared.offerings()
         expect(receivedOfferings.all).toNot(beEmpty())

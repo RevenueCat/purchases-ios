@@ -1069,13 +1069,27 @@ extension Purchases: @unchecked Sendable {}
 
 // MARK: Internal
 
+extension Purchases: InternalPurchasesType {
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    internal func healthRequest() async throws {
+        do {
+            try await self.backend.healthRequest()
+        } catch {
+            throw NewErrorUtils.purchasesError(withUntypedError: error)
+        }
+    }
+
+}
+
+/// Necessary because `ErrorUtils` inside of `Purchases` finds the obsoleted type.
+private typealias NewErrorUtils = ErrorUtils
+
 internal extension Purchases {
 
     var isStoreKit1Configured: Bool {
         return self.paymentQueueWrapper.sk1Wrapper != nil
     }
-
-    #if DEBUG
 
     /// - Returns: the parsed `AppleReceipt`
     ///
@@ -1086,8 +1100,6 @@ internal extension Purchases {
 
         return try receipt.map { try ReceiptParser.default.parse(from: $0) }
     }
-
-    #endif
 
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
     /// - Parameter completion: will be called once all attributes have completed syncing

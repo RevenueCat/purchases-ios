@@ -27,6 +27,7 @@
 		575885A52748274E00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 575885A32748274E00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5758EE5227864A8500B3B703 /* RCStoreProductAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE5127864A8500B3B703 /* RCStoreProductAPI.m */; };
 		5758EE5B2786548D00B3B703 /* RCStoreTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE5A2786548D00B3B703 /* RCStoreTransactionAPI.m */; };
+		57918A1628F4C58300BF4963 /* RCSDKTesterAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 57918A1528F4C58300BF4963 /* RCSDKTesterAPI.m */; };
 		57DE807828074E59008D6C6F /* RCStorefrontAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 57DE807728074E59008D6C6F /* RCStorefrontAPI.m */; };
 		A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
 		B32554452825E74000DA62EA /* RCConfigurationAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B32554442825E74000DA62EA /* RCConfigurationAPI.m */; };
@@ -65,6 +66,8 @@
 		5758EE5127864A8500B3B703 /* RCStoreProductAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStoreProductAPI.m; sourceTree = "<group>"; };
 		5758EE592786548D00B3B703 /* RCStoreTransactionAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCStoreTransactionAPI.h; sourceTree = "<group>"; };
 		5758EE5A2786548D00B3B703 /* RCStoreTransactionAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStoreTransactionAPI.m; sourceTree = "<group>"; };
+		57918A1428F4C58300BF4963 /* RCSDKTesterAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCSDKTesterAPI.h; sourceTree = "<group>"; };
+		57918A1528F4C58300BF4963 /* RCSDKTesterAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCSDKTesterAPI.m; sourceTree = "<group>"; };
 		57DE807628074E59008D6C6F /* RCStorefrontAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCStorefrontAPI.h; sourceTree = "<group>"; };
 		57DE807728074E59008D6C6F /* RCStorefrontAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStorefrontAPI.m; sourceTree = "<group>"; };
 		A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCRefundRequestStatusAPI.h; sourceTree = "<group>"; };
@@ -164,6 +167,8 @@
 				A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */,
 				A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */,
 				A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */,
+				57918A1428F4C58300BF4963 /* RCSDKTesterAPI.h */,
+				57918A1528F4C58300BF4963 /* RCSDKTesterAPI.m */,
 				57DE807628074E59008D6C6F /* RCStorefrontAPI.h */,
 				57DE807728074E59008D6C6F /* RCStorefrontAPI.m */,
 				5758EE5027864A8500B3B703 /* RCStoreProductAPI.h */,
@@ -279,6 +284,7 @@
 				2DD7790E270E23870079CBD4 /* RCIntroEligibilityAPI.m in Sources */,
 				5738F42D278674710096D623 /* RCSubscriptionPeriodAPI.m in Sources */,
 				2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */,
+				57918A1628F4C58300BF4963 /* RCSDKTesterAPI.m in Sources */,
 				570FAF502864ECB000D3C769 /* RCNonSubscriptionTransactionAPI.m in Sources */,
 				2DD7790F270E23870079CBD4 /* RCPurchasesAPI.m in Sources */,
 				B378153D2857A750000A7B93 /* RCAttributionAPI.m in Sources */,

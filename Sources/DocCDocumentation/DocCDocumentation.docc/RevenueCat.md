@@ -56,6 +56,7 @@ Or browse our iOS sample apps:
 ### Configuring the SDK
 - ``Purchases/configure(withAPIKey:)``
 - ``Purchases/configure(with:)-6oipy``
+- ``SDKTester``
 
 ### Displaying Products
 - ``Offerings``
