@@ -466,11 +466,10 @@ final class PurchasesOrchestrator {
         forProductDiscount discount: StoreProductDiscountType,
         product: StoreProductType
     ) async throws -> PromotionalOffer {
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await Async.call { completion in
             self.promotionalOffer(forProductDiscount: discount,
-                                  product: product) { result in
-                continuation.resume(with: result)
-            }
+                                  product: product,
+                                  completion: completion)
         }
     }
 
@@ -1095,12 +1094,11 @@ extension PurchasesOrchestrator {
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await Async.call { completion in
             self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
                                isRestore: isRestore,
-                               initiationSource: initiationSource) { result in
-                continuation.resume(with: result)
-            }
+                               initiationSource: initiationSource,
+                               completion: completion)
         }
     }
 

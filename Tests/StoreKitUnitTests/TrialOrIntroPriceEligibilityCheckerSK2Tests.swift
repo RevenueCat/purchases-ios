@@ -144,7 +144,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         let storeProduct = try await self.fetchSk2StoreProduct()
 
-        let status: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
+        let status: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
             }
@@ -159,7 +159,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         let storeProduct = try await self.fetchSk2StoreProduct("lifetime")
 
-        let status: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
+        let status: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
             }
@@ -175,7 +175,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let sk2Product = try await self.fetchSk2Product()
         let storeProduct = StoreProduct(sk2Product: sk2Product)
 
-        let prePurchaseStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
+        let prePurchaseStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
             }
@@ -185,7 +185,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         _ = try await sk2Product.purchase()
 
-        let postPurchaseStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
+        let postPurchaseStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
             }
@@ -203,7 +203,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         // We can't fetch an invalid StoreProduct to pass into the
         // eligibility checker so this just fakes an unknown response,
         // regardless of the real status from the checker
-        let fakeStatus: IntroEligibilityStatus = try await withCheckedThrowingContinuation { continuation in
+        let fakeStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { _ in
                 continuation.resume(returning: .unknown)
             }

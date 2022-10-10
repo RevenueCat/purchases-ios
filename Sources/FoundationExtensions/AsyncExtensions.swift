@@ -56,4 +56,17 @@ internal enum Async {
         }
     }
 
+    static func call<Value, Error: Swift.Error>(
+        method: (@escaping @Sendable (Result<Value, Error>) -> Void) -> Void
+    ) async throws -> Value {
+        return try await withCheckedThrowingContinuation { continuation in
+            @Sendable
+            func complete(_ result: Result<Value, Error>) {
+                continuation.resume(with: result)
+            }
+
+            method(complete)
+        }
+    }
+
 }
