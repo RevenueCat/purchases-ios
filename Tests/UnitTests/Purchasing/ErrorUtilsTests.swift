@@ -103,7 +103,7 @@ class ErrorUtilsTests: TestCase {
     func testNetworkErrorsAreLogged() {
         let error = ErrorUtils.networkError(message: Strings.network.could_not_find_cached_response.description)
 
-        self.expectLoggedError(error, .rcError, .networkError)
+        self.expectLoggedError(error, .rcError)
     }
 
     func testLoggedErrorsWithNoMessage() throws {
@@ -113,6 +113,22 @@ class ErrorUtilsTests: TestCase {
 
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == "\(LogIntent.rcError.prefix) \(error.localizedDescription)"
+    }
+
+    func testNetworkErrorsAreLoggedWithUnderlyingError() throws {
+        let response = ErrorResponse(code: .unknownBackendError,
+                                     message: "Page not found",
+                                     attributeErrors: [:])
+        let purchasesError = response.asBackendError(with: .notFoundError)
+
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+
+        expect(loggedMessage.level) == .error
+        expect(loggedMessage.message) == [
+            LogIntent.rcError.prefix,
+            purchasesError.error.description,
+            response.message!
+        ].joined(separator: " ")
     }
 
     func testLoggedErrorsWithMessageIncludeErrorDescriptionAndMessage() throws {
@@ -175,7 +191,8 @@ class ErrorUtilsTests: TestCase {
         expect(loggedMessage.level) == .error
         expect(loggedMessage.message) == [
             LogIntent.rcError.prefix,
-            errorResponse.code.toPurchasesErrorCode().description
+            errorResponse.code.toPurchasesErrorCode().description,
+            errorResponse.message!
         ]
             .joined(separator: " ")
     }
@@ -189,13 +206,11 @@ class ErrorUtilsTests: TestCase {
     private func expectLoggedError(
         _ error: Error,
         _ intent: LogIntent,
-        _ code: ErrorCode? = nil,
         file: FileString = #fileID,
         line: UInt = #line
     ) {
         let expectedMessage = [
             intent.prefix,
-            code?.description,
             error.localizedDescription
         ]
             .compactMap { $0 }

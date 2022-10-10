@@ -91,7 +91,12 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
         let nsError = error.asPurchasesError as NSError
 
         expect(nsError.subscriberAttributesErrors) == errorResponse.attributeErrors
-        expect(nsError.localizedDescription) == errorResponse.attributeErrors.description
+        expect(nsError.localizedDescription) == [
+            errorResponse.code.toPurchasesErrorCode().description,
+            errorResponse.attributeErrors.description
+
+        ]
+            .joined(separator: " ")
     }
 
     func testErrorResponseWithNoAttributeErrors() throws {
@@ -113,7 +118,12 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
         let nsError = error.asPurchasesError as NSError
 
         expect(nsError.subscriberAttributesErrors).to(beNil())
-        expect(nsError.localizedDescription) == errorResponse.code.toPurchasesErrorCode().description
+        expect(nsError.localizedDescription) == [
+            errorResponse.code.toPurchasesErrorCode().description,
+            errorResponse.message!
+
+        ]
+            .joined(separator: " ")
     }
 
 }
