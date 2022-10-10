@@ -14,24 +14,31 @@
 import Foundation
 @testable import RevenueCat
 
+// swiftlint:disable identifier_name large_tuple
+
 // Note: this class is implicitly `@unchecked Sendable` through its parent
 // even though it's not actually thread safe.
-// swiftlint:disable identifier_name
 class MockOfferingsManager: OfferingsManager {
 
 typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) -> Void
 
     var invokedOfferings = false
     var invokedOfferingsCount = 0
-    var invokedOfferingsParameters: (appUserID: String, completion: OfferingsCompletion?)?
-    var invokedOfferingsParametersList = [(appUserID: String, completion: OfferingsCompletion??)]()
+    var invokedOfferingsParameters: (appUserID: String,
+                                     fetchPolicy: FetchPolicy,
+                                     completion: OfferingsCompletion?)?
+    var invokedOfferingsParametersList = [(appUserID: String,
+                                           fetchPolicy: FetchPolicy,
+                                           completion: OfferingsCompletion??)]()
     var stubbedOfferingsCompletionResult: Result<Offerings, Error>?
 
-    override func offerings(appUserID: String, completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?) {
+    override func offerings(appUserID: String,
+                            fetchPolicy: FetchPolicy,
+                            completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?) {
         self.invokedOfferings = true
         self.invokedOfferingsCount += 1
-        self.invokedOfferingsParameters = (appUserID, completion)
-        self.invokedOfferingsParametersList.append((appUserID, completion))
+        self.invokedOfferingsParameters = (appUserID, fetchPolicy, completion)
+        self.invokedOfferingsParametersList.append((appUserID, fetchPolicy, completion))
 
         OperationDispatcher.dispatchOnMainActor { [result = self.stubbedOfferingsCompletionResult] in
             completion?(result!)
@@ -41,6 +48,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     struct InvokedUpdateOfferingsCacheParameters {
         let appUserID: String
         let isAppBackgrounded: Bool
+        let fetchPolicy: OfferingsManager.FetchPolicy
         let completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     }
 
@@ -53,6 +61,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     override func updateOfferingsCache(
         appUserID: String,
         isAppBackgrounded: Bool,
+        fetchPolicy: OfferingsManager.FetchPolicy,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         self.invokedUpdateOfferingsCache = true
@@ -61,6 +70,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         let parameters = InvokedUpdateOfferingsCacheParameters(
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded,
+            fetchPolicy: fetchPolicy,
             completion: completion
         )
 
