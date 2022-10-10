@@ -119,3 +119,25 @@ extension ReceiptFetcher {
     }
 
 }
+
+extension SKPaymentQueue {
+
+    @available(iOS 14.0, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(macCatalyst, unavailable)
+    func presentCodeRedemptionSheetIfAvailable() {
+        // Even though the docs in `SKPaymentQueue.presentCodeRedemptionSheet`
+        // say that it's available on Catalyst 14.0, there is a note:
+        // This function doesn’t affect Mac apps built with Mac Catalyst.
+        // It crashes when called both from Catalyst and also when running as "Designed for iPad".
+        if self.responds(to: #selector(SKPaymentQueue.presentCodeRedemptionSheet)) {
+            Logger.debug(Strings.purchase.presenting_code_redemption_sheet)
+            self.presentCodeRedemptionSheet()
+        } else {
+            Logger.appleError(Strings.purchase.unable_to_present_redemption_sheet)
+        }
+    }
+
+}
