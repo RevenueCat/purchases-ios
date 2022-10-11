@@ -64,6 +64,7 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
 
         let unwrappedOfferings = try XCTUnwrap(result?.value)
+        expect(unwrappedOfferings.all).to(beEmpty())
         expect(unwrappedOfferings["base"]).to(beNil())
     }
 
@@ -84,6 +85,38 @@ extension OfferingsManagerTests {
         expect(unwrappedOfferings["base"]).toNot(beNil())
         expect(unwrappedOfferings["base"]!.monthly).toNot(beNil())
         expect(unwrappedOfferings["base"]!.monthly?.storeProduct).toNot(beNil())
+    }
+
+    func testOfferingsIgnoresProductsNotFoundAndLogsWarning() throws {
+        let logger = TestLogHandler()
+
+        // given
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
+            MockData.backendOfferingsResponseWithUnknownProducts
+        )
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([
+            StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly_freetrial"))
+        ])
+
+        // when
+        var result: Result<Offerings, OfferingsManager.Error>?
+        self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+            result = $0
+        }
+
+        // then
+        expect(result).toEventuallyNot(beNil())
+
+        let offerings = try XCTUnwrap(result?.value)
+        expect(offerings.all).to(haveCount(1))
+        expect(offerings["base"]).toNot(beNil())
+        expect(offerings["base"]!.monthly).toNot(beNil())
+        expect(offerings["base"]!.monthly?.storeProduct).toNot(beNil())
+
+        logger.verifyMessageWasLogged(
+            Strings.offering.cannot_find_product_configuration_error(identifiers: ["yearly_freetrial"]),
+            level: .warn
+        )
     }
 
     func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {
@@ -272,6 +305,17 @@ private extension OfferingsManagerTests {
                       description: "This is the base offering",
                       packages: [
                         .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
+                      ])
+            ]
+        )
+        static let backendOfferingsResponseWithUnknownProducts: OfferingsResponse = .init(
+            currentOfferingId: "base",
+            offerings: [
+                .init(identifier: "base",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial"),
+                        .init(identifier: "$rc_yearly", platformProductIdentifier: "yearly_freetrial")
                       ])
             ]
         )
