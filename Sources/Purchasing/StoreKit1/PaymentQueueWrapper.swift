@@ -27,7 +27,33 @@ protocol PaymentQueueWrapperDelegate: AnyObject, Sendable {
 
 }
 
-class PaymentQueueWrapper: NSObject {
+/// A wrapper for `SKPaymentQueue`
+@objc
+protocol PaymentQueueWrapperType: AnyObject {
+
+    func finishTransaction(_ transaction: SKPaymentTransaction)
+
+    #if os(iOS) || targetEnvironment(macCatalyst)
+    @available(iOS 13.4, macCatalyst 13.4, *)
+    func showPriceConsentIfNeeded()
+    #endif
+
+    @available(iOS 14.0, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(macCatalyst, unavailable)
+    func presentCodeRedemptionSheet()
+
+}
+
+/// The choice between SK1's `StoreKit1Wrapper` or `PaymentQueueWrapper` when SK2 is enabled.
+typealias EitherPaymentQueueWrapper = Either<StoreKit1Wrapper, PaymentQueueWrapper>
+
+// MARK: -
+
+/// Implementation of `PaymentQueueWrapperType` used when SK1 is not enabled.
+class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
 
     private let paymentQueue: SKPaymentQueue
 
@@ -51,6 +77,10 @@ class PaymentQueueWrapper: NSObject {
         super.init()
     }
 
+    func finishTransaction(_ transaction: SKPaymentTransaction) {
+        self.paymentQueue.finishTransaction(transaction)
+    }
+
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     func showPriceConsentIfNeeded() {
@@ -58,14 +88,12 @@ class PaymentQueueWrapper: NSObject {
     }
     #endif
 
+    #if os(iOS)
     @available(iOS 14.0, *)
-    @available(macOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet() {
         self.paymentQueue.presentCodeRedemptionSheetIfAvailable()
     }
+    #endif
 
 }
 
@@ -104,3 +132,17 @@ extension PaymentQueueWrapper: SKPaymentTransactionObserver {
 // `SKPaymentQueue` is not `Sendable` until Swift 5.7
 // - Not-final since it's mocked in tests.
 extension PaymentQueueWrapper: @unchecked Sendable {}
+
+extension EitherPaymentQueueWrapper {
+
+    var paymentQueueWrapperType: PaymentQueueWrapperType {
+        switch self {
+        case let .left(storeKit1Wrapper): return storeKit1Wrapper
+        case let .right(paymentQueueWrapper): return paymentQueueWrapper
+        }
+    }
+
+    var sk1Wrapper: StoreKit1Wrapper? { return self.left }
+    var sk2Wrapper: PaymentQueueWrapper? { return self.right }
+
+}

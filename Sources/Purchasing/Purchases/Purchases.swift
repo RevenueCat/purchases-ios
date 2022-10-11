@@ -227,8 +227,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
-    private let storeKit1Wrapper: StoreKit1Wrapper?
-    private let paymentQueueWrapper: PaymentQueueWrapper
+    private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
     private var customerInfoObservationDisposable: (() -> Void)?
 
@@ -267,10 +266,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                               eTagManager: eTagManager,
                               operationDispatcher: operationDispatcher,
                               attributionFetcher: attributionFetcher)
-        let storeKit1Wrapper: StoreKit1Wrapper? = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
-        ? nil
-        : StoreKit1Wrapper()
-        let paymentQueueWrapper = storeKit1Wrapper?.createPaymentQueueWrapper() ?? .init()
+
+        let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+            ? .right(.init())
+            : .left(.init())
 
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
@@ -324,7 +323,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return .init(
                     productsManager: productsManager,
-                    storeKit1Wrapper: storeKit1Wrapper,
+                    paymentQueueWrapper: paymentQueueWrapper,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,
@@ -343,7 +342,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             } else {
                 return .init(
                     productsManager: productsManager,
-                    storeKit1Wrapper: storeKit1Wrapper,
+                    paymentQueueWrapper: paymentQueueWrapper,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,
@@ -373,7 +372,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   attributionFetcher: attributionFetcher,
                   attributionPoster: attributionPoster,
                   backend: backend,
-                  storeKit1Wrapper: storeKit1Wrapper,
                   paymentQueueWrapper: paymentQueueWrapper,
                   notificationCenter: NotificationCenter.default,
                   systemInfo: systemInfo,
@@ -396,8 +394,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          attributionFetcher: AttributionFetcher,
          attributionPoster: AttributionPoster,
          backend: Backend,
-         storeKit1Wrapper: StoreKit1Wrapper?,
-         paymentQueueWrapper: PaymentQueueWrapper,
+         paymentQueueWrapper: EitherPaymentQueueWrapper,
          notificationCenter: NotificationCenter,
          systemInfo: SystemInfo,
          offeringsFactory: OfferingsFactory,
@@ -425,7 +422,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.attributionFetcher = attributionFetcher
         self.attributionPoster = attributionPoster
         self.backend = backend
-        self.storeKit1Wrapper = storeKit1Wrapper
         self.paymentQueueWrapper = paymentQueueWrapper
         self.offeringsFactory = offeringsFactory
         self.deviceCache = deviceCache
@@ -455,16 +451,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
-            storeKit1Wrapper?.delegate = purchasesOrchestrator
+            self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
         } else {
             Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
 
         /// If SK1 is not enabled, `PaymentQueueWrapper` needs to handle transactions
         /// for promotional offers to work.
-        if !self.isStoreKit1Configured {
-            self.paymentQueueWrapper.delegate = purchasesOrchestrator
-        }
+        self.paymentQueueWrapper.sk2Wrapper?.delegate = purchasesOrchestrator
 
         self.subscribeToAppStateNotifications()
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
@@ -479,8 +473,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     deinit {
         self.notificationCenter.removeObserver(self)
-        self.storeKit1Wrapper?.delegate = nil
-        self.paymentQueueWrapper.delegate = nil
+        self.paymentQueueWrapper.sk1Wrapper?.delegate = nil
+        self.paymentQueueWrapper.sk2Wrapper?.delegate = nil
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
         Self.proxyURL = nil
@@ -730,7 +724,7 @@ public extension Purchases {
 #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     @objc func showPriceConsentIfNeeded() {
-        self.paymentQueueWrapper.showPriceConsentIfNeeded()
+        self.paymentQueueWrapper.paymentQueueWrapperType.showPriceConsentIfNeeded()
     }
 #endif
 
@@ -746,7 +740,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     @objc func presentCodeRedemptionSheet() {
-        self.paymentQueueWrapper.presentCodeRedemptionSheet()
+        self.paymentQueueWrapper.paymentQueueWrapperType.presentCodeRedemptionSheet()
     }
 #endif
 
@@ -1050,7 +1044,7 @@ extension Purchases: @unchecked Sendable {}
 internal extension Purchases {
 
     var isStoreKit1Configured: Bool {
-        return self.storeKit1Wrapper != nil
+        return self.paymentQueueWrapper.sk1Wrapper != nil
     }
 
     #if DEBUG

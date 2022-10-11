@@ -160,7 +160,7 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
         self.setupPurchases()
 
         self.product = MockSK1Product(mockProductIdentifier: "mock_product")
-        self.paymentQueueWrapperDelegate = self.paymentQueueWrapper.delegate
+        self.paymentQueueWrapperDelegate = try XCTUnwrap(self.paymentQueueWrapper.delegate)
     }
 
     func testDeferBlockMakesPayment() throws {

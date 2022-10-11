@@ -139,7 +139,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.mockIdentityManager.mockIsAnonymous = false
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
-                                                          storeKit1Wrapper: mockStoreKit1Wrapper,
+                                                          paymentQueueWrapper: .left(self.mockStoreKit1Wrapper),
                                                           systemInfo: systemInfo,
                                                           subscriberAttributes: attribution,
                                                           operationDispatcher: mockOperationDispatcher,
@@ -167,8 +167,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               attributionFetcher: mockAttributionFetcher,
                               attributionPoster: mockAttributionPoster,
                               backend: mockBackend,
-                              storeKit1Wrapper: mockStoreKit1Wrapper,
-                              paymentQueueWrapper: .init(),
+                              paymentQueueWrapper: .left(self.mockStoreKit1Wrapper),
                               notificationCenter: mockNotificationCenter,
                               systemInfo: systemInfo,
                               offeringsFactory: mockOfferingsFactory,
