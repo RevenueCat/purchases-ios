@@ -525,7 +525,7 @@ extension PurchasesOrchestrator {
 
     /// - Returns: `StoreKit1Wrapper` if it's set, otherwise forwards an error to `completion` and returns `nil`
     private func storeKit1Wrapper(orFailWith completion: @escaping PurchaseCompletedBlock) -> StoreKit1Wrapper? {
-        guard let storeKit1Wrapper = self.paymentQueueWrapper.storeKit1Wrapper else {
+        guard let storeKit1Wrapper = self.paymentQueueWrapper.sk1Wrapper else {
             self.operationDispatcher.dispatchOnMainActor {
                 completion(nil,
                            nil,
@@ -631,7 +631,7 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
         // when `StoreKit1Wrapper` is not initialized, which means that promoted purchases
         // need to be handled as a SK2 purchase.
         // This method converts the `SKPayment` into an SK2 purchase by fetching the product again.
-        if self.paymentQueueWrapper.storeKit1Wrapper != nil {
+        if self.paymentQueueWrapper.sk1Wrapper != nil {
             Logger.warn("Unexpectedly received PaymentQueueWrapperDelegate call with SK1 enabled")
             assertionFailure("This method should not be invoked if SK1 is enabled")
         }

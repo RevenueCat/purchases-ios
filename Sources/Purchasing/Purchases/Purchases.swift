@@ -451,14 +451,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
-            self.paymentQueueWrapper.storeKit1Wrapper?.delegate = purchasesOrchestrator
+            self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
         } else {
             Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
 
         /// If SK1 is not enabled, `PaymentQueueWrapper` needs to handle transactions
         /// for promotional offers to work.
-        self.paymentQueueWrapper.right?.delegate = purchasesOrchestrator
+        self.paymentQueueWrapper.sk2Wrapper?.delegate = purchasesOrchestrator
 
         self.subscribeToAppStateNotifications()
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
@@ -473,8 +473,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     deinit {
         self.notificationCenter.removeObserver(self)
-        self.paymentQueueWrapper.left?.delegate = nil
-        self.paymentQueueWrapper.right?.delegate = nil
+        self.paymentQueueWrapper.sk1Wrapper?.delegate = nil
+        self.paymentQueueWrapper.sk2Wrapper?.delegate = nil
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
         Self.proxyURL = nil
@@ -1044,7 +1044,7 @@ extension Purchases: @unchecked Sendable {}
 internal extension Purchases {
 
     var isStoreKit1Configured: Bool {
-        return self.paymentQueueWrapper.storeKit1Wrapper != nil
+        return self.paymentQueueWrapper.sk1Wrapper != nil
     }
 
     #if DEBUG

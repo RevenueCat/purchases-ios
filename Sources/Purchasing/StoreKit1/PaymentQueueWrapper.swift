@@ -135,13 +135,14 @@ extension PaymentQueueWrapper: @unchecked Sendable {}
 
 extension EitherPaymentQueueWrapper {
 
-    var storeKit1Wrapper: StoreKit1Wrapper? { return self.left }
-
     var paymentQueueWrapperType: PaymentQueueWrapperType {
         switch self {
         case let .left(storeKit1Wrapper): return storeKit1Wrapper
         case let .right(paymentQueueWrapper): return paymentQueueWrapper
         }
     }
+
+    var sk1Wrapper: StoreKit1Wrapper? { return self.left }
+    var sk2Wrapper: PaymentQueueWrapper? { return self.right }
 
 }
