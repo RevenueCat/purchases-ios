@@ -31,8 +31,9 @@ internal struct SK1StoreTransaction: StoreTransactionType {
     let transactionIdentifier: String
     let quantity: Int
 
-    func finish(_ wrapper: PaymentQueueWrapperType) {
+    func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         wrapper.finishTransaction(self.underlyingSK1Transaction)
+        completion()
     }
 
 }

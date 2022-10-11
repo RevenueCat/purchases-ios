@@ -20,7 +20,7 @@ enum PurchaseStrings {
 
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
-    case finishing_transaction(transaction: SKPaymentTransaction)
+    case finishing_transaction(StoreTransaction)
     case purchasing_with_observer_mode_and_finish_transactions_false_warning
     case paymentqueue_removedtransaction(transaction: SKPaymentTransaction)
     case paymentqueue_revoked_entitlements_for_product_identifiers(productIdentifiers: [String])
@@ -80,10 +80,9 @@ extension PurchaseStrings: CustomStringConvertible {
             return "Entitlements revoked for product " +
             "identifiers: \(productIdentifiers). \nsyncing purchases"
 
-        case .finishing_transaction(let transaction):
-            return "Finishing transaction \(transaction.payment.productIdentifier) " +
-            "\(transaction.transactionIdentifier ?? "") " +
-            "(\(transaction.original?.transactionIdentifier ?? ""))"
+        case let .finishing_transaction(transaction):
+            return "Finishing transaction '\(transaction.transactionIdentifier)' " +
+            "for product '\(transaction.productIdentifier)'"
 
         case .purchasing_with_observer_mode_and_finish_transactions_false_warning:
             return "Observer mode is active (finishTransactions is set to false) and " +

@@ -98,13 +98,23 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     }
 
     func testFinishesTransactionsIfSentToBackendCorrectly() throws {
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+        var finished = true
+
+        let productID = "com.product.id1"
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productID))
+
+        self.purchases.purchase(product: product) { (_, _, _, _) in
+            // Transactions must be finished by the time the callback is invoked.
+            expect(self.storeKit1Wrapper.finishCalled) == true
+            expect(self.storeKit1Wrapper.finishProductIdentifier) == productID
+
+            finished = true
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        transaction.mockState = .purchasing
 
-        transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
@@ -113,7 +123,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
+        expect(finished).toEventually(beTrue())
     }
 
     func testDoesntFinishTransactionsIfFinishingDisabled() throws {
@@ -157,11 +167,22 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     }
 
     func testAfterSendingFinishesFromBackendErrorIfAppropriate() throws {
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+        var finished = false
+
+        let productID = "com.product.id1"
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productID))
+
+        self.purchases.purchase(product: product) { (_, _, _, _) in
+            // Transactions must be finished by the time the callback is invoked.
+            expect(self.storeKit1Wrapper.finishCalled) == true
+            expect(self.storeKit1Wrapper.finishProductIdentifier) == productID
+
+            finished = true
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        transaction.mockState = .purchased
 
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
@@ -170,11 +191,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             ))
         )
 
-        transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
+        expect(finished).toEventually(beTrue())
     }
 
     func testNotifiesIfTransactionFailsFromBackend() throws {
@@ -525,9 +545,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
                     receivedError = error as NSError?
                     secondCompletionCalled = true
                 }
+
+                self.performTransaction()
             }
 
-            self.performTransaction()
             self.performTransaction()
         }
 

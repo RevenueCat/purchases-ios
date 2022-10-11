@@ -734,7 +734,7 @@ private extension PurchasesOrchestrator {
             }
         }
 
-        self.finishTransactionIfNeeded(storeTransaction)
+        self.finishTransactionIfNeeded(storeTransaction, completion: {})
     }
 
     func handleDeferredTransaction(_ transaction: SKPaymentTransaction) {
@@ -899,23 +899,30 @@ private extension PurchasesOrchestrator {
                                     error: result.error)
 
             let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: transaction)
+
             let error = result.error
             let finishable = error?.finishable ?? false
 
             switch result {
             case let .success(customerInfo):
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
-                completion?(transaction, customerInfo, nil, false)
 
-                self.finishTransactionIfNeeded(transaction)
+                self.finishTransactionIfNeeded(transaction) {
+                    completion?(transaction, customerInfo, nil, false)
+                }
 
             case let .failure(error):
                 let purchasesError = error.asPublicError
 
-                completion?(transaction, nil, purchasesError, false)
+                @MainActor
+                func complete() {
+                    completion?(transaction, nil, purchasesError, false)
+                }
 
                 if finishable {
-                    self.finishTransactionIfNeeded(transaction)
+                    self.finishTransactionIfNeeded(transaction) { complete() }
+                } else {
+                    complete()
                 }
             }
         }
@@ -1044,10 +1051,23 @@ private extension PurchasesOrchestrator {
         self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
     }
 
-    func finishTransactionIfNeeded(_ transaction: StoreTransaction) {
-        if self.finishTransactions {
-            transaction.finish(self.paymentQueueWrapper.paymentQueueWrapperType)
+    func finishTransactionIfNeeded(
+        _ transaction: StoreTransaction,
+        completion: @escaping @Sendable @MainActor () -> Void
+    ) {
+        @Sendable
+        func complete() {
+            self.operationDispatcher.dispatchOnMainActor(completion)
         }
+
+        guard self.finishTransactions else {
+            complete()
+            return
+        }
+
+        Logger.purchase(Strings.purchase.finishing_transaction(transaction))
+
+        transaction.finish(self.paymentQueueWrapper.paymentQueueWrapperType, completion: complete)
     }
 
 }

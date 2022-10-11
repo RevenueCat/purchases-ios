@@ -68,6 +68,47 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         try await self.purchaseMonthlyProduct()
     }
 
+    func testCanPurchaseConsumable() async throws {
+        let info = try await self.purchaseConsumablePackage().customerInfo
+
+        expect(info.allPurchasedProductIdentifiers).to(contain(Self.consumable10Coins))
+    }
+
+    func testCanPurchaseConsumableMultipleTimes() async throws {
+        // See https://revenuecats.atlassian.net/browse/TRIAGE-134
+        try XCTSkipIf(Self.storeKit2Setting == .disabled, "This test is not currently passing on SK1")
+
+        let count = 2
+
+        for _ in 0..<count {
+            try await self.purchaseConsumablePackage()
+        }
+
+        let info = try await Purchases.shared.customerInfo()
+        expect(info.nonSubscriptions).to(haveCount(count))
+        expect(info.nonSubscriptions.map(\.productIdentifier)) == [
+            Self.consumable10Coins,
+            Self.consumable10Coins
+        ]
+    }
+
+    func testCanPurchaseConsumableWithMultipleUsers() async throws {
+        func verifyPurchase(_ info: CustomerInfo) {
+            expect(info.nonSubscriptions).to(haveCount(1))
+            expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
+        }
+
+        _ = try await Purchases.shared.logIn("user_1.\(UUID().uuidString)")
+        let info1 = try await self.purchaseConsumablePackage().customerInfo
+        verifyPurchase(info1)
+
+        let user2 = try await Purchases.shared.logIn("user_1.\(UUID().uuidString)").customerInfo
+        expect(user2.nonSubscriptions).to(beEmpty())
+
+        let info2 = try await self.purchaseConsumablePackage().customerInfo
+        verifyPurchase(info2)
+    }
+
     func testSubscriptionIsSandbox() async throws {
         let info = try await self.purchaseMonthlyOffering().customerInfo
 
@@ -394,6 +435,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 private extension StoreKit1IntegrationTests {
 
     static let entitlementIdentifier = "premium"
+    static let consumable10Coins = "consumable.10_coins"
 
     private var currentOffering: Offering {
         get async throws {
@@ -464,6 +506,23 @@ private extension StoreKit1IntegrationTests {
         )
 
         return data
+    }
+
+    @discardableResult
+    func purchaseConsumablePackage(
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let offering = try await XCTAsyncUnwrap(
+            try await Purchases.shared.offerings().offering(identifier: "coins"),
+            file: file, line: line
+        )
+        let package = try XCTUnwrap(
+            offering.package(identifier: "10.coins"),
+            file: file, line: line
+        )
+
+        return try await Purchases.shared.purchase(package: package)
     }
 
     @discardableResult
