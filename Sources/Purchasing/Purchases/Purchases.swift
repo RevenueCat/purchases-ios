@@ -570,15 +570,28 @@ public extension Purchases {
     func logOut() async throws -> CustomerInfo {
         return try await logOutAsync()
     }
+
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
-        self.offeringsManager.offerings(appUserID: appUserID) { result in
+        self.getOfferings(fetchPolicy: .default, completion: completion)
+    }
+
+    internal func getOfferings(
+        fetchPolicy: OfferingsManager.FetchPolicy,
+        completion: @escaping (Offerings?, PublicError?) -> Void
+    ) {
+        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy) { result in
             completion(result.value, result.error?.asPublicError)
         }
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings() async throws -> Offerings {
-        return try await offeringsAsync()
+        return try await self.offerings(fetchPolicy: .default)
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
+        return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
 
 }

@@ -34,7 +34,7 @@ enum OfferingStrings {
     case fetching_products_finished
     case fetching_products(identifiers: Set<String>)
     case completion_handlers_waiting_on_products(handlersCount: Int)
-    case configuration_error_skproducts_not_found
+    case configuration_error_products_not_found
     case configuration_error_no_products_for_offering
     case offering_empty(offeringIdentifier: String)
     case product_details_empty_title(productIdentifier: String)
@@ -48,7 +48,7 @@ extension OfferingStrings: CustomStringConvertible {
     var description: String {
         switch self {
         case .cannot_find_product_configuration_error(let identifiers):
-            return "Could not find SKProduct for \(identifiers) " +
+            return "Could not find products with identifiers: \(identifiers)." +
                 "\nThere is a problem with your configuration in App Store Connect. " +
                 "\nMore info here: https://errors.rev.cat/configuring-products"
 
@@ -107,7 +107,7 @@ extension OfferingStrings: CustomStringConvertible {
         case .completion_handlers_waiting_on_products(let handlersCount):
             return "\(handlersCount) completion handlers waiting on products"
 
-        case .configuration_error_skproducts_not_found:
+        case .configuration_error_products_not_found:
             return "There's a problem with your configuration. None of the products registered in the RevenueCat " +
             "dashboard could be fetched from App Store Connect (or the StoreKit Configuration file " +
             "if one is being used). \nMore information: https://rev.cat/why-are-offerings-empty"

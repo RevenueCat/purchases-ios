@@ -119,6 +119,28 @@ extension OfferingsManagerTests {
         )
     }
 
+    func testOfferingsFailsIfSomeProductIsNotFound() throws {
+        // given
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
+            MockData.backendOfferingsResponseWithUnknownProducts
+        )
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([
+            StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly_freetrial"))
+        ])
+
+        // when
+        var result: Result<Offerings, OfferingsManager.Error>?
+        self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, fetchPolicy: .failIfProductsAreMissing) {
+            result = $0
+        }
+
+        // then
+        expect(result).toEventuallyNot(beNil())
+        expect(result).to(beFailure { error in
+            expect(error).to(matchError(OfferingsManager.Error.missingProducts(identifiers: ["yearly_freetrial"])))
+        })
+    }
+
     func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {
         // given
         mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
@@ -179,7 +201,7 @@ extension OfferingsManagerTests {
 
         switch result?.error {
         case let .configurationError(message, underlyingError, _):
-            expect(message) == Strings.offering.configuration_error_skproducts_not_found.description
+            expect(message) == Strings.offering.configuration_error_products_not_found.description
             expect(underlyingError).to(beNil())
         default:
             fail("Unexpected result")
@@ -205,7 +227,7 @@ extension OfferingsManagerTests {
 
         switch result?.error {
         case let .configurationError(message, underlyingError, _):
-            expect(message) == Strings.offering.configuration_error_skproducts_not_found.description
+            expect(message) == Strings.offering.configuration_error_products_not_found.description
             expect(underlyingError).to(matchError(error))
         default:
             fail("Unexpected result")

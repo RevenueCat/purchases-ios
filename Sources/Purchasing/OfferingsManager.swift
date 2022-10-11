@@ -37,12 +37,17 @@ class OfferingsManager {
         self.productsManager = productsManager
     }
 
-    func offerings(appUserID: String, completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?) {
+    func offerings(
+        appUserID: String,
+        fetchPolicy: FetchPolicy = .default,
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+    ) {
         guard let cachedOfferings = self.deviceCache.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
             systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
+                                          fetchPolicy: fetchPolicy,
                                           completion: completion)
             }
             return
@@ -59,6 +64,7 @@ class OfferingsManager {
 
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
+                                          fetchPolicy: fetchPolicy,
                                           completion: nil)
 
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
@@ -69,12 +75,15 @@ class OfferingsManager {
     func updateOfferingsCache(
         appUserID: String,
         isAppBackgrounded: Bool,
+        fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         self.backend.offerings.getOfferings(appUserID: appUserID, withRandomDelay: isAppBackgrounded) { result in
             switch result {
             case let .success(response):
-                self.handleOfferingsBackendResult(with: response, completion: completion)
+                self.handleOfferingsBackendResult(with: response,
+                                                  fetchPolicy: fetchPolicy,
+                                                  completion: completion)
 
             case let .failure(error):
                 self.handleOfferingsUpdateError(.backendError(error), completion: completion)
@@ -96,7 +105,7 @@ class OfferingsManager {
         self.deviceCache.clearCachedOfferings()
 
         if cachedOfferings != nil {
-            self.offerings(appUserID: appUserID, completion: { _ in })
+            self.offerings(appUserID: appUserID, fetchPolicy: .ignoreNotFoundProducts) { _ in }
         }
     }
 
@@ -106,6 +115,7 @@ private extension OfferingsManager {
 
     func handleOfferingsBackendResult(
         with response: OfferingsResponse,
+        fetchPolicy: FetchPolicy,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         let productIdentifiers = response.productIdentifiers
@@ -122,7 +132,7 @@ private extension OfferingsManager {
 
             guard products.isEmpty == false else {
                 self.handleOfferingsUpdateError(
-                    .configurationError(Strings.offering.configuration_error_skproducts_not_found.description,
+                    .configurationError(Strings.offering.configuration_error_products_not_found.description,
                                         underlyingError: result.error as NSError?),
                     completion: completion
                 )
@@ -134,9 +144,19 @@ private extension OfferingsManager {
             let missingProductIDs = self.getMissingProductIDs(productIDsFromStore: Set(productsByID.keys),
                                                               productIDsFromBackend: productIdentifiers)
             if !missingProductIDs.isEmpty {
-                Logger.appleWarning(
-                    Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs)
-                )
+                switch fetchPolicy {
+                case .ignoreNotFoundProducts:
+                    Logger.appleWarning(
+                        Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs)
+                    )
+
+                case .failIfProductsAreMissing:
+                    self.handleOfferingsUpdateError(
+                        .missingProducts(identifiers: missingProductIDs),
+                        completion: completion
+                    )
+                    return
+                }
             }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, data: response) {
@@ -171,6 +191,20 @@ private extension OfferingsManager {
 
 }
 
+extension OfferingsManager {
+
+    /// Determines the behavior when products in an `Offering` are not found
+    internal enum FetchPolicy {
+
+        case ignoreNotFoundProducts
+        case failIfProductsAreMissing
+
+        static let `default`: Self = .ignoreNotFoundProducts
+
+    }
+
+}
+
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension OfferingsManager: @unchecked Sendable {}
@@ -184,6 +218,7 @@ extension OfferingsManager {
         case backendError(BackendError)
         case configurationError(String, NSError?, ErrorSource)
         case noOfferingsFound(ErrorSource)
+        case missingProducts(identifiers: Set<String>, ErrorSource)
 
     }
 
@@ -207,6 +242,14 @@ extension OfferingsManager.Error: PurchasesErrorConvertible {
             return ErrorUtils.unexpectedBackendResponseError(fileName: source.file,
                                                              functionName: source.function,
                                                              line: source.line)
+
+        case let .missingProducts(identifiers, source):
+            return ErrorUtils.configurationError(
+                message: Strings.offering.cannot_find_product_configuration_error(identifiers: identifiers).description,
+                fileName: source.file,
+                functionName: source.function,
+                line: source.line
+            )
         }
     }
 
@@ -228,6 +271,15 @@ extension OfferingsManager.Error: PurchasesErrorConvertible {
         return .noOfferingsFound(.init(file: file, function: function, line: line))
     }
 
+    static func missingProducts(
+        identifiers: Set<String>,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) -> Self {
+        return .missingProducts(identifiers: identifiers, .init(file: file, function: function, line: line))
+    }
+
 }
 
 extension OfferingsManager.Error: CustomNSError {
@@ -244,6 +296,7 @@ extension OfferingsManager.Error: CustomNSError {
         case let .backendError(error): return error
         case let .configurationError(_, error, _): return error
         case .noOfferingsFound: return nil
+        case .missingProducts: return nil
         }
     }
 

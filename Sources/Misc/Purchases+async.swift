@@ -34,9 +34,9 @@ extension Purchases {
         }
     }
 
-    func offeringsAsync() async throws -> Offerings {
+    func offeringsAsync(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
-            getOfferings { offerings, error in
+            self.getOfferings(fetchPolicy: fetchPolicy) { offerings, error in
                 continuation.resume(with: Result(offerings, error))
             }
         }
