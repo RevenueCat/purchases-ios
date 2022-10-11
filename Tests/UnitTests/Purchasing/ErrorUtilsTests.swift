@@ -72,6 +72,27 @@ class ErrorUtilsTests: TestCase {
         }
     }
 
+    func testPurchasesErrorWithUntypedPurchasesError() throws {
+        let error = ErrorUtils.offlineConnectionError()
+
+        expect(ErrorUtils.purchasesError(withUntypedError: error)).to(matchError(error))
+    }
+
+    func testPurchasesErrorWithUntypedBackendError() throws {
+        let error: BackendError = .missingAppUserID()
+        let expected = error.asPurchasesError
+
+        expect(ErrorUtils.purchasesError(withUntypedError: error)).to(matchError(expected))
+    }
+
+    func testPublicErrorFromUntypedBackendError() throws {
+        let error: BackendError = .missingAppUserID()
+        let expected = error.asPublicError
+
+        expect(ErrorUtils.purchasesError(withUntypedError: error).asPublicError)
+            .to(matchError(expected))
+    }
+
     func testPurchaseErrorsAreLoggedAsApppleErrors() {
         let underlyingError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentInvalid.rawValue)
         let error = ErrorUtils.purchaseNotAllowedError(error: underlyingError)
