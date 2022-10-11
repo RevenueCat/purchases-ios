@@ -475,10 +475,10 @@ extension ErrorUtils {
                              fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         let errorCode = backendCode.toPurchasesErrorCode()
-        let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
+        let underlyingError = self.backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
         return error(with: errorCode,
-                     message: message,
+                     message: message ?? backendMessage,
                      underlyingError: underlyingError,
                      extraUserInfo: extraUserInfo,
                      fileName: fileName, functionName: functionName, line: line)
@@ -495,8 +495,17 @@ private extension ErrorUtils {
                       fileName: String = #fileID,
                       functionName: String = #function,
                       line: UInt = #line) -> PurchasesError {
+        let localizedDescription: String
+
+        if let message = message, message != code.description {
+            // Print both ErrorCode and message only if they're different
+            localizedDescription = "\(code.description) \(message)"
+        } else {
+            localizedDescription = code.description
+        }
+
         var userInfo = extraUserInfo ?? [:]
-        userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = message ?? code.description
+        userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = localizedDescription
         if let underlyingError = underlyingError {
             userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = underlyingError
         }
@@ -506,7 +515,7 @@ private extension ErrorUtils {
 
         Self.logErrorIfNeeded(
             code,
-            message: message,
+            localizedDescription: localizedDescription,
             fileName: fileName, functionName: functionName, line: line
         )
 
@@ -539,19 +548,10 @@ private extension ErrorUtils {
 
     // swiftlint:disable:next function_body_length
     private static func logErrorIfNeeded(_ code: ErrorCode,
-                                         message: String?,
+                                         localizedDescription: String,
                                          fileName: String = #fileID,
                                          functionName: String = #function,
                                          line: UInt = #line) {
-        let formattedMessage: String
-
-        if let message = message, message != code.description {
-            // Print both ErrorCode and message only if they're different
-            formattedMessage = "\(code.description) \(message)"
-        } else {
-            formattedMessage = code.description
-        }
-
         switch code {
         case .networkError,
                 .unknownError,
@@ -577,7 +577,7 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError:
                 Logger.error(
-                    formattedMessage,
+                    localizedDescription,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -596,7 +596,7 @@ private extension ErrorUtils {
                 .paymentPendingError,
                 .productRequestTimedOut:
                 Logger.appleError(
-                    formattedMessage,
+                    localizedDescription,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -604,7 +604,7 @@ private extension ErrorUtils {
 
         @unknown default:
             Logger.error(
-                formattedMessage,
+                localizedDescription,
                 fileName: fileName,
                 functionName: functionName,
                 line: line
