@@ -6,7 +6,7 @@
 * `ReceiptFetcher`: added retry mechanism (#1945) via NachoSoto (@NachoSoto)
 * `PaymentQueueWrapper`: also conform to `SKPaymentTransactionObserver` to fix promoted purchases (#1962) via NachoSoto (@NachoSoto)
 ### Other Changes
-*  via Miguel José Carranza Guisado (@MiguelCarranza)
+*  Updating great support link via Miguel José Carranza Guisado (@MiguelCarranza)
 * `OfferingsManager`: added ability to fail if any product is not found (#1976) via NachoSoto (@NachoSoto)
 * `OfferingsManager`: added missing test for ignoring missing products (#1975) via NachoSoto (@NachoSoto)
 * `PaymentQueueWrapper`: improved abstraction for active `SKPaymentQueue` wrapper (#1968) via NachoSoto (@NachoSoto)
