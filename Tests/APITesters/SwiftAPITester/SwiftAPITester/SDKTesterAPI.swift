@@ -18,7 +18,7 @@ private func checkSDKTesterAsync(_ tester: SDKTester) async {
 
 func checkSDKTesterErrors(_ error: SDKTester.Error) {
     switch error {
-    case let .failedConectingToAPI(error):
+    case let .failedConnectingToAPI(error):
         print(error)
 
     case .invalidAPIKey:

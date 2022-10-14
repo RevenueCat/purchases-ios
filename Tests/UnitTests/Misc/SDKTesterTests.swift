@@ -51,7 +51,7 @@ class SDKTesterTests: TestCase {
         do {
             try await self.tester.test()
             fail("Expected error")
-        } catch let SDKTester.Error.failedConectingToAPI(underlyingError) {
+        } catch let SDKTester.Error.failedConnectingToAPI(underlyingError) {
             expect(underlyingError).to(matchError(error))
         } catch {
             fail("Unexpected error: \(error)")

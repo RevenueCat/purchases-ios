@@ -50,7 +50,7 @@ extension SDKTester {
     public enum Error: Swift.Error {
 
         /// Connection to the API failed
-        case failedConectingToAPI(Swift.Error)
+        case failedConnectingToAPI(Swift.Error)
 
         /// API key is invalid
         case invalidAPIKey
@@ -98,7 +98,7 @@ private extension SDKTester {
         do {
             try await self.purchases.healthRequest()
         } catch {
-            throw Error.failedConectingToAPI(error)
+            throw Error.failedConnectingToAPI(error)
         }
     }
 
@@ -126,7 +126,7 @@ private extension SDKTester {
             return Error.unknown(error)
 
         case .offlineConnectionError:
-            return Error.failedConectingToAPI(error)
+            return Error.failedConnectingToAPI(error)
 
         case .invalidCredentialsError:
             return Error.invalidAPIKey
@@ -152,7 +152,7 @@ extension SDKTester.Error: CustomNSError {
     var localizedDescription: String {
         switch self {
         case let .unknown(error): return "Unknown error: \(error.localizedDescription)"
-        case let .failedConectingToAPI(error): return "Error connecting to API: \(error.localizedDescription)"
+        case let .failedConnectingToAPI(error): return "Error connecting to API: \(error.localizedDescription)"
         case let .failedFetchingOfferings(error): return "Failed fetching offerings: \(error.localizedDescription)"
         case .invalidAPIKey: return "API key is not valid"
         }
@@ -161,7 +161,7 @@ extension SDKTester.Error: CustomNSError {
     private var underlyingError: Swift.Error? {
         switch self {
         case let .unknown(error): return error
-        case let .failedConectingToAPI(error): return error
+        case let .failedConnectingToAPI(error): return error
         case let .failedFetchingOfferings(error): return error
         case .invalidAPIKey: return nil
         }
