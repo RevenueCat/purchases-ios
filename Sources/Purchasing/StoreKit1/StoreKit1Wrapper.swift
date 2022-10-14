@@ -114,7 +114,7 @@ extension StoreKit1Wrapper: PaymentQueueWrapperType {
     }
     #endif
 
-    #if os(iOS)
+    #if os(iOS) && !targetEnvironment(macCatalyst)
     @available(iOS 14.0, *)
     func presentCodeRedemptionSheet() {
         self.paymentQueue.presentCodeRedemptionSheetIfAvailable()
