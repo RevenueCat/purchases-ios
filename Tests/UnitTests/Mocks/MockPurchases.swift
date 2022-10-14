@@ -285,9 +285,13 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    #if os(iOS)
+
     func presentCodeRedemptionSheet() {
         self.unimplemented()
     }
+
+    #endif
 
     func showPriceConsentIfNeeded() {
         self.unimplemented()
