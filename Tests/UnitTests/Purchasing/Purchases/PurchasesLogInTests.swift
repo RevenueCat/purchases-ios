@@ -159,7 +159,7 @@ class PurchasesLogInTests: BasePurchasesTests {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func testLogInWithStringLogsMessage() async throws {
+    func testLogInWithStaticStringLogsMessage() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let logger = TestLogHandler()
@@ -171,7 +171,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
-    func testLogInWithCompletionBlockWithStringDoesNotLogMessage() throws {
+    func testCompletionBlockLogInWithStringDoesNotLogMessage() throws {
         let appUserID = "user ID"
         let logger = TestLogHandler()
 
@@ -187,7 +187,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
-    func testLogInWithCompletionBlockStringLogsMessage() throws {
+    func testCompletionBlockLogInWithStaticStringLogsMessage() throws {
         let logger = TestLogHandler()
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
