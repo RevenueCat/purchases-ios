@@ -155,7 +155,7 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         _ = try await self.purchases.logIn(appUserID)
 
-        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -184,7 +184,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         }
 
         expect(finished).toEventually(beTrue())
-        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
     func testCompletionBlockLogInWithStaticStringLogsMessage() {
