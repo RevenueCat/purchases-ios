@@ -223,7 +223,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offeringsManager: OfferingsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
-    private let trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker
+    private let trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
@@ -406,7 +406,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
-         trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker
+         trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
     ) {
 
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
