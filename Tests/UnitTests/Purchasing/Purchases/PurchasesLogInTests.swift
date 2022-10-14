@@ -171,7 +171,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
-    func testCompletionBlockLogInWithStringDoesNotLogMessage() throws {
+    func testCompletionBlockLogInWithStringDoesNotLogMessage() {
         let appUserID = "user ID"
         let logger = TestLogHandler()
 
@@ -187,7 +187,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
-    func testCompletionBlockLogInWithStaticStringLogsMessage() throws {
+    func testCompletionBlockLogInWithStaticStringLogsMessage() {
         let logger = TestLogHandler()
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
