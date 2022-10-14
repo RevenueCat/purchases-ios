@@ -98,7 +98,9 @@ struct PromoOfferDetailsView: View {
                         .foregroundColor(.blue)
                         .padding(.vertical, 10)
                         .onTapGesture {
-                            purchasePromo(promotionalOffer: promotionalOffer)
+                            Task<Void, Never> {
+                                await self.purchasePromo(promotionalOffer: promotionalOffer)
+                            }
                         }
                 }
             }
@@ -107,12 +109,15 @@ struct PromoOfferDetailsView: View {
         }
     }
     
-    func purchasePromo(promotionalOffer: PromotionalOffer) {
-        Purchases.shared.purchase(package: self.package, promotionalOffer: promotionalOffer) { transaction, info, error, userCancelled in
-            print("🚀 Info 💁‍♂️ - Transactions: \(transaction)")
-            print("🚀 Info 💁‍♂️ - Info: \(info)")
-            print("🚀 Info 💁‍♂️ - Error: \(error)")
-            print("🚀 Info 💁‍♂️ - User Cancelled: \(userCancelled)")
+    private func purchasePromo(promotionalOffer: PromotionalOffer) async {
+        do {
+            let result = try await Purchases.shared.purchase(package: self.package, promotionalOffer: promotionalOffer)
+
+            print("🚀 Info 💁‍♂️ - Transactions: \(result.transaction?.description ?? "")")
+            print("🚀 Info 💁‍♂️ - Info: \(result.customerInfo)")
+            print("🚀 Info 💁‍♂️ - User Cancelled: \(result.userCancelled)")
+        } catch {
+            print("🚀 Purchase failed: 💁‍♂️ - Error: \(error)")
         }
     }
 }

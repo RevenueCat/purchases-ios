@@ -63,4 +63,18 @@ class RevenueCatCustomerData: ObservableObject {
 
 }
 
-extension RevenueCat.StoreProduct: Identifiable {}
+extension RevenueCat.StoreProduct: Identifiable {
+
+    public var id: String {
+        return self.productIdentifier
+    }
+
+}
+
+extension RevenueCat.NonSubscriptionTransaction: Identifiable {
+
+    public var id: String {
+        return self.productIdentifier
+    }
+
+}

@@ -22,7 +22,7 @@ struct HomeView: View {
             CustomerInfoHeaderView() { action in
                 switch action {
                 case .login: self.showLogin()
-                case .logout: self.logout()
+                case .logout: await self.logout()
                 }
             }.padding(.horizontal, 20)
             
@@ -83,7 +83,7 @@ struct HomeView: View {
                     Button {
                         Task<Void, Never> {
                             do {
-                                try await Purchases.shared.beginRefundRequestForActiveEntitlement()
+                                _ = try await Purchases.shared.beginRefundRequestForActiveEntitlement()
                             } catch {
                                 print("🚀 Info 💁‍♂️ - Error: \(error)")
                             }
@@ -105,7 +105,7 @@ struct HomeView: View {
                 return
             }
             
-            Task {
+            Task<Void, Never> {
                 do {
                     let (customerInfo, created) = try await Purchases.shared.logIn(self.newAppUserID)
                     print("🚀 Info 💁‍♂️ - Customer Info: \(customerInfo)")
@@ -133,10 +133,12 @@ struct HomeView: View {
         self.showingAlert = true
     }
     
-    private func logout() {
-        Purchases.shared.logOut { customerInfo, error in
+    private func logout() async {
+        do {
+            let customerInfo = try await Purchases.shared.logOut()
             print("🚀 Info 💁‍♂️ - Customer Info: \(customerInfo)")
-            print("🚀 Info 💁‍♂️ - Error: \(error)")
+        } catch {
+            print("🚀 Failed logging out 💁‍♂️ - Error: \(error)")
         }
     }
 }
@@ -144,7 +146,7 @@ struct HomeView: View {
 private struct CustomerInfoHeaderView: View {
     @EnvironmentObject var revenueCatCustomerData: RevenueCatCustomerData
     
-    typealias Completion = (Action) -> ()
+    typealias Completion = (Action) async -> ()
     enum Action {
         case login, logout
     }
@@ -194,13 +196,17 @@ private struct CustomerInfoHeaderView: View {
                 Spacer()
                 if Purchases.shared.isAnonymous {
                     Button {
-                        self.completion(.login)
+                        Task<Void, Never> {
+                            await self.completion(.login)
+                        }
                     } label: {
                         Text("Login")
                     }
                 } else {
                     Button {
-                        self.completion(.logout)
+                        Task<Void, Never> {
+                            await self.completion(.logout)
+                        }
                     } label: {
                         Text("Logout")
                     }
