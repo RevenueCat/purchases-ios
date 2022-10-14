@@ -115,19 +115,19 @@ class SDKTesterTests: TestCase {
     }
 
     func testFailedConnectingToAPI() {
+        let underlyingError = ErrorUtils.offlineConnectionError()
+        let error = SDKTester.Error.failedConnectingToAPI(underlyingError)
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))
+        expect(error.localizedDescription) == "Error connecting to API: \(underlyingError.localizedDescription)"
+    }
+
+    func testFailedFetchingOfferings() {
         let underlyingError = OfferingsManager.Error.missingProducts(identifiers: ["a"]).asPublicError
         let error = SDKTester.Error.failedFetchingOfferings(underlyingError)
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))
         expect(error.localizedDescription) == "Failed fetching offerings: \(underlyingError.localizedDescription)"
-    }
-
-    func testFetchingOfferingsError() {
-        let underlyingError = ErrorUtils.missingReceiptFileError()
-        let error = SDKTester.Error.unknown(underlyingError)
-
-        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))
-        expect(error.localizedDescription) == "Unknown error: \(underlyingError.localizedDescription)"
     }
 
 }
