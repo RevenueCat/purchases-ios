@@ -63,7 +63,7 @@ class HTTPRequestTests: TestCase {
         for path in Self.unauthenticatedPaths {
             expect(path.authenticated).to(
                 beFalse(),
-                description: "Path '\(path)' should be authenticated"
+                description: "Path '\(path)' should not be authenticated"
             )
         }
     }
