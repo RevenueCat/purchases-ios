@@ -658,7 +658,8 @@ workflows:
           xcode_version: '14.0.0'
           <<: *release-tags-and-branches
       - installation-tests-swift-package-manager:
-          xcode_version: '14.0.0'
+          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
+          xcode_version: '13.4.1'
           <<: *release-tags-and-branches
       - installation-tests-carthage:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
