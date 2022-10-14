@@ -290,16 +290,36 @@ enum ErrorUtils {
         withUntypedError error: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
-        switch error {
-        case let purchasesError as PurchasesError:
-            return purchasesError
-        case let convertible as PurchasesErrorConvertible:
-            return convertible.asPurchasesError
-        default:
-            return ErrorUtils.unknownError(
-                error: error,
-                fileName: fileName, functionName: functionName, line: line
-            )
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            switch error {
+            case let purchasesError as PurchasesError:
+                return purchasesError
+            // This line crashes on iOS 12.x only (see https://github.com/RevenueCat/purchases-ios/pull/1982).
+            case let convertible as PurchasesErrorConvertible:
+                return convertible.asPurchasesError
+            default:
+                return ErrorUtils.unknownError(
+                    error: error,
+                    fileName: fileName, functionName: functionName, line: line
+                )
+            }
+        } else {
+            switch error {
+            case let purchasesError as PurchasesError:
+                return purchasesError
+            // `as PurchasesErrorConvertible` crashes on iOS 12.x, so these explicit casts are a workaround.
+            // We can't guarantee that these are exhaustive, but at least this covers the most common cases,
+            // and the `default` below ensures that we don't crash for the rest.
+            case let backendError as BackendError:
+                return backendError.asPurchasesError
+            case let networkError as NetworkError:
+                return networkError.asPurchasesError
+            default:
+                return ErrorUtils.unknownError(
+                    error: error,
+                    fileName: fileName, functionName: functionName, line: line
+                )
+            }
         }
     }
 
