@@ -749,7 +749,7 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 /// If this is disabled, RevenueCat won’t observe the StoreKit queue, and it will not sync any purchase
 /// automatically.
 ///
-- (nonnull instancetype)initWithAutoSyncPurchases:(BOOL)autoSyncPurchases OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithAutoSyncPurchases:(BOOL)autoSyncPurchases;
 @end
 
 
@@ -1255,9 +1255,20 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPackageType, "PackageType", open) {
   RCPackageTypeWeekly = 6,
 };
 
+@class SKPaymentTransaction;
 
+/// A wrapper for <code>SKPaymentQueue</code>
+SWIFT_PROTOCOL("_TtP10RevenueCat23PaymentQueueWrapperType_")
+@protocol PaymentQueueWrapperType
+- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction;
+- (void)presentCodeRedemptionSheet SWIFT_AVAILABILITY(maccatalyst,unavailable) SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(macos,unavailable) SWIFT_AVAILABILITY(ios,introduced=14.0);
+@end
+
+
+/// Implementation of <code>PaymentQueueWrapperType</code> used when SK1 is not enabled.
 SWIFT_CLASS("_TtC10RevenueCat19PaymentQueueWrapper")
-@interface PaymentQueueWrapper : NSObject
+@interface PaymentQueueWrapper : NSObject <PaymentQueueWrapperType>
+- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -1266,6 +1277,15 @@ SWIFT_CLASS("_TtC10RevenueCat19PaymentQueueWrapper")
 
 @interface PaymentQueueWrapper (SWIFT_EXTENSION(RevenueCat)) <SKPaymentQueueDelegate>
 @end
+
+@class SKPaymentQueue;
+@class SKPayment;
+
+@interface PaymentQueueWrapper (SWIFT_EXTENSION(RevenueCat)) <SKPaymentTransactionObserver>
+- (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue updatedTransactions:(NSArray<SKPaymentTransaction *> * _Nonnull)transactions;
+- (BOOL)paymentQueue:(SKPaymentQueue * _Nonnull)queue shouldAddStorePayment:(SKPayment * _Nonnull)payment forProduct:(SKProduct * _Nonnull)product SWIFT_WARN_UNUSED_RESULT;
+@end
+
 
 /// Enum of supported period types for an entitlement.
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPeriodType, "PeriodType", open) {
@@ -2209,7 +2229,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 @end
 
 
-
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Configures an instance of the Purchases SDK with a specified <code>Configuration</code>.
 /// The instance will be set as a singleton.
@@ -2268,6 +2287,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 @end
 
 
+
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
@@ -2297,18 +2317,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull appUserID;
-@property (nonatomic, readonly) BOOL isAnonymous;
-- (void)logIn:(NSString * _Nonnull)appUserID completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completion;
-- (void)logIn:(NSString * _Nonnull)appUserID completionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
-- (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
-- (void)logOutWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
-- (void)getOfferingsWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
-- (void)offeringsWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
-@end
-
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
@@ -2318,6 +2326,18 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAttributionCollection SWIFT_DEPRECATED_MSG("Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead");)
 + (BOOL)automaticAppleSearchAdsAttributionCollection SWIFT_WARN_UNUSED_RESULT;
 + (void)setAutomaticAppleSearchAdsAttributionCollection:(BOOL)value;
+@end
+
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+@property (nonatomic, readonly, copy) NSString * _Nonnull appUserID;
+@property (nonatomic, readonly) BOOL isAnonymous;
+- (void)logIn:(NSString * _Nonnull)appUserID completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completion;
+- (void)logIn:(NSString * _Nonnull)appUserID completionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
+- (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
+- (void)logOutWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
+- (void)getOfferingsWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
+- (void)offeringsWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 @end
 
 
@@ -2624,6 +2644,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCRefundRequestStatus, "RefundRequestStatus"
 
 
 
+
 /// Enum of supported stores
 typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
 /// For entitlements granted via Apple App Store.
@@ -2644,20 +2665,25 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
 
 
 SWIFT_CLASS("_TtC10RevenueCat16StoreKit1Wrapper")
-@interface StoreKit1Wrapper : NSObject <SKPaymentTransactionObserver>
+@interface StoreKit1Wrapper : NSObject
 - (nonnull instancetype)init;
 @end
 
 
 
-@class SKPaymentQueue;
-@class SKPaymentTransaction;
-@class SKPayment;
-
 @interface StoreKit1Wrapper (SWIFT_EXTENSION(RevenueCat)) <SKPaymentQueueDelegate>
+@end
+
+
+@interface StoreKit1Wrapper (SWIFT_EXTENSION(RevenueCat)) <PaymentQueueWrapperType>
+- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction;
+@end
+
+
+@interface StoreKit1Wrapper (SWIFT_EXTENSION(RevenueCat)) <SKPaymentTransactionObserver>
 - (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue updatedTransactions:(NSArray<SKPaymentTransaction *> * _Nonnull)transactions;
 - (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue removedTransactions:(NSArray<SKPaymentTransaction *> * _Nonnull)transactions;
-- (BOOL)paymentQueue:(SKPaymentQueue * _Nonnull)queue shouldAddStorePayment:(SKPayment * _Nonnull)payment forProduct:(SKProduct * _Nonnull)product SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,unavailable);
+- (BOOL)paymentQueue:(SKPaymentQueue * _Nonnull)queue shouldAddStorePayment:(SKPayment * _Nonnull)payment forProduct:(SKProduct * _Nonnull)product SWIFT_WARN_UNUSED_RESULT;
 - (void)paymentQueue:(SKPaymentQueue * _Nonnull)queue didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> * _Nonnull)productIdentifiers SWIFT_AVAILABILITY(watchos,introduced=7.0) SWIFT_AVAILABILITY(tvos,introduced=14.0) SWIFT_AVAILABILITY(macos,introduced=11.0) SWIFT_AVAILABILITY(ios,introduced=14.0);
 - (void)paymentQueueDidChangeStorefront:(SKPaymentQueue * _Nonnull)queue;
 @end
