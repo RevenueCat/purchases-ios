@@ -45,17 +45,17 @@ class HTTPClient {
         self.dnsChecker = dnsChecker
         self.timeout = requestTimeout
         self.apiKey = apiKey
-        self.authHeaders =  HTTPClient.authorizationHeader(withAPIKey: apiKey)
+        self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
     }
 
     func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
-        perform(request: .init(httpRequest: request,
-                               headers: self.authHeaders,
-                               completionHandler: completionHandler))
+        self.perform(request: .init(httpRequest: request,
+                                    headers: request.path.authenticated ? self.authHeaders : [:],
+                                    completionHandler: completionHandler))
     }
 
     func clearCaches() {
-        eTagManager.clearCaches()
+        self.eTagManager.clearCaches()
     }
 
 }

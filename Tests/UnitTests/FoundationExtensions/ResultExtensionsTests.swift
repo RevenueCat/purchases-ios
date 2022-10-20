@@ -59,6 +59,16 @@ class ResultExtensionsTests: TestCase {
         }
     }
 
+    func testVoidValueInitWithNoError() {
+        expect(Result<Void, Error>(nil)).to(beSuccess())
+    }
+
+    func testVoidValueInitWithError() {
+        expect(Result<Void, Error>(.error1)).to(beFailure {
+            expect($0).to(matchError(Error.error1))
+        })
+    }
+
 }
 
 class ResultAsOptionalResultTest: TestCase {

@@ -69,7 +69,31 @@ extension HTTPRequest {
         case postReceiptData
         case postSubscriberAttributes(appUserID: String)
         case postAdServicesToken(appUserID: String)
+        case health
 
+    }
+
+}
+
+extension HTTPRequest.Path {
+
+    /// Whether requests to this path are authenticated.
+    var authenticated: Bool {
+        switch self {
+        case .getCustomerInfo,
+                .getOfferings,
+                .getIntroEligibility,
+                .logIn,
+                .postAttributionData,
+                .postOfferForSigning,
+                .postReceiptData,
+                .postSubscriberAttributes,
+                .postAdServicesToken:
+            return true
+
+        case .health:
+            return false
+        }
     }
 
 }
@@ -106,6 +130,9 @@ extension HTTPRequest.Path: CustomStringConvertible {
 
         case let .postSubscriberAttributes(appUserID):
             return "subscribers/\(appUserID)/attributes"
+
+        case .health:
+            return "health"
         }
     }
 
