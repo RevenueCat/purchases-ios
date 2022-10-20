@@ -142,6 +142,66 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
     }
 
+    // MARK: - StaticString appUserID
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testLogInWithStringDoesNotLogMessage() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let appUserID = "user ID"
+        let logger = TestLogHandler()
+
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        _ = try await self.purchases.logIn(appUserID)
+
+        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testLogInWithStaticStringLogsMessage() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let logger = TestLogHandler()
+
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        _ = try await self.purchases.logIn("Static string")
+
+        logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+    }
+
+    func testCompletionBlockLogInWithStringDoesNotLogMessage() {
+        let appUserID = "user ID"
+        let logger = TestLogHandler()
+
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        var finished = false
+
+        self.purchases.logIn(appUserID) { _, _, _ in
+            finished = true
+        }
+
+        expect(finished).toEventually(beTrue())
+        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
+    }
+
+    func testCompletionBlockLogInWithStaticStringLogsMessage() {
+        let logger = TestLogHandler()
+
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        var finished = false
+
+        self.purchases.logIn("Static string") { _, _, _ in
+            finished = true
+        }
+
+        expect(finished).toEventually(beTrue())
+        logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+    }
+
 }
 
 // MARK: -
