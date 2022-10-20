@@ -914,10 +914,18 @@ private extension PurchasesOrchestrator {
             case let .failure(error):
                 let purchasesError = error.asPublicError
 
+                #if swift(<5.6)
+                @Sendable
                 @MainActor
                 func complete() {
                     completion?(transaction, nil, purchasesError, false)
                 }
+                #else
+                @MainActor
+                func complete() {
+                    completion?(transaction, nil, purchasesError, false)
+                }
+                #endif
 
                 if finishable {
                     self.finishTransactionIfNeeded(transaction) { complete() }
