@@ -276,12 +276,19 @@ jobs:
 
   run-test-ios-15-xcode-13-2:
     steps:
+      - restore_cache:
+          keys:
+            - homebrew-tap-cache
       - run:
           name: Install swiftlint 0.48.0
           command: |
               brew tap-new $USER/local-tap
               brew extract --version=0.48.0 swiftlint $USER/local-tap
               brew install swiftlint@0.48.0
+      - save_cache:
+          key: homebrew-tap-cache
+          paths:
+            - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
     <<: *base-job
 
   run-test-tvos:
