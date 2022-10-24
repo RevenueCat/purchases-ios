@@ -252,7 +252,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 30m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.0)
+            SCAN_DEVICE: iPhone 14 (16.1)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
