@@ -194,8 +194,8 @@ commands:
        - run:
            name: Setup Git config
            command: |
-             git config user.email $GIT_EMAIL
-             git config user.name $GIT_USERNAME
+             git config --global user.email $GIT_EMAIL
+             git config --global user.name $GIT_USERNAME
 
   trust-github-key:
     steps:
@@ -276,6 +276,7 @@ jobs:
 
   run-test-ios-15-xcode-13-2:
     steps:
+      - setup-git-credentials
       - restore_cache:
           keys:
             - homebrew-tap-cache
