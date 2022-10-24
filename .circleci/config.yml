@@ -365,9 +365,6 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - run:
-          name: Install swiftlint
-          command: brew install swiftlint
       - install-dependencies
       - run:
           name: Build tvOS, watchOS and macOS
