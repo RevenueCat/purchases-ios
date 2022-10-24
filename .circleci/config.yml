@@ -77,13 +77,12 @@ commands:
           name: Create simulator
           command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
 
-  install-dependencies:
+  install-bundle-dependencies:
     parameters:
       directory:
         type: string
         default: .
     steps:
-      # Bundler
       - restore_cache:
           keys:
             - v2-gem-cache-{{ checksum "Gemfile.lock" }}
@@ -98,6 +97,15 @@ commands:
           key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+  
+  install-dependencies:
+    parameters:
+      directory:
+        type: string
+        default: .
+    steps:
+      - install-bundle-dependencies:
+          directory: << parameters.directory >>
       - run:
           name: Install swiftlint
           command: brew install swiftlint
@@ -275,6 +283,7 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-15-xcode-13-2:
+    <<: *base-job
     steps:
       - setup-git-credentials
       - restore_cache:
@@ -283,6 +292,7 @@ jobs:
       - run:
           name: Install swiftlint 0.48.0
           command: |
+              brew update --preinstall
               brew tap-new $USER/local-tap
               brew extract --version=0.48.0 swiftlint $USER/local-tap
               brew install swiftlint@0.48.0
@@ -290,7 +300,22 @@ jobs:
           key: homebrew-tap-cache
           paths:
             - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
-    <<: *base-job
+      - checkout
+      - install-bundle-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
+          environment:
+            SCAN_DEVICE: iPhone 13 (15.2)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
 
   run-test-tvos:
     <<: *base-job
