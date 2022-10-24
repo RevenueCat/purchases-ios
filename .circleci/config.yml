@@ -274,6 +274,16 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  run-test-ios-15-xcode-13-2:
+    steps:
+      - run:
+          name: Install swiftlint 0.48.0
+          command: |
+              brew tap-new $USER/local-tap
+              brew extract --version=0.48.0 swiftlint $USER/local-tap
+              brew install swiftlint@0.48.0
+    <<: *base-job
+
   run-test-tvos:
     <<: *base-job
     steps:
@@ -624,7 +634,6 @@ workflows:
       - spm-build:
           xcode_version: '14.0.0'
       - run-test-ios-15:
-          name: run-test-ios-15
           xcode_version: '14.0.0'
       - run-test-tvos:
           xcode_version: '14.0.0'
@@ -642,8 +651,8 @@ workflows:
       - build-tv-watch-and-macos:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
-      # Duplicate job to ensure we don't break compilation with Xcode 13.2.1
-      - run-test-ios-15:
+      # To ensure we don't break compilation with Xcode 13.2.1
+      - run-test-ios-15-xcode-13-2:
           name: xcode-13.2.1
           xcode_version: '13.2.1'
       - release-checks:
