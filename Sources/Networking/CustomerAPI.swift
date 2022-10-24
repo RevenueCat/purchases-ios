@@ -119,5 +119,3 @@ final class CustomerAPI {
     }
 
 }
-
-extension CustomerAPI: Sendable {}

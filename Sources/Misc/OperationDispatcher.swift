@@ -55,7 +55,9 @@ extension OperationDispatcher {
                 }
             }
         } else {
-            DispatchQueue.main.async(execute: block)
+            DispatchQueue.main.async { @Sendable in
+                block()
+            }
         }
     }
 

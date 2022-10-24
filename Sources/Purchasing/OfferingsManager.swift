@@ -105,7 +105,7 @@ class OfferingsManager {
         self.deviceCache.clearCachedOfferings()
 
         if cachedOfferings != nil {
-            self.offerings(appUserID: appUserID, fetchPolicy: .ignoreNotFoundProducts) { _ in }
+            self.offerings(appUserID: appUserID, fetchPolicy: .ignoreNotFoundProducts) { @Sendable _ in }
         }
     }
 

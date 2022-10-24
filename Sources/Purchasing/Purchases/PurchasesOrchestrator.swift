@@ -594,7 +594,7 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
     func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
                           didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
         Logger.debug(Strings.purchase.entitlements_revoked_syncing_purchases(productIdentifiers: productIdentifiers))
-        syncPurchases { _ in
+        syncPurchases { @Sendable _ in
             Logger.debug(Strings.purchase.purchases_synced)
         }
     }
@@ -716,7 +716,7 @@ private extension PurchasesOrchestrator {
 
             if isCancelled {
                 self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                      fetchPolicy: .cachedOrFetched) { customerInfo in
+                                                      fetchPolicy: .cachedOrFetched) { @Sendable customerInfo in
                     self.operationDispatcher.dispatchOnMainActor {
                         completion(storeTransaction,
                                    customerInfo.value,
@@ -914,10 +914,18 @@ private extension PurchasesOrchestrator {
             case let .failure(error):
                 let purchasesError = error.asPublicError
 
+                #if swift(>=5.6)
                 @MainActor
                 func complete() {
                     completion?(transaction, nil, purchasesError, false)
                 }
+                #else
+                @Sendable
+                @MainActor
+                func complete() {
+                    completion?(transaction, nil, purchasesError, false)
+                }
+                #endif
 
                 if finishable {
                     self.finishTransactionIfNeeded(transaction) { complete() }
