@@ -288,7 +288,7 @@ jobs:
       - setup-git-credentials
       - restore_cache:
           keys:
-            - homebrew-tap-cache
+            - homebrew-tap-cache-3
       - run:
           name: Install swiftlint 0.48.0
           command: |
@@ -297,9 +297,10 @@ jobs:
               brew extract --version=0.48.0 swiftlint $USER/local-tap
               brew install swiftlint@0.48.0
       - save_cache:
-          key: homebrew-tap-cache
+          key: homebrew-tap-cache-3
           paths:
             - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
+            - /Users/$USER/Library/Caches/Homebrew/
       - checkout
       - install-bundle-dependencies
       - run:
