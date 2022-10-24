@@ -233,7 +233,7 @@ commands:
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  spm-build:
+  spm-release-build:
     <<: *base-job
     steps:
       - checkout
@@ -282,7 +282,7 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  run-test-ios-15-xcode-13-2:
+  compile-xcode-13-2:
     <<: *base-job
     steps:
       - setup-git-credentials
@@ -303,19 +303,9 @@ jobs:
       - checkout
       - install-bundle-dependencies
       - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
+          name: SPM Build
+          command: swift build
           no_output_timeout: 30m
-          environment:
-            SCAN_DEVICE: iPhone 13 (15.2)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
 
   run-test-tvos:
     <<: *base-job
@@ -664,7 +654,7 @@ workflows:
           xcode_version: '14.0.0'
       - run-test-ios-16:
           xcode_version: '14.0.0'
-      - spm-build:
+      - spm-release-build:
           xcode_version: '14.0.0'
       - run-test-ios-15:
           xcode_version: '14.0.0'
@@ -685,7 +675,7 @@ workflows:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
       # To ensure we don't break compilation with Xcode 13.2.1
-      - run-test-ios-15-xcode-13-2:
+      - compile-xcode-13-2:
           name: xcode-13.2.1
           xcode_version: '13.2.1'
       - release-checks:
