@@ -679,6 +679,7 @@ workflows:
       - compile-xcode-13-2:
           name: xcode-13.2.1
           xcode_version: '13.2.1'
+          <<: *release-branches-and-main
       - release-checks:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
