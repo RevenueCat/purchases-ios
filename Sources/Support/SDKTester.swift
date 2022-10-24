@@ -14,13 +14,13 @@
 import Foundation
 
 /// `SDKTester` allows you to ensure that the SDK is set up correctly by diagnosing configuration errors.
-/// To run the test, simply call ``SDKTester/test()``.
+/// To run the test, simply call ``SDKTester/testRevenueCatIntegrationWithCompletion()``.
 ///
 /// #### Example:
 /// ```swift
 /// let tester = SDKTester.default
 /// do {
-///     try await tester.test()
+///     try await tester.testRevenueCatIntegration()
 /// } catch {
 ///     print("SDKTester failed: \(error.localizedDescription)")
 /// }
@@ -72,8 +72,8 @@ extension SDKTester {
 
     /// Perform tests to ensure SDK is configured correctly.
     /// - `Throws`: ``SDKTester/Error`` if any step fails
-    @objc(testWithCompletion:)
-    public func test() async throws {
+    @objc(testRevenueCatIntegrationWithCompletion:)
+    public func testRevenueCatIntegration() async throws {
         do {
             try await self.unauthenticatedRequest()
             try await self.authenticatedRequest()

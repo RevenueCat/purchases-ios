@@ -49,7 +49,7 @@ class SDKTesterTests: TestCase {
         self.purchases.mockedHealthRequestResponse = .failure(error)
 
         do {
-            try await self.tester.test()
+            try await self.tester.testRevenueCatIntegration()
             fail("Expected error")
         } catch let SDKTester.Error.failedConnectingToAPI(underlyingError) {
             expect(underlyingError).to(matchError(error))
@@ -65,7 +65,7 @@ class SDKTesterTests: TestCase {
         self.purchases.mockedCustomerInfoResponse = .failure(error)
 
         do {
-            try await self.tester.test()
+            try await self.tester.testRevenueCatIntegration()
             fail("Expected error")
         } catch SDKTester.Error.invalidAPIKey {
             // Expected error
@@ -79,7 +79,7 @@ class SDKTesterTests: TestCase {
         self.purchases.mockedOfferingsResponse = .failure(error)
 
         do {
-            try await self.tester.test()
+            try await self.tester.testRevenueCatIntegration()
             fail("Expected error")
         } catch let SDKTester.Error.failedFetchingOfferings(offeringsError) {
             expect(offeringsError).to(matchError(error))
@@ -91,7 +91,7 @@ class SDKTesterTests: TestCase {
 
     func testSuccessfulTest() async throws {
         do {
-            try await self.tester.test()
+            try await self.tester.testRevenueCatIntegration()
         } catch {
             fail("Unexpected error: \(error)")
         }

@@ -13,7 +13,7 @@ func checkSDKTester() {
 }
 
 private func checkSDKTesterAsync(_ tester: SDKTester) async {
-    _ = try? await tester.test()
+    _ = try? await tester.testRevenueCatIntegration()
 }
 
 func checkSDKTesterErrors(_ error: SDKTester.Error) {

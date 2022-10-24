@@ -57,7 +57,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
     func testSDKTester() async throws {
         let tester = SDKTester.default
-        try await tester.test()
+        try await tester.testRevenueCatIntegration()
     }
 
     func testCanGetOfferings() async throws {

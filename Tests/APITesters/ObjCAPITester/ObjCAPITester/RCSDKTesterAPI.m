@@ -14,7 +14,7 @@
 + (void)checkAPI {
     RCSDKTester *tester = [RCSDKTester default];
 
-    [tester testWithCompletion:^(NSError * _Nullable error) {}];
+    [tester testRevenueCatIntegrationWithCompletion:^(NSError * _Nullable error) {}];
 }
 
 @end
