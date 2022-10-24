@@ -1,3 +1,7 @@
+## 4.13.3
+### Other Changes
+* `TrialOrIntroPriceEligibilityChecker`: only use SK2 implementation if enabled (#1984) via NachoSoto (@NachoSoto)
+
 ## 4.13.2
 ### Bugfixes
 * Purchasing: fixed consumable purchases by fixing transaction-finishing (#1965) via NachoSoto (@NachoSoto)
