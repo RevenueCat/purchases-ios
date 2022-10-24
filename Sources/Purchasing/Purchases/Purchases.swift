@@ -594,7 +594,7 @@ public extension Purchases {
         fetchPolicy: OfferingsManager.FetchPolicy,
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
-        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy) { result in
+        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -624,7 +624,7 @@ public extension Purchases {
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     ) {
         self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                              fetchPolicy: fetchPolicy) { result in
+                                              fetchPolicy: fetchPolicy) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -705,7 +705,7 @@ public extension Purchases {
     }
 
     @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        self.purchasesOrchestrator.syncPurchases {
+        self.purchasesOrchestrator.syncPurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)
         }
     }
@@ -716,7 +716,7 @@ public extension Purchases {
     }
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
-        purchasesOrchestrator.restorePurchases {
+        purchasesOrchestrator.restorePurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)
         }
     }
@@ -1097,9 +1097,11 @@ internal extension Purchases {
         syncedAttribute: (@Sendable (PublicError?) -> Void)? = nil,
         completion: (@Sendable () -> Void)? = nil
     ) -> Int {
-        return self.attribution.syncAttributesForAllUsers(currentAppUserID: self.appUserID,
-                                                          syncedAttribute: { syncedAttribute?($0?.asPublicError) },
-                                                          completion: completion)
+        return self.attribution.syncAttributesForAllUsers(
+            currentAppUserID: self.appUserID,
+            syncedAttribute: { @Sendable in syncedAttribute?($0?.asPublicError) },
+            completion: completion
+        )
     }
 
 }
@@ -1183,7 +1185,7 @@ private extension Purchases {
     func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
-                                                               isAppBackgrounded: isAppBackgrounded) {
+                                                               isAppBackgrounded: isAppBackgrounded) { @Sendable in
                 completion?($0.mapError { $0.asPublicError })
             }
 
