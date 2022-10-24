@@ -641,6 +641,9 @@ workflows:
       - build-tv-watch-and-macos:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
+      # Dupicate job to ensure we don't break compilation with Xcode 13.2.1
+      - run-test-ios-15:
+          xcode_version: '13.2.1'
       - release-checks:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
