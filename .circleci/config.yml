@@ -653,18 +653,17 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - lint:
-          xcode_version: '14.0.0'
+          xcode_version: '14.1.0'
       - run-test-ios-16:
-          xcode_version: '14.0.0'
+          xcode_version: '14.1.0'
       - spm-release-build:
-          xcode_version: '14.0.0'
+          xcode_version: '14.1.0'
       - run-test-ios-15:
-          xcode_version: '14.0.0'
+          xcode_version: '14.1.0'
       - run-test-tvos:
-          xcode_version: '14.0.0'
+          xcode_version: '14.1.0'
       - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.1.1'
       - run-test-ios-13:
           # Simulator fails to install on Xcode 14
           xcode_version: '13.4.1'
@@ -674,36 +673,32 @@ workflows:
           xcode_version: '13.4.1'
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
+          xcode_version: '14.1.0'
       # To ensure we don't break compilation with Xcode 13.2.1
       - compile-xcode-13-2:
           name: xcode-13.2.1
           xcode_version: '13.2.1'
           <<: *release-branches-and-main
       - release-checks:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
+          xcode_version: '14.1.0'
           <<: *release-branches
       - backend-integration-tests:
-          xcode_version: '14.0.0'
+          xcode_version: '14.1.0'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - installation-tests-cocoapods:
-          xcode_version: '14.0.0'
+          xcode_version: '14.1.0'
           <<: *release-tags-and-branches
       - installation-tests-swift-package-manager:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
+          xcode_version: '14.1.0'
           <<: *release-tags-and-branches
       - installation-tests-carthage:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
+          xcode_version: '14.1.0'
           <<: *release-tags-and-branches
       - installation-tests-xcode-direct-integration:
-          xcode_version: '14.0.0'
+          xcode_version: '14.1.0'
           <<: *release-tags-and-branches
   deploy:
     when:
@@ -718,8 +713,7 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
+          xcode_version: '14.1.0'
           <<: *release-tags
       - docs-deploy:
           xcode_version: '14.1.0'
@@ -733,8 +727,7 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - prepare-next-version:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
+          xcode_version: '14.1.0'
           <<: *only-main-branch
   danger:
     jobs:
@@ -746,5 +739,4 @@ workflows:
         - equal: [ "release-train", << pipeline.schedule.name >> ]
     jobs:
       - release-train:
-          # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
-          xcode_version: '13.4.1'
+          xcode_version: '14.1.0'
