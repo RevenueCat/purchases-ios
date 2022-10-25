@@ -32,7 +32,9 @@ struct TextFieldAlert<Presenting>: View where Presenting: View {
                         ForEach(self.fields, id: \.self.0) { fieldData in
                             Text(fieldData.0)
                             TextField(fieldData.1, text: fieldData.2)
+                                #if !os(macOS)
                                 .textInputAutocapitalization(.never)
+                                #endif
                                 .disableAutocorrection(true)
                             Divider()
                         }
