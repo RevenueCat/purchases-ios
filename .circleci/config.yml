@@ -713,7 +713,8 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
-          xcode_version: '14.1.0'
+          # Xcode 14 not supported until https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
+          xcode_version: '13.4.1'
           <<: *release-tags
       - docs-deploy:
           xcode_version: '14.1.0'
