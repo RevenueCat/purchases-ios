@@ -14,9 +14,15 @@
 import Foundation
 import StoreKit
 
-class TrialOrIntroPriceEligibilityChecker {
+typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
 
-    typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
+/// A type that can determine `IntroEligibility` for products.
+protocol TrialOrIntroPriceEligibilityCheckerType {
+
+    func checkEligibility(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock)
+}
+
+class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
 
@@ -72,13 +78,6 @@ class TrialOrIntroPriceEligibilityChecker {
         }
     }
 
-    func checkEligibility(product: StoreProductType,
-                          completion: @escaping (IntroEligibilityStatus) -> Void) {
-        self.checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
-            completion(eligibility[product.productIdentifier]?.status ?? .unknown)
-        }
-    }
-
     func sk1CheckEligibility(_ productIdentifiers: [String],
                              completion: @escaping ReceiveIntroEligibilityBlock) {
         // We don't want to refresh receipts because it will likely prompt the user for their credentials,
@@ -125,7 +124,20 @@ class TrialOrIntroPriceEligibilityChecker {
 
 }
 
-fileprivate extension TrialOrIntroPriceEligibilityChecker {
+/// Default overload implementation that takes a single `StoreProductType`.
+extension TrialOrIntroPriceEligibilityCheckerType {
+
+    func checkEligibility(product: StoreProductType, completion: @escaping (IntroEligibilityStatus) -> Void) {
+        self.checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
+            completion(eligibility[product.productIdentifier]?.status ?? .unknown)
+        }
+    }
+
+}
+
+// MARK: - Implementations
+
+private extension TrialOrIntroPriceEligibilityChecker {
 
     @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *)
     func sk1CheckEligibility(with receiptData: Data,
