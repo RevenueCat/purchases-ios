@@ -12,69 +12,25 @@ import RevenueCat
 @main
 struct PurchaseTesterApp: App {
 
-    private let delegate = Delegate()
-
-    init() {
-        let configuration: Configuration =
-            .builder(withAPIKey: Constants.apiKey)
-            .with(usesStoreKit2IfAvailable: true)
-            .build()
-
-        if let proxyURL = Constants.proxyURL {
-            Purchases.proxyURL = URL(string: proxyURL)!
-        }
-
-        Purchases.logLevel = .debug
-        Purchases.configure(with: configuration)
-        Purchases.shared.delegate = self.delegate
-    }
-
-    @State private var revenueCatCustomerData = RevenueCatCustomerData()
+    @State
+    private var configuration: ConfiguredPurchases?
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(revenueCatCustomerData)
-                .task {
-                    for await customerInfo in Purchases.shared.customerInfoStream {
-                        self.revenueCatCustomerData.customerInfo = customerInfo
-                        self.revenueCatCustomerData.appUserID = Purchases.shared.appUserID
+            NavigationView {
+                if let configuration {
+                    ContentView(configuration: configuration)
+                } else {
+                    ConfigurationView { data in
+                        self.configuration = .init(
+                            apiKey: data.apiKey,
+                            proxyURL: data.proxy.nonEmpty,
+                            useStoreKit2: data.storeKit2Enabled
+                        )
                     }
                 }
+            }
         }
-    }
-
-}
-
-final class Delegate: NSObject, PurchasesDelegate {
-
-    func purchases(_ purchases: Purchases, readyForPromotedProduct product: StoreProduct, purchase makeDeferredPurchase: @escaping StartPurchaseBlock) {
-        makeDeferredPurchase { (transaction, customerInfo, error, success) in
-            print("Yay")
-        }
-    }
-
-}
-
-class RevenueCatCustomerData: ObservableObject {
-
-    @Published var appUserID: String? = nil
-    @Published var customerInfo: RevenueCat.CustomerInfo? = nil
-
-}
-
-extension RevenueCat.StoreProduct: Identifiable {
-
-    public var id: String {
-        return self.productIdentifier
-    }
-
-}
-
-extension RevenueCat.NonSubscriptionTransaction: Identifiable {
-
-    public var id: String {
-        return self.productIdentifier
     }
 
 }
