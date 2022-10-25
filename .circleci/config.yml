@@ -305,6 +305,7 @@ jobs:
       - install-bundle-dependencies
       - run:
           name: SPM Build
+          # Not using `pod lib lint` because that fails on this old Xcode
           command: swift build
           no_output_timeout: 30m
 
