@@ -77,13 +77,12 @@ commands:
           name: Create simulator
           command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
 
-  install-dependencies:
+  install-bundle-dependencies:
     parameters:
       directory:
         type: string
         default: .
     steps:
-      # Bundler
       - restore_cache:
           keys:
             - v2-gem-cache-{{ checksum "Gemfile.lock" }}
@@ -98,6 +97,15 @@ commands:
           key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+  
+  install-dependencies:
+    parameters:
+      directory:
+        type: string
+        default: .
+    steps:
+      - install-bundle-dependencies:
+          directory: << parameters.directory >>
       - run:
           name: Install swiftlint
           command: brew install swiftlint
@@ -194,8 +202,8 @@ commands:
        - run:
            name: Setup Git config
            command: |
-             git config user.email $GIT_EMAIL
-             git config user.name $GIT_USERNAME
+             git config --global user.email $GIT_EMAIL
+             git config --global user.name $GIT_USERNAME
 
   trust-github-key:
     steps:
@@ -225,7 +233,7 @@ commands:
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  spm-build:
+  spm-release-build:
     <<: *base-job
     steps:
       - checkout
@@ -273,6 +281,33 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+
+  compile-xcode-13-2:
+    <<: *base-job
+    steps:
+      - setup-git-credentials
+      - restore_cache:
+          keys:
+            - homebrew-tap-cache-3
+      - run:
+          name: Install swiftlint 0.48.0
+          command: |
+              brew update --preinstall
+              brew tap-new $USER/local-tap
+              brew extract --version=0.48.0 swiftlint $USER/local-tap
+              brew install swiftlint@0.48.0
+      - save_cache:
+          key: homebrew-tap-cache-3
+          paths:
+            - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
+            - /Users/$USER/Library/Caches/Homebrew/
+      - checkout
+      - install-bundle-dependencies
+      - run:
+          name: SPM Build
+          # Not using `pod lib lint` because that fails on this old Xcode
+          command: swift build
+          no_output_timeout: 30m
 
   run-test-tvos:
     <<: *base-job
@@ -621,7 +656,7 @@ workflows:
           xcode_version: '14.0.0'
       - run-test-ios-16:
           xcode_version: '14.0.0'
-      - spm-build:
+      - spm-release-build:
           xcode_version: '14.0.0'
       - run-test-ios-15:
           xcode_version: '14.0.0'
@@ -641,6 +676,11 @@ workflows:
       - build-tv-watch-and-macos:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
+      # To ensure we don't break compilation with Xcode 13.2.1
+      - compile-xcode-13-2:
+          name: xcode-13.2.1
+          xcode_version: '13.2.1'
+          <<: *release-branches-and-main
       - release-checks:
           # Not using Xcode 14 yet because it does not contain the new macOS SDK until Ventura is released.
           xcode_version: '13.4.1'
