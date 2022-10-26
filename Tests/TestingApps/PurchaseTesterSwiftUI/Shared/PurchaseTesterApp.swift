@@ -20,6 +20,15 @@ struct PurchaseTesterApp: App {
             NavigationView {
                 if let configuration {
                     ContentView(configuration: configuration)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button {
+                                    self.configuration = nil
+                                } label: {
+                                    Text("Reconfigure")
+                                }
+                            }
+                        }
                 } else {
                     ConfigurationView { data in
                         self.configuration = .init(
@@ -30,7 +39,14 @@ struct PurchaseTesterApp: App {
                     }
                 }
             }
+            .navigationViewStyle(.stack)
+            .animation(.default, value: self.isConfigured)
+            .transition(.opacity)
         }
+    }
+
+    private var isConfigured: Bool {
+        return self.configuration != nil
     }
 
 }

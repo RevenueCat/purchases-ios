@@ -11,17 +11,23 @@ import RevenueCat
 
 struct ConfigurationView: View {
 
-    struct Data {
+    struct Data: Equatable, Codable {
         var apiKey: String = Constants.apiKey.replacingOccurrences(of: "REVENUECAT_API_KEY",
                                                                    with: "")
         var proxy: String = ""
         var storeKit2Enabled: Bool = true
     }
 
-    @State
-    private var data: Data = .init()
-
     let onContinue: (Data) -> Void
+
+    init(onContinue: @escaping (Data) -> Void) {
+        self.onContinue = onContinue
+
+        if let data = self.storedData,
+           let decoded = try? JSONDecoder().decode(Data.self, from: data) {
+            self._data = .init(initialValue: decoded)
+        }
+    }
 
     var body: some View {
         Form {
@@ -45,13 +51,13 @@ struct ConfigurationView: View {
                 }
             }
         }
-
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled(true)
         .navigationTitle("Purchase Tester")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
+                    self.saveData()
                     self.onContinue(self.data)
                 } label: {
                     Text("Continue")
@@ -59,8 +65,23 @@ struct ConfigurationView: View {
                 .disabled(!self.contentIsValid)
             }
         }
+        .onChange(of: self.data) { _ in
+            self.saveData()
+        }
     }
 
+    // MARK: -
+
+    @State
+    private var data: Data = .init() {
+        didSet {
+            self.saveData()
+        }
+    }
+
+    @AppStorage("com.revenuecat.sampleapp.data")
+    private var storedData: Foundation.Data?
+    
     private var contentIsValid: Bool {
         let apiKeyIsValid = !self.data.apiKey
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -71,6 +92,10 @@ struct ConfigurationView: View {
         || URL(string: self.data.proxy) != nil
 
         return apiKeyIsValid && proxyIsValid
+    }
+
+    private func saveData() {
+        self.storedData = try? JSONEncoder().encode(self.data)
     }
 
 }
