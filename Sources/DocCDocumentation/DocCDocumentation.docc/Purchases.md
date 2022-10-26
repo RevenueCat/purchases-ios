@@ -60,8 +60,8 @@ Most features require configuring the SDK before using it.
 ### Identifying Users
 - ``Purchases/appUserID``
 - ``Purchases/isAnonymous``
-- ``Purchases/logIn(_:)``
-- ``Purchases/logIn(_:completion:)``
+- ``Purchases/logIn(_:)-arja``
+- ``Purchases/logIn(_:completion:)-4km90``
 - ``Purchases/logOut()``
 - ``Purchases/logOut(completion:)``
 
