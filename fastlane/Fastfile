@@ -573,7 +573,13 @@ def carthage_archive
 end
 
 lane :check_pods do
-  pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec')
+  pod_lib_lint(
+    verbose: true,
+    podspec:'RevenueCat.podspec', 
+    # TODO: re-add watchOS when https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
+    platforms:"ios,osx,tvos",
+    fail_fast: true
+  )
 end
 
 def current_version_number
