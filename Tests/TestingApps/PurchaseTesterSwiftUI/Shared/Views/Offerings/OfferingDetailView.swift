@@ -47,9 +47,7 @@ struct OfferingDetailView: View {
                         Text("**Pkg Id:** \(package.identifier)")
                         Text("**Sub Group:** \(package.storeProduct.subscriptionGroupIdentifier ?? "-")")
                         Text("**Package type:** \(package.display)")
-                        
-                        
-                        
+
                         if let period = package.storeProduct.sk1Product?.subscriptionPeriod?.unit.rawValue {
                             Text("**Sub Period:** \(period)")
                         } else {
@@ -75,7 +73,9 @@ struct OfferingDetailView: View {
                     .foregroundColor(.blue)
                     .padding(.vertical, 10)
                     .onTapGesture {
-                        purchaseAsPackage()
+                        Task<Void, Never> {
+                            await self.purchaseAsPackage()
+                        }
                     }
                 
                 Divider()
@@ -84,7 +84,9 @@ struct OfferingDetailView: View {
                     .foregroundColor(.blue)
                     .padding(.vertical, 10)
                     .onTapGesture {
-                        purchaseAsProduct()
+                        Task<Void, Never> {
+                            await self.purchaseAsProduct()
+                        }
                     }
 
                 Divider()
@@ -101,22 +103,28 @@ struct OfferingDetailView: View {
             }
         }
         
-        private func purchaseAsPackage() {
-            Purchases.shared.purchase(package: self.package) { transaction, info, error, userCancelled in
-                print("🚀 Info 💁‍♂️ - Transactions: \(transaction)")
-                print("🚀 Info 💁‍♂️ - Info: \(info)")
-                print("🚀 Info 💁‍♂️ - Error: \(error)")
-                print("🚀 Info 💁‍♂️ - User Cancelled: \(userCancelled)")
+        private func purchaseAsPackage() async {
+            do {
+                let result = try await Purchases.shared.purchase(package: self.package)
+                self.completedPurchase(result)
+            } catch {
+                print("🚀 Failed purchase: 💁‍♂️ - Error: \(error)")
             }
         }
         
-        private func purchaseAsProduct() {
-            Purchases.shared.purchase(product: self.package.storeProduct) { transaction, info, error, userCancelled in
-                print("🚀 Info 💁‍♂️ - Transactions: \(transaction)")
-                print("🚀 Info 💁‍♂️ - Info: \(info)")
-                print("🚀 Info 💁‍♂️ - Error: \(error)")
-                print("🚀 Info 💁‍♂️ - User Cancelled: \(userCancelled)")
+        private func purchaseAsProduct() async {
+            do {
+                let result = try await Purchases.shared.purchase(product: self.package.storeProduct)
+                self.completedPurchase(result)
+            } catch {
+                print("🚀 Purchase failed: 💁‍♂️ - Error: \(error)")
             }
+        }
+
+        private func completedPurchase(_ data: PurchaseResultData) {
+            print("🚀 Info 💁‍♂️ - Transaction: \(data.transaction?.description ?? "")")
+            print("🚀 Info 💁‍♂️ - Info: \(data.customerInfo)")
+            print("🚀 Info 💁‍♂️ - User Cancelled: \(data.userCancelled)")
         }
     }
 }
