@@ -15,8 +15,8 @@ struct Constants {
 
     /*
      The API key for your app from the RevenueCat dashboard: https://app.revenuecat.com
+     This is the default used by `ConfigurationView`
      */
-    #error("Modify this property to reflect your app's API key, then comment this line out.")
     static let apiKey = "REVENUECAT_API_KEY"
 
 }
