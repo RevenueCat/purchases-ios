@@ -588,6 +588,18 @@ jobs:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
+  deploy-purchase-tester:
+    <<: *base-job
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - run:
+          name: Submit Purchase Tester
+          working_directory: "Tests/TestingApps/PurchaseTesterSwiftUI"
+          command: bundle exec fastlane deploy_purchase_tester
+
   notify-on-non-patch-release-branches:
     docker:
       - image: 'cimg/base:stable'
@@ -716,6 +728,9 @@ workflows:
           xcode_version: '13.4.1'
           <<: *release-tags
       - docs-deploy:
+          xcode_version: '14.1.0'
+          <<: *release-tags
+      - deploy-purchase-tester:
           xcode_version: '14.1.0'
           <<: *release-tags
       - notify-on-non-patch-release-branches:
