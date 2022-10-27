@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SDKTesterTests.swift
+//  PurchasesDiagnosticsTests.swift
 //
 //  Created by Nacho Soto on 10/10/22.
 
@@ -17,10 +17,10 @@ import XCTest
 @testable import RevenueCat
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-class SDKTesterTests: TestCase {
+class PurchasesDiagnosticsTests: TestCase {
 
     private var purchases: MockPurchases!
-    private var tester: SDKTester!
+    private var diagnostics: PurchasesDiagnostics!
 
     override func setUp() async throws {
         try await super.setUp()
@@ -28,7 +28,7 @@ class SDKTesterTests: TestCase {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         self.purchases = .init()
-        self.tester = .init(purchases: self.purchases)
+        self.diagnostics = .init(purchases: self.purchases)
 
         self.purchases.mockedHealthRequestResponse = .success(())
         self.purchases.mockedCustomerInfoResponse = .success(
@@ -49,9 +49,9 @@ class SDKTesterTests: TestCase {
         self.purchases.mockedHealthRequestResponse = .failure(error)
 
         do {
-            try await self.tester.testRevenueCatIntegration()
+            try await self.diagnostics.testSDKHealth()
             fail("Expected error")
-        } catch let SDKTester.Error.failedConnectingToAPI(underlyingError) {
+        } catch let PurchasesDiagnostics.Error.failedConnectingToAPI(underlyingError) {
             expect(underlyingError).to(matchError(error))
         } catch {
             fail("Unexpected error: \(error)")
@@ -65,9 +65,9 @@ class SDKTesterTests: TestCase {
         self.purchases.mockedCustomerInfoResponse = .failure(error)
 
         do {
-            try await self.tester.testRevenueCatIntegration()
+            try await self.diagnostics.testSDKHealth()
             fail("Expected error")
-        } catch SDKTester.Error.invalidAPIKey {
+        } catch PurchasesDiagnostics.Error.invalidAPIKey {
             // Expected error
         } catch {
             fail("Unexpected error: \(error)")
@@ -79,9 +79,9 @@ class SDKTesterTests: TestCase {
         self.purchases.mockedOfferingsResponse = .failure(error)
 
         do {
-            try await self.tester.testRevenueCatIntegration()
+            try await self.diagnostics.testSDKHealth()
             fail("Expected error")
-        } catch let SDKTester.Error.failedFetchingOfferings(offeringsError) {
+        } catch let PurchasesDiagnostics.Error.failedFetchingOfferings(offeringsError) {
             expect(offeringsError).to(matchError(error))
             expect(self.purchases.invokedGetOfferingsParameters) == .failIfProductsAreMissing
         } catch {
@@ -91,7 +91,7 @@ class SDKTesterTests: TestCase {
 
     func testSuccessfulTest() async throws {
         do {
-            try await self.tester.testRevenueCatIntegration()
+            try await self.diagnostics.testSDKHealth()
         } catch {
             fail("Unexpected error: \(error)")
         }
@@ -101,14 +101,14 @@ class SDKTesterTests: TestCase {
 
     func testUnknownError() {
         let underlyingError = ErrorUtils.missingReceiptFileError()
-        let error = SDKTester.Error.unknown(underlyingError)
+        let error = PurchasesDiagnostics.Error.unknown(underlyingError)
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))
         expect(error.localizedDescription) == "Unknown error: \(underlyingError.localizedDescription)"
     }
 
     func testInvalidAPIKey() {
-        let error = SDKTester.Error.invalidAPIKey
+        let error = PurchasesDiagnostics.Error.invalidAPIKey
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
         expect(error.localizedDescription) == "API key is not valid"
@@ -116,7 +116,7 @@ class SDKTesterTests: TestCase {
 
     func testFailedConnectingToAPI() {
         let underlyingError = ErrorUtils.offlineConnectionError()
-        let error = SDKTester.Error.failedConnectingToAPI(underlyingError)
+        let error = PurchasesDiagnostics.Error.failedConnectingToAPI(underlyingError)
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))
         expect(error.localizedDescription) == "Error connecting to API: \(underlyingError.localizedDescription)"
@@ -124,7 +124,7 @@ class SDKTesterTests: TestCase {
 
     func testFailedFetchingOfferings() {
         let underlyingError = OfferingsManager.Error.missingProducts(identifiers: ["a"]).asPublicError
-        let error = SDKTester.Error.failedFetchingOfferings(underlyingError)
+        let error = PurchasesDiagnostics.Error.failedFetchingOfferings(underlyingError)
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))
         expect(error.localizedDescription) == "Failed fetching offerings: \(underlyingError.localizedDescription)"

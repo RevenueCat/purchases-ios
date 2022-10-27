@@ -7,27 +7,27 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SDKTester.swift
+//  PurchasesDiagnostics.swift
 //
 //  Created by Nacho Soto on 9/21/22.
 
 import Foundation
 
-/// `SDKTester` allows you to ensure that the SDK is set up correctly by diagnosing configuration errors.
-/// To run the test, simply call ``SDKTester/testRevenueCatIntegrationWithCompletion()``.
+/// `PurchasesDiagnostics` allows you to ensure that the SDK is set up correctly by diagnosing configuration errors.
+/// To run the test, simply call ``PurchasesDiagnostics/testSDKHealth()``.
 ///
 /// #### Example:
 /// ```swift
-/// let tester = SDKTester.default
+/// let diagnostics = PurchasesDiagnostics.default
 /// do {
-///     try await tester.testRevenueCatIntegration()
+///     try await diagnostics.testSDKHealth()
 /// } catch {
-///     print("SDKTester failed: \(error.localizedDescription)")
+///     print("Diagnostics failed: \(error.localizedDescription)")
 /// }
 /// ```
-@objc(RCSDKTester)
+@objc(RCPurchasesDiagnostics)
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-public final class SDKTester: NSObject {
+public final class PurchasesDiagnostics: NSObject {
 
     typealias SDK = PurchasesType & InternalPurchasesType
 
@@ -37,16 +37,16 @@ public final class SDKTester: NSObject {
         self.purchases = purchases
     }
 
-    /// Default instance of `SDKTester`.
+    /// Default instance of `PurchasesDiagnostics`.
     /// Note: you must call ``Purchases/configure(with:)-6oipy`` before using this.
     @objc
-    public static let `default`: SDKTester = .init(purchases: Purchases.shared)
+    public static let `default`: PurchasesDiagnostics = .init(purchases: Purchases.shared)
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-extension SDKTester {
+extension PurchasesDiagnostics {
 
-    /// An error that represents a failing step in ``SDKTester``
+    /// An error that represents a failing step in ``PurchasesDiagnostics``
     public enum Error: Swift.Error {
 
         /// Connection to the API failed
@@ -68,12 +68,12 @@ extension SDKTester {
 // MARK: - Implementation
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-extension SDKTester {
+extension PurchasesDiagnostics {
 
     /// Perform tests to ensure SDK is configured correctly.
-    /// - `Throws`: ``SDKTester/Error`` if any step fails
-    @objc(testRevenueCatIntegrationWithCompletion:)
-    public func testRevenueCatIntegration() async throws {
+    /// - `Throws`: ``PurchasesDiagnostics/Error`` if any step fails
+    @objc(testSDKHealthWithCompletion:)
+    public func testSDKHealth() async throws {
         do {
             try await self.unauthenticatedRequest()
             try await self.authenticatedRequest()
@@ -91,7 +91,7 @@ extension SDKTester {
 // MARK: - Private
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-private extension SDKTester {
+private extension PurchasesDiagnostics {
 
     /// Makes a request to the backend, to verify connectivity, firewalls, or anything blocking network traffic.
     func unauthenticatedRequest() async throws {
@@ -139,7 +139,7 @@ private extension SDKTester {
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-extension SDKTester.Error: CustomNSError {
+extension PurchasesDiagnostics.Error: CustomNSError {
 
     // swiftlint:disable:next missing_docs
     public var errorUserInfo: [String: Any] {

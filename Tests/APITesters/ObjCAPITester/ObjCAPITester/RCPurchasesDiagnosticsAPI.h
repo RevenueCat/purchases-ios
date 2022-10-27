@@ -1,5 +1,5 @@
 //
-//  RCSDKTesterAPI.h
+//  RCPurchasesDiagnosticsAPI.h
 //  ObjCAPITester
 //
 //  Created by Nacho Soto on 10/10/22.
@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCSDKTesterAPI : NSObject
+@interface RCPurchasesDiagnosticsAPI : NSObject
 
 + (void)checkAPI;
 
