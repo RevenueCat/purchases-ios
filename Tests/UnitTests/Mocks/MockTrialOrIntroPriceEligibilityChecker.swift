@@ -34,16 +34,16 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
 
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = false
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount = 0
-    var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters: (productIdentifiers: [String], Void)?
-    var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList = [(productIdentifiers: [String], Void)]()
+    var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters: [String]?
+    var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList = [[String]]()
     var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     override func checkEligibility(productIdentifiers: [String],
                                    completion: @escaping ReceiveIntroEligibilityBlock) {
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = true
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount += 1
-        invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters = (productIdentifiers, ())
-        invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList.append((productIdentifiers, ()))
+        invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters = productIdentifiers
+        invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList.append(productIdentifiers)
         completion(stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult)
     }
 

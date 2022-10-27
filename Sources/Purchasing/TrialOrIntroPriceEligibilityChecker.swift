@@ -135,6 +135,20 @@ extension TrialOrIntroPriceEligibilityCheckerType {
 
 }
 
+/// Default overload implementation that exposes an `async` API.
+@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
+extension TrialOrIntroPriceEligibilityCheckerType {
+
+    func checkEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
+        return await Async.call { completion in
+            self.checkEligibility(productIdentifiers: productIdentifiers) { result in
+                completion(result)
+            }
+        }
+    }
+
+}
+
 // MARK: - Implementations
 
 private extension TrialOrIntroPriceEligibilityChecker {
