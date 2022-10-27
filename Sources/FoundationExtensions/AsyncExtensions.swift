@@ -56,6 +56,7 @@ internal enum Async {
         }
     }
 
+    /// Invokes a completion-block based API and returns the `throw`ing method `async`hronously.
     static func call<Value, Error: Swift.Error>(
         method: (@escaping @Sendable (Result<Value, Error>) -> Void) -> Void
     ) async throws -> Value {
@@ -63,6 +64,20 @@ internal enum Async {
             @Sendable
             func complete(_ result: Result<Value, Error>) {
                 continuation.resume(with: result)
+            }
+
+            method(complete)
+        }
+    }
+
+    /// Invokes a completion-block based API and returns the method `async`hronoiusly.
+    static func call<Value>(
+        method: (@escaping @Sendable (Value) -> Void) -> Void
+    ) async -> Value {
+        return await withCheckedContinuation { continuation in
+            @Sendable
+            func complete(_ value: Value) {
+                continuation.resume(with: .success(value))
             }
 
             method(complete)
