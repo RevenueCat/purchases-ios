@@ -123,7 +123,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
         expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList)
             .to(contain([
-                cachedProductIDs,
+                Set(cachedProductIDs),
                 [Self.productID3]
             ]))
 
