@@ -62,11 +62,13 @@ struct HomeView: View {
                         Text("Sync Purchases")
                     }
                     
+                    #if os(iOS) && !targetEnvironment(macCatalyst)
                     Button {
                         Purchases.shared.presentCodeRedemptionSheet()
                     } label: {
                         Text("Redemption Sheet")
                     }
+                    #endif
                     
                     Button {
                         Task<Void, Never> {
@@ -79,7 +81,8 @@ struct HomeView: View {
                     } label: {
                         Text("Manage Subscriptions")
                     }
-                    
+
+                    #if os(iOS)
                     Button {
                         Task<Void, Never> {
                             do {
@@ -91,6 +94,7 @@ struct HomeView: View {
                     } label: {
                         Text("Begin Refund For Active Entitlement")
                     }
+                    #endif
                 }
             }
                 .padding()
