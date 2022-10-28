@@ -36,15 +36,19 @@ class NetworkOperation: Operation {
 
     let httpClient: HTTPClient
 
+    // Note: implementing asynchronousy `Operations` needs KVO.
+    // We're not using Swift's `KeyPath` verison (`willChangeValue(for:)`)
+    // due to it crashing on iOS 12. See https://github.com/RevenueCat/purchases-ios/pull/2008.
+
     private var _isExecuting: Atomic<Bool> = false
     private(set) override final var isExecuting: Bool {
         get {
             return self._isExecuting.value
         }
         set {
-            self.willChangeValue(for: \.isExecuting)
+            self.willChangeValue(forKey: #keyPath(NetworkOperation.isExecuting))
             self._isExecuting.value = newValue
-            self.didChangeValue(for: \.isExecuting)
+            self.didChangeValue(forKey: #keyPath(NetworkOperation.isExecuting))
         }
     }
 
@@ -54,9 +58,9 @@ class NetworkOperation: Operation {
             return self._isFinished.value
         }
         set {
-            self.willChangeValue(for: \.isFinished)
+            self.willChangeValue(forKey: #keyPath(NetworkOperation.isFinished))
             self._isFinished.value = newValue
-            self.didChangeValue(for: \.isFinished)
+            self.didChangeValue(forKey: #keyPath(NetworkOperation.isFinished))
         }
     }
 
@@ -66,9 +70,10 @@ class NetworkOperation: Operation {
             return self._isCancelled.value
         }
         set {
-            self.willChangeValue(for: \.isCancelled)
+            self.willChangeValue(forKey: #keyPath(NetworkOperation.isCancelled))
             self._isCancelled.value = newValue
-            self.didChangeValue(for: \.isCancelled)
+            self.didChangeValue(forKey: #keyPath(NetworkOperation.isCancelled))
+
         }
     }
 
