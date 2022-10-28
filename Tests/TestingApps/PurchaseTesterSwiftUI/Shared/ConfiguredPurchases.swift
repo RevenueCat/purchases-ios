@@ -25,6 +25,7 @@ final class ConfiguredPurchases {
         useStoreKit2: Bool
     ) {
         Purchases.logLevel = .debug
+        Purchases.logHandler = Self.logger.logHandler
 
         if let proxyURL {
             Purchases.proxyURL = URL(string: proxyURL)!
@@ -38,6 +39,10 @@ final class ConfiguredPurchases {
 
         self.init(purchases: purchases)
     }
+
+    // MARK: -
+
+    static let logger: Logger = .init()
 
 }
 

@@ -24,6 +24,9 @@
 		2CF4286428637559007E6A78 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF4286328637559007E6A78 /* RevenueCat.framework */; };
 		2CF4286528637559007E6A78 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF4286328637559007E6A78 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2CF428692863EEAC007E6A78 /* Package+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF428682863EEAC007E6A78 /* Package+Extensions.swift */; };
+		575642A2290C78DD00719219 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A1290C78DD00719219 /* Logger.swift */; };
+		575642A4290C7A2700719219 /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A3290C7A2700719219 /* LoggerView.swift */; };
+		575642A6290C7D3100719219 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A5290C7D3100719219 /* Windows.swift */; };
 		57ED6A80290886B6009580C6 /* ConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A7F290886B6009580C6 /* ConfigurationView.swift */; };
 		57ED6A8229089111009580C6 /* Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A8129089111009580C6 /* Identifiable.swift */; };
 		57ED6A84290891AF009580C6 /* ConfiguredPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */; };
@@ -63,6 +66,9 @@
 		2CD2C4F5278C9B02005D1CC2 /* PurchaseTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PurchaseTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CF4286328637559007E6A78 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CF428682863EEAC007E6A78 /* Package+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Package+Extensions.swift"; sourceTree = "<group>"; };
+		575642A1290C78DD00719219 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		575642A3290C7A2700719219 /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
+		575642A5290C7D3100719219 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
 		57ED6A7F290886B6009580C6 /* ConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationView.swift; sourceTree = "<group>"; };
 		57ED6A8129089111009580C6 /* Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Identifiable.swift; sourceTree = "<group>"; };
 		57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfiguredPurchases.swift; sourceTree = "<group>"; };
@@ -89,9 +95,10 @@
 				2CD2C4EF278C9B01005D1CC2 /* ContentView.swift */,
 				57ED6A7F290886B6009580C6 /* ConfigurationView.swift */,
 				2C10F18427A995150078444D /* HomeView.swift */,
+				575642A3290C7A2700719219 /* LoggerView.swift */,
+				2C10F18D27AAD1F00078444D /* TextFieldAlert.swift */,
 				2C10F18927A996F10078444D /* Customer */,
 				2C10F18827A996B80078444D /* Offerings */,
-				2C10F18D27AAD1F00078444D /* TextFieldAlert.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -142,10 +149,12 @@
 			children = (
 				2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */,
 				2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */,
+				57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */,
+				575642A1290C78DD00719219 /* Logger.swift */,
+				575642A5290C7D3100719219 /* Windows.swift */,
 				2CF428672863EE9D007E6A78 /* Extensions */,
 				2C10F18727A9952B0078444D /* Views */,
 				2CD2C4F0278C9B02005D1CC2 /* Assets.xcassets */,
-				57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -264,7 +273,10 @@
 				2C10F18B27A997570078444D /* CustomerView.swift in Sources */,
 				2C10F19A27AC32840078444D /* SubscriberAttributesView.swift in Sources */,
 				2CD2C516278C9B02005D1CC2 /* PurchaseTesterApp.swift in Sources */,
+				575642A4290C7A2700719219 /* LoggerView.swift in Sources */,
 				2C10F18227A9943D0078444D /* PromoOfferDetailsView.swift in Sources */,
+				575642A2290C78DD00719219 /* Logger.swift in Sources */,
+				575642A6290C7D3100719219 /* Windows.swift in Sources */,
 				2C10F19727AC31B80078444D /* CustomerInfoView.swift in Sources */,
 				57ED6A86290893B6009580C6 /* Extensions.swift in Sources */,
 				57ED6A8229089111009580C6 /* Identifiable.swift in Sources */,
