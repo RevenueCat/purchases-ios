@@ -111,7 +111,7 @@ final class AttributionPoster {
                 return
             }
 
-            let attributionDetailsValues = Array(attributionDetails.values)
+            let attributionDetailsValues = attributionDetails.values
             let firstAttributionDict = attributionDetailsValues.first as? [String: NSObject]
 
             guard let hasIad = firstAttributionDict?["iad-attribution"] as? NSNumber,
