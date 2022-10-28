@@ -66,7 +66,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../Configuration.storekit">
+         identifier = "../RevenueCat_IntegrationPurchaseTesterConfiguration.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
