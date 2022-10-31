@@ -49,7 +49,7 @@ class CachingProductsManagerTests: TestCase {
         self.expectProductsWereFetched(times: 1, for: Self.productID)
     }
 
-    func testFetchesNotCachedProductIfOneOfTheRequestedProductsIsNotCached() async throws {
+    func testFetchesNotCachedProductsIfOneOfTheRequestedProductsIsNotCached() async throws {
         let product1 = self.createMockProduct(identifier: "product1")
         let product2 = self.createMockProduct(identifier: "product2")
 
@@ -67,7 +67,7 @@ class CachingProductsManagerTests: TestCase {
         expect(self.mockManager.invokedProductsCount) == 2
         expect(self.mockManager.invokedProductsParametersList) == [
             Set([product1.productIdentifier]), // First product fetched
-            Set([product1.productIdentifier, product2.productIdentifier]) // Both products fetched
+            Set([product2.productIdentifier]) // Only second product fetched
         ]
     }
 
