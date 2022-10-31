@@ -15,21 +15,14 @@ import StoreKit
 
 class TransactionsManager {
 
-    private let storeKit2Setting: StoreKit2Setting
     private let receiptParser: ReceiptParser
 
-    init(storeKit2Setting: StoreKit2Setting,
-         receiptParser: ReceiptParser) {
-        self.storeKit2Setting = storeKit2Setting
+    init(receiptParser: ReceiptParser) {
         self.receiptParser = receiptParser
     }
 
-    func customerHasTransactions(receiptData: Data, completion: @escaping (Bool) -> Void) {
-        completion(self.sk1CheckCustomerHasTransactions(receiptData: receiptData))
-    }
-
-    func sk1CheckCustomerHasTransactions(receiptData: Data) -> Bool {
-        receiptParser.receiptHasTransactions(receiptData: receiptData)
+    func customerHasTransactions(receiptData: Data) -> Bool {
+        return self.receiptParser.receiptHasTransactions(receiptData: receiptData)
     }
 
 }

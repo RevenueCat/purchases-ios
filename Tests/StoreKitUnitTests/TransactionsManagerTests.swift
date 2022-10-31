@@ -25,19 +25,17 @@ class TransactionsManagerTests: StoreKitConfigTestCase {
         try super.setUpWithError()
 
         self.mockReceiptParser = MockReceiptParser()
-        self.transactionsManager = TransactionsManager(storeKit2Setting: .disabled,
-                                                       receiptParser: self.mockReceiptParser)
+        self.transactionsManager = TransactionsManager(receiptParser: self.mockReceiptParser)
     }
 
     func testCheckCustomerHasTransactionsParserIsCalled() {
-        _ = transactionsManager.sk1CheckCustomerHasTransactions(receiptData: .init())
-        expect(self.mockReceiptParser.invokedReceiptHasTransactions) ==  true
+        _ = transactionsManager.customerHasTransactions(receiptData: .init())
+        expect(self.mockReceiptParser.invokedReceiptHasTransactions) == true
     }
 
     func testCheckCustomerHasTransactionsCalculatedFromReceiptData() {
         self.mockReceiptParser.stubbedReceiptHasTransactionsResult = true
-        let receivedHasTransactionsValue = self.transactionsManager.sk1CheckCustomerHasTransactions(receiptData: .init())
-        expect(receivedHasTransactionsValue) == true
+        expect(self.transactionsManager.customerHasTransactions(receiptData: .init())) == true
     }
 
 }

@@ -983,34 +983,33 @@ private extension PurchasesOrchestrator {
                       return
                   }
 
-            self.transactionsManager.customerHasTransactions(receiptData: receiptData) { hasTransactions in
-                let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
-                let hasOriginalPurchaseDate = cachedCustomerInfo?.originalPurchaseDate != nil
+            let hasTransactions = self.transactionsManager.customerHasTransactions(receiptData: receiptData)
+            let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
+            let hasOriginalPurchaseDate = cachedCustomerInfo?.originalPurchaseDate != nil
 
-                if !hasTransactions && hasOriginalPurchaseDate {
-                    if let completion = completion {
-                        self.operationDispatcher.dispatchOnMainThread {
-                            completion(
-                                Result(cachedCustomerInfo,
-                                       ErrorUtils.customerInfoError(withMessage: "No cached customer info"))
-                            )
-                        }
+            if !hasTransactions && hasOriginalPurchaseDate {
+                if let completion = completion {
+                    self.operationDispatcher.dispatchOnMainThread {
+                        completion(
+                            Result(cachedCustomerInfo,
+                                   ErrorUtils.customerInfoError(withMessage: "No cached customer info"))
+                        )
                     }
-                    return
                 }
+                return
+            }
 
-                self.backend.post(receiptData: receiptData,
-                                  appUserID: currentAppUserID,
-                                  isRestore: isRestore,
-                                  productData: nil,
-                                  presentedOfferingIdentifier: nil,
-                                  observerMode: !self.finishTransactions,
-                                  initiationSource: initiationSource,
-                                  subscriberAttributes: unsyncedAttributes) { result in
-                    self.handleReceiptPost(result: result,
-                                           subscriberAttributes: unsyncedAttributes,
-                                           completion: completion)
-                }
+            self.backend.post(receiptData: receiptData,
+                              appUserID: currentAppUserID,
+                              isRestore: isRestore,
+                              productData: nil,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: !self.finishTransactions,
+                              initiationSource: initiationSource,
+                              subscriberAttributes: unsyncedAttributes) { result in
+                self.handleReceiptPost(result: result,
+                                       subscriberAttributes: unsyncedAttributes,
+                                       completion: completion)
             }
         }
     }

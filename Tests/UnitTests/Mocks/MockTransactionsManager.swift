@@ -22,12 +22,13 @@ class MockTransactionsManager: TransactionsManager {
     var invokedCustomerHasTransactionsParametersList = [Data]()
     var stubbedCustomerHasTransactionsCompletionParameter = false
 
-    override func customerHasTransactions(receiptData: Data, completion: @escaping (Bool) -> Void) {
-        invokedCustomerHasTransactions = true
-        invokedCustomerHasTransactionsCount += 1
-        invokedCustomerHasTransactionsParameters = receiptData
-        invokedCustomerHasTransactionsParametersList.append(receiptData)
-        completion(stubbedCustomerHasTransactionsCompletionParameter)
+    override func customerHasTransactions(receiptData: Data) -> Bool {
+        self.invokedCustomerHasTransactions = true
+        self.invokedCustomerHasTransactionsCount += 1
+        self.invokedCustomerHasTransactionsParameters = receiptData
+        self.invokedCustomerHasTransactionsParametersList.append(receiptData)
+
+        return self.stubbedCustomerHasTransactionsCompletionParameter
     }
 
 }
