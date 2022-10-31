@@ -51,10 +51,23 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
             completion(cached)
         } else {
             self.checker.checkEligibility(productIdentifiers: Array(missingProducts)) { result in
-                self.cache.value += result
+                self.cache.value += result.filter { $0.value.shouldCache }
 
                 completion(cached + result)
             }
+        }
+    }
+
+}
+
+// MARK: - Private
+
+private extension IntroEligibility {
+
+    var shouldCache: Bool {
+        switch self.status {
+        case .noIntroOfferExists, .ineligible, .eligible: return true
+        case .unknown: return false
         }
     }
 

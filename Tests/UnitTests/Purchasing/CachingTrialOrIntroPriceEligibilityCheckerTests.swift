@@ -65,6 +65,31 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters) == [Self.productID1]
     }
 
+    func testRetriesIfFailed() async {
+        let unknownResult: Result = [
+            Self.productID1: .init(eligibilityStatus: .unknown)
+        ]
+        self.mockChecker.stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult
+        = unknownResult
+
+        let result1 = await self.caching.checkEligibility(productIdentifiers: [Self.productID1])
+        expect(result1) == unknownResult
+
+        let expected: Result = [
+            Self.productID1: .init(eligibilityStatus: .noIntroOfferExists)
+        ]
+        self.mockChecker.stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult = expected
+
+        let result2 = await self.caching.checkEligibility(productIdentifiers: [Self.productID1])
+        expect(result2) == expected
+
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList) == [
+            [Self.productID1],
+            [Self.productID1]
+        ]
+    }
+
     func testCachesResultForMultipleProducts() async {
         let productIDs = [
             Self.productID1,
@@ -86,6 +111,32 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
         expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters)
             .to(contain(productIDs))
+    }
+
+    func testOnlyCachesEligibilitiesThatDidNotFail() async {
+        let productIDs = [
+            Self.productID1,
+            Self.productID2
+        ]
+
+        let expected: Result = [
+            Self.productID1: .init(eligibilityStatus: .eligible),
+            Self.productID2: .init(eligibilityStatus: .unknown)
+        ]
+
+        self.mockChecker.stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult = expected
+
+        _ = await self.caching.checkEligibility(productIdentifiers: productIDs)
+        let result = await self.caching.checkEligibility(productIdentifiers: productIDs)
+
+        expect(result) == expected
+
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList)
+            .to(contain([
+                [Self.productID1, Self.productID2],
+                [Self.productID2]
+            ]))
     }
 
     func testFetchesOnlyMissingProductsFromCache() async {
