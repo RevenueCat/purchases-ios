@@ -55,7 +55,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     func checkEligibility(productIdentifiers: [String],
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         guard !productIdentifiers.isEmpty else {
-            Logger.warn(Strings.purchase.check_eligibility_no_identifiers)
+            Logger.warn(Strings.eligibility.check_eligibility_no_identifiers)
             completion([:])
             return
         }
@@ -66,7 +66,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 do {
                     return try await self.sk2CheckEligibility(productIdentifiers)
                 } catch {
-                    Logger.appleError(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
+                    Logger.appleError(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
 
                     return productIdentifiers.reduce(into: [:]) { resultDict, productId in
                         resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
@@ -232,7 +232,7 @@ extension TrialOrIntroPriceEligibilityChecker {
                                                    productIdentifiers: productIdentifiers) { backendResult, error in
             let result: [String: IntroEligibility] = {
                 if let error = error {
-                    Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
+                    Logger.error(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
                     return Set(productIdentifiers)
                         .dictionaryWithValues { _ in IntroEligibility(eligibilityStatus: .unknown) }
                 } else {

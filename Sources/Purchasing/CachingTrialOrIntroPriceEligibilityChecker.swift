@@ -45,13 +45,20 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
         // It's a fine compromise to keep this implementaton simpler.
         let cached = self.cache.value.filter { uniqueProductIdentifiers.contains($0.key) }
 
+        if !cached.isEmpty {
+            Logger.debug(Strings.eligibility.found_cached_eligibility_for_products(Set(cached.keys)))
+        }
+
         let missingProducts = uniqueProductIdentifiers.subtracting(cached.keys)
 
         if missingProducts.isEmpty {
             completion(cached)
         } else {
             self.checker.checkEligibility(productIdentifiers: Array(missingProducts)) { result in
-                self.cache.value += result.filter { $0.value.shouldCache }
+                let productsToCache = result.filter { $0.value.shouldCache }
+
+                Logger.debug(Strings.eligibility.caching_intro_eligibility_for_products(Set(productsToCache.keys)))
+                self.cache.value += productsToCache
 
                 completion(cached + result)
             }
