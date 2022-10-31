@@ -19,7 +19,7 @@ A clear and concise description of what the bug is. The more detail you can prov
 1. Environment
    1. Platform:
    2. SDK version:
-   3. StoreKit 2 (_enabled with `useStoreKit2IfEnabled`_) (Y/N):
+   3. StoreKit 2 (_disabled with `useStoreKit2IfEnabled(false)`_) (Y/N):
    4. OS version:
    5. Xcode version:
    6. How widespread is the issue. Percentage of devices affected.
