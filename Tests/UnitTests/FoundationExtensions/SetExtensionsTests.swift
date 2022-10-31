@@ -40,4 +40,20 @@ class SetExtensionsTests: TestCase {
         ]
     }
 
+    func testAddingTwoSets() {
+        let set1: Set<String> = ["1", "2"]
+        let set2: Set<String> = ["3", "2"]
+
+        expect(set1 + set2) == ["1", "2", "3"]
+    }
+
+    func testSetUnion() {
+        var set1: Set<String> = ["1", "2"]
+        let set2: Set<String> = ["3", "2"]
+
+        set1 += set2
+
+        expect(set1) == ["1", "2", "3"]
+    }
+
 }

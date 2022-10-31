@@ -14,8 +14,20 @@
 import Foundation
 
 extension Set {
+
     /// Creates a `Dictionary` with the keys in the receiver `Set`, and the values provided by `value`.
     func dictionaryWithValues<Value>(_ value: @escaping (Element) -> Value) -> [Element: Value] {
         return Dictionary(uniqueKeysWithValues: self.lazy.map { ($0, value($0)) })
     }
+
+    /// Merge the values of two `Set`s.
+    static func + (lhs: Set<Element>, rhs: Set<Element>) -> Set<Element> {
+        lhs.union(rhs)
+    }
+
+    /// Adds values from `rhs` to `lhs`.
+    static func += (lhs: inout Set<Element>, rhs: Set<Element>) {
+        lhs.formUnion(rhs)
+    }
+
 }
