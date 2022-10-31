@@ -25,23 +25,11 @@ class TransactionsManager {
     }
 
     func customerHasTransactions(receiptData: Data, completion: @escaping (Bool) -> Void) {
-        // Note: this uses SK2 (unless it's explicitly disabled) because its implementation is more accurate.
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *), self.storeKit2Setting != .disabled {
-            Async.call(with: completion) {
-                return await self.sk2CheckCustomerHasTransactions()
-            }
-        } else {
-            completion(self.sk1CheckCustomerHasTransactions(receiptData: receiptData))
-        }
+        completion(self.sk1CheckCustomerHasTransactions(receiptData: receiptData))
     }
 
     func sk1CheckCustomerHasTransactions(receiptData: Data) -> Bool {
         receiptParser.receiptHasTransactions(receiptData: receiptData)
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2CheckCustomerHasTransactions() async -> Bool {
-        await StoreKit.Transaction.all.contains { _ in true }
     }
 
 }
