@@ -14,12 +14,6 @@ aliases:
         type: string
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
-  release-tags-and-branches: &release-tags-and-branches
-    filters:
-      tags:
-        ignore: /^.*-SNAPSHOT/
-      branches:
-        only: /^release\/.*/
   release-branches: &release-branches
     filters:
       tags:
@@ -688,25 +682,30 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
-      - installation-tests-cocoapods:
-          xcode_version: '14.1.0'
-          <<: *release-tags-and-branches
-      - installation-tests-swift-package-manager:
-          xcode_version: '14.1.0'
-          <<: *release-tags-and-branches
-      - installation-tests-carthage:
-          xcode_version: '14.1.0'
-          <<: *release-tags-and-branches
-      - installation-tests-xcode-direct-integration:
-          xcode_version: '14.1.0'
-          <<: *release-tags-and-branches
   deploy:
     when:
       not:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
+      - installation-tests-cocoapods:
+          xcode_version: '14.1.0'
+          <<: *release-branches
+      - installation-tests-swift-package-manager:
+          xcode_version: '14.1.0'
+          <<: *release-branches
+      - installation-tests-carthage:
+          xcode_version: '14.1.0'
+          <<: *release-branches
+      - installation-tests-xcode-direct-integration:
+          xcode_version: '14.1.0'
+          <<: *release-branches
       - hold:
           type: approval
+          requires:
+            - installation-tests-cocoapods
+            - installation-tests-swift-package-manager
+            - installation-tests-carthage
+            - installation-tests-xcode-direct-integration
           <<: *release-branches
       - tag-release-branch:
           requires:
