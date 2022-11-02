@@ -82,8 +82,7 @@ class BasePurchasesTests: TestCase {
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: self.systemInfo,
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.identityManager)
-        self.mockTransactionsManager = MockTransactionsManager(storeKit2Setting: self.systemInfo.storeKit2Setting,
-                                                               receiptParser: self.mockReceiptParser)
+        self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
     }
 
     override func tearDown() {
