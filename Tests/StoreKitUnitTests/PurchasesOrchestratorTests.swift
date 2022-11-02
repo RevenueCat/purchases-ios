@@ -194,9 +194,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
     }
 
-    func testPurchaseSK1PromotionalOffer() async throws {
+    func testGetSK1PromotionalOffer() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
 
         let product = try await fetchSk1Product()
@@ -210,14 +209,53 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                             numberOfPeriods: 2,
                                                             type: .promotional)
 
-        _ = try await Async.call { completion in
+        let result = try await Async.call { completion in
             orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
                                           product: StoreProduct(sk1Product: product),
                                           completion: completion)
         }
 
+        expect(result.signedData.identifier) == storeProductDiscount.offerIdentifier
+
         expect(self.offerings.invokedPostOfferCount) == 1
         expect(self.offerings.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
+    }
+
+    func testGetSK1PromotionalOfferFailsWithIneligibleDiscount() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        self.offerings.stubbedPostOfferCompletionResult = .failure(
+            .networkError(
+                .errorResponse(
+                    .init(code: .userIneligibleForPromoOffer),
+                    .success
+                )
+            )
+        )
+
+        let product = try await self.fetchSk1Product()
+
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            currencyCode: product.priceLocale.currencyCode,
+                                                            price: 11.1,
+                                                            localizedPriceString: "$11.10",
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            numberOfPeriods: 2,
+                                                            type: .promotional)
+
+        do {
+            _ = try await Async.call { completion in
+                self.orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                                   product: StoreProduct(sk1Product: product),
+                                                   completion: completion)
+            }
+
+            fail("Expected error")
+        } catch let purchasesError as PurchasesError {
+            expect(purchasesError.error).to(matchError(ErrorCode.ineligibleError))
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
     }
 
     func testPurchaseSK1PackageWithDiscountSendsReceiptToBackendIfSuccessful() async throws {
