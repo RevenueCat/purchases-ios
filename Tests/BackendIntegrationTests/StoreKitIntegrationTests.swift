@@ -377,8 +377,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
     func testPurchaseWithPromotionalOffer() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try XCTSkipIf(Self.storeKit2Setting == .enabledForCompatibleDevices,
-                      "This test is not currently passing on SK2")
 
         let user = UUID().uuidString
 
