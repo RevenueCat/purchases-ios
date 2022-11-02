@@ -22,6 +22,8 @@ class TransactionsManager {
     }
 
     func customerHasTransactions(receiptData: Data) -> Bool {
+        // Note: even though SK2's implementation (using `StoreKit.Transaction.all`) might be more accurate
+        // we need to check what will be reflected in the posted receipt.
         return self.receiptParser.receiptHasTransactions(receiptData: receiptData)
     }
 
