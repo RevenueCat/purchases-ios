@@ -16,6 +16,8 @@ struct HomeView: View {
     
     @State private var showingAlert = false
     @State private var newAppUserID: String = ""
+
+    @State private var error: Error?
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -103,6 +105,18 @@ struct HomeView: View {
                 }
 
         }
+        .alert(
+            isPresented: .constant(self.error != nil),
+            error: LocalizedAlertError(self.error),
+            actions: { _ in
+                Button("OK") {
+                    self.error = nil
+                }
+            },
+            message: { error in
+                Text((error.underlyingError as NSError).debugDescription)
+            }
+        )
         .navigationTitle("PurchaseTester")
         .textFieldAlert(isShowing: self.$showingAlert, title: "App User ID", fields: [("User ID", "ID of your user", self.$newAppUserID)]) {
             guard !self.newAppUserID.isEmpty else {
@@ -116,6 +130,7 @@ struct HomeView: View {
                     print("🚀 Info 💁‍♂️ - Created: \(created)")
                 } catch {
                     print("🚀 Info 💁‍♂️ - Error: \(error)")
+                    self.error = error
                 }
             }
         }
@@ -129,6 +144,7 @@ struct HomeView: View {
             })
         } catch {
             print("🚀 Info 💁‍♂️ - Error: \(error)")
+            self.error = error
         }
     }
     
@@ -143,6 +159,7 @@ struct HomeView: View {
             print("🚀 Info 💁‍♂️ - Customer Info: \(customerInfo)")
         } catch {
             print("🚀 Failed logging out 💁‍♂️ - Error: \(error)")
+            self.error = error
         }
     }
 }
@@ -231,4 +248,18 @@ private struct OfferingItemView: View {
             Text("\(offering.availablePackages.count) package(s)")
         }
     }
+}
+
+private struct LocalizedAlertError: LocalizedError {
+
+    let underlyingError: Error
+
+    var errorDescription: String? { (self.underlyingError as NSError).localizedDescription }
+    var recoverySuggestion: String? { (self.underlyingError as NSError).localizedRecoverySuggestion }
+
+    init?(_ error: Error?) {
+        guard let error else { return nil }
+        self.underlyingError = error
+    }
+
 }
