@@ -16,7 +16,7 @@ struct PurchaseTesterApp: App {
     private var configuration: ConfiguredPurchases?
     
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: Windows.default.rawValue) {
             NavigationView {
                 if let configuration {
                     ContentView(configuration: configuration)
@@ -42,6 +42,10 @@ struct PurchaseTesterApp: App {
             .navigationViewStyle(.stack)
             .animation(.default, value: self.isConfigured)
             .transition(.opacity)
+        }
+
+        WindowGroup(id: Windows.logs.rawValue) {
+            LoggerView(logger: ConfiguredPurchases.logger)
         }
     }
 

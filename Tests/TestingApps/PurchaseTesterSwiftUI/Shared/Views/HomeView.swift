@@ -210,11 +210,10 @@ private struct CustomerInfoHeaderView: View {
                     NavigationLink(destination: CustomerView(customerInfo: customerInfo)) {
                         Text("View Info")
                     }
-                } else {
-                    Text("View Info")
                 }
                 
                 Spacer()
+
                 if Purchases.shared.isAnonymous {
                     Button {
                         Task<Void, Never> {
@@ -232,7 +231,21 @@ private struct CustomerInfoHeaderView: View {
                         Text("Logout")
                     }
                 }
+
                 Spacer()
+
+                #if targetEnvironment(macCatalyst)
+                if #available(macCatalyst 16.0, *) {
+                    OpenWindowButton()
+                }
+                #else
+                NavigationLink(destination: LoggerView(logger: ConfiguredPurchases.logger)) {
+                    Text("View logs")
+                }
+                #endif
+
+                Spacer()
+
             }.padding(.top, 20)
         }
     }
@@ -263,3 +276,19 @@ private struct LocalizedAlertError: LocalizedError {
     }
 
 }
+
+#if targetEnvironment(macCatalyst)
+@available(macCatalyst 16.0, *)
+private struct OpenWindowButton: View {
+
+    @Environment(\.openWindow)
+    private var openWindow
+
+    var body: some View {
+        Button("View logs") {
+            self.openWindow(id: Windows.logs.rawValue)
+        }
+    }
+    
+}
+#endif
