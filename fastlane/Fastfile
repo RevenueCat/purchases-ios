@@ -465,6 +465,28 @@ platform :ios do
     end
   end
 
+  desc "Build and deploy PurchaseTesterSwiftUI"
+  lane :deploy_purchase_tester do
+    match(verbose: true, readonly: true)
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1,
+      xcodeproj: 'PurchaseTester.xcodeproj'
+    )
+    build_ios_app(
+      workspace: "PurchaseTester.xcworkspace",
+      scheme: "PurchaseTester",
+      destination: "generic/platform=ios",
+      xcodebuild_formatter: ''
+    )
+    upload_to_app_store(
+      skip_metadata: true,
+      skip_screenshots: true,
+      automatic_release: true,
+      submit_for_review: false,
+      run_precheck_before_submit: false
+    )
+  end
+
   desc "Create or delete sandbox testers"
   lane :sandbox_testers do
     Spaceship::ConnectAPI.login(use_portal: false)
