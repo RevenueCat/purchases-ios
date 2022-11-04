@@ -492,15 +492,35 @@ platform :ios do
 
   desc "Build and deploy PurchaseTesterSwiftUI"
   lane :deploy_purchase_tester do
-    match(readonly: true)
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
       xcodeproj: 'PurchaseTester.xcodeproj'
     )
+
+    # iOS
+
+    # match(readonly: true)
+    # build_ios_app(
+    #   workspace: "PurchaseTester.xcworkspace",
+    #   scheme: "PurchaseTester",
+    #   destination: "generic/platform=ios",
+    #   xcodebuild_formatter: ''
+    # )
+    # upload_to_app_store(
+    #   skip_metadata: true,
+    #   skip_screenshots: true,
+    #   automatic_release: true,
+    #   submit_for_review: false,
+    #   run_precheck_before_submit: false
+    # )
+
+    # Catalyst
+    match(readonly: true, platform: "catalyst")
+
     build_ios_app(
       workspace: "PurchaseTester.xcworkspace",
       scheme: "PurchaseTester",
-      destination: "generic/platform=ios",
+      destination: 'platform=macOS,variant=Mac Catalyst',
       xcodebuild_formatter: ''
     )
     upload_to_app_store(
@@ -508,7 +528,8 @@ platform :ios do
       skip_screenshots: true,
       automatic_release: true,
       submit_for_review: false,
-      run_precheck_before_submit: false
+      run_precheck_before_submit: false,
+      platform: "osx"
     )
   end
 
