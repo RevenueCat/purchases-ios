@@ -190,7 +190,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         self.mock(receipt: Self.receiptWithoutPurchases)
 
         let data = await self.fetch(productIdentifier: Self.productID, retries: 0)
-        expect(data) == Data()
+        expect(data) == Self.receiptWithoutPurchases.asData
 
         expect(self.mockReceiptParser.invokedParseParametersList) == [
             Self.receiptWithoutPurchases.asData
@@ -203,7 +203,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         let invalidData = Self.receiptWithoutPurchases.asData
 
         let data = await self.fetch(productIdentifier: Self.productID, retries: 2)
-        expect(data) == Data()
+        expect(data) == invalidData
 
         expect(self.mockReceiptParser.invokedParseParametersList) == [
             invalidData,
