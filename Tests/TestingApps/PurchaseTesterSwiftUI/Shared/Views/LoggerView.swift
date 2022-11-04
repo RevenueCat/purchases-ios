@@ -5,9 +5,10 @@
 //  Created by Nacho Soto on 10/28/22.
 //
 
-import RevenueCat
-
+import Foundation
 import SwiftUI
+
+import RevenueCat
 
 struct LoggerView: View {
 

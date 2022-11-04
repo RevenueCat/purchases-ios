@@ -5,6 +5,8 @@
 //  Created by Nacho Soto on 10/25/22.
 //
 
+import Foundation
+
 import RevenueCat
 
 final class ConfiguredPurchases {
