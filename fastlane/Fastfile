@@ -498,7 +498,6 @@ platform :ios do
     )
 
     # iOS
-
     # match(readonly: true)
     # build_ios_app(
     #   workspace: "PurchaseTester.xcworkspace",
@@ -515,13 +514,26 @@ platform :ios do
     # )
 
     # Catalyst
-    match(readonly: true, platform: "catalyst", additional_cert_types: "mac_installer_distribution")
+    team_id = "8SXR2327BM"
+    installer_cert_name = "3rd Party Mac Developer Installer: RevenueCat, Inc. (#{team_id})"
+    codesign_identity = "Apple Distribution: RevenueCat, Inc. (#{team_id})"
 
-    build_ios_app(
+    match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
+    build_app(
       workspace: "PurchaseTester.xcworkspace",
       scheme: "PurchaseTester",
       destination: 'platform=macOS,variant=Mac Catalyst',
-      xcodebuild_formatter: ''
+      xcodebuild_formatter: '',
+      catalyst_platform: 'ios',
+      installer_cert_name: installer_cert_name,
+      codesigning_identity: codesign_identity,
+      export_options: {
+        provisioningProfiles: {
+          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp catalyst"
+        },
+        installerSigningCertificate: installer_cert_name,
+        signingCertificate: codesign_identity
+      }
     )
     upload_to_app_store(
       skip_metadata: true,
@@ -529,7 +541,7 @@ platform :ios do
       automatic_release: true,
       submit_for_review: false,
       run_precheck_before_submit: false,
-      platform: "catalyst"
+      platform: 'osx'
     )
   end
 
