@@ -641,10 +641,6 @@ jobs:
                       {
                         "type": "mrkdwn",
                         "text": "*Branch*: $CIRCLE_BRANCH"
-                      },
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Author*: $CIRCLE_USERNAME"
                       }
                     ]
                   }
@@ -734,6 +730,8 @@ workflows:
           xcode_version: '14.1.0'
           <<: *release-tags
       - notify-on-non-patch-release-branches:
+          requires:
+            - make-release
           <<: *non-patch-release-branches
           context: slack-secrets
   snapshot-bump:
