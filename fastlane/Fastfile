@@ -249,7 +249,6 @@ platform :ios do
 
   desc "Release to CocoaPods"
   lane :push_pods do |options|
-    version_number = current_version_number
     push_pods
   end
 
