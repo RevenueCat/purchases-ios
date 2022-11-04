@@ -135,8 +135,8 @@ import Foundation
 
         /**
          * Set `usesStoreKit2IfAvailable`.
-         * - Parameter usesStoreKit2IfAvailable: opt out of using StoreKit 2 on devices that support it.
-         * Defaults to  `true`.
+         * - Parameter usesStoreKit2IfAvailable: opt in using StoreKit 2 on devices that support it.
+         * Defaults to  `false`.
          */
         @objc public func with(usesStoreKit2IfAvailable: Bool) -> Builder {
             self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)

@@ -34,7 +34,7 @@ extension StoreKit2Setting {
             : .enabledOnlyForOptimizations
     }
 
-    static let `default`: Self = .enabledForCompatibleDevices
+    static let `default`: Self = .enabledOnlyForOptimizations
 
 }
 
