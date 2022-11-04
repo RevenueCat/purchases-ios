@@ -195,3 +195,16 @@ private extension CachingTrialOrIntroPriceEligibilityCheckerTests {
     static let productID3 = "com.revenuecat.product_3"
 
 }
+
+@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
+private extension TrialOrIntroPriceEligibilityCheckerType {
+
+    func checkEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
+        return await Async.call { completion in
+            self.checkEligibility(productIdentifiers: productIdentifiers) { result in
+                completion(result)
+            }
+        }
+    }
+
+}
