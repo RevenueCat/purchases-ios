@@ -683,6 +683,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PurchaseTester-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Purchase Tester";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -718,6 +719,8 @@
 				CLANG_MODULES_AUTOLINK = YES;
 				CODE_SIGN_ENTITLEMENTS = PurchaseTester.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution: RevenueCat, Inc. (8SXR2327BM)";
+				"CODE_SIGN_IDENTITY[sdk=*]" = "Apple Distribution: RevenueCat, Inc. (8SXR2327BM)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Installer: RevenueCat, Inc. (8SXR2327BM)";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -725,6 +728,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PurchaseTester-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Purchase Tester";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -515,7 +515,7 @@ platform :ios do
     # )
 
     # Catalyst
-    match(readonly: true, platform: "catalyst")
+    match(readonly: true, platform: "catalyst", additional_cert_types: "mac_installer_distribution")
 
     build_ios_app(
       workspace: "PurchaseTester.xcworkspace",
@@ -529,7 +529,7 @@ platform :ios do
       automatic_release: true,
       submit_for_review: false,
       run_precheck_before_submit: false,
-      platform: "osx"
+      platform: "catalyst"
     )
   end
 
