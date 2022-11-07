@@ -328,7 +328,9 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
 
     func testPostAdServicesTokenIfNeededDoesNotCacheOnAPIError() throws {
         let stubbedError: BackendError = .networkError(
-            .errorResponse(.init(code: .invalidAPIKey, message: nil),
+            .errorResponse(.init(code: .invalidAPIKey,
+                                 originalCode: BackendErrorCode.invalidAPIKey.rawValue,
+                                 message: nil),
                            400)
         )
 

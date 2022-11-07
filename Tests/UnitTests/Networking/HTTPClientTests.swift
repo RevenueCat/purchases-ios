@@ -269,7 +269,9 @@ class HTTPClientTests: TestCase {
 
         let error = try XCTUnwrap(result.value?.error)
         expect(error) == .errorResponse(
-            .init(code: .storeProblem, message: "something is broken up in the cloud"),
+            .init(code: .storeProblem,
+                  originalCode: 7101,
+                  message: "something is broken up in the cloud"),
             HTTPStatusCode(rawValue: errorCode)
         )
     }
@@ -281,7 +283,7 @@ class HTTPClientTests: TestCase {
         let result: Atomic<HTTPResponse<Data>.Result?> = nil
 
         stub(condition: isPath(request.path)) { _ in
-            let json = "{\"message\": \"something is broken up in the cloud\"}"
+            let json = "{\"code\": 5000,\"message\": \"something is broken up in the cloud\"}"
             return HTTPStubsResponse(
                 data: json.data(using: String.Encoding.utf8)!,
                 statusCode: Int32(errorCode),
@@ -298,7 +300,9 @@ class HTTPClientTests: TestCase {
 
         let error = try XCTUnwrap(result.value?.error)
         expect(error) == .errorResponse(
-            .init(code: .unknownBackendError, message: "something is broken up in the cloud"),
+            .init(code: .unknownBackendError,
+                  originalCode: 5000,
+                  message: "something is broken up in the cloud"),
             HTTPStatusCode(rawValue: errorCode)
         )
     }

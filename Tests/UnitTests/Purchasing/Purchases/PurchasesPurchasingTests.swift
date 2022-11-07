@@ -154,7 +154,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
-                .init(code: .unknownBackendError, message: nil),
+                .init(code: .unknownBackendError,
+                      originalCode: BackendErrorCode.unknownBackendError.rawValue,
+                      message: nil),
                 .internalServerError
             ))
         )
@@ -186,7 +188,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
-                .init(code: .unknownBackendError, message: nil),
+                .init(code: .unknownBackendError,
+                      originalCode: BackendErrorCode.unknownBackendError.rawValue,
+                      message: nil),
                 .invalidRequest
             ))
         )
@@ -205,7 +209,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         self.backend.postReceiptResult = .failure(
             .networkError(.errorResponse(
-                .init(code: .unknownBackendError, message: nil),
+                .init(code: .unknownBackendError,
+                      originalCode: BackendErrorCode.unknownBackendError.rawValue,
+                      message: nil),
                 .internalServerError
             ))
         )

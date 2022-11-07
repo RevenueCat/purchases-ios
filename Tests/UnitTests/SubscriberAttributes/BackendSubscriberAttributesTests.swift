@@ -206,7 +206,8 @@ class BackendSubscriberAttributesTests: TestCase {
 
     func testPostReceiptWithSubscriberAttributesPassesErrorIfStatusCodeIsNotSuccess() throws {
         let errorResponse: ErrorResponse = .init(
-            code: BackendErrorCode.invalidSubscriberAttributes,
+            code: .invalidSubscriberAttributes,
+            originalCode: BackendErrorCode.invalidSubscriberAttributes.rawValue,
             message: "Some subscriber attributes keys were unable to be saved.",
             attributeErrors: [ "$email": "email is not in valid format"]
         )

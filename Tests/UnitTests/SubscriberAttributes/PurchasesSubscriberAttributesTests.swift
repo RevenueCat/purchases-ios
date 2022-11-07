@@ -719,7 +719,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.mockBackend.stubbedPostReceiptResult = .failure(
             .networkError(.errorResponse(
-                .init(code: .invalidAPIKey, message: "Invalid credentials"),
+                .init(code: .invalidAPIKey,
+                      originalCode: BackendErrorCode.invalidAPIKey.rawValue,
+                      message: "Invalid credentials"),
                 400
             ))
         )
@@ -749,7 +751,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.mockBackend.stubbedPostReceiptResult = .failure(
             .networkError(.errorResponse(
-                .init(code: .internalServerError, message: "Error", attributeErrors: [:]),
+                .init(code: .internalServerError,
+                      originalCode: BackendErrorCode.internalServerError.rawValue,
+                      message: "Error",
+                      attributeErrors: [:]),
                 .internalServerError)
             )
         )

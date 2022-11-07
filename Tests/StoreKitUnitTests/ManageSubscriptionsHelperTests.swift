@@ -70,7 +70,10 @@ class ManageSubscriptionsHelperTests: TestCase {
 
     func testShowManageSubscriptionsFailsIfCouldntGetCustomerInfo() throws {
         let error: BackendError = .networkError(.errorResponse(
-            .init(code: BackendErrorCode.badRequest, message: nil, attributeErrors: [:]),
+            .init(code: .badRequest,
+                  originalCode: BackendErrorCode.badRequest.rawValue,
+                  message: nil,
+                  attributeErrors: [:]),
             400)
         )
 

@@ -116,7 +116,10 @@ class ErrorUtilsTests: TestCase {
     }
 
     func testNetworkErrorsAreLoggedWithUnderlyingError() throws {
+        let originalErrorCode = 6000
+
         let response = ErrorResponse(code: .unknownBackendError,
+                                     originalCode: originalErrorCode,
                                      message: "Page not found",
                                      attributeErrors: [:])
         let purchasesError = response.asBackendError(with: .notFoundError)
@@ -127,7 +130,8 @@ class ErrorUtilsTests: TestCase {
         expect(loggedMessage.message) == [
             LogIntent.rcError.prefix,
             purchasesError.error.description,
-            response.message!
+            response.message!,
+            "(\(originalErrorCode))"
         ].joined(separator: " ")
     }
 
@@ -159,6 +163,7 @@ class ErrorUtilsTests: TestCase {
 
     func testLoggedErrorResponseWithAttributeErrors() throws {
         let errorResponse = ErrorResponse(code: .invalidSubscriberAttributes,
+                                          originalCode: BackendErrorCode.invalidSubscriberAttributes.rawValue,
                                           message: "Invalid Attributes",
                                           attributeErrors: [
                                             "$email": "invalid"
@@ -180,6 +185,7 @@ class ErrorUtilsTests: TestCase {
 
     func testLoggedErrorResponseWithNoAttributeErrors() throws {
         let errorResponse = ErrorResponse(code: .invalidAPIKey,
+                                          originalCode: BackendErrorCode.invalidAPIKey.rawValue,
                                           message: "Invalid API key",
                                           attributeErrors: [:])
 
