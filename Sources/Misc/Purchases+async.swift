@@ -150,6 +150,8 @@ extension Purchases {
                             forProductDiscount: discount,
                             product: product
                         )
+                    } catch RevenueCat.ErrorCode.ineligibleError {
+                        return nil
                     } catch {
                         Logger.error(
                             Strings.purchase.check_eligibility_failed(
