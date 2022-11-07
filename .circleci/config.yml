@@ -107,6 +107,25 @@ commands:
           name: Install xcbeautify
           command: brew install xcbeautify
 
+  # Required to be installed manually for Xcode < 13.3
+  install-swiftlint-0-48:
+    steps:
+      - restore_cache:
+          keys:
+            - homebrew-tap-cache-3
+      - run:
+          name: Install swiftlint 0.48.0
+          command: |
+              brew update --preinstall
+              brew tap-new $USER/local-tap
+              brew extract --version=0.48.0 swiftlint $USER/local-tap
+              brew install swiftlint@0.48.0
+      - save_cache:
+          key: homebrew-tap-cache-3
+          paths:
+            - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
+            - /Users/$USER/Library/Caches/Homebrew/
+
   install-rubydocker-dependencies:
     steps:
       - restore_cache:
@@ -280,21 +299,7 @@ jobs:
     <<: *base-job
     steps:
       - setup-git-credentials
-      - restore_cache:
-          keys:
-            - homebrew-tap-cache-3
-      - run:
-          name: Install swiftlint 0.48.0
-          command: |
-              brew update --preinstall
-              brew tap-new $USER/local-tap
-              brew extract --version=0.48.0 swiftlint $USER/local-tap
-              brew install swiftlint@0.48.0
-      - save_cache:
-          key: homebrew-tap-cache-3
-          paths:
-            - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
-            - /Users/$USER/Library/Caches/Homebrew/
+      - install-swiftlint-0-48
       - checkout
       - install-bundle-dependencies
       - run:
@@ -389,6 +394,34 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+
+  run-test-ios-11:
+    <<: *base-job
+    steps:
+      - setup-git-credentials
+      - install-swiftlint-0-48
+      - checkout
+      - install-bundle-dependencies
+      - install-and-create-sim:
+          install-name: iOS 11.4.1 Simulator
+          sim-device-type: iPhone-6
+          sim-device-runtime: iOS-11-4-1
+          sim-name: iPhone 6 (11.4.1)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 30m
+          environment:
+            SCAN_DEVICE: iPhone 6 (11.4.1)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
 
   build-tv-watch-and-macos:
     <<: *base-job
@@ -684,6 +717,10 @@ workflows:
           # Simulator fails to install on Xcode 14
           xcode_version: '13.4.1'
           <<: *release-branches-and-main
+      - run-test-ios-11:
+          xcode_version: '13.1.0'
+          # TODO: add this
+          #<<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '14.1.0'
       # To ensure we don't break compilation with Xcode 13.2.1
