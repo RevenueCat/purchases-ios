@@ -326,11 +326,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - install-and-create-sim:
-          install-name: iOS 14.5 Simulator
-          sim-device-type: iPhone-8
-          sim-device-runtime: iOS-14-5
-          sim-name: iPhone 8 (14.5)
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -680,7 +675,8 @@ workflows:
       - run-test-tvos:
           xcode_version: '14.1.0'
       - run-test-ios-14:
-          xcode_version: '14.1.0'
+          # Simulator fails to install on Xcode 14
+          xcode_version: '13.4.1'
       - run-test-ios-13:
           # Simulator fails to install on Xcode 14
           xcode_version: '13.4.1'
