@@ -95,7 +95,7 @@ class AsyncExtensionsTests: TestCase {
         expect(result).toEventually(equal(expected))
     }
 
-    func testConversionToAsyncWithValue() async throws {
+    func testConversionToAsyncWithResultSuccess() async throws {
         let expected = Int.random(in: 0..<100)
 
         let result = try await Async.call { (completion: (Result<Int, NSError>) -> Void) in
@@ -105,7 +105,7 @@ class AsyncExtensionsTests: TestCase {
         expect(result) == expected
     }
 
-    func testConversionToAsyncWithError() async throws {
+    func testConversionToAsyncWithResultFailure() async throws {
         enum Error: Swift.Error {
             case error1
         }
@@ -118,6 +118,16 @@ class AsyncExtensionsTests: TestCase {
         } catch {
             expect(error).to(matchError(Error.error1))
         }
+    }
+
+    func testConversionToAsyncWithValue() async {
+        let expected = Int.random(in: 0..<100)
+
+        let result = await Async.call { (completion: (Int) -> Void) in
+            completion(expected)
+        }
+
+        expect(result) == expected
     }
 
 }
