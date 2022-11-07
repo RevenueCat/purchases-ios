@@ -232,9 +232,9 @@ These types replace native StoreKit types in all public API methods that used th
 | v3 | v4 |
 | ------------ | ------------------------------------- | 
 | invalidatePurchaserInfoCache | ``Purchases/invalidateCustomerInfoCache()`` |
-| logIn(_ appUserId:, _ completion:) | ``Purchases/logIn(_:completion:)`` |
-| createAlias(_ alias:, _ completion:) | ``Purchases/logIn(_:completion:)`` |
-| identify(_ appUserID:, _ completion:) | ``Purchases/logIn(_:completion:)`` |
+| logIn(_ appUserId:, _ completion:) | ``Purchases/logIn(_:completion:)-4km90`` |
+| createAlias(_ alias:, _ completion:) | ``Purchases/logIn(_:completion:)-4km90`` |
+| identify(_ appUserID:, _ completion:) | ``Purchases/logIn(_:completion:)-4km90`` |
 | reset(completion:) | ``Purchases/logOut(completion:)`` |
 | purchaserInfo(_ completion:) | ``Purchases/getCustomerInfo(completion:)`` |
 | offerings(_ completion:) | ``Purchases/getOfferings(completion:)`` |
