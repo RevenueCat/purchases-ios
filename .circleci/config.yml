@@ -398,8 +398,6 @@ jobs:
   run-test-ios-11:
     <<: *base-job
     steps:
-      - setup-git-credentials
-      - install-swiftlint-0-48
       - checkout
       - install-bundle-dependencies
       - install-and-create-sim:
@@ -407,6 +405,8 @@ jobs:
           sim-device-type: iPhone-6
           sim-device-runtime: iOS-11-4-1
           sim-name: iPhone 6 (11.4.1)
+      - setup-git-credentials
+      - install-swiftlint-0-48
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -718,7 +718,7 @@ workflows:
       #     xcode_version: '13.4.1'
       #     <<: *release-branches-and-main
       - run-test-ios-11:
-          xcode_version: '13.1.0'
+          xcode_version: '13.0.0'
           # TODO: add this
           #<<: *release-branches-and-main
       # - build-tv-watch-and-macos:
