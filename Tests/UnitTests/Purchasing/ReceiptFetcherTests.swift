@@ -240,6 +240,19 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         ]
     }
 
+    func testStopsRetryingEvenIfParsingReceiptKeepsThrowingError() async {
+        let invalidData = self.mockReceiptWithInvalidData()
+
+        let data = await self.fetch(productIdentifier: Self.productID, retries: 1)
+        expect(data) == invalidData
+
+        expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
+        expect(self.mockReceiptParser.invokedParseParametersList) == [
+            invalidData,
+            invalidData
+        ]
+    }
+
     func testStopsRetryingIfFindsValidReceipt() async {
         self.mock(receipts: [Self.receiptWithoutPurchases, Self.validReceipt])
 
@@ -281,6 +294,18 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         self.mockFileReader.mockedURLContents[self.mockBundle.appStoreReceiptURL!] = receipts
             .compactMap { $0.value?.asData }
         self.mockReceiptParser.stubbedParseResults = receipts
+    }
+
+    private func mockReceiptWithInvalidData() -> Data {
+        let invalidData = Data(repeating: 0, count: 10)
+
+        self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockFileReader.mockedURLContents[self.mockBundle.appStoreReceiptURL!] = [invalidData]
+        self.mockReceiptParser.stubbedParseResults = [
+            .failure(ErrorUtils.missingReceiptFileError())
+        ]
+
+        return invalidData
     }
 
     private static let productID = "com.revenuecat.test_product"
