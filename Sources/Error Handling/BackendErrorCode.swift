@@ -90,7 +90,8 @@ extension BackendErrorCode {
             return .storeProblemError
         case .cannotTransferPurchase:
             return .receiptAlreadyInUseError
-        case .invalidReceiptToken, .purchasedProductMissingInAppleReceipt:
+        case .invalidReceiptToken,
+                .purchasedProductMissingInAppleReceipt:
             return .invalidReceiptError
         case .invalidAppStoreSharedSecret,
              .invalidAuthToken,
