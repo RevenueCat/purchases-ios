@@ -67,7 +67,7 @@ class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
         expect(self.mockManager.invokedSk2StoreProductsCount) == 2
         expect(self.mockManager.invokedSk2StoreProductsParameterList) == [
             Set([product1.productIdentifier]), // First product fetched
-            Set([product1.productIdentifier, product2.productIdentifier]) // Both products fetched
+            Set([product2.productIdentifier]) // Second product fetched
         ]
     }
 
