@@ -67,6 +67,8 @@ private extension ISO8601DateFormatter {
 
             return formatter
         } else {
+            // See https://github.com/RevenueCat/purchases-ios/pull/2037
+            // `.withFractionalSeconds` makes iOS 11 crash.
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
             return dateFormatter
