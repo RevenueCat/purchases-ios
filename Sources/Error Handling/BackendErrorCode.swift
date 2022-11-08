@@ -42,6 +42,7 @@ enum BackendErrorCode: Int, Error {
     case subscriptionNotFoundForCustomer = 7259
     case invalidSubscriberAttributes = 7263
     case invalidSubscriberAttributesBody = 7264
+    case purchasedProductMissingInAppleReceipt = 7712
 
     /**
      * - Parameter code: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
@@ -89,7 +90,8 @@ extension BackendErrorCode {
             return .storeProblemError
         case .cannotTransferPurchase:
             return .receiptAlreadyInUseError
-        case .invalidReceiptToken:
+        case .invalidReceiptToken,
+                .purchasedProductMissingInAppleReceipt:
             return .invalidReceiptError
         case .invalidAppStoreSharedSecret,
              .invalidAuthToken,
