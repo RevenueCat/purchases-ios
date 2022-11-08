@@ -45,6 +45,16 @@ extension AppleReceipt.InAppPurchase {
         return expiration > Date()
     }
 
+    var purchaseDateEqualsExpiration: Bool {
+        guard self.productType?.isSubscription == true else { return false }
+        guard let expiration = self.expiresDate else { return false }
+
+        return abs(self.purchaseDate.timeIntervalSince(expiration)) <= Self.purchaseAndExpirationEqualThreshold
+    }
+
+    /// Seconds between purchase and expiration to consider both equal.
+    private static let purchaseAndExpirationEqualThreshold: TimeInterval = 5
+
 }
 
 extension AppleReceipt.InAppPurchase {

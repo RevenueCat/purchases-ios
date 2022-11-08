@@ -18,6 +18,8 @@ import XCTest
 
 final class AppleReceiptTests: TestCase {
 
+    // MARK: - containsActivePurchase
+
     func testReceiptWithNoPurchasesDoesNotContainActivePurchase() {
         let receipt = Self.create(with: [:])
         expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == false
@@ -63,6 +65,62 @@ final class AppleReceiptTests: TestCase {
             "different_product": nil
         ])
         expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == false
+    }
+
+    // MARK: - purchaseDateEqualsExpiration
+
+    func testPurchaseDateEqualsExpirationWithNoSubscription() {
+        expect(
+            Self.create(with: [ Self.productIdentifier: nil ])
+                .inAppPurchases
+                .first!
+                .purchaseDateEqualsExpiration
+        ) == false
+    }
+
+    func testExpirationDate10SecondsAfterPurchase() {
+        expect(
+            Self.create(with: [ Self.productIdentifier: Date().addingTimeInterval(10) ])
+                .inAppPurchases
+                .first!
+                .purchaseDateEqualsExpiration
+        ) == false
+    }
+
+    func testExpirationDate5SecondsAfterPurchase() {
+        expect(
+            Self.create(with: [ Self.productIdentifier: Date().addingTimeInterval(5) ])
+                .inAppPurchases
+                .first!
+                .purchaseDateEqualsExpiration
+        ) == true
+    }
+
+    func testExpirationDateSameAsPurchase() {
+        expect(
+            Self.create(with: [ Self.productIdentifier: Date() ])
+                .inAppPurchases
+                .first!
+                .purchaseDateEqualsExpiration
+        ) == true
+    }
+
+    func testExpirationDate4SecondsBeforePurchase() {
+        expect(
+            Self.create(with: [ Self.productIdentifier: Date().addingTimeInterval(-4) ])
+                .inAppPurchases
+                .first!
+                .purchaseDateEqualsExpiration
+        ) == true
+    }
+
+    func testExpirationDate10SecondsBeforePurchaseIsNotTheSame() {
+        expect(
+            Self.create(with: [ Self.productIdentifier: Date().addingTimeInterval(-10) ])
+                .inAppPurchases
+                .first!
+                .purchaseDateEqualsExpiration
+        ) == false
     }
 
     // MARK: -

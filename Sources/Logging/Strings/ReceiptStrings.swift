@@ -29,6 +29,11 @@ enum ReceiptStrings {
     case refreshing_empty_receipt
     case unable_to_load_receipt
     case posting_receipt(AppleReceipt)
+    case receipt_subscription_purchase_equals_expiration(
+        productIdentifier: String,
+        purchase: Date,
+        expiration: Date?
+    )
     case receipt_retrying_mechanism_not_available
     case local_receipt_missing_purchase(AppleReceipt, forProductIdentifier: String)
     case retrying_receipt_fetch_after(sleepDuration: DispatchTimeInterval)
@@ -80,6 +85,14 @@ extension ReceiptStrings: CustomStringConvertible {
 
         case let .posting_receipt(receipt):
             return "Posting receipt: \(receipt.debugDescription)"
+
+        case let .receipt_subscription_purchase_equals_expiration(
+            productIdentifier,
+            purchase,
+            expiration
+        ):
+            return "Receipt for product '\(productIdentifier)' has the same purchase (\(purchase)) " +
+            "and expiration (\(expiration?.description ?? "")) dates. This is likely a StoreKit bug."
 
         case .receipt_retrying_mechanism_not_available:
             return "Receipt retrying mechanism is not available in iOS 12. Will only attempt to fetch once."
