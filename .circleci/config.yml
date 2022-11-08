@@ -410,7 +410,7 @@ jobs:
           command: bundle exec fastlane backend_integration_tests
           no_output_timeout: 30m
           environment:
-            SCAN_DEVICE: iPhone 11 Pro (15.5)
+            SCAN_DEVICE: iPhone 14 (16.1)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
