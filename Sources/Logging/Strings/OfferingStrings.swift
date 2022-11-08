@@ -79,9 +79,9 @@ extension OfferingStrings: CustomStringConvertible {
             return "Offerings cache is stale, updating from " +
                 "network in foreground"
 
-        case .products_already_cached(let identifiers):
-            return "Skipping products request because products were already " +
-                "cached. products: \(identifiers)"
+        case let .products_already_cached(identifiers):
+            return "Skipping products request for these products because they were already " +
+                "cached: \(identifiers)"
 
         case .product_cache_invalid_for_storefront_change:
             return "Storefront change detected. Invalidating and re-fetching product cache."

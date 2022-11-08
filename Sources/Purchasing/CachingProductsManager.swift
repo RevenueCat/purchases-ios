@@ -115,32 +115,31 @@ private extension CachingProductsManager {
         requestCache: Atomic<[Set<String>: [(Result<Set<T>, PurchasesError>) -> Void]]>,
         fetcher: (Set<String>, @escaping (Result<Set<T>, PurchasesError>) -> Void) -> Void
     ) {
-        if let cachedProducts = Self.cachedProducts(with: identifiers, productCache: productCache) {
-            Logger.debug(
-                Strings.offering.products_already_cached(
-                    identifiers: Set(cachedProducts.map { $0.productIdentifier})
-                )
-            )
+        let cachedProducts = Self.cachedProducts(with: identifiers, productCache: productCache)
+        let missingProducts = identifiers.subtracting(cachedProducts.keys)
 
-            completion(.success(cachedProducts))
+        if missingProducts.isEmpty {
+            completion(.success(Set(cachedProducts.values)))
         } else {
-            let requestInProgress = Self.save(completion, for: identifiers, requestCache: requestCache)
+            let requestInProgress = Self.save(completion, for: missingProducts, requestCache: requestCache)
             guard !requestInProgress else {
-                Logger.debug(Strings.offering.found_existing_product_request(identifiers: identifiers))
+                Logger.debug(Strings.offering.found_existing_product_request(identifiers: missingProducts))
                 return
             }
 
             Logger.debug(
-                Strings.storeKit.no_cached_products_starting_store_products_request(identifiers: identifiers)
+                Strings.storeKit.no_cached_products_starting_store_products_request(identifiers: missingProducts)
             )
 
-            fetcher(identifiers) { result in
+            fetcher(missingProducts) { result in
                 if let products = result.value {
                     Self.cache(products, container: productCache)
                 }
 
-                for completion in Self.getAndClearRequestCompletion(for: identifiers, requestCache: requestCache) {
-                    completion(result)
+                for completion in Self.getAndClearRequestCompletion(for: missingProducts, requestCache: requestCache) {
+                    completion(
+                        result.map { Set(cachedProducts.values) + $0 }
+                    )
                 }
             }
         }
@@ -149,15 +148,15 @@ private extension CachingProductsManager {
     static func cachedProducts<T: StoreProductType>(
         with identifiers: Set<String>,
         productCache: Atomic<[String: T]>
-    ) -> Set<T>? {
+    ) -> [String: T] {
         let productsAlreadyCached = productCache.value.filter { identifiers.contains($0.key) }
 
-        if productsAlreadyCached.count == identifiers.count {
-            Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
-            return Set(productsAlreadyCached.values)
-        } else {
-            return nil
+        if !productsAlreadyCached.isEmpty {
+            Logger.debug(Strings.offering.products_already_cached(identifiers: Set(productsAlreadyCached.keys)))
+
         }
+
+        return productsAlreadyCached
     }
 
     static func cache<T: StoreProductType>(_ products: Set<T>, container: Atomic<[String: T]>) {
