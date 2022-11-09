@@ -151,10 +151,11 @@ private extension ReceiptFetcher {
         sleepDuration: DispatchTimeInterval
     ) async -> Data {
         var retries = 0
+        var data: Data = .init()
 
         repeat {
             retries += 1
-            let data = await self.refreshReceipt()
+            data = await self.refreshReceipt()
 
             if !data.isEmpty {
                 do {
@@ -176,7 +177,7 @@ private extension ReceiptFetcher {
             try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
         } while retries <= maximumRetries && !Task.isCancelled
 
-        return Data()
+        return data
     }
 
 }

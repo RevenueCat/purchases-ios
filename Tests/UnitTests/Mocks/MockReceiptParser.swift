@@ -54,7 +54,7 @@ class MockReceiptParser: ReceiptParser {
             // This is used to mock changing receipts over time.
             return try self.stubbedParseResults[self.invokedParseCount - 1].get()
         } else {
-            return try XCTUnwrap(self.stubbedParseResults.first?.get())
+            return try XCTUnwrap(self.stubbedParseResults.first).get()
         }
     }
 
