@@ -45,7 +45,7 @@ class InAppPurchaseBuilder {
         var productId: String?
         var transactionId: String?
         var originalTransactionId: String?
-        var productType: InAppPurchase.ProductType?
+        var productType: InAppPurchase.ProductType = .unknown
         var purchaseDate: Date?
         var originalPurchaseDate: Date?
         var expiresDate: Date?
@@ -74,7 +74,7 @@ class InAppPurchaseBuilder {
             case .webOrderLineItemId:
                 webOrderLineItemId = internalContainer.internalPayload.toInt64()
             case .productType:
-                productType = .init(rawValue: internalContainer.internalPayload.toInt())
+                productType = .init(rawValue: internalContainer.internalPayload.toInt()) ?? .unknown
             case .isInIntroOfferPeriod:
                 isInIntroOfferPeriod = internalContainer.internalPayload.toBool()
             case .isInTrialPeriod:

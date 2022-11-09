@@ -67,6 +67,38 @@ final class AppleReceiptTests: TestCase {
         expect(receipt.containsActivePurchase(forProductIdentifier: Self.productIdentifier)) == false
     }
 
+    // MARK: - isSubscription
+
+    func testUnknownProductTypeWithNoExpirationDateIsNotSubscription() {
+        let purchase = Self.create(with: .unknown, expiration: nil)
+        expect(purchase.isSubscription) == false
+    }
+
+    func testUnknownProductTypeWithExpirationDateIsSubscription() {
+        let purchase = Self.create(with: .unknown, expiration: Date().addingTimeInterval(10))
+        expect(purchase.isSubscription) == true
+    }
+
+    func testNonConsumablePurchaseIsNotSubscription() {
+        let purchase = Self.create(with: .nonConsumable, expiration: nil)
+        expect(purchase.isSubscription) == false
+    }
+
+    func testConsumablePurchaseIsNotSubscription() {
+        let purchase = Self.create(with: .consumable, expiration: nil)
+        expect(purchase.isSubscription) == false
+    }
+
+    func testNonRenewingSubscriptionIsSubscription() {
+        let purchase = Self.create(with: .nonRenewingSubscription, expiration: Date())
+        expect(purchase.isSubscription) == true
+    }
+
+    func testAutoRenewingSubscriptionIsSubscription() {
+        let purchase = Self.create(with: .autoRenewableSubscription, expiration: Date())
+        expect(purchase.isSubscription) == true
+    }
+
     // MARK: - purchaseDateEqualsExpiration
 
     func testPurchaseDateEqualsExpirationWithNoSubscription() {
@@ -142,24 +174,34 @@ private extension AppleReceiptTests {
             creationDate: Date(),
             expirationDate: nil,
             inAppPurchases: expirationDatesByProductIdentifier.map { identifier, expiration in
-                .init(
-                    quantity: 1,
-                    productId: identifier,
-                    transactionId: "transaction-\(identifier)",
-                    originalTransactionId: nil,
-                    productType: expiration == nil
-                        ? .nonConsumable
-                        : .autoRenewableSubscription,
-                    purchaseDate: Date(),
-                    originalPurchaseDate: nil,
-                    expiresDate: expiration,
-                    cancellationDate: nil,
-                    isInTrialPeriod: nil,
-                    isInIntroOfferPeriod: nil,
-                    webOrderLineItemId: nil,
-                    promotionalOfferIdentifier: nil
-                )
+                Self.create(with: expiration == nil
+                            ? .nonConsumable
+                            : .autoRenewableSubscription,
+                            identifier: identifier,
+                            expiration: expiration)
             }
+        )
+    }
+
+    static func create(
+        with productType: AppleReceipt.InAppPurchase.ProductType,
+        identifier: String = UUID().uuidString,
+        expiration: Date?
+    ) -> AppleReceipt.InAppPurchase {
+        return .init(
+            quantity: 1,
+            productId: identifier,
+            transactionId: "transaction-\(identifier)",
+            originalTransactionId: nil,
+            productType: productType,
+            purchaseDate: Date(),
+            originalPurchaseDate: nil,
+            expiresDate: expiration,
+            cancellationDate: nil,
+            isInTrialPeriod: nil,
+            isInIntroOfferPeriod: nil,
+            webOrderLineItemId: nil,
+            promotionalOfferIdentifier: nil
         )
     }
 
