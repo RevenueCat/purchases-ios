@@ -15,12 +15,19 @@ import Foundation
 
 extension UserDefaults {
 
+    #if DEBUG
     /// The "default" `UserDefaults` to use for the SDK.
     ///
     /// Moving foward, this default is `UserDefaults.revenueCatSuite`, for for compatibility with existing users
     /// `UserDefaults.standard` is used.
     /// This is determined by the presence of an app user ID in `UserDefaults.standard`.
-    static let `default`: UserDefaults = UserDefaults.computeDefault()
+    ///
+    /// Computed property only in `DEBUG` to be able to test it under different conditions.
+    /// In release mode, it gets cached.
+    static var `default`: UserDefaults { .computeDefault() }
+    #else
+    static let `default`: UserDefaults = .computeDefault()
+    #endif
 
     // These are the only 2 documented reasons why `.init(suiteName:)` might return `nil`:
     // - "Because a suite manages the defaults of a specified app group, a suite name
@@ -30,7 +37,12 @@ extension UserDefaults {
     // Because we know at compile time that it's neither of those, this is a safe force-unwrap.
     static let revenueCatSuite: UserDefaults = .init(suiteName: UserDefaults.revenueCatSuiteName)!
 
-    /// - Warning: this is only visible for tests, `.default` must be used instead.
+}
+
+private extension UserDefaults {
+
+    static let revenueCatSuiteName = "com.revenuecat.user_defaults"
+
     static func computeDefault() -> UserDefaults {
         let standard: UserDefaults = .standard
 
@@ -40,11 +52,5 @@ extension UserDefaults {
             return .revenueCatSuite
         }
     }
-
-}
-
-private extension UserDefaults {
-
-    static let revenueCatSuiteName = "com.revenuecat.user_defaults"
 
 }

@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  UserDefaultsExtensionsTests.swift
+//  UserDefaultsDefaultTests.swift
 //
 //  Created by Nacho Soto on 11/9/22.
 
@@ -17,7 +17,10 @@ import XCTest
 
 @testable import RevenueCat
 
-final class UserDefaultsExtensionsTests: TestCase {
+// Note: these are in `StoreKitUnitTests` because they can't run in parallel.
+// We run them serially to avoid race conditions while modifying `UserDefaults`.
+
+final class UserDefaultsDefaultTests: TestCase {
 
     override func setUp() {
         super.setUp()
@@ -32,23 +35,23 @@ final class UserDefaultsExtensionsTests: TestCase {
     func testDefaultIsStandardIfStandardContainsUserID() {
         UserDefaults.standard.set("user", forKey: Self.appUserKey)
 
-        expect(UserDefaults.computeDefault()) === UserDefaults.standard
+        expect(UserDefaults.default) === UserDefaults.standard
     }
 
     func testDefaultIsRevenueCatSuiteIfStandardDoesNotContainUserID() {
-        expect(UserDefaults.computeDefault()) === UserDefaults.revenueCatSuite
+        expect(UserDefaults.default) === UserDefaults.revenueCatSuite
     }
 
     /// Ensures that the logic only checks `UserDefaults.standard`.
     func testDefaultIsRevenueCatSuiteEvenIfItContainsAppUserID() {
         UserDefaults.revenueCatSuite.set("user", forKey: Self.appUserKey)
 
-        expect(UserDefaults.computeDefault()) === UserDefaults.revenueCatSuite
+        expect(UserDefaults.default) === UserDefaults.revenueCatSuite
     }
 
 }
 
-private extension UserDefaultsExtensionsTests {
+private extension UserDefaultsDefaultTests {
 
     static let appUserKey: String = DeviceCache.CacheKeys.appUserDefaults.rawValue
 

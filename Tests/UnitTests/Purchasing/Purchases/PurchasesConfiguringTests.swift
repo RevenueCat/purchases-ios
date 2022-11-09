@@ -265,24 +265,12 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     // MARK: - UserDefaults
 
-    func testCustomUserDefaultsIsUsedIfNoUserIDIsStored() {
+    func testCustomUserDefaultsIsUsed() {
         expect(Self.create(userDefaults: Self.customUserDefaults).configuredUserDefaults) === Self.customUserDefaults
     }
 
-    func testCustomUserDefaultsIsUsedEvenIfUserIDIsStored() {
-        UserDefaults.standard.set("user", forKey: DeviceCache.CacheKeys.appUserDefaults.rawValue)
-
-        expect(Self.create(userDefaults: Self.customUserDefaults).configuredUserDefaults) === Self.customUserDefaults
-    }
-
-    func testRevenueCatSuiteIsUsedByDefault() {
-        expect(Self.create(userDefaults: nil).configuredUserDefaults) === UserDefaults.revenueCatSuite
-    }
-
-    func testStandardUserDefaultsIsUsedByDefaultIfItContainedUserID() {
-        UserDefaults.standard.set("user", forKey: DeviceCache.CacheKeys.appUserDefaults.rawValue)
-
-        expect(Self.create(userDefaults: nil).configuredUserDefaults) === UserDefaults.standard
+    func testDefaultUserDefaultsIsUsedByDefault() {
+        expect(Self.create(userDefaults: nil).configuredUserDefaults) === UserDefaults.default
     }
 
     private static func create(userDefaults: UserDefaults?) -> Purchases {
