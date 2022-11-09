@@ -22,7 +22,7 @@ extension AppleReceipt {
         let productId: String
         let transactionId: String
         let originalTransactionId: String?
-        let productType: ProductType?
+        let productType: ProductType
         let purchaseDate: Date
         let originalPurchaseDate: Date?
         let expiresDate: Date?
@@ -39,11 +39,21 @@ extension AppleReceipt {
 extension AppleReceipt.InAppPurchase {
 
     var isActiveSubscription: Bool {
-        guard self.productType?.isSubscription == true else { return false }
-        guard let expiration = self.expiresDate else { return true }
+        guard self.isSubscription, let expiration = self.expiresDate else { return false }
 
         return expiration > Date()
     }
+
+    var purchaseDateEqualsExpiration: Bool {
+        guard self.isSubscription, let expiration = self.expiresDate else { return false }
+
+        return abs(self.purchaseDate.timeIntervalSince(expiration)) <= Self.purchaseAndExpirationEqualThreshold
+    }
+
+    /// Seconds between purchase and expiration to consider both equal.
+    /// 5 provides some margin for error, while still covering the shortest possible
+    /// subscription length (weekly subscriptions with `TimeRate.monthlyRenewalEveryThirtySeconds`.
+    private static let purchaseAndExpirationEqualThreshold: TimeInterval = 5
 
 }
 
@@ -61,16 +71,14 @@ extension AppleReceipt.InAppPurchase {
 
 }
 
-extension AppleReceipt.InAppPurchase.ProductType {
-
+extension AppleReceipt.InAppPurchase {
     var isSubscription: Bool {
-        switch self {
-        case .unknown: return false
+        switch self.productType {
+        case .unknown: return self.expiresDate != nil
         case .nonConsumable, .consumable: return false
         case .nonRenewingSubscription, .autoRenewableSubscription: return true
         }
     }
-
 }
 
 // MARK: -

@@ -327,7 +327,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
                 productType: .autoRenewableSubscription,
                 purchaseDate: Date(),
                 originalPurchaseDate: nil,
-                expiresDate: nil,
+                expiresDate: Date().addingTimeInterval(100),
                 cancellationDate: nil,
                 isInTrialPeriod: false,
                 isInIntroOfferPeriod: false,

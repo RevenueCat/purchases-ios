@@ -67,7 +67,7 @@ extension AppleReceipt {
     func containsActivePurchase(forProductIdentifier identifier: String) -> Bool {
         return (
             self.inAppPurchases.contains { $0.isActiveSubscription } ||
-            self.inAppPurchases.contains { $0.productType?.isSubscription != true && $0.productId == identifier }
+            self.inAppPurchases.contains { !$0.isSubscription && $0.productId == identifier }
         )
     }
 
