@@ -268,7 +268,7 @@ class DeviceCache {
                 Logger.warn(Strings.identity.deleting_synced_attributes_none_found)
                 return
             }
-            $0.setValue(groupedAttributes, forKey: CacheKeys.subscriberAttributes)
+            $0.setValue(groupedAttributes, forKey: .subscriberAttributes)
         }
     }
 
@@ -318,7 +318,7 @@ class DeviceCache {
 
     // MARK: - Helper functions
 
-    fileprivate enum CacheKeys: String {
+    internal enum CacheKeys: String {
 
         case legacyGeneratedAppUserDefaults = "com.revenuecat.userdefaults.appUserID"
         case appUserDefaults = "com.revenuecat.userdefaults.appUserID.new"
