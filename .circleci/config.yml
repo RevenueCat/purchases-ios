@@ -470,6 +470,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - install-bundle-dependencies
       - trust-github-key
       - run:
           name: Deploy new version
