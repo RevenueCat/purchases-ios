@@ -37,7 +37,7 @@ class DeviceCache {
     private let appUserIDHasBeenSet: Atomic<Bool> = false
 
     convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
-                     userDefaults: UserDefaults = UserDefaults.standard) {
+                     userDefaults: UserDefaults) {
         self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                   userDefaults: userDefaults,
                   offeringsCachedObject: nil,
@@ -45,7 +45,7 @@ class DeviceCache {
     }
 
     init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
-         userDefaults: UserDefaults = UserDefaults.standard,
+         userDefaults: UserDefaults,
          offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
          notificationCenter: NotificationCenter? = NotificationCenter.default) {
 
