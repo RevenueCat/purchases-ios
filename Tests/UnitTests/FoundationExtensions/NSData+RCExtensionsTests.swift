@@ -42,20 +42,26 @@ class NSDataExtensionsTests: TestCase {
 extension NSDataExtensionsTests {
 
     static func sampleReceiptData(receiptName: String) -> Data {
-        let receiptText = readFile(named: receiptName)
-        guard let receiptData = Data(base64Encoded: receiptText) else { fatalError("couldn't decode file") }
+        let receiptText = self.readFile(named: receiptName)
+        guard let receiptData = Data(base64Encoded: receiptText) else {
+            fatalError("Couldn't decode base64 file: \(receiptName).\(Self.fileExtension)")
+        }
         return receiptData
     }
 
     static func readFile(named filename: String) -> String {
-        guard let pathString = Bundle(for: Self.self).path(forResource: filename, ofType: "txt") else {
-            fatalError("\(filename) not found")
+        guard let pathString = Bundle(for: Self.self).path(forResource: filename,
+                                                           ofType: Self.fileExtension) else {
+            fatalError("File \(filename).\(Self.fileExtension) not found")
         }
         do {
-            return try String(contentsOfFile: pathString, encoding: String.Encoding.utf8)
+            return try String(contentsOfFile: pathString, encoding: .utf8)
         } catch let error {
-            fatalError("couldn't read file named \(filename). Error: \(error.localizedDescription)")
+            fatalError("Couldn't read file named \(filename).\(Self.fileExtension).\n" +
+                       "Error: \(error.localizedDescription)")
         }
     }
+
+    private static let fileExtension = "txt"
 
 }
