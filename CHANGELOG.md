@@ -1,3 +1,26 @@
+## 4.14.1
+### Bugfixes
+* `ISO8601DateFormatter.withMilliseconds`: fixed iOS 11 crash (#2037) via NachoSoto (@NachoSoto)
+* Changed `StoreKit2Setting.default` back to `.enabledOnlyForOptimizations` (#2022) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Integration Tests`: changed weekly to monthly subscriptions to work around 0-second subscriptions (#2042) via NachoSoto (@NachoSoto)
+* `Integration Tests`: fixed `testPurchaseWithAskToBuyPostsReceipt` (#2040) via NachoSoto (@NachoSoto)
+* `ReceiptRefreshPolicy.retryUntilProductIsFound`: default to returning "invalid" receipt (#2024) via NachoSoto (@NachoSoto)
+* `CachingProductsManager`: use partial cached products (#2014) via NachoSoto (@NachoSoto)
+* Added `BackendErrorCode.purchasedProductMissingInAppleReceipt` (#2033) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: replaced `Purchases` dependency with `SPM` (#2027) via NachoSoto (@NachoSoto)
+* `Integration Tests`: changed log output to `raw` (#2031) via NachoSoto (@NachoSoto)
+* `Integration Tests`: run on iOS 16 (#2035) via NachoSoto (@NachoSoto)
+* CI: fixed `iOS 14` tests Xcode version (#2030) via NachoSoto (@NachoSoto)
+* `Async.call`: added non-throwing overload (#2006) via NachoSoto (@NachoSoto)
+* Documentation: Fixed references in `V4_API_Migration_guide.md` (#2018) via NachoSoto (@NachoSoto)
+* `eligiblePromotionalOffers`: don't log error if response is ineligible (#2019) via NachoSoto (@NachoSoto)
+* Runs push-pods after make-release (#2025) via Cesar de la Vega (@vegaro)
+* Some updates on notify-on-non-patch-release-branches: (#2026) via Cesar de la Vega (@vegaro)
+* Deploy `PurchaseTesterSwiftUI` to TestFlight (#2003) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: added "logs" screen (#2012) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: allow configuring API key at runtime (#1999) via NachoSoto (@NachoSoto)
+
 ## 4.14.0
 ### New Features
 * Introduced `PurchasesDiagnostics` to help diagnose SDK configuration errors (#1977) via NachoSoto (@NachoSoto)
