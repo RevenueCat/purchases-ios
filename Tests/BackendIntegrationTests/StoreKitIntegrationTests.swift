@@ -204,8 +204,8 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         try self.testSession.approveAskToBuyTransaction(identifier: transaction.identifier)
 
-        // This shouldn't throw error anymore
-        try await self.purchaseMonthlyOffering()
+        let customerInfo = try await Purchases.shared.restorePurchases()
+        try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
     func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() async throws {
