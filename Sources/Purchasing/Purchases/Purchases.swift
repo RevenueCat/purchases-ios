@@ -218,6 +218,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let identityManager: IdentityManager
+    private let userDefaults: UserDefaults
     private let notificationCenter: NotificationCenter
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
@@ -272,7 +273,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             : .left(.init())
 
         let offeringsFactory = OfferingsFactory()
-        let userDefaults = userDefaults ?? UserDefaults.standard
+        let userDefaults = userDefaults ?? UserDefaults.default
         let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
         let receiptParser = ReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
@@ -372,7 +373,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   attributionPoster: attributionPoster,
                   backend: backend,
                   paymentQueueWrapper: paymentQueueWrapper,
-                  notificationCenter: NotificationCenter.default,
+                  userDefaults: userDefaults,
+                  notificationCenter: .default,
                   systemInfo: systemInfo,
                   offeringsFactory: offeringsFactory,
                   deviceCache: deviceCache,
@@ -393,6 +395,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          attributionPoster: AttributionPoster,
          backend: Backend,
          paymentQueueWrapper: EitherPaymentQueueWrapper,
+         userDefaults: UserDefaults,
          notificationCenter: NotificationCenter,
          systemInfo: SystemInfo,
          offeringsFactory: OfferingsFactory,
@@ -424,6 +427,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.offeringsFactory = offeringsFactory
         self.deviceCache = deviceCache
         self.identityManager = identityManager
+        self.userDefaults = userDefaults
         self.notificationCenter = notificationCenter
         self.systemInfo = systemInfo
         self.attribution = subscriberAttributes
@@ -1122,7 +1126,7 @@ internal extension Purchases {
 
 #if DEBUG
 
-// MARK: - Exposed data for testing
+// MARK: - Exposed data for testing only
 
 internal extension Purchases {
 
@@ -1136,6 +1140,10 @@ internal extension Purchases {
 
     var isSandbox: Bool {
         return self.systemInfo.isSandbox
+    }
+
+    var configuredUserDefaults: UserDefaults {
+        return self.userDefaults
     }
 
 }

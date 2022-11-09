@@ -263,4 +263,38 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.paymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
+    // MARK: - UserDefaults
+
+    func testCustomUserDefaultsIsUsedIfNoUserIDIsStored() {
+        expect(Self.create(userDefaults: Self.customUserDefaults).configuredUserDefaults) === Self.customUserDefaults
+    }
+
+    func testCustomUserDefaultsIsUsedEvenIfUserIDIsStored() {
+        UserDefaults.standard.set("user", forKey: DeviceCache.CacheKeys.appUserDefaults.rawValue)
+
+        expect(Self.create(userDefaults: Self.customUserDefaults).configuredUserDefaults) === Self.customUserDefaults
+    }
+
+    func testRevenueCatSuiteIsUsedByDefault() {
+        expect(Self.create(userDefaults: nil).configuredUserDefaults) === UserDefaults.revenueCatSuite
+    }
+
+    func testStandardUserDefaultsIsUsedByDefaultIfItContainedUserID() {
+        UserDefaults.standard.set("user", forKey: DeviceCache.CacheKeys.appUserDefaults.rawValue)
+
+        expect(Self.create(userDefaults: nil).configuredUserDefaults) === UserDefaults.standard
+    }
+
+    private static func create(userDefaults: UserDefaults?) -> Purchases {
+        var configurationBuilder: Configuration.Builder = .init(withAPIKey: "")
+
+        if let userDefaults = userDefaults {
+            configurationBuilder = configurationBuilder.with(userDefaults: userDefaults)
+        }
+
+        return Purchases.configure(with: configurationBuilder.build())
+    }
+
+    private static let customUserDefaults: UserDefaults = .init(suiteName: "com.revenuecat.testing_user_defaults")!
+
 }

@@ -190,6 +190,7 @@ class BasePurchasesTests: TestCase {
                                    attributionPoster: self.attributionPoster,
                                    backend: self.backend,
                                    paymentQueueWrapper: paymentQueueWrapper,
+                                   userDefaults: .default,
                                    notificationCenter: self.notificationCenter,
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,
