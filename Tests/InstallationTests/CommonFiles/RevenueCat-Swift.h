@@ -637,8 +637,8 @@ SWIFT_CLASS_NAMED("Builder")
 ///
 - (RCConfigurationBuilder * _Nonnull)withUserDefaults:(NSUserDefaults * _Nonnull)userDefaults SWIFT_WARN_UNUSED_RESULT;
 /// Set <code>usesStoreKit2IfAvailable</code>.
-/// \param usesStoreKit2IfAvailable opt out of using StoreKit 2 on devices that support it.
-/// Defaults to  <code>true</code>.
+/// \param usesStoreKit2IfAvailable opt in using StoreKit 2 on devices that support it.
+/// Defaults to  <code>false</code>.
 ///
 - (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT;
 /// Set <code>dangerousSettings</code>.
