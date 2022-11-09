@@ -18,8 +18,8 @@ extension UserDefaults {
     #if DEBUG
     /// The "default" `UserDefaults` to use for the SDK.
     ///
-    /// Moving foward, this default is `UserDefaults.revenueCatSuite`, for for compatibility with existing users
-    /// `UserDefaults.standard` is used.
+    /// Moving foward, this default is `UserDefaults.revenueCatSuite`,
+    /// but existing users will continue using `UserDefaults.standard` for compatibility.
     /// This is determined by the presence of an app user ID in `UserDefaults.standard`.
     ///
     /// Computed property only in `DEBUG` to be able to test it under different conditions.
