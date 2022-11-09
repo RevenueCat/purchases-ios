@@ -268,9 +268,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testNoIntroOfferIfProductHasNoIntro() async throws {
-        let product = try await XCTAsyncUnwrap(
-            await Purchases.shared.products(["com.revenuecat.weekly_1.99.no_intro"]).onlyElement
-        )
+        let product = try await XCTAsyncUnwrap(await self.monthlyNoIntroProduct)
 
         let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .noIntroOfferExists
@@ -296,10 +294,10 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
-        let product = try await self.weeklyPackage.storeProduct
+        let product = try await self.monthlyPackage.storeProduct
 
-        // 1. Purchase weekly offering
-        let customerInfo = try await self.purchaseWeeklyOffering().customerInfo
+        // 1. Purchase monthly offering
+        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
 
         // 2. Expire subscription
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
@@ -311,9 +309,8 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testEligibleAfterPurchaseWithNoTrialExpires() async throws {
-        let products = await Purchases.shared.products(["com.revenuecat.weekly_1.99.no_intro"])
-        let productWithNoIntro = try XCTUnwrap(products.first)
-        let productWithIntro = try await self.weeklyPackage.storeProduct
+        let productWithNoIntro = try await self.monthlyNoIntroProduct
+        let productWithIntro = try await self.monthlyPackage.storeProduct
 
         let customerInfo = try await Purchases.shared.purchase(product: productWithNoIntro).customerInfo
         let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
@@ -333,7 +330,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
         expect(created) == true
 
-        var customerInfo = try await self.purchaseWeeklyOffering().customerInfo
+        var customerInfo = try await self.purchaseMonthlyOffering().customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all[Self.entitlementIdentifier])
 
         try await self.expireSubscription(entitlement)
@@ -345,7 +342,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     func testResubscribeAfterExpiration() async throws {
         @discardableResult
         func subscribe() async throws -> CustomerInfo {
-            return try await self.purchaseWeeklyOffering().customerInfo
+            return try await self.purchaseMonthlyOffering().customerInfo
         }
 
         let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
@@ -387,8 +384,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let (_, created) = try await Purchases.shared.logIn(user)
         expect(created) == true
 
-        let products = await Purchases.shared.products(["com.revenuecat.weekly_1.99.no_intro"])
-        let product = try XCTUnwrap(products.first)
+        let product = try await self.monthlyNoIntroProduct
 
         // 1. Purchase subscription
 
@@ -448,12 +444,6 @@ private extension StoreKit1IntegrationTests {
         }
     }
 
-    var weeklyPackage: Package {
-        get async throws {
-            return try await XCTAsyncUnwrap(try await self.currentOffering.weekly)
-        }
-    }
-
     var monthlyPackage: Package {
         get async throws {
             return try await XCTAsyncUnwrap(try await self.currentOffering.monthly)
@@ -463,6 +453,13 @@ private extension StoreKit1IntegrationTests {
     var annualPackage: Package {
         get async throws {
             return try await XCTAsyncUnwrap(try await self.currentOffering.annual)
+        }
+    }
+
+    var monthlyNoIntroProduct: StoreProduct {
+        get async throws {
+            let products = await Purchases.shared.products(["com.revenuecat.monthly_4.99.no_intro"])
+            return try XCTUnwrap(products.onlyElement)
         }
     }
 
@@ -495,25 +492,6 @@ private extension StoreKit1IntegrationTests {
     }
 
     @discardableResult
-    func purchaseWeeklyOffering(
-        file: FileString = #file,
-        line: UInt = #line
-    ) async throws -> PurchaseResultData {
-        let data = try await Purchases.shared.purchase(package: self.weeklyPackage)
-
-        try await self.verifyEntitlementWentThrough(
-            data.customerInfo,
-            // Weekly subscriptions expire in 1 second with this `SKTestTimeRate`.
-            // This short interval can lead to false negatives.
-            verifyEntitlementIsActive: false,
-            file: file,
-            line: line
-        )
-
-        return data
-    }
-
-    @discardableResult
     func purchaseConsumablePackage(
         file: FileString = #file,
         line: UInt = #line
@@ -533,7 +511,6 @@ private extension StoreKit1IntegrationTests {
     @discardableResult
     func verifyEntitlementWentThrough(
         _ customerInfo: CustomerInfo,
-        verifyEntitlementIsActive: Bool = true,
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> EntitlementInfo {
@@ -563,14 +540,12 @@ private extension StoreKit1IntegrationTests {
             throw error
         }
 
-        if verifyEntitlementIsActive {
-            if !entitlement.isActive {
-                await self.printReceiptContent()
-            }
-
-            expect(file: file, line: line, entitlement.isActive)
-                .to(beTrue(), description: "Entitlement is not active")
+        if !entitlement.isActive {
+            await self.printReceiptContent()
         }
+
+        expect(file: file, line: line, entitlement.isActive)
+            .to(beTrue(), description: "Entitlement is not active")
 
         return entitlement
     }
