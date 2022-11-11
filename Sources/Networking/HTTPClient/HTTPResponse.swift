@@ -82,7 +82,7 @@ extension ErrorResponse {
         ]
 
         if !self.attributeErrors.isEmpty {
-            userInfo[.attributeErrors] = self.attributeErrors
+            userInfo[.attributeErrors] = self.attributeErrors as NSDictionary
         }
 
         let message: String? = self.code != .unknownBackendError
