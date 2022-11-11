@@ -122,7 +122,9 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
     }
 
     func testOfferForSigningSignatureErrorResponse() {
-        let errorResponse = ErrorResponse(code: 7234, message: "Ineligible for some reason")
+        let errorResponse = ErrorResponse(code: .invalidAppleSubscriptionKey,
+                                          originalCode: 7234,
+                                          message: "Ineligible for some reason")
 
         let validSigningResponse: [String: Any] = [
             "offers": [

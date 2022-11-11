@@ -226,7 +226,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.offerings.stubbedPostOfferCompletionResult = .failure(
             .networkError(
                 .errorResponse(
-                    .init(code: .userIneligibleForPromoOffer),
+                    .init(code: .userIneligibleForPromoOffer,
+                          originalCode: BackendErrorCode.userIneligibleForPromoOffer.rawValue),
                     .success
                 )
             )

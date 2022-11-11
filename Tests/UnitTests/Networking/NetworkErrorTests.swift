@@ -71,6 +71,7 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
 
     func testErrorResponse() throws {
         let errorResponse = ErrorResponse(code: .invalidSubscriberAttributes,
+                                          originalCode: BackendErrorCode.invalidSubscriberAttributes.rawValue,
                                           message: "Invalid Attributes",
                                           attributeErrors: [
                                             "$email": "invalid"
@@ -101,6 +102,7 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
 
     func testErrorResponseWithNoAttributeErrors() throws {
         let errorResponse = ErrorResponse(code: .invalidAPIKey,
+                                          originalCode: BackendErrorCode.invalidAPIKey.rawValue,
                                           message: "Invalid API key",
                                           attributeErrors: [:])
 
@@ -121,6 +123,39 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
         expect(nsError.localizedDescription) == [
             errorResponse.code.toPurchasesErrorCode().description,
             errorResponse.message!
+
+        ]
+            .joined(separator: " ")
+    }
+
+    func testErrorResponseWithUnknownCode() throws {
+        let unknownCode = 1234
+
+        let errorResponse = ErrorResponse(code: .unknownBackendError,
+                                          originalCode: unknownCode,
+                                          message: "This is a future unknown error")
+
+        let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
+        let underlyingError = errorResponse.code
+            .addingUserInfo([
+                NSLocalizedDescriptionKey: errorResponse.message ?? ""
+            ])
+
+        verifyPurchasesError(error,
+                             expectedCode: .unknownBackendError,
+                             underlyingError: underlyingError,
+                             userInfoKeys: [.statusCode, .backendErrorCode])
+
+        let nsError = error.asPurchasesError as NSError
+
+        expect(
+            nsError.userInfo[NSError.UserInfoKey.backendErrorCode as String] as? Int
+        ) == unknownCode
+        expect(nsError.subscriberAttributesErrors).to(beNil())
+        expect(nsError.localizedDescription) == [
+            errorResponse.code.toPurchasesErrorCode().description,
+            errorResponse.message!,
+            "(\(unknownCode))"
 
         ]
             .joined(separator: " ")
@@ -241,6 +276,7 @@ class NetworkErrorTests: TestCase {
     private static func responseError(_ statusCode: HTTPStatusCode) -> NetworkError {
         return .errorResponse(
             ErrorResponse(code: .invalidAPIKey,
+                          originalCode: BackendErrorCode.invalidAPIKey.rawValue,
                           message: nil),
             statusCode
         )

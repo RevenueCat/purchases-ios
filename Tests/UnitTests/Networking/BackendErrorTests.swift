@@ -58,6 +58,7 @@ class BackendErrorTests: BaseErrorTests {
 
         let response = ErrorResponse(
             code: .subscriptionNotFoundForCustomer,
+            originalCode: BackendErrorCode.subscriptionNotFoundForCustomer.rawValue,
             message: "Subscription not found for subscriber",
             attributeErrors: [:]
         )

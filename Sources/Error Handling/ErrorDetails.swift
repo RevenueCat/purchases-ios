@@ -21,6 +21,7 @@ extension NSError.UserInfoKey {
     static let statusCode: NSError.UserInfoKey = "rc_response_status_code"
 
     static let readableErrorCode: NSError.UserInfoKey = "readable_error_code"
+    static let backendErrorCode: NSError.UserInfoKey = "rc_backend_error_code"
     static let extraContext: NSError.UserInfoKey = "extra_context"
     static let file: NSError.UserInfoKey = "source_file"
     static let function: NSError.UserInfoKey = "source_function"

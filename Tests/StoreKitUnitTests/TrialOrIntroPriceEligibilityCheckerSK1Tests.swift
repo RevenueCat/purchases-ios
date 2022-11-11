@@ -177,7 +177,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let productId = "product_id"
 
         let stubbedError: BackendError = .networkError(
-            .errorResponse(.init(code: .invalidAPIKey, message: nil),
+            .errorResponse(.init(code: .invalidAPIKey,
+                                 originalCode: BackendErrorCode.invalidAPIKey.rawValue,
+                                 message: nil),
                            400)
         )
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], stubbedError)

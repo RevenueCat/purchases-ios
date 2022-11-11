@@ -62,6 +62,7 @@ extension HTTPResponse {
 struct ErrorResponse: Equatable {
 
     var code: BackendErrorCode
+    var originalCode: Int
     var message: String?
     var attributeErrors: [String: String] = [:]
 
@@ -84,12 +85,23 @@ extension ErrorResponse {
             userInfo[.attributeErrors] = self.attributeErrors
         }
 
+        let message: String? = self.code != .unknownBackendError
+            ? self.message
+            : [
+                self.message,
+                // Append original error code if we couldn't map it to a value.
+                "(\(self.originalCode))"
+            ]
+            .compactMap { $0 }
+            .joined(separator: " ")
+
         return ErrorUtils.backendError(
             withBackendCode: self.code,
+            originalBackendErrorCode: self.originalCode,
             message: self.attributeErrors.isEmpty
                 ? nil
                 : self.attributeErrors.description,
-            backendMessage: self.message,
+            backendMessage: message,
             extraUserInfo: userInfo,
             fileName: file, functionName: function, line: line
         )
@@ -121,6 +133,7 @@ extension ErrorResponse: Decodable {
         let codeAsString = try? container.decodeIfPresent(String.self, forKey: .code)
 
         self.code = BackendErrorCode(code: codeAsInteger ?? codeAsString)
+        self.originalCode = codeAsInteger ?? BackendErrorCode.unknownBackendError.rawValue
         self.message = try container.decodeIfPresent(String.self, forKey: .message)
 
         let attributeErrors = (
@@ -178,6 +191,7 @@ extension ErrorResponse {
     }
 
     private static let defaultResponse: Self = .init(code: .unknownError,
+                                                     originalCode: BackendErrorCode.unknownError.rawValue,
                                                      message: nil)
 
 }

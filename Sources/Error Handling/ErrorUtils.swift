@@ -31,7 +31,7 @@ enum ErrorUtils {
     static func networkError(
         message: String? = nil,
         withUnderlyingError underlyingError: Error? = nil,
-        extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
+        extraUserInfo: [NSError.UserInfoKey: Any] = [:],
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
 
@@ -64,17 +64,23 @@ enum ErrorUtils {
      * `NSUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
      * ``BackendErrorCode/toPurchasesErrorCode()``.
      *
-     * - Parameter backendCode: The numerical value of the error.
+     * - Parameter backendCode: The code of the error.
+     * - Parameter originalBackendErrorCode: the original numerical value of this error.
      * - Parameter backendMessage: The message of the errror contained under the `NSUnderlyingErrorKey` key.
      *
      * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
      */
     static func backendError(
-        withBackendCode backendCode: BackendErrorCode, backendMessage: String?,
+        withBackendCode backendCode: BackendErrorCode,
+        originalBackendErrorCode: Int,
+        backendMessage: String?,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
-        return backendError(withBackendCode: backendCode, backendMessage: backendMessage, extraUserInfo: nil,
+        return backendError(withBackendCode: backendCode,
+                            originalBackendErrorCode: originalBackendErrorCode,
+                            backendMessage: backendMessage,
+                            extraUserInfo: [:],
                             fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -84,7 +90,7 @@ enum ErrorUtils {
      * - Note: This error is used when a network request returns an unexpected response.
      */
     static func unexpectedBackendResponseError(
-        extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
+        extraUserInfo: [NSError.UserInfoKey: Any] = [:],
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         return error(with: ErrorCode.unexpectedBackendResponseError, extraUserInfo: extraUserInfo,
@@ -489,18 +495,23 @@ enum ErrorUtils {
 extension ErrorUtils {
 
     static func backendError(withBackendCode backendCode: BackendErrorCode,
+                             originalBackendErrorCode: Int,
                              message: String? = nil,
                              backendMessage: String? = nil,
-                             extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
+                             extraUserInfo: [NSError.UserInfoKey: Any] = [:],
                              fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         let errorCode = backendCode.toPurchasesErrorCode()
-        let underlyingError = self.backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
+        let underlyingError = self.backendUnderlyingError(backendCode: backendCode,
+                                                          originalBackendErrorCode: originalBackendErrorCode,
+                                                          backendMessage: backendMessage)
 
         return error(with: errorCode,
                      message: message ?? backendMessage,
                      underlyingError: underlyingError,
-                     extraUserInfo: extraUserInfo,
+                     extraUserInfo: extraUserInfo + [
+                        .backendErrorCode: originalBackendErrorCode
+                     ],
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -511,7 +522,7 @@ private extension ErrorUtils {
     static func error(with code: ErrorCode,
                       message: String? = nil,
                       underlyingError: Error? = nil,
-                      extraUserInfo: [NSError.UserInfoKey: Any]? = nil,
+                      extraUserInfo: [NSError.UserInfoKey: Any] = [:],
                       fileName: String = #fileID,
                       functionName: String = #function,
                       line: UInt = #line) -> PurchasesError {
@@ -524,7 +535,7 @@ private extension ErrorUtils {
             localizedDescription = code.description
         }
 
-        var userInfo = extraUserInfo ?? [:]
+        var userInfo = extraUserInfo
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = localizedDescription
         if let underlyingError = underlyingError {
             userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = underlyingError
@@ -560,9 +571,12 @@ private extension ErrorUtils {
         return .init(error: .unexpectedBackendResponseError, userInfo: userInfo)
     }
 
-    static func backendUnderlyingError(backendCode: BackendErrorCode, backendMessage: String?) -> NSError {
+    static func backendUnderlyingError(backendCode: BackendErrorCode,
+                                       originalBackendErrorCode: Int,
+                                       backendMessage: String?) -> NSError {
         return backendCode.addingUserInfo([
-            NSLocalizedDescriptionKey: backendMessage ?? ""
+            NSLocalizedDescriptionKey as NSError.UserInfoKey: backendMessage ?? "",
+            .backendErrorCode: originalBackendErrorCode
         ])
     }
 

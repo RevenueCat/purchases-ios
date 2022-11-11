@@ -60,7 +60,9 @@ class PurchasesDiagnosticsTests: TestCase {
 
     func testFailingAuthenticatedRequest() async throws {
         let error = ErrorUtils
-            .backendError(withBackendCode: .invalidAPIKey, backendMessage: "Invalid API key")
+            .backendError(withBackendCode: .invalidAPIKey,
+                          originalBackendErrorCode: BackendErrorCode.invalidAPIKey.rawValue,
+                          backendMessage: "Invalid API key")
             .asPublicError
         self.purchases.mockedCustomerInfoResponse = .failure(error)
 
