@@ -17,8 +17,9 @@ import Foundation
 // swiftlint:disable identifier_name
 enum NetworkStrings {
 
-    case api_request_completed(_ request: HTTPRequest, httpCode: HTTPStatusCode)
     case api_request_started(HTTPRequest)
+    case api_request_completed(_ request: HTTPRequest, httpCode: HTTPStatusCode)
+    case api_request_failed(_ request: HTTPRequest, error: NetworkError)
     case reusing_existing_request_for_operation(CacheableNetworkOperation)
     case creating_json_error(error: String)
     case json_data_received(dataString: String)
@@ -38,13 +39,14 @@ extension NetworkStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case let .api_request_started(request):
+            return "API request started: \(request.description)"
 
         case let .api_request_completed(request, httpCode):
-            return "API request completed: \(request.method.httpMethod) \(request.path.url?.path ?? "")" +
-            " \(httpCode.rawValue)"
+            return "API request completed: \(request.description) (\(httpCode.rawValue))"
 
-        case let .api_request_started(request):
-            return "API request started: \(request.method.httpMethod) \(request.path.url?.path ?? "")"
+        case let .api_request_failed(request, error):
+            return "API request failed: \(request.description): \(error.description)"
 
         case let .reusing_existing_request_for_operation(operation):
             return "Network operation '\(type(of: operation))' found with the same cache key " +
@@ -89,6 +91,14 @@ extension NetworkStrings: CustomStringConvertible {
             "to \(url.absoluteString) host: (\(newHost ?? "<unable to resolve>")), " +
             "see: https://rev.cat/dnsBlocking for more info."
         }
+    }
+
+}
+
+private extension HTTPRequest {
+
+    var description: String {
+        return "\(self.method.httpMethod) \(self.path.url?.path ?? "")"
     }
 
 }
