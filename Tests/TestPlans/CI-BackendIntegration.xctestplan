@@ -11,6 +11,7 @@
   "defaultOptions" : {
     "codeCoverage" : false,
     "maximumTestExecutionTimeAllowance" : 180,
+    "maximumTestRepetitions" : 15,
     "repeatInNewRunnerProcess" : true,
     "targetForVariableExpansion" : {
       "containerPath" : "container:RevenueCat.xcodeproj",
@@ -18,11 +19,44 @@
       "name" : "UnitTestsHostApp"
     },
     "testExecutionOrdering" : "random",
-    "testRepetitionMode" : "retryOnFailure",
+    "testRepetitionMode" : "untilFailure",
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [
     {
+      "skippedTests" : [
+        "BaseBackendIntegrationTests",
+        "OtherIntegrationTests",
+        "StoreKit1IntegrationTests\/testCanGetOfferings()",
+        "StoreKit1IntegrationTests\/testCanPurchaseConsumable()",
+        "StoreKit1IntegrationTests\/testCanPurchaseConsumableMultipleTimes()",
+        "StoreKit1IntegrationTests\/testCanPurchaseConsumableWithMultipleUsers()",
+        "StoreKit1IntegrationTests\/testCanPurchasePackage()",
+        "StoreKit1IntegrationTests\/testCanPurchaseProduct()",
+        "StoreKit1IntegrationTests\/testEligibleAfterPurchaseWithNoTrialExpires()",
+        "StoreKit1IntegrationTests\/testEligibleForIntroBeforePurchase()",
+        "StoreKit1IntegrationTests\/testEligibleForIntroForDifferentProductAfterPurchase()",
+        "StoreKit1IntegrationTests\/testExpireSubscription()",
+        "StoreKit1IntegrationTests\/testIneligibleForIntroAfterPurchase()",
+        "StoreKit1IntegrationTests\/testIneligibleForIntroAfterPurchaseExpires()",
+        "StoreKit1IntegrationTests\/testIsSandbox()",
+        "StoreKit1IntegrationTests\/testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting()",
+        "StoreKit1IntegrationTests\/testLogInThenLogInAsAnotherUserWontTransferPurchases()",
+        "StoreKit1IntegrationTests\/testLogOutRemovesEntitlements()",
+        "StoreKit1IntegrationTests\/testNoIntroOfferIfProductHasNoIntro()",
+        "StoreKit1IntegrationTests\/testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements()",
+        "StoreKit1IntegrationTests\/testPurchaseFailuresAreReportedCorrectly()",
+        "StoreKit1IntegrationTests\/testPurchaseMadeBeforeLogInIsRetainedAfter()",
+        "StoreKit1IntegrationTests\/testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled()",
+        "StoreKit1IntegrationTests\/testPurchaseUpdatesCustomerInfoDelegate()",
+        "StoreKit1IntegrationTests\/testPurchaseWithAskToBuyPostsReceipt()",
+        "StoreKit1IntegrationTests\/testPurchaseWithPromotionalOffer()",
+        "StoreKit1IntegrationTests\/testPurchasesDiagnostics()",
+        "StoreKit1IntegrationTests\/testSubscriptionIsSandbox()",
+        "StoreKit1IntegrationTests\/testUserHasNoEligibleOffersByDefault()",
+        "StoreKit2IntegrationTests",
+        "SubscriberAttributesManagerIntegrationTests"
+      ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "2DE20B6B264087FB004C597D",
