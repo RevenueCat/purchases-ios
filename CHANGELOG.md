@@ -465,7 +465,7 @@ RevenueCat iOS SDK v4 is here!!
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/main...4.0.0)
 
 ### Migration Guide
-- See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 **Note:** This release is based off of 4.0.0-rc.4. Developers migrating from that version shouldn't see any changes. 
 
 ### API changes:
@@ -491,7 +491,7 @@ When enabled, StoreKit 2 APIs will be used under the hood for purchases in compa
 On devices that don't support StoreKit 2, StoreKit 1 will be used automatically instead. 
  
 #### Full API changes list
-- See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 ### Documentation: 
 
@@ -504,7 +504,7 @@ The new documentation can be found [here](https://revenuecat-docs.netlify.app/do
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-rc.3...4.0.0-rc.4)
-- See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 RC 4 introduces the following updates:
 
@@ -538,7 +538,7 @@ These changes add to all of the changes from beta RC 2, [listed here.](https://g
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-rc.2...4.0.0-rc.3)
-- See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 RC 3 introduces the following updates:
 
@@ -570,7 +570,7 @@ These changes add to all of the changes from beta RC 2, [listed here.](https://g
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-rc.1...4.0.0-rc.2)
-- See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 RC 2 introduces the following updates:
 
@@ -605,7 +605,7 @@ These changes add to all of the changes from beta RC 1, [listed here.](https://g
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.10...4.0.0-rc.1)
-- See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 RC 1 introduces the following updates:
 
@@ -642,7 +642,7 @@ In addition to all of the changes from beta 10, [listed here.](https://github.co
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.9...4.0.0-beta.10)
-- See our [RevenueCat V4 API update doc](Documentation.docc/V4_API_Migration_guide.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 Beta 10 introduces the following updates:
 
@@ -669,7 +669,7 @@ https://github.com/RevenueCat/purchases-ios/blob/4.0.0-beta.9/CHANGELOG.latest.m
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.8...4.0.0-beta.9)
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 ### Breaking changes:
 - `identify`, previously deprecated, has been removed in favor of `logIn`.
@@ -718,7 +718,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.8
 - Eighth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Replaced custom DateFormatter with new ISO8601DateFormatter
     https://github.com/RevenueCat/purchases-ios/pull/998
 - Put CustomerInfo Logging into LoginHandler function
@@ -731,7 +731,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.7
 - Seventh beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - macOS: improved ErrorCode.storeProblemError to indicate potential cancellation
     https://github.com/RevenueCat/purchases-ios/pull/943
 - Log when duplicate subscription time lengths exist during Offering init
@@ -746,14 +746,14 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.6
 - Sixth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Add more specific backend error subcodes
     https://github.com/RevenueCat/purchases-ios/pull/927
 
 ## 4.0.0-beta.5
 - Fifth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Improve error handling for backend errors
     https://github.com/RevenueCat/purchases-ios/pull/922
 - Replaced #file with #fileID
@@ -764,7 +764,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.4
 - Fourth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Purchaser to Customer rename
     https://github.com/RevenueCat/purchases-ios/pull/878
     https://github.com/RevenueCat/purchases-ios/pull/899
@@ -783,7 +783,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.3
 - Third beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Fix bug logging the incorrect missing product IDs in `getOfferings`
 - Fix MagicWeather sample app with latest updates
 - Add caching of completion blocks for `createAlias` and `identify` calls to avoid sending calls with the same parameters at the same time
@@ -791,7 +791,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.2
 - Second beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Our API is now more consistent, `completionBlock` -> `completion` across Swift/ObjC
 - Fixed SPM warning relating to excluding `RequiresXcode13` 
 - Make parameter labels that were optional pre-migration optional again
@@ -799,7 +799,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.1
 - First beta for RevenueCat (previously Purchases) framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 ## 3.12.5
 - Cache callbacks for `createAlias` and `identify` to avoid sending multiple calls with same parameters at the same time
