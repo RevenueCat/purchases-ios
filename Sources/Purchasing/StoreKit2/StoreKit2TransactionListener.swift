@@ -17,7 +17,10 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 protocol StoreKit2TransactionListenerDelegate: AnyObject {
 
-    func transactionsUpdated() async throws
+    func storeKit2TransactionListener(
+        _ listener: StoreKit2TransactionListener,
+        updatedTransaction transaction: StoreTransactionType
+    ) async throws
 
 }
 
@@ -98,13 +101,12 @@ private extension StoreKit2TransactionListener {
                 error: verificationError
             )
 
-        case .verified(let verifiedTransaction):
-            if fromTransactionUpdate { // Otherwise transaction will be finished by `PurchasesOrchestrator`
-                await verifiedTransaction.finish()
-            }
-
+        case let .verified(verifiedTransaction):
             if fromTransactionUpdate, let delegate = self.delegate {
-                _ = try await delegate.transactionsUpdated()
+                try await delegate.storeKit2TransactionListener(
+                    self,
+                    updatedTransaction: StoreTransaction(sk2Transaction: verifiedTransaction)
+                )
             }
 
             return verifiedTransaction

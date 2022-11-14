@@ -769,7 +769,16 @@ private extension PurchasesOrchestrator {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
-    func transactionsUpdated() async throws {
+    func storeKit2TransactionListener(
+        _ listener: StoreKit2TransactionListener,
+        updatedTransaction transaction: StoreTransactionType
+    ) async throws {
+        await Async.call { completion in
+            self.finishTransactionIfNeeded(transaction) { @MainActor in
+                completion(())
+            }
+        }
+
         // Need to restore if using observer mode (which is inverse of finishTransactions)
         let isRestore = !self.systemInfo.finishTransactions
 
@@ -1059,7 +1068,7 @@ private extension PurchasesOrchestrator {
     }
 
     func finishTransactionIfNeeded(
-        _ transaction: StoreTransaction,
+        _ transaction: StoreTransactionType,
         completion: @escaping @Sendable @MainActor () -> Void
     ) {
         @Sendable

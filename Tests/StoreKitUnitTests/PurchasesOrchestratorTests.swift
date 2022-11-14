@@ -510,29 +510,45 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     func testStoreKit2TransactionListenerDelegate() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+        self.setUpStoreKit2Listener()
 
-        try await self.orchestrator.transactionsUpdated()
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        expect(self.backend.invokedPostReceiptData).to(beTrue())
-        expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beFalse())
+        let transaction = MockStoreTransaction()
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(transaction.finishInvoked) == true
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testStoreKit2TransactionListenerDelegateWithObserverMode() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        try setUpSystemInfo(finishTransactions: false)
-        setUpOrchestrator()
+        try self.setUpSystemInfo(finishTransactions: false, storeKit2Setting: .enabledForCompatibleDevices)
 
-        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
-        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
 
-        try await self.orchestrator.transactionsUpdated()
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
-        expect(self.backend.invokedPostReceiptData).to(beTrue())
-        expect(self.backend.invokedPostReceiptDataParameters?.isRestore).to(beTrue())
+        let transaction = MockStoreTransaction()
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(transaction.finishInvoked) == false
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == true
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

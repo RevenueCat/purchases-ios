@@ -636,13 +636,3 @@ private extension StoreKit1IntegrationTests {
     }
 
 }
-
-private extension AsyncSequence {
-
-    func extractValues() async rethrows -> [Element] {
-        return try await self.reduce(into: [Element]()) {
-            $0 += [$1]
-        }
-    }
-
-}
