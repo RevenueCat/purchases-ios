@@ -214,9 +214,6 @@ private extension HTTPClient {
 
         let statusCode = HTTPStatusCode(rawValue: httpURLResponse.statusCode)
 
-        Logger.debug(Strings.network.api_request_completed(request.httpRequest,
-                                                           httpCode: statusCode))
-
         return Result
             .success(dataIfAvailable(statusCode))
             .mapSuccessToOptionalHTTPResult(statusCode)
@@ -244,6 +241,13 @@ private extension HTTPClient {
         )
 
         if let response = response {
+            switch response {
+            case let .success(response):
+                Logger.debug(Strings.network.api_request_completed(request.httpRequest, httpCode: response.statusCode))
+            case let .failure(error):
+                Logger.debug(Strings.network.api_request_failed(request.httpRequest, error: error))
+            }
+
             request.completionHandler?(response)
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod,
