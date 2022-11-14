@@ -35,7 +35,8 @@ struct PurchaseTesterApp: App {
                         self.configuration = .init(
                             apiKey: data.apiKey,
                             proxyURL: data.proxy.nonEmpty,
-                            useStoreKit2: data.storeKit2Enabled
+                            useStoreKit2: data.storeKit2Enabled,
+                            observerMode: data.observerMode
                         )
                     }
                 }
