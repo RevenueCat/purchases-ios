@@ -32,10 +32,16 @@ final class MockStoreTransaction: StoreTransactionType {
 
     var finishInvoked: Bool { return self._finishInvoked.value }
 
-    func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping () -> Void) {
+    func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         self._finishInvoked.value = true
 
         completion()
     }
 
 }
+
+#if swift(<5.7)
+// `@unchecked` because:
+// - `Date` is not `Sendable` until Swift 5.7
+extension MockStoreTransaction: @unchecked Sendable {}
+#endif
