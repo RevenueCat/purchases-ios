@@ -22,8 +22,10 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
     private var listener: StoreKit2TransactionListener! = nil
     private var delegate: MockStoreKit2TransactionListenerDelegate! = nil
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.delegate = .init()
         self.listener = .init(delegate: self.delegate)
