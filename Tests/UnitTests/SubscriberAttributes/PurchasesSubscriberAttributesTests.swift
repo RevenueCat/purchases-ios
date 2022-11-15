@@ -189,16 +189,11 @@ class PurchasesSubscriberAttributesTests: TestCase {
     func testSubscribesToForegroundNotifications() {
         setupPurchases()
 
-        expect(self.mockNotificationCenter.observers.count) > 0
+        expect(self.mockNotificationCenter.observers).toNot(beEmpty())
 
-        var isObservingDidBecomeActive = false
-
-        for (_, _, name, _) in self.mockNotificationCenter.observers
-        where name == SystemInfo.applicationDidBecomeActiveNotification {
-            isObservingDidBecomeActive = true
-            break
-        }
-        expect(isObservingDidBecomeActive) == true
+        expect(self.mockNotificationCenter.observers).to(containElementSatisfying {
+            $0.notificationName == SystemInfo.applicationDidBecomeActiveNotification
+        })
 
         self.mockNotificationCenter.fireNotifications()
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
@@ -207,16 +202,11 @@ class PurchasesSubscriberAttributesTests: TestCase {
     func testSubscribesToBackgroundNotifications() {
         setupPurchases()
 
-        expect(self.mockNotificationCenter.observers.count) > 0
+        expect(self.mockNotificationCenter.observers).toNot(beEmpty())
 
-        var isObservingDidBecomeActive = false
-
-        for (_, _, name, _) in self.mockNotificationCenter.observers
-        where name == SystemInfo.applicationWillResignActiveNotification {
-            isObservingDidBecomeActive = true
-            break
-        }
-        expect(isObservingDidBecomeActive) == true
+        expect(self.mockNotificationCenter.observers).to(containElementSatisfying {
+            $0.notificationName == SystemInfo.applicationWillResignActiveNotification
+        })
 
         self.mockNotificationCenter.fireNotifications()
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
