@@ -69,6 +69,30 @@ class ResultExtensionsTests: TestCase {
         })
     }
 
+    func testInitWithThrowingAsyncBlockReturningValue() async {
+        let expectedValue: Int = .random(in: 0..<100)
+
+        func asyncValue() async throws -> Int {
+            return expectedValue
+        }
+
+        let result: Result<Int, Swift.Error> = await .init(catching: { try await asyncValue() })
+        expect(result).to(beSuccess())
+        expect(result.value) == expectedValue
+    }
+
+    func testInitWithThrowingAsyncBlockThrowingError() async {
+        let expectedError: ErrorCode = .customerInfoError
+
+        func asyncValue() async throws -> Int {
+            throw expectedError
+        }
+
+        let result: Result<Int, Swift.Error> = await .init(catching: { try await asyncValue() })
+        expect(result).to(beFailure())
+        expect(result.error).to(matchError(expectedError))
+    }
+
 }
 
 class ResultAsOptionalResultTest: TestCase {

@@ -71,3 +71,16 @@ extension Result where Success: OptionalType {
     }
 
 }
+
+extension Result where Failure == Swift.Error {
+
+    /// Equivalent to `Result.init(catching:)` but with an `async` closure.
+    init(catching block: () async throws -> Success) async {
+        do {
+            self = .success(try await block())
+        } catch {
+            self = .failure(error)
+        }
+    }
+
+}
