@@ -17,6 +17,7 @@ import Foundation
 enum LogIntent {
 
     case appleError
+    case appleWarning
     case info
     case purchase
     case rcError
@@ -28,6 +29,7 @@ enum LogIntent {
     var prefix: String {
         switch self {
         case .appleError: return "🍎‼️"
+        case .appleWarning: return "🍎⚠️"
         case .info: return "ℹ️"
         case .purchase: return "💰"
         case .rcError: return "😿‼️"

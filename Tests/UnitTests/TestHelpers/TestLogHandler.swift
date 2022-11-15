@@ -89,7 +89,7 @@ extension TestLogHandler {
         )
         .to(
             containElementSatisfying(Self.entryCondition(message: message, level: level)),
-            description: "Message not found. Logged messages: \(self.messages)"
+            description: "Message '\(message)' not found. Logged messages: \(self.messages)"
         )
     }
 
