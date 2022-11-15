@@ -42,6 +42,10 @@ enum StoreKitStrings {
 
     case no_cached_products_starting_store_products_request(identifiers: Set<String>)
 
+    case sk1_product_request_too_slow
+
+    case sk2_product_request_too_slow
+
 }
 
 extension StoreKitStrings: CustomStringConvertible {
@@ -92,6 +96,12 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .no_cached_products_starting_store_products_request(let identifiers):
             return "No existing products cached, starting store products request for: \(identifiers)"
+
+        case .sk1_product_request_too_slow:
+            return "StoreKit 1 product request took longer than expected"
+
+        case .sk2_product_request_too_slow:
+            return "StoreKit 2 product request took longer than expected"
         }
     }
 

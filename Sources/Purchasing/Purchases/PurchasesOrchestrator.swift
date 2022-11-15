@@ -420,19 +420,25 @@ final class PurchasesOrchestrator {
         sk2Product: SK2Product,
         promotionalOffer: PromotionalOffer.SignedData?
     ) async throws -> PurchaseResultData {
-        var options: Set<Product.PurchaseOption> = [
-            .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
-        ]
-
-        if let signedData = promotionalOffer {
-            Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier))
-            options.insert(signedData.sk2PurchaseOption)
-        }
-
         let result: Product.PurchaseResult
 
         do {
-            result = try await sk2Product.purchase(options: options)
+            result = try await TimingUtil.measureAndLogIfTooSlow(
+                threshold: .purchase,
+                message: Strings.purchase.sk2_purchase_too_slow) {
+                    var options: Set<Product.PurchaseOption> = [
+                        .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
+                    ]
+
+                    if let signedData = promotionalOffer {
+                        Logger.debug(
+                            Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
+                        )
+                        options.insert(signedData.sk2PurchaseOption)
+                    }
+
+                    return try await sk2Product.purchase(options: options)
+                }
         } catch StoreKitError.userCancelled {
             return (
                 transaction: nil,

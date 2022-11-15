@@ -30,7 +30,7 @@ extension TimingUtil {
     /// }
     /// ```
     static func measure<Value>(
-        _ work: () async throws -> Value
+        _ work: @Sendable () async throws -> Value
     ) async rethrows -> (result: Value, duration: Duration) {
         let start: DispatchTime = .now()
         let result = try await work()
@@ -59,7 +59,7 @@ extension TimingUtil {
         message: CustomStringConvertible,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
-        work: () async throws -> Value
+        work: @Sendable () async throws -> Value
     ) async rethrows -> Value {
         precondition(threshold > 0, "Invalid threshold: \(threshold)")
 
@@ -72,6 +72,35 @@ extension TimingUtil {
                            intent: intent)
 
         return result
+    }
+
+    /// Measures the time to execute `work`, returns the result,
+    /// and logs `message` if duration exceeded `threshold`.
+    /// Example:
+    /// ```swift
+    /// let result = try await TimingUtil.measureAndLogIfTooSlow(
+    ///     threshold: .productRequest,
+    ///     message: "Computation too slow",
+    ///     level: .warn,
+    ///     intent: .appleWarning
+    /// ) {
+    ///    try await asyncMethod()
+    /// }
+    /// ```
+    static func measureAndLogIfTooSlow<Value, Message: CustomStringConvertible & Sendable>(
+        threshold: Configuration.TimingThreshold,
+        message: Message,
+        level: LogLevel = .warn,
+        intent: LogIntent = .appleWarning,
+        _ work: @Sendable () async throws -> Value
+    ) async rethrows -> Value {
+        return try await self.measureAndLogIfTooSlow(
+            threshold: threshold.rawValue,
+            message: message,
+            level: level,
+            intent: intent,
+            work: work
+        )
     }
 
 }
@@ -130,6 +159,37 @@ extension TimingUtil {
 
             result(value)
         }
+    }
+
+    /// Measures the time to execute `work`, returns the result,
+    /// and logs `message` if duration exceeded `threshold`.
+    /// Example:
+    /// ```swift
+    /// TimingUtil.measureAndLogIfTooSlow(
+    ///     threshold: .productRequest,
+    ///     message: "Computation too slow",
+    ///     level: .warn,
+    ///     intent: .appleWarning
+    /// ) { completion in
+    ///     work { completion($0) }
+    /// } result: { result in
+    ///     print("Finished computing: \(result)")
+    /// }
+    /// ```
+    static func measureAndLogIfTooSlow<Value>(
+        threshold: Configuration.TimingThreshold,
+        message: CustomStringConvertible,
+        level: LogLevel = .warn,
+        intent: LogIntent = .appleWarning,
+        work: (@escaping @Sendable (Value) -> Void) -> Void,
+        result: @escaping (Value) -> Void
+    ) {
+        Self.measureAndLogIfTooSlow(threshold: threshold.rawValue,
+                                    message: message,
+                                    level: level,
+                                    intent: intent,
+                                    work: work,
+                                    result: result)
     }
 
 }

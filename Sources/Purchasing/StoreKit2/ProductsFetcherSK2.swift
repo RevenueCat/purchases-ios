@@ -26,7 +26,13 @@ actor ProductsFetcherSK2 {
     /// - Throws: `ProductsFetcherSK2.Error`
     func products(identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
         do {
-            let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
+            let storeKitProducts = try await TimingUtil.measureAndLogIfTooSlow(
+                threshold: .productRequest,
+                message: Strings.storeKit.sk2_product_request_too_slow
+            ) {
+                try await StoreKit.Product.products(for: identifiers)
+            }
+
             Logger.rcSuccess(Strings.storeKit.store_product_request_received_response)
             return Set(storeKitProducts.map { SK2StoreProduct(sk2Product: $0) })
         } catch {
