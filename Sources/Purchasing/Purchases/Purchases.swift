@@ -284,7 +284,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,
                                                       backend: backend,
-                                                      systemInfo: systemInfo)
+                                                      systemInfo: systemInfo,
+                                                      notificationCenter: .default)
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
                                                                       deviceCache: deviceCache,

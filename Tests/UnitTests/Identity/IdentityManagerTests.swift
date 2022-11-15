@@ -45,7 +45,8 @@ class IdentityManagerTests: TestCase {
         self.mockCustomerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
                                                                deviceCache: self.mockDeviceCache,
                                                                backend: MockBackend(),
-                                                               systemInfo: systemInfo)
+                                                               systemInfo: systemInfo,
+                                                               notificationCenter: MockNotificationCenter())
         self.mockAttributeSyncing = MockAttributeSyncing()
     }
 

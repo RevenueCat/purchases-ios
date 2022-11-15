@@ -75,7 +75,8 @@ class BasePurchasesTests: TestCase {
         self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
                                                        backend: self.backend,
-                                                       systemInfo: self.systemInfo)
+                                                       systemInfo: self.systemInfo,
+                                                       notificationCenter: self.notificationCenter)
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
                                                          operationDispatcher: self.mockOperationDispatcher,
                                                          systemInfo: self.systemInfo,

@@ -4,7 +4,7 @@
 //
 import Foundation
 
-class MockNotificationCenter: NotificationCenter {
+final class MockNotificationCenter: NotificationCenter {
 
     typealias ObserversWithSelector = (observer: WeakBox<AnyObject>,
                                        selector: Selector,
@@ -58,4 +58,21 @@ class MockNotificationCenter: NotificationCenter {
             }
         }
     }
+
+    // MARK: -
+
+    typealias PostedNotification = (notification: NSNotification.Name,
+                                    object: Any?,
+                                    userInfo: [AnyHashable: Any])
+
+    var postedNotifications: [PostedNotification] = []
+
+    override func post(
+        name: NSNotification.Name,
+        object: Any?,
+        userInfo: [AnyHashable: Any]? = nil
+    ) {
+        self.postedNotifications.append((name, object, userInfo ?? [:]))
+    }
+
 }

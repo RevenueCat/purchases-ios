@@ -6,11 +6,22 @@ import XCTest
 @MainActor
 class BaseCustomerInfoManagerTests: TestCase {
     fileprivate static let appUserID = "app_user_id"
+    fileprivate static let mockCustomerInfoData: [String: Any] = [
+        "request_date": "2018-12-21T02:40:36Z",
+        "subscriber": [
+            "original_app_user_id": BaseCustomerInfoManagerTests.appUserID,
+            "first_seen": "2019-06-17T16:05:33Z",
+            "subscriptions": [:],
+            "other_purchases": [:],
+            "original_application_version": NSNull()
+        ]
+    ]
 
     fileprivate var mockBackend = MockBackend()
     fileprivate var mockOperationDispatcher = MockOperationDispatcher()
     fileprivate var mockDeviceCache: MockDeviceCache!
     fileprivate var mockSystemInfo = MockSystemInfo(finishTransactions: true)
+    fileprivate var notificationCenter: MockNotificationCenter!
 
     fileprivate var mockCustomerInfo: CustomerInfo!
 
@@ -24,15 +35,8 @@ class BaseCustomerInfoManagerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.mockCustomerInfo = try CustomerInfo(data: [
-            "request_date": "2018-12-21T02:40:36Z",
-            "subscriber": [
-                "original_app_user_id": Self.appUserID,
-                "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": NSNull()
-            ]])
+        self.mockCustomerInfo = try CustomerInfo(data: Self.mockCustomerInfoData)
+        self.notificationCenter = .init()
 
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
         self.customerInfoManagerChangesCallCount = 0
@@ -40,7 +44,8 @@ class BaseCustomerInfoManagerTests: TestCase {
         self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.mockDeviceCache,
                                                        backend: self.mockBackend,
-                                                       systemInfo: self.mockSystemInfo)
+                                                       systemInfo: self.mockSystemInfo,
+                                                       notificationCenter: self.notificationCenter)
     }
 
 }
@@ -385,7 +390,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
-    func testCachePurchaserSendsToDelegateIfChanged() {
+    func testCacheCustomerInfoSendsToDelegateIfChanged() {
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: "myUser")
         expect(self.customerInfoManagerChangesCallCount) == 1
         expect(self.customerInfoManagerLastCustomerInfo) == mockCustomerInfo
@@ -406,6 +411,63 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
 
         expect(self.customerInfoManager.lastSentCustomerInfo).to(beNil())
+    }
+
+    func testCacheInitialCustomerInfoDoesNotPostNotification() {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        expect(self.notificationCenter.postedNotifications).to(beEmpty())
+    }
+
+    func testCacheCustomerInfoWithSameCustomerInfoDoesNotPostNotification() throws {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        expect(self.notificationCenter.postedNotifications).to(beEmpty())
+    }
+
+    func testCacheCustomerInfoWithDifferentSubscriptionsPostsNotification() throws {
+        let customerInfo = try CustomerInfo(data: [
+            "request_date": "2019-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2020-06-17T16:05:33Z",
+                "subscriptions": ["product_a": ["expires_date": "2118-05-27T06:24:50Z", "period_type": "normal"]],
+                "other_purchases": [:],
+                "original_application_version": "1.0"
+            ]])
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: Self.appUserID)
+
+        expect(self.notificationCenter.postedNotifications).to(haveCount(1))
+        expect(self.notificationCenter.postedNotifications).to(containElementSatisfying {
+            $0.notification == CustomerInfoManager.customerInfoChangedNotification &&
+            $0.object as? CustomerInfo == customerInfo
+        })
+    }
+
+    func testCacheCustomerInfoWithDifferentUserIDPostsNotification() throws {
+        let newCustomerInfoData: [String: Any] = {
+            var result = Self.mockCustomerInfoData
+            // swiftlint:disable:next force_cast
+            var newSubscriber = result["subscriber"] as! [String: Any]
+
+            newSubscriber["original_app_user_id"] = "new user ID"
+            result["subscriber"] = newSubscriber
+
+            return result
+        }()
+        let customerInfo = try CustomerInfo(data: newCustomerInfoData)
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+        self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: Self.appUserID)
+
+        expect(self.notificationCenter.postedNotifications).to(haveCount(1))
+        expect(self.notificationCenter.postedNotifications).to(containElementSatisfying {
+            $0.notification == CustomerInfoManager.customerInfoChangedNotification &&
+            $0.object as? CustomerInfo == customerInfo
+        })
     }
 
 }

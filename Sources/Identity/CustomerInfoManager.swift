@@ -22,16 +22,20 @@ class CustomerInfoManager {
     private let deviceCache: DeviceCache
     private let backend: Backend
     private let systemInfo: SystemInfo
+    private let notificationCenter: NotificationCenter
+
     private let customerInfoCacheLock = Lock()
 
     init(operationDispatcher: OperationDispatcher,
          deviceCache: DeviceCache,
          backend: Backend,
-         systemInfo: SystemInfo) {
+         systemInfo: SystemInfo,
+         notificationCenter: NotificationCenter) {
         self.operationDispatcher = operationDispatcher
         self.deviceCache = deviceCache
         self.backend = backend
         self.systemInfo = systemInfo
+        self.notificationCenter = notificationCenter
     }
 
     func fetchAndCacheCustomerInfo(appUserID: String,
@@ -83,11 +87,11 @@ class CustomerInfoManager {
     }
 
     func sendCachedCustomerInfoIfAvailable(appUserID: String) {
-        guard let info = cachedCustomerInfo(appUserID: appUserID) else {
+        guard let info = self.cachedCustomerInfo(appUserID: appUserID) else {
             return
         }
 
-        sendUpdateIfChanged(customerInfo: info)
+        self.sendUpdateIfChanged(customerInfo: info)
     }
 
     func customerInfo(
@@ -231,21 +235,27 @@ class CustomerInfoManager {
 
     private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
         self.customerInfoCacheLock.perform {
-            guard !self.customerInfoObserversByIdentifier.isEmpty,
-                  self.lastSentCustomerInfo != customerInfo else {
-                      return
-                  }
+            guard self.lastSentCustomerInfo != customerInfo else { return }
 
-            if lastSentCustomerInfo != nil {
+            if self.lastSentCustomerInfo != nil {
                 Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
             } else {
                 Logger.debug(Strings.customerInfo.sending_latest_customerinfo_to_delegate)
             }
 
+            if let previousCustomerInfo = self.lastSentCustomerInfo,
+               previousCustomerInfo != customerInfo {
+                self.notificationCenter.post(name: Self.customerInfoChangedNotification,
+                                             object: customerInfo)
+            }
+
             self.lastSentCustomerInfo = customerInfo
-            self.operationDispatcher.dispatchOnMainThread { [observers = self.customerInfoObserversByIdentifier] in
-                for closure in observers.values {
-                    closure(customerInfo)
+
+            if !self.customerInfoObserversByIdentifier.isEmpty {
+                self.operationDispatcher.dispatchOnMainThread { [observers = self.customerInfoObserversByIdentifier] in
+                    for closure in observers.values {
+                        closure(customerInfo)
+                    }
                 }
             }
         }
@@ -266,6 +276,13 @@ extension CustomerInfoManager {
                                      completion: { @Sendable in continuation.resume(with: $0) })
         }
     }
+
+}
+
+extension CustomerInfoManager {
+
+    static let customerInfoChangedNotification: Notification.Name
+    = .init("com.revenuecat.notification.customer_info_changed")
 
 }
 

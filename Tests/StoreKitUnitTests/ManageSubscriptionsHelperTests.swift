@@ -45,7 +45,8 @@ class ManageSubscriptionsHelperTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             deviceCache: MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo),
             backend: MockBackend(),
-            systemInfo: self.systemInfo
+            systemInfo: self.systemInfo,
+            notificationCenter: MockNotificationCenter()
         )
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")
         self.helper = ManageSubscriptionsHelper(systemInfo: self.systemInfo,

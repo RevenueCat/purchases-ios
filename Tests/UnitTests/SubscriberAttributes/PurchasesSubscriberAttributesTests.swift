@@ -102,10 +102,11 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
                                        currentUserProvider: self.mockIdentityManager,
                                        attributionPoster: self.mockAttributionPoster)
-        self.customerInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
-                                                       deviceCache: mockDeviceCache,
-                                                       backend: mockBackend,
-                                                       systemInfo: systemInfo)
+        self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
+                                                       deviceCache: self.mockDeviceCache,
+                                                       backend: self.mockBackend,
+                                                       systemInfo: self.systemInfo,
+                                                       notificationCenter: self.mockNotificationCenter)
         mockOfferingsManager = MockOfferingsManager(deviceCache: mockDeviceCache,
                                                     operationDispatcher: mockOperationDispatcher,
                                                     systemInfo: systemInfo,

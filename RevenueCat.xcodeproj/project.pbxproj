@@ -341,6 +341,7 @@
 		57D5412E27F6311C004CC35C /* OfferingsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57D5412D27F6311C004CC35C /* OfferingsResponse.swift */; };
 		57D5414227F656D9004CC35C /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57D5414127F656D9004CC35C /* NetworkError.swift */; };
 		57D56FCA2853C005009E8E1E /* StringExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57D56FC92853C005009E8E1E /* StringExtensionsTests.swift */; };
+		57D9EC5829240CA1002E3B97 /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
 		57DBFA5D28AADA43002D18CA /* PurchasesLogInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DBFA5C28AADA43002D18CA /* PurchasesLogInTests.swift */; };
 		57DC9F4627CC2E4900DA6AF9 /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DC9F4527CC2E4900DA6AF9 /* HTTPRequest.swift */; };
 		57DC9F4A27CD37BA00DA6AF9 /* HTTPStatusCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DC9F4927CD37BA00DA6AF9 /* HTTPStatusCodeTests.swift */; };
@@ -2425,6 +2426,7 @@
 				B359DDF027EAA2B4003ABA54 /* MockDateProvider.swift in Sources */,
 				57C381E3279627B7009E3940 /* MockStoreProductDiscount.swift in Sources */,
 				576C8AB927D2996C0058FA6E /* CurrentTestCaseTracker.swift in Sources */,
+				57D9EC5829240CA1002E3B97 /* MockNotificationCenter.swift in Sources */,
 				B3BE0264275942D500915B4C /* AvailabilityChecks.swift in Sources */,
 				2D90F8B326FD2082009B9142 /* MockProductsManager.swift in Sources */,
 				575A8EE32922C5E100936709 /* AsyncTestHelpers.swift in Sources */,

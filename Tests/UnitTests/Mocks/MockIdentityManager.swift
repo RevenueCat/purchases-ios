@@ -30,7 +30,8 @@ class MockIdentityManager: IdentityManager {
                    customerInfoManager: MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
                                                                 deviceCache: mockDeviceCache,
                                                                 backend: mockBackend,
-                                                                systemInfo: mockSystemInfo),
+                                                                systemInfo: mockSystemInfo,
+                                                                notificationCenter: MockNotificationCenter()),
                    attributeSyncing: self.mockAttributeSyncing,
                    appUserID: mockAppUserID)
     }
