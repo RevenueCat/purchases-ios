@@ -29,7 +29,7 @@ class TimingUtilAsyncTests: TestCase {
         let expectedResult = Int.random(in: 0..<1000)
         let sleepDuration: DispatchTimeInterval = .milliseconds(10)
 
-        let (result, time) = await TimingUtil.measure {
+        let (result, time) = await TimingUtil.measure { () -> Int in
             try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
 
             return expectedResult
@@ -62,7 +62,7 @@ class TimingUtilAsyncTests: TestCase {
         let sleepDuration = threshold + .milliseconds(-5)
 
         let result = await TimingUtil.measureAndLogIfTooSlow(threshold: threshold.seconds,
-                                                             message: "Too slow") {
+                                                             message: "Too slow") { () -> Int in
             try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
 
             return expectedResult
@@ -84,7 +84,7 @@ class TimingUtilAsyncTests: TestCase {
 
         let result = await TimingUtil.measureAndLogIfTooSlow(threshold: threshold.seconds,
                                                              message: message,
-                                                             level: level) {
+                                                             level: level) { () -> Int in
             try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
 
             return expectedResult
