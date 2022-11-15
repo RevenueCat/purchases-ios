@@ -171,6 +171,19 @@ extension Logger {
                  fileName: fileName, functionName: functionName, line: line)
     }
 
+    static func log(level: LogLevel,
+                    intent: LogIntent,
+                    message: @autoclosure () -> String,
+                    fileName: String? = #fileID,
+                    functionName: String? = #function,
+                    line: UInt = #line) {
+        Self.log(level: level,
+                 message: "\(intent.prefix) \(message())",
+                 fileName: fileName,
+                 functionName: functionName,
+                 line: line)
+    }
+
 }
 
 private extension Logger {
@@ -183,19 +196,6 @@ private extension Logger {
         guard self.logLevel.rawValue <= level.rawValue else { return }
 
         Self.logHandler(level, message(), fileName, functionName, line)
-    }
-
-    static func log(level: LogLevel,
-                    intent: LogIntent,
-                    message: @autoclosure () -> String,
-                    fileName: String? = #fileID,
-                    functionName: String? = #function,
-                    line: UInt = #line) {
-        Self.log(level: level,
-                 message: "\(intent.prefix) \(message())",
-                 fileName: fileName,
-                 functionName: functionName,
-                 line: line)
     }
 
 }
