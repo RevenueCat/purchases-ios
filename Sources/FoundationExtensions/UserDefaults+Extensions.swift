@@ -47,8 +47,10 @@ private extension UserDefaults {
         let standard: UserDefaults = .standard
 
         if standard.value(forKey: DeviceCache.CacheKeys.appUserDefaults.rawValue) != nil {
+            Logger.debug(Strings.configure.using_user_defaults_standard)
             return standard
         } else {
+            Logger.debug(Strings.configure.using_user_defaults_suite_name)
             return .revenueCatSuite
         }
     }

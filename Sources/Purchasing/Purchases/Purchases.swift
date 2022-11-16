@@ -242,6 +242,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil) {
+        if userDefaults != nil {
+            Logger.debug(Strings.configure.using_custom_user_defaults)
+        }
+
         let operationDispatcher: OperationDispatcher = .default
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,

@@ -45,6 +45,12 @@ enum ConfigureStrings {
 
     case autoSyncPurchasesDisabled
 
+    case using_custom_user_defaults
+
+    case using_user_defaults_standard
+
+    case using_user_defaults_suite_name
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
@@ -97,6 +103,16 @@ extension ConfigureStrings: CustomStringConvertible {
             "after the transaction is finished, so make sure purchases are synced before \n" +
             "finishing any consumable transaction, otherwise RevenueCat won’t register the \n" +
             "purchase."
+
+        case .using_custom_user_defaults:
+            return "Configuring SDK using provided UserDefaults."
+
+        case .using_user_defaults_standard:
+            return "Configuring SDK using UserDefaults.standard."
+
+        case .using_user_defaults_suite_name:
+            return "Configuring SDK using RevenueCat's UserDefaults suite."
+
         }
     }
 
