@@ -14,10 +14,12 @@
 
 import Foundation
 
+import ReceiptParser
+
 class ReceiptFetcher {
 
     private let requestFetcher: StoreKitRequestFetcher
-    private let receiptParser: ReceiptParser
+    private let receiptParser: ReceiptParser.Parser
     private let fileReader: FileReader
 
     let systemInfo: SystemInfo
@@ -25,7 +27,7 @@ class ReceiptFetcher {
     init(
         requestFetcher: StoreKitRequestFetcher,
         systemInfo: SystemInfo,
-        receiptParser: ReceiptParser = .default,
+        receiptParser: ReceiptParser.Parser = .default,
         fileReader: FileReader = DefaultFileReader()
     ) {
         self.requestFetcher = requestFetcher

@@ -14,6 +14,8 @@
 
 import Foundation
 
+import ReceiptParser
+
 // swiftlint:disable identifier_name
 enum ReceiptStrings {
 

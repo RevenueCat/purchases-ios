@@ -12,9 +12,10 @@
 //  Created by Andrés Boedo on 8/3/21.
 
 import Foundation
+import Nimble
 import XCTest
 
-import Nimble
+@testable import ReceiptParser
 @testable import RevenueCat
 
 class BaseReceiptFetcherTests: TestCase {

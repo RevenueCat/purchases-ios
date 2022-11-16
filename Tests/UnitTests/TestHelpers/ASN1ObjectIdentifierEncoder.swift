@@ -4,9 +4,12 @@
 //
 
 import Foundation
+
+@testable import ReceiptParser
 @testable import RevenueCat
 
 class ASN1ObjectIdentifierEncoder {
+
     func objectIdentifierPayload(_ objectIdentifier: ASN1ObjectIdentifier) -> ArraySlice<UInt8> {
         return encodeASN1ObjectIdentifier(numbers: objectIdentifierNumbers(objectIdentifier))
     }
@@ -25,6 +28,7 @@ class ASN1ObjectIdentifierEncoder {
 
         return ArraySlice(encodedNumbers)
     }
+    
 }
 
 private extension ASN1ObjectIdentifierEncoder {

@@ -20,6 +20,8 @@
 import Foundation
 import StoreKit
 
+import ReceiptParser
+
 // MARK: Block definitions
 
 /**
@@ -274,7 +276,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
         let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
-        let receiptParser = ReceiptParser.default
+        let receiptParser: ReceiptParser.Parser = .default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,
@@ -1099,7 +1101,7 @@ internal extension Purchases {
     func fetchReceipt(_ policy: ReceiptRefreshPolicy) async throws -> AppleReceipt? {
         let receipt = await self.receiptFetcher.receiptData(refreshPolicy: policy)
 
-        return try receipt.map { try ReceiptParser.default.parse(from: $0) }
+        return try receipt.map { try ReceiptParser.Parser.default.parse(from: $0) }
     }
 
     #endif

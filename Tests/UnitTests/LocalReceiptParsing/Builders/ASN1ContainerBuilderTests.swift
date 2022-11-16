@@ -1,16 +1,20 @@
 import Nimble
 import XCTest
 
+@testable import ReceiptParser
 @testable import RevenueCat
 
 class ASN1ContainerBuilderTests: TestCase {
-    var containerBuilder: ASN1ContainerBuilder!
-    let mockContainerPayload: [UInt8] = [0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01]
-    let lengthByteForIndefiniteLengthContainers = 0b10000000
+
+    private var containerBuilder: ASN1ContainerBuilder!
+
+    private let mockContainerPayload: [UInt8] = [0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01, 0b01]
+    private let lengthByteForIndefiniteLengthContainers = 0b10000000
 
     override func setUp() {
         super.setUp()
-        containerBuilder = ASN1ContainerBuilder()
+
+        self.containerBuilder = ASN1ContainerBuilder()
     }
 
     func testBuildFromContainerExtractsClassCorrectly() throws {

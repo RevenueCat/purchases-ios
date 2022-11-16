@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import RevenueCat
+import ReceiptParser
 
 struct HomeView: View {
     @EnvironmentObject var revenueCatCustomerData: RevenueCatCustomerData

@@ -16,27 +16,27 @@ import Foundation
 
 extension AppleReceipt {
 
-    struct InAppPurchase: Equatable {
+    public struct InAppPurchase: Equatable {
 
-        let quantity: Int
-        let productId: String
-        let transactionId: String
-        let originalTransactionId: String?
-        let productType: ProductType
-        let purchaseDate: Date
-        let originalPurchaseDate: Date?
-        let expiresDate: Date?
-        let cancellationDate: Date?
-        let isInTrialPeriod: Bool?
-        let isInIntroOfferPeriod: Bool?
-        let webOrderLineItemId: Int64?
-        let promotionalOfferIdentifier: String?
+        public let quantity: Int
+        public let productId: String
+        public let transactionId: String
+        public let originalTransactionId: String?
+        public let productType: ProductType
+        public let purchaseDate: Date
+        public let originalPurchaseDate: Date?
+        public let expiresDate: Date?
+        public let cancellationDate: Date?
+        public let isInTrialPeriod: Bool?
+        public let isInIntroOfferPeriod: Bool?
+        public let webOrderLineItemId: Int64?
+        public let promotionalOfferIdentifier: String?
 
     }
 
 }
 
-extension AppleReceipt.InAppPurchase {
+public extension AppleReceipt.InAppPurchase {
 
     var isActiveSubscription: Bool {
         guard self.isSubscription, let expiration = self.expiresDate else { return false }
@@ -59,7 +59,7 @@ extension AppleReceipt.InAppPurchase {
 
 extension AppleReceipt.InAppPurchase {
 
-    enum ProductType: Int {
+    public enum ProductType: Int {
 
         case unknown = -1,
         nonConsumable,
@@ -72,13 +72,15 @@ extension AppleReceipt.InAppPurchase {
 }
 
 extension AppleReceipt.InAppPurchase {
-    var isSubscription: Bool {
+
+    public var isSubscription: Bool {
         switch self.productType {
         case .unknown: return self.expiresDate != nil
         case .nonConsumable, .consumable: return false
         case .nonRenewingSubscription, .autoRenewableSubscription: return true
         }
     }
+
 }
 
 // MARK: -
@@ -88,8 +90,10 @@ extension AppleReceipt.InAppPurchase: Codable {}
 
 extension AppleReceipt.InAppPurchase: CustomDebugStringConvertible {
 
-    var debugDescription: String {
-        return (try? self.prettyPrintedJSON) ?? "<null>"
+    public var debugDescription: String {
+        // TODO
+        return ""
+//        return (try? self.prettyPrintedJSON) ?? "<null>"
     }
 
 }

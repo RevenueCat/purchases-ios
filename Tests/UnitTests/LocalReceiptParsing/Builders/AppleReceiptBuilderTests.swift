@@ -1,6 +1,7 @@
 import Nimble
 import XCTest
 
+@testable import ReceiptParser
 @testable import RevenueCat
 
 class AppleReceiptBuilderTests: TestCase {

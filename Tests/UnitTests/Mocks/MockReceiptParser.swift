@@ -4,11 +4,13 @@
 //
 
 import Foundation
+
+@testable import ReceiptParser
 @testable import RevenueCat
 
 import XCTest
 
-class MockReceiptParser: ReceiptParser {
+class MockReceiptParser: Parser {
 
     var invokedParse = false
     var invokedParseCount = 0

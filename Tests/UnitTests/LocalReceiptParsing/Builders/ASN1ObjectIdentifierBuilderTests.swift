@@ -1,11 +1,13 @@
 import Nimble
 import XCTest
 
+@testable import ReceiptParser
 @testable import RevenueCat
 
 class ASN1ObjectIdentifierBuilderTests: TestCase {
 
-    let encoder = ASN1ObjectIdentifierEncoder()
+    private let encoder = ASN1ObjectIdentifierEncoder()
+
     func testBuildFromPayloadBuildsCorrectlyForDataPayload() {
         let payload = encoder.objectIdentifierPayload(.data)
         expect(try ASN1ObjectIdentifierBuilder.build(fromPayload: payload)) == .data

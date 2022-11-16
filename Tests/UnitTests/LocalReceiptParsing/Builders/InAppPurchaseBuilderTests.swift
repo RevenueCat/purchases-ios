@@ -7,6 +7,7 @@ import Foundation
 import Nimble
 import XCTest
 
+@testable import ReceiptParser
 @testable import RevenueCat
 
 class InAppPurchaseBuilderTests: TestCase {

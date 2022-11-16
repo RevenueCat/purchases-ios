@@ -13,6 +13,8 @@
 
 import Foundation
 
+import ReceiptParser
+
 class PostReceiptDataOperation: CacheableNetworkOperation {
 
     struct PostData {
@@ -82,7 +84,7 @@ private extension PostReceiptDataOperation {
 
     func printReceiptData() {
         do {
-            let receipt = try ReceiptParser.default.parse(from: self.postData.receiptData)
+            let receipt = try ReceiptParser.Parser.default.parse(from: self.postData.receiptData)
             self.log(Strings.receipt.posting_receipt(receipt))
 
             for purchase in receipt.inAppPurchases where purchase.purchaseDateEqualsExpiration {

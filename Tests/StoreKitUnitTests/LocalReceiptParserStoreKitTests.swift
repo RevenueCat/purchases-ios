@@ -13,7 +13,10 @@
 
 import Foundation
 import Nimble
+
+@testable import ReceiptParser
 @testable import RevenueCat
+
 import StoreKit
 import XCTest
 
@@ -25,7 +28,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
     private var requestFetcher: StoreKitRequestFetcher!
     private var systemInfo: SystemInfo!
     private var receiptFetcher: ReceiptFetcher!
-    private var parser: ReceiptParser!
+    private var parser: Parser!
 
     override func setUpWithError() throws {
         try super.setUpWithError()

@@ -14,6 +14,9 @@
 import Foundation
 import StoreKit
 
+// @_implementationOnly
+import ReceiptParser
+
 @objc protocol PurchasesOrchestratorDelegate {
 
     func readyForPromotedProduct(_ product: StoreProduct,
@@ -29,6 +32,10 @@ import StoreKit
 
 // swiftlint:disable file_length type_body_length
 final class PurchasesOrchestrator {
+
+    var receiptName: String {
+        return AppleReceipt.InAppPurchase.ProductType.consumable.rawValue.description
+    }
 
     var finishTransactions: Bool { self.systemInfo.finishTransactions }
     var allowSharingAppStoreAccount: Bool {

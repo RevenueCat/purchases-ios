@@ -17,13 +17,13 @@ import Foundation
 // swiftlint:disable nesting
 
 /// The contents of a parsed IAP receipt.
-struct AppleReceipt: Equatable {
+public struct AppleReceipt: Equatable {
 
     // swiftlint:disable:next line_length
     // https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ReceiptFields.html
-    struct Attribute {
+    public struct Attribute {
 
-        enum AttributeType: Int {
+        public enum AttributeType: Int {
 
             case bundleId = 2,
                  applicationVersion = 3,
@@ -36,22 +36,22 @@ struct AppleReceipt: Equatable {
 
         }
 
-        let type: AttributeType
-        let version: Int
-        let value: String
+        public let type: AttributeType
+        public let version: Int
+        public let value: String
 
     }
 
-    let bundleId: String
-    let applicationVersion: String
-    let originalApplicationVersion: String?
-    let opaqueValue: Data
-    let sha1Hash: Data
-    let creationDate: Date
-    let expirationDate: Date?
-    let inAppPurchases: [InAppPurchase]
+    public let bundleId: String
+    public let applicationVersion: String
+    public let originalApplicationVersion: String?
+    public let opaqueValue: Data
+    public let sha1Hash: Data
+    public let creationDate: Date
+    public let expirationDate: Date?
+    public let inAppPurchases: [InAppPurchase]
 
-    func purchasedIntroOfferOrFreeTrialProductIdentifiers() -> Set<String> {
+    public func purchasedIntroOfferOrFreeTrialProductIdentifiers() -> Set<String> {
         let productIdentifiers = self.inAppPurchases
             .filter { $0.isInIntroOfferPeriod == true || $0.isInTrialPeriod == true }
             .map { $0.productId }
@@ -62,7 +62,7 @@ struct AppleReceipt: Equatable {
 
 // MARK: - Extensions
 
-extension AppleReceipt {
+public extension AppleReceipt {
 
     func containsActivePurchase(forProductIdentifier identifier: String) -> Bool {
         return (
@@ -79,8 +79,10 @@ extension AppleReceipt: Codable {}
 
 extension AppleReceipt: CustomDebugStringConvertible {
 
-    var debugDescription: String {
-        return (try? self.prettyPrintedJSON) ?? "<null>"
+    public var debugDescription: String {
+        // TODO
+        return "TODO"
+//        return (try? self.prettyPrintedJSON) ?? "<null>"
     }
 
 }

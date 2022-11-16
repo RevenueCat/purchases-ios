@@ -1,21 +1,26 @@
 import Nimble
 import XCTest
 
+@testable import ReceiptParser
 @testable import RevenueCat
 
+// TODO: move?
+
 class ReceiptParserTests: TestCase {
-    var receiptParser: ReceiptParser!
-    var mockAppleReceiptBuilder: MockAppleReceiptBuilder!
-    var mockASN1ContainerBuilder: MockASN1ContainerBuilder!
+
+    private var receiptParser: Parser!
+    private var mockAppleReceiptBuilder: MockAppleReceiptBuilder!
+    private var mockASN1ContainerBuilder: MockASN1ContainerBuilder!
 
     private let containerFactory = ContainerFactory()
 
     override func setUp() {
         super.setUp()
-        mockAppleReceiptBuilder = MockAppleReceiptBuilder()
-        mockASN1ContainerBuilder = MockASN1ContainerBuilder()
-        receiptParser = ReceiptParser(containerBuilder: mockASN1ContainerBuilder,
-                                      receiptBuilder: mockAppleReceiptBuilder)
+        
+        self.mockAppleReceiptBuilder = MockAppleReceiptBuilder()
+        self.mockASN1ContainerBuilder = MockASN1ContainerBuilder()
+        self.receiptParser = Parser(containerBuilder: mockASN1ContainerBuilder,
+                                    receiptBuilder: mockAppleReceiptBuilder)
     }
 
     func testParseFromReceiptDataBuildsContainerAfterObjectIdentifier() throws {

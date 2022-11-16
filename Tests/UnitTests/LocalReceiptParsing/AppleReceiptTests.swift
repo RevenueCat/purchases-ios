@@ -14,7 +14,10 @@
 import Nimble
 import XCTest
 
+@testable import ReceiptParser
 @testable import RevenueCat
+
+// TODO: move?
 
 final class AppleReceiptTests: TestCase {
 
