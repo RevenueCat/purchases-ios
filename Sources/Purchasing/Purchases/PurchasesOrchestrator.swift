@@ -31,6 +31,8 @@ import StoreKit
 final class PurchasesOrchestrator {
 
     var finishTransactions: Bool { self.systemInfo.finishTransactions }
+    var observerMode: Bool { self.systemInfo.observerMode }
+
     var allowSharingAppStoreAccount: Bool {
         get { self._allowSharingAppStoreAccount.value ?? self.currentUserProvider.currentUserIsAnonymous }
         set { self._allowSharingAppStoreAccount.value = newValue }
@@ -779,8 +781,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             }
         }
 
-        // Need to restore if using observer mode (which is inverse of finishTransactions)
-        let isRestore = !self.systemInfo.finishTransactions
+        let isRestore = self.systemInfo.observerMode
 
         _ = try await self.syncPurchases(receiptRefreshPolicy: .always,
                                          isRestore: isRestore,
@@ -889,7 +890,7 @@ private extension PurchasesOrchestrator {
                           isRestore: allowSharingAppStoreAccount,
                           productData: productData,
                           presentedOfferingIdentifier: presentedOfferingID,
-                          observerMode: !self.finishTransactions,
+                          observerMode: self.observerMode,
                           initiationSource: initiationSource,
                           subscriberAttributes: unsyncedAttributes) { result in
             self.handleReceiptPost(withTransaction: transaction,
@@ -1013,7 +1014,7 @@ private extension PurchasesOrchestrator {
                               isRestore: isRestore,
                               productData: nil,
                               presentedOfferingIdentifier: nil,
-                              observerMode: !self.finishTransactions,
+                              observerMode: self.observerMode,
                               initiationSource: initiationSource,
                               subscriberAttributes: unsyncedAttributes) { result in
                 self.handleReceiptPost(result: result,

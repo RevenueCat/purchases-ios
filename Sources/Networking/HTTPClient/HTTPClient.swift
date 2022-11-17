@@ -138,8 +138,6 @@ private extension HTTPClient {
 private extension HTTPClient {
 
     var defaultHeaders: [String: String] {
-        let observerMode = !self.systemInfo.finishTransactions
-
         var headers: [String: String] = [
             "content-type": "application/json",
             "X-Version": SystemInfo.frameworkVersion,
@@ -150,7 +148,7 @@ private extension HTTPClient {
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
             "X-StoreKit2-Setting": "\(self.systemInfo.storeKit2Setting.debugDescription)",
-            "X-Observer-Mode-Enabled": "\(observerMode)",
+            "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             "X-Is-Sandbox": "\(self.systemInfo.isSandbox)"
         ]
 
