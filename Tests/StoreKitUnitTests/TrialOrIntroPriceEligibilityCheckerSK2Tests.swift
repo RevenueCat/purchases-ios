@@ -93,12 +93,13 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
                         "lifetime": IntroEligibilityStatus.noIntroOfferExists]
 
-        var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { receivedEligibilities in
-            eligibilities = receivedEligibilities
+        let eligibilities = waitUntilValue { completed in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+                productIdentifiers: products
+            ) {
+                completed($0)
+            }
         }
-
-        expect(eligibilities).toEventuallyNot(beNil())
 
         let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities).to(haveCount(expected.count))
@@ -123,12 +124,13 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         self.mockProductsManager?.stubbedSk2StoreProductsResult = .failure(ErrorUtils.productRequestTimedOutError())
 
-        var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { receivedEligibilities in
-            eligibilities = receivedEligibilities
+        let eligibilities = waitUntilValue { completed in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+                productIdentifiers: products
+            ) {
+                completed($0)
+            }
         }
-
-        expect(eligibilities).toEventuallyNot(beNil())
 
         let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities).to(haveCount(expected.count))

@@ -22,46 +22,36 @@ class IntroEligibilityCalculatorTests: TestCase {
     }
 
     func testCheckTrialOrIntroDiscountEligibilityReturnsEmptyIfNoProductIds() {
-        var receivedError: Error?
-        var receivedEligibility: [String: IntroEligibilityStatus]?
-        var completionCalled = false
-        calculator.checkEligibility(with: Data(),
-                                    productIdentifiers: Set()) { eligibilityByProductId, error in
-            receivedError = error
-            receivedEligibility = eligibilityByProductId
-            completionCalled = true
+        let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
+            self.calculator.checkEligibility(with: Data(),
+                                             productIdentifiers: Set()) { eligibilityByProductId, error in
+                completed((eligibilityByProductId, error))
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).to(beNil())
-        expect(receivedEligibility).toNot(beNil())
-        expect(receivedEligibility).to(beEmpty())
+        expect(result?.error).to(beNil())
+        expect(result?.eligibility).toNot(beNil())
+        expect(result?.eligibility).to(beEmpty())
     }
 
     func testCheckTrialOrIntroDiscountEligibilityReturnsErrorIfReceiptParserThrows() {
-        var receivedError: Error?
-        var receivedEligibility: [String: IntroEligibilityStatus]?
-        var completionCalled = false
         let productIdentifiers = Set(["com.revenuecat.test"])
 
-        mockReceiptParser.stubbedParseError = ReceiptReadingError.receiptParsingError
+        self.mockReceiptParser.stubbedParseError = ReceiptReadingError.receiptParsingError
 
-        calculator.checkEligibility(with: Data(),
-                                    productIdentifiers: productIdentifiers) { eligibilityByProductId, error in
-            receivedError = error
-            receivedEligibility = eligibilityByProductId
-            completionCalled = true
+        let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
+            self.calculator.checkEligibility(with: Data(),
+                                             productIdentifiers: productIdentifiers) { eligibilityByProductId, error in
+                completed((eligibilityByProductId, error))
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).to(matchError(ReceiptReadingError.receiptParsingError))
-        expect(receivedEligibility).toNot(beNil())
-        expect(receivedEligibility).to(beEmpty())
+        expect(result?.error).to(matchError(ReceiptReadingError.receiptParsingError))
+        expect(result?.eligibility).toNot(beNil())
+        expect(result?.eligibility).to(beEmpty())
     }
 
     func testCheckTrialOrIntroDiscountEligibilityMakesOnlyOneProductsRequest() {
-        var completionCalled = false
-
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
         let receiptIdentifiers = receipt.purchasedIntroOfferOrFreeTrialProductIdentifiers()
@@ -75,21 +65,18 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
 
         let candidateIdentifiers = Set(["a", "b", "c"])
-        calculator.checkEligibility(with: Data(),
-                                    productIdentifiers: Set(candidateIdentifiers)) { _, _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.calculator.checkEligibility(with: Data(),
+                                             productIdentifiers: Set(candidateIdentifiers)) { _, _ in
+                completed()
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
         expect(self.mockProductsManager.invokedProductsCount) == 1
         expect(self.mockProductsManager.invokedProductsParameters) == candidateIdentifiers.union(receiptIdentifiers)
     }
 
     func testCheckTrialOrIntroDiscountEligibilityGetsCorrectResult() {
-        var receivedError: Error?
-        var receivedEligibility: [String: IntroEligibilityStatus]?
-        var completionCalled = false
-
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
 
@@ -107,17 +94,17 @@ class IntroEligibilityCalculatorTests: TestCase {
         let candidateIdentifiers = Set(["com.revenuecat.product1",
                                         "com.revenuecat.product2",
                                         "com.revenuecat.unknownProduct"])
-
-        calculator.checkEligibility(with: Data(),
-                                    productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
-            receivedError = error
-            receivedEligibility = eligibility
-            completionCalled = true
+        let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
+            self.calculator.checkEligibility(
+                with: Data(),
+                productIdentifiers: Set(candidateIdentifiers)
+            ) { eligibilityByProductId, error in
+                completed((eligibilityByProductId, error))
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).to(beNil())
-        expect(receivedEligibility) == [
+        expect(result?.error).to(beNil())
+        expect(result?.eligibility) == [
             "com.revenuecat.product1": IntroEligibilityStatus.eligible,
             "com.revenuecat.product2": IntroEligibilityStatus.ineligible,
             "com.revenuecat.unknownProduct": IntroEligibilityStatus.unknown
@@ -125,10 +112,6 @@ class IntroEligibilityCalculatorTests: TestCase {
     }
 
     func testCheckTrialOrIntroDiscountEligibilityForProductWithoutIntroTrialReturnsNoIntroOfferExists() {
-        var receivedError: Error?
-        var receivedEligibility: [String: IntroEligibilityStatus]?
-        var completionCalled = false
-
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
         let mockProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
@@ -138,25 +121,22 @@ class IntroEligibilityCalculatorTests: TestCase {
 
         let candidateIdentifiers = Set(["com.revenuecat.product1"])
 
-        calculator.checkEligibility(with: Data(),
-                                    productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
-            receivedError = error
-            receivedEligibility = eligibility
-            completionCalled = true
+        let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
+            self.calculator.checkEligibility(
+                with: Data(),
+                productIdentifiers: Set(candidateIdentifiers)
+            ) { eligibilityByProductId, error in
+                completed((eligibilityByProductId, error))
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).to(beNil())
-        expect(receivedEligibility) == [
+        expect(result?.error).to(beNil())
+        expect(result?.eligibility) == [
             "com.revenuecat.product1": IntroEligibilityStatus.noIntroOfferExists
         ]
     }
 
     func testCheckTrialOrIntroDiscountEligibilityForConsumableReturnsUnknown() {
-        var receivedError: Error?
-        var receivedEligibility: [String: IntroEligibilityStatus]?
-        var completionCalled = false
-
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
         let mockProduct = MockSK1Product(mockProductIdentifier: "lifetime",
@@ -167,16 +147,17 @@ class IntroEligibilityCalculatorTests: TestCase {
 
         let candidateIdentifiers = Set(["lifetime"])
 
-        calculator.checkEligibility(with: Data(),
-                                    productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
-            receivedError = error
-            receivedEligibility = eligibility
-            completionCalled = true
+        let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
+            self.calculator.checkEligibility(
+                with: Data(),
+                productIdentifiers: Set(candidateIdentifiers)
+            ) { eligibilityByProductId, error in
+                completed((eligibilityByProductId, error))
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).to(beNil())
-        expect(receivedEligibility) == [
+        expect(result?.error).to(beNil())
+        expect(result?.eligibility) == [
             "lifetime": IntroEligibilityStatus.unknown
         ]
     }

@@ -47,20 +47,20 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
 
         let productIdentifier = "a_great_product"
         let group = "sub_group"
-        var completionCalled = false
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".asData
 
-        self.offerings.post(offerIdForSigning: offerIdentifier,
-                            productIdentifier: productIdentifier,
-                            subscriptionGroup: group,
-                            receiptData: discountData,
-                            appUserID: Self.userID) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.offerings.post(offerIdForSigning: offerIdentifier,
+                                productIdentifier: productIdentifier,
+                                subscriptionGroup: group,
+                                receiptData: discountData,
+                                appUserID: Self.userID) { _ in
+                completed()
+            }
         }
 
-        expect(self.httpClient.calls).toEventually(haveCount(1))
-        expect(completionCalled).toEventually(beTrue())
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
     func testOfferForSigningNetworkError() {
@@ -76,17 +76,15 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        var result: Result<PostOfferForSigningOperation.SigningData, BackendError>?
-
-        self.offerings.post(offerIdForSigning: offerIdentifier,
-                            productIdentifier: productIdentifier,
-                            subscriptionGroup: group,
-                            receiptData: discountData,
-                            appUserID: Self.userID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offerings.post(offerIdForSigning: offerIdentifier,
+                                productIdentifier: productIdentifier,
+                                subscriptionGroup: group,
+                                receiptData: discountData,
+                                appUserID: Self.userID,
+                                completion: completed)
         }
 
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
         expect(result?.error) == .networkError(mockedError)
     }
@@ -106,19 +104,17 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        var receivedError: BackendError?
-
-        self.offerings.post(offerIdForSigning: offerIdentifier,
-                            productIdentifier: productIdentifier,
-                            subscriptionGroup: group,
-                            receiptData: discountData,
-                            appUserID: Self.userID) { result in
-            receivedError = result.error
+        let result = waitUntilValue { completed in
+            self.offerings.post(offerIdForSigning: offerIdentifier,
+                                productIdentifier: productIdentifier,
+                                subscriptionGroup: group,
+                                receiptData: discountData,
+                                appUserID: Self.userID,
+                                completion: completed)
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
-
-        expect(receivedError) == .unexpectedBackendResponse(.postOfferIdMissingOffersInResponse)
+        expect(result).to(beFailure())
+        expect(result?.error) == .unexpectedBackendResponse(.postOfferIdMissingOffersInResponse)
     }
 
     func testOfferForSigningSignatureErrorResponse() {
@@ -151,18 +147,17 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        var receivedError: BackendError?
-
-        self.offerings.post(offerIdForSigning: offerIdentifier,
-                            productIdentifier: productIdentifier,
-                            subscriptionGroup: group,
-                            receiptData: discountData,
-                            appUserID: Self.userID) { result in
-            receivedError = result.error
+        let result = waitUntilValue { completed in
+            self.offerings.post(offerIdForSigning: offerIdentifier,
+                                productIdentifier: productIdentifier,
+                                subscriptionGroup: group,
+                                receiptData: discountData,
+                                appUserID: Self.userID,
+                                completion: completed)
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError) == .networkError(.errorResponse(errorResponse, .success))
+        expect(result).to(beFailure())
+        expect(result?.error) == .networkError(.errorResponse(errorResponse, .success))
     }
 
     func testOfferForSigningNoDataAndNoSignatureErrorResponse() {
@@ -188,20 +183,19 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        var receivedError: BackendError?
-
-        self.offerings.post(offerIdForSigning: offerIdentifier,
-                            productIdentifier: productIdentifier,
-                            subscriptionGroup: group,
-                            receiptData: discountData,
-                            appUserID: Self.userID) { result in
-            receivedError = result.error
+        let result = waitUntilValue { completed in
+            self.offerings.post(offerIdForSigning: offerIdentifier,
+                                productIdentifier: productIdentifier,
+                                subscriptionGroup: group,
+                                receiptData: discountData,
+                                appUserID: Self.userID,
+                                completion: completed)
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
+        expect(result).to(beFailure())
 
-        guard case .unexpectedBackendResponse(.postOfferIdSignature, _, _) = receivedError else {
-            fail("Invalid error: \(String(describing: receivedError))")
+        guard case .unexpectedBackendResponse(.postOfferIdSignature, _, _) = result?.error else {
+            fail("Invalid error: \(String(describing: result))")
             return
         }
     }

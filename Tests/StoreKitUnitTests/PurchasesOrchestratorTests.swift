@@ -646,12 +646,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let message = "Failed to get managementURL from CustomerInfo. Details: customerInfo is nil."
         mockManageSubsHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
 
-        var receivedError: Error?
-        orchestrator.showManageSubscription { error in
-            receivedError = error
+        let receivedError: Error? = waitUntilValue { completed in
+            self.orchestrator.showManageSubscription { error in
+                completed(error)
+            }
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError).to(matchError(ErrorCode.customerInfoError))
     }
 

@@ -84,38 +84,39 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let mockError: BackendError = .missingAppUserID()
         mockBackend.stubbedGetCustomerInfoResult = .failure(mockError)
 
-        var receivedError: BackendError?
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
-                                                      isAppBackgrounded: false) { result in
-            receivedError = result.error
+        let receivedError = waitUntilValue { completed in
+            self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
+                                                               isAppBackgrounded: false) { result in
+                completed(result.error)
+            }
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError) == mockError
     }
 
     func testFetchAndCacheCustomerInfoClearsCustomerInfoTimestampIfBackendError() {
         mockBackend.stubbedGetCustomerInfoResult = .failure(.missingAppUserID())
 
-        var completionCalled = false
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
-                                                      isAppBackgrounded: false) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
+                                                               isAppBackgrounded: false) { _ in
+                completed()
+            }
         }
-        expect(completionCalled).toEventually(beTrue())
+
         expect(self.mockDeviceCache.clearCustomerInfoCacheTimestampCount) == 1
     }
 
     func testFetchAndCacheCustomerInfoCachesIfSuccessful() {
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
-        var receivedCustomerInfo: CustomerInfo?
-
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
-                                                      isAppBackgrounded: false) { result in
-            receivedCustomerInfo = result.value
+        let receivedCustomerInfo = waitUntilValue { completed in
+            self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
+                                                               isAppBackgrounded: false) { result in
+                completed(result.value)
+            }
         }
-        expect(receivedCustomerInfo).toEventuallyNot(beNil())
+
         expect(receivedCustomerInfo) == self.mockCustomerInfo
 
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
@@ -126,13 +127,12 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testFetchAndCacheCustomerInfoCallsCompletionOnMainThread() {
         mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
 
-        var completionCalled = false
-        customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
-                                                      isAppBackgrounded: false) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
+                                                               isAppBackgrounded: false) { _ in
+                completed()
+            }
         }
-
-        expect(completionCalled).toEventually(beTrue())
 
         let expectedInvocationsOnMainThread = 2 // one for the delegate, one for completion
         expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == expectedInvocationsOnMainThread
@@ -162,28 +162,28 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testFetchAndCacheCustomerInfoIfStaleFetchesIfStale() {
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
-        var completionCalled = false
 
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
-                                                             isAppBackgrounded: false) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
+                                                                      isAppBackgrounded: false) { _ in
+                completed()
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
     }
 
     func testFetchAndCacheCustomerInfoIfStaleFetchesIfCacheEmpty() {
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
-        var completionCalled = false
 
-        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
-                                                             isAppBackgrounded: false) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
+                                                                      isAppBackgrounded: false) { _ in
+                completed()
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfNeverSent() throws {
@@ -256,13 +256,12 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testCustomerInfoReturnsFromCacheIfAvailable() {
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
 
-        var receivedCustomerInfo: CustomerInfo?
-
-        customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { result in
-            receivedCustomerInfo = result.value
+        let receivedCustomerInfo = waitUntilValue { completed in
+            self.customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { result in
+                completed(result.value)
+            }
         }
 
-        expect(receivedCustomerInfo).toEventuallyNot(beNil())
         expect(receivedCustomerInfo) == self.mockCustomerInfo
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 0
     }
@@ -273,27 +272,26 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
 
-        var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { _ in
+                completed()
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
     }
 
     func testCustomerInfoFetchesIfNoCache() {
         let appUserID = "myUser"
 
-        var completionCalled = false
-        customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default) { _ in
+                // checking here to ensure that completion gets called from the backend call
+                expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
 
-            // checking here to ensure that completion gets called from the backend call
-            expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+                completed()
+            }
         }
-
-        expect(completionCalled).toEventually(beTrue())
     }
 
     func testCachedCustomerInfoParsesCorrectly() throws {

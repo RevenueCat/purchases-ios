@@ -23,13 +23,10 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let manager = try createManager(storeKit2Setting: .disabled)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        var receivedProducts: Result<Set<StoreProduct>, PurchasesError>?
-
-        manager.products(withIdentifiers: Set([identifier])) { products in
-            receivedProducts = products
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: Set([identifier]), completion: completed)
         }
 
-        expect(receivedProducts).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
 
         let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
@@ -46,13 +43,10 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let manager = try createManager(storeKit2Setting: .enabledForCompatibleDevices)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        var receivedProducts: Result<Set<StoreProduct>, PurchasesError>?
-
-        manager.products(withIdentifiers: Set([identifier])) { products in
-            receivedProducts = products
+        let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: Set([identifier]), completion: completed)
         }
 
-        expect(receivedProducts).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout)
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
 
         let product = try XCTUnwrap(unwrappedProducts.onlyElement).product

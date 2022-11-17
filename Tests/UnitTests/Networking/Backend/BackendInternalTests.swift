@@ -24,45 +24,34 @@ class BackendInternalTests: BaseBackendTests {
     }
 
     func testHealthRequestWithSuccess() {
-        var finished: Bool = false
-        var error: Error?
-
         self.httpClient.mock(requestPath: .health, response: .init(statusCode: .success))
 
-        self.internalAPI.healthRequest {
-            error = $0
-            finished = true
+        let error = waitUntilValue { completed in
+            self.internalAPI.healthRequest(completion: completed)
         }
 
-        expect(finished).toEventually(beTrue())
         expect(error).to(beNil())
     }
 
     func testHealthRequestIsNotAuthenticated() {
-        var finished = false
-
-        self.internalAPI.healthRequest { _ in
-            finished = true
+        waitUntil { completed in
+            self.internalAPI.healthRequest { _ in
+                completed()
+            }
         }
 
-        expect(finished).toEventually(beTrue())
         expect(self.httpClient.calls.onlyElement?.headers).to(beEmpty())
     }
 
     func testHealthRequestWithFailure() {
-        var finished: Bool = false
-        var error: Error?
-
         let expectedError: NetworkError = .offlineConnection()
 
         self.httpClient.mock(requestPath: .health, response: .init(error: expectedError))
 
-        self.internalAPI.healthRequest {
-            error = $0
-            finished = true
+        let error = waitUntilValue { completed in
+            self.internalAPI.healthRequest(completion: completed)
         }
 
-        expect(finished).toEventually(beTrue())
         expect(error).to(matchError(BackendError.networkError(expectedError)))
     }
 

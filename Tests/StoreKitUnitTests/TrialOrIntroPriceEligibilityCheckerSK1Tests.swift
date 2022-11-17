@@ -76,15 +76,11 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedEligibility = ["product_id": IntroEligibilityStatus.eligible]
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = (stubbedEligibility, nil)
 
-        var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (receivedEligibilities) in
-            eligibilities = receivedEligibilities
+        let eligibilities = waitUntilValue { completed in
+            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([], completion: completed)
         }
 
-        expect(eligibilities).toEventuallyNot(beNil())
-
-        let receivedEligibilities = try XCTUnwrap(eligibilities)
-        expect(receivedEligibilities).to(haveCount(1))
+        expect(eligibilities).to(haveCount(1))
     }
 
     func testSK1EligibilityProductsWithKnownIntroEligibilityStatus() throws {
@@ -126,12 +122,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
         mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
 
-        var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            eligibilities = receivedEligibilities
+        let eligibilities = waitUntilValue { completed in
+            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([productId], completion: completed)
         }
-
-        expect(eligibilities).toEventuallyNot(beNil())
 
         let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities).to(haveCount(1))
@@ -158,12 +151,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
         mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
 
-        var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            eligibilities = receivedEligibilities
+        let eligibilities = waitUntilValue { completed in
+            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([productId], completion: completed)
         }
-
-        expect(eligibilities).toEventuallyNot(beNil())
 
         let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities).to(haveCount(1))
@@ -186,9 +176,8 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
         mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
 
-        var eligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (receivedEligibilities) in
-            eligibilities = receivedEligibilities
+        let eligibilities = waitUntilValue { completed in
+            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([productId], completion: completed)
         }
 
         expect(eligibilities).toEventuallyNot(beNil())

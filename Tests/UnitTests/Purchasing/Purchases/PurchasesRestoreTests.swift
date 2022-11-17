@@ -27,23 +27,26 @@ class PurchasesRestoreTests: BasePurchasesTests {
 
     func testRestoresDontPostMissingReceipts() {
         self.receiptFetcher.shouldReturnReceipt = false
-        var receivedError: NSError?
-        self.purchases.restorePurchases { (_, error) in
-            receivedError = error as NSError?
+
+        let receivedError = waitUntilValue { completed in
+            self.purchases.restorePurchases { (_, error) in
+                completed(error as NSError?)
+            }
         }
 
-        expect(receivedError?.code).toEventually(equal(ErrorCode.missingReceiptFileError.rawValue))
+        expect(receivedError).to(matchError(ErrorCode.missingReceiptFileError))
     }
 
     func testRestorePurchasesCallsCompletionOnMainThreadWhenMissingReceipts() {
         self.receiptFetcher.shouldReturnReceipt = false
-        var receivedError: NSError?
-        self.purchases.restorePurchases { (_, error) in
-            receivedError = error as NSError?
+        let receivedError = waitUntilValue { completed in
+            self.purchases.restorePurchases { (_, error) in
+                completed(error as NSError?)
+            }
         }
 
-        expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 1
-        expect(receivedError?.code).toEventually(equal(ErrorCode.missingReceiptFileError.rawValue))
+        expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 3
+        expect(receivedError).to(matchError(ErrorCode.missingReceiptFileError))
     }
 
     func testRestoringPurchasesPostsTheReceipt() {
@@ -103,13 +106,13 @@ class PurchasesRestoreTests: BasePurchasesTests {
         let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
         self.backend.postReceiptResult = .success(customerInfo)
 
-        var receivedCustomerInfo: CustomerInfo?
-
-        self.purchases.restorePurchases { (info, _) in
-            receivedCustomerInfo = info
+        let receivedCustomerInfo = waitUntilValue { completed in
+            self.purchases.restorePurchases { (info, _) in
+                completed(info)
+            }
         }
 
-        expect(receivedCustomerInfo).toEventually(be(customerInfo))
+        expect(receivedCustomerInfo) === customerInfo
     }
 
     func testRestorePurchasesPassesErrorOnFailure() {
@@ -118,13 +121,12 @@ class PurchasesRestoreTests: BasePurchasesTests {
         self.backend.postReceiptResult = .failure(error)
         self.purchasesDelegate.customerInfo = nil
 
-        var receivedError: Error?
-
-        self.purchases.restorePurchases { (_, newError) in
-            receivedError = newError
+        let receivedError = waitUntilValue { completed in
+            self.purchases.restorePurchases { (_, newError) in
+                completed(newError)
+            }
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError).to(matchError(error.asPurchasesError))
     }
 
@@ -141,17 +143,16 @@ class PurchasesRestoreTests: BasePurchasesTests {
             ]
         ]))
 
-        var receivedCustomerInfo: CustomerInfo?
-
-        self.purchases.restorePurchases { (info, _) in
-            receivedCustomerInfo = info
+        let receivedCustomerInfo = waitUntilValue { completed in
+            self.purchases.restorePurchases { (info, _) in
+                completed(info)
+            }
         }
 
-        expect(receivedCustomerInfo?.originalApplicationVersion).toEventually(equal("1.0"))
-        expect(receivedCustomerInfo?.originalPurchaseDate)
-            .toEventually(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
-        expect(self.backend.userID).toEventuallyNot(beNil())
-        expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
+        expect(receivedCustomerInfo?.originalApplicationVersion) == "1.0"
+        expect(receivedCustomerInfo?.originalPurchaseDate) == Date(timeIntervalSinceReferenceDate: 562288673)
+        expect(self.backend.userID).toNot(beNil())
+        expect(self.backend.postReceiptDataCalled) == true
     }
 
 }

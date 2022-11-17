@@ -24,16 +24,16 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
-        var error: NSError??
-
-        self.backend.offerings.getIntroEligibility(appUserID: Self.userID,
-                                                   receiptData: Data(),
-                                                   productIdentifiers: []) {
-            error = $1 as NSError?
+        let error = waitUntilValue { completed in
+            self.backend.offerings.getIntroEligibility(appUserID: Self.userID,
+                                                       receiptData: Data(),
+                                                       productIdentifiers: []) {
+                completed($1 as NSError?)
+            }
         }
 
-        expect(error).toEventually(equal(.some(nil)))
-        expect(self.httpClient.calls.count) == 0
+        expect(error) == nil
+        expect(self.httpClient.calls).to(beEmpty())
     }
 
     func testPostsProductIdentifiers() throws {
@@ -43,20 +43,19 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
                             response: ["producta": true, "productb": false, "productd": NSNull()])
         )
 
-        var eligibility: [String: IntroEligibility]?
-
         let products = ["producta", "productb", "productc", "productd"]
-        self.offerings.getIntroEligibility(appUserID: Self.userID,
-                                           receiptData: Data(1...3),
-                                           productIdentifiers: products,
-                                           completion: {(productEligibility, error) in
-            expect(error).to(beNil())
-            eligibility = productEligibility
 
-        })
+        let eligibility = waitUntilValue { completed in
+            self.offerings.getIntroEligibility(appUserID: Self.userID,
+                                               receiptData: Data(1...3),
+                                               productIdentifiers: products,
+                                               completion: { productEligibility, error in
+                expect(error).to(beNil())
+                completed(productEligibility)
+            })
+        }
 
-        expect(self.httpClient.calls).toEventually(haveCount(1))
-        expect(eligibility).toEventuallyNot(beNil())
+        expect(self.httpClient.calls).to(haveCount(1))
 
         expect(eligibility?.keys).to(contain(products))
         expect(eligibility?["producta"]?.status) == .eligible
@@ -71,18 +70,16 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
             response: .init(statusCode: .invalidRequest, response: Self.serverErrorResponse)
         )
 
-        var eligibility: [String: IntroEligibility]?
-
-        let products = ["producta", "productb", "productc"]
-        self.offerings.getIntroEligibility(appUserID: Self.userID,
-                                           receiptData: Data.init(1...2),
-                                           productIdentifiers: products,
-                                           completion: {(productEligibility, error) in
-            expect(error).to(beNil())
-            eligibility = productEligibility
-        })
-
-        expect(eligibility).toEventuallyNot(beNil())
+        let eligibility = waitUntilValue { completed in
+            let products = ["producta", "productb", "productc"]
+            self.offerings.getIntroEligibility(appUserID: Self.userID,
+                                               receiptData: Data.init(1...2),
+                                               productIdentifiers: products,
+                                               completion: {(productEligibility, error) in
+                expect(error).to(beNil())
+                completed(productEligibility)
+            })
+        }
 
         expect(eligibility?["producta"]?.status) == .unknown
         expect(eligibility?["productb"]?.status) == .unknown
@@ -133,18 +130,18 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
             response: .init(error: error)
         )
 
-        var eligibility: [String: IntroEligibility]?
-
         let products = ["producta", "productb", "productc"]
-        self.offerings.getIntroEligibility(appUserID: Self.userID,
-                                           receiptData: Data.init(1...2),
-                                           productIdentifiers: products,
-                                           completion: {(productEligbility, error) in
-            expect(error).to(beNil())
-            eligibility = productEligbility
-        })
 
-        expect(eligibility).toEventuallyNot(beNil())
+        let eligibility = waitUntilValue { completed in
+
+            self.offerings.getIntroEligibility(appUserID: Self.userID,
+                                               receiptData: Data.init(1...2),
+                                               productIdentifiers: products,
+                                               completion: { productEligbility, error in
+                expect(error).to(beNil())
+                completed(productEligbility)
+            })
+        }
 
         expect(eligibility?["producta"]?.status) == .unknown
         expect(eligibility?["productb"]?.status) == .unknown
@@ -152,18 +149,16 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
     }
 
     func testEligibilityUnknownIfNoReceipt() {
-        var eligibility: [String: IntroEligibility]?
-
         let products = ["producta", "productb", "productc"]
-        self.offerings.getIntroEligibility(appUserID: Self.userID,
-                                           receiptData: Data(),
-                                           productIdentifiers: products,
-                                           completion: {(productEligibility, error) in
-            expect(error).to(beNil())
-            eligibility = productEligibility
-        })
-
-        expect(eligibility).toEventuallyNot(beNil())
+        let eligibility = waitUntilValue { completed in
+            self.offerings.getIntroEligibility(appUserID: Self.userID,
+                                               receiptData: Data(),
+                                               productIdentifiers: products,
+                                               completion: {(productEligibility, error) in
+                expect(error).to(beNil())
+                completed(productEligibility)
+            })
+        }
 
         expect(eligibility?["producta"]?.status) == .unknown
         expect(eligibility?["productb"]?.status) == .unknown

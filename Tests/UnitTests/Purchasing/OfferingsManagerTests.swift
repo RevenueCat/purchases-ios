@@ -50,41 +50,38 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsNilIfMissingStoreProduct() throws {
         // given
-        mockOfferingsFactory.emptyOfferings = true
-        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferingsFactory.emptyOfferings = true
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beSuccess())
-
-        let unwrappedOfferings = try XCTUnwrap(result?.value)
-        expect(unwrappedOfferings.all).to(beEmpty())
-        expect(unwrappedOfferings["base"]).to(beNil())
+        expect(result?.value?.all).to(beEmpty())
+        expect(result?.value?["base"]).to(beNil())
     }
 
     func testOfferingsForAppUserIDReturnsOfferingsIfSuccessBackendRequest() throws {
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
-
-        let unwrappedOfferings = try XCTUnwrap(result?.value)
-        expect(unwrappedOfferings["base"]).toNot(beNil())
-        expect(unwrappedOfferings["base"]!.monthly).toNot(beNil())
-        expect(unwrappedOfferings["base"]!.monthly?.storeProduct).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?["base"]).toNot(beNil())
+        expect(result?.value?["base"]!.monthly).toNot(beNil())
+        expect(result?.value?["base"]!.monthly?.storeProduct).toNot(beNil())
     }
 
     func testOfferingsIgnoresProductsNotFoundAndLogsWarning() throws {
@@ -99,14 +96,13 @@ extension OfferingsManagerTests {
         ])
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
-
         let offerings = try XCTUnwrap(result?.value)
         expect(offerings.all).to(haveCount(1))
         expect(offerings["base"]).toNot(beNil())
@@ -129,13 +125,13 @@ extension OfferingsManagerTests {
         ])
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, fetchPolicy: .failIfProductsAreMissing) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, fetchPolicy: .failIfProductsAreMissing) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure { error in
             expect(error).to(matchError(OfferingsManager.Error.missingProducts(identifiers: ["yearly_freetrial"])))
         })
@@ -143,36 +139,36 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
-        mockOfferingsFactory.emptyOfferings = true
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
+        self.mockOfferingsFactory.emptyOfferings = true
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
         expect(result?.error) == .backendError(.unexpectedBackendResponse(.customerInfoNil))
     }
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .success(
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
             .init(currentOfferingId: "", offerings: [])
         )
-        mockOfferingsFactory.emptyOfferings = true
+        self.mockOfferingsFactory.emptyOfferings = true
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
 
         switch result?.error {
@@ -186,17 +182,17 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
-        mockProductsManager.stubbedProductsCompletionResult = .success(Set())
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockProductsManager.stubbedProductsCompletionResult = .success(Set())
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
 
         switch result?.error {
@@ -212,17 +208,17 @@ extension OfferingsManagerTests {
         let error = ErrorUtils.unknownError()
 
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
-        mockProductsManager.stubbedProductsCompletionResult = .failure(error)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockProductsManager.stubbedProductsCompletionResult = .failure(error)
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
 
         switch result?.error {
@@ -236,68 +232,76 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendResponseIfOfferingsFactoryCantCreateOfferings() throws {
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
-        mockOfferingsFactory.nilOfferings = true
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferingsFactory.nilOfferings = true
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
         expect(result?.error) == .noOfferingsFound()
     }
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() throws {
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
-        mockOfferingsFactory.nilOfferings = true
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
+        self.mockOfferingsFactory.nilOfferings = true
 
         // when
-        var result: Result<Offerings, OfferingsManager.Error>?
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
         }
 
         // then
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
         expect(result?.error) == .backendError(MockData.unexpectedBackendResponseError)
     }
 
     func testFailBackendDeviceCacheClearsOfferingsCache() {
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
-        mockOfferingsFactory.emptyOfferings = true
-        mockSystemInfo.stubbedIsApplicationBackgrounded = false
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
+        self.mockOfferingsFactory.emptyOfferings = true
+        self.mockSystemInfo.stubbedIsApplicationBackgrounded = false
 
         let expectedCallCount = 1
 
         // when
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID, completion: nil)
+        waitUntil { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { _ in
+                completed()
+            }
+        }
 
         // then
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
-        expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount).toEventually(equal(expectedCallCount))
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == expectedCallCount
+        expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount) == expectedCallCount
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == false
     }
 
     func testUpdateOfferingsCacheOK() {
         // given
-        mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
-        mockSystemInfo.stubbedIsApplicationBackgrounded = true
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockSystemInfo.stubbedIsApplicationBackgrounded = true
 
         let expectedCallCount = 1
 
         // when
-        offeringsManager.offerings(appUserID: MockData.anyAppUserID, completion: nil)
+        waitUntil { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { _ in
+                completed()
+            }
+        }
 
         // then
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))
-        expect(self.mockDeviceCache.cacheOfferingsCount).toEventually(equal(expectedCallCount))
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == expectedCallCount
+        expect(self.mockDeviceCache.cacheOfferingsCount) == expectedCallCount
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == true
     }
 

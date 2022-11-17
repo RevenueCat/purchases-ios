@@ -29,14 +29,12 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
         )
 
-        var result: Result<OfferingsResponse, BackendError>?
-
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false, completion: completed)
         }
 
-        expect(self.httpClient.calls.count).toEventually(equal(1))
-        expect(result).toEventually(beSuccess())
+        expect(result).to(beSuccess())
+        expect(self.httpClient.calls).to(haveCount(1))
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == false
     }
 
@@ -46,14 +44,12 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
         )
 
-        var result: Result<OfferingsResponse, BackendError>?
-
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: true) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: true, completion: completed)
         }
 
-        expect(self.httpClient.calls.count).toEventually(equal(1))
-        expect(result).toEventually(beSuccess())
+        expect(result).to(beSuccess())
+        expect(self.httpClient.calls).to(haveCount(1))
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == true
     }
 
@@ -139,13 +135,10 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(error: .unexpectedResponse(nil))
         )
 
-        var result: Result<OfferingsResponse, BackendError>?
-
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false, completion: completed)
         }
 
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
     }
 
@@ -157,35 +150,31 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(error: mockedError)
         )
 
-        var result: Result<OfferingsResponse, BackendError>?
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false, completion: completed)
         }
 
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
         expect(result?.error) == .networkError(mockedError)
     }
 
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
-        var completionCalled = false
-
-        self.offerings.getOfferings(appUserID: "", withRandomDelay: false) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.offerings.getOfferings(appUserID: "", withRandomDelay: false) { _ in
+                completed()
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
         expect(self.httpClient.calls).to(beEmpty())
     }
 
     func testGetOfferingsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
-        var receivedError: BackendError?
-
-        self.offerings.getOfferings(appUserID: "", withRandomDelay: false) { result in
-            receivedError = result.error
+        let receivedError = waitUntilValue { completed in
+            self.offerings.getOfferings(appUserID: "", withRandomDelay: false) { result in
+                completed(result.error)
+            }
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError) == .missingAppUserID()
     }
 
