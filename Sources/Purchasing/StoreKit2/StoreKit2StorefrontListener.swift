@@ -38,7 +38,7 @@ class StoreKit2StorefrontListener {
     }
 
     func listenForStorefrontChanges() {
-        self.taskHandle = Task { [weak self] in
+        self.taskHandle = Task(priority: .background) { [weak self] in
             for await _ in StoreKit.Storefront.updates {
                 guard let delegate = self?.delegate else { break }
                 await MainActor.run { @Sendable in
