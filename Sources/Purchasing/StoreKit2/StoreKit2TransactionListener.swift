@@ -37,18 +37,28 @@ class StoreKit2TransactionListener {
         self.delegate = delegate
     }
 
-    func listenForTransactions() {
+    func listenForTransactions(observerMode: Bool) {
         self.taskHandle?.cancel()
         self.taskHandle = Task { [weak self] in
-            for await result in StoreKit.Transaction.updates {
-                guard let self = self else { break }
+            func observe(_ transactions: StoreKit.Transaction.Transactions) async {
+                for await result in transactions {
+                    guard let self = self else { break }
 
-                do {
-                    _ = try await self.handle(transactionResult: result, fromTransactionUpdate: true)
-                } catch {
-                    Logger.error(error.localizedDescription)
+                    do {
+                        _ = try await self.handle(transactionResult: result, fromTransactionUpdate: true)
+                    } catch {
+                        Logger.error(error.localizedDescription)
+                    }
                 }
             }
+
+            if observerMode {
+                // `Transaction.all` is a finite list of transactions
+                // which we need to consider
+                await observe(StoreKit.Transaction.all)
+            }
+
+            await observe(StoreKit.Transaction.updates)
         }
     }
 

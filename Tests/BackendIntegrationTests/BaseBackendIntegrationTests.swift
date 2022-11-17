@@ -14,6 +14,8 @@
 @testable import RevenueCat
 import XCTest
 
+import StoreKit
+
 final class TestPurchaseDelegate: NSObject, PurchasesDelegate {
 
     var customerInfo: CustomerInfo?
@@ -33,9 +35,9 @@ class BaseBackendIntegrationTests: XCTestCase {
     // swiftlint:disable:next weak_delegate
     private(set) var purchasesDelegate: TestPurchaseDelegate!
 
-    class var storeKit2Setting: StoreKit2Setting {
-        return .default
-    }
+    class var storeKit2Setting: StoreKit2Setting { return .default }
+
+    class var observerMode: Bool { return false }
 
     override class func setUp() {
         BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector()
@@ -58,6 +60,10 @@ class BaseBackendIntegrationTests: XCTestCase {
             Purchases.proxyURL = URL(string: Constants.proxyURL)
         }
 
+        if #available(iOS 15.0, *) {
+            await self.finishAllUnfinishedTransactions()
+        }
+
         self.clearReceiptIfExists()
         self.configurePurchases()
     }
@@ -70,6 +76,8 @@ class BaseBackendIntegrationTests: XCTestCase {
     }
 
 }
+
+// MARK: - Private
 
 private extension BaseBackendIntegrationTests {
 
@@ -91,7 +99,7 @@ private extension BaseBackendIntegrationTests {
 
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
-                            observerMode: false,
+                            observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
                             platformInfo: nil,
                             storeKit2Setting: Self.storeKit2Setting,
@@ -105,6 +113,37 @@ private extension BaseBackendIntegrationTests {
     private var dangerousSettings: DangerousSettings {
         return .init(autoSyncPurchases: true,
                      internalSettings: .init(enableReceiptFetchRetry: true))
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension BaseBackendIntegrationTests {
+
+    func finishAllUnfinishedTransactions() async {
+        let transactions = await self.unfinishedTransactions
+
+        Logger.debug("Finishing \(transactions.count) transactions before running tests")
+
+        for verificationResult in transactions {
+            await verificationResult.underlyingTransaction.finish()
+        }
+    }
+
+    private var unfinishedTransactions: [VerificationResult<Transaction>] {
+        get async { return await StoreKit.Transaction.unfinished.extractValues() }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension VerificationResult where SignedType == Transaction {
+
+    var underlyingTransaction: Transaction {
+        switch self {
+        case let .unverified(transaction, _): return transaction
+        case let .verified(transaction): return transaction
+        }
     }
 
 }

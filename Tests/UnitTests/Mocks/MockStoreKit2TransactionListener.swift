@@ -49,11 +49,13 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
     }
 
     var invokedListenForTransactions = false
+    var invokedListenForTransactionObserverMode: Bool?
     var invokedListenForTransactionsCount = 0
 
-    override func listenForTransactions() {
-        invokedListenForTransactions = true
-        invokedListenForTransactionsCount += 1
+    override func listenForTransactions(observerMode: Bool) {
+        self.invokedListenForTransactions = true
+        self.invokedListenForTransactionObserverMode = observerMode
+        self.invokedListenForTransactionsCount += 1
     }
 
     var invokedHandle = false

@@ -13,19 +13,23 @@
 
 import Nimble
 @testable import RevenueCat
+@preconcurrency import StoreKit // `PurchaseResult` is not `Sendable`
 import StoreKitTest
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+@MainActor
 class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
 
     private var listener: StoreKit2TransactionListener! = nil
     private var delegate: MockStoreKit2TransactionListenerDelegate! = nil
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
 
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        await self.finishAllUnfinishedTransactions()
 
         self.delegate = .init()
         self.listener = .init(delegate: self.delegate)
@@ -38,7 +42,7 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
 
         expect(self.listener!.taskHandle).to(beNil())
 
-        self.listener!.listenForTransactions()
+        self.listener!.listenForTransactions(observerMode: false)
         handle = self.listener!.taskHandle
 
         expect(handle).toNot(beNil())
@@ -100,8 +104,8 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
         }
     }
 
-    func testPurchasingDoesNotFinishTransaction() async throws {
-        self.listener.listenForTransactions()
+    func testPurchasingDoesNotFinishTransactionInObserverMode() async throws {
+        self.listener.listenForTransactions(observerMode: true)
 
         await self.verifyNoUnfinishedTransactions()
 
@@ -111,19 +115,56 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
         try await self.verifyUnfinishedTransaction(withId: purchasedTransaction.id)
     }
 
-    func testPurchasingDoesNotNotifyDelegate() async throws {
-        self.listener.listenForTransactions()
+    func testPurchasingDoesNotFinishTransactionNotInObserverMode() async throws {
+        self.listener.listenForTransactions(observerMode: false)
 
-        _ = try await self.fetchSk2Product().purchase()
+        await self.verifyNoUnfinishedTransactions()
+
+        let (_, _, purchasedTransaction) = try await self.purchase()
+        expect(purchasedTransaction.ownershipType) == .purchased
+
+        try await self.verifyUnfinishedTransaction(withId: purchasedTransaction.id)
+    }
+
+    func testPurchasingNotifiesDelegateNotInObserverMode() throws {
+        self.listener.listenForTransactions(observerMode: false)
+
+        try self.testSession.buyProduct(productIdentifier: Self.productID)
+
+        expect(self.delegate.invokedTransactionUpdated).toEventually(beTrue())
+    }
+
+    func testPurchasingNotifiesDelegate() throws {
+        self.listener.listenForTransactions(observerMode: true)
+
+        try self.testSession.buyProduct(productIdentifier: Self.productID)
+
+        expect(self.delegate.invokedTransactionUpdated).toEventually(beTrue())
+    }
+
+    func testDoesNotNotifyDelegateForExistingTransactionsNotInObserverMode() async throws {
+        try self.testSession.buyProduct(productIdentifier: Self.productID)
+
+        self.listener.listenForTransactions(observerMode: false)
+
+        // In order for this test to not be a false positive we need to give it a chance to
+        // handle the potential transaction.
+        // If `observerMode` is turned on in this test, it would fail only if we wait,
+        // and we can't use `toEventuallyNot(beTrue())` because that passes immediately.
+        try await Task.sleep(nanoseconds: UInt64(DispatchTimeInterval.milliseconds(300).nanoseconds))
 
         expect(self.delegate.invokedTransactionUpdated) == false
     }
 
+    func testNotifiesDelegateForExistingTransactionsInObserverMode() throws {
+        try self.testSession.buyProduct(productIdentifier: Self.productID)
+
+        self.listener.listenForTransactions(observerMode: true)
+
+        expect(self.delegate.invokedTransactionUpdated).toEventually(beTrue())
+    }
+
     func testHandlePurchaseResultDoesNotFinishTransaction() async throws {
-        self.listener.listenForTransactions()
-
-        await self.verifyNoUnfinishedTransactions()
-
         let (purchaseResult, _, purchasedTransaction) = try await self.purchase()
 
         let sk2Transaction = try await self.listener.handle(purchaseResult: purchaseResult)
@@ -134,8 +175,6 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
     }
 
     func testHandlePurchaseResultDoesNotNotifyDelegate() async throws {
-        self.listener.listenForTransactions()
-
         let result = try await self.purchase().result
         _ = try await self.listener.handle(purchaseResult: result)
 
@@ -211,7 +250,7 @@ private extension StoreKit2TransactionListenerTests {
         withId identifier: Transaction.ID,
         line: UInt = #line
     ) async throws {
-        let unfinishedTransactions = await StoreKit.Transaction.unfinished.extractValues()
+        let unfinishedTransactions = await self.unfinishedTransactions
 
         expect(line: line, unfinishedTransactions).to(haveCount(1))
 
@@ -222,6 +261,46 @@ private extension StoreKit2TransactionListenerTests {
 
         expect(line: line, verified.id) == identifier
 
+    }
+
+    func finishAllUnfinishedTransactions() async {
+        let transactions = await self.unfinishedTransactions
+
+        Logger.debug("Finishing \(transactions.count) transactions before running tests")
+
+        for verificationResult in transactions {
+            await verificationResult.underlyingTransaction.finish()
+        }
+    }
+
+    private var unfinishedTransactions: [VerificationResult<Transaction>] {
+        get async { return await StoreKit.Transaction.unfinished.extractValues() }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension VerificationResult where SignedType == Transaction {
+
+    var underlyingTransaction: Transaction {
+        switch self {
+        case let .unverified(transaction, _): return transaction
+        case let .verified(transaction): return transaction
+        }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension Product.PurchaseResult {
+
+    var verificationResult: VerificationResult<Transaction>? {
+        switch self {
+        case let .success(verificationResult): return verificationResult
+        case .userCancelled: return nil
+        case .pending: return nil
+        @unknown default: return nil
+        }
     }
 
 }
