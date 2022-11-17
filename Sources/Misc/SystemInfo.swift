@@ -40,6 +40,8 @@ class SystemInfo {
         set { self._finishTransactions.value = newValue }
     }
 
+    var observerMode: Bool { return !self.finishTransactions }
+
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let _finishTransactions: Atomic<Bool>
 

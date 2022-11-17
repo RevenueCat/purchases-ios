@@ -47,12 +47,14 @@ class SystemInfoTests: TestCase {
         var systemInfo = try SystemInfo(platformInfo: nil,
                                         finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
+        expect(systemInfo.observerMode) == !finishTransactions
 
         finishTransactions = true
 
         systemInfo = try SystemInfo(platformInfo: nil,
                                     finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
+        expect(systemInfo.observerMode) == !finishTransactions
     }
 
     func testIsSandbox() throws {
