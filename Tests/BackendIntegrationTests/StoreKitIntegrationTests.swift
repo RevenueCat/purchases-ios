@@ -8,31 +8,21 @@
 
 import Nimble
 @testable import RevenueCat
+@preconcurrency import StoreKit // `PurchaseResult` is not `Sendable`
 import StoreKitTest
 import UniformTypeIdentifiers
 import XCTest
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length type_body_length type_name
 
-class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
+@MainActor
+class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
-
-}
-
-class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
-
-    private var testSession: SKTestSession!
+    fileprivate var testSession: SKTestSession!
 
     override func setUp() async throws {
-        self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
-        self.testSession.resetToDefaultState()
-        self.testSession.disableDialogs = true
-        self.testSession.clearTransactions()
-        if #available(iOS 15.2, *) {
-            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
-        } else {
-            self.testSession.timeRate = .oneSecondIsOneDay
+        if self.testSession == nil {
+            try self.configureTestSession()
         }
 
         // Initialize `Purchases` *after* the fresh new session has been created
@@ -46,6 +36,36 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         // this waits for that request to finish.
         _ = try await Purchases.shared.offerings()
     }
+
+    override func tearDown() {
+        self.testSession = nil
+
+        super.tearDown()
+    }
+
+    func configureTestSession() throws {
+        assert(self.testSession == nil, "Attempted to configure session multiple times")
+
+        self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        self.testSession.resetToDefaultState()
+        self.testSession.disableDialogs = true
+        self.testSession.clearTransactions()
+        if #available(iOS 15.2, *) {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        } else {
+            self.testSession.timeRate = .oneSecondIsOneDay
+        }
+    }
+
+}
+
+class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
+
+    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
+
+}
+
+class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKit2Setting: StoreKit2Setting {
         return .disabled
@@ -449,10 +469,97 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
 }
 
-private extension StoreKit1IntegrationTests {
+// MARK: - Observer Mode tests
+
+class BaseStoreKitObserverModeIntegrationTests: BaseStoreKitIntegrationTests {
+
+    override class var observerMode: Bool { return true }
+
+}
+
+class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTests {
+
+    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseInDevicePostsReceipt() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        try await self.purchaseProductFromStoreKit()
+
+        let info = try await Purchases.shared.restorePurchases()
+        try await self.verifyEntitlementWentThrough(info)
+    }
+
+}
+
+class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
+
+    func testPurchaseOutsideTheAppPostsReceipt() async throws {
+        try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
+
+        let info = try await Purchases.shared.restorePurchases()
+        try await self.verifyEntitlementWentThrough(info)
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+class StoreKit2ObserverModeWithExistingPurchasesTests: StoreKit1ObserverModeWithExistingPurchasesTests {
+
+    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
+
+}
+
+/// Purchases a product before configuring `Purchases` to verify behavior upon initialization in observer mode.
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeIntegrationTests {
+
+    // MARK: - Transactions observation
+
+    private static var transactionsObservation: Task<Void, Never>?
+
+    override class func setUp() {
+        Self.transactionsObservation?.cancel()
+        Self.transactionsObservation = Task {
+            // Silence warning in tests:
+            // "Making a purchase without listening for transaction updates risks missing successful purchases.
+            for await _ in Transaction.updates {}
+        }
+    }
+
+    override class func tearDown() {
+        Self.transactionsObservation?.cancel()
+        Self.transactionsObservation = nil
+    }
+
+    override func setUp() async throws {
+        // 1. Create `SKTestSession`
+        try self.configureTestSession()
+
+        // 2. Purchase product directly from StoreKit
+        try await self.purchaseProductFromStoreKit()
+
+        // 3. Configure SDK
+        try await super.setUp()
+    }
+
+    func testDoesNotSyncExistingPurchase() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        self.assertNoPurchases(info)
+    }
+
+}
+
+// MARK: - Private
+
+private extension BaseStoreKitIntegrationTests {
 
     static let entitlementIdentifier = "premium"
     static let consumable10Coins = "consumable.10_coins"
+    static let monthlyNoIntroProductID = "com.revenuecat.monthly_4.99.no_intro"
 
     private var currentOffering: Offering {
         get async throws {
@@ -474,7 +581,7 @@ private extension StoreKit1IntegrationTests {
 
     var monthlyNoIntroProduct: StoreProduct {
         get async throws {
-            let products = await Purchases.shared.products(["com.revenuecat.monthly_4.99.no_intro"])
+            let products = await Purchases.shared.products([Self.monthlyNoIntroProductID])
             return try XCTUnwrap(products.onlyElement)
         }
     }
@@ -647,7 +754,7 @@ private extension StoreKit1IntegrationTests {
 
 // MARK: - Private
 
-private extension StoreKit1IntegrationTests {
+private extension BaseStoreKitIntegrationTests {
 
     func printReceiptContent() async {
         do {
@@ -666,6 +773,15 @@ private extension StoreKit1IntegrationTests {
         } catch {
             Logger.error("Error parsing local receipt: \(error)")
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    @discardableResult
+    func purchaseProductFromStoreKit() async throws -> Product.PurchaseResult {
+        let products = try await StoreKit.Product.products(for: [Self.monthlyNoIntroProductID])
+        let product = try XCTUnwrap(products.onlyElement)
+
+        return try await product.purchase()
     }
 
 }
