@@ -20,11 +20,15 @@ import XCTest
 class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
 
     private var listener: StoreKit2TransactionListener! = nil
+    private var delegate: MockStoreKit2TransactionListenerDelegate! = nil
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
 
-        self.listener = .init(delegate: nil)
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.delegate = .init()
+        self.listener = .init(delegate: self.delegate)
     }
 
     func testStopsListeningToTransactions() throws {
@@ -49,7 +53,7 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
     func testVerifiedTransactionReturnsOriginalTransaction() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let fakeTransaction = try await createTransactionWithPurchase()
+        let fakeTransaction = try await self.createTransactionWithPurchase()
 
         let (isCancelled, transaction) = try await self.listener.handle(
             purchaseResult: .success(.verified(fakeTransaction))
@@ -94,6 +98,130 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
         } catch {
             expect(error).to(matchError(ErrorCode.storeProblemError))
         }
+    }
+
+    func testPurchasingDoesNotFinishTransaction() async throws {
+        self.listener.listenForTransactions()
+
+        await self.verifyNoUnfinishedTransactions()
+
+        let (_, _, purchasedTransaction) = try await self.purchase()
+        expect(purchasedTransaction.ownershipType) == .purchased
+
+        try await self.verifyUnfinishedTransaction(withId: purchasedTransaction.id)
+    }
+
+    func testPurchasingDoesNotNotifyDelegate() async throws {
+        self.listener.listenForTransactions()
+
+        _ = try await self.fetchSk2Product().purchase()
+
+        expect(self.delegate.invokedTransactionUpdated) == false
+    }
+
+    func testHandlePurchaseResultDoesNotFinishTransaction() async throws {
+        self.listener.listenForTransactions()
+
+        await self.verifyNoUnfinishedTransactions()
+
+        let (purchaseResult, _, purchasedTransaction) = try await self.purchase()
+
+        let sk2Transaction = try await self.listener.handle(purchaseResult: purchaseResult)
+        expect(sk2Transaction.transaction) == purchasedTransaction
+        expect(sk2Transaction.userCancelled) == false
+
+        try await self.verifyUnfinishedTransaction(withId: purchasedTransaction.id)
+    }
+
+    func testHandlePurchaseResultDoesNotNotifyDelegate() async throws {
+        self.listener.listenForTransactions()
+
+        let result = try await self.purchase().result
+        _ = try await self.listener.handle(purchaseResult: result)
+
+        expect(self.delegate.invokedTransactionUpdated) == false
+    }
+
+    func testHandleUnverifiedPurchase() async throws {
+        let (_, _, transaction) = try await self.purchase()
+
+        let verificationError: VerificationResult<Transaction>.VerificationError = .invalidSignature
+
+        do {
+            _ = try await self.listener.handle(
+                purchaseResult: .success(.unverified(transaction, verificationError))
+            )
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.storeProblemError))
+
+            let underlyingError = try XCTUnwrap((error as NSError).userInfo[NSUnderlyingErrorKey] as? NSError)
+            expect(underlyingError).to(matchError(verificationError))
+        }
+    }
+
+    func testHandlePurchaseResultWithCancelledPurchase() async throws {
+        let result = try await self.listener.handle(purchaseResult: .userCancelled)
+        expect(result.userCancelled) == true
+        expect(result.transaction).to(beNil())
+    }
+
+    func testHandlePurchaseResultWithDeferredPurchase() async throws {
+        do {
+            _ = try await self.listener.handle(purchaseResult: .pending)
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.paymentPendingError))
+        }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension StoreKit2TransactionListenerTests {
+
+    private enum Error: Swift.Error {
+        case invalidResult(Product.PurchaseResult)
+        case invalidTransactions([VerificationResult<Transaction>])
+    }
+
+    func verifyNoUnfinishedTransactions(line: UInt = #line) async {
+        let unfinished = await StoreKit.Transaction.unfinished.extractValues()
+        expect(line: line, unfinished).to(beEmpty())
+    }
+
+    // swiftlint:disable:next large_tuple
+    func purchase() async throws -> (
+        result: Product.PurchaseResult,
+        verificationResult: VerificationResult<Transaction>,
+        transaction: Transaction
+    ) {
+        let result = try await self.fetchSk2Product().purchase()
+
+        guard case let .success(verificationResult) = result,
+              case let .verified(transaction) = verificationResult
+        else {
+            throw Error.invalidResult(result)
+        }
+
+        return (result, verificationResult, transaction)
+    }
+
+    func verifyUnfinishedTransaction(
+        withId identifier: Transaction.ID,
+        line: UInt = #line
+    ) async throws {
+        let unfinishedTransactions = await StoreKit.Transaction.unfinished.extractValues()
+
+        expect(line: line, unfinishedTransactions).to(haveCount(1))
+
+        guard let transaction = unfinishedTransactions.onlyElement,
+              case let .verified(verified) = transaction else {
+            throw Error.invalidTransactions(unfinishedTransactions)
+        }
+
+        expect(line: line, verified.id) == identifier
+
     }
 
 }

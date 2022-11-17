@@ -20,7 +20,7 @@ enum PurchaseStrings {
 
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
-    case finishing_transaction(StoreTransaction)
+    case finishing_transaction(StoreTransactionType)
     case purchasing_with_observer_mode_and_finish_transactions_false_warning
     case paymentqueue_removedtransaction(transaction: SKPaymentTransaction)
     case paymentqueue_revoked_entitlements_for_product_identifiers(productIdentifiers: [String])
