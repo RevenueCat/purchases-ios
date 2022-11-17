@@ -52,6 +52,10 @@ class BaseBackendIntegrationTests: XCTestCase {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            await self.finishAllUnfinishedTransactions()
+        }
+
         self.userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
         self.userDefaults?.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
         if !Constants.proxyURL.isEmpty {

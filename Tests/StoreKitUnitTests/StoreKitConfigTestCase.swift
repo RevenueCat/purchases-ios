@@ -36,8 +36,9 @@ class StoreKitConfigTestCase: TestCase {
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    @MainActor
+    override func setUp() async throws {
+        try await super.setUp()
 
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 
@@ -45,6 +46,10 @@ class StoreKitConfigTestCase: TestCase {
         self.testSession.resetToDefaultState()
         self.testSession.disableDialogs = true
         self.testSession.clearTransactions()
+
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            await self.finishAllUnfinishedTransactions()
+        }
 
         self.waitForStoreKitTestIfNeeded()
 

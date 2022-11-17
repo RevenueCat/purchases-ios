@@ -13,138 +13,75 @@
 
 import Nimble
 @testable import RevenueCat
-@preconcurrency import StoreKit
+import StoreKit
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension StoreKitConfigTestCase {
+extension XCTestCase {
 
-    @MainActor
-    @discardableResult
-    func simulateAnyPurchase() async throws -> SK2Product {
-        let product = try await fetchSk2Product()
-        _ = try await product.purchase()
-
-        return product
+    private enum Error: Swift.Error {
+        case invalidTransactions([VerificationResult<Transaction>])
     }
 
-    @MainActor
-    func createTransactionWithPurchase() async throws -> Transaction {
-        let product = try await self.simulateAnyPurchase()
-
-        let transaction = try await XCTAsyncUnwrap(await product.latestTransaction)
-
-        switch transaction {
-        case let .verified(transaction):
-            return transaction
-        default:
-            XCTFail("Invalid transaction: \(transaction)")
-            fatalError("Unreachable")
-        }
+    func verifyNoUnfinishedTransactions(line: UInt = #line) async {
+        let unfinished = await StoreKit.Transaction.unfinished.extractValues()
+        expect(line: line, unfinished).to(beEmpty())
     }
 
-    @MainActor
-    func fetchSk2Product(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2Product {
-        let products: [SK2Product] = try await StoreKit.Product.products(for: [productID])
-        return try XCTUnwrap(products.first)
-    }
-
-    @MainActor
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func fetchSk2StoreProduct(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2StoreProduct {
-        return SK2StoreProduct(sk2Product: try await self.fetchSk2Product(productID))
-    }
-
-}
-
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
-extension StoreKitConfigTestCase {
-
-    /// Updates `SKTestSession.storefront` and waits for `Storefront.current` to reflect the change
-    /// This is necessary because the change is aynchronous within `StoreKit`, and otherwise code that depends
-    /// on the change might not see it in time, resulting in race conditions and flaky tests.
-    func changeStorefront(
-        _ new: String,
-        file: FileString = #fileID,
+    func verifyUnfinishedTransaction(
+        withId identifier: Transaction.ID,
         line: UInt = #line
-    ) async {
-        self.testSession.storefront = new
+    ) async throws {
+        let unfinishedTransactions = await self.unfinishedTransactions
 
-        // Note: a better approach would be using `XCTestExpectation` and `self.wait(for:timeout:)`
-        // but it doesn't seem to play well with async-await.
-        // Also `toEventually` (Quick nor Nimble) don't support `async`.
+        expect(line: line, unfinishedTransactions).to(haveCount(1))
 
-        var storefrontUpdateDetected: Bool {
-            get async { await Storefront.currentStorefront?.countryCode == new }
+        guard let transaction = unfinishedTransactions.onlyElement,
+              case let .verified(verified) = transaction else {
+            throw Error.invalidTransactions(unfinishedTransactions)
         }
 
-        var numberOfChecksLeft = 10
+        expect(line: line, verified.id) == identifier
 
-        repeat {
-            if await !storefrontUpdateDetected {
-                numberOfChecksLeft -= 1
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-            } else {
-                break
-            }
-        } while numberOfChecksLeft > 0
+    }
 
-        let detected = await storefrontUpdateDetected
-        expect(
-            file: file,
-            line: line,
-            detected
-        ).to(beTrue(), description: "Storefront change not detected")
+    func finishAllUnfinishedTransactions() async {
+        let transactions = await self.unfinishedTransactions
+
+        Logger.debug("Finishing \(transactions.count) transactions before running tests")
+
+        for verificationResult in transactions {
+            await verificationResult.underlyingTransaction.finish()
+        }
+    }
+
+    private var unfinishedTransactions: [VerificationResult<Transaction>] {
+        get async { return await StoreKit.Transaction.unfinished.extractValues() }
     }
 
 }
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
-extension StoreKitConfigTestCase {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension VerificationResult where SignedType == Transaction {
 
-    static let productID = "com.revenuecat.monthly_4.99.1_week_intro"
-    static let lifetimeProductID = "lifetime"
-
-}
-
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
-fileprivate extension StoreKitConfigTestCase {
-
-    enum Error: Swift.Error {
-
-        case noProductsFound
-        case multipleProductsFound
-
-    }
-
-}
-
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
-extension ProductsFetcherSK1 {
-
-    func product(withIdentifier identifier: String) async throws -> StoreProduct {
-        let products = try await self.products(withIdentifiers: Set([identifier]))
-
-        switch products.count {
-        case 0: throw StoreKitConfigTestCase.Error.noProductsFound
-        case 1: return StoreProduct.from(product: products.first!)
-        default: throw StoreKitConfigTestCase.Error.multipleProductsFound
+    var underlyingTransaction: Transaction {
+        switch self {
+        case let .unverified(transaction, _): return transaction
+        case let .verified(transaction): return transaction
         }
     }
 
 }
 
-@MainActor
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension ProductsFetcherSK2 {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension Product.PurchaseResult {
 
-    func product(withIdentifier identifier: String) async throws -> StoreProduct {
-        let products = try await self.products(identifiers: Set([identifier]))
-
-        switch products.count {
-        case 0: throw StoreKitConfigTestCase.Error.noProductsFound
-        case 1: return StoreProduct.from(product: products.first!)
-        default: throw StoreKitConfigTestCase.Error.multipleProductsFound
+    var verificationResult: VerificationResult<Transaction>? {
+        switch self {
+        case let .success(verificationResult): return verificationResult
+        case .userCancelled: return nil
+        case .pending: return nil
+        @unknown default: return nil
         }
     }
 
