@@ -45,7 +45,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
 
         let products = ["producta", "productb", "productc", "productd"]
 
-        let eligibility = waitUntilValue { completed in
+        let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
             self.offerings.getIntroEligibility(appUserID: Self.userID,
                                                receiptData: Data(1...3),
                                                productIdentifiers: products,
@@ -70,7 +70,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
             response: .init(statusCode: .invalidRequest, response: Self.serverErrorResponse)
         )
 
-        let eligibility = waitUntilValue { completed in
+        let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
             let products = ["producta", "productb", "productc"]
             self.offerings.getIntroEligibility(appUserID: Self.userID,
                                                receiptData: Data.init(1...2),
@@ -132,7 +132,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
 
         let products = ["producta", "productb", "productc"]
 
-        let eligibility = waitUntilValue { completed in
+        let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
 
             self.offerings.getIntroEligibility(appUserID: Self.userID,
                                                receiptData: Data.init(1...2),
@@ -150,7 +150,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
 
     func testEligibilityUnknownIfNoReceipt() {
         let products = ["producta", "productb", "productc"]
-        let eligibility = waitUntilValue { completed in
+        let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
             self.offerings.getIntroEligibility(appUserID: Self.userID,
                                                receiptData: Data(),
                                                productIdentifiers: products,

@@ -40,7 +40,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
         )
 
-        let result = waitUntilValue { completed in
+        let result: SK1Product? = waitUntilValue { completed in
             self.purchases.getOfferings { (newOfferings, _) in
                 let storeProduct = newOfferings!["base"]!.monthly!.storeProduct
 
@@ -57,7 +57,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
                 transaction.mockState = SKPaymentTransactionState.purchased
                 self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-                completed(storeProduct.sk1Product!)
+                completed(storeProduct.sk1Product)
             }
         }
 
