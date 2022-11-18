@@ -4,6 +4,12 @@ orbs:
 
 version: 2.1
 
+parameters:
+  action:
+    type: enum
+    enum: [default, bump]
+    default: default
+
 aliases:
   base-job: &base-job
     resource_class: macos.x86.medium.gen2
@@ -768,6 +774,13 @@ workflows:
       and:
         - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
         - equal: [ "release-train", << pipeline.schedule.name >> ]
+    jobs:
+      - release-train:
+          xcode_version: '14.1.0'
+  
+  manual-trigger-bump:
+    when:
+      equal: [ bump, << pipeline.parameters.action >> ]
     jobs:
       - release-train:
           xcode_version: '14.1.0'
