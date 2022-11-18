@@ -14,6 +14,7 @@ default_platform(:ios)
 
 files_with_version_number = [
   './RevenueCat.podspec',
+  './Packages/ReceiptParser/ReceiptParser.podspec',
   './Sources/Misc/SystemInfo.swift',
   './.jazzy.yaml',
   './.version',
@@ -574,6 +575,7 @@ platform :ios do
 end
 
 def push_pods
+  pod_push(path: "Packages/ReceiptParser/ReceiptParser.podspec", synchronous: true)
   pod_push(path: "RevenueCat.podspec", synchronous: true)
 end
 
@@ -604,7 +606,14 @@ end
 lane :check_pods do
   pod_lib_lint(
     verbose: true,
-    podspec:'RevenueCat.podspec', 
+    podspec: 'RevenueCat.podspec', 
+    # TODO: re-add watchOS when https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
+    platforms:"ios,osx,tvos",
+    fail_fast: true
+  )
+  pod_lib_lint(
+    verbose: true,
+    podspec: 'Packages/ReceiptParser/ReceiptParser.podspec', 
     # TODO: re-add watchOS when https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
     platforms:"ios,osx,tvos",
     fail_fast: true
