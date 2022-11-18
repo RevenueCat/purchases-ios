@@ -2,9 +2,8 @@ import Nimble
 import XCTest
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
-class AppleReceiptBuilderTests: TestCase {
+class AppleReceiptBuilderTests: XCTestCase {
     let containerFactory = ContainerFactory()
     var appleReceiptBuilder: AppleReceiptBuilder!
     var mockInAppPurchaseBuilder: MockInAppPurchaseBuilder!

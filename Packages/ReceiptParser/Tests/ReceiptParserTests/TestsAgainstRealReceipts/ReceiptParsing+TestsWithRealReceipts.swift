@@ -11,11 +11,8 @@ import Nimble
 import XCTest
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
-// TODO: move
-
-class ReceiptParsingRealReceiptTests: TestCase {
+class ReceiptParsingRealReceiptTests: XCTestCase {
 
     private let receipt1Name = "base64encodedreceiptsample1"
 
@@ -30,6 +27,7 @@ class ReceiptParsingRealReceiptTests: TestCase {
         expect(receipt.expirationDate).to(beNil())
     }
 
+    // swiftlint:disable:next function_body_length
     func testInAppPurchasesAttributesForSample1() throws {
         let receiptData = sampleReceiptData(receiptName: receipt1Name)
         let receipt = try Parser.default.parse(from: receiptData)

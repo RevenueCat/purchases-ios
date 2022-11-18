@@ -20,10 +20,10 @@ import ReceiptParser
 class IntroEligibilityCalculator {
 
     private let productsManager: ProductsManagerType
-    private let receiptParser: ReceiptParser.Parser
+    private let receiptParser: ReceiptParser.ParserType
 
     init(productsManager: ProductsManagerType,
-         receiptParser: ReceiptParser.Parser) {
+         receiptParser: ReceiptParser.ParserType) {
         self.productsManager = productsManager
         self.receiptParser = receiptParser
     }

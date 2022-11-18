@@ -18,6 +18,7 @@ let package = Package(
             targets: ["ReceiptParser"])
     ],
     dependencies: [
+        .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0")
     ],
     targets: [
         .target(
@@ -26,6 +27,10 @@ let package = Package(
             swiftSettings: [
                 .unsafeFlags(["-enable-library-evolution"])
             ]
+        ),
+        .testTarget(
+            name: "ReceiptParserTests",
+            dependencies: ["ReceiptParser", "Nimble"]
         )
     ]
 )

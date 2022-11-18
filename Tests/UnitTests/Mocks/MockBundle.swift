@@ -47,6 +47,7 @@ final class MockBundle: Bundle {
 
     // MARK: -
 
+    // TODO: move these
     private static let mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
     private static let mockSandboxReceiptFileName = "base64encoded_sandboxReceipt"
 

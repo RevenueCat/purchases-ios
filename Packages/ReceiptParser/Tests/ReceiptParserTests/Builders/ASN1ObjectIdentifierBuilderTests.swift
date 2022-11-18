@@ -2,9 +2,8 @@ import Nimble
 import XCTest
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
-class ASN1ObjectIdentifierBuilderTests: TestCase {
+class ASN1ObjectIdentifierBuilderTests: XCTestCase {
 
     private let encoder = ASN1ObjectIdentifierEncoder()
 

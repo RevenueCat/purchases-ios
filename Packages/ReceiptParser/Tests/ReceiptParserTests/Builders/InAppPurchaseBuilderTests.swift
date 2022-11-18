@@ -8,9 +8,8 @@ import Nimble
 import XCTest
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
-class InAppPurchaseBuilderTests: TestCase {
+class InAppPurchaseBuilderTests: XCTestCase {
 
     // swiftlint:disable force_try
     let quantity = 2

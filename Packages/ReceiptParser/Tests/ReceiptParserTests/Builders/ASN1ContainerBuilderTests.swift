@@ -2,9 +2,8 @@ import Nimble
 import XCTest
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
-class ASN1ContainerBuilderTests: TestCase {
+class ASN1ContainerBuilderTests: XCTestCase {
 
     private var containerBuilder: ASN1ContainerBuilder!
 

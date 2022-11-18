@@ -2,11 +2,8 @@ import Nimble
 import XCTest
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
-// TODO: move?
-
-class ReceiptParserTests: TestCase {
+class ReceiptParserTests: XCTestCase {
 
     private var receiptParser: Parser!
     private var mockAppleReceiptBuilder: MockAppleReceiptBuilder!
@@ -16,7 +13,7 @@ class ReceiptParserTests: TestCase {
 
     override func setUp() {
         super.setUp()
-        
+
         self.mockAppleReceiptBuilder = MockAppleReceiptBuilder()
         self.mockASN1ContainerBuilder = MockASN1ContainerBuilder()
         self.receiptParser = Parser(containerBuilder: mockASN1ContainerBuilder,

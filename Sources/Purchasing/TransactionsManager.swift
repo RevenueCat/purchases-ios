@@ -17,9 +17,9 @@ import ReceiptParser
 
 class TransactionsManager {
 
-    private let receiptParser: ReceiptParser.Parser
+    private let receiptParser: ReceiptParser.ParserType
 
-    init(receiptParser: ReceiptParser.Parser) {
+    init(receiptParser: ReceiptParser.ParserType) {
         self.receiptParser = receiptParser
     }
 

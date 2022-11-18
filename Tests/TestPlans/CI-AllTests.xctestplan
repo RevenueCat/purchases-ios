@@ -34,6 +34,13 @@
         "identifier" : "2DAC5F7126F13C9800C5258F",
         "name" : "StoreKitUnitTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/ReceiptParser",
+        "identifier" : "ReceiptParserTests",
+        "name" : "ReceiptParserTests"
+      }
     }
   ],
   "version" : 1

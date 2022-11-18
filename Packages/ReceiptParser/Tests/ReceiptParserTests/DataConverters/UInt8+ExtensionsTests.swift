@@ -2,9 +2,8 @@ import Nimble
 import XCTest
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
-class UInt8ExtensionsTests: TestCase {
+class UInt8ExtensionsTests: XCTestCase {
 
     func testBitAtIndexGetsCorrectValue() {
         expect(try UInt8(0b10000000).bitAtIndex(0)) == 1
@@ -40,5 +39,5 @@ class UInt8ExtensionsTests: TestCase {
         .to(throwError(BitShiftError.rangeFlipped(from: 6, to: 1)))
         expect { _ = try UInt8(0b10000010).valueInRange(from: 6, to: 8)}.to(throwError(BitShiftError.invalidIndex(8)))
     }
-    
+
 }

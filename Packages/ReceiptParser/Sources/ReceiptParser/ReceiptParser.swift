@@ -14,9 +14,18 @@
 
 import Foundation
 
-public class Parser {
+public protocol ParserType {
 
-    public static let `default`: Parser = .init()
+    func receiptHasTransactions(receiptData: Data) -> Bool
+    func parse(from receiptData: Data) throws -> AppleReceipt
+
+}
+
+// TODO: move logs outside
+
+public class Parser: ParserType {
+
+    public static let `default`: ParserType = Parser()
 
     private let containerBuilder: ASN1ContainerBuilder
     private let receiptBuilder: AppleReceiptBuilder
@@ -40,13 +49,13 @@ public class Parser {
     public func parse(from receiptData: Data) throws -> AppleReceipt {
         let intData = [UInt8](receiptData)
 
-        let asn1Container = try containerBuilder.build(fromPayload: ArraySlice(intData))
-        guard let receiptASN1Container = try findASN1Container(withObjectId: ASN1ObjectIdentifier.data,
+        let asn1Container = try self.containerBuilder.build(fromPayload: ArraySlice(intData))
+        guard let receiptASN1Container = try self.findASN1Container(withObjectId: ASN1ObjectIdentifier.data,
                                                                inContainer: asn1Container) else {
 //            Logger.error(Strings.receipt.data_object_identifer_not_found_receipt)
             throw ReceiptReadingError.dataObjectIdentifierMissing
         }
-        let receipt = try receiptBuilder.build(fromContainer: receiptASN1Container)
+        let receipt = try self.receiptBuilder.build(fromContainer: receiptASN1Container)
 //        Logger.info(Strings.receipt.parsing_receipt_success)
         return receipt
     }

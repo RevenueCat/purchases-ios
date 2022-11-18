@@ -276,7 +276,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
         let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
-        let receiptParser: ReceiptParser.Parser = .default
+        let receiptParser = ReceiptParser.Parser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,

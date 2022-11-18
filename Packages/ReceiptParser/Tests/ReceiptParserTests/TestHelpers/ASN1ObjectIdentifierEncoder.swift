@@ -6,7 +6,6 @@
 import Foundation
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
 class ASN1ObjectIdentifierEncoder {
 
@@ -28,7 +27,7 @@ class ASN1ObjectIdentifierEncoder {
 
         return ArraySlice(encodedNumbers)
     }
-    
+
 }
 
 private extension ASN1ObjectIdentifierEncoder {

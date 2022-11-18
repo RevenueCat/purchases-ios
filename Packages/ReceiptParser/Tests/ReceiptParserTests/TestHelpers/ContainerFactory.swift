@@ -6,9 +6,9 @@
 import Foundation
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
 class ContainerFactory {
+
     private let objectIdentifierEncoder = ASN1ObjectIdentifierEncoder()
 
     func simpleDataContainer() -> ASN1Container {

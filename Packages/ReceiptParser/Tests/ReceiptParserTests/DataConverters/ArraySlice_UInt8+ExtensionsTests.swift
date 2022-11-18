@@ -2,9 +2,8 @@ import Nimble
 import XCTest
 
 @testable import ReceiptParser
-@testable import RevenueCat
 
-class ArraySliceUInt8ExtensionsTests: TestCase {
+class ArraySliceUInt8ExtensionsTests: XCTestCase {
 
     func testToUIntReturnsCorrectValue() {
         var arraySlice = ArraySlice([UInt8(0b10000000), UInt8(0b10000000)])
@@ -16,5 +15,5 @@ class ArraySliceUInt8ExtensionsTests: TestCase {
         arraySlice = ArraySlice([UInt8(0b10010100)])
         expect(arraySlice.toUInt64()) == 0b10010100
     }
-    
+
 }

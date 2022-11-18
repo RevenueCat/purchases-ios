@@ -17,20 +17,6 @@ import Foundation
 
 extension NSData {
 
-    func asString() -> String {
-        // 2 characters per byte
-        let deviceTokenString = NSMutableString(capacity: self.length * 2)
-
-        self.enumerateBytes { bytes, byteRange, _ in
-            for index in stride(from: 0, to: byteRange.length, by: 1) {
-                let byte = bytes.load(fromByteOffset: index, as: UInt8.self)
-                deviceTokenString.appendFormat("%02x", byte)
-            }
-        }
-
-        return deviceTokenString as String
-    }
-
     var uuid: UUID? {
         let bytes = [UInt8](self)
         return NSUUID(uuidBytes: bytes) as UUID
@@ -39,15 +25,6 @@ extension NSData {
 }
 
 extension Data {
-
-    var asString: String {
-        return (self as NSData).asString()
-    }
-
-    // Returns a string representing a fetch token.
-    var asFetchToken: String {
-        return self.base64EncodedString()
-    }
 
     var uuid: UUID? {
         (self as NSData).uuid

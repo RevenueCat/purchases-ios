@@ -10,7 +10,7 @@ import Foundation
 
 import XCTest
 
-class MockReceiptParser: Parser {
+class MockReceiptParser: ParserType {
 
     var invokedParse = false
     var invokedParseCount = 0
@@ -36,12 +36,9 @@ class MockReceiptParser: Parser {
         )
     ]
 
-    convenience init() {
-        self.init(containerBuilder: MockASN1ContainerBuilder(),
-                  receiptBuilder: MockAppleReceiptBuilder())
-    }
+    init() {}
 
-    override func parse(from receiptData: Data) throws -> AppleReceipt {
+    func parse(from receiptData: Data) throws -> AppleReceipt {
         self.invokedParse = true
         self.invokedParseCount += 1
         self.invokedParseParameters = receiptData
@@ -66,7 +63,7 @@ class MockReceiptParser: Parser {
     var invokedReceiptHasTransactionsParametersList = [(receiptData: Data, Void)]()
     var stubbedReceiptHasTransactionsResult: Bool! = false
 
-    override func receiptHasTransactions(receiptData: Data) -> Bool {
+    func receiptHasTransactions(receiptData: Data) -> Bool {
         invokedReceiptHasTransactions = true
         invokedReceiptHasTransactionsCount += 1
         invokedReceiptHasTransactionsParameters = (receiptData, ())

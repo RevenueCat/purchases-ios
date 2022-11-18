@@ -7,6 +7,7 @@ excluded:
   - scan_derived_data
   - .git
   - .build
+  - Packages/*/.build
 
 opt_in_rules:
   - sorted_imports
@@ -19,7 +20,9 @@ opt_in_rules:
 custom_rules:
   xctestcase_superclass:
     included: ".*\\.swift"
-    excluded: Tests/BackendIntegrationTests
+    excluded: 
+      - Tests/BackendIntegrationTests
+      - Packages
     regex: "\\: XCTestCase \\{"
     name: "XCTestCase Superclass"
     message: "Test classes must inherit `TestCase` instead."

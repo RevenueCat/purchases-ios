@@ -7,9 +7,9 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@testable import ReceiptParser
 
-class NSDataExtensionsTests: TestCase {
+class NSDataExtensionsTests: XCTestCase {
 
     func testAsString() {
         let data = Data([
@@ -42,20 +42,32 @@ class NSDataExtensionsTests: TestCase {
 extension NSDataExtensionsTests {
 
     static func sampleReceiptData(receiptName: String) -> Data {
-        let receiptText = readFile(named: receiptName)
-        guard let receiptData = Data(base64Encoded: receiptText) else { fatalError("couldn't decode file") }
+        let receiptText = self.readFile(named: receiptName)
+        guard let receiptData = Data(base64Encoded: receiptText) else { fatalError("Couldn't decode file '\(receiptName).\(Self.fileExtension)'") }
         return receiptData
     }
 
-    static func readFile(named filename: String) -> String {
-        guard let pathString = Bundle(for: Self.self).path(forResource: filename, ofType: "txt") else {
-            fatalError("\(filename) not found")
-        }
+    static func readFile(named filename: String, file: String = #file) -> String {
+        let path = URL(string: file)!
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Resources", isDirectory: true)
+            .appendingPathComponent("receipts", isDirectory: true)
+            .appendingPathComponent(filename, isDirectory: false)
+            .appendingPathExtension(Self.fileExtension)
+            .absoluteString
+
         do {
-            return try String(contentsOfFile: pathString, encoding: String.Encoding.utf8)
+            return try String(contentsOfFile: path, encoding: .utf8)
         } catch let error {
-            fatalError("couldn't read file named \(filename). Error: \(error.localizedDescription)")
+            fatalError(
+                "Couldn't read file named '\(filename).\(Self.fileExtension).\n" +
+                "Error: \(error.localizedDescription)\n" +
+                "URL: \(path)"
+            )
         }
     }
+
+    private static let fileExtension = "txt"
 
 }

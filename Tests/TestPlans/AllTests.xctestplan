@@ -24,7 +24,7 @@
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "2DC5621D24EC63430031F69B",
-        "name" : "RevenueCatTests"
+        "name" : "UnitTests"
       }
     },
     {
@@ -32,6 +32,14 @@
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "2DAC5F7126F13C9800C5258F",
         "name" : "StoreKitUnitTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Packages\/ReceiptParser",
+        "identifier" : "ReceiptParserTests",
+        "name" : "ReceiptParserTests"
       }
     }
   ],

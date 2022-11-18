@@ -28,7 +28,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
     private var requestFetcher: StoreKitRequestFetcher!
     private var systemInfo: SystemInfo!
     private var receiptFetcher: ReceiptFetcher!
-    private var parser: Parser!
+    private var parser: ParserType!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -40,7 +40,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
                                          operationDispatcher: operationDispatcher,
                                          storeKit2Setting: .disabled)
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfo)
-        self.parser = .default
+        self.parser = Parser.default
     }
 
     @MainActor

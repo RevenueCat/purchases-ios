@@ -19,7 +19,7 @@ import ReceiptParser
 class ReceiptFetcher {
 
     private let requestFetcher: StoreKitRequestFetcher
-    private let receiptParser: ReceiptParser.Parser
+    private let receiptParser: ReceiptParser.ParserType
     private let fileReader: FileReader
 
     let systemInfo: SystemInfo
@@ -27,7 +27,7 @@ class ReceiptFetcher {
     init(
         requestFetcher: StoreKitRequestFetcher,
         systemInfo: SystemInfo,
-        receiptParser: ReceiptParser.Parser = .default,
+        receiptParser: ReceiptParser.ParserType = ReceiptParser.Parser.default,
         fileReader: FileReader = DefaultFileReader()
     ) {
         self.requestFetcher = requestFetcher
