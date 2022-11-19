@@ -14,7 +14,8 @@
       "containerPath" : "container:RevenueCat.xcodeproj",
       "identifier" : "2DE20B7E26409EB7004C597D",
       "name" : "BackendIntegrationTestsHostApp"
-    }
+    },
+    "testExecutionOrdering" : "random"
   },
   "testTargets" : [
     {
