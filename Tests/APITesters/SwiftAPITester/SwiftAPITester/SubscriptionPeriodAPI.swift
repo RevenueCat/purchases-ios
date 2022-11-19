@@ -18,9 +18,7 @@ func checkSubscriptionPeriodAPI() {
     print(value, unit)
 }
 
-func checkSubscriptionPeriodUnit() {
-    let unit: SubscriptionPeriod.Unit = .day
-
+func checkSubscriptionPeriodUnit(_ unit: SubscriptionPeriod.Unit = .day) {
     switch unit {
     case
             .day,
