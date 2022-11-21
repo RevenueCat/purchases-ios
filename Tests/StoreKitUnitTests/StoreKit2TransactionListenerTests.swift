@@ -190,7 +190,6 @@ private extension StoreKit2TransactionListenerTests {
         expect(line: line, unfinished).to(beEmpty())
     }
 
-    // swiftlint:disable:next large_tuple
     func purchase() async throws -> (
         result: Product.PurchaseResult,
         verificationResult: VerificationResult<Transaction>,

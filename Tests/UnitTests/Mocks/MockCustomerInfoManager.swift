@@ -6,7 +6,6 @@
 import Foundation
 @testable import RevenueCat
 
-// swiftlint:disable large_tuple
 // swiftlint:disable line_length
 // Note: this class is implicitly `@unchecked Sendable` through its parent
 // even though it's not actually thread safe.

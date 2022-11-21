@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 4/7/22.
 
-// swiftlint:disable multiline_parameters large_tuple
+// swiftlint:disable multiline_parameters
 
 import Nimble
 @testable import RevenueCat
