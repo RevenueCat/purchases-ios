@@ -270,7 +270,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testDefaultUserDefaultsIsUsedByDefault() {
-        expect(Self.create(userDefaults: nil).configuredUserDefaults) === UserDefaults.default
+        expect(Self.create(userDefaults: nil).configuredUserDefaults) === UserDefaults.computeDefault()
     }
 
     private static func create(userDefaults: UserDefaults?) -> Purchases {

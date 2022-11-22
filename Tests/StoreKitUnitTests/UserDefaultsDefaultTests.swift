@@ -35,18 +35,18 @@ final class UserDefaultsDefaultTests: TestCase {
     func testDefaultIsStandardIfStandardContainsUserID() {
         UserDefaults.standard.set("user", forKey: Self.appUserKey)
 
-        expect(UserDefaults.default) === UserDefaults.standard
+        expect(UserDefaults.computeDefault()) === UserDefaults.standard
     }
 
     func testDefaultIsRevenueCatSuiteIfStandardDoesNotContainUserID() {
-        expect(UserDefaults.default) === UserDefaults.revenueCatSuite
+        expect(UserDefaults.computeDefault()) === UserDefaults.revenueCatSuite
     }
 
     /// Ensures that the logic only checks `UserDefaults.standard`.
     func testDefaultIsRevenueCatSuiteEvenIfItContainsAppUserID() {
         UserDefaults.revenueCatSuite.set("user", forKey: Self.appUserKey)
 
-        expect(UserDefaults.default) === UserDefaults.revenueCatSuite
+        expect(UserDefaults.computeDefault()) === UserDefaults.revenueCatSuite
     }
 
 }
