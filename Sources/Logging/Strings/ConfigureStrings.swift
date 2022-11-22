@@ -108,7 +108,7 @@ extension ConfigureStrings: CustomStringConvertible {
             return "Configuring SDK using provided UserDefaults."
 
         case .using_user_defaults_standard:
-            return "Configuring SDK using UserDefaults.standard."
+            return "Configuring SDK using UserDefaults.standard because we found existing data in it."
 
         case .using_user_defaults_suite_name:
             return "Configuring SDK using RevenueCat's UserDefaults suite."
