@@ -56,4 +56,15 @@ class AtomicTests: TestCase {
         expect(atomic.value) == ["0": 0, "1": 1, "2": 2]
     }
 
+    func testRecursiveUnrelatedAtomics() {
+        let atomic1: Atomic<Bool> = false
+        let atomic2: Atomic<Bool> = true
+
+        atomic1.modify {
+            $0 = atomic2.value
+        }
+
+        expect(atomic1.value) == true
+    }
+
 }
