@@ -252,6 +252,22 @@ class DeviceCacheTests: TestCase {
         expectNoFatalError { mockNotificationCenter.fireNotifications() }
     }
 
+    func testNoAssertionIfModifyingRevenueCatUserDefaultsSuite() {
+        let userDefaults: UserDefaults = .revenueCatSuite
+        let mockNotificationCenter = MockNotificationCenter()
+
+        userDefaults.set("User", forKey: "com.revenuecat.userdefaults.appUserID.new")
+
+        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+                                       userDefaults: userDefaults,
+                                       offeringsCachedObject: nil,
+                                       notificationCenter: mockNotificationCenter)
+
+        userDefaults.set(nil, forKey: "com.revenuecat.userdefaults.appUserID.new")
+
+        expectNoFatalError { mockNotificationCenter.fireNotifications() }
+    }
+
     func testNewDeviceCacheInstanceWithExistingValidCustomerInfoCacheIsntStale() {
         let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
