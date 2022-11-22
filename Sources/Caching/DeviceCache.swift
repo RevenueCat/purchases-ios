@@ -36,7 +36,7 @@ class DeviceCache {
     /// cleared from under the SDK
     private let appUserIDHasBeenSet: Atomic<Bool> = false
 
-    private var userDefaultsObserver: NSObjectProtocol!
+    private var userDefaultsObserver: NSObjectProtocol?
 
     convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
                      userDefaults: UserDefaults) {
@@ -57,14 +57,21 @@ class DeviceCache {
         self.userDefaults = .init(userDefaults: userDefaults)
         self.appUserIDHasBeenSet.value = userDefaults.string(forKey: .appUserDefaults) != nil
 
-        self.userDefaultsObserver = self.notificationCenter.addObserver(
-            forName: UserDefaults.didChangeNotification,
-            object: userDefaults,
-            queue: nil, // Run synchronously on the posting thread
-            using: { [weak self] notification in
-                self?.handleUserDefaultsChanged(notification: notification)
-            }
-        )
+        // Observe `UserDefaults` changes through `handleUserDefaultsChanged`
+        // to ensure that users don't remove the data from the SDK, which would
+        // leave it in an undetermined state. See https://rev.cat/userdefaults-crash
+        // If the user is not using a custom `UserDefaults`, we don't need to
+        // because they have no access to it.
+        if userDefaults !== UserDefaults.revenueCatSuite {
+            self.userDefaultsObserver = self.notificationCenter.addObserver(
+                forName: UserDefaults.didChangeNotification,
+                object: userDefaults,
+                queue: nil, // Run synchronously on the posting thread
+                using: { [weak self] notification in
+                    self?.handleUserDefaultsChanged(notification: notification)
+                }
+            )
+        }
     }
 
     @objc private func handleUserDefaultsChanged(notification: Notification) {
@@ -80,7 +87,9 @@ class DeviceCache {
     }
 
     deinit {
-        self.notificationCenter.removeObserver(self.userDefaultsObserver as Any)
+        if let observer = self.userDefaultsObserver {
+            self.notificationCenter.removeObserver(observer)
+        }
     }
 
     // MARK: - appUserID
