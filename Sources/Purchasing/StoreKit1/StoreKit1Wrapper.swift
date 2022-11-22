@@ -127,7 +127,7 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
-            Logger.debug(Strings.purchase.paymentqueue_updatedtransaction(transaction: transaction))
+            Logger.debug(Strings.purchase.paymentqueue_updated_transaction(self, transaction))
             self.delegate?.storeKit1Wrapper(self, updatedTransaction: transaction)
         }
     }
@@ -135,7 +135,7 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
     // Sent when transactions are removed from the queue (via finishTransaction:).
     func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
-            Logger.debug(Strings.purchase.paymentqueue_removedtransaction(transaction: transaction))
+            Logger.debug(Strings.purchase.paymentqueue_removed_transaction(self, transaction))
             self.delegate?.storeKit1Wrapper(self, removedTransaction: transaction)
         }
     }

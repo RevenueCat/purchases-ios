@@ -22,9 +22,11 @@ enum PurchaseStrings {
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
     case finishing_transaction(StoreTransactionType)
     case purchasing_with_observer_mode_and_finish_transactions_false_warning
-    case paymentqueue_removedtransaction(transaction: SKPaymentTransaction)
     case paymentqueue_revoked_entitlements_for_product_identifiers(productIdentifiers: [String])
-    case paymentqueue_updatedtransaction(transaction: SKPaymentTransaction)
+    case paymentqueue_removed_transaction(_ observer: SKPaymentTransactionObserver,
+                                          _ transaction: SKPaymentTransaction)
+    case paymentqueue_updated_transaction(_ observer: SKPaymentTransactionObserver,
+                                          _ transaction: SKPaymentTransaction)
     case presenting_code_redemption_sheet
     case unable_to_present_redemption_sheet
     case purchases_synced
@@ -89,9 +91,13 @@ extension PurchaseStrings: CustomStringConvertible {
             "purchase has been initiated. RevenueCat will not finish the " +
             "transaction, are you sure you want to do this?"
 
-        case .paymentqueue_removedtransaction(let transaction):
+        case .paymentqueue_revoked_entitlements_for_product_identifiers(let productIdentifiers):
+            return "PaymentQueue didRevokeEntitlementsForProductIdentifiers: \(productIdentifiers)"
+
+        case let .paymentqueue_removed_transaction(observer, transaction):
             let errorUserInfo = (transaction.error as NSError?)?.userInfo ?? [:]
-            return "PaymentQueue removedTransaction: \(transaction.payment.productIdentifier) " +
+
+            return "\(observer.debugName) removedTransaction: \(transaction.payment.productIdentifier) " +
             [
                 transaction.transactionIdentifier,
                 transaction.original?.transactionIdentifier,
@@ -102,12 +108,8 @@ extension PurchaseStrings: CustomStringConvertible {
                 .compactMap { $0 }
                 .joined(separator: " ")
 
-        case .paymentqueue_revoked_entitlements_for_product_identifiers(let productIdentifiers):
-            return "PaymentQueue " +
-            "didRevokeEntitlementsForProductIdentifiers: \(productIdentifiers)"
-
-        case .paymentqueue_updatedtransaction(let transaction):
-            return "PaymentQueue updatedTransaction: \(transaction.payment.productIdentifier) " +
+        case let .paymentqueue_updated_transaction(observer, transaction):
+            return "\(observer.debugName) updatedTransaction: \(transaction.payment.productIdentifier) " +
             [
                 transaction.transactionIdentifier,
                 (transaction.error?.localizedDescription).map { "(\($0))" },
@@ -247,6 +249,17 @@ extension PurchaseStrings: CustomStringConvertible {
         case .missing_cached_customer_info:
             return "Requested a cached CustomerInfo but it's not available."
         }
+    }
+
+}
+
+private extension SKPaymentTransactionObserver {
+
+    var debugName: String {
+        // Example: PaymentTransactionObserver (0x0000600000e36480)
+        // Used to debug which observer is detecting changes
+        // to ensure only one is in memory at a time.
+        return "PaymentTransactionObserver (\(Unmanaged.passUnretained(self).toOpaque()))"
     }
 
 }
