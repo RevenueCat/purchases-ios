@@ -387,7 +387,6 @@ extension BasePurchasesTests {
 
         var invokedPostAttributionData = false
         var invokedPostAttributionDataCount = 0
-        // swiftlint:disable:next large_tuple
         var invokedPostAttributionDataParameters: (
             data: [String: Any]?,
             network: AttributionNetwork,
