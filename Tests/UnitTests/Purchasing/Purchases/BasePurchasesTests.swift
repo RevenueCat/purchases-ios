@@ -91,7 +91,7 @@ class BasePurchasesTests: TestCase {
 
         Purchases.clearSingleton()
 
-        UserDefaults.standard.removePersistentDomain(forName: Self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: Self.userDefaultsSuiteName)
 
         super.tearDown()
     }
@@ -190,6 +190,7 @@ class BasePurchasesTests: TestCase {
                                    attributionPoster: self.attributionPoster,
                                    backend: self.backend,
                                    paymentQueueWrapper: paymentQueueWrapper,
+                                   userDefaults: self.userDefaults,
                                    notificationCenter: self.notificationCenter,
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,

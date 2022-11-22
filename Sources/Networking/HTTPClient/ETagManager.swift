@@ -22,7 +22,10 @@ class ETagManager {
 
     convenience init() {
         self.init(
-            userDefaults: UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
+            userDefaults: UserDefaults(suiteName: Self.suiteName)
+            // This should never return `nil` for this known `suiteName`,
+            // but `.standard` is a good fallback anyway.
+            ?? UserDefaults.standard
         )
     }
 

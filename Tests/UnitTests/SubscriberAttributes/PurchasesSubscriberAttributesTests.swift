@@ -167,6 +167,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               attributionPoster: mockAttributionPoster,
                               backend: mockBackend,
                               paymentQueueWrapper: .left(self.mockStoreKit1Wrapper),
+                              userDefaults: .computeDefault(),
                               notificationCenter: mockNotificationCenter,
                               systemInfo: systemInfo,
                               offeringsFactory: mockOfferingsFactory,

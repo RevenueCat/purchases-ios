@@ -263,4 +263,26 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.paymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
+    // MARK: - UserDefaults
+
+    func testCustomUserDefaultsIsUsed() {
+        expect(Self.create(userDefaults: Self.customUserDefaults).configuredUserDefaults) === Self.customUserDefaults
+    }
+
+    func testDefaultUserDefaultsIsUsedByDefault() {
+        expect(Self.create(userDefaults: nil).configuredUserDefaults) === UserDefaults.computeDefault()
+    }
+
+    private static func create(userDefaults: UserDefaults?) -> Purchases {
+        var configurationBuilder: Configuration.Builder = .init(withAPIKey: "")
+
+        if let userDefaults = userDefaults {
+            configurationBuilder = configurationBuilder.with(userDefaults: userDefaults)
+        }
+
+        return Purchases.configure(with: configurationBuilder.build())
+    }
+
+    private static let customUserDefaults: UserDefaults = .init(suiteName: "com.revenuecat.testing_user_defaults")!
+
 }
