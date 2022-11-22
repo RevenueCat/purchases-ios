@@ -72,6 +72,8 @@ class DeviceCache {
             return
         }
 
+        // Note: this should never use `self.userDefaults` directly because this method
+        // might be synchronized, and `Atomic` is not reentrant.
         if self.appUserIDHasBeenSet.value && Self.cachedAppUserID(userDefaults) == nil {
             fatalError(Strings.purchase.cached_app_user_id_deleted.description)
         }
