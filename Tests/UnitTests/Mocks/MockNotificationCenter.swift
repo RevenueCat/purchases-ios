@@ -6,11 +6,11 @@ import Foundation
 
 class MockNotificationCenter: NotificationCenter {
 
-    typealias AddObserverTuple = (observer: AnyObject,
-                                  selector: Selector,
-                                  notificationName: NSNotification.Name?,
-                                  object: Any?)
-    var observers = [AddObserverTuple]()
+    typealias ObserversWithSelector = (observer: AnyObject,
+                                       selector: Selector,
+                                       notificationName: NSNotification.Name?,
+                                       object: Any?)
+    var observers = [ObserversWithSelector]()
 
     override func addObserver(
         _ observer: Any,
@@ -18,22 +18,44 @@ class MockNotificationCenter: NotificationCenter {
         name aName: NSNotification.Name?,
         object anObject: Any?
     ) {
-        observers.append((observer as AnyObject, aSelector, aName, anObject))
+        self.observers.append((observer as AnyObject, aSelector, aName, anObject))
+    }
+
+    typealias ObserversWithBlock = (block: (Notification) -> Void,
+                                    notificationName: NSNotification.Name?,
+                                    object: Any?)
+    var observersWithBlock = [ObserversWithBlock]()
+
+    override func addObserver(
+        forName name: NSNotification.Name?,
+        object: Any?,
+        queue: OperationQueue?,
+        using block: @escaping (Notification) -> Void
+    ) -> NSObjectProtocol {
+        self.observersWithBlock.append((block, name, object))
+
+        return NSObject()
     }
 
     override func removeObserver(_ anObserver: Any, name aName: NSNotification.Name?, object anObject: Any?) {
-        observers = observers.filter {
+        self.observers = self.observers.filter {
             $0.0 !== anObserver as AnyObject || $0.2 != aName
         }
     }
 
     func fireNotifications() {
-        for (observer, selector, name, object) in observers {
+        for (observer, selector, name, object) in self.observers {
             var notification: NSNotification?
             if let name = name {
                 notification = NSNotification(name: name, object: object)
             }
             _ = observer.perform(selector, with: notification)
+        }
+
+        for (block, name, object) in self.observersWithBlock {
+            if let name = name {
+                block(Notification(name: name, object: object))
+            }
         }
     }
 }

@@ -14,7 +14,7 @@
 
 import Foundation
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 class DeviceCache {
 
     var cachedAppUserID: String? {
@@ -36,6 +36,8 @@ class DeviceCache {
     /// cleared from under the SDK
     private let appUserIDHasBeenSet: Atomic<Bool> = false
 
+    private var userDefaultsObserver: NSObjectProtocol!
+
     convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
                      userDefaults: UserDefaults) {
         self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
@@ -55,10 +57,14 @@ class DeviceCache {
         self.userDefaults = .init(userDefaults: userDefaults)
         self.appUserIDHasBeenSet.value = userDefaults.string(forKey: .appUserDefaults) != nil
 
-        self.notificationCenter.addObserver(self,
-                                            selector: #selector(self.handleUserDefaultsChanged),
-                                            name: UserDefaults.didChangeNotification,
-                                            object: userDefaults)
+        self.userDefaultsObserver = self.notificationCenter.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: userDefaults,
+            queue: nil, // Run synchronously on the posting thread
+            using: { [weak self] notification in
+                self?.handleUserDefaultsChanged(notification: notification)
+            }
+        )
     }
 
     @objc private func handleUserDefaultsChanged(notification: Notification) {
@@ -72,7 +78,7 @@ class DeviceCache {
     }
 
     deinit {
-        self.notificationCenter.removeObserver(self)
+        self.notificationCenter.removeObserver(self.userDefaultsObserver as Any)
     }
 
     // MARK: - appUserID
@@ -123,7 +129,6 @@ class DeviceCache {
             $0.set(customerInfo, forKey: CacheKeyBases.customerInfoAppUserDefaults + appUserID)
             Self.setCustomerInfoCacheTimestampToNow($0, appUserID: appUserID)
         }
-
     }
 
     func isCustomerInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
