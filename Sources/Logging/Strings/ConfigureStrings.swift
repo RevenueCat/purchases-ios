@@ -27,6 +27,8 @@ enum ConfigureStrings {
 
     case store_kit_2_enabled
 
+    case observer_mode_enabled
+
     case delegate_set
 
     case purchase_instance_already_set
@@ -68,6 +70,8 @@ extension ConfigureStrings: CustomStringConvertible {
             return "Debug logging enabled"
         case .store_kit_2_enabled:
             return "StoreKit 2 support enabled"
+        case .observer_mode_enabled:
+            return "Purchases is configured in observer mode"
         case .delegate_set:
             return "Delegate set"
         case .purchase_instance_already_set:

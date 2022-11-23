@@ -418,6 +418,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
         }
+        if systemInfo.observerMode {
+            Logger.debug(Strings.configure.observer_mode_enabled, fileName: nil)
+        }
         Logger.debug(Strings.configure.sdk_version(Self.frameworkVersion), fileName: nil)
         Logger.debug(Strings.configure.bundle_id(SystemInfo.bundleIdentifier), fileName: nil)
         Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil), fileName: nil)
