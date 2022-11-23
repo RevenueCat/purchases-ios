@@ -16,6 +16,7 @@ struct ConfigurationView: View {
                                                                    with: "")
         var proxy: String = ""
         var storeKit2Enabled: Bool = true
+        var observerMode: Bool = false
     }
 
     let onContinue: (Data) -> Void
@@ -40,6 +41,10 @@ struct ConfigurationView: View {
             Section {
                 Toggle(isOn: self.$data.storeKit2Enabled) {
                     Text("StoreKit2 enabled")
+                }
+
+                Toggle(isOn: self.$data.observerMode) {
+                    Text("Observer mode")
                 }
             }
 

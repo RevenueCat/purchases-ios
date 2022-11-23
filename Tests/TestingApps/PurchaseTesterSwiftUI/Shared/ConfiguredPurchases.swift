@@ -24,7 +24,8 @@ final class ConfiguredPurchases {
     convenience init(
         apiKey: String,
         proxyURL: String?,
-        useStoreKit2: Bool
+        useStoreKit2: Bool,
+        observerMode: Bool
     ) {
         Purchases.logLevel = .debug
         Purchases.logHandler = Self.logger.logHandler
@@ -36,6 +37,7 @@ final class ConfiguredPurchases {
         let purchases = Purchases.configure(
             with: .builder(withAPIKey: apiKey)
                 .with(usesStoreKit2IfAvailable: useStoreKit2)
+                .with(observerMode: observerMode)
                 .build()
         )
 
