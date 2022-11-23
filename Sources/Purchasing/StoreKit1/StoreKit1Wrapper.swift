@@ -64,6 +64,10 @@ class StoreKit1Wrapper: NSObject {
 
     init(paymentQueue: SKPaymentQueue) {
         self.paymentQueue = paymentQueue
+
+        super.init()
+
+        Logger.verbose(Strings.purchase.storekit1_wrapper_init(self))
     }
 
     override convenience init() {
@@ -71,6 +75,8 @@ class StoreKit1Wrapper: NSObject {
     }
 
     deinit {
+        Logger.verbose(Strings.purchase.storekit1_wrapper_deinit(self))
+
         self.paymentQueue.remove(self)
     }
 

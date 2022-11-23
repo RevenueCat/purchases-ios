@@ -28,3 +28,18 @@ enum Strings {
     static let storeKit = StoreKitStrings.self
 
 }
+
+extension Strings {
+
+    /// Returns the type and address of the given object, useful for debugging.
+    /// Example: StoreKit1Wrapper (0x0000600000e36480)
+    static func objectDescription(_ object: AnyObject) -> String {
+        return "\(type(of: object)) (\(Strings.address(for: object)))"
+    }
+
+    /// Returns the address of the given object, useful for debugging.
+    private static func address(for object: AnyObject) -> String {
+        return Unmanaged.passUnretained(object).toOpaque().debugDescription
+    }
+
+}
