@@ -69,6 +69,36 @@ class ResultExtensionsTests: TestCase {
         })
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testInitWithThrowingAsyncBlockReturningValue() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let expectedValue: Int = .random(in: 0..<100)
+
+        func asyncValue() async throws -> Int {
+            return expectedValue
+        }
+
+        let result: Result<Int, Swift.Error> = await .init(catching: { try await asyncValue() })
+        expect(result).to(beSuccess())
+        expect(result.value) == expectedValue
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testInitWithThrowingAsyncBlockThrowingError() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let expectedError: ErrorCode = .customerInfoError
+
+        func asyncValue() async throws -> Int {
+            throw expectedError
+        }
+
+        let result: Result<Int, Swift.Error> = await .init(catching: { try await asyncValue() })
+        expect(result).to(beFailure())
+        expect(result.error).to(matchError(expectedError))
+    }
+
 }
 
 class ResultAsOptionalResultTest: TestCase {
