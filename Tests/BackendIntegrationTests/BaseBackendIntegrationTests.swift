@@ -96,6 +96,8 @@ private extension BaseBackendIntegrationTests {
     func configurePurchases() {
         self.purchasesDelegate = TestPurchaseDelegate()
 
+        Purchases.logLevel = .verbose
+
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
                             observerMode: false,
@@ -105,7 +107,6 @@ private extension BaseBackendIntegrationTests {
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
                             networkTimeout: Configuration.networkTimeoutDefault,
                             dangerousSettings: self.dangerousSettings)
-        Purchases.logLevel = .verbose
         Purchases.shared.delegate = self.purchasesDelegate
     }
 
