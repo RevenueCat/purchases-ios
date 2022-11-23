@@ -58,13 +58,14 @@ class AtomicTests: TestCase {
 
     func testRecursiveUnrelatedAtomics() {
         let atomic1: Atomic<Bool> = false
-        let atomic2: Atomic<Bool> = true
+        let atomic2: Atomic<Bool> = false
 
         atomic1.modify {
-            $0 = atomic2.value
+            $0 = !atomic2.value
         }
 
         expect(atomic1.value) == true
+        expect(atomic2.value) == false
     }
 
 }
