@@ -214,9 +214,10 @@ BOOL isAnonymous;
 
     RCLogLevel l = RCLogLevelInfo;
     switch(l) {
+        case RCLogLevelVerbose:
+        case RCLogLevelDebug:
         case RCLogLevelInfo:
         case RCLogLevelWarn:
-        case RCLogLevelDebug:
         case RCLogLevelError:
             NSLog(@"%ld", (long)o);
     }

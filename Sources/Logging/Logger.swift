@@ -21,11 +21,12 @@ import Foundation
 @objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible {
 
     // swiftlint:disable:next missing_docs
-    case debug, info, warn, error
+    case verbose, debug, info, warn, error
 
     // swiftlint:disable:next missing_docs
     public var description: String {
         switch self {
+        case .verbose: return "VERBOSE"
         case .debug: return "DEBUG"
         case .info: return "INFO"
         case .warn: return "WARN"
@@ -78,6 +79,14 @@ enum Logger {
     }()
 
     internal static let frameworkDescription = "Purchases"
+
+    static func verbose(_ message: @autoclosure () -> CustomStringConvertible,
+                        fileName: String? = #fileID,
+                        functionName: String? = #function,
+                        line: UInt = #line) {
+        log(level: .verbose, intent: .verbose, message: message().description,
+            fileName: fileName, functionName: functionName, line: line)
+    }
 
     static func debug(_ message: @autoclosure () -> CustomStringConvertible,
                       fileName: String? = #fileID,
@@ -178,7 +187,9 @@ extension Logger {
                     functionName: String? = #function,
                     line: UInt = #line) {
         Self.log(level: level,
-                 message: "\(intent.prefix) \(message())",
+                 message: [intent.prefix.notEmpty, message()]
+                    .compactMap { $0 }
+                    .joined(separator: " "),
                  fileName: fileName,
                  functionName: functionName,
                  line: line)
