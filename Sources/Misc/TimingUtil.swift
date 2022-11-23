@@ -31,7 +31,7 @@ extension TimingUtil {
     /// ```
     static func measure<Value>(
         _ work: () async throws -> Value
-    ) async rethrows  -> (result: Value, duration: Duration) {
+    ) async rethrows -> (result: Value, duration: Duration) {
         let start: DispatchTime = .now()
         let result = try await work()
 
@@ -60,7 +60,7 @@ extension TimingUtil {
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
         work: () async throws -> Value
-    ) async rethrows  -> Value {
+    ) async rethrows -> Value {
         precondition(threshold > 0, "Invalid threshold: \(threshold)")
 
         let (result, duration) = try await self.measure(work)
