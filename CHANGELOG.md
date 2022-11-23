@@ -1,3 +1,21 @@
+## 4.14.3
+### Bugfixes
+* Changed default `UserDefaults` from `.standard` to our own Suite (#2046) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Logging`: added log when configuring SDK in observer mode (#2065) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: added observer mode setting (#2052) via NachoSoto (@NachoSoto)
+* Exposed `SystemInfo.observerMode` to simplify code (#2064) via NachoSoto (@NachoSoto)
+* `Result.init(catching:)` with `async` method (#2060) via NachoSoto (@NachoSoto)
+* Updated schemes and project for Xcode 14.1 (#2081) via NachoSoto (@NachoSoto)
+* `PurchasesSubscriberAttributesTests`: simplified tests (#2056) via NachoSoto (@NachoSoto)
+* `DeviceCache`: removed `fatalError` for users not overriding `UserDefaults` (#2079) via NachoSoto (@NachoSoto)
+* `DeviceCache`: changed `NotificationCenter` observation to be received on posting thread (#2078) via NachoSoto (@NachoSoto)
+* `StoreKit1Wrapper`: added instance address when detecting transactions (#2055) via NachoSoto (@NachoSoto)
+* Fixed lint issues with `SwiftLint 0.5.0` (#2076) via NachoSoto (@NachoSoto)
+* `NSData+RCExtensionsTests`: improved errors (#2043) via NachoSoto (@NachoSoto)
+* `APITester`: fixed warning in `SubscriptionPeriodAPI` (#2054) via NachoSoto (@NachoSoto)
+* `Integration Tests`: always run them in random order locally (#2068) via NachoSoto (@NachoSoto)
+
 ## 4.14.2
 ### Bugfixes
 * `StoreKit 2`: don't finish transactions in observer mode (#2053) via NachoSoto (@NachoSoto)
