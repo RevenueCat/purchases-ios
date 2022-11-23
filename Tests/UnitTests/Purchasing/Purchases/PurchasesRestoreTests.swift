@@ -45,7 +45,7 @@ class PurchasesRestoreTests: BasePurchasesTests {
             }
         }
 
-        expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 3
+        expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) >= 1
         expect(receivedError).to(matchError(ErrorCode.missingReceiptFileError))
     }
 
