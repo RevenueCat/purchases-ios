@@ -414,7 +414,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasesOrchestrator: PurchasesOrchestrator,
          trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
     ) {
-
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
@@ -447,6 +446,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
 
         super.init()
+
+        Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
         self.purchasesOrchestrator.delegate = self
 
@@ -482,6 +483,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     deinit {
+        Logger.verbose(Strings.configure.purchases_deinit(self))
+
         self.notificationCenter.removeObserver(self)
         self.paymentQueueWrapper.sk1Wrapper?.delegate = nil
         self.paymentQueueWrapper.sk2Wrapper?.delegate = nil

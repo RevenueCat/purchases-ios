@@ -17,6 +17,10 @@ import Foundation
 // swiftlint:disable identifier_name
 enum ConfigureStrings {
 
+    case purchases_init(Purchases, EitherPaymentQueueWrapper)
+
+    case purchases_deinit(Purchases)
+
     case adsupport_not_imported
 
     case application_active
@@ -59,6 +63,12 @@ extension ConfigureStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case let .purchases_init(purchases, wrapper):
+            return "Purchases.init: created new Purchases instance: " +
+            "\(Strings.objectDescription(purchases))\nStoreKit Wrapper: \(wrapper)"
+        case let .purchases_deinit(purchases):
+            return "Purchases.deinit: " +
+            "\(Strings.objectDescription(purchases))"
         case .adsupport_not_imported:
             return "AdSupport framework not imported. Attribution data incomplete."
         case .application_active:

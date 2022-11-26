@@ -18,6 +18,8 @@ import StoreKit
 // swiftlint:disable identifier_name
 enum PurchaseStrings {
 
+    case storekit1_wrapper_init(StoreKit1Wrapper)
+    case storekit1_wrapper_deinit(StoreKit1Wrapper)
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
     case finishing_transaction(StoreTransactionType)
@@ -74,6 +76,13 @@ extension PurchaseStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case let .storekit1_wrapper_init(instance):
+            return "StoreKit1Wrapper.init: " +
+            "\(Strings.objectDescription(instance))"
+
+        case let .storekit1_wrapper_deinit(instance):
+            return "StoreKit1Wrapper.deinit: " +
+            "\(Strings.objectDescription(instance))"
 
         case .cannot_purchase_product_appstore_configuration_error:
             return "Could not purchase SKProduct. " +
@@ -264,10 +273,7 @@ extension PurchaseStrings: CustomStringConvertible {
 private extension SKPaymentTransactionObserver {
 
     var debugName: String {
-        // Example: PaymentTransactionObserver (0x0000600000e36480)
-        // Used to debug which observer is detecting changes
-        // to ensure only one is in memory at a time.
-        return "PaymentTransactionObserver (\(Unmanaged.passUnretained(self).toOpaque()))"
+        return Strings.objectDescription(self)
     }
 
 }
