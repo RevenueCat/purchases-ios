@@ -20,12 +20,17 @@ import Foundation
 /// - ``Purchases/logLevel``
 @objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible {
 
-    // swiftlint:disable:next missing_docs
-    case debug, info, warn, error
+    // swiftlint:disable missing_docs
 
-    // swiftlint:disable:next missing_docs
+    case verbose = 4
+    case debug = 0
+    case info = 1
+    case warn = 2
+    case error = 3
+
     public var description: String {
         switch self {
+        case .verbose: return "VERBOSE"
         case .debug: return "DEBUG"
         case .info: return "INFO"
         case .warn: return "WARN"
@@ -33,6 +38,7 @@ import Foundation
         }
     }
 
+    // swiftlint:enable missing_docs
 }
 
 /// A function that can handle a log message including file and method information.
@@ -78,6 +84,14 @@ enum Logger {
     }()
 
     internal static let frameworkDescription = "Purchases"
+
+    static func verbose(_ message: @autoclosure () -> CustomStringConvertible,
+                        fileName: String? = #fileID,
+                        functionName: String? = #function,
+                        line: UInt = #line) {
+        log(level: .verbose, intent: .verbose, message: message().description,
+            fileName: fileName, functionName: functionName, line: line)
+    }
 
     static func debug(_ message: @autoclosure () -> CustomStringConvertible,
                       fileName: String? = #fileID,
@@ -178,7 +192,9 @@ extension Logger {
                     functionName: String? = #function,
                     line: UInt = #line) {
         Self.log(level: level,
-                 message: "\(intent.prefix) \(message())",
+                 message: [intent.prefix.notEmpty, message()]
+                    .compactMap { $0 }
+                    .joined(separator: " "),
                  fileName: fileName,
                  functionName: functionName,
                  line: line)

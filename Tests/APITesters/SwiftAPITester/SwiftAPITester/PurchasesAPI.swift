@@ -65,9 +65,10 @@ func checkPurchasesEnums() {
     }
 
     switch logLevel! {
-    case .info,
-         .warn,
+    case .verbose,
          .debug,
+         .info,
+         .warn,
          .error:
         print(logLevel!)
     @unknown default:
