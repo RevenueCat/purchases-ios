@@ -20,10 +20,14 @@ import Foundation
 /// - ``Purchases/logLevel``
 @objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible {
 
-    // swiftlint:disable:next missing_docs
-    case verbose, debug, info, warn, error
+    // swiftlint:disable missing_docs
 
-    // swiftlint:disable:next missing_docs
+    case verbose = 4
+    case debug = 0
+    case info = 1
+    case warn = 2
+    case error = 3
+
     public var description: String {
         switch self {
         case .verbose: return "VERBOSE"
@@ -34,6 +38,7 @@ import Foundation
         }
     }
 
+    // swiftlint:enable missing_docs
 }
 
 /// A function that can handle a log message including file and method information.
