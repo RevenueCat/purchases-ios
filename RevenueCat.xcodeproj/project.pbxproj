@@ -210,6 +210,8 @@
 		57069A5428E3918400B86355 /* AsyncExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57069A5328E3918400B86355 /* AsyncExtensions.swift */; };
 		57069A5E28E398E100B86355 /* AsyncExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57069A5D28E398E100B86355 /* AsyncExtensionsTests.swift */; };
 		570FAF4B2864EC2300D3C769 /* NonSubscriptionTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */; };
+		5712BE9029241EB500A83F15 /* TimingUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712BE8F29241EB500A83F15 /* TimingUtil.swift */; };
+		5712BE9229241F7900A83F15 /* TimingUtilTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712BE9129241F7900A83F15 /* TimingUtilTests.swift */; };
 		571E7AD4279F2D0C003B3606 /* StoreKitTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */; };
 		5721360F28B4602C006C46BE /* Purchases+nonasync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5721360E28B4602C006C46BE /* Purchases+nonasync.swift */; };
 		572247D127BEC28E00C524A7 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572247D027BEC28E00C524A7 /* Array+Extensions.swift */; };
@@ -745,6 +747,8 @@
 		570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftAPITester.xcodeproj; path = Tests/APITesters/SwiftAPITester/SwiftAPITester.xcodeproj; sourceTree = "<group>"; };
 		570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ObjCAPITester.xcodeproj; path = Tests/APITesters/ObjCAPITester/ObjCAPITester.xcodeproj; sourceTree = "<group>"; };
 		570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransaction.swift; sourceTree = "<group>"; };
+		5712BE8F29241EB500A83F15 /* TimingUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtil.swift; sourceTree = "<group>"; };
+		5712BE9129241F7900A83F15 /* TimingUtilTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtilTests.swift; sourceTree = "<group>"; };
 		571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitTestHelpers.swift; sourceTree = "<group>"; };
 		5721360E28B4602C006C46BE /* Purchases+nonasync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+nonasync.swift"; sourceTree = "<group>"; };
 		572247D027BEC28E00C524A7 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
@@ -1321,6 +1325,7 @@
 				B3AA6237268B926F00894871 /* SystemInfo.swift */,
 				57FDAAB9284937A0009A48F1 /* SandboxEnvironmentDetector.swift */,
 				57ABA76C28F08DDA003D9181 /* Either.swift */,
+				5712BE8F29241EB500A83F15 /* TimingUtil.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -1536,6 +1541,7 @@
 				57FDAABD28493A29009A48F1 /* SandboxEnvironmentDetectorTests.swift */,
 				579189E828F47E8D00BF4963 /* PurchasesDiagnosticsTests.swift */,
 				57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */,
+				5712BE9129241F7900A83F15 /* TimingUtilTests.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -2532,6 +2538,7 @@
 				80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
+				5712BE9029241EB500A83F15 /* TimingUtil.swift in Sources */,
 				B3B5FBC1269E17CE00104A0C /* DeviceCache.swift in Sources */,
 				F5BE424226965F9F00254A30 /* ProductRequestData+Initialization.swift in Sources */,
 				2DDF41AD24F6F37C005BC22D /* ASN1ObjectIdentifier.swift in Sources */,
@@ -2772,6 +2779,7 @@
 				57FDAAC028493C13009A48F1 /* MockSandboxEnvironmentDetector.swift in Sources */,
 				5766AAD1283E981700FA6091 /* PurchasesPurchasingTests.swift in Sources */,
 				351B515E26D44B9900BD2BD7 /* MockPurchasesDelegate.swift in Sources */,
+				5712BE9229241F7900A83F15 /* TimingUtilTests.swift in Sources */,
 				57554CC1282AE1E3009A7E58 /* TestCase.swift in Sources */,
 				57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */,
 				351B515A26D44B6200BD2BD7 /* MockAttributionFetcher.swift in Sources */,
