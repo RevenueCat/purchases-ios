@@ -182,12 +182,6 @@ private extension StoreKit2TransactionListenerTests {
 
     private enum Error: Swift.Error {
         case invalidResult(Product.PurchaseResult)
-        case invalidTransactions([VerificationResult<Transaction>])
-    }
-
-    func verifyNoUnfinishedTransactions(line: UInt = #line) async {
-        let unfinished = await StoreKit.Transaction.unfinished.extractValues()
-        expect(line: line, unfinished).to(beEmpty())
     }
 
     func purchase() async throws -> (
@@ -205,22 +199,4 @@ private extension StoreKit2TransactionListenerTests {
 
         return (result, verificationResult, transaction)
     }
-
-    func verifyUnfinishedTransaction(
-        withId identifier: Transaction.ID,
-        line: UInt = #line
-    ) async throws {
-        let unfinishedTransactions = await StoreKit.Transaction.unfinished.extractValues()
-
-        expect(line: line, unfinishedTransactions).to(haveCount(1))
-
-        guard let transaction = unfinishedTransactions.onlyElement,
-              case let .verified(verified) = transaction else {
-            throw Error.invalidTransactions(unfinishedTransactions)
-        }
-
-        expect(line: line, verified.id) == identifier
-
-    }
-
 }
