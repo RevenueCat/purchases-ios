@@ -36,7 +36,7 @@ import Foundation
  *  Purchases.configure(with: configuration)
  * ```
  */
-@objc(RCConfiguration) public class Configuration: NSObject {
+@objc(RCConfiguration) public final class Configuration: NSObject {
 
     static let storeKitRequestTimeoutDefault: TimeInterval = 30
     static let networkTimeoutDefault: TimeInterval = 60
@@ -226,5 +226,19 @@ extension Configuration {
     }
 
     private static let applePlatformKeyPrefix: String = "appl_"
+
+}
+
+// MARK: - Slow Operation Thresholds
+
+extension Configuration {
+
+    /// Thresholds that determine when `TimingUtil` log warnings for slow operations.
+    internal enum TimingThreshold: TimingUtil.Duration {
+
+        case productRequest = 3
+        case purchase = 7
+
+    }
 
 }

@@ -18,7 +18,7 @@ import Foundation
 ///
 /// #### Related Symbols
 /// - ``Purchases/logLevel``
-@objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible {
+@objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible, Sendable {
 
     // swiftlint:disable missing_docs
 

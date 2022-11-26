@@ -65,6 +65,8 @@ enum PurchaseStrings {
     case check_eligibility_no_identifiers
     case check_eligibility_failed(productIdentifier: String, error: Error)
     case missing_cached_customer_info
+    case sk1_purchase_too_slow
+    case sk2_purchase_too_slow
 
 }
 
@@ -248,6 +250,12 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .missing_cached_customer_info:
             return "Requested a cached CustomerInfo but it's not available."
+
+        case .sk1_purchase_too_slow:
+            return "StoreKit 1 purchase took longer than expected"
+
+        case .sk2_purchase_too_slow:
+            return "StoreKit 2 purchase took longer than expected"
         }
     }
 
