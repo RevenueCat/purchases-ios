@@ -455,6 +455,7 @@ jobs:
   docs-deploy:
     <<: *base-job
     steps:
+      - setup-git-credentials
       - checkout
       - install-dependencies
       - run:
