@@ -459,7 +459,6 @@ platform :ios do
            "--enable-inherited-docs",
            "--additional-symbol-graph-dir", ".build")
            
-        docs_index_path = File.join(Dir.pwd, "scripts/docs/index.html")
         # clone docs repo
         Dir.mktmpdir do |docs_repo_clone_dir|
           Dir.chdir(docs_repo_clone_dir) do
@@ -468,14 +467,11 @@ platform :ios do
               # copy docs generated in the previous step into the docs folder
               # and push the changes
               docs_destination_folder = "docs/#{version_number}"
-              index_destination_path = "docs/index.html"
               FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
-              FileUtils.cp docs_index_path, index_destination_path
 
               # using sh instead of fastlane commands because fastlane would run
               # from the repo root
               sh("git", "add", docs_destination_folder)
-              sh("git", "add", index_destination_path)
               sh("git", "commit", "-m", "Update documentation for #{version_number}")
               sh("git", "push")
             end
