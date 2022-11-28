@@ -1,3 +1,7 @@
+## 3.14.3
+ - `RCProductInfo`: added `SKStoreFront.countryCode` to post `store_country` with receipts  
+		https://github.com/RevenueCat/purchases-ios/pull/2093
+
 ## 3.14.2
 - Deprecated `Purchases` pod in favor of `RevenueCat`
     https://github.com/RevenueCat/purchases-ios/pull/1552
