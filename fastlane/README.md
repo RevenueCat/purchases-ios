@@ -160,7 +160,15 @@ replace API KEY for installation and integration tests
 [bundle exec] fastlane ios release
 ```
 
-Release to CocoaPods, create Carthage archive, export XCFramework, and create GitHub release
+Create Carthage archive, export XCFramework, and create GitHub release
+
+### ios push_pods
+
+```sh
+[bundle exec] fastlane ios push_pods
+```
+
+Release to CocoaPods
 
 ### ios tag_current_branch
 
