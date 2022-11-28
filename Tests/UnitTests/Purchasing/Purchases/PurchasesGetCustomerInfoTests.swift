@@ -37,13 +37,12 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        var receivedInfo: CustomerInfo?
-
-        purchases.getCustomerInfo { (info, _) in
-            receivedInfo = info
+        let receivedInfo = waitUntilValue { completed in
+            self.purchases.getCustomerInfo { info, _ in
+                completed(info)
+            }
         }
 
-        expect(receivedInfo).toEventuallyNot(beNil())
         expect(receivedInfo?.schemaVersion).toNot(beNil())
     }
 
@@ -57,13 +56,13 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        var receivedInfo: CustomerInfo?
-
-        self.purchases.getCustomerInfo { (info, _) in
-            receivedInfo = info
+        let receivedInfo = waitUntilValue { completed in
+            self.purchases.getCustomerInfo { info, _ in
+                completed(info)
+            }
         }
 
-        expect(receivedInfo).toEventually(equal(fetchedInfo))
+        expect(receivedInfo) == fetchedInfo
     }
 
     func testSendsCachedCustomerInfoToGetter() throws {
@@ -73,13 +72,12 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        var receivedInfo: CustomerInfo?
-
-        self.purchases.getCustomerInfo { (info, _) in
-            receivedInfo = info
+        let receivedInfo = waitUntilValue { completed in
+            self.purchases.getCustomerInfo { info, _ in
+                completed(info)
+            }
         }
-
-        expect(receivedInfo).toEventuallyNot(beNil())
+        expect(receivedInfo).toNot(beNil())
     }
 
     func testCustomerInfoCompletionBlockCalledExactlyOnceWhenInfoCached() throws {
@@ -109,13 +107,13 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        var receivedInfo: CustomerInfo?
-
-        self.purchases.getCustomerInfo { (info, _) in
-            receivedInfo = info
+        let receivedInfo = waitUntilValue { completed in
+            self.purchases.getCustomerInfo { info, _ in
+                completed(info)
+            }
         }
 
-        expect(receivedInfo).toEventually(equal(fetchedInfo))
+        expect(receivedInfo) == fetchedInfo
     }
 
     func testDoesntSendsCachedCustomerInfoToGetterIfNoSchemaVersionInCached() throws {
@@ -128,13 +126,12 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        var receivedInfo: CustomerInfo?
-
-        self.purchases.getCustomerInfo { (info, _) in
-            receivedInfo = info
+        let receivedInfo = waitUntilValue { completed in
+            self.purchases.getCustomerInfo { info, _ in
+                completed(info)
+            }
         }
-
-        expect(receivedInfo).toEventually(equal(fetchedInfo))
+        expect(receivedInfo) == fetchedInfo
     }
 
     func testDoesntSendCacheIfNoCacheAndCallsBackendAgain() {
@@ -154,9 +151,11 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
 
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
 
-        self.purchases.getCustomerInfo { (_, _) in }
+        waitUntil { completed in
+            self.purchases.getCustomerInfo { (_, _) in completed() }
+        }
 
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
+        expect(self.backend.getSubscriberCallCount) == 2
     }
 
     func testGetCustomerInfoAfterInvalidatingDoesntReturnCachedVersion() throws {

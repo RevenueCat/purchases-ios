@@ -13,6 +13,8 @@
 
 import Foundation
 
+import Nimble
+
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 internal extension AsyncSequence {
 
@@ -23,4 +25,31 @@ internal extension AsyncSequence {
         }
     }
 
+}
+
+/// Waits for `action` to be invoked, and returns the provided value, or `nil` on timeout.
+/// Usage:
+/// ```swift
+/// let value: T? = waitUntilValue { completed in
+///    asyncMethod { value in
+///         completed(value)
+///    }
+/// }
+/// ```
+func waitUntilValue<Value>(
+    timeout: DispatchTimeInterval = AsyncDefaults.timeout,
+    file: FileString = #file,
+    line: UInt = #line,
+    action: @escaping (@escaping (Value?) -> Void) -> Void
+) -> Value? {
+    var value: Value?
+
+    waitUntil(timeout: timeout, file: file, line: line) { completed in
+        action {
+            value = $0
+            completed()
+        }
+    }
+
+    return value
 }

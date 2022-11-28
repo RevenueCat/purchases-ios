@@ -29,20 +29,18 @@ class PurchasesLogInTests: BasePurchasesTests {
     }
 
     func testLogInWithSuccess() {
-        let created = Bool.random()
+        let created: Bool = .random()
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, created))
 
-        var result: LogInResult!
-
-        self.purchases.logIn(Self.appUserID) { customerInfo, created, error in
-            result = Self.logInResult(customerInfo, created, error)
+        let result = waitUntilValue { completed in
+            self.purchases.logIn(Self.appUserID) { customerInfo, created, error in
+                completed(Self.logInResult(customerInfo, created, error))
+            }
         }
 
-        expect(result).toEventuallyNot(beNil())
-
         expect(result).to(beSuccess())
-        expect(result.value) == (Self.mockLoggedInInfo, created)
+        expect(result?.value) == (Self.mockLoggedInInfo, created)
         expect(self.identityManager.invokedLogInCount) == 1
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
     }
@@ -51,16 +49,14 @@ class PurchasesLogInTests: BasePurchasesTests {
         let error: BackendError = .networkError(.offlineConnection())
         self.identityManager.mockLogInResult = .failure(error)
 
-        var result: LogInResult!
-
-        self.purchases.logIn(Self.appUserID) { customerInfo, created, error in
-            result = Self.logInResult(customerInfo, created, error)
+        let result = waitUntilValue { completed in
+            self.purchases.logIn(Self.appUserID) { customerInfo, created, error in
+                completed(Self.logInResult(customerInfo, created, error))
+            }
         }
 
-        expect(result).toEventuallyNot(beNil())
-
         expect(result).to(beFailure())
-        expect(result.error).to(matchError(error.asPurchasesError))
+        expect(result?.error).to(matchError(error.asPurchasesError))
         expect(self.identityManager.invokedLogInCount) == 1
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
     }
@@ -71,14 +67,14 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         expect(self.backend.getSubscriberCallCount) == 1
 
-        var result: Result<CustomerInfo, Error>!
-        self.purchases.logOut { customerInfo, error in
-            result = .init(customerInfo, error)
+        let result = waitUntilValue { completed in
+            self.purchases.logOut { customerInfo, error in
+                completed(Result(customerInfo, error))
+            }
         }
 
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beSuccess())
-        expect(result.value) == Self.mockLoggedOutInfo
+        expect(result?.value) == Self.mockLoggedOutInfo
 
         expect(self.backend.getSubscriberCallCount) == 2
         expect(self.identityManager.invokedLogOutCount) == 1
@@ -89,14 +85,14 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         self.identityManager.mockLogOutError = error
 
-        var result: Result<CustomerInfo, Error>!
-        self.purchases.logOut { customerInfo, error in
-            result = .init(customerInfo, error)
+        let result = waitUntilValue { completed in
+            self.purchases.logOut { customerInfo, error in
+                completed(Result(customerInfo, error))
+            }
         }
 
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
-        expect(result.error).to(matchError(error))
+        expect(result?.error).to(matchError(error))
 
         expect(self.backend.getSubscriberCallCount) == 1
         expect(self.identityManager.invokedLogOutCount) == 1
@@ -115,12 +111,12 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
 
-        var finished = false
-        self.purchases.logIn(Self.appUserID) { _, _, _ in
-            finished = true
+        waitUntil { completed in
+            self.purchases.logIn(Self.appUserID) { _, _, _ in
+                completed()
+            }
         }
 
-        expect(finished).toEventually(beTrue())
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 2
 
         let parameters = try XCTUnwrap(self.mockOfferingsManager.invokedUpdateOfferingsCacheParameters)
@@ -133,12 +129,12 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
 
-        var finished = false
-        self.purchases.logIn(Self.appUserID) { _, _, _ in
-            finished = true
+        waitUntil { completed in
+            self.purchases.logIn(Self.appUserID) { _, _, _ in
+                completed()
+            }
         }
 
-        expect(finished).toEventually(beTrue())
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
     }
 
@@ -177,13 +173,12 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
-        var finished = false
-
-        self.purchases.logIn(appUserID) { _, _, _ in
-            finished = true
+        waitUntil { completed in
+            self.purchases.logIn(appUserID) { _, _, _ in
+                completed()
+            }
         }
 
-        expect(finished).toEventually(beTrue())
         logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
@@ -192,13 +187,12 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
-        var finished = false
-
-        self.purchases.logIn("Static string") { _, _, _ in
-            finished = true
+        waitUntil { completed in
+            self.purchases.logIn("Static string") { _, _, _ in
+                completed()
+            }
         }
 
-        expect(finished).toEventually(beTrue())
         logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 

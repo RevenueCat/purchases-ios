@@ -31,12 +31,15 @@ class BackendPostAttributionDataTests: BaseBackendTests {
 
         let data: [String: AnyObject] = ["a": "b" as NSString, "c": "d" as NSString]
 
-        backend.post(attributionData: data,
-                     network: .adjust,
-                     appUserID: Self.userID,
-                     completion: nil)
+        waitUntil { completed in
+            self.backend.post(attributionData: data,
+                              network: .adjust,
+                              appUserID: Self.userID) { _ in
+                completed()
+            }
+        }
 
-        expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
 }

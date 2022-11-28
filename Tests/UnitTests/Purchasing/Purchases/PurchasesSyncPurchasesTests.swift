@@ -122,13 +122,13 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
         let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
         self.backend.postReceiptResult = .success(customerInfo)
 
-        var receivedCustomerInfo: CustomerInfo?
-
-        self.purchases.syncPurchases { (info, _) in
-            receivedCustomerInfo = info
+        let receivedCustomerInfo = waitUntilValue { completed in
+            self.purchases.syncPurchases { (info, _) in
+                completed(info)
+            }
         }
 
-        expect(receivedCustomerInfo).toEventually(be(customerInfo))
+        expect(receivedCustomerInfo) === customerInfo
     }
 
     func testSyncPurchasesPassesErrorOnFailure() {
@@ -137,13 +137,12 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
         self.backend.postReceiptResult = .failure(error)
         self.purchasesDelegate.customerInfo = nil
 
-        var receivedError: Error?
-
-        self.purchases.syncPurchases { (_, newError) in
-            receivedError = newError
+        let receivedError = waitUntilValue { completed in
+            self.purchases.syncPurchases { (_, newError) in
+                completed(newError)
+            }
         }
 
-        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError).to(matchError(error.asPurchasesError))
     }
 

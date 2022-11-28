@@ -27,13 +27,12 @@ class BackendLoginTests: BaseBackendTests {
         let newAppUserID = "new id"
         let currentAppUserID = "old id"
         _ = self.mockLoginRequest(appUserID: currentAppUserID)
-        var completionCalled = false
 
-        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { _ in
+                completed()
+            }
         }
-
-        expect(completionCalled).toEventually(beTrue())
     }
 
     func testLoginPassesNetworkErrorIfCouldntCommunicate() throws {
@@ -43,13 +42,10 @@ class BackendLoginTests: BaseBackendTests {
         let currentAppUserID = "old id"
         _ = mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
-
-        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
-            receivedResult = result
+        let receivedResult = waitUntilValue { completed in
+            self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID, completion: completed)
         }
 
-        expect(receivedResult).toEventuallyNot(beNil())
         expect(receivedResult).to(beFailure())
         expect(receivedResult?.error) == .networkError(stubbedError)
     }
@@ -60,15 +56,11 @@ class BackendLoginTests: BaseBackendTests {
 
         _ = self.mockLoginRequest(appUserID: currentAppUserID, statusCode: .createdSuccess)
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
-
-        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
-            receivedResult = result
+        let receivedResult = waitUntilValue { completed in
+            self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID, completion: completed)
         }
 
-        expect(receivedResult).toEventuallyNot(beNil())
-        expect(receivedResult?.value).to(beNil())
-
+        expect(receivedResult).to(beFailure())
         let receivedError = try XCTUnwrap(receivedResult?.error)
 
         switch receivedError {
@@ -85,13 +77,10 @@ class BackendLoginTests: BaseBackendTests {
                                   statusCode: .createdSuccess,
                                   response: Self.mockCustomerInfoData)
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
-
-        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
-            receivedResult = result
+        let receivedResult = waitUntilValue { completed in
+            self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID, completion: completed)
         }
 
-        expect(receivedResult).toEventuallyNot(beNil())
         expect(receivedResult?.value?.created) == true
         expect(receivedResult?.value?.info) == CustomerInfo(testData: Self.mockCustomerInfoData)
     }
@@ -104,13 +93,9 @@ class BackendLoginTests: BaseBackendTests {
                                   statusCode: .success,
                                   response: Self.mockCustomerInfoData)
 
-        var receivedResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
-
-        self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
-            receivedResult = result
+        let receivedResult = waitUntilValue { completed in
+            self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID, completion: completed)
         }
-
-        expect(receivedResult).toEventuallyNot(beNil())
 
         expect(receivedResult?.value?.created) == false
         expect(receivedResult?.value?.info) == CustomerInfo(testData: Self.mockCustomerInfoData)

@@ -28,25 +28,22 @@ class PurchasesGetProductsTests: BasePurchasesTests {
     func testDoesntFetchProductDataIfEmptyList() {
         self.mockProductsManager.resetMock()
 
-        var completionCalled = false
-
-        self.purchases.getProducts([]) { _ in
-            completionCalled = true
+        waitUntil { completed in
+            self.purchases.getProducts([]) { _ in
+                completed()
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
         expect(self.mockProductsManager.invokedProducts) == false
     }
 
     func testIsAbleToFetchProducts() {
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
 
-        var products: [StoreProduct]?
-        self.purchases.getProducts(productIdentifiers) { (newProducts) in
-            products = newProducts
+        let products = waitUntilValue { completed in
+            self.purchases.getProducts(productIdentifiers, completion: completed)
         }
 
-        expect(products).toEventuallyNot(beNil())
         expect(products).to(haveCount(productIdentifiers.count))
     }
 

@@ -63,14 +63,11 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var customerInfo: Result<CustomerInfo, BackendError>?
-
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
-            customerInfo = result
+        let customerInfo = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
         }
 
-        expect(customerInfo).toEventuallyNot(beNil())
-        expect(customerInfo?.value).toNot(beNil())
+        expect(customerInfo).to(beSuccess())
     }
 
     func testEncodesCustomerUserID() {
@@ -82,14 +79,11 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodeableUserID),
                         response: .init(error: .unexpectedResponse(nil)))
 
-        var customerInfo: Result<CustomerInfo, BackendError>?
-
-        backend.getCustomerInfo(appUserID: encodeableUserID, withRandomDelay: false) { result in
-            customerInfo = result
+        let customerInfo = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: encodeableUserID, withRandomDelay: false, completion: completed)
         }
 
-        expect(customerInfo).toEventuallyNot(beNil())
-        expect(customerInfo?.value).toNot(beNil())
+        expect(customerInfo).to(beSuccess())
     }
 
     func testHandlesGetCustomerInfoErrors() throws {
@@ -100,13 +94,10 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(error: mockedError)
         )
 
-        var result: Result<CustomerInfo, BackendError>?
-
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
         }
 
-        expect(result).toEventuallyNot(beNil())
         expect(result).to(beFailure())
         expect(result?.error) == .networkError(mockedError)
     }
@@ -117,13 +108,9 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: ["sjkaljdklsjadkjs": ""])
         )
 
-        var result: Result<CustomerInfo, BackendError>?
-
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
-            result = $0
+        let result = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
         }
-
-        expect(result).toEventuallyNot(beNil())
 
         guard case .failure(.networkError(.decoding)) = result else {
             fail("Unexpected result: \(result!)")

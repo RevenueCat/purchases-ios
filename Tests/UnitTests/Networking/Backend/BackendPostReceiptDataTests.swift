@@ -31,25 +31,24 @@ class BackendPostReceiptDataTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = false
-
         let isRestore = false
         let observerMode = true
 
-        backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
-                     productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
-                     completion: { _ in
-            completionCalled = true
-        })
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: isRestore,
+                              productData: nil,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: observerMode,
+                              initiationSource: .queue,
+                              subscriberAttributes: nil,
+                              completion: { _ in
+                completed()
+            })
+        }
 
-        expect(self.httpClient.calls).toEventually(haveCount(1))
-        expect(completionCalled).toEventually(beTrue())
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
     func testPostsReceiptDataWithProductDataCorrectly() throws {
@@ -60,25 +59,24 @@ class BackendPostReceiptDataTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = false
-
         let isRestore = false
         let observerMode = true
         let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
 
-        backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
-                     productData: productData,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: observerMode,
-                     initiationSource: .purchase,
-                     subscriberAttributes: nil,
-                     completion: { _ in
-            completionCalled = true
-        })
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: isRestore,
+                              productData: productData,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: observerMode,
+                              initiationSource: .purchase,
+                              subscriberAttributes: nil,
+                              completion: { _ in
+                completed()
+            })
+        }
 
-        expect(completionCalled).toEventually(beTrue())
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
@@ -293,27 +291,27 @@ class BackendPostReceiptDataTests: BaseBackendTests {
 
         let paymentMode: StoreProductDiscount.PaymentMode? = nil
 
-        var completionCalled = false
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
                                                                      paymentMode: paymentMode,
                                                                      currencyCode: currencyCode,
                                                                      price: price,
                                                                      subscriptionGroup: group)
 
-        backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: false,
-                     productData: productData,
-                     presentedOfferingIdentifier: offeringIdentifier,
-                     observerMode: false,
-                     initiationSource: .purchase,
-                     subscriberAttributes: nil,
-                     completion: { _ in
-            completionCalled = true
-        })
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: false,
+                              productData: productData,
+                              presentedOfferingIdentifier: offeringIdentifier,
+                              observerMode: false,
+                              initiationSource: .purchase,
+                              subscriberAttributes: nil,
+                              completion: { _ in
+                completed()
+            })
+        }
 
-        expect(self.httpClient.calls).toEventually(haveCount(1))
-        expect(completionCalled).toEventually(beTrue())
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
     func testIndividualParamsCanBeNil() {
@@ -323,23 +321,23 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                             response: Self.validCustomerResponse)
         )
 
-        var completionCalled = false
-
         let productData: ProductRequestData = .createMockProductData()
-        backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: false,
-                     productData: productData,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
-                     completion: { _ in
-            completionCalled = true
-        })
 
-        expect(self.httpClient.calls).toEventually(haveCount(1))
-        expect(completionCalled).toEventually(beTrue())
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: false,
+                              productData: productData,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: false,
+                              initiationSource: .queue,
+                              subscriberAttributes: nil,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
     func testPayAsYouGoPostsCorrectly() throws {
@@ -457,25 +455,21 @@ class BackendPostReceiptDataTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var customerInfo: CustomerInfo?
-
-        backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: false,
-                     productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .purchase,
-                     subscriberAttributes: nil,
-                     completion: { result in
-            customerInfo = result.value
-        })
-
-        expect(customerInfo).toEventuallyNot(beNil())
-        if customerInfo != nil {
-            let expiration = customerInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")
-            expect(expiration).toNot(beNil())
+        let customerInfo = waitUntilValue { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: false,
+                              productData: nil,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: false,
+                              initiationSource: .purchase,
+                              subscriberAttributes: nil,
+                              completion: { result in
+                completed(result.value)
+            })
         }
+
+        expect(customerInfo?.expirationDate(forProductIdentifier: "onemonth_freetrial")).toNot(beNil())
     }
 
     func testErrorIsForwardedForCustomerInfoCalls() throws {
@@ -486,20 +480,20 @@ class BackendPostReceiptDataTests: BaseBackendTests {
             response: .init(error: error)
         )
 
-        var receivedError: BackendError?
-        backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: true,
-                     productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
-                     completion: { result in
-            receivedError = result.error
-        })
+        let receivedError = waitUntilValue { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: true,
+                              productData: nil,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: false,
+                              initiationSource: .queue,
+                              subscriberAttributes: nil,
+                              completion: { result in
+                completed(result.error)
+            })
+        }
 
-        expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError) == .networkError(error)
     }
 
@@ -563,7 +557,6 @@ class BackendPostReceiptDataTests: BaseBackendTests {
         let group = "sub_group"
         let currencyCode = "BFD"
         let paymentMode: StoreProductDiscount.PaymentMode? = nil
-        var completionCalled = false
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
                                                 currencyCode: currencyCode,
                                                 price: 12.1,
@@ -579,20 +572,21 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                                                                      subscriptionGroup: group,
                                                                      discounts: [discount])
 
-        backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: false,
-                     productData: productData,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
-                     completion: { _ in
-            completionCalled = true
-        })
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: false,
+                              productData: productData,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: false,
+                              initiationSource: .queue,
+                              subscriberAttributes: nil,
+                              completion: { _ in
+                completed()
+            })
+        }
 
-        expect(self.httpClient.calls).toEventually(haveCount(1))
-        expect(completionCalled).toEventually(beTrue())
+        expect(self.httpClient.calls).to(haveCount(1))
     }
 
     func testDoesntCacheForDifferentOfferings() {
@@ -641,23 +635,21 @@ private extension BackendPostReceiptDataTests {
     static let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
-        var completionCalled = false
-
         let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
 
-        backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: false,
-                     productData: productData,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
-                     completion: { _ in
-            completionCalled = true
-        })
-
-        expect(completionCalled).toEventually(beTrue())
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: false,
+                              productData: productData,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: false,
+                              initiationSource: .queue,
+                              subscriberAttributes: nil,
+                              completion: { _ in
+                completed()
+            })
+        }
     }
 
 }

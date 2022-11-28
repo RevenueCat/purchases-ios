@@ -1637,6 +1637,7 @@ class SubscriberAttributesManagerTests: TestCase {
 }
 
 private extension SubscriberAttributesManagerTests {
+
     func assertMockAttributesSynced() {
         expect(self.mockDeviceCache.invokedStoreSubscriberAttributesCount).toEventually(equal(1))
 
