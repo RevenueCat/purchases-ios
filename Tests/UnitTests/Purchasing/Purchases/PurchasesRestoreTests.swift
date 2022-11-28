@@ -41,6 +41,7 @@ class PurchasesRestoreTests: BasePurchasesTests {
         self.receiptFetcher.shouldReturnReceipt = false
         let receivedError = waitUntilValue { completed in
             self.purchases.restorePurchases { (_, error) in
+                expect(Thread.isMainThread) == true
                 completed(error as NSError?)
             }
         }
