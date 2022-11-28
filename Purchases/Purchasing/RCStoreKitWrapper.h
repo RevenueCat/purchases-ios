@@ -20,12 +20,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, nullable) id<RCStoreKitWrapperDelegate> delegate;
 @property (class, nonatomic, assign) BOOL simulatesAskToBuyInSandbox API_AVAILABLE(ios(8.0), macos(10.14), watchos(6.2), macCatalyst(13.0), tvos(9.0));
 
+@property (nonatomic, readonly, nullable) SKStorefront *currentStorefront API_AVAILABLE(ios(13.0), macos(10.15), watchos(6.2), macCatalyst(13.1), tvos(13.0));
+
 - (void)addPayment:(SKPayment *)payment;
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;
 - (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos);
 
 - (SKMutablePayment *)paymentWithProduct:(SKProduct *)product;
 - (SKMutablePayment *)paymentWithProduct:(SKProduct *)product discount:(SKPaymentDiscount *)discount API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(12.2));
+
+/**
+ * Returns the country code for the current `SKStoreFront`, or `nil` if not available.
+ */
+- (nullable NSString *)countryCode;
 
 @end
 

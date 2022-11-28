@@ -351,6 +351,7 @@ class BackendTests: XCTestCase {
         let price = 4.99 as NSDecimalNumber
         let group = "sub_group"
 
+        let countryCode = "ESP"
         let currencyCode = "BFD"
 
         let paymentMode: RCPaymentMode = .none
@@ -359,6 +360,7 @@ class BackendTests: XCTestCase {
         let productInfo: RCProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
                                                                 paymentMode: paymentMode,
                                                                 currencyCode: currencyCode,
+                                                                countryCode: countryCode,
                                                                 price: price,
                                                                 subscriptionGroup: group)
 
@@ -379,6 +381,7 @@ class BackendTests: XCTestCase {
             "is_restore": false,
             "product_id": productIdentifier,
             "price": price,
+            "store_country": countryCode,
             "currency": currencyCode,
             "subscription_group_id": group,
             "presented_offering_identifier": offeringIdentifier,
@@ -395,7 +398,70 @@ class BackendTests: XCTestCase {
 
             expect(call.path).to(equal(expectedCall.path))
             expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
-            XCTAssert(call.body!.keys == expectedCall.body!.keys)
+            XCTAssertEqual(call.body!.keys, expectedCall.body!.keys)
+
+            expect(call.headers?["Authorization"]).toNot(beNil())
+            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+    }
+
+    func testPostsReceiptDataWithNoStorefrontCorrectly() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/receipts", response: response)
+
+        let productIdentifier = "a_great_product"
+        let offeringIdentifier = "a_offering"
+        let price = 4.99 as NSDecimalNumber
+        let group = "sub_group"
+
+        let currencyCode = "BFD"
+
+        let paymentMode: RCPaymentMode = .none
+
+        var completionCalled = false
+        let productInfo: RCProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
+                                                                paymentMode: paymentMode,
+                                                                currencyCode: currencyCode,
+                                                                countryCode: nil,
+                                                                price: price,
+                                                                subscriptionGroup: group)
+
+        backend?.postReceiptData(receiptData,
+                                 appUserID: userID,
+                                 isRestore: false,
+                                 productInfo: productInfo,
+                                 presentedOfferingIdentifier: offeringIdentifier,
+                                 observerMode: false,
+                                 subscriberAttributes: nil,
+                                 completion: { (purchaserInfo, error) in
+            completionCalled = true
+        })
+
+        let body: [String: Any] = [
+            "app_user_id": userID,
+            "fetch_token": receiptData.base64EncodedString(),
+            "is_restore": false,
+            "product_id": productIdentifier,
+            "price": price,
+            "currency": currencyCode,
+            "subscription_group_id": group,
+            "presented_offering_identifier": offeringIdentifier,
+            "observer_mode": false
+        ]
+
+        let expectedCall = HTTPRequest(HTTPMethod: "POST", serially: true, path: "/receipts",
+                                       body: body, headers: ["Authorization": "Bearer " + apiKey])
+
+        expect(self.httpClient.calls.count).to(equal(1))
+
+        if self.httpClient.calls.count > 0 {
+            let call = self.httpClient.calls[0]
+
+            expect(call.path).to(equal(expectedCall.path))
+            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
+            XCTAssertEqual(call.body!.keys, expectedCall.body!.keys)
 
             expect(call.headers?["Authorization"]).toNot(beNil())
             expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))

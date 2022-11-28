@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *productIdentifier;
 @property (nonatomic, assign) RCPaymentMode paymentMode;
 @property (nonatomic, copy) NSString *currencyCode;
+@property (nonatomic, nullable, copy) NSString *countryCode;
 @property (nonatomic, copy) NSDecimalNumber *price;
 @property (nonatomic, nullable, copy) NSString *normalDuration;
 @property (nonatomic, nullable, copy) NSString *introDuration;
@@ -46,6 +47,7 @@ RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode payme
 - (instancetype)initWithProductIdentifier:(NSString *)productIdentifier
                               paymentMode:(RCPaymentMode)paymentMode
                              currencyCode:(NSString *)currencyCode
+                              countryCode:(nullable NSString *)countryCode
                                     price:(NSDecimalNumber *)price
                            normalDuration:(nullable NSString *)normalDuration
                             introDuration:(nullable NSString *)introDuration
@@ -58,6 +60,7 @@ RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode payme
         self.productIdentifier = productIdentifier;
         self.paymentMode = paymentMode;
         self.currencyCode = currencyCode;
+        self.countryCode = countryCode;
         self.price = price;
         self.normalDuration = normalDuration;
         self.introDuration = introDuration;
@@ -75,6 +78,10 @@ RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode payme
 
     if (self.productIdentifier) {
         dict[@"product_id"] = self.productIdentifier;
+    }
+
+    if (self.countryCode) {
+        dict[@"store_country"] = self.countryCode;
     }
 
     if (self.price) {
