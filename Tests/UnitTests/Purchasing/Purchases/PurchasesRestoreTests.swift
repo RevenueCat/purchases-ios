@@ -39,7 +39,7 @@ class PurchasesRestoreTests: BasePurchasesTests {
 
     func testRestorePurchasesCallsCompletionOnMainThreadWhenMissingReceipts() {
         self.receiptFetcher.shouldReturnReceipt = false
-        let receivedError = waitUntilValue { completed in
+        let receivedError: NSError? = waitUntilValue { completed in
             self.purchases.restorePurchases { (_, error) in
                 expect(Thread.isMainThread) == true
                 completed(error as NSError?)
