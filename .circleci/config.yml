@@ -461,6 +461,8 @@ jobs:
       - run:
           name: Build docs
           command: bundle exec fastlane generate_docs
+          environment:
+            DOCS_IOS_VERSION: "16.1"
 
   make-release:
     <<: *base-job
