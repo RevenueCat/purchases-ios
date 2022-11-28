@@ -425,7 +425,7 @@ final class PurchasesOrchestrator {
         do {
             result = try await TimingUtil.measureAndLogIfTooSlow(
                 threshold: .purchase,
-                message: Strings.purchase.sk2_purchase_too_slow) {
+                message: Strings.purchase.sk2_purchase_too_slow.description) {
                     var options: Set<Product.PurchaseOption> = [
                         .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
                     ]
