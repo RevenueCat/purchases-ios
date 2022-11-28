@@ -674,43 +674,8 @@ workflows:
       not:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
-      - lint:
+      - docs-deploy:
           xcode_version: '14.1.0'
-      - run-test-ios-16:
-          xcode_version: '14.1.0'
-      - spm-release-build:
-          xcode_version: '14.1.0'
-      - run-test-ios-15:
-          xcode_version: '14.1.0'
-      - run-test-tvos:
-          xcode_version: '14.1.0'
-      - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-      - run-test-ios-13:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-          <<: *release-branches-and-main
-      - run-test-ios-12:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-          <<: *release-branches-and-main
-      - build-tv-watch-and-macos:
-          xcode_version: '14.1.0'
-      # To ensure we don't break compilation with Xcode 13.2.1
-      - compile-xcode-13-2:
-          name: xcode-13.2.1
-          xcode_version: '13.2.1'
-          <<: *release-branches-and-main
-      - release-checks:
-          xcode_version: '14.1.0'
-          <<: *release-branches
-      - backend-integration-tests:
-          xcode_version: '14.1.0'
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
   deploy:
     when:
       not:
@@ -749,9 +714,6 @@ workflows:
           xcode_version: '13.4.1'
           requires:
             - make-release
-          <<: *release-tags
-      - docs-deploy:
-          xcode_version: '14.1.0'
           <<: *release-tags
       - deploy-purchase-tester:
           xcode_version: '14.1.0'
