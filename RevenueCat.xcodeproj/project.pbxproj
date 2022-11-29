@@ -282,7 +282,6 @@
 		5774F9C12805EA3000997128 /* BaseHTTPResponseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */; };
 		5774F9C22805EA6900997128 /* CustomerInfoDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */; };
 		578C5F2C28DB82DD00A56F02 /* PurchasesDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578C5F2B28DB82DD00A56F02 /* PurchasesDiagnostics.swift */; };
-		578D79942936B0810042E434 /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578D79932936B0810042E434 /* LoggerTests.swift */; };
 		578FB10E27ADDA8000F70709 /* AvailabilityChecks.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BE0263275942D500915B4C /* AvailabilityChecks.swift */; };
 		579189B728F4747700BF4963 /* EitherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579189B628F4747700BF4963 /* EitherTests.swift */; };
 		579189E928F47E8D00BF4963 /* PurchasesDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579189E828F47E8D00BF4963 /* PurchasesDiagnosticsTests.swift */; };
@@ -304,6 +303,7 @@
 		5796A39927D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A39827D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift */; };
 		5796A3A927D7C43500653165 /* Deprecations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A3A827D7C43500653165 /* Deprecations.swift */; };
 		5796A3C027D7D64500653165 /* ResultExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A3BF27D7D64500653165 /* ResultExtensionsTests.swift */; };
+		5799708B2936CE5700FF3573 /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578D79932936B0810042E434 /* LoggerTests.swift */; };
 		579B67F428C5326A0094F7E8 /* PaymentQueueWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579B67F328C5326A0094F7E8 /* PaymentQueueWrapper.swift */; };
 		579D2E3A28F0BF5A0094B36F /* BackendInternalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579D2E3928F0BF5A0094B36F /* BackendInternalTests.swift */; };
 		57A0FBF02749C0C2009E2FC3 /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */; };
@@ -2382,6 +2382,7 @@
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
 				57E6195028D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift in Sources */,
 				F5847431278D00C1001B1CE6 /* MockDNSChecker.swift in Sources */,
+				5799708B2936CE5700FF3573 /* LoggerTests.swift in Sources */,
 				B3CAFF1F285CEAAA0048A994 /* MockOfferingsAPI.swift in Sources */,
 				F55FFA632763F60700995146 /* TransactionsManagerTests.swift in Sources */,
 				575A8EE62922C9F300936709 /* MockStoreKit2TransactionListenerDelegate.swift in Sources */,
@@ -2742,7 +2743,6 @@
 				35272E1B26D0029300F22C3B /* DeviceCacheSubscriberAttributesTests.swift in Sources */,
 				5796A39627D6BDAB00653165 /* BackendPostOfferForSigningTests.swift in Sources */,
 				57CFB96C27FE0E79002A6730 /* MockCurrentUserProvider.swift in Sources */,
-				578D79942936B0810042E434 /* LoggerTests.swift in Sources */,
 				57ACB13728184CF1000DCC9F /* DecoderExtensionTests.swift in Sources */,
 				351B516126D44BEB00BD2BD7 /* IdentityManagerTests.swift in Sources */,
 				57032ABF28C13CE4004FF47A /* StoreKit2SettingTests.swift in Sources */,
