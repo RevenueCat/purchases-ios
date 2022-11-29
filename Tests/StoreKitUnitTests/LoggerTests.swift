@@ -21,11 +21,19 @@ import XCTest
 class LoggerTests: TestCase {
 
     private var logger: TestLogHandler!
+    private var previousLogLevel: LogLevel!
 
     override func setUp() {
         super.setUp()
 
         self.logger = .init()
+        self.previousLogLevel = Logger.logLevel
+    }
+
+    override func tearDown() {
+        Logger.logLevel = self.previousLogLevel
+
+        super.tearDown()
     }
 
     func testLogLevelOrderContainsAllLevels() {
