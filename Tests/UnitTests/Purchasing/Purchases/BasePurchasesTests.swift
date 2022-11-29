@@ -83,6 +83,11 @@ class BasePurchasesTests: TestCase {
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.identityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
+
+        // Some tests rely on the level being at least `.debug`
+        // Because unit tests can run in parallel, if a test needs to modify
+        // this level it should be moved to `StoreKitUnitTests`, which runs serially.
+        Purchases.logLevel = .verbose
     }
 
     override func tearDown() {
