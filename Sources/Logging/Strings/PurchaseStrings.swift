@@ -20,6 +20,8 @@ enum PurchaseStrings {
 
     case storekit1_wrapper_init(StoreKit1Wrapper)
     case storekit1_wrapper_deinit(StoreKit1Wrapper)
+    case device_cache_init(DeviceCache)
+    case device_cache_deinit(DeviceCache)
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
     case finishing_transaction(StoreTransactionType)
@@ -77,12 +79,16 @@ extension PurchaseStrings: CustomStringConvertible {
     var description: String {
         switch self {
         case let .storekit1_wrapper_init(instance):
-            return "StoreKit1Wrapper.init: " +
-            "\(Strings.objectDescription(instance))"
+            return "StoreKit1Wrapper.init: \(Strings.objectDescription(instance))"
 
         case let .storekit1_wrapper_deinit(instance):
-            return "StoreKit1Wrapper.deinit: " +
-            "\(Strings.objectDescription(instance))"
+            return "StoreKit1Wrapper.deinit: \(Strings.objectDescription(instance))"
+
+        case let .device_cache_init(instance):
+            return "DeviceCache.init: \(Strings.objectDescription(instance))"
+
+        case let .device_cache_deinit(instance):
+            return "DeviceCache.deinit: \(Strings.objectDescription(instance))"
 
         case .cannot_purchase_product_appstore_configuration_error:
             return "Could not purchase SKProduct. " +
