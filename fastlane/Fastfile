@@ -384,9 +384,14 @@ platform :ios do
   end
 
   private_lane :build_symbols_for_docs do
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
     sh("swift",
        "build",
        "--target", "RevenueCat",
+       # Build for iOS instead of the default macOS. This ensures that iOS-only symbols are included in the docs.
+       "-Xswiftc", "-sdk", "-Xswiftc", sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").strip!,
+       "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-ios#{ios_version}-simulator",
        "-Xswiftc", "-emit-symbol-graph",
        "-Xswiftc", "-emit-symbol-graph-dir",
        "-Xswiftc", ".build")
@@ -394,6 +399,8 @@ platform :ios do
 
   desc "Preview docs"
   lane :preview_docs do
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
     ENV["INCLUDE_DOCC_PLUGIN"] = "true"
     Dir.chdir("..") do
       build_symbols_for_docs
@@ -404,6 +411,8 @@ platform :ios do
          "preview-documentation",
          "--target",
          "RevenueCat",
+         "--platform",
+         "name=iOS,version=#{ios_version}",
          "--transform-for-static-hosting",
          "--enable-inherited-docs",
          "--additional-symbol-graph-dir", ".build")
@@ -417,6 +426,8 @@ platform :ios do
     version_number = current_version_number
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
     docs_repo_name = ENV["DOCS_REPO_NAME"]
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+    
     UI.user_error!("Missing environment variable: DOCS_REPO_BASE_URL") unless docs_repo_base_url
     UI.user_error!("Missing environment variable: DOCS_REPO_NAME") unless docs_repo_name
 
@@ -437,7 +448,9 @@ platform :ios do
            "generate-documentation",
            "--target",
            "RevenueCat",
-           "--disable-indexing",
+           "--disable-indexing", # Produces a DocC archive that is best-suited for hosting online but incompatible with Xcode.
+           "--platform",
+           "name=iOS,version=#{ios_version}",
            "--output-path",
            docs_generation_folder,
            "--hosting-base-path",
