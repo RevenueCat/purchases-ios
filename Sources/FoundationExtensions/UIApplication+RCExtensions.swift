@@ -30,7 +30,7 @@ extension UIApplication {
         #if DEBUG && targetEnvironment(simulator)
         // Running StoreKitUnitTests might not always have an active scene
         // Sporadically, the only scene will be `foregroundInactive` or `background`
-        if scenes.isEmpty, UIApplication.isRunningUnitTests {
+        if scenes.isEmpty, ProcessInfo.isRunningUnitTests {
             scenes = self.connectedScenes
         }
         #endif
@@ -39,15 +39,5 @@ extension UIApplication {
     }
 
 }
-
-#if DEBUG
-
-private extension UIApplication {
-    static var isRunningUnitTests: Bool {
-        return ProcessInfo.processInfo.environment.keys.contains("XCTestConfigurationFilePath")
-    }
-}
-
-#endif
 
 #endif

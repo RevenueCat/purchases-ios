@@ -33,7 +33,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expectNoFatalError { _ = Purchases.shared }
     }
 
-    func testIsConfiguredReturnsCorrectvalue() {
+    func testIsConfiguredReturnsCorrectValue() {
         expect(Purchases.isConfigured) == false
         self.setupPurchases()
         expect(Purchases.isConfigured) == true

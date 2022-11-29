@@ -85,8 +85,7 @@ extension ConfigureStrings: CustomStringConvertible {
         case .delegate_set:
             return "Delegate set"
         case .purchase_instance_already_set:
-            return "Purchases instance already set. Did you mean to configure " +
-                "two Purchases objects?"
+            return "Purchases instance already set. Did you mean to configure two Purchases objects?"
         case .initial_app_user_id(let isSet):
             return isSet
                 ? "Initial App User ID set"

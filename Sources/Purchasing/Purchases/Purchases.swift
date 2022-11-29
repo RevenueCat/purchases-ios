@@ -500,6 +500,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     static func setDefaultInstance(_ purchases: Purchases) {
         self.purchases.modify { currentInstance in
             if currentInstance != nil {
+                #if DEBUG
+                if ProcessInfo.isRunningUnitTests {
+                    preconditionFailure(Strings.configure.purchase_instance_already_set.description)
+                }
+                #endif
                 Logger.info(Strings.configure.purchase_instance_already_set)
             }
 

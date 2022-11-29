@@ -150,6 +150,7 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
         self.systemInfo = try MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
                                              dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+        Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.syncPurchases(completion: nil)
