@@ -37,7 +37,7 @@ class IntroEligibilityCalculatorTests: TestCase {
     func testCheckTrialOrIntroDiscountEligibilityReturnsErrorIfReceiptParserThrows() {
         let productIdentifiers = Set(["com.revenuecat.test"])
 
-        self.mockReceiptParser.stubbedParseError = ReceiptReadingError.receiptParsingError
+        self.mockReceiptParser.stubbedParseError = ReceiptParser.Error.receiptParsingError
 
         let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
             self.calculator.checkEligibility(with: Data(),
@@ -46,7 +46,7 @@ class IntroEligibilityCalculatorTests: TestCase {
             }
         }
 
-        expect(result?.error).to(matchError(ReceiptReadingError.receiptParsingError))
+        expect(result?.error).to(matchError(ReceiptParser.Error.receiptParsingError))
         expect(result?.eligibility).toNot(beNil())
         expect(result?.eligibility).to(beEmpty())
     }

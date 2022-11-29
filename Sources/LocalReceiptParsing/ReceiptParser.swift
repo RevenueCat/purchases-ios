@@ -40,11 +40,11 @@ class ReceiptParser {
     func parse(from receiptData: Data) throws -> AppleReceipt {
         let intData = [UInt8](receiptData)
 
-        let asn1Container = try containerBuilder.build(fromPayload: ArraySlice(intData))
-        guard let receiptASN1Container = try findASN1Container(withObjectId: ASN1ObjectIdentifier.data,
-                                                               inContainer: asn1Container) else {
+        let asn1Container = try self.containerBuilder.build(fromPayload: ArraySlice(intData))
+        guard let receiptASN1Container = try self.findASN1Container(withObjectId: ASN1ObjectIdentifier.data,
+                                                                    inContainer: asn1Container) else {
             Logger.error(Strings.receipt.data_object_identifer_not_found_receipt)
-            throw ReceiptReadingError.dataObjectIdentifierMissing
+            throw Error.dataObjectIdentifierMissing
         }
         let receipt = try receiptBuilder.build(fromContainer: receiptASN1Container)
         Logger.info(Strings.receipt.parsing_receipt_success)
@@ -72,7 +72,7 @@ private extension ReceiptParser {
                         return container.internalContainers[index + 1]
                     }
                 } else {
-                    let receipt = try findASN1Container(withObjectId: objectId, inContainer: internalContainer)
+                    let receipt = try self.findASN1Container(withObjectId: objectId, inContainer: internalContainer)
                     if receipt != nil {
                         return receipt
                     }

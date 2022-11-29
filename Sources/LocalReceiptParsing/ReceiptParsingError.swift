@@ -15,28 +15,28 @@
 
 import Foundation
 
-enum ReceiptReadingError: Error, Equatable {
+extension ReceiptParser {
 
-    case missingReceipt,
-         emptyReceipt,
-         dataObjectIdentifierMissing,
-         asn1ParsingError(description: String),
-         receiptParsingError,
-         inAppPurchaseParsingError
+    enum Error: Swift.Error, Equatable {
 
+        case emptyReceipt,
+             dataObjectIdentifierMissing,
+             asn1ParsingError(description: String),
+             receiptParsingError,
+             inAppPurchaseParsingError
+
+    }
 }
 
-extension ReceiptReadingError: LocalizedError {
+extension ReceiptParser.Error: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .missingReceipt:
-            return "The receipt couldn't be found"
         case .emptyReceipt:
             return "The receipt is empty"
         case .dataObjectIdentifierMissing:
             return "Couldn't find an object identifier of type data in the receipt"
-        case .asn1ParsingError(let description):
+        case let .asn1ParsingError(description):
             return "Error while parsing, payload can't be interpreted as ASN1. details: \(description)"
         case .receiptParsingError:
             return "Error while parsing the receipt. One or more attributes are missing."

@@ -227,7 +227,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     }
 
     func testRetriesIfFirstReceiptThrowsError() async {
-        self.mock(receipts: [.failure(ErrorUtils.missingReceiptFileError()),
+        self.mock(receipts: [.failure(.receiptParsingError),
                              .success(Self.validReceipt)])
 
         let data = await self.fetch(productIdentifier: Self.productID, retries: 1)
@@ -287,7 +287,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         self.mock(receipts: receipts.map(Result.success))
     }
 
-    private func mock(receipts: [Result<AppleReceipt, Error>]) {
+    private func mock(receipts: [Result<AppleReceipt, ReceiptParser.Error>]) {
         precondition(!receipts.isEmpty)
 
         self.mockBundle.receiptURLResult = .receiptWithData
@@ -302,7 +302,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         self.mockBundle.receiptURLResult = .receiptWithData
         self.mockFileReader.mockedURLContents[self.mockBundle.appStoreReceiptURL!] = [invalidData]
         self.mockReceiptParser.stubbedParseResults = [
-            .failure(ErrorUtils.missingReceiptFileError())
+            .failure(.emptyReceipt)
         ]
 
         return invalidData
