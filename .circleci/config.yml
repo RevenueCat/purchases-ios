@@ -42,7 +42,7 @@ commands:
             - vendor/bundle
       - restore_cache:
           keys:
-            - homebrew-tap-cache
+            - homebrew-tap-cache-0.46.5
       - run:
           name: Install swiftlint 0.46.5
           command: |
@@ -51,7 +51,7 @@ commands:
               brew extract --version=0.46.5 swiftlint $USER/local-tap
               brew install swiftlint@0.46.5
       - save_cache:
-          key: homebrew-tap-cache
+          key: homebrew-tap-cache-0.46.5
           paths:
             - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
             - /Users/$USER/Library/Caches/Homebrew/
