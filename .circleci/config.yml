@@ -457,7 +457,7 @@ jobs:
     steps:
       - setup-git-credentials
       - checkout
-      - install-dependencies
+      - install-bundle-dependencies
       - run:
           name: Build docs
           command: bundle exec fastlane generate_docs
