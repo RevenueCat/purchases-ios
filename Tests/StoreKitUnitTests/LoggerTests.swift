@@ -32,6 +32,7 @@ class LoggerTests: TestCase {
 
     override func tearDown() {
         Logger.logLevel = self.previousLogLevel
+        self.logger = nil
 
         super.tearDown()
     }
