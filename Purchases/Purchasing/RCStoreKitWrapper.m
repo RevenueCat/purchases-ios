@@ -58,6 +58,18 @@ static BOOL _simulatesAskToBuyInSandbox = NO;
     return _delegate;
 }
 
+- (SKStorefront *)currentStorefront {
+    return self.paymentQueue.storefront;
+}
+
+- (NSString *)countryCode {
+    if (@available(iOS 13.0, macos 10.15, watchos 6.2, macCatalyst 13.1, tvos 13.0, *)) {
+        return self.currentStorefront.countryCode;
+    } else {
+        return nil;
+    }
+}
+
 - (void)addPayment:(SKPayment *)payment {
     [self.paymentQueue addPayment:payment];
 }

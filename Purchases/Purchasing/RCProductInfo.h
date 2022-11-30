@@ -31,6 +31,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 @property (nonatomic, readonly, copy) NSString *productIdentifier;
 @property (nonatomic, readonly, assign) RCPaymentMode paymentMode;
 @property (nonatomic, readonly, copy) NSString *currencyCode;
+@property (nonatomic, nullable, readonly, copy) NSString *countryCode;
 @property (nonatomic, readonly, copy) NSDecimalNumber *price;
 @property (nonatomic, nullable, readonly, copy) NSString *normalDuration;
 @property (nonatomic, nullable, readonly, copy) NSString *introDuration;
@@ -42,6 +43,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (instancetype)initWithProductIdentifier:(NSString *)productIdentifier
                               paymentMode:(RCPaymentMode)paymentMode
                              currencyCode:(NSString *)currencyCode
+                              countryCode:(nullable NSString *)countryCode
                                     price:(NSDecimalNumber *)price
                            normalDuration:(nullable NSString *)normalDuration
                             introDuration:(nullable NSString *)introDuration

@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (RCProductInfo *)extractInfoFromProduct:(SKProduct *)product {
+- (RCProductInfo *)extractInfoFromProduct:(SKProduct *)product countryCode:(nullable NSString *)countryCode {
     NSString *productIdentifier = product.productIdentifier;
     NSDecimalNumber *price = product.price;
     NSString *currencyCode = product.priceLocale.rc_currencyCode;
@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
     RCProductInfo *productInfo = [[RCProductInfo alloc] initWithProductIdentifier:productIdentifier
                                                                       paymentMode:paymentMode
                                                                      currencyCode:currencyCode
+                                                                      countryCode:countryCode
                                                                             price:price
                                                                    normalDuration:normalDuration
                                                                     introDuration:introDuration

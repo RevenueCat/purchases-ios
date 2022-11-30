@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCProductInfoExtractor : NSObject
 
-- (RCProductInfo *)extractInfoFromProduct:(SKProduct *)product;
+- (RCProductInfo *)extractInfoFromProduct:(SKProduct *)product countryCode:(nullable NSString *)countryCode;
 
 @end
 

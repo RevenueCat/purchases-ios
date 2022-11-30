@@ -1134,7 +1134,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     switch (transaction.transactionState) {
         case SKPaymentTransactionStateRestored: // For observer mode
         case SKPaymentTransactionStatePurchased: {
-            [self handlePurchasedTransaction:transaction];
+            [self handlePurchasedTransaction:transaction countryCode:storeKitWrapper.countryCode];
             break;
         }
         case SKPaymentTransactionStateFailed: {
@@ -1209,7 +1209,8 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     }];
 }
 
-- (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {
+- (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
+                       countryCode:(NSString *)countryCode {
     [self receiptData:^(NSData * _Nonnull data) {
         if (data.length == 0) {
             [self handleReceiptPostWithTransaction:transaction
@@ -1217,16 +1218,24 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
                               subscriberAttributes:nil
                                              error:RCPurchasesErrorUtils.missingReceiptFileError];
         } else {
-            [self fetchProductsAndPostReceiptWithTransaction:transaction data:data];
+            [self fetchProductsAndPostReceiptWithTransaction:transaction
+                                                 countryCode:countryCode
+                                                        data:data];
         }
     }];
 }
 
-- (void)fetchProductsAndPostReceiptWithTransaction:(SKPaymentTransaction *)transaction data:(NSData *)data {
+- (void)fetchProductsAndPostReceiptWithTransaction:(SKPaymentTransaction *)transaction
+                                       countryCode:(NSString *)countryCode
+                                              data:(NSData *)data {
     if ([self productIdentifierFrom:transaction]) {
         [self productsWithIdentifiers:@[[self productIdentifierFrom:transaction]]
                       completionBlock:^(NSArray<SKProduct *> *products) {
-                          [self postReceiptWithTransaction:transaction data:data products:products];
+                          [self postReceiptWithTransaction:transaction
+                                               countryCode:countryCode
+                                                      data:data
+                                                  products:products
+                          ];
                       }];
     } else {
         [self handleReceiptPostWithTransaction:transaction
@@ -1237,15 +1246,17 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
 }
 
 - (void)postReceiptWithTransaction:(SKPaymentTransaction *)transaction
+                       countryCode:(NSString *)countryCode
                               data:(NSData *)data
                           products:(NSArray<SKProduct *> *)products {
     SKProduct *product = products.lastObject;
     RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
     RCProductInfo *productInfo = nil;
     NSString *presentedOffering = nil;
+
     if (product) {
         RCProductInfoExtractor *productInfoExtractor = [[RCProductInfoExtractor alloc] init];
-        productInfo = [productInfoExtractor extractInfoFromProduct:product];
+        productInfo = [productInfoExtractor extractInfoFromProduct:product countryCode:countryCode];
 
         @synchronized (self) {
             presentedOffering = self.presentedOfferingsByProductIdentifier[productInfo.productIdentifier];
