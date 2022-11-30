@@ -57,11 +57,15 @@ final class TestLogHandler {
 
     var messages: [MessageData] { return self.loggedMessages.value }
 
-    init() { Self.sharedHandler.add(observer: self) }
+    init(file: String = #fileID, line: UInt = #line) {
+        self.creationContext = .init(file: file, line: line)
+        Self.sharedHandler.add(observer: self)
+    }
 
     deinit { Self.sharedHandler.remove(observer: self) }
 
     private let loggedMessages: Atomic<[MessageData]> = .init([])
+    private let creationContext: Context
 
     private static let sharedHandler: SharedTestLogHandler = {
         let handler = SharedTestLogHandler()
@@ -125,6 +129,15 @@ extension TestLogHandler {
 
 // MARK: - Private
 
+private extension TestLogHandler {
+
+    struct Context {
+        let file: String
+        let line: UInt
+    }
+
+}
+
 extension TestLogHandler: LogMessageObserver {
 
     func didReceive(message: String, with level: LogLevel) {
@@ -133,8 +146,9 @@ extension TestLogHandler: LogMessageObserver {
 
             precondition(
                 $0.count < Self.messageLimit,
-                "\(Self.messageLimit) messages have been stored.\n" +
-                "This is likely a programming error and \(self) has leaked."
+                "\(Self.messageLimit) messages have been stored. " +
+                "This is likely a programming error and \(self) " +
+                "(created in \(self.creationContext.file):\(self.creationContext.line) has leaked."
             )
         }
     }

@@ -18,7 +18,7 @@ import Foundation
 ///
 /// #### Related Symbols
 /// - ``Purchases/logLevel``
-@objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible, Sendable {
+@objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible, CaseIterable, Sendable {
 
     // swiftlint:disable missing_docs
 
@@ -209,9 +209,37 @@ private extension Logger {
                     fileName: String? = #fileID,
                     functionName: String? = #function,
                     line: UInt = #line) {
-        guard self.logLevel.rawValue <= level.rawValue else { return }
+        guard self.logLevel <= level else { return }
 
         Self.logHandler(level, message(), fileName, functionName, line)
     }
+
+}
+
+// MARK: -
+
+extension LogLevel: Comparable {
+
+    // swiftlint:disable:next missing_docs
+    public static func < (lhs: LogLevel, rhs: LogLevel) -> Bool {
+        // Tests ensure that this can't happen
+        guard let lhs = Self.order[lhs], let rhs = Self.order[rhs] else { return false }
+
+        return lhs < rhs
+    }
+
+    private static let orderedLevels: [LogLevel] = [
+        .verbose,
+        .debug,
+        .info,
+        .warn,
+        .error
+    ]
+    static let order: [LogLevel: Int] = Dictionary(uniqueKeysWithValues:
+                                                    Self.orderedLevels
+        .enumerated()
+        .lazy
+        .map { ($1, $0) }
+    )
 
 }
