@@ -32,7 +32,8 @@ class IdentityManager: CurrentUserProvider {
     private let customerInfoManager: CustomerInfoManager
     private let attributeSyncing: AttributeSyncing
 
-    internal static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
+    internal static let anonymousPrefix = "$RCAnonymousID:"
+    internal static let anonymousRegex = #"\#(IdentityManager.anonymousPrefix)([a-z0-9]{32})$"#
 
     init(
         deviceCache: DeviceCache,
@@ -92,7 +93,7 @@ class IdentityManager: CurrentUserProvider {
     }
 
     static func generateRandomID() -> String {
-        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
+        "\(Self.anonymousPrefix)\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
 
 }
