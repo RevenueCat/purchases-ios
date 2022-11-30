@@ -94,7 +94,7 @@ class BasePurchasesTests: TestCase {
         // - They run in LIFO order.
 
         self.addTeardownBlock { [weak purchases = self.purchases] in
-            expect(purchases).toEventually(beNil(), timeout: .seconds(1), description: "Purchases has leaked")
+            expect(purchases).to(beNil(), description: "Purchases has leaked")
         }
 
         self.addTeardownBlock {
