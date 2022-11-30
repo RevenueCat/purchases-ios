@@ -13,10 +13,11 @@
 
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
-    RCConfiguration *config = [[[[[[[[[[builder withApiKey:@""]
+    RCConfiguration *config = [[[[[[[[[[[builder withApiKey:@""]
                                        withObserverMode:false]
                                       withUserDefaults:NSUserDefaults.standardUserDefaults]
                                      withAppUserID:@""]
+                                    withAppUserID:nil]
                                     withDangerousSettings:[[RCDangerousSettings alloc] init]]
                                    withNetworkTimeout:1]
                                   withStoreKit1Timeout: 1]

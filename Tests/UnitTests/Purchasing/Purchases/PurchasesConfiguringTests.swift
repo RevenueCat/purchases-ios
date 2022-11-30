@@ -92,6 +92,34 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Purchases.shared.finishTransactions) == true
     }
 
+    func testUserIdIsSetWhenConfiguringWithUserID() {
+        let purchases = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(appUserID: Self.appUserID)
+        )
+        expect(purchases.appUserID) == Self.appUserID
+    }
+
+    func testUserIdIsSetToAnonymousWhenConfiguringWithEmptyUserID() {
+        let purchases = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(appUserID: "")
+        )
+        expect(purchases.appUserID).toNot(beEmpty())
+        expect(IdentityManager.userIsAnonymous(purchases.appUserID))
+            .to(beTrue(), description: "User '\(purchases.appUserID)' should be anonymous")
+    }
+
+    func testUserIdIsSetToAnonymousWhenConfiguringWithNilUserID() {
+        let purchases = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(appUserID: nil)
+        )
+        expect(purchases.appUserID).toNot(beEmpty())
+        expect(IdentityManager.userIsAnonymous(purchases.appUserID))
+            .to(beTrue(), description: "User '\(purchases.appUserID)' should be anonymous")
+    }
+
     func testFirstInitializationCallDelegate() {
         self.setupPurchases()
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))

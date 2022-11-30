@@ -13,6 +13,7 @@ func checkConfigurationAPI() {
         .builder(withAPIKey: "")
         .with(apiKey: "")
         .with(appUserID: "")
+        .with(appUserID: nil)
         .with(observerMode: false)
         .with(userDefaults: UserDefaults.standard)
         .with(dangerousSettings: DangerousSettings())

@@ -109,7 +109,7 @@ import Foundation
          *
          * - Important: Set this property if you have your own user identifiers that you manage.
          */
-        @objc public func with(appUserID: String) -> Builder {
+        @objc public func with(appUserID: String?) -> Builder {
             self.appUserID = appUserID
             return self
         }

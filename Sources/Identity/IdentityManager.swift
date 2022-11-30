@@ -70,11 +70,8 @@ class IdentityManager: CurrentUserProvider {
     }
 
     var currentUserIsAnonymous: Bool {
-
-        let anonymousFoundRange = currentAppUserID.range(of: IdentityManager.anonymousRegex,
-                                                         options: .regularExpression)
-        let currentAppUserIDLooksAnonymous = anonymousFoundRange != nil
-        let isLegacyAnonymousAppUserID = currentAppUserID == deviceCache.cachedLegacyAppUserID
+        let currentAppUserIDLooksAnonymous = Self.userIsAnonymous(self.currentAppUserID)
+        let isLegacyAnonymousAppUserID = self.currentAppUserID == deviceCache.cachedLegacyAppUserID
 
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
@@ -93,6 +90,16 @@ class IdentityManager: CurrentUserProvider {
 
     static func generateRandomID() -> String {
         "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
+    }
+
+}
+
+extension IdentityManager {
+
+    static func userIsAnonymous(_ appUserId: String) -> Bool {
+        let anonymousFoundRange = appUserId.range(of: IdentityManager.anonymousRegex,
+                                                  options: .regularExpression)
+        return anonymousFoundRange != nil
     }
 
 }
