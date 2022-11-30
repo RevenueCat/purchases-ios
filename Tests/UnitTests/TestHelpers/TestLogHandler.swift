@@ -153,7 +153,7 @@ extension TestLogHandler: LogMessageObserver {
         }
     }
 
-    private static let messageLimit = 200
+    private static let messageLimit = 100
 
 }
 
