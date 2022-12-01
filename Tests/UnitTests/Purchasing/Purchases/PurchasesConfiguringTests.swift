@@ -101,8 +101,12 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testUserIdIsSetToAnonymousWhenConfiguringWithEmptyUserID() {
+        self.deviceCache.userIDStoredInCache = nil
+
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
+                // This test requires no previously stored user
+                .with(userDefaults: .init(suiteName: UUID().uuidString)!)
                 .with(appUserID: "")
         )
         expect(purchases.appUserID).toNot(beEmpty())
@@ -113,6 +117,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     func testUserIdIsSetToAnonymousWhenConfiguringWithNilUserID() {
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
+                // This test requires no previously stored user
+                .with(userDefaults: .init(suiteName: UUID().uuidString)!)
                 .with(appUserID: nil)
         )
         expect(purchases.appUserID).toNot(beEmpty())
