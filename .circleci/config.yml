@@ -230,6 +230,7 @@ jobs:
       - run:
           name: Deploy new version
           command: bundle exec fastlane deploy
+          no_output_timeout: 30m
 
   prepare-next-version:
     macos:
