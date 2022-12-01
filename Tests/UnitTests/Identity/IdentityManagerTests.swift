@@ -298,26 +298,17 @@ class IdentityManagerTests: TestCase {
 private extension IdentityManagerTests {
 
     func assertCorrectlyIdentified(_ manager: IdentityManager, expectedAppUserID: String) {
-        expect(manager.currentAppUserID).to(equal(expectedAppUserID))
-        expect(self.mockDeviceCache.userIDStoredInCache!).to(equal(expectedAppUserID))
-        expect(manager.currentUserIsAnonymous).to(beFalse())
+        expect(manager.currentAppUserID) == expectedAppUserID
+        expect(self.mockDeviceCache.userIDStoredInCache!) == expectedAppUserID
+        expect(manager.currentUserIsAnonymous) == false
     }
 
     func assertCorrectlyIdentifiedWithAnonymous(_ manager: IdentityManager, usingOldID: Bool = false) {
         if !usingOldID {
-            var obtainedRange = manager.currentAppUserID.range(
-                of: IdentityManager.anonymousRegex,
-                options: .regularExpression
-            )
-            expect(obtainedRange).toNot(beNil())
-
-            obtainedRange = self.mockDeviceCache.userIDStoredInCache!.range(
-                of: IdentityManager.anonymousRegex,
-                options: .regularExpression
-            )
-            expect(obtainedRange).toNot(beNil())
+            expect(IdentityManager.userIsAnonymous(manager.currentAppUserID)) == true
+            expect(IdentityManager.userIsAnonymous(self.mockDeviceCache.userIDStoredInCache!)) == true
         }
-        expect(manager.currentUserIsAnonymous).to(beTrue())
+        expect(manager.currentUserIsAnonymous) == true
     }
 
 }

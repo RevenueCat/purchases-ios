@@ -32,7 +32,7 @@ class IdentityManager: CurrentUserProvider {
     private let customerInfoManager: CustomerInfoManager
     private let attributeSyncing: AttributeSyncing
 
-    internal static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
+    private static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
     init(
         deviceCache: DeviceCache,
