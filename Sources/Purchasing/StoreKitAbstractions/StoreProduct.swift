@@ -124,7 +124,7 @@ internal protocol StoreProductType: Sendable {
     /// not the preferred language set on the device.
     var localizedTitle: String { get }
 
-    /// The ccurrency of the product's price.
+    /// The currency of the product's price.
     var currencyCode: String? { get }
 
     /// The decimal representation of the cost of the product, in local currency.
