@@ -258,6 +258,28 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
         expect(payment2.simulatesAskToBuyInSandbox) == true
     }
 
+    func testUpdatedTransactionsDoesNotLogWarningForLowNumberOfTransactions() {
+        let logger = TestLogHandler()
+
+        self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: [Self.randomTransaction()])
+
+        logger.verifyMessageWasNotLogged("This high number is unexpected")
+    }
+
+    func testUpdatedTransactionsLogsWarningWhenSendingTooManyTransactions() {
+        let logger = TestLogHandler(capacity: 150)
+
+        let payment = SKPayment(product: .init())
+        let transactions = (0..<110).map { _ in
+            Self.transaction(with: payment)
+        }
+
+        self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: transactions)
+
+        logger.verifyMessageWasLogged(Strings.storeKit.sk1_payment_queue_too_many_transactions(transactions.count),
+                                      level: .warn)
+    }
+
 #if os(iOS) || targetEnvironment(macCatalyst)
     func testShouldShowPriceConsentWiredUp() throws {
         guard #available(iOS 13.4, macCatalyst 13.4, *) else {
@@ -281,6 +303,10 @@ private extension StoreKit1WrapperTests {
         transaction.mockPayment = SKPayment(product: SK1Product())
 
         return transaction
+    }
+
+    static func randomTransaction() -> MockTransaction {
+        return Self.transaction(with: .init(product: .init()))
     }
 
 }

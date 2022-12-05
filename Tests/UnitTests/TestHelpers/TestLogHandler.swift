@@ -56,8 +56,14 @@ final class TestLogHandler {
     typealias MessageData = (level: LogLevel, message: String)
 
     var messages: [MessageData] { return self.loggedMessages.value }
+    private let capacity: Int
 
-    init(file: String = #fileID, line: UInt = #line) {
+    init(
+        capacity: Int = TestLogHandler.defaultMessageLimit,
+        file: String = #fileID,
+        line: UInt = #line
+    ) {
+        self.capacity = capacity
         self.creationContext = .init(file: file, line: line)
         Self.sharedHandler.add(observer: self)
     }
@@ -145,15 +151,15 @@ extension TestLogHandler: LogMessageObserver {
             $0.append((level, message))
 
             precondition(
-                $0.count < Self.messageLimit,
-                "\(Self.messageLimit) messages have been stored. " +
+                $0.count < self.capacity,
+                "\($0.count) messages have been stored. " +
                 "This is likely a programming error and \(self) " +
                 "(created in \(self.creationContext.file):\(self.creationContext.line) has leaked."
             )
         }
     }
 
-    private static let messageLimit = 100
+    private static let defaultMessageLimit = 100
 
 }
 

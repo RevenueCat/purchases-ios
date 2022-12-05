@@ -133,6 +133,10 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         guard let delegate = self.delegate else { return }
 
+        if transactions.count >= 100 {
+            Logger.appleWarning(Strings.storeKit.sk1_payment_queue_too_many_transactions(transactions.count))
+        }
+
         self.operationDispatcher.dispatchOnWorkerThread {
             for transaction in transactions {
                 Logger.debug(Strings.purchase.paymentqueue_updated_transaction(self, transaction))

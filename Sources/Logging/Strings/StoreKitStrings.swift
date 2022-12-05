@@ -42,6 +42,8 @@ enum StoreKitStrings {
 
     case no_cached_products_starting_store_products_request(identifiers: Set<String>)
 
+    case sk1_payment_queue_too_many_transactions(_ count: Int)
+
     case sk1_product_request_too_slow
 
     case sk2_product_request_too_slow
@@ -96,6 +98,10 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .no_cached_products_starting_store_products_request(let identifiers):
             return "No existing products cached, starting store products request for: \(identifiers)"
+
+        case let .sk1_payment_queue_too_many_transactions(count):
+            return "SKPaymentQueue sent \(count) updated transactions. " +
+            "This high number is unexpected and is likely due to bad state on your device."
 
         case .sk1_product_request_too_slow:
             return "StoreKit 1 product request took longer than expected"
