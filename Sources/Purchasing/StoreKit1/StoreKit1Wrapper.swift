@@ -134,20 +134,24 @@ extension StoreKit1Wrapper: PaymentQueueWrapperType {
 extension StoreKit1Wrapper: SKPaymentTransactionObserver {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        guard let delegate = self.delegate else { return }
+
         self.operationDispatcher.dispatchOnWorkerThread {
             for transaction in transactions {
                 Logger.debug(Strings.purchase.paymentqueue_updated_transaction(self, transaction))
-                self.delegate?.storeKit1Wrapper(self, updatedTransaction: transaction)
+                delegate.storeKit1Wrapper(self, updatedTransaction: transaction)
             }
         }
     }
 
     // Sent when transactions are removed from the queue (via finishTransaction:).
     func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
+        guard let delegate = self.delegate else { return }
+
         self.operationDispatcher.dispatchOnWorkerThread {
             for transaction in transactions {
                 Logger.debug(Strings.purchase.paymentqueue_removed_transaction(self, transaction))
-                self.delegate?.storeKit1Wrapper(self, removedTransaction: transaction)
+                delegate.storeKit1Wrapper(self, removedTransaction: transaction)
             }
         }
     }
