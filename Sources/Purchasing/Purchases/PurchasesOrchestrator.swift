@@ -434,7 +434,7 @@ final class PurchasesOrchestrator {
                         Logger.debug(
                             Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
                         )
-                        options.insert(signedData.sk2PurchaseOption)
+                        options.insert(try signedData.sk2PurchaseOption)
                     }
 
                     return try await sk2Product.purchase(options: options)
@@ -446,6 +446,9 @@ final class PurchasesOrchestrator {
                                                                               fetchPolicy: .cachedOrFetched),
                 userCancelled: true
             )
+        } catch let error as PromotionalOffer.SignedData.Error {
+            throw ErrorUtils.invalidPromotionalOfferError(error: error,
+                                                          message: error.localizedDescription)
         } catch {
             throw ErrorUtils.purchasesError(withStoreKitError: error)
         }
