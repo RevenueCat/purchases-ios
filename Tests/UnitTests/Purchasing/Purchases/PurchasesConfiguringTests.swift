@@ -92,6 +92,68 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Purchases.shared.finishTransactions) == true
     }
 
+    func testUserIdIsSetWhenConfiguringWithUserID() {
+        let purchases = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(appUserID: Self.appUserID)
+        )
+        expect(purchases.appUserID) == Self.appUserID
+    }
+
+    func testUserIdIsSetToAnonymousWhenConfiguringWithEmptyUserID() {
+        self.deviceCache.userIDStoredInCache = nil
+
+        let purchases = Purchases.configure(
+            with: .init(withAPIKey: "")
+                // This test requires no previously stored user
+                .with(userDefaults: .init(suiteName: UUID().uuidString)!)
+                .with(appUserID: "")
+        )
+        expect(purchases.appUserID).toNot(beEmpty())
+        expect(IdentityManager.userIsAnonymous(purchases.appUserID))
+            .to(beTrue(), description: "User '\(purchases.appUserID)' should be anonymous")
+    }
+
+    func testUserIdOverridesPreviouslyConfiguredUser() {
+        // This test requires no previously stored user
+        let userDefaults: UserDefaults = .init(suiteName: UUID().uuidString)!
+
+        let newUserID = Self.appUserID + "_new"
+
+        _ = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(userDefaults: userDefaults)
+                .with(appUserID: Self.appUserID)
+        )
+        Purchases.clearSingleton()
+        let purchases = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(userDefaults: userDefaults)
+                .with(appUserID: newUserID)
+        )
+
+        expect(purchases.appUserID) == newUserID
+    }
+
+    func testNilUserIdIsIgnoredIfPreviousUserExists() {
+        // This test requires no previously stored user
+        let userDefaults: UserDefaults = .init(suiteName: UUID().uuidString)!
+
+        _ = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(userDefaults: userDefaults)
+                .with(appUserID: Self.appUserID)
+        )
+        Purchases.clearSingleton()
+        let purchases = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(userDefaults: userDefaults)
+                .with(appUserID: nil)
+        )
+
+        expect(purchases.appUserID) == Self.appUserID
+    }
+
     func testFirstInitializationCallDelegate() {
         self.setupPurchases()
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
