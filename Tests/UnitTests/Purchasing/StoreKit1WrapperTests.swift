@@ -17,7 +17,7 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     private var operationDispatcher: MockOperationDispatcher!
     private var paymentQueue: MockPaymentQueue!
 
-    private var wrapper: StoreKit1Wrapper?
+    private var wrapper: StoreKit1Wrapper!
 
     override func setUp() {
         super.setUp()
@@ -25,9 +25,9 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
         self.operationDispatcher = .init()
         self.paymentQueue = .init()
 
-        self.wrapper = StoreKit1Wrapper.init(paymentQueue: self.paymentQueue,
-                                             operationDispatcher: self.operationDispatcher)
-        self.wrapper?.delegate = self
+        self.wrapper = StoreKit1Wrapper(paymentQueue: self.paymentQueue,
+                                        operationDispatcher: self.operationDispatcher)
+        self.wrapper.delegate = self
     }
 
     var updatedTransactions: [SKPaymentTransaction] = []
@@ -95,14 +95,14 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
 
     func testCallsDelegateToProcessTransactionsOnWorkerThread() {
         let payment = SKPayment(product: SK1Product())
-        self.wrapper?.add(payment)
+        self.wrapper.add(payment)
 
         let transactions = [
             Self.transaction(with: payment),
             Self.transaction(with: payment)
         ]
 
-        self.wrapper?.paymentQueue(paymentQueue, updatedTransactions: transactions)
+        self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: transactions)
         expect(self.operationDispatcher.invokedDispatchOnWorkerThread) == true
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadCount) == 1
     }
@@ -278,7 +278,7 @@ private extension StoreKit1WrapperTests {
 
     static func transaction(with: SKPayment) -> MockTransaction {
         let transaction = MockTransaction()
-        transaction.mockPayment = SKPayment.init(product: SK1Product())
+        transaction.mockPayment = SKPayment(product: SK1Product())
 
         return transaction
     }
