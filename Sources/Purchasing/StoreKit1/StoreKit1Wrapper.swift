@@ -63,17 +63,14 @@ class StoreKit1Wrapper: NSObject {
     private let paymentQueue: SKPaymentQueue
     private let operationDispatcher: OperationDispatcher
 
-    init(paymentQueue: SKPaymentQueue, operationDispatcher: OperationDispatcher) {
+    init(paymentQueue: SKPaymentQueue = .default(),
+         operationDispatcher: OperationDispatcher = .default) {
         self.paymentQueue = paymentQueue
         self.operationDispatcher = operationDispatcher
 
         super.init()
 
         Logger.verbose(Strings.purchase.storekit1_wrapper_init(self))
-    }
-
-    override convenience init() {
-        self.init(paymentQueue: .default(), operationDispatcher: .default)
     }
 
     deinit {

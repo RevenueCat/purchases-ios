@@ -274,7 +274,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
             ? .right(.init())
-            : .left(.init())
+            : .left(.init(operationDispatcher: operationDispatcher))
 
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
