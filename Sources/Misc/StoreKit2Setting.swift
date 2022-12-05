@@ -60,6 +60,11 @@ extension StoreKit2Setting {
 
     /// - Returns: `true` iff SK2 is enabled and it's available.
     var shouldOnlyUseStoreKit2: Bool {
+        return self.isEnabledAndAvailable
+    }
+
+    /// - Returns: `true` iff SK2 is enabled and it's available.
+    var isEnabledAndAvailable: Bool {
         switch self {
         case .disabled, .enabledOnlyForOptimizations: return false
         case .enabledForCompatibleDevices: return Self.isStoreKit2Available

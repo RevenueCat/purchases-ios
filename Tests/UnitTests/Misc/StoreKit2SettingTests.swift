@@ -48,6 +48,22 @@ class StoreKit2SettingTests: TestCase {
         expect(StoreKit2Setting.enabledForCompatibleDevices.shouldOnlyUseStoreKit2) == true
     }
 
+    func testIsEnabledAndAvailableFalseWhenOnlyEnabledForOptimizations() {
+        expect(StoreKit2Setting.enabledOnlyForOptimizations.isEnabledAndAvailable) == false
+    }
+
+    func testIsEnabledAndAvailableFalseIfNotAvailable() throws {
+        try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
+
+        expect(StoreKit2Setting.enabledForCompatibleDevices.isEnabledAndAvailable) == false
+    }
+
+    func testIsEnabledAndAvailableTrueIfAvailable() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        expect(StoreKit2Setting.enabledForCompatibleDevices.isEnabledAndAvailable) == true
+    }
+
     func testStoreKit2NotAvailableOnOlderDevices() throws {
         try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
 

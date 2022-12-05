@@ -469,6 +469,24 @@ class HTTPClientTests: TestCase {
         expect(headerPresent.value).toEventually(equal(true))
     }
 
+    func testPassesStoreKit2EnabledHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        let headerPresent: Atomic<Bool> = false
+
+        let enabled = self.systemInfo.storeKit2Setting.isEnabledAndAvailable.description
+
+        stub(condition: hasHeaderNamed("X-StoreKit2-Enabled",
+                                       value: enabled)) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse
+        }
+
+        self.client.perform(request) { (_: HTTPResponse<Data>.Result) in }
+
+        expect(headerPresent.value).toEventually(equal(true))
+    }
+
     #if os(macOS) || targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifierWhenIsSandbox() {
         let request = HTTPRequest(method: .get, path: .mockPath)

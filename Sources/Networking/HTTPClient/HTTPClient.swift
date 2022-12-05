@@ -148,6 +148,7 @@ private extension HTTPClient {
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
             "X-StoreKit2-Setting": "\(self.systemInfo.storeKit2Setting.debugDescription)",
+            "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             "X-Is-Sandbox": "\(self.systemInfo.isSandbox)"
         ]
