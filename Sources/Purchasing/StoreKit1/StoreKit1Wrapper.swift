@@ -61,9 +61,11 @@ class StoreKit1Wrapper: NSObject {
     }
 
     private let paymentQueue: SKPaymentQueue
+    private let operationDispatcher: OperationDispatcher
 
-    init(paymentQueue: SKPaymentQueue) {
+    init(paymentQueue: SKPaymentQueue, operationDispatcher: OperationDispatcher) {
         self.paymentQueue = paymentQueue
+        self.operationDispatcher = operationDispatcher
 
         super.init()
 
@@ -71,7 +73,7 @@ class StoreKit1Wrapper: NSObject {
     }
 
     override convenience init() {
-        self.init(paymentQueue: .default())
+        self.init(paymentQueue: .default(), operationDispatcher: .default)
     }
 
     deinit {
@@ -132,17 +134,21 @@ extension StoreKit1Wrapper: PaymentQueueWrapperType {
 extension StoreKit1Wrapper: SKPaymentTransactionObserver {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        for transaction in transactions {
-            Logger.debug(Strings.purchase.paymentqueue_updated_transaction(self, transaction))
-            self.delegate?.storeKit1Wrapper(self, updatedTransaction: transaction)
+        self.operationDispatcher.dispatchOnWorkerThread {
+            for transaction in transactions {
+                Logger.debug(Strings.purchase.paymentqueue_updated_transaction(self, transaction))
+                self.delegate?.storeKit1Wrapper(self, updatedTransaction: transaction)
+            }
         }
     }
 
     // Sent when transactions are removed from the queue (via finishTransaction:).
     func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
-        for transaction in transactions {
-            Logger.debug(Strings.purchase.paymentqueue_removed_transaction(self, transaction))
-            self.delegate?.storeKit1Wrapper(self, removedTransaction: transaction)
+        self.operationDispatcher.dispatchOnWorkerThread {
+            for transaction in transactions {
+                Logger.debug(Strings.purchase.paymentqueue_removed_transaction(self, transaction))
+                self.delegate?.storeKit1Wrapper(self, removedTransaction: transaction)
+            }
         }
     }
 
