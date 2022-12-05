@@ -128,6 +128,9 @@ commands:
       - run:
           name: Install << parameters.dependency_name >>
           command: |
+            # Link dependency in case it was found in the cache
+            brew link << parameters.dependency_name >> || true
+
             if which << parameters.dependency_name >> > /dev/null 2>&1; then
                 echo "Skipping installation, already found."
                 exit 0;
