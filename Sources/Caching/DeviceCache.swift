@@ -50,12 +50,13 @@ class DeviceCache {
          userDefaults: UserDefaults,
          offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
          notificationCenter: NotificationCenter? = NotificationCenter.default) {
-
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default
         self.userDefaults = .init(userDefaults: userDefaults)
         self.appUserIDHasBeenSet.value = userDefaults.string(forKey: .appUserDefaults) != nil
+
+        Logger.verbose(Strings.purchase.device_cache_init(self))
 
         // Observe `UserDefaults` changes through `handleUserDefaultsChanged`
         // to ensure that users don't remove the data from the SDK, which would
@@ -87,6 +88,8 @@ class DeviceCache {
     }
 
     deinit {
+        Logger.verbose(Strings.purchase.device_cache_deinit(self))
+
         if let observer = self.userDefaultsObserver {
             self.notificationCenter.removeObserver(observer)
         }
