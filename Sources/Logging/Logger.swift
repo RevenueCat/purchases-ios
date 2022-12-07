@@ -52,7 +52,12 @@ public typealias VerboseLogHandler = (_ level: LogLevel,
 public typealias LogHandler = (_ level: LogLevel,
                                _ message: String) -> Void
 
-enum Logger {
+// MARK: - Logger
+
+// This is a `struct` instead of `enum` so that
+// we can use `Logger()` as a `LoggerType`.
+// swiftlint:disable:next convenience_type
+struct Logger {
 
     static var logLevel: LogLevel = Self.defaultLogLevel
     static var logHandler: VerboseLogHandler = Self.defaultLogHandler
@@ -70,7 +75,7 @@ enum Logger {
             fileContext = ""
         }
 
-        NSLog("%@", "[\(frameworkDescription)] - \(level.description)\(fileContext): \(message)")
+        NSLog("%@", "[\(Self.frameworkDescription)] - \(level.description)\(fileContext): \(message)")
     }
 
     static var verbose: Bool = false
@@ -85,44 +90,97 @@ enum Logger {
 
     internal static let frameworkDescription = "Purchases"
 
+}
+
+// MARK: - LoggerType implementation
+
+/// `Logger` can be used both with static or instance methods.
+/// This allows us to use it directly (`Logger.info("...")`), or inject it:
+/// ```swift
+/// let logger: LoggerType
+/// logger.info("...")
+/// ```
+extension Logger: LoggerType {
+
+    func verbose(_ message: @autoclosure () -> CustomStringConvertible,
+                 fileName: String? = #fileID,
+                 functionName: String? = #function,
+                 line: UInt = #line) {
+        Self.verbose(message(), fileName: fileName, functionName: functionName, line: line)
+    }
+
+    func debug(_ message: @autoclosure () -> CustomStringConvertible,
+               fileName: String? = #fileID,
+               functionName: String? = #function,
+               line: UInt = #line) {
+        Self.debug(message(), fileName: fileName, functionName: functionName, line: line)
+    }
+
+    func info(_ message: @autoclosure () -> CustomStringConvertible,
+              fileName: String? = #fileID,
+              functionName: String? = #function,
+              line: UInt = #line) {
+        Self.info(message(), fileName: fileName, functionName: functionName, line: line)
+    }
+
+    func warn(_ message: @autoclosure () -> CustomStringConvertible,
+              fileName: String? = #fileID,
+              functionName: String? = #function,
+              line: UInt = #line) {
+        Self.warn(message(), fileName: fileName, functionName: functionName, line: line)
+    }
+
+    func error(_ message: @autoclosure () -> CustomStringConvertible,
+               fileName: String = #fileID,
+               functionName: String = #function,
+               line: UInt = #line) {
+        Self.error(message(), fileName: fileName, functionName: functionName, line: line)
+    }
+
+}
+
+// MARK: - Static implementation
+
+extension Logger {
+
     static func verbose(_ message: @autoclosure () -> CustomStringConvertible,
                         fileName: String? = #fileID,
                         functionName: String? = #function,
                         line: UInt = #line) {
-        log(level: .verbose, intent: .verbose, message: message().description,
-            fileName: fileName, functionName: functionName, line: line)
+        Self.log(level: .verbose, intent: .verbose, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
     static func debug(_ message: @autoclosure () -> CustomStringConvertible,
                       fileName: String? = #fileID,
                       functionName: String? = #function,
                       line: UInt = #line) {
-        log(level: .debug, intent: .info, message: message().description,
-            fileName: fileName, functionName: functionName, line: line)
+        Self.log(level: .debug, intent: .info, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
     static func info(_ message: @autoclosure () -> CustomStringConvertible,
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        log(level: .info, intent: .info, message: message().description,
-            fileName: fileName, functionName: functionName, line: line)
+        Self.log(level: .info, intent: .info, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
     static func warn(_ message: @autoclosure () -> CustomStringConvertible,
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        log(level: .warn, intent: .warning, message: message().description,
-            fileName: fileName, functionName: functionName, line: line)
+        Self.log(level: .warn, intent: .warning, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
     static func error(_ message: @autoclosure () -> CustomStringConvertible,
                       fileName: String = #fileID,
                       functionName: String = #function,
                       line: UInt = #line) {
-        log(level: .error, intent: .rcError, message: message().description,
-            fileName: fileName, functionName: functionName, line: line)
+        Self.log(level: .error, intent: .rcError, message: message().description,
+                 fileName: fileName, functionName: functionName, line: line)
     }
 
 }
@@ -133,7 +191,7 @@ extension Logger {
                            fileName: String = #fileID,
                            functionName: String = #function,
                            line: UInt = #line) {
-        self.log(level: .error, intent: .appleError, message: message().description,
+        Self.log(level: .error, intent: .appleError, message: message(),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -141,7 +199,7 @@ extension Logger {
                              fileName: String = #fileID,
                              functionName: String = #function,
                              line: UInt = #line) {
-        self.log(level: .warn, intent: .appleError, message: message().description,
+        Self.log(level: .warn, intent: .appleError, message: message(),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -149,7 +207,7 @@ extension Logger {
                          fileName: String = #fileID,
                          functionName: String = #function,
                          line: UInt = #line) {
-        self.log(level: .info, intent: .purchase, message: message().description,
+        Self.log(level: .info, intent: .purchase, message: message(),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -157,7 +215,7 @@ extension Logger {
                                   fileName: String = #fileID,
                                   functionName: String = #function,
                                   line: UInt = #line) {
-        self.log(level: .info, intent: .rcPurchaseSuccess, message: message().description,
+        Self.log(level: .info, intent: .rcPurchaseSuccess, message: message(),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -165,7 +223,7 @@ extension Logger {
                                 fileName: String = #fileID,
                                 functionName: String = #function,
                                 line: UInt = #line) {
-        self.log(level: .error, intent: .purchase, message: message().description,
+        Self.log(level: .error, intent: .purchase, message: message(),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -173,7 +231,7 @@ extension Logger {
                           fileName: String = #fileID,
                           functionName: String = #function,
                           line: UInt = #line) {
-        self.log(level: .debug, intent: .rcSuccess, message: message().description,
+        Self.log(level: .debug, intent: .rcSuccess, message: message(),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -181,18 +239,18 @@ extension Logger {
                      fileName: String? = #fileID,
                      functionName: String? = #function,
                      line: UInt = #line) {
-        self.log(level: .debug, intent: .user, message: message().description,
+        Self.log(level: .debug, intent: .user, message: message(),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
     static func log(level: LogLevel,
                     intent: LogIntent,
-                    message: @autoclosure () -> String,
+                    message: @autoclosure () -> CustomStringConvertible,
                     fileName: String? = #fileID,
                     functionName: String? = #function,
                     line: UInt = #line) {
         Self.log(level: level,
-                 message: [intent.prefix.notEmpty, message()]
+                 message: [intent.prefix.notEmpty, message().description]
                     .compactMap { $0 }
                     .joined(separator: " "),
                  fileName: fileName,
@@ -201,6 +259,8 @@ extension Logger {
     }
 
 }
+
+// MARK: - Private
 
 private extension Logger {
 
