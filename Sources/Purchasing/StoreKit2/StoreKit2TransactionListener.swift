@@ -39,7 +39,7 @@ class StoreKit2TransactionListener {
 
     func listenForTransactions() {
         self.taskHandle?.cancel()
-        self.taskHandle = Task { [weak self] in
+        self.taskHandle = Task(priority: .utility) { [weak self] in
             for await result in StoreKit.Transaction.updates {
                 guard let self = self else { break }
 
