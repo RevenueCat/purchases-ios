@@ -14,14 +14,20 @@ import XCTest
 @testable import RevenueCat
 
 class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
-    let paymentQueue = MockPaymentQueue()
+    private var operationDispatcher: MockOperationDispatcher!
+    private var paymentQueue: MockPaymentQueue!
 
-    var wrapper: StoreKit1Wrapper?
+    private var wrapper: StoreKit1Wrapper!
 
     override func setUp() {
         super.setUp()
-        wrapper = StoreKit1Wrapper.init(paymentQueue: paymentQueue)
-        wrapper?.delegate = self
+
+        self.operationDispatcher = .init()
+        self.paymentQueue = .init()
+
+        self.wrapper = StoreKit1Wrapper(paymentQueue: self.paymentQueue,
+                                        operationDispatcher: self.operationDispatcher)
+        self.wrapper.delegate = self
     }
 
     var updatedTransactions: [SKPaymentTransaction] = []
@@ -85,6 +91,20 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
         wrapper?.paymentQueue(paymentQueue, updatedTransactions: [transaction])
 
         expect(self.updatedTransactions).to(contain(transaction))
+    }
+
+    func testCallsDelegateToProcessTransactionsOnWorkerThread() {
+        let payment = SKPayment(product: SK1Product())
+        self.wrapper.add(payment)
+
+        let transactions = [
+            Self.transaction(with: payment),
+            Self.transaction(with: payment)
+        ]
+
+        self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: transactions)
+        expect(self.operationDispatcher.invokedDispatchOnWorkerThread) == true
+        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadCount) == 1
     }
 
     func testCallsDelegateWhenPromoPurchaseIsAvailable() {
@@ -251,5 +271,16 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
         expect(consentStatuses) == [false]
     }
 #endif
+
+}
+
+private extension StoreKit1WrapperTests {
+
+    static func transaction(with: SKPayment) -> MockTransaction {
+        let transaction = MockTransaction()
+        transaction.mockPayment = SKPayment(product: SK1Product())
+
+        return transaction
+    }
 
 }

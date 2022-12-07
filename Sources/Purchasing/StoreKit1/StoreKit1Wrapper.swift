@@ -61,17 +61,16 @@ class StoreKit1Wrapper: NSObject {
     }
 
     private let paymentQueue: SKPaymentQueue
+    private let operationDispatcher: OperationDispatcher
 
-    init(paymentQueue: SKPaymentQueue) {
+    init(paymentQueue: SKPaymentQueue = .default(),
+         operationDispatcher: OperationDispatcher = .default) {
         self.paymentQueue = paymentQueue
+        self.operationDispatcher = operationDispatcher
 
         super.init()
 
         Logger.verbose(Strings.purchase.storekit1_wrapper_init(self))
-    }
-
-    override convenience init() {
-        self.init(paymentQueue: .default())
     }
 
     deinit {
@@ -132,17 +131,25 @@ extension StoreKit1Wrapper: PaymentQueueWrapperType {
 extension StoreKit1Wrapper: SKPaymentTransactionObserver {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        for transaction in transactions {
-            Logger.debug(Strings.purchase.paymentqueue_updated_transaction(self, transaction))
-            self.delegate?.storeKit1Wrapper(self, updatedTransaction: transaction)
+        guard let delegate = self.delegate else { return }
+
+        self.operationDispatcher.dispatchOnWorkerThread {
+            for transaction in transactions {
+                Logger.debug(Strings.purchase.paymentqueue_updated_transaction(self, transaction))
+                delegate.storeKit1Wrapper(self, updatedTransaction: transaction)
+            }
         }
     }
 
     // Sent when transactions are removed from the queue (via finishTransaction:).
     func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
-        for transaction in transactions {
-            Logger.debug(Strings.purchase.paymentqueue_removed_transaction(self, transaction))
-            self.delegate?.storeKit1Wrapper(self, removedTransaction: transaction)
+        guard let delegate = self.delegate else { return }
+
+        self.operationDispatcher.dispatchOnWorkerThread {
+            for transaction in transactions {
+                Logger.debug(Strings.purchase.paymentqueue_removed_transaction(self, transaction))
+                delegate.storeKit1Wrapper(self, removedTransaction: transaction)
+            }
         }
     }
 
