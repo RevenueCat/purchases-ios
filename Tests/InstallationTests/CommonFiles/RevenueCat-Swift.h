@@ -626,7 +626,7 @@ SWIFT_CLASS_NAMED("Builder")
 /// purchases and subscriptions across devices. Pass <code>nil</code> or an empty string if you want <code>Purchases</code>
 /// to generate this for you.
 ///
-- (RCConfigurationBuilder * _Nonnull)withAppUserID:(NSString * _Nonnull)appUserID SWIFT_WARN_UNUSED_RESULT;
+- (RCConfigurationBuilder * _Nonnull)withAppUserID:(NSString * _Nullable)appUserID SWIFT_WARN_UNUSED_RESULT;
 /// Set <code>observerMode</code>.
 /// \param observerMode Set this to <code>true</code> if you have your own IAP implementation and want to use only
 /// RevenueCat’s backend. Default is <code>false</code>.
