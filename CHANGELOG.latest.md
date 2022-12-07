@@ -1,18 +1,4 @@
-### New Features
-* Added `LogLevel.verbose` (#2080) via NachoSoto (@NachoSoto)
+### Bugfixes
+* `Configuration.with(appUserID:)`: allow passing `nil` and added new tests (#2110) via NachoSoto (@NachoSoto)
 ### Other Changes
-* Fixed `LogLevel` ordering and added tests (#2102) via NachoSoto (@NachoSoto)
-* `TimingUtil`: fixed Xcode 13.2 compilation (#2088) via NachoSoto (@NachoSoto)
-* Generate documentation for `iOS` instead of `macOS` (#2089) via NachoSoto (@NachoSoto)
-* Update `fastlane` (#2090) via NachoSoto (@NachoSoto)
-* CI: speed up `docs-deploy` by only installing `bundle` dependencies (#2092) via NachoSoto (@NachoSoto)
-* `Tests`: replaced `toEventually` with new `waitUntilValue` to simplify tests (#2071) via NachoSoto (@NachoSoto)
-* `CircleCI`: fixed `docs-deploy` git credentials (#2087) via NachoSoto (@NachoSoto)
-* Added `verbose` logs for `Purchases` and `StoreKit1Wrapper` lifetime (#2082) via NachoSoto (@NachoSoto)
-* `StoreKit`: added logs when purchasing and product requests are too slow (#2061) via NachoSoto (@NachoSoto)
-* Created `TimingUtil` to measure and log methods that are too slow (#2059) via NachoSoto (@NachoSoto)
-* `SKTestSession`: finish all unfinished transactions before starting each test (#2066) via NachoSoto (@NachoSoto)
-* `CircleCI`: lowered `no_output_timeout` to 5 minutes (#2084) via NachoSoto (@NachoSoto)
-* Removed unused `APITesters.xcworkspace` and created `RevenueCat.xcworkspace` (#2075) via NachoSoto (@NachoSoto)
-* `Atomic`: added new test to verify each instance gets its own `Lock` (#2077) via NachoSoto (@NachoSoto)
-* `Logger`: exposed generic `log` method (#2058) via NachoSoto (@NachoSoto)
+* Fix documentation typo (#2113) via Bas Broek (@BasThomas)
