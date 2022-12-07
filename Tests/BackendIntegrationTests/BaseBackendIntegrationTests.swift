@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 4/1/22.
 
+import Nimble
 @testable import RevenueCat
 import XCTest
 
@@ -67,13 +68,7 @@ class BaseBackendIntegrationTests: XCTestCase {
 
         self.clearReceiptIfExists()
         self.configurePurchases()
-    }
-
-    @MainActor
-    override func tearDown() {
-        Purchases.clearSingleton()
-
-        super.tearDown()
+        self.verifyPurchasesDoesNotLeak()
     }
 
 }
@@ -108,6 +103,20 @@ private extension BaseBackendIntegrationTests {
                             networkTimeout: Configuration.networkTimeoutDefault,
                             dangerousSettings: self.dangerousSettings)
         Purchases.shared.delegate = self.purchasesDelegate
+    }
+
+    func verifyPurchasesDoesNotLeak() {
+        // See `addTeardownBlock` docs:
+        // - These run *before* `tearDown`.
+        // - They run in LIFO order.
+        self.addTeardownBlock { [weak purchases = Purchases.shared] in
+            expect(purchases).toEventually(beNil(), description: "Purchases has leaked")
+        }
+
+        self.addTeardownBlock {
+            Purchases.shared.delegate = nil
+            Purchases.clearSingleton()
+        }
     }
 
     private var dangerousSettings: DangerousSettings {
