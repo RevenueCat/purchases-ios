@@ -16,6 +16,8 @@ import Foundation
 enum EnvironmentKey: String {
 
     case XCTestConfigurationFile = "XCTestConfigurationFilePath"
+    case RCRunningTests = "RCRunningTests"
+    case RCRunningIntegrationTests = "RCRunningIntegrationTests"
 
 }
 
@@ -32,7 +34,17 @@ extension ProcessInfo {
 extension ProcessInfo {
 
     static var isRunningUnitTests: Bool {
-        return ProcessInfo[.XCTestConfigurationFile] != nil
+        return self[.XCTestConfigurationFile] != nil
+    }
+
+    /// `true` when running unit or integration tests (configured in .xctestplan files).
+    static var isRunningRevenueCatTests: Bool {
+        return self[.RCRunningTests] == "1"
+    }
+
+    /// `true` when running integration tests (configured in .xctestplan files).
+    static var isRunningIntegrationTests: Bool {
+        return self[.RCRunningIntegrationTests] == "1"
     }
 
 }

@@ -501,7 +501,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.purchases.modify { currentInstance in
             if currentInstance != nil {
                 #if DEBUG
-                if ProcessInfo.isRunningUnitTests {
+                if ProcessInfo.isRunningRevenueCatTests {
                     preconditionFailure(Strings.configure.purchase_instance_already_set.description)
                 }
                 #endif
