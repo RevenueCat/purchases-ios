@@ -375,6 +375,38 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
+    func testApplyPromotionalOfferDuringSubscription() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let user = UUID().uuidString
+
+        let (_, created) = try await Purchases.shared.logIn(user)
+        expect(created) == true
+
+        let product = try await self.monthlyNoIntroProduct
+
+        // 1. Purchase subscription
+
+        var customerInfo = try await Purchases.shared.purchase(product: product).customerInfo
+
+        try await self.verifyEntitlementWentThrough(customerInfo)
+
+        // 2. Get eligible offer
+
+        let offers = await product.eligiblePromotionalOffers()
+        expect(offers).to(haveCount(1))
+        let offer = try XCTUnwrap(offers.first)
+
+        // 3. Purchase offer
+
+        customerInfo = try await Purchases.shared.purchase(product: product, promotionalOffer: offer).customerInfo
+
+        // 4. Verify purchase went through
+
+        let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+    }
+
+    @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
     func testPurchaseWithPromotionalOffer() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
@@ -387,9 +419,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 1. Purchase subscription
 
-        _ = try await Purchases.shared.purchase(product: product)
-        var customerInfo = try await Purchases.shared.syncPurchases()
-
+        var customerInfo = try await Purchases.shared.purchase(product: product).customerInfo
         var entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         // 2. Expire subscription
@@ -405,25 +435,12 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 4. Purchase with offer
 
-        _ = try await Purchases.shared.purchase(product: product, promotionalOffer: offer)
-        customerInfo = try await Purchases.shared.syncPurchases()
+        customerInfo = try await Purchases.shared.purchase(product: product, promotionalOffer: offer).customerInfo
 
         // 5. Verify offer was applied
 
         entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
-
-        let transactions: [Transaction] = await Transaction
-            .currentEntitlements
-            .compactMap {
-                switch $0 {
-                case let .verified(transaction): return transaction
-                case .unverified: return nil
-                }
-            }
-            .filter { $0.productID == product.productIdentifier }
-            .extractValues()
-
-        let transaction = try XCTUnwrap(transactions.onlyElement)
+        let transaction = try await Self.findTransaction(for: product.productIdentifier)
 
         expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
         expect(transaction.offerID) == offer.discount.offerIdentifier
@@ -607,6 +624,23 @@ private extension StoreKit1IntegrationTests {
         // `SKTestSession.expireSubscription` doesn't seem to work, so force expiration by waiting
         Logger.warn("Sleeping for \(timeToSleep) seconds to force expiration")
         try await Task.sleep(nanoseconds: UInt64(timeToSleep * 1_000_000_000))
+    }
+
+    @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
+    static func findTransaction(for productIdentifier: String) async throws -> Transaction {
+        let transactions: [Transaction] = await Transaction
+            .currentEntitlements
+            .compactMap {
+                switch $0 {
+                case let .verified(transaction): return transaction
+                case .unverified: return nil
+                }
+            }
+            .filter { $0.productID == productIdentifier }
+            .extractValues()
+
+        expect(transactions).to(haveCount(1))
+        return try XCTUnwrap(transactions.first)
     }
 
 }
