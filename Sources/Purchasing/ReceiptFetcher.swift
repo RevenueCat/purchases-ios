@@ -159,7 +159,11 @@ private extension ReceiptFetcher {
 
             if !data.isEmpty {
                 do {
-                    let receipt = try self.receiptParser.parse(from: data)
+                    // Parse receipt in a background thread
+                    let receipt = try await Task.detached { [currentData = data] in
+                        try self.receiptParser.parse(from: currentData)
+                    }.value
+
                     if receipt.containsActivePurchase(forProductIdentifier: productIdentifier) {
                         return data
                     } else {
