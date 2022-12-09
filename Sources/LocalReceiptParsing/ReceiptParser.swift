@@ -88,6 +88,8 @@ private extension ReceiptParser {
 
     #if DEBUG
     static func ensureRunningOutsideOfMainThread() {
+        // Only checking on integration tests.
+        // Unit tests might run on the main thread when testing this class directly.
         if ProcessInfo.isRunningIntegrationTests {
             precondition(
                 !Thread.isMainThread,
