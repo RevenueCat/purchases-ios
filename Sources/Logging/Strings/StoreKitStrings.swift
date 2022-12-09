@@ -101,7 +101,8 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case let .sk1_payment_queue_too_many_transactions(count):
             return "SKPaymentQueue sent \(count) updated transactions. " +
-            "This high number is unexpected and is likely due to bad state on your device."
+            "This high number is unexpected and is likely due to using an old sandbox account on a new device. " +
+            "If this is impacting performance, using a new sandbox account is recommended."
 
         case .sk1_product_request_too_slow:
             return "StoreKit 1 product request took longer than expected"
