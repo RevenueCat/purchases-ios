@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable file_length line_length missing_docs
+// swiftlint:disable line_length missing_docs
 
 public extension Purchases {
 
@@ -54,28 +54,6 @@ public extension Purchases {
     @available(macCatalyst, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
     func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffers(forProduct: product)
-    }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:)
-    @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
-        configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
-    }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool) -> Purchases {
-        configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: observerMode, userDefaults: nil)
     }
 
     @available(iOS, deprecated: 1, renamed: "configure(with:)")

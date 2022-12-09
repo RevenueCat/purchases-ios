@@ -16,7 +16,7 @@ import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
-    let purch = checkConfigure()
+    let purch = checkConfigure()!
 
     // initializers
     let finishTransactions: Bool = purch.finishTransactions
@@ -248,11 +248,19 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
     #endif
 }
 
-private func checkConfigure() -> Purchases {
+private func checkConfigure() -> Purchases! {
     Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
     Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
 
-    return Purchases.configure(withAPIKey: "")
+    Purchases.configure(withAPIKey: "")
+
+    Purchases.configure(withAPIKey: "", appUserID: nil)
+    Purchases.configure(withAPIKey: "", appUserID: "")
+
+    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
+
+    return nil
 }
 
 @available(*, deprecated) // Ignore deprecation warnings
@@ -276,12 +284,6 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
     Purchases.automaticAppleSearchAdsAttributionCollection = false
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
-
-    Purchases.configure(withAPIKey: "", appUserID: nil)
-    Purchases.configure(withAPIKey: "", appUserID: "")
-
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
 
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: nil)
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
