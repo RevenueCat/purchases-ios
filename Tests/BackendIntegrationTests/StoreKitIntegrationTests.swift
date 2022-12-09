@@ -442,7 +442,9 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
         let transaction = try await Self.findTransaction(for: product.productIdentifier)
 
-        self.verifyPromotionalOffer(offer, entitlement, transaction)
+        expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
+        expect(transaction.offerID) == offer.discount.offerIdentifier
+        expect(transaction.offerType) == .promotional
     }
 
 }
@@ -591,28 +593,6 @@ private extension StoreKit1IntegrationTests {
             beEmpty(),
             description: "Expected no entitlements. Got: \(customerInfo.entitlements.all)"
         )
-    }
-
-    @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
-    func verifyPromotionalOffer(
-        _ offer: PromotionalOffer,
-        _ entitlement: EntitlementInfo,
-        _ transaction: Transaction,
-        file: FileString = #file,
-        line: UInt = #line
-    ) {
-        expect(
-            file: file, line: line,
-            entitlement.latestPurchaseDate
-        ) != entitlement.originalPurchaseDate
-        expect(
-            file: file, line: line,
-            transaction.offerID
-        ) == offer.discount.offerIdentifier
-        expect(
-            file: file, line: line,
-            transaction.offerType
-        ) == .promotional
     }
 
     func expireSubscription(_ entitlement: EntitlementInfo) async throws {
