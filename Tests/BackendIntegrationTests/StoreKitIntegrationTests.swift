@@ -401,12 +401,9 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         customerInfo = try await Purchases.shared.purchase(product: product, promotionalOffer: offer).customerInfo
 
-        // 4. Verify offer was applied
+        // 4. Verify purchase went through
 
         let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
-        let transaction = try await Self.findTransaction(for: product.productIdentifier)
-
-        self.verifyPromotionalOffer(offer, entitlement, transaction)
     }
 
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
