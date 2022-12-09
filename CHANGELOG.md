@@ -1,3 +1,21 @@
+## 4.15.2
+### Bugfixes
+* Fixed purchasing with `PromotionalOffer`s using `StoreKit 2` (#2020) via NachoSoto (@NachoSoto)
+### Other Changes
+* `CircleCI`: cache Homebrew installation (#2103) via NachoSoto (@NachoSoto)
+* `Integration Tests`: fixed `Purchases` leak through `PurchasesDiagnostics` (#2126) via NachoSoto (@NachoSoto)
+* `HTTPClient`: replaced `X-StoreKit2-Setting` with `X-StoreKit2-Enabled` (#2118) via NachoSoto (@NachoSoto)
+* `BasePurchasesTests`: added assertion to ensure `Purchases` does not leak (#2104) via NachoSoto (@NachoSoto)
+* `ReceiptParser.parse` always throws `ReceiptParser.Error` (#2099) via NachoSoto (@NachoSoto)
+* `Tests`: ensure `Purchases` is not configured multiple times (#2100) via NachoSoto (@NachoSoto)
+* Extracted `LoggerType` (#2098) via NachoSoto (@NachoSoto)
+* `Integration Tests`: verify `Purchases` does not leak across tests (#2106) via NachoSoto (@NachoSoto)
+* `StoreKit2` listeners: set `Task` `priority` to `.utility` (#2070) via NachoSoto (@NachoSoto)
+* `Installation Tests`: remove unused code in `Fastfile` (#2097) via NachoSoto (@NachoSoto)
+* `DeviceCache`: added verbose logs for `init`/`deinit` (#2101) via NachoSoto (@NachoSoto)
+* `StoreKit1Wrapper`: process transactions in a background thread (#2115) via NachoSoto (@NachoSoto)
+* update CONTRIBUTING.md link in bug report template (#2119) via Nate Lowry (@natelowry)
+
 ## 4.15.1
 ### Bugfixes
 * `Configuration.with(appUserID:)`: allow passing `nil` and added new tests (#2110) via NachoSoto (@NachoSoto)
