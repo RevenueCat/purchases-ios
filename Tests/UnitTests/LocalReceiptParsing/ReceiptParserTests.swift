@@ -77,9 +77,9 @@ class ReceiptParserTests: TestCase {
         let container = containerWithDataObjectIdentifier()
 
         mockASN1ContainerBuilder.stubbedBuildResult = container
-        mockAppleReceiptBuilder.stubbedBuildError = ReceiptReadingError.receiptParsingError
+        mockAppleReceiptBuilder.stubbedBuildError = ReceiptParser.Error.receiptParsingError
 
-        expect { try self.receiptParser.parse(from: Data()) }.to(throwError(ReceiptReadingError.receiptParsingError))
+        expect { try self.receiptParser.parse(from: Data()) }.to(throwError(ReceiptParser.Error.receiptParsingError))
     }
 
     func testParseFromReceiptThrowsIfNoDataObjectIdentifierFound() {
@@ -91,7 +91,7 @@ class ReceiptParserTests: TestCase {
         mockASN1ContainerBuilder.stubbedBuildResult = container
 
         expect { try self.receiptParser.parse(from: Data()) }
-            .to(throwError(ReceiptReadingError.dataObjectIdentifierMissing))
+            .to(throwError(ReceiptParser.Error.dataObjectIdentifierMissing))
     }
 
     func testParseFromReceiptThrowsIfReceiptPayloadIsntLocatedAfterDataObjectIdentifierContainer() {
@@ -103,7 +103,7 @@ class ReceiptParserTests: TestCase {
         mockASN1ContainerBuilder.stubbedBuildResult = container
 
         expect { try self.receiptParser.parse(from: Data()) }
-            .to(throwError(ReceiptReadingError.dataObjectIdentifierMissing))
+            .to(throwError(ReceiptParser.Error.dataObjectIdentifierMissing))
     }
 
     func testReceiptHasTransactionsTrueIfReceiptHasTransactions() {
@@ -119,7 +119,7 @@ class ReceiptParserTests: TestCase {
     }
 
     func testReceiptHasTransactionsTrueIfReceiptCantBeParsed() {
-        mockASN1ContainerBuilder.stubbedBuildError = ReceiptReadingError.receiptParsingError
+        mockASN1ContainerBuilder.stubbedBuildError = ReceiptParser.Error.receiptParsingError
         expect(self.receiptParser.receiptHasTransactions(receiptData: Data())) == true
     }
 }

@@ -209,7 +209,9 @@ private extension ContainerFactory {
 }
 
 protocol BuildableReceiptAttributeType {
+
     var rawValue: Int { get }
+
 }
 
 extension InAppPurchaseBuilder.AttributeType: BuildableReceiptAttributeType {}

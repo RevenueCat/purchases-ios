@@ -30,6 +30,7 @@ class AppleReceiptBuilder {
         self.inAppPurchaseBuilder = inAppPurchaseBuilder
     }
 
+    /// - Throws: `ReceiptParser.Error`
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     func build(fromContainer container: ASN1Container) throws -> AppleReceipt {
         var bundleId: String?
@@ -42,7 +43,7 @@ class AppleReceiptBuilder {
         var inAppPurchases: [AppleReceipt.InAppPurchase] = []
 
         guard let internalContainer = container.internalContainers.first else {
-            throw ReceiptReadingError.receiptParsingError
+            throw ReceiptParser.Error.receiptParsingError
         }
         var receiptContainer = try containerBuilder.build(fromPayload: internalContainer.internalPayload)
 
@@ -57,7 +58,7 @@ class AppleReceiptBuilder {
 
         for receiptAttribute in receiptContainer.internalContainers {
             guard receiptAttribute.internalContainers.count == expectedInternalContainersCount else {
-                throw ReceiptReadingError.receiptParsingError
+                throw ReceiptParser.Error.receiptParsingError
             }
             let typeContainer = receiptAttribute.internalContainers[typeContainerIndex]
             let valueContainer = receiptAttribute.internalContainers[attributeTypeContainerIndex]
@@ -99,7 +100,7 @@ class AppleReceiptBuilder {
             let nonOptionalOpaqueValue = opaqueValue,
             let nonOptionalSha1Hash = sha1Hash,
             let nonOptionalCreationDate = creationDate else {
-            throw ReceiptReadingError.receiptParsingError
+            throw ReceiptParser.Error.receiptParsingError
         }
 
         let receipt = AppleReceipt(bundleId: nonOptionalBundleId,
