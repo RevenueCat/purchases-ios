@@ -106,12 +106,38 @@ commands:
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
+      - restore_cache:
+          keys:
+            - homebrew-cache-{{ checksum "Brewfile.lock.json" }}
+      - install-brew-dependency:
+          dependency_name: 'xcbeautify'
+      - install-brew-dependency:
+          dependency_name: 'swiftlint'
+      - save_cache:
+          key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}
+          paths:
+            - /usr/local/Cellar/swiftlint/
+            - /usr/local/Cellar/xcbeautify/
+            - /Users/$USER/Library/Caches/Homebrew/
+  
+  install-brew-dependency:
+    parameters:
+      dependency_name:
+        type: string
+    steps:
       - run:
-          name: Install swiftlint
-          command: brew install swiftlint
-      - run:
-          name: Install xcbeautify
-          command: brew install xcbeautify
+          name: Install << parameters.dependency_name >>
+          command: |
+            # Link dependency in case it was found in the cache
+            brew link << parameters.dependency_name >> || true
+
+            if which << parameters.dependency_name >> > /dev/null 2>&1; then
+                echo "Skipping installation, already found."
+                exit 0;
+            fi
+            brew install << parameters.dependency_name >>
+          environment:
+            HOMEBREW_NO_INSTALL_CLEANUP: 1
 
   install-rubydocker-dependencies:
     steps:
