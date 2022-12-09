@@ -151,7 +151,10 @@ private extension ASN1ContainerBuilder {
 
         if lengthDefinition == .indefinite {
             innerContainers = try buildInternalContainers(payload: data.dropFirst(bytesUsedForLength))
-            let innerContainersOverallLength = innerContainers.map { $0.totalBytesUsed }.reduce(0, +)
+            let innerContainersOverallLength = innerContainers
+                .lazy
+                .map { $0.totalBytesUsed }
+                .reduce(0, +)
             lengthValue = innerContainersOverallLength
         } else if isConstructed {
             let innerContainerData = data.dropFirst(bytesUsedForLength).prefix(lengthValue)
