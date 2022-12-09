@@ -97,7 +97,9 @@ class PurchasesRestoreTests: BasePurchasesTests {
     }
 
     func testRestoringPurchasesSetsIsRestoreForAnon() {
+        Purchases.clearSingleton()
         self.setupAnonPurchases()
+
         self.purchases.restorePurchases()
 
         expect(self.backend.postedIsRestore!).to(beTrue())

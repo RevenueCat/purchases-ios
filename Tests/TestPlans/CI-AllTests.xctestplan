@@ -10,6 +10,12 @@
   ],
   "defaultOptions" : {
     "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "RCRunningTests",
+        "value" : "1"
+      }
+    ],
     "maximumTestExecutionTimeAllowance" : 180,
     "targetForVariableExpansion" : {
       "containerPath" : "container:RevenueCat.xcodeproj",

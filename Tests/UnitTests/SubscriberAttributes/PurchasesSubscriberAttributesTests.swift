@@ -126,6 +126,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
     }
 
     override func tearDown() {
+        Purchases.clearSingleton()
+
         self.purchases?.delegate = nil
         self.purchases = nil
         UserDefaults().removePersistentDomain(forName: "TestDefaults")

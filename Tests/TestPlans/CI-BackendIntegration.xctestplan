@@ -10,6 +10,16 @@
   ],
   "defaultOptions" : {
     "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "RCRunningTests",
+        "value" : "1"
+      },
+      {
+        "key" : "RCRunningIntegrationTests",
+        "value" : "1"
+      }
+    ],
     "maximumTestExecutionTimeAllowance" : 180,
     "repeatInNewRunnerProcess" : true,
     "targetForVariableExpansion" : {

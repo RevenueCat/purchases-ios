@@ -10,6 +10,16 @@
   ],
   "defaultOptions" : {
     "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "RCRunningTests",
+        "value" : "1"
+      },
+      {
+        "key" : "RCRunningIntegrationTests",
+        "value" : "1"
+      }
+    ],
     "targetForVariableExpansion" : {
       "containerPath" : "container:RevenueCat.xcodeproj",
       "identifier" : "2DE20B7E26409EB7004C597D",
