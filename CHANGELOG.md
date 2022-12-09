@@ -1,3 +1,9 @@
+## 4.15.1
+### Bugfixes
+* `Configuration.with(appUserID:)`: allow passing `nil` and added new tests (#2110) via NachoSoto (@NachoSoto)
+### Other Changes
+* Fix documentation typo (#2113) via Bas Broek (@BasThomas)
+
 ## 4.15.0
 ### New Features
 * Added `LogLevel.verbose` (#2080) via NachoSoto (@NachoSoto)
