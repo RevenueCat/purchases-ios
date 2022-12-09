@@ -56,7 +56,8 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testPurchasesDiagnostics() async throws {
-        let diagnostics = PurchasesDiagnostics.default
+        let diagnostics = PurchasesDiagnostics(purchases: Purchases.shared)
+
         try await diagnostics.testSDKHealth()
     }
 
