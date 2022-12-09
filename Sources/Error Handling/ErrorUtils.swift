@@ -408,9 +408,11 @@ enum ErrorUtils {
      */
     static func invalidPromotionalOfferError(
         error: Error? = nil,
+        message: String? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         return ErrorUtils.error(with: .invalidPromotionalOfferError,
+                                message: message,
                                 underlyingError: error)
     }
 
