@@ -387,8 +387,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 1. Purchase subscription
 
-        _ = try await Purchases.shared.purchase(product: product)
-        var customerInfo = try await Purchases.shared.syncPurchases()
+        var customerInfo = try await Purchases.shared.purchase(product: product).customerInfo
 
         try await self.verifyEntitlementWentThrough(customerInfo)
 
@@ -400,8 +399,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 3. Purchase offer
 
-        _ = try await Purchases.shared.purchase(product: product, promotionalOffer: offer)
-        customerInfo = try await Purchases.shared.syncPurchases()
+        customerInfo = try await Purchases.shared.purchase(product: product, promotionalOffer: offer).customerInfo
 
         // 4. Verify offer was applied
 
@@ -424,9 +422,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 1. Purchase subscription
 
-        _ = try await Purchases.shared.purchase(product: product)
-        var customerInfo = try await Purchases.shared.syncPurchases()
-
+        var customerInfo = try await Purchases.shared.purchase(product: product).customerInfo
         var entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         // 2. Expire subscription
@@ -442,8 +438,7 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 4. Purchase with offer
 
-        _ = try await Purchases.shared.purchase(product: product, promotionalOffer: offer)
-        customerInfo = try await Purchases.shared.syncPurchases()
+        customerInfo = try await Purchases.shared.purchase(product: product, promotionalOffer: offer).customerInfo
 
         // 5. Verify offer was applied
 
