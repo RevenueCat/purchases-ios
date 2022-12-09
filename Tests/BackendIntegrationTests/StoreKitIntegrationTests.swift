@@ -383,15 +383,14 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         let (_, created) = try await Purchases.shared.logIn(user)
         expect(created) == true
 
-        let products = await Purchases.shared.products(["com.revenuecat.monthly_4.99.no_intro"])
-        let product = try XCTUnwrap(products.first)
+        let product = try await self.monthlyNoIntroProduct
 
         // 1. Purchase subscription
 
         _ = try await Purchases.shared.purchase(product: product)
         var customerInfo = try await Purchases.shared.syncPurchases()
 
-        try self.verifyEntitlementWentThrough(customerInfo)
+        try await self.verifyEntitlementWentThrough(customerInfo)
 
         // 2. Get eligible offer
 
@@ -406,25 +405,10 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         // 4. Verify offer was applied
 
-        let entitlement = try self.verifyEntitlementWentThrough(customerInfo)
+        let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+        let transaction = try await Self.findTransaction(for: product.productIdentifier)
 
-        let transactions: [Transaction] = await Transaction
-            .currentEntitlements
-            .compactMap {
-                switch $0 {
-                case let .verified(transaction): return transaction
-                case .unverified: return nil
-                }
-            }
-            .filter { $0.productID == product.productIdentifier }
-            .extractValues()
-
-        expect(transactions).to(haveCount(1))
-        let transaction = try XCTUnwrap(transactions.first)
-
-        expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
-        expect(transaction.offerID) == offer.discount.offerIdentifier
-        expect(transaction.offerType) == .promotional
+        self.verifyPromotionalOffer(offer, entitlement, transaction)
     }
 
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
@@ -464,23 +448,9 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
         // 5. Verify offer was applied
 
         entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+        let transaction = try await Self.findTransaction(for: product.productIdentifier)
 
-        let transactions: [Transaction] = await Transaction
-            .currentEntitlements
-            .compactMap {
-                switch $0 {
-                case let .verified(transaction): return transaction
-                case .unverified: return nil
-                }
-            }
-            .filter { $0.productID == product.productIdentifier }
-            .extractValues()
-
-        let transaction = try XCTUnwrap(transactions.onlyElement)
-
-        expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
-        expect(transaction.offerID) == offer.discount.offerIdentifier
-        expect(transaction.offerType) == .promotional
+        self.verifyPromotionalOffer(offer, entitlement, transaction)
     }
 
 }
@@ -631,6 +601,28 @@ private extension StoreKit1IntegrationTests {
         )
     }
 
+    @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
+    func verifyPromotionalOffer(
+        _ offer: PromotionalOffer,
+        _ entitlement: EntitlementInfo,
+        _ transaction: Transaction,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        expect(
+            file: file, line: line,
+            entitlement.latestPurchaseDate
+        ) != entitlement.originalPurchaseDate
+        expect(
+            file: file, line: line,
+            transaction.offerID
+        ) == offer.discount.offerIdentifier
+        expect(
+            file: file, line: line,
+            transaction.offerType
+        ) == .promotional
+    }
+
     func expireSubscription(_ entitlement: EntitlementInfo) async throws {
         guard let expirationDate = entitlement.expirationDate else { return }
 
@@ -660,6 +652,23 @@ private extension StoreKit1IntegrationTests {
         // `SKTestSession.expireSubscription` doesn't seem to work, so force expiration by waiting
         Logger.warn("Sleeping for \(timeToSleep) seconds to force expiration")
         try await Task.sleep(nanoseconds: UInt64(timeToSleep * 1_000_000_000))
+    }
+
+    @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
+    static func findTransaction(for productIdentifier: String) async throws -> Transaction {
+        let transactions: [Transaction] = await Transaction
+            .currentEntitlements
+            .compactMap {
+                switch $0 {
+                case let .verified(transaction): return transaction
+                case .unverified: return nil
+                }
+            }
+            .filter { $0.productID == productIdentifier }
+            .extractValues()
+
+        expect(transactions).to(haveCount(1))
+        return try XCTUnwrap(transactions.first)
     }
 
 }
