@@ -98,7 +98,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     }
 
     func testFinishesTransactionsIfSentToBackendCorrectly() throws {
-        var finished = true
+        var finished = false
 
         let productID = "com.product.id1"
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productID))

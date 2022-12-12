@@ -25,6 +25,12 @@ class BasePurchasesTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        self.storeKit1Wrapper = MockStoreKit1Wrapper()
+        self.notificationCenter = MockNotificationCenter()
+        self.purchasesDelegate = MockPurchasesDelegate()
+
+        self.paymentQueueWrapper = MockPaymentQueueWrapper()
+
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
         self.systemInfo = MockSystemInfo(finishTransactions: true, storeKit2Setting: self.storeKit2Setting)
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
@@ -92,14 +98,47 @@ class BasePurchasesTests: TestCase {
         // See `addTeardownBlock` docs:
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
-
-        self.addTeardownBlock { [weak purchases = self.purchases] in
-            expect(purchases).to(beNil(), description: "Purchases has leaked")
+        self.addTeardownBlock {
+            expect { [weak purchases = self.purchases] in purchases }
+                .toEventually(beNil(), description: "Purchases has leaked")
+        }
+        self.addTeardownBlock {
+            expect { [weak orchestrator = self.purchasesOrchestrator] in orchestrator }
+                .toEventually(beNil(), description: "PurchasesOrchestrator has leaked")
+        }
+        self.addTeardownBlock {
+            expect { [weak deviceCache = self.deviceCache] in deviceCache }
+                .toEventually(beNil(), description: "DeviceCache has leaked: \(self)")
         }
 
         self.addTeardownBlock {
             Purchases.clearSingleton()
 
+            self.mockOperationDispatcher = nil
+            self.paymentQueueWrapper = nil
+            self.requestFetcher = nil
+            self.receiptFetcher = nil
+            self.mockProductsManager = nil
+            self.mockIntroEligibilityCalculator = nil
+            self.mockTransactionsManager = nil
+            self.backend = nil
+            self.attributionFetcher = nil
+            self.purchasesDelegate.makeDeferredPurchase = nil
+            self.purchasesDelegate = nil
+            self.storeKit1Wrapper.delegate = nil
+            self.storeKit1Wrapper = nil
+            self.systemInfo = nil
+            self.notificationCenter = nil
+            self.subscriberAttributesManager = nil
+            self.trialOrIntroPriceEligibilityChecker = nil
+            self.attributionPoster = nil
+            self.attribution = nil
+            self.customerInfoManager = nil
+            self.identityManager = nil
+            self.mockOfferingsManager = nil
+            self.mockManageSubsHelper = nil
+            self.mockBeginRefundRequestHelper = nil
+            self.purchasesOrchestrator = nil
             self.deviceCache = nil
             self.purchases = nil
         }
@@ -115,9 +154,9 @@ class BasePurchasesTests: TestCase {
     var requestFetcher: MockRequestFetcher!
     var mockProductsManager: MockProductsManager!
     var backend: MockBackend!
-    let storeKit1Wrapper = MockStoreKit1Wrapper()
-    let paymentQueueWrapper = MockPaymentQueueWrapper()
-    let notificationCenter = MockNotificationCenter()
+    var storeKit1Wrapper: MockStoreKit1Wrapper!
+    var paymentQueueWrapper: MockPaymentQueueWrapper!
+    var notificationCenter: MockNotificationCenter!
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
@@ -139,7 +178,7 @@ class BasePurchasesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
     // swiftlint:disable:next weak_delegate
-    var purchasesDelegate = MockPurchasesDelegate()
+    var purchasesDelegate: MockPurchasesDelegate!
 
     var purchases: Purchases!
 

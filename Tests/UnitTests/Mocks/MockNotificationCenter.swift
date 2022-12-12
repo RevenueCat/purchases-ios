@@ -6,7 +6,7 @@ import Foundation
 
 class MockNotificationCenter: NotificationCenter {
 
-    typealias ObserversWithSelector = (observer: AnyObject,
+    typealias ObserversWithSelector = (observer: WeakBox<AnyObject>,
                                        selector: Selector,
                                        notificationName: NSNotification.Name?,
                                        object: Any?)
@@ -18,7 +18,7 @@ class MockNotificationCenter: NotificationCenter {
         name aName: NSNotification.Name?,
         object anObject: Any?
     ) {
-        self.observers.append((observer as AnyObject, aSelector, aName, anObject))
+        self.observers.append((.init(observer as AnyObject), aSelector, aName, anObject))
     }
 
     typealias ObserversWithBlock = (block: (Notification) -> Void,
@@ -39,7 +39,7 @@ class MockNotificationCenter: NotificationCenter {
 
     override func removeObserver(_ anObserver: Any, name aName: NSNotification.Name?, object anObject: Any?) {
         self.observers = self.observers.filter {
-            $0.0 !== anObserver as AnyObject || $0.2 != aName
+            $0.0.value !== anObserver as AnyObject || $0.2 != aName
         }
     }
 
@@ -49,7 +49,7 @@ class MockNotificationCenter: NotificationCenter {
             if let name = name {
                 notification = NSNotification(name: name, object: object)
             }
-            _ = observer.perform(selector, with: notification)
+            _ = observer.value?.perform(selector, with: notification)
         }
 
         for (block, name, object) in self.observersWithBlock {
