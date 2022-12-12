@@ -15,12 +15,15 @@ import Foundation
 
 extension OperationQueue {
 
-    func addCacheableOperation(_ operation: CacheableNetworkOperation, cacheStatus: CallbackCacheStatus) {
+    final func addCacheableOperation<T: CacheableNetworkOperation>(
+        with factory: CacheableNetworkOperationFactory<T>,
+        cacheStatus: CallbackCacheStatus
+    ) {
         switch cacheStatus {
         case .firstCallbackAddedToList:
-            self.addOperation(operation)
+            self.addOperation(factory.create())
         case .addedToExistingInFlightList:
-            Logger.debug(Strings.network.reusing_existing_request_for_operation(operation))
+            Logger.debug(Strings.network.reusing_existing_request_for_operation(T.self, factory.cacheKey))
             return
         }
     }

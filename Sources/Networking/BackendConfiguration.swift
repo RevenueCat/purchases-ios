@@ -40,13 +40,13 @@ final class BackendConfiguration {
 extension BackendConfiguration {
 
     /// Adds the `operation` to the `OperationQueue` (based on `CallbackCacheStatus`) potentially adding a random delay.
-    func addCacheableOperation(
-        _ operation: CacheableNetworkOperation,
+    func addCacheableOperation<T: CacheableNetworkOperation>(
+        with factory: CacheableNetworkOperationFactory<T>,
         withRandomDelay randomDelay: Bool,
         cacheStatus: CallbackCacheStatus
     ) {
         self.operationDispatcher.dispatchOnWorkerThread(withRandomDelay: randomDelay) {
-            self.operationQueue.addCacheableOperation(operation, cacheStatus: cacheStatus)
+            self.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
         }
     }
 

@@ -32,15 +32,19 @@ class OfferingsAPI {
                       completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
-        let getOfferingsOperation = GetOfferingsOperation(configuration: config,
-                                                          offeringsCallbackCache: self.offeringsCallbacksCache)
+        let factory = GetOfferingsOperation.createFactory(
+            configuration: config,
+            offeringsCallbackCache: self.offeringsCallbacksCache
+        )
 
-        let offeringsCallback = OfferingsCallback(cacheKey: getOfferingsOperation.cacheKey, completion: completion)
+        let offeringsCallback = OfferingsCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.offeringsCallbacksCache.add(offeringsCallback)
 
-        self.backendConfig.addCacheableOperation(getOfferingsOperation,
-                                                 withRandomDelay: randomDelay,
-                                                 cacheStatus: cacheStatus)
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            withRandomDelay: randomDelay,
+            cacheStatus: cacheStatus
+        )
     }
 
     func getIntroEligibility(appUserID: String,

@@ -13,17 +13,32 @@
 
 import Foundation
 
-class GetOfferingsOperation: CacheableNetworkOperation {
+final class GetOfferingsOperation: CacheableNetworkOperation {
 
     private let offeringsCallbackCache: CallbackCache<OfferingsCallback>
     private let configuration: AppUserConfiguration
 
-    init(configuration: UserSpecificConfiguration,
-         offeringsCallbackCache: CallbackCache<OfferingsCallback>) {
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        offeringsCallbackCache: CallbackCache<OfferingsCallback>
+    ) -> CacheableNetworkOperationFactory<GetOfferingsOperation> {
+        return .init({ cacheKey in
+                    .init(
+                        configuration: configuration,
+                        offeringsCallbackCache: offeringsCallbackCache,
+                        cacheKey: cacheKey
+                    )
+            },
+            individualizedCacheKeyPart: configuration.appUserID)
+    }
+
+    private init(configuration: UserSpecificConfiguration,
+                 offeringsCallbackCache: CallbackCache<OfferingsCallback>,
+                 cacheKey: String) {
         self.configuration = configuration
         self.offeringsCallbackCache = offeringsCallbackCache
 
-        super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID)
+        super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {

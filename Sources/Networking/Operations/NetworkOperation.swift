@@ -13,21 +13,41 @@
 
 import Foundation
 
-class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
+/// A type that can construct a `CacheableNetworkOperation` and pre-compute a cache key.
+final class CacheableNetworkOperationFactory<T: CacheableNetworkOperation> {
 
-    var cacheKey: String { "\(type(of: self)) \(individualizedCacheKeyPart)" }
-
-    let individualizedCacheKeyPart: String
+    let creator: (_ cacheKey: String) -> T
+    let cacheKey: String
+    var operationType: T.Type { T.self }
 
     /**
      - Parameter individualizedCacheKeyPart: The part of the cacheKey that makes it unique from other operations of the
      same type. Example: If you posted receipts two times in a row you'd have 2 operations. The cache key would be
      PostOperation + individualizedCacheKeyPart where individualizedCacheKeyPart is whatever you determine to be unique.
      */
-    init(configuration: NetworkConfiguration, individualizedCacheKeyPart: String) {
-        self.individualizedCacheKeyPart = individualizedCacheKeyPart
+    init(_ creator: @escaping (_ cacheKey: String) -> T, individualizedCacheKeyPart: String) {
+        self.creator = creator
+        self.cacheKey = T.cacheKey(with: individualizedCacheKeyPart)
+    }
+
+    func create() -> T {
+        return self.creator(self.cacheKey)
+    }
+
+}
+
+class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
+
+    let cacheKey: String
+
+    init(configuration: NetworkConfiguration, cacheKey: String) {
+        self.cacheKey = cacheKey
 
         super.init(configuration: configuration)
+    }
+
+    fileprivate static func cacheKey(with individualizedCacheKeyPart: String) -> String {
+        return "\(Self.self) \(individualizedCacheKeyPart)"
     }
 
 }

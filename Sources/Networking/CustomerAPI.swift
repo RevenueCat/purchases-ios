@@ -34,12 +34,14 @@ final class CustomerAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
-        let operation = GetCustomerInfoOperation(configuration: config,
-                                                 customerInfoCallbackCache: self.customerInfoCallbackCache)
+        let factory = GetCustomerInfoOperation.createFactory(configuration: config,
+                                                             customerInfoCallbackCache: self.customerInfoCallbackCache)
 
-        let callback = CustomerInfoCallback(operation: operation, completion: completion)
+        let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,
+                                            source: factory.operationType,
+                                            completion: completion)
         let cacheStatus = self.customerInfoCallbackCache.addOrAppendToPostReceiptDataOperation(callback: callback)
-        self.backendConfig.addCacheableOperation(operation,
+        self.backendConfig.addCacheableOperation(with: factory,
                                                  withRandomDelay: randomDelay,
                                                  cacheStatus: cacheStatus)
     }
@@ -107,15 +109,17 @@ final class CustomerAPI {
                                                          observerMode: observerMode,
                                                          initiationSource: initiationSource,
                                                          subscriberAttributesByKey: subscriberAttributesByKey)
-        let postReceiptOperation = PostReceiptDataOperation(configuration: config,
-                                                            postData: postData,
-                                                            customerInfoCallbackCache: self.customerInfoCallbackCache)
+        let factory = PostReceiptDataOperation.createFactory(configuration: config,
+                                                             postData: postData,
+                                                             customerInfoCallbackCache: self.customerInfoCallbackCache)
 
-        let callbackObject = CustomerInfoCallback(operation: postReceiptOperation, completion: completion)
+        let callbackObject = CustomerInfoCallback(cacheKey: factory.cacheKey,
+                                                  source: PostReceiptDataOperation.self,
+                                                  completion: completion)
 
         let cacheStatus = customerInfoCallbackCache.add(callbackObject)
 
-        self.backendConfig.operationQueue.addCacheableOperation(postReceiptOperation, cacheStatus: cacheStatus)
+        self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
     }
 
 }

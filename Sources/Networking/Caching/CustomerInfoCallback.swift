@@ -21,9 +21,11 @@ struct CustomerInfoCallback: CacheKeyProviding {
     var source: NetworkOperation.Type
     var completion: Completion
 
-    init(operation: CacheableNetworkOperation, completion: @escaping Completion) {
-        self.cacheKey = operation.cacheKey
-        self.source = type(of: operation)
+    init<T: CacheableNetworkOperation>(cacheKey: String,
+                                       source: T.Type,
+                                       completion: @escaping Completion) {
+        self.cacheKey = cacheKey
+        self.source = T.self
         self.completion = completion
     }
 
