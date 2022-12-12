@@ -481,14 +481,28 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
     override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
 
+    override func setUp() async throws {
+        try await super.setUp()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseInDevicePostsReceipt() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
         try await self.purchaseProductFromStoreKit()
 
-        let info = try await Purchases.shared.restorePurchases()
-        try await self.verifyEntitlementWentThrough(info)
+        await asyncWait(
+            until: {
+                let entitlement = try? await Purchases.shared
+                    .customerInfo(fetchPolicy: .fetchCurrent)
+                    .entitlements[Self.entitlementIdentifier]
+
+                return entitlement?.isActive == true
+            },
+            timeout: .seconds(30),
+            pollInterval: .seconds(1),
+            description: "Entitlement didn't become active"
+        )
     }
 
 }
@@ -775,6 +789,7 @@ private extension BaseStoreKitIntegrationTests {
         }
     }
 
+    /// Purchases a product directly with StoreKit.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     @discardableResult
     func purchaseProductFromStoreKit() async throws -> Product.PurchaseResult {
