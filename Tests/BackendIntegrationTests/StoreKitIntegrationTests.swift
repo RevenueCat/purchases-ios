@@ -423,7 +423,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 4. Verify purchase went through
 
-        let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+        try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
