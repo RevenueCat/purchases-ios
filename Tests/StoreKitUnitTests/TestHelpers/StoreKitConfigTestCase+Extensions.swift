@@ -70,31 +70,12 @@ extension StoreKitConfigTestCase {
     ) async {
         self.testSession.storefront = new
 
-        // Note: a better approach would be using `XCTestExpectation` and `self.wait(for:timeout:)`
-        // but it doesn't seem to play well with async-await.
-        // Also `toEventually` (Quick nor Nimble) don't support `async`.
-
-        var storefrontUpdateDetected: Bool {
-            get async { await Storefront.currentStorefront?.countryCode == new }
-        }
-
-        var numberOfChecksLeft = 10
-
-        repeat {
-            if await !storefrontUpdateDetected {
-                numberOfChecksLeft -= 1
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-            } else {
-                break
-            }
-        } while numberOfChecksLeft > 0
-
-        let detected = await storefrontUpdateDetected
-        expect(
-            file: file,
-            line: line,
-            detected
-        ).to(beTrue(), description: "Storefront change not detected")
+        await asyncWait(
+            until: { await Storefront.currentStorefront?.countryCode == new },
+            timeout: .seconds(1),
+            pollInterval: .milliseconds(100),
+            description: "Storefront change not detected"
+        )
     }
 
 }
