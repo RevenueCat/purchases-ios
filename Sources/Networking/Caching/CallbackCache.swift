@@ -48,6 +48,17 @@ final class CallbackCache<T> where T: CacheKeyProviding {
         }
     }
 
+    deinit {
+        #if DEBUG
+        if ProcessInfo.isRunningRevenueCatTests {
+            precondition(
+                self.cachedCallbacksByKey.value.isEmpty,
+                "\(type(of: self)) was deallocated with callbacks still stored."
+            )
+        }
+        #endif
+    }
+
 }
 
 extension CallbackCache: Sendable where T: Sendable {}
