@@ -9,25 +9,25 @@ import Foundation
 
 import RevenueCat
 
-final class Logger: ObservableObject {
+public final class Logger: ObservableObject {
 
-    struct Entry {
-        var level: LogLevel
-        var message: String
-        var id: UUID = .init()
+    public struct Entry {
+        public var level: LogLevel
+        public var message: String
+        public var id: UUID = .init()
     }
 
     @Published
     @MainActor
-    var messages: [Entry] = []
+    public var messages: [Entry] = []
 
-    init() {}
+    public init() {}
 
 }
 
 extension Logger {
 
-    var logHandler: (LogLevel, String) -> Void {
+    public var logHandler: (LogLevel, String) -> Void {
         return { level, message in
             DispatchQueue.main.async {
                 self.messages.append(.init(level: level, message: message))

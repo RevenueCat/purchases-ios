@@ -11,12 +11,12 @@ import Foundation
  Configuration file for your app's RevenueCat settings.
  */
 
-struct Constants {
+public struct Constants {
 
     /*
      The API key for your app from the RevenueCat dashboard: https://app.revenuecat.com
      This is the default used by `ConfigurationView`
      */
-    static let apiKey = "REVENUECAT_API_KEY"
+    public static let apiKey = "REVENUECAT_API_KEY"
 
 }
