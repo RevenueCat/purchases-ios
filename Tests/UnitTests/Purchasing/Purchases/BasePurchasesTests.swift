@@ -98,14 +98,17 @@ class BasePurchasesTests: TestCase {
         // See `addTeardownBlock` docs:
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
-        self.addTeardownBlock { [weak purchases = self.purchases] in
-            expect(purchases).toEventually(beNil(), description: "Purchases has leaked")
+        self.addTeardownBlock {
+            expect { [weak purchases = self.purchases] in purchases }
+                .toEventually(beNil(), description: "Purchases has leaked")
         }
-        self.addTeardownBlock { [weak orchestrator = self.purchasesOrchestrator] in
-            expect(orchestrator).toEventually(beNil(), description: "PurchasesOrchestrator has leaked")
+        self.addTeardownBlock {
+            expect { [weak orchestrator = self.purchasesOrchestrator] in orchestrator }
+                .toEventually(beNil(), description: "PurchasesOrchestrator has leaked")
         }
-        self.addTeardownBlock { [weak deviceCache = self.deviceCache] in
-            expect(deviceCache).toEventually(beNil(), description: "DeviceCache has leaked: \(self)")
+        self.addTeardownBlock {
+            expect { [weak deviceCache = self.deviceCache] in deviceCache }
+                .toEventually(beNil(), description: "DeviceCache has leaked: \(self)")
         }
 
         self.addTeardownBlock {
