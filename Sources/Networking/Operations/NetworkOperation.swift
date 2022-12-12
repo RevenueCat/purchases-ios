@@ -56,6 +56,9 @@ class NetworkOperation: Operation {
 
     let httpClient: HTTPClient
 
+    private let _didStart: Atomic<Bool> = false
+    private var didStart: Bool { return self._didStart.value }
+
     // Note: implementing asynchronousy `Operations` needs KVO.
     // We're not using Swift's `KeyPath` verison (`willChangeValue(for:)`)
     // due to it crashing on iOS 12. See https://github.com/RevenueCat/purchases-ios/pull/2008.
@@ -103,7 +106,25 @@ class NetworkOperation: Operation {
         super.init()
     }
 
+    deinit {
+        #if DEBUG
+        if ProcessInfo.isRunningRevenueCatTests {
+            precondition(
+                self.didStart,
+                "\(type(of: self)) was deallocated but it never started. Did it need to be created?"
+            )
+            precondition(
+                self.isFinished,
+                "\(type(of: self)) started but never finished. " +
+                "Did the operation not call `completion` in its `begin` implementation?"
+            )
+        }
+        #endif
+    }
+
     override final func main() {
+        self._didStart.value = true
+
         if self.isCancelled {
             self.isFinished = true
             return
