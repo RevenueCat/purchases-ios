@@ -44,7 +44,6 @@ extension CallbackCache where T == CustomerInfoCallback {
     private func callbacks(ofType type: NetworkOperation.Type) -> [T] {
         return self
             .cachedCallbacksByKey
-            .value
             .lazy
             .flatMap(\.value)
             .filter { $0.source == type }
