@@ -38,6 +38,10 @@ class ReceiptParser {
     }
 
     func parse(from receiptData: Data) throws -> AppleReceipt {
+        #if DEBUG
+        Self.ensureRunningOutsideOfMainThread()
+        #endif
+
         let intData = [UInt8](receiptData)
 
         let asn1Container = try self.containerBuilder.build(fromPayload: ArraySlice(intData))
@@ -81,5 +85,18 @@ private extension ReceiptParser {
         }
         return nil
     }
+
+    #if DEBUG
+    static func ensureRunningOutsideOfMainThread() {
+        // Only checking on integration tests.
+        // Unit tests might run on the main thread when testing this class directly.
+        if ProcessInfo.isRunningIntegrationTests {
+            precondition(
+                !Thread.isMainThread,
+                "Receipt parsing should not run on the main thread."
+            )
+        }
+    }
+    #endif
 
 }
