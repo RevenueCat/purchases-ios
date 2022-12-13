@@ -40,7 +40,7 @@ class NetworkOperation: Operation {
     // We're not using Swift's `KeyPath` verison (`willChangeValue(for:)`)
     // due to it crashing on iOS 12. See https://github.com/RevenueCat/purchases-ios/pull/2008.
 
-    private var _isExecuting: Atomic<Bool> = false
+    private let _isExecuting: Atomic<Bool> = false
     private(set) override final var isExecuting: Bool {
         get {
             return self._isExecuting.value
@@ -52,7 +52,7 @@ class NetworkOperation: Operation {
         }
     }
 
-    private var _isFinished: Atomic<Bool> = false
+    private let _isFinished: Atomic<Bool> = false
     private(set) override final var isFinished: Bool {
         get {
             return self._isFinished.value
@@ -64,7 +64,7 @@ class NetworkOperation: Operation {
         }
     }
 
-    private var _isCancelled: Atomic<Bool> = false
+    private let _isCancelled: Atomic<Bool> = false
     private(set) override final var isCancelled: Bool {
         get {
             return self._isCancelled.value
