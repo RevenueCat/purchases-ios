@@ -81,9 +81,6 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testCanPurchaseConsumableMultipleTimes() async throws {
-        // See https://revenuecats.atlassian.net/browse/TRIAGE-134
-        try XCTSkipIf(Self.storeKit2Setting == .disabled, "This test is not currently passing on SK1")
-
         let count = 2
 
         for _ in 0..<count {
@@ -92,10 +89,8 @@ class StoreKit1IntegrationTests: BaseBackendIntegrationTests {
 
         let info = try await Purchases.shared.customerInfo()
         expect(info.nonSubscriptions).to(haveCount(count))
-        expect(info.nonSubscriptions.map(\.productIdentifier)) == [
-            Self.consumable10Coins,
-            Self.consumable10Coins
-        ]
+        expect(info.nonSubscriptions.map(\.productIdentifier)) == Array(repeating: Self.consumable10Coins,
+                                                                        count: count)
     }
 
     func testCanPurchaseConsumableWithMultipleUsers() async throws {

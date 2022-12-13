@@ -184,7 +184,7 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .sktransaction_missing_transaction_identifier:
             return "There is a problem with the SKPaymentTransaction missing " +
-            "a transaction identifier - this is an issue with the App Store." +
+            "a transaction identifier - this is an issue with the App Store. " +
             "Transactions in the backend and in webhooks are unaffected and will have the correct identifier. " +
             "This is a bug in StoreKit 1. To prevent running into this issue on devices running " +
             "iOS 15+, watchOS 8+, macOS 12+, and tvOS 15+, make sure " +
