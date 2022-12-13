@@ -954,7 +954,62 @@ public extension Purchases {
      */
     @objc(configureWithAPIKey:)
     @discardableResult static func configure(withAPIKey apiKey: String) -> Purchases {
-        configure(with: Configuration.builder(withAPIKey: apiKey).build())
+        Self.configure(withAPIKey: apiKey, appUserID: nil)
+    }
+
+    /**
+     * Configures an instance of the Purchases SDK with a specified API key and app user ID.
+     *
+     * The instance will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Note: Best practice is to use a salted hash of your unique app user ids.
+     *
+     * - Warning: Use this initializer if you have your own user identifiers that you manage.
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
+     * to generate this for you.
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     */
+    @objc(configureWithAPIKey:appUserID:)
+    @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
+        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
+    }
+
+    /**
+     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
+     *
+     * Use this constructor if you want to
+     * sync status across a shared container, such as between a host app and an extension. The instance of the
+     * Purchases SDK will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
+     * to generate this for you.
+     *
+     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is `false`.
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     */
+    @objc(configureWithAPIKey:appUserID:observerMode:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool) -> Purchases {
+        Self.configure(
+            with: Configuration
+                .builder(withAPIKey: apiKey)
+                .with(appUserID: appUserID)
+                .with(observerMode: observerMode)
+                .build()
+        )
     }
 
     // swiftlint:disable:next function_parameter_count
