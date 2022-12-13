@@ -84,7 +84,8 @@ extension ReceiptStrings: CustomStringConvertible {
             return "Unable to load receipt, ensure you are logged in to a valid Apple account."
 
         case let .posting_receipt(receipt):
-            return "Posting receipt: \(receipt.debugDescription)"
+            return "Posting receipt (note: the contents might not be up-to-date, " +
+            "but it will be refreshed with Apple's servers):\n\(receipt.debugDescription)"
 
         case let .receipt_subscription_purchase_equals_expiration(
             productIdentifier,
