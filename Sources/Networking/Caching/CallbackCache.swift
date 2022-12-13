@@ -54,7 +54,7 @@ final class CallbackCache<T> where T: CacheKeyProviding {
         #if DEBUG
         if ProcessInfo.isRunningRevenueCatTests {
             precondition(
-                self.cachedCallbacksByKey.value.isEmpty,
+                self.cachedCallbacksByKey.isEmpty,
                 "\(type(of: self)) was deallocated with callbacks still stored."
             )
         }
