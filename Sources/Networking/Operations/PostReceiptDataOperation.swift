@@ -54,7 +54,7 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        if Logger.logLevel == .debug {
+        if Logger.logLevel <= .debug {
             self.printReceiptData()
         }
 
