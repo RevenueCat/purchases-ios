@@ -499,8 +499,8 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
                 return entitlement?.isActive == true
             },
-            timeout: .seconds(30),
-            pollInterval: .seconds(1),
+            timeout: .seconds(60),
+            pollInterval: .seconds(2),
             description: "Entitlement didn't become active"
         )
     }
