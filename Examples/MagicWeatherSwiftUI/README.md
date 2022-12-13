@@ -9,8 +9,8 @@ Sign up for a free RevenueCat account [here](https://www.revenuecat.com).
 This sample uses:
 
 - SwiftUI
-- Xcode 12.2
-- iOS 14
+- Xcode 14.0
+- iOS 15.0
 - Swift 5
 
 See minimum platform version requirements for RevenueCat's *Purchases* SDK [here](https://github.com/RevenueCat/purchases-ios/blob/main/Package.swift#L65).
