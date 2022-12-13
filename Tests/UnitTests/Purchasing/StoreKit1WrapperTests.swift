@@ -16,6 +16,7 @@ import XCTest
 class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     private var operationDispatcher: MockOperationDispatcher!
     private var paymentQueue: MockPaymentQueue!
+    private var sandboxEnvironmentDetector: MockSandboxEnvironmentDetector!
 
     private var wrapper: StoreKit1Wrapper!
 
@@ -24,9 +25,11 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
 
         self.operationDispatcher = .init()
         self.paymentQueue = .init()
+        self.sandboxEnvironmentDetector = .init(isSandbox: .random())
 
         self.wrapper = StoreKit1Wrapper(paymentQueue: self.paymentQueue,
-                                        operationDispatcher: self.operationDispatcher)
+                                        operationDispatcher: self.operationDispatcher,
+                                        sandboxEnvironmentDetector: self.sandboxEnvironmentDetector)
         self.wrapper.delegate = self
     }
 
@@ -276,7 +279,10 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
 
         self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: transactions)
 
-        logger.verifyMessageWasLogged(Strings.storeKit.sk1_payment_queue_too_many_transactions(transactions.count),
+        logger.verifyMessageWasLogged(Strings.storeKit.sk1_payment_queue_too_many_transactions(
+            count: transactions.count,
+            isSandbox: self.sandboxEnvironmentDetector.isSandbox
+        ),
                                       level: .warn)
     }
 

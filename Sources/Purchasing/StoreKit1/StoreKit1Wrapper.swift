@@ -62,11 +62,14 @@ class StoreKit1Wrapper: NSObject {
 
     private let paymentQueue: SKPaymentQueue
     private let operationDispatcher: OperationDispatcher
+    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
 
     init(paymentQueue: SKPaymentQueue = .default(),
-         operationDispatcher: OperationDispatcher = .default) {
+         operationDispatcher: OperationDispatcher = .default,
+         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default) {
         self.paymentQueue = paymentQueue
         self.operationDispatcher = operationDispatcher
+        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
 
         super.init()
 
@@ -134,7 +137,10 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
         guard let delegate = self.delegate else { return }
 
         if transactions.count >= Self.highTransactionCountThreshold {
-            Logger.appleWarning(Strings.storeKit.sk1_payment_queue_too_many_transactions(transactions.count))
+            Logger.appleWarning(Strings.storeKit.sk1_payment_queue_too_many_transactions(
+                count: transactions.count,
+                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+            ))
         }
 
         self.operationDispatcher.dispatchOnWorkerThread {
