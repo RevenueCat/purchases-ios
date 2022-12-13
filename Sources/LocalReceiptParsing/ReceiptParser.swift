@@ -42,9 +42,7 @@ class ReceiptParser {
         Self.ensureRunningOutsideOfMainThread()
         #endif
 
-        let intData = [UInt8](receiptData)
-
-        let asn1Container = try self.containerBuilder.build(fromPayload: ArraySlice(intData))
+        let asn1Container = try self.containerBuilder.build(fromPayload: ArraySlice(receiptData))
         guard let receiptASN1Container = try self.findASN1Container(withObjectId: ASN1ObjectIdentifier.data,
                                                                     inContainer: asn1Container) else {
             Logger.error(Strings.receipt.data_object_identifer_not_found_receipt)
