@@ -65,10 +65,15 @@ extension UInt8 {
 
 private extension UInt8 {
 
+    /// - Returns: 2^range - 1
     /// - Throws: `BitShiftError`
     func maskForRange(_ range: UInt8) throws -> UInt8 {
         guard 0 <= range && range <= 8 else { throw BitShiftError.rangeLargerThanByte }
 
+        /// Returns 2 ^ range - 1 (a number with range 1s)
+        /// Example:
+        /// - range 1: 0b1
+        /// - range 2: 0b11
         return 0b11111111 >> (8 - range)
     }
 
