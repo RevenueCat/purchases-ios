@@ -55,6 +55,10 @@ func + (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInt
     return .nanoseconds(lhs.nanoseconds + rhs.nanoseconds)
 }
 
+func - (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInterval {
+    return .nanoseconds(lhs.nanoseconds - rhs.nanoseconds)
+}
+
 extension DispatchTimeInterval: Comparable {
 
     // swiftlint:disable:next missing_docs
