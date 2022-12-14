@@ -56,6 +56,20 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2DD778CF270E233F0079CBD4"
+               BuildableName = "ReceiptParserAPITester.app"
+               BlueprintName = "ReceiptParserAPITester"
+               ReferencedContainer = "container:Tests/APITesters/ReceiptParserAPITester/ReceiptParserAPITester.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DC5621D24EC63430031F69B"
                BuildableName = "UnitTests.xctest"
                BlueprintName = "UnitTests"

@@ -12,7 +12,7 @@ class MockAppleReceiptBuilder: AppleReceiptBuilder {
     var invokedBuildCount = 0
     var invokedBuildParameters: ASN1Container?
     var invokedBuildParametersList: [ASN1Container] = []
-    var stubbedBuildError: Error?
+    var stubbedBuildError: PurchasesReceiptParser.Error?
     var stubbedBuildResult: AppleReceipt!
 
     override func build(fromContainer container: ASN1Container) throws -> AppleReceipt {

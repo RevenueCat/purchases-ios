@@ -4,16 +4,6 @@
 import PackageDescription
 import class Foundation.ProcessInfo
 
-func resolveTargets() -> [Target] {
-    let baseTargets: [Target] = [
-        .target(name: "RevenueCat",
-                path: "Sources",
-                exclude: ["Info.plist"])
-    ]
-
-    return baseTargets
-}
-
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin
 let environmentVariables = ProcessInfo.processInfo.environment
@@ -34,8 +24,16 @@ let package = Package(
     ],
     products: [
         .library(name: "RevenueCat",
-                 targets: ["RevenueCat"])
+                 targets: ["RevenueCat"]),
+        .library(name: "ReceiptParser",
+                 targets: ["ReceiptParser"])
     ],
     dependencies: dependencies,
-    targets: resolveTargets()
+    targets: [
+        .target(name: "RevenueCat",
+                path: "Sources",
+                exclude: ["Info.plist"]),
+        .target(name: "ReceiptParser",
+                path: "LocalReceiptParsing")
+    ]
 )

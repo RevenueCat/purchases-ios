@@ -15,25 +15,31 @@
 
 import Foundation
 
-extension ReceiptParser {
+extension PurchasesReceiptParser {
 
-    enum Error: Swift.Error, Equatable {
+    /// An error thrown by ``PurchasesReceiptParser``
+    public enum Error: Swift.Error, Equatable {
 
-        case emptyReceipt,
-             dataObjectIdentifierMissing,
-             asn1ParsingError(description: String),
-             receiptParsingError,
-             inAppPurchaseParsingError
+        /// The data object identifier couldn't be found on the receipt.
+        case dataObjectIdentifierMissing
+
+        /// Unable to parse ASN1 container.
+        case asn1ParsingError(description: String)
+
+        /// Internal container was empty.
+        case receiptParsingError
+
+        /// Failed to parse IAP.
+        case inAppPurchaseParsingError
 
     }
 }
 
-extension ReceiptParser.Error: LocalizedError {
+extension PurchasesReceiptParser.Error: LocalizedError {
 
-    var errorDescription: String? {
+    // swiftlint:disable:next missing_docs
+    public var errorDescription: String? {
         switch self {
-        case .emptyReceipt:
-            return "The receipt is empty"
         case .dataObjectIdentifierMissing:
             return "Couldn't find an object identifier of type data in the receipt"
         case let .asn1ParsingError(description):

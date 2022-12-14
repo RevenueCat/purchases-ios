@@ -18,10 +18,10 @@ import StoreKit
 class IntroEligibilityCalculator {
 
     private let productsManager: ProductsManagerType
-    private let receiptParser: ReceiptParser
+    private let receiptParser: PurchasesReceiptParser
 
     init(productsManager: ProductsManagerType,
-         receiptParser: ReceiptParser) {
+         receiptParser: PurchasesReceiptParser) {
         self.productsManager = productsManager
         self.receiptParser = receiptParser
     }

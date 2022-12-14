@@ -274,7 +274,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         self.mock(receipts: receipts.map(Result.success))
     }
 
-    private func mock(receipts: [Result<AppleReceipt, ReceiptParser.Error>]) {
+    private func mock(receipts: [Result<AppleReceipt, PurchasesReceiptParser.Error>]) {
         precondition(!receipts.isEmpty)
 
         self.mockBundle.receiptURLResult = .receiptWithData

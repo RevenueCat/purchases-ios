@@ -265,7 +265,16 @@ jobs:
       - checkout
       - run:
           name: SPM Release Build
-          command: swift build -c release
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+  spm-receipt-parser:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Receipt Parser
+          command: swift build -c release --target ReceiptParser
           no_output_timeout: 30m
 
   run-test-ios-16:
@@ -548,6 +557,17 @@ jobs:
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
 
+  installation-tests-receipt-parser:
+    <<: *base-job
+    steps:
+      - checkout
+      - trust-github-key
+      - update-spm-installation-commit
+      - install-dependencies:
+          directory: Tests/InstallationTests/ReceiptParserInstallation/
+      - scan-and-archive-all-platforms:
+          directory: Tests/InstallationTests/ReceiptParserInstallation/
+
   installation-tests-carthage:
     <<: *base-job
     steps:
@@ -702,9 +722,11 @@ workflows:
     jobs:
       - lint:
           xcode_version: '14.1.0'
-      - run-test-ios-16:
-          xcode_version: '14.1.0'
       - spm-release-build:
+          xcode_version: '14.1.0'
+      - spm-receipt-parser:
+          xcode_version: '14.1.0'
+      - run-test-ios-16:
           xcode_version: '14.1.0'
       - run-test-ios-15:
           xcode_version: '14.1.0'

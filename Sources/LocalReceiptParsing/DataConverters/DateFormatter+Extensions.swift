@@ -9,8 +9,7 @@
 //
 //  DateFormatter+Extensions.swift
 //
-//  Created by Andrés Boedo on 7/29/20.
-//
+//  Created by Nacho Soto on 12/14/22.
 
 import Foundation
 

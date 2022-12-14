@@ -187,8 +187,8 @@ platform :ios do
   lane :archive_all_platforms do
     platforms = {
       'ios' => 'generic/platform=ios',
-       'tvos' => 'generic/platform=tvos',
-       'catalyst' => 'generic/platform=macOS,variant=Mac Catalyst'
+      'tvos' => 'generic/platform=tvos',
+      'catalyst' => 'generic/platform=macOS,variant=Mac Catalyst'
     }
 
     platforms.each do |platform, destination|
@@ -360,6 +360,7 @@ platform :ios do
   lane :update_swift_package_commit do
     project_file_locations = [
       './Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.pbxproj',
+      './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 

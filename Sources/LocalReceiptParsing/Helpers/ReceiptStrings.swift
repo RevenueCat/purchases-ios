@@ -9,8 +9,7 @@
 //
 //  ReceiptStrings.swift
 //
-//  Created by Tina Nguyen on 12/11/20.
-//
+//  Created by Nacho Soto on 11/29/22.
 
 import Foundation
 
@@ -36,7 +35,7 @@ enum ReceiptStrings {
     )
     case receipt_retrying_mechanism_not_available
     case local_receipt_missing_purchase(AppleReceipt, forProductIdentifier: String)
-    case retrying_receipt_fetch_after(sleepDuration: DispatchTimeInterval)
+    case retrying_receipt_fetch_after(sleepDuration: TimeInterval)
 
 }
 
@@ -103,7 +102,7 @@ extension ReceiptStrings: CustomStringConvertible {
             "\((try? receipt.prettyPrintedJSON) ?? "<null>")"
 
         case let .retrying_receipt_fetch_after(sleepDuration):
-            return String(format: "Retrying receipt fetch after %2.f seconds", sleepDuration.seconds)
+            return String(format: "Retrying receipt fetch after %2.f seconds", sleepDuration)
 
         }
     }
