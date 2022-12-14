@@ -23,6 +23,7 @@
 		5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */; };
 		5738F42127866F8F0096D623 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
 		5738F42A278673A80096D623 /* SubscriptionPeriodAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */; };
+		5753ED9D294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5753ED9C294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift */; };
 		5758859C2748272A00CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; };
 		5758859D2748272A00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5758EE4F2786493400B3B703 /* StoreProductAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5758EE4E2786493300B3B703 /* StoreProductAPI.swift */; };
@@ -55,6 +56,7 @@
 		570FAF552864EE1D00D3C769 /* NonSubscriptionTransactionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransactionAPI.swift; sourceTree = "<group>"; };
 		5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductDiscountAPI.swift; sourceTree = "<group>"; };
 		5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPeriodAPI.swift; sourceTree = "<group>"; };
+		5753ED9C294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesReceiptParserAPI.swift; sourceTree = "<group>"; };
 		575885972748271100CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758859B2748272A00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758EE4E2786493300B3B703 /* StoreProductAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductAPI.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
 				A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */,
 				57918A1228F4C49500BF4963 /* PurchasesDiagnosticsAPI.swift */,
+				5753ED9C294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift */,
 				57DE807428074D9C008D6C6F /* StorefrontAPI.swift */,
 				5758EE4E2786493300B3B703 /* StoreProductAPI.swift */,
 				5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */,
@@ -233,6 +236,7 @@
 				2DD778EF270E23460079CBD4 /* EntitlementInfoAPI.swift in Sources */,
 				2DD778E9270E23460079CBD4 /* CustomerInfoAPI.swift in Sources */,
 				5758EE4F2786493400B3B703 /* StoreProductAPI.swift in Sources */,
+				5753ED9D294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift in Sources */,
 				2DD778ED270E23460079CBD4 /* OfferingAPI.swift in Sources */,
 				B378153A2857A609000A7B93 /* AttributionAPI.swift in Sources */,
 				2DD778EE270E23460079CBD4 /* EntitlementInfosAPI.swift in Sources */,

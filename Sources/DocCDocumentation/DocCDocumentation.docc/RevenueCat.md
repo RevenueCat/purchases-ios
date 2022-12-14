@@ -121,6 +121,10 @@ Or browse our iOS sample apps:
 - ``Purchases/showManageSubscriptions()``
 - ``Purchases/showManageSubscriptions(completion:)``
 
+### Parsing Receipts
+- ``PurchasesReceiptParser``
+- ``AppleReceipt``
+
 ### Subscriber Attributes
 - ``Purchases/setAttributes(_:)``
 - ``Purchases/setAd(_:)``

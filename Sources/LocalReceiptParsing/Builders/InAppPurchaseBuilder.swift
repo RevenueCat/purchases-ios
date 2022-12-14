@@ -57,7 +57,7 @@ class InAppPurchaseBuilder {
 
         for internalContainer in container.internalContainers {
             guard internalContainer.internalContainers.count == expectedInternalContainersCount else {
-                throw ReceiptParser.Error.inAppPurchaseParsingError
+                throw PurchasesReceiptParser.Error.inAppPurchaseParsingError
             }
             let typeContainer = internalContainer.internalContainers[typeContainerIndex]
             let valueContainer = internalContainer.internalContainers[attributeTypeContainerIndex]
@@ -102,7 +102,7 @@ class InAppPurchaseBuilder {
             let nonOptionalProductId = productId,
             let nonOptionalTransactionId = transactionId,
             let nonOptionalPurchaseDate = purchaseDate else {
-            throw ReceiptParser.Error.inAppPurchaseParsingError
+            throw PurchasesReceiptParser.Error.inAppPurchaseParsingError
         }
 
         return InAppPurchase(quantity: nonOptionalQuantity,

@@ -18,7 +18,7 @@ class ReceiptParsingRealReceiptTests: TestCase {
 
     func testBasicReceiptAttributesForSample1() throws {
         let receiptData = sampleReceiptData(receiptName: receipt1Name)
-        let receipt = try ReceiptParser.default.parse(from: receiptData)
+        let receipt = try PurchasesReceiptParser.default.parse(from: receiptData)
 
         expect(receipt.applicationVersion) == "4"
         expect(receipt.bundleId) == "com.revenuecat.sampleapp"
@@ -29,7 +29,7 @@ class ReceiptParsingRealReceiptTests: TestCase {
 
     func testInAppPurchasesAttributesForSample1() throws {
         let receiptData = sampleReceiptData(receiptName: receipt1Name)
-        let receipt = try ReceiptParser.default.parse(from: receiptData)
+        let receipt = try PurchasesReceiptParser.default.parse(from: receiptData)
         let inAppPurchases = receipt.inAppPurchases
 
         expect(inAppPurchases.count) == 9

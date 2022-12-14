@@ -8,13 +8,13 @@ import Foundation
 
 import XCTest
 
-class MockReceiptParser: ReceiptParser {
+class MockReceiptParser: PurchasesReceiptParser {
 
     var invokedParse = false
     var invokedParseCount = 0
     var invokedParseParameters: Data?
     var invokedParseParametersList = [Data]()
-    var stubbedParseError: Error?
+    var stubbedParseError: PurchasesReceiptParser.Error?
 
     var stubbedParseResult: AppleReceipt {
         get { return self.stubbedParseResults.onlyElement!.value! }
@@ -35,7 +35,8 @@ class MockReceiptParser: ReceiptParser {
     ]
 
     convenience init() {
-        self.init(containerBuilder: MockASN1ContainerBuilder(),
+        self.init(logger: Logger(),
+                  containerBuilder: MockASN1ContainerBuilder(),
                   receiptBuilder: MockAppleReceiptBuilder())
     }
 

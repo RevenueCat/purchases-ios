@@ -15,9 +15,9 @@ import StoreKit
 
 class TransactionsManager {
 
-    private let receiptParser: ReceiptParser
+    private let receiptParser: PurchasesReceiptParser
 
-    init(receiptParser: ReceiptParser) {
+    init(receiptParser: PurchasesReceiptParser) {
         self.receiptParser = receiptParser
     }
 

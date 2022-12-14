@@ -45,6 +45,9 @@ func main() -> Int {
     checkPackageAPI()
     checkPackageEnums()
 
+    checkReceiptParserAPI()
+    checkAppleReceiptAPI()
+
     checkRefundRequestStatusEnum()
 
     checkNonSubscriptionTransactionAPI()

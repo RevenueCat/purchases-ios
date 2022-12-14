@@ -14,33 +14,6 @@
 
 import Foundation
 
-/// Enumeration of the different verbosity levels.
-///
-/// #### Related Symbols
-/// - ``Purchases/logLevel``
-@objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible, CaseIterable, Sendable {
-
-    // swiftlint:disable missing_docs
-
-    case verbose = 4
-    case debug = 0
-    case info = 1
-    case warn = 2
-    case error = 3
-
-    public var description: String {
-        switch self {
-        case .verbose: return "VERBOSE"
-        case .debug: return "DEBUG"
-        case .info: return "INFO"
-        case .warn: return "WARN"
-        case .error: return "ERROR"
-        }
-    }
-
-    // swiftlint:enable missing_docs
-}
-
 /// A function that can handle a log message including file and method information.
 public typealias VerboseLogHandler = (_ level: LogLevel,
                                       _ message: String,
@@ -63,19 +36,15 @@ struct Logger {
     static var logHandler: VerboseLogHandler = Self.defaultLogHandler
 
     static let defaultLogHandler: VerboseLogHandler = { level, message, file, functionName, line in
-        let fileContext: String
-        if Logger.verbose, let file = file, let functionName = functionName {
-            let fileName = (file as NSString)
-                .lastPathComponent
-                .replacingOccurrences(of: ".swift", with: "")
-                .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-
-            fileContext = "\t\(fileName).\(functionName):\(line)"
-        } else {
-            fileContext = ""
-        }
-
-        NSLog("%@", "[\(Self.frameworkDescription)] - \(level.description)\(fileContext): \(message)")
+        RevenueCat.defaultLogHandler(
+            framework: Self.frameworkDescription,
+            verbose: Logger.verbose,
+            level: level,
+            message: message,
+            file: file,
+            function: functionName,
+            line: line
+        )
     }
 
     static var verbose: Bool = false
