@@ -2269,6 +2269,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 @end
 
 
+
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Configures an instance of the Purchases SDK with a specified <code>Configuration</code>.
 /// The instance will be set as a singleton.
@@ -2324,8 +2325,42 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey;
+/// Configures an instance of the Purchases SDK with a specified API key and app user ID.
+/// The instance will be set as a singleton.
+/// You should access the singleton instance using <code>Purchases/shared</code>
+/// note:
+/// Best practice is to use a salted hash of your unique app user ids.
+/// warning:
+/// Use this initializer if you have your own user identifiers that you manage.
+/// \param apiKey The API Key generated for your app from https://app.revenuecat.com/
+///
+/// \param appUserID The unique app user id for this user. This user id will allow users to share their
+/// purchases and subscriptions across devices. Pass <code>nil</code> or an empty string if you want <code>Purchases</code>
+/// to generate this for you.
+///
+///
+/// returns:
+/// An instantiated <code>Purchases</code> object that has been set as a singleton.
++ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID;
+/// Configures an instance of the Purchases SDK with a custom <code>UserDefaults</code>.
+/// Use this constructor if you want to
+/// sync status across a shared container, such as between a host app and an extension. The instance of the
+/// Purchases SDK will be set as a singleton.
+/// You should access the singleton instance using <code>Purchases/shared</code>
+/// \param apiKey The API Key generated for your app from https://app.revenuecat.com/
+///
+/// \param appUserID The unique app user id for this user. This user id will allow users to share their
+/// purchases and subscriptions across devices. Pass <code>nil</code> or an empty string if you want <code>Purchases</code>
+/// to generate this for you.
+///
+/// \param observerMode Set this to <code>true</code> if you have your own IAP implementation and want to use only
+/// RevenueCat’s backend. Default is <code>false</code>.
+///
+///
+/// returns:
+/// An instantiated <code>Purchases</code> object that has been set as a singleton.
++ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode;
 @end
-
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -2357,8 +2392,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-+ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
-+ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable dangerousSettings:(RCDangerousSettings * _Nullable)dangerousSettings SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
