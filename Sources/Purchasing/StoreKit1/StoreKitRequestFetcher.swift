@@ -90,11 +90,9 @@ private extension StoreKitRequestFetcher {
             let completionHandlers = self.receiptRefreshCompletionHandlers
             self.receiptRefreshCompletionHandlers = []
 
-            self.operationDispatcher.dispatchOnWorkerThread {
-                for handler in completionHandlers {
-                    self.operationDispatcher.dispatchOnMainActor {
-                        handler()
-                    }
+            for handler in completionHandlers {
+                self.operationDispatcher.dispatchOnMainActor {
+                    handler()
                 }
             }
         }
