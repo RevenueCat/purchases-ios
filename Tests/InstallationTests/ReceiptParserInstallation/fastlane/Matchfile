@@ -1,0 +1,8 @@
+git_url(ENV["CERTS_REPO_URL"])
+
+storage_mode("git")
+
+type("development")
+
+app_identifier(["com.revenuecat.ReceiptParserIntegration"])
+username(ENV["FASTLANE_USER"])
