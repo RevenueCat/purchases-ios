@@ -43,6 +43,8 @@ class StoreKitRequestFetcher: NSObject {
             self.receiptRefreshCompletionHandlers.append(completion)
 
             if self.receiptRefreshRequest == nil {
+                Logger.debug(Strings.storeKit.sk_receipt_request_started)
+
                 self.receiptRefreshRequest = self.requestFactory.receiptRefreshRequest()
                 self.receiptRefreshRequest?.delegate = self
                 self.receiptRefreshRequest?.start()
@@ -57,6 +59,7 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
     func requestDidFinish(_ request: SKRequest) {
         guard request is SKReceiptRefreshRequest else { return }
 
+        Logger.debug(Strings.storeKit.sk_receipt_request_finished)
         self.finishReceiptRequest(request)
         request.cancel()
     }

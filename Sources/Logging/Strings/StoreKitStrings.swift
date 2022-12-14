@@ -16,6 +16,10 @@ import Foundation
 // swiftlint:disable identifier_name
 enum StoreKitStrings {
 
+    case sk_receipt_request_started
+
+    case sk_receipt_request_finished
+
     case skrequest_failed(error: Error)
 
     case store_products_request_failed(error: Error)
@@ -52,6 +56,12 @@ extension StoreKitStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
+
+        case .sk_receipt_request_started:
+            return "SKReceiptRefreshRequest started"
+
+        case .sk_receipt_request_finished:
+            return "SKReceiptRefreshRequest finished"
 
         case .skrequest_failed(let error):
             return "SKRequest failed: \(error.localizedDescription)"
