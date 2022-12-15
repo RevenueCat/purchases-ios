@@ -267,6 +267,7 @@ final class PurchasesOrchestrator {
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
             self.purchase(sk2Product: sk2Product,
+                          package: package,
                           promotionalOffer: nil,
                           completion: completion)
         } else {
@@ -292,6 +293,7 @@ final class PurchasesOrchestrator {
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
             self.purchase(sk2Product: sk2Product,
+                          package: package,
                           promotionalOffer: promotionalOffer,
                           completion: completion)
         } else {
@@ -348,10 +350,7 @@ final class PurchasesOrchestrator {
         payment.applicationUsername = self.appUserID
         self.preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: self.appUserID)
 
-        if let presentedOfferingIdentifier = package?.offeringIdentifier {
-            self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = presentedOfferingIdentifier }
-
-        }
+        self.cachePresentedOfferingIdentifier(package: package, productIdentifier: productIdentifier)
 
         self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
 
@@ -382,11 +381,13 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(sk2Product product: SK2Product,
+                  package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData?,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
             do {
                 let result: PurchaseResultData = try await self.purchase(sk2Product: product,
+                                                                         package: package,
                                                                          promotionalOffer: promotionalOffer)
 
                 if !result.userCancelled {
@@ -418,6 +419,7 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(
         sk2Product: SK2Product,
+        package: Package?,
         promotionalOffer: PromotionalOffer.SignedData?
     ) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
@@ -436,6 +438,8 @@ final class PurchasesOrchestrator {
                         )
                         options.insert(try signedData.sk2PurchaseOption)
                     }
+
+                    self.cachePresentedOfferingIdentifier(package: package, productIdentifier: sk2Product.id)
 
                     return try await sk2Product.purchase(options: options)
                 }
@@ -1098,6 +1102,11 @@ private extension PurchasesOrchestrator {
         transaction.finish(self.paymentQueueWrapper.paymentQueueWrapperType, completion: complete)
     }
 
+    func cachePresentedOfferingIdentifier(package: Package?, productIdentifier: String) {
+        if let package = package {
+            self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = package.offeringIdentifier }
+        }
+    }
 }
 
 private extension PurchasesOrchestrator {

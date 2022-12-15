@@ -192,6 +192,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
     }
 
     func testGetSK1PromotionalOffer() async throws {
@@ -288,6 +289,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
     }
 
     func testPurchaseSK1PackageWithNoProductIdentifierDoesNotPostReceipt() async throws {
@@ -339,7 +341,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await self.fetchSk2Product()
 
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk2Product: product),
+                              offeringIdentifier: "offering")
+
         let (transaction, customerInfo, userCancelled) = try await orchestrator.purchase(sk2Product: product,
+                                                                                         package: package,
                                                                                          promotionalOffer: nil)
 
         expect(transaction?.sk2Transaction) == mockTransaction
@@ -392,13 +400,41 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await fetchSk2Product()
 
-        _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
+        _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(beNil())
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageSendsOfferingIdentifierIfSuccessful() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        mockListener.mockTransaction.value = try await self.createTransactionWithPurchase()
+
+        let product = try await fetchSk2Product()
+
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk2Product: product),
+                              offeringIdentifier: "offering")
+
+        _ = try await orchestrator.purchase(sk2Product: product, package: package, promotionalOffer: nil)
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -427,7 +463,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await self.fetchSk2Product()
 
-        _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
+        _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .retryUntilProductIsFound(
@@ -456,7 +492,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                 timestamp: 0)
 
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: offer)
+            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer)
             XCTFail("Expected error")
         } catch {
             expect(self.backend.invokedPostReceiptData) == false
@@ -485,7 +521,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         )
 
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: offer)
+            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer)
             XCTFail("Expected error")
         } catch {
             expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
@@ -503,6 +539,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let product = try await self.fetchSk2Product()
 
         let (transaction, customerInfo, cancelled) = try await self.orchestrator.purchase(sk2Product: product,
+                                                                                          package: nil,
                                                                                           promotionalOffer: nil)
 
         expect(transaction).to(beNil())
@@ -524,7 +561,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockListener.mockTransaction.value = try await self.createTransactionWithPurchase()
 
         do {
-            _ = try await self.orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
+            _ = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
             XCTFail("Expected error")
         } catch {
