@@ -728,9 +728,6 @@ workflows:
           name: xcode-13.2.1
           xcode_version: '13.2.1'
           <<: *release-branches-and-main
-      - release-checks:
-          xcode_version: '14.1.0'
-          <<: *release-branches
       - backend-integration-tests:
           xcode_version: '14.1.0'
           filters:
@@ -742,6 +739,9 @@ workflows:
       not:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
+      - release-checks:
+          xcode_version: '14.1.0'
+          <<: *release-branches
       - installation-tests-cocoapods:
           xcode_version: '14.1.0'
           <<: *release-branches
@@ -757,6 +757,7 @@ workflows:
       - hold:
           type: approval
           requires:
+            - release-checks
             - installation-tests-cocoapods
             - installation-tests-swift-package-manager
             - installation-tests-carthage
