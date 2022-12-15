@@ -85,7 +85,8 @@ class AttributionFetcher {
 #if canImport(AdServices)
         do {
             #if targetEnvironment(simulator)
-                Logger.appleWarning(Strings.attribution.adservices_target_environment_is_simulator)
+                // See https://github.com/RevenueCat/purchases-ios/issues/2121
+                Logger.appleWarning(Strings.attribution.adservices_token_unavailable_in_simulator)
                 return nil
             #else
                 return try AAAttribution.attributionToken()
