@@ -431,14 +431,18 @@ final class PurchasesOrchestrator {
                     var options: Set<Product.PurchaseOption> = [
                         .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
                     ]
+
                     let productIdentifier = sk2Product.id
+
                     if let signedData = promotionalOffer {
                         Logger.debug(
                             Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
                         )
                         options.insert(try signedData.sk2PurchaseOption)
                     }
+
                     cachePresentedOfferingIdentifier(package: package, productIdentifier: productIdentifier)
+
                     return try await sk2Product.purchase(options: options)
                 }
         } catch StoreKitError.userCancelled {
