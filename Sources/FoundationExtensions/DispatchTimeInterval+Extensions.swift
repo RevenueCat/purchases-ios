@@ -16,6 +16,11 @@ import Foundation
 
 extension DispatchTimeInterval {
 
+    /// Creates a `DispatchTimeInterval` from a `TimeInterval` with millisecond precision.
+    init(_ timeInterval: TimeInterval) {
+        self = .milliseconds(Int(timeInterval * 1000))
+    }
+
     /// `DispatchTimeInterval` can only be used by specifying a unit of time.
     /// This allows us to easily convert any `DispatchTimeInterval` into nanoseconds.
     var nanoseconds: Int {
@@ -48,6 +53,15 @@ extension DispatchTimeInterval {
 
 func + (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInterval {
     return .nanoseconds(lhs.nanoseconds + rhs.nanoseconds)
+}
+
+extension DispatchTimeInterval: Comparable {
+
+    // swiftlint:disable:next missing_docs
+    public static func < (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> Bool {
+        return lhs.nanoseconds < rhs.nanoseconds
+    }
+
 }
 
 #if swift(<5.8)
