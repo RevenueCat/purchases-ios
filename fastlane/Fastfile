@@ -333,9 +333,10 @@ platform :ios do
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
 
+    xcframework_root_for_sh = "#{output_directory_for_sh}/RevenueCat.xcframework"
     xcframeworks_zip_path_for_sh = "../RevenueCat.xcframework.zip"
     sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
-      output_directory_for_sh,
+      xcframework_root_for_sh,
       xcframeworks_zip_path_for_sh)
 
   end
