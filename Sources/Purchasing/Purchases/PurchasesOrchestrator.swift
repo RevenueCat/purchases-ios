@@ -1105,7 +1105,7 @@ private extension PurchasesOrchestrator {
     }
 
     func cachePresentedOfferingIdentifier(package: Package?, productIdentifier: String) {
-        if let package {
+        if let package = package {
             self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = package.offeringIdentifier }
         }
     }
