@@ -770,6 +770,9 @@ workflows:
       - installation-tests-swift-package-manager:
           xcode_version: '14.2.0'
           <<: *release-branches
+      - installation-tests-receipt-parser:
+          xcode_version: '14.1.0'
+          <<: *release-branches
       - installation-tests-carthage:
           xcode_version: '14.2.0'
           <<: *release-branches
@@ -784,6 +787,7 @@ workflows:
             - installation-tests-swift-package-manager
             - installation-tests-carthage
             - installation-tests-xcode-direct-integration
+            - installation-tests-receipt-parser
           <<: *release-branches
       - tag-release-branch:
           requires:
