@@ -192,6 +192,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(equal("offering"))
     }
 
     func testGetSK1PromotionalOffer() async throws {
@@ -288,6 +289,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(equal("offering"))
     }
 
     func testPurchaseSK1PackageWithNoProductIdentifierDoesNotPostReceipt() async throws {
@@ -339,7 +341,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await self.fetchSk2Product()
 
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: product,
+                              offeringIdentifier: "offering")
+
         let (transaction, customerInfo, userCancelled) = try await orchestrator.purchase(sk2Product: product,
+                                                                                         package: package
                                                                                          promotionalOffer: nil)
 
         expect(transaction?.sk2Transaction) == mockTransaction
@@ -399,6 +407,34 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(beNil())
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageSendsOfferingIdentifierIfSuccessful() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        mockListener.mockTransaction.value = try await self.createTransactionWithPurchase()
+
+        let product = try await fetchSk2Product()
+
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: product,
+                              offeringIdentifier: "offering")
+
+        _ = try await orchestrator.purchase(sk2Product: product, package: package, promotionalOffer: nil)
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(equal("offering"))
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
