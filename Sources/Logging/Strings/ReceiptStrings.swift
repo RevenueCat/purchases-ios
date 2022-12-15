@@ -19,6 +19,7 @@ enum ReceiptStrings {
 
     case data_object_identifer_not_found_receipt
     case force_refreshing_receipt
+    case throttling_force_refreshing_receipt
     case loaded_receipt(url: URL)
     case no_sandbox_receipt_intro_eligibility
     case no_sandbox_receipt_restore
@@ -50,6 +51,9 @@ extension ReceiptStrings: CustomStringConvertible {
 
         case .force_refreshing_receipt:
             return "Force refreshing the receipt to get latest transactions from Apple."
+
+        case .throttling_force_refreshing_receipt:
+            return "Throttled request to refresh receipt."
 
         case .loaded_receipt(let url):
             return "Loaded receipt from url \(url.absoluteString)"
