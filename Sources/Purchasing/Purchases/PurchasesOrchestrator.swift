@@ -350,7 +350,7 @@ final class PurchasesOrchestrator {
         payment.applicationUsername = self.appUserID
         self.preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: self.appUserID)
 
-        cachePresentedOfferingIdentifier(package: package, productIdentifier: productIdentifier)
+        self.cachePresentedOfferingIdentifier(package: package, productIdentifier: productIdentifier)
 
         self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
 
@@ -432,8 +432,6 @@ final class PurchasesOrchestrator {
                         .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
                     ]
 
-                    let productIdentifier = sk2Product.id
-
                     if let signedData = promotionalOffer {
                         Logger.debug(
                             Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
@@ -441,7 +439,7 @@ final class PurchasesOrchestrator {
                         options.insert(try signedData.sk2PurchaseOption)
                     }
 
-                    cachePresentedOfferingIdentifier(package: package, productIdentifier: productIdentifier)
+                    self.cachePresentedOfferingIdentifier(package: package, productIdentifier: sk2Product.id)
 
                     return try await sk2Product.purchase(options: options)
                 }

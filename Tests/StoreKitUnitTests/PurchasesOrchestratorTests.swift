@@ -192,7 +192,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(equal("offering"))
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
     }
 
     func testGetSK1PromotionalOffer() async throws {
@@ -289,7 +289,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(equal("offering"))
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
     }
 
     func testPurchaseSK1PackageWithNoProductIdentifierDoesNotPostReceipt() async throws {
@@ -434,7 +434,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(equal("offering"))
+        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
