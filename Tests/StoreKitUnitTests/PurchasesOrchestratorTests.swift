@@ -343,11 +343,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let package = Package(identifier: "package",
                               packageType: .monthly,
-                              storeProduct: product,
+                              storeProduct: StoreProduct(sk2Product: product),
                               offeringIdentifier: "offering")
 
         let (transaction, customerInfo, userCancelled) = try await orchestrator.purchase(sk2Product: product,
-                                                                                         package: package
+                                                                                         package: package,
                                                                                          promotionalOffer: nil)
 
         expect(transaction?.sk2Transaction) == mockTransaction
@@ -400,7 +400,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await fetchSk2Product()
 
-        _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
+        _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
@@ -424,7 +424,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let package = Package(identifier: "package",
                               packageType: .monthly,
-                              storeProduct: product,
+                              storeProduct: StoreProduct(sk2Product: product),
                               offeringIdentifier: "offering")
 
         _ = try await orchestrator.purchase(sk2Product: product, package: package, promotionalOffer: nil)
@@ -463,7 +463,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await self.fetchSk2Product()
 
-        _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
+        _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .retryUntilProductIsFound(
@@ -492,7 +492,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                 timestamp: 0)
 
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: offer)
+            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer)
             XCTFail("Expected error")
         } catch {
             expect(self.backend.invokedPostReceiptData) == false
@@ -521,7 +521,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         )
 
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, promotionalOffer: offer)
+            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer)
             XCTFail("Expected error")
         } catch {
             expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
@@ -539,6 +539,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let product = try await self.fetchSk2Product()
 
         let (transaction, customerInfo, cancelled) = try await self.orchestrator.purchase(sk2Product: product,
+                                                                                          package: nil,
                                                                                           promotionalOffer: nil)
 
         expect(transaction).to(beNil())
@@ -560,7 +561,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockListener.mockTransaction.value = try await self.createTransactionWithPurchase()
 
         do {
-            _ = try await self.orchestrator.purchase(sk2Product: product, promotionalOffer: nil)
+            _ = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
             XCTFail("Expected error")
         } catch {
