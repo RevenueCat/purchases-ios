@@ -16,15 +16,18 @@
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 final class MockStoreKit2TransactionListenerDelegate: StoreKit2TransactionListenerDelegate {
 
-    var invokedTransactionUpdated = false
-    var updatedTransactions: [StoreTransactionType] = []
+    var invokedTransactionUpdated: Bool { return self._invokedTransactionUpdated.value }
+    var updatedTransactions: [StoreTransactionType] { return self._updatedTransactions.value }
+
+    private var _invokedTransactionUpdated: Atomic<Bool> = false
+    private var _updatedTransactions: Atomic<[StoreTransactionType]> = .init([])
 
     func storeKit2TransactionListener(
         _ listener: StoreKit2TransactionListener,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
-        self.invokedTransactionUpdated = true
-        self.updatedTransactions.append(transaction)
+        self._invokedTransactionUpdated.value = true
+        self._updatedTransactions.value.append(transaction)
     }
 
 }

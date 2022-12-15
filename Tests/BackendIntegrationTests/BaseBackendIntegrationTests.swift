@@ -34,9 +34,8 @@ class BaseBackendIntegrationTests: XCTestCase {
     // swiftlint:disable:next weak_delegate
     private(set) var purchasesDelegate: TestPurchaseDelegate!
 
-    class var storeKit2Setting: StoreKit2Setting {
-        return .default
-    }
+    class var storeKit2Setting: StoreKit2Setting { return .default }
+    class var observerMode: Bool { return false }
 
     override class func setUp() {
         BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector()
@@ -95,7 +94,7 @@ private extension BaseBackendIntegrationTests {
 
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
-                            observerMode: false,
+                            observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
                             platformInfo: nil,
                             storeKit2Setting: Self.storeKit2Setting,
