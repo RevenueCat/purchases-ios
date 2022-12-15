@@ -244,6 +244,8 @@
 		57536A2627851FFE00E2AE7F /* SK1StoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57536A2527851FFE00E2AE7F /* SK1StoreTransaction.swift */; };
 		57536A28278522B400E2AE7F /* SK2StoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57536A27278522B400E2AE7F /* SK2StoreTransaction.swift */; };
 		5753EE00294B8C0C00CBAB54 /* AttributionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5753EDFF294B8C0C00CBAB54 /* AttributionFetcherTests.swift */; };
+		5753EE0E294B938900CBAB54 /* StoreKitObserverModeIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5753EE0D294B938900CBAB54 /* StoreKitObserverModeIntegrationTests.swift */; };
+		5753EE10294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5753EE0F294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift */; };
 		57544C28285FA94B004E54D5 /* MockAttributeSyncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57544C24285FA8E6004E54D5 /* MockAttributeSyncing.swift */; };
 		57544C29285FA95E004E54D5 /* MockAttributeSyncing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57544C24285FA8E6004E54D5 /* MockAttributeSyncing.swift */; };
 		57554C62282ABFD9009A7E58 /* StoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57554C61282ABFD9009A7E58 /* StoreTests.swift */; };
@@ -786,6 +788,8 @@
 		57536A2527851FFE00E2AE7F /* SK1StoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1StoreTransaction.swift; sourceTree = "<group>"; };
 		57536A27278522B400E2AE7F /* SK2StoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2StoreTransaction.swift; sourceTree = "<group>"; };
 		5753EDFF294B8C0C00CBAB54 /* AttributionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionFetcherTests.swift; sourceTree = "<group>"; };
+		5753EE0D294B938900CBAB54 /* StoreKitObserverModeIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitObserverModeIntegrationTests.swift; sourceTree = "<group>"; };
+		5753EE0F294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseStoreKitIntegrationTests.swift; sourceTree = "<group>"; };
 		57544C24285FA8E6004E54D5 /* MockAttributeSyncing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAttributeSyncing.swift; sourceTree = "<group>"; };
 		57554C61282ABFD9009A7E58 /* StoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTests.swift; sourceTree = "<group>"; };
 		57554C83282AC273009A7E58 /* PeriodTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeriodTypeTests.swift; sourceTree = "<group>"; };
@@ -1474,8 +1478,10 @@
 			isa = PBXGroup;
 			children = (
 				579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */,
-				579189FC28F4966500BF4963 /* OtherIntegrationTests.swift */,
+				5753EE0F294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift */,
+				5753EE0D294B938900CBAB54 /* StoreKitObserverModeIntegrationTests.swift */,
 				2DE20B6E264087FB004C597D /* StoreKitIntegrationTests.swift */,
+				579189FC28F4966500BF4963 /* OtherIntegrationTests.swift */,
 				579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */,
 				2CD2C541278CE0E0005D1CC2 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */,
 				2DE61A83264190830021CEA0 /* Constants.swift */,
@@ -2845,9 +2851,11 @@
 				57DD426E2926B9A50026DF09 /* StoreKitTestHelpers.swift in Sources */,
 				57C2932A28BFF89D0054EDFC /* ErrorMatcher.swift in Sources */,
 				2DE61A84264190830021CEA0 /* Constants.swift in Sources */,
+				5753EE10294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift in Sources */,
 				579234E527F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift in Sources */,
 				2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */,
 				2D1015DB275A4EAE0086173F /* AvailabilityChecks.swift in Sources */,
+				5753EE0E294B938900CBAB54 /* StoreKitObserverModeIntegrationTests.swift in Sources */,
 				579189FD28F4966500BF4963 /* OtherIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
