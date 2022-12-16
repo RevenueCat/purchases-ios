@@ -19,6 +19,9 @@ class ReceiptFetcher {
     private let requestFetcher: StoreKitRequestFetcher
     private let receiptParser: ReceiptParser
     private let fileReader: FileReader
+    private let clock: ClockType
+
+    private let lastReceiptRefreshRequest: Atomic<Date?> = nil
 
     let systemInfo: SystemInfo
 
@@ -26,19 +29,29 @@ class ReceiptFetcher {
         requestFetcher: StoreKitRequestFetcher,
         systemInfo: SystemInfo,
         receiptParser: ReceiptParser = .default,
-        fileReader: FileReader = DefaultFileReader()
+        fileReader: FileReader = DefaultFileReader(),
+        clock: ClockType = Clock.default
     ) {
         self.requestFetcher = requestFetcher
         self.systemInfo = systemInfo
         self.receiptParser = receiptParser
         self.fileReader = fileReader
+        self.clock = clock
     }
 
     func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?) -> Void) {
         switch refreshPolicy {
         case .always:
-            Logger.debug(Strings.receipt.force_refreshing_receipt)
-            self.refreshReceipt(completion)
+            if self.shouldThrottleRefreshRequest() {
+                Logger.debug(Strings.receipt.throttling_force_refreshing_receipt)
+
+                // If requested to refresh again within the throttle duration
+                // Use `ReceiptRefreshPolicy.onlyIfEmpty` so receipt is not refreshed if it's already loaded.
+                self.receiptData(refreshPolicy: .onlyIfEmpty, completion: completion)
+            } else {
+                Logger.debug(Strings.receipt.force_refreshing_receipt)
+                self.refreshReceipt(completion)
+            }
 
         case .onlyIfEmpty:
             let receiptData = self.receiptData()
@@ -75,6 +88,15 @@ class ReceiptFetcher {
                 continuation.resume(returning: result)
             }
         }
+    }
+
+    private func shouldThrottleRefreshRequest() -> Bool {
+        guard let lastRefresh = self.lastReceiptRefreshRequest.value else {
+            return false
+        }
+
+        let timeSinceLastRequest = DispatchTimeInterval(self.clock.now.timeIntervalSince(lastRefresh))
+        return timeSinceLastRequest < ReceiptRefreshPolicy.alwaysRefreshThrottleDuration
     }
 
 }
@@ -120,6 +142,8 @@ private extension ReceiptFetcher {
     }
 
     func refreshReceipt(_ completion: @escaping (Data) -> Void) {
+        self.lastReceiptRefreshRequest.value = self.clock.now
+
         self.requestFetcher.fetchReceiptData {
             let data = self.receiptData()
             guard let receiptData = data,

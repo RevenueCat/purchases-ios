@@ -13,10 +13,12 @@
 
 import Nimble
 @testable import RevenueCat
+@preconcurrency import StoreKit // `PurchaseResult` is not `Sendable`
 import StoreKitTest
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+@MainActor
 class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
 
     private var listener: StoreKit2TransactionListener! = nil
@@ -111,19 +113,31 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
         try await self.verifyUnfinishedTransaction(withId: purchasedTransaction.id)
     }
 
-    func testPurchasingDoesNotNotifyDelegate() async throws {
+    func testPurchasingInTheAppDoesNotNotifyDelegate() async throws {
         self.listener.listenForTransactions()
 
         _ = try await self.fetchSk2Product().purchase()
 
-        expect(self.delegate.invokedTransactionUpdated) == false
+        try await self.verifyTransactionsWereNotUpdated()
+    }
+
+    func testPurchasingOutsideTheAppNotifiesDelegate() throws {
+        self.listener.listenForTransactions()
+
+        try self.testSession.buyProduct(productIdentifier: Self.productID)
+
+        expect(self.delegate.invokedTransactionUpdated).toEventually(beTrue())
+    }
+
+    func testNotifiesDelegateForExistingTransactions() throws {
+        try self.testSession.buyProduct(productIdentifier: Self.productID)
+
+        self.listener.listenForTransactions()
+
+        expect(self.delegate.invokedTransactionUpdated).toEventually(beTrue())
     }
 
     func testHandlePurchaseResultDoesNotFinishTransaction() async throws {
-        self.listener.listenForTransactions()
-
-        await self.verifyNoUnfinishedTransactions()
-
         let (purchaseResult, _, purchasedTransaction) = try await self.purchase()
 
         let sk2Transaction = try await self.listener.handle(purchaseResult: purchaseResult)
@@ -134,8 +148,6 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
     }
 
     func testHandlePurchaseResultDoesNotNotifyDelegate() async throws {
-        self.listener.listenForTransactions()
-
         let result = try await self.purchase().result
         _ = try await self.listener.handle(purchaseResult: result)
 
@@ -199,4 +211,13 @@ private extension StoreKit2TransactionListenerTests {
 
         return (result, verificationResult, transaction)
     }
+
+    func verifyTransactionsWereNotUpdated() async throws {
+        // In order for this test to not be a false positive we need to
+        // give it a chance to handle the potential transaction.
+        try await Task.sleep(nanoseconds: UInt64(DispatchTimeInterval.milliseconds(300).nanoseconds))
+
+        expect(self.delegate.invokedTransactionUpdated) == false
+    }
+
 }

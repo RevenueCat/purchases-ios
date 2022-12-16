@@ -24,6 +24,7 @@ class BaseReceiptFetcherTests: TestCase {
     fileprivate var mockBundle: MockBundle!
     fileprivate var mockSystemInfo: MockSystemInfo!
     fileprivate var mockReceiptParser: MockReceiptParser!
+    fileprivate var clock: TestClock!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -34,11 +35,13 @@ class BaseReceiptFetcherTests: TestCase {
         self.mockSystemInfo = try MockSystemInfo(platformInfo: nil,
                                                  finishTransactions: false,
                                                  bundle: self.mockBundle)
+        self.clock = TestClock()
 
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher,
                                              systemInfo: self.mockSystemInfo,
                                              receiptParser: self.mockReceiptParser,
-                                             fileReader: self.createFileReader())
+                                             fileReader: self.createFileReader(),
+                                             clock: self.clock)
     }
 
     func createFileReader() -> FileReader {
@@ -128,6 +131,62 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
 
         expect(receivedData).toNot(beNil())
         expect(receivedData).toNot(beEmpty())
+
+        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
+        expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 1
+    }
+
+    func testReceiptDataWithRefreshPolicyAlwaysDoesNotRefreshIfRequestedWithinThrottleDuration() {
+        let _: Data? = waitUntilValue { completion in
+            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
+        }
+
+        self.clock.advance(by: ReceiptRefreshPolicy.alwaysRefreshThrottleDuration - .milliseconds(500))
+
+        let receivedData: Data? = waitUntilValue { completion in
+            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
+        }
+
+        expect(receivedData).toNot(beEmpty())
+
+        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
+        expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 1
+    }
+
+    func testReceiptDataWithRefreshPolicyAlwaysRefreshesWithinThrottleDurationIfNoReceiptData() {
+        self.mockBundle.receiptURLResult = .emptyReceipt
+
+        let _: Data? = waitUntilValue { completion in
+            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
+        }
+
+        self.clock.advance(by: ReceiptRefreshPolicy.alwaysRefreshThrottleDuration - .milliseconds(500))
+
+        let receivedData: Data? = waitUntilValue { completion in
+            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
+        }
+
+        expect(receivedData).toNot(beNil())
+
+        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
+        expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
+    }
+
+    func testReceiptDataWithRefreshPolicyAlwaysRefreshesAfterThrottleDuration() {
+        let _: Data? = waitUntilValue { completion in
+            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
+        }
+
+        self.clock.advance(by: ReceiptRefreshPolicy.alwaysRefreshThrottleDuration + .seconds(1))
+
+        let receivedData: Data? = waitUntilValue { completion in
+            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
+        }
+
+        expect(receivedData).toNot(beEmpty())
+
+        expect(self.mockRequestFetcher.refreshReceiptCalled) == true
+        expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
     }
 
 }

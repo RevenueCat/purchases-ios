@@ -26,4 +26,14 @@ enum ReceiptRefreshPolicy {
 
 }
 
+extension ReceiptRefreshPolicy {
+
+    /// See `ReceiptFetcher`.
+    /// `ReceiptRefreshPolicy.always` won't refresh receipts faster than this interval
+    /// to avoid StoreKit errors:
+    /// "Finished refreshing receipt with error: Error Domain=ASDErrorDomain Code=603 "Request throttled"
+    static let alwaysRefreshThrottleDuration: DispatchTimeInterval = .seconds(2)
+
+}
+
 extension ReceiptRefreshPolicy: Equatable {}
