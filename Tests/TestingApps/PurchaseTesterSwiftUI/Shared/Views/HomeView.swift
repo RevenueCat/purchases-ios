@@ -106,16 +106,15 @@ struct HomeView: View {
 
         }
         .alert(
-            isPresented: .constant(self.error != nil),
-            error: LocalizedAlertError(self.error),
+            isPresented: .init(get: { self.error != nil },
+                               set: { if $0 == false { self.error = nil } }),
+            error: self.error.map(LocalizedAlertError.init),
             actions: { _ in
                 Button("OK") {
                     self.error = nil
                 }
             },
-            message: { error in
-                Text((error.underlyingError as NSError).debugDescription)
-            }
+            message: { Text($0.subtitle) }
         )
         .navigationTitle("PurchaseTester")
         .textFieldAlert(isShowing: self.$showingAlert, title: "App User ID", fields: [("User ID", "ID of your user", self.$newAppUserID)]) {
@@ -265,14 +264,21 @@ private struct OfferingItemView: View {
 
 private struct LocalizedAlertError: LocalizedError {
 
-    let underlyingError: Error
+    private let underlyingError: NSError
 
-    var errorDescription: String? { (self.underlyingError as NSError).localizedDescription }
-    var recoverySuggestion: String? { (self.underlyingError as NSError).localizedRecoverySuggestion }
+    var errorDescription: String? { self.title }
+    var recoverySuggestion: String? { self.underlyingError.localizedRecoverySuggestion }
 
-    init?(_ error: Error?) {
-        guard let error else { return nil }
-        self.underlyingError = error
+    init(_ error: Error) {
+        self.underlyingError = error as NSError
+    }
+
+    var title: String {
+        return "\(self.underlyingError.domain) \(self.underlyingError.code)"
+    }
+
+    var subtitle: String {
+        return self.underlyingError.localizedDescription
     }
 
 }
