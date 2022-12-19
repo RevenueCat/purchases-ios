@@ -12,8 +12,9 @@ import Core
 import RevenueCat
 
 struct HomeView: View {
-    
-    @EnvironmentObject var revenueCatCustomerData: RevenueCatCustomerData
+
+    @EnvironmentObject private var revenueCatCustomerData: RevenueCatCustomerData
+    @EnvironmentObject private var observerModeManager: ObserverModeManager
     
     @State var offerings: [RevenueCat.Offering] = []
     
@@ -34,7 +35,10 @@ struct HomeView: View {
             List {
                 Section("Offerings") {
                     ForEach(self.offerings) { offering in
-                        NavigationLink(destination: OfferingDetailView(offering: offering)) {
+                        NavigationLink(
+                            destination: OfferingDetailView(offering: offering)
+                                .environmentObject(self.observerModeManager)
+                        ) {
                             OfferingItemView(offering: offering)
                         }
                     }

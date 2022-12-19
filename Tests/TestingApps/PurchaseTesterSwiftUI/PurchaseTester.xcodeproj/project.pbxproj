@@ -37,6 +37,10 @@
 		578DAA312947E256001700FD /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 578DAA302947E256001700FD /* RevenueCat */; };
 		578DAA322947E256001700FD /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; };
 		578DAA332947E256001700FD /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		57B5795429536B8C003EAA40 /* PurchasesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B5795029536B8C003EAA40 /* PurchasesOrchestrator.swift */; };
+		57B5795529536B8C003EAA40 /* ProductFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B5795129536B8C003EAA40 /* ProductFetcherSK2.swift */; };
+		57B5795629536B8C003EAA40 /* ObserverModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B5795229536B8C003EAA40 /* ObserverModeManager.swift */; };
+		57B5795729536B8C003EAA40 /* ProductFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B5795329536B8C003EAA40 /* ProductFetcherSK1.swift */; };
 		57C217AD29159B83005236DB /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 57C217AC29159B83005236DB /* RevenueCat */; };
 		57E9CF09290B0E0600EE12D1 /* AppIcon.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57E9CF08290B0BE500EE12D1 /* AppIcon.xcassets */; };
 		57ED6A80290886B6009580C6 /* ConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A7F290886B6009580C6 /* ConfigurationView.swift */; };
@@ -132,6 +136,10 @@
 		578DAA0F2947DD21001700FD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		578DAA202947DD8C001700FD /* Core.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Core.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		578DAA222947DD8C001700FD /* Core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Core.h; sourceTree = "<group>"; };
+		57B5795029536B8C003EAA40 /* PurchasesOrchestrator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestrator.swift; sourceTree = "<group>"; };
+		57B5795129536B8C003EAA40 /* ProductFetcherSK2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProductFetcherSK2.swift; sourceTree = "<group>"; };
+		57B5795229536B8C003EAA40 /* ObserverModeManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObserverModeManager.swift; sourceTree = "<group>"; };
+		57B5795329536B8C003EAA40 /* ProductFetcherSK1.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProductFetcherSK1.swift; sourceTree = "<group>"; };
 		57E9CF08290B0BE500EE12D1 /* AppIcon.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AppIcon.xcassets; sourceTree = "<group>"; };
 		57ED6A7F290886B6009580C6 /* ConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationView.swift; sourceTree = "<group>"; };
 		57ED6A8129089111009580C6 /* Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Identifiable.swift; sourceTree = "<group>"; };
@@ -227,6 +235,7 @@
 				2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */,
 				575642A5290C7D3100719219 /* Windows.swift */,
 				2CF428672863EE9D007E6A78 /* Extensions */,
+				57B5794F29536B8C003EAA40 /* Helpers */,
 				2C10F18727A9952B0078444D /* Views */,
 				2CD2C4F0278C9B02005D1CC2 /* Assets.xcassets */,
 			);
@@ -272,6 +281,17 @@
 				578DAA222947DD8C001700FD /* Core.h */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		57B5794F29536B8C003EAA40 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				57B5795029536B8C003EAA40 /* PurchasesOrchestrator.swift */,
+				57B5795129536B8C003EAA40 /* ProductFetcherSK2.swift */,
+				57B5795229536B8C003EAA40 /* ObserverModeManager.swift */,
+				57B5795329536B8C003EAA40 /* ProductFetcherSK1.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		57C217AB29159B83005236DB /* Frameworks */ = {
@@ -446,14 +466,18 @@
 				2CD2C518278C9B02005D1CC2 /* ContentView.swift in Sources */,
 				2CF428692863EEAC007E6A78 /* Package+Extensions.swift in Sources */,
 				2C10F17F27A993EA0078444D /* OfferingDetailView.swift in Sources */,
+				57B5795529536B8C003EAA40 /* ProductFetcherSK2.swift in Sources */,
 				2C10F18527A995150078444D /* HomeView.swift in Sources */,
 				2C10F19127AC31610078444D /* TransactionsView.swift in Sources */,
+				57B5795429536B8C003EAA40 /* PurchasesOrchestrator.swift in Sources */,
 				2C10F18B27A997570078444D /* CustomerView.swift in Sources */,
 				2C10F19A27AC32840078444D /* SubscriberAttributesView.swift in Sources */,
+				57B5795629536B8C003EAA40 /* ObserverModeManager.swift in Sources */,
 				2CD2C516278C9B02005D1CC2 /* PurchaseTesterApp.swift in Sources */,
 				575642A4290C7A2700719219 /* LoggerView.swift in Sources */,
 				2C10F18227A9943D0078444D /* PromoOfferDetailsView.swift in Sources */,
 				575642A6290C7D3100719219 /* Windows.swift in Sources */,
+				57B5795729536B8C003EAA40 /* ProductFetcherSK1.swift in Sources */,
 				2C10F19727AC31B80078444D /* CustomerInfoView.swift in Sources */,
 				57ED6A86290893B6009580C6 /* Extensions.swift in Sources */,
 				57ED6A8229089111009580C6 /* Identifiable.swift in Sources */,
