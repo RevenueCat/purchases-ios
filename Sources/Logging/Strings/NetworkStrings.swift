@@ -31,6 +31,7 @@ enum NetworkStrings {
     case retrying_request(httpMethod: String, path: String)
     case could_not_find_cached_response
     case could_not_find_cached_response_in_already_retried(response: String)
+    case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
 
 }
@@ -86,7 +87,10 @@ extension NetworkStrings: CustomStringConvertible {
             return "We can't find the cached response, but call has already been retried. " +
                 "Returning result from backend \(response)"
 
-        case .blocked_network(let url, let newHost):
+        case let .failing_url_resolved_to_host(url, resolvedHost):
+            return "Failing url '\(url)' resolved to host '\(resolvedHost)'"
+
+        case let .blocked_network(url, newHost):
             return "It looks like requests to RevenueCat are being blocked. Context: We're attempting to connect " +
             "to \(url.absoluteString) host: (\(newHost ?? "<unable to resolve>")), " +
             "see: https://rev.cat/dnsBlocking for more info."
