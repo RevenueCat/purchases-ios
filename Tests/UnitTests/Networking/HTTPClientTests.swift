@@ -16,12 +16,13 @@ import XCTest
 class HTTPClientTests: TestCase {
 
     private typealias EmptyResponse = HTTPResponse<HTTPEmptyResponseBody>.Result
-    let apiKey = "MockAPIKey"
-    let systemInfo = MockSystemInfo(finishTransactions: true)
-    var client: HTTPClient!
-    var userDefaults: UserDefaults!
-    var eTagManager: MockETagManager!
-    var operationDispatcher: OperationDispatcher!
+
+    private let apiKey = "MockAPIKey"
+    private let systemInfo = MockSystemInfo(finishTransactions: true)
+    private var client: HTTPClient!
+    private var userDefaults: UserDefaults!
+    private var eTagManager: MockETagManager!
+    private var operationDispatcher: OperationDispatcher!
 
     override func setUp() {
         super.setUp()
@@ -787,8 +788,6 @@ class HTTPClientTests: TestCase {
             "test": "data"
         ])
 
-        let response: Atomic<HTTPResponse<Data>.Result?> = nil
-
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
             statusCode: .success,
@@ -801,14 +800,15 @@ class HTTPClientTests: TestCase {
                          headers: nil)
         }
 
-        self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
-            response.value = result
+        let response: HTTPResponse<Data>.Result? = waitUntilValue(timeout: .seconds(1)) { completion in
+            self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
+                completion(result)
+            }
         }
 
-        expect(response.value).toEventuallyNot(beNil(), timeout: .seconds(1))
-
-        expect(response.value?.value?.statusCode) == .success
-        expect(response.value?.value?.body) == mockedCachedResponse
+        expect(response).toNot(beNil())
+        expect(response?.value?.statusCode) == .success
+        expect(response?.value?.body) == mockedCachedResponse
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
@@ -823,10 +823,14 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in }
+        waitUntil { completion in
+            self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
+                completion()
+            }
+        }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == false
     }
 
     func testDNSCheckerIsCalledWhenPOSTRequestFailedWithUnknownError() {
@@ -841,11 +845,14 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .post([:]), path: path)) { (_: HTTPResponse<Data>.Result) in
+        waitUntil { completion in
+            self.client.perform(.init(method: .post([:]), path: path)) { (_: HTTPResponse<Data>.Result) in
+                completion()
+            }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == false
     }
 
     func testDNSCheckedIsCalledWhenPOSTRequestFailedWithDNSError() {
@@ -864,11 +871,14 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .post([:]), path: path)) { (_: HTTPResponse<Data>.Result) in
+        waitUntil { completion in
+            self.client.perform(.init(method: .post([:]), path: path)) { (_: HTTPResponse<Data>.Result) in
+                completion()
+            }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
     }
 
     func testDNSCheckedIsCalledWhenGETRequestFailedWithDNSError() {
@@ -886,11 +896,14 @@ class HTTPClientTests: TestCase {
             response.error = nsErrorWithUserInfo
             return response
         }
+        waitUntil { completion in
+            self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
+                completion()
+            }
+        }
 
-        self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in }
-
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
     }
 
     func testOfflineConnectionError() {
@@ -904,13 +917,14 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        let obtainedError: Atomic<NetworkError?> = nil
-        self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
-            obtainedError.value = result.error
+        let obtainedError: NetworkError? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
+                completion(result.error)
+            }
         }
 
-        expect(obtainedError.value).toEventuallyNot(beNil())
-        expect(obtainedError.value) == .offlineConnection()
+        expect(obtainedError).toNot(beNil())
+        expect(obtainedError) == .offlineConnection()
     }
 
     func testErrorIsLoggedAndReturnsDNSErrorWhenGETRequestFailedWithDNSError() {
@@ -933,16 +947,17 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        let obtainedError: Atomic<NetworkError?> = nil
-        self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
-            obtainedError.value = result.error
+        let obtainedError: NetworkError? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
+                completion(result.error)
+            }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(true))
-        expect(obtainedError.value).toEventually(equal(expectedDNSError))
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
+        expect(obtainedError) == expectedDNSError
         expect(logHandler.messages.map(\.message))
-            .toEventually(contain(expectedMessage))
+            .to(contain(expectedMessage))
     }
 
     func testErrorIsntLoggedWhenGETRequestFailedWithUnknownError() {
@@ -963,12 +978,16 @@ class HTTPClientTests: TestCase {
             return response
         }
 
-        self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in }
+        waitUntil { completion in
+            self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
+                completion()
+            }
+        }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value).toEventually(equal(true))
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value).toEventually(equal(false))
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == false
         expect(logHandler.messages.map(\.message))
-            .toNotEventually(contain(unexpectedDNSError.description))
+            .toNot(contain(unexpectedDNSError.description))
     }
 
 }
