@@ -183,7 +183,7 @@ platform :ios do
 
   desc "archive"
   lane :archive do
-    match(type: "appstore")
+    match(type: "appstore", readonly: true)
     gym(export_method: "app-store")
   end
 
@@ -196,7 +196,7 @@ platform :ios do
     }
 
     platforms.each do |platform, destination|
-      match(type: "appstore", platform: platform)
+      match(type: "appstore", platform: platform, readonly: true)
       gym(export_method: "app-store", destination: destination)
     end
   end
@@ -491,7 +491,7 @@ platform :ios do
 
   desc "Build and deploy PurchaseTesterSwiftUI"
   lane :deploy_purchase_tester do
-    match(verbose: true, readonly: true)
+    match(readonly: true)
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
       xcodeproj: 'PurchaseTester.xcodeproj'
