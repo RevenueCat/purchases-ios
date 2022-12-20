@@ -47,6 +47,7 @@ extension XCTestCase {
 
     func finishAllUnfinishedTransactions() async {
         let transactions = await self.unfinishedTransactions
+        guard !transactions.isEmpty else { return }
 
         Logger.debug("Finishing \(transactions.count) transactions before running tests")
 
