@@ -22,6 +22,8 @@ final class MockBundle: Bundle {
         case receiptWithData
         case emptyReceipt
         case sandboxReceipt
+        case macOSAppStoreReceipt
+        case macOSSandboxReceipt
         case nilURL
 
     }
@@ -40,6 +42,11 @@ final class MockBundle: Bundle {
         case .sandboxReceipt:
             return testBundle
                 .url(forResource: Self.mockSandboxReceiptFileName, withExtension: "txt")
+        case .macOSSandboxReceipt:
+            // swiftlint:disable:next line_length
+            return URL(string: "/Users/nachosoto/Library/Developer/Xcode/DerivedData/PurchaseTester-coxthvoqhbhicvcmwbbwnogtdrle/Build/Products/Debug-maccatalyst/PurchaseTester.app/Contents/_MASReceipt/receipt")!
+        case .macOSAppStoreReceipt:
+            return URL(string: "/Applications/PurchaseTester.app/Contents/_MASReceipt/receipt")!
         case .nilURL:
             return nil
         }

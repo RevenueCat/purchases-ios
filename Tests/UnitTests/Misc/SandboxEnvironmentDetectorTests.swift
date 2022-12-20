@@ -30,6 +30,14 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
     }
 
+    func testMacSandboxReceiptIsSandbox() throws {
+        expect(try SystemInfo.withReceiptResult(.macOSSandboxReceipt).isSandbox) == true
+    }
+
+    func testMacAppStoreReceiptIsNotSandbox() throws {
+        expect(try SystemInfo.withReceiptResult(.macOSAppStoreReceipt).isSandbox) == false
+    }
+
 }
 
 private extension SandboxEnvironmentDetector {

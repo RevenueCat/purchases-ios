@@ -30,11 +30,17 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
     }
 
     var isSandbox: Bool {
-        guard let url = self.bundle.appStoreReceiptURL else {
+        guard let path = self.bundle.appStoreReceiptURL?.path else {
             return false
         }
 
-        return url.path.contains("sandboxReceipt")
+        // `true` for either `macOS` or `Catalyst`
+        let isMASReceipt = path.contains("MASReceipt/receipt")
+        if isMASReceipt {
+            return path.contains("Xcode/DerivedData")
+        } else {
+            return path.contains("sandboxReceipt")
+        }
     }
 
     #if DEBUG
