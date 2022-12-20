@@ -60,6 +60,9 @@ enum DNSChecker: DNSCheckerType {
             return false
         }
 
+        Logger.debug(Strings.network.failing_url_resolved_to_host(url: url,
+                                                                  resolvedHost: resolvedHostName))
+
         return self.invalidHosts.contains(resolvedHostName)
     }
 
