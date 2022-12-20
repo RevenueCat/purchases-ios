@@ -47,6 +47,23 @@ import Foundation
 
 extension IntroEligibilityStatus: CaseIterable, Sendable {}
 
+extension IntroEligibilityStatus: CustomStringConvertible {
+
+    // swiftlint:disable:next missing_docs
+    public var description: String {
+        switch self {
+        case .eligible: return "\(type(of: self)).eligible"
+        case .ineligible: return "\(type(of: self)).ineligible"
+        case .noIntroOfferExists: return "\(type(of: self)).noIntroOfferExists"
+
+        case .unknown: fallthrough
+        @unknown default:
+            return "\(type(of: self)).unknown"
+        }
+    }
+
+}
+
 private extension IntroEligibilityStatus {
 
     enum IntroEligibilityStatusError: LocalizedError {
