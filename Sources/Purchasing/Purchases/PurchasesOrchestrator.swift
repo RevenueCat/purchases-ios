@@ -59,6 +59,7 @@ final class PurchasesOrchestrator {
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
     private let receiptFetcher: ReceiptFetcher
+    private let receiptParser: PurchasesReceiptParser
     private let customerInfoManager: CustomerInfoManager
     private let backend: Backend
     private let currentUserProvider: CurrentUserProvider
@@ -93,6 +94,7 @@ final class PurchasesOrchestrator {
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
                      receiptFetcher: ReceiptFetcher,
+                     receiptParser: PurchasesReceiptParser,
                      customerInfoManager: CustomerInfoManager,
                      backend: Backend,
                      currentUserProvider: CurrentUserProvider,
@@ -111,6 +113,7 @@ final class PurchasesOrchestrator {
             subscriberAttributes: subscriberAttributes,
             operationDispatcher: operationDispatcher,
             receiptFetcher: receiptFetcher,
+            receiptParser: receiptParser,
             customerInfoManager: customerInfoManager,
             backend: backend,
             currentUserProvider: currentUserProvider,
@@ -139,6 +142,7 @@ final class PurchasesOrchestrator {
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
          receiptFetcher: ReceiptFetcher,
+         receiptParser: PurchasesReceiptParser,
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
          currentUserProvider: CurrentUserProvider,
@@ -153,6 +157,7 @@ final class PurchasesOrchestrator {
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
         self.receiptFetcher = receiptFetcher
+        self.receiptParser = receiptParser
         self.customerInfoManager = customerInfoManager
         self.backend = backend
         self.currentUserProvider = currentUserProvider
@@ -988,10 +993,10 @@ private extension PurchasesOrchestrator {
         }
 
         let currentAppUserID = self.appUserID
-        let unsyncedAttributes = unsyncedAttributes
+        let unsyncedAttributes = self.unsyncedAttributes
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://rev.cat/apple-restoring-purchased-products
-        receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData in
+        self.receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData in
             guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
                       if self.systemInfo.isSandbox {
@@ -1023,17 +1028,19 @@ private extension PurchasesOrchestrator {
                     return
                 }
 
-                self.backend.post(receiptData: receiptData,
-                                  appUserID: currentAppUserID,
-                                  isRestore: isRestore,
-                                  productData: nil,
-                                  presentedOfferingIdentifier: nil,
-                                  observerMode: self.observerMode,
-                                  initiationSource: initiationSource,
-                                  subscriberAttributes: unsyncedAttributes) { result in
-                    self.handleReceiptPost(result: result,
-                                           subscriberAttributes: unsyncedAttributes,
-                                           completion: completion)
+                self.createProductRequestData(with: receiptData) { productRequestData in
+                    self.backend.post(receiptData: receiptData,
+                                      appUserID: currentAppUserID,
+                                      isRestore: isRestore,
+                                      productData: productRequestData,
+                                      presentedOfferingIdentifier: nil,
+                                      observerMode: self.observerMode,
+                                      initiationSource: initiationSource,
+                                      subscriberAttributes: unsyncedAttributes) { result in
+                        self.handleReceiptPost(result: result,
+                                               subscriberAttributes: unsyncedAttributes,
+                                               completion: completion)
+                    }
                 }
             }
         }
@@ -1107,6 +1114,32 @@ private extension PurchasesOrchestrator {
             self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = package.offeringIdentifier }
         }
     }
+
+    /// Computes a `ProductRequestData` for an active subscription found in the receipt,
+    /// or `nil` if there is any issue fetching it.
+    func createProductRequestData(
+        with receiptData: Data,
+        completion: @escaping (ProductRequestData?) -> Void
+    ) {
+        guard let receipt = try? self.receiptParser.parse(from: receiptData) else { completion(nil); return }
+
+        // Find the latest purchased subscription
+        guard let productIdentifier = receipt.inAppPurchases
+            .lazy
+            .filter({ $0.isActiveSubscription })
+            .sorted(by: { $0.purchaseDate > $1.purchaseDate })
+            .first?
+            .productId else { completion(nil); return }
+
+        self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
+            let result = products.value?.first.map {
+                ProductRequestData(with: $0, storefront: self.paymentQueueWrapper.currentStorefront)
+            }
+
+            completion(result)
+        }
+    }
+
 }
 
 private extension PurchasesOrchestrator {

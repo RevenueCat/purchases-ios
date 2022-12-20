@@ -91,6 +91,91 @@ class PurchasesRestoreTests: BasePurchasesTests {
         expect(self.receiptFetcher.receiptDataTimesCalled).to(equal(1))
     }
 
+    func testRestoringPurchasesPostsProductRequestDataForActiveSubscription() {
+        let productIdentifier = "com.revenuecat.product"
+        let product = MockSK1Product(mockProductIdentifier: productIdentifier)
+        product.mockPrice = 2.99
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.mockReceiptParser.stubbedParseResult = .init(
+            bundleId: "",
+            applicationVersion: "",
+            originalApplicationVersion: nil,
+            opaqueValue: Data(),
+            sha1Hash: Data(),
+            creationDate: Date(),
+            expirationDate: nil,
+            inAppPurchases: [
+                .init(quantity: 1,
+                      productId: "consumable",
+                      transactionId: "1",
+                      originalTransactionId: nil,
+                      productType: .consumable,
+                      purchaseDate: Date(),
+                      originalPurchaseDate: nil,
+                      expiresDate: Date().addingTimeInterval(10000),
+                      cancellationDate: nil,
+                      isInTrialPeriod: false,
+                      isInIntroOfferPeriod: false,
+                      webOrderLineItemId: nil,
+                      promotionalOfferIdentifier: nil),
+                .init(quantity: 1,
+                      productId: productIdentifier,
+                      transactionId: "2",
+                      originalTransactionId: nil,
+                      productType: .autoRenewableSubscription,
+                      purchaseDate: Date(),
+                      originalPurchaseDate: nil,
+                      expiresDate: Date().addingTimeInterval(10000),
+                      cancellationDate: nil,
+                      isInTrialPeriod: false,
+                      isInIntroOfferPeriod: false,
+                      webOrderLineItemId: nil,
+                      promotionalOfferIdentifier: nil),
+                .init(quantity: 1,
+                      productId: "expired sub",
+                      transactionId: "3",
+                      originalTransactionId: nil,
+                      productType: .autoRenewableSubscription,
+                      purchaseDate: Date(),
+                      originalPurchaseDate: nil,
+                      expiresDate: Date().addingTimeInterval(-100),
+                      cancellationDate: nil,
+                      isInTrialPeriod: false,
+                      isInIntroOfferPeriod: false,
+                      webOrderLineItemId: nil,
+                      promotionalOfferIdentifier: nil),
+                .init(quantity: 1,
+                      productId: "older subscription",
+                      transactionId: "4",
+                      originalTransactionId: nil,
+                      productType: .autoRenewableSubscription,
+                      purchaseDate: Date().addingTimeInterval(-100000),
+                      originalPurchaseDate: nil,
+                      expiresDate: Date().addingTimeInterval(10000),
+                      cancellationDate: nil,
+                      isInTrialPeriod: false,
+                      isInIntroOfferPeriod: false,
+                      webOrderLineItemId: nil,
+                      promotionalOfferIdentifier: nil)
+            ]
+        )
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+
+        self.purchases.restorePurchases()
+
+        expect(self.mockProductsManager.invokedProductsCount) == 1
+        expect(self.mockProductsManager.invokedProductsParameters) == [productIdentifier]
+
+        expect(self.receiptFetcher.receiptDataTimesCalled) == 1
+
+        expect(self.backend.postedReceiptData) == self.receiptFetcher.mockReceiptData
+        expect(self.backend.postedProductID) == productIdentifier
+        expect(self.backend.postedPrice) == product.price as Decimal
+        expect(self.backend.postedCurrencyCode) == "USD"
+        expect(self.backend.postedDiscounts).to(beEmpty())
+    }
+
     func testRestoringPurchasesSetsIsRestore() {
         self.purchases.restorePurchases()
         expect(self.backend.postedIsRestore!).to(beTrue())

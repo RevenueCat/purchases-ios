@@ -27,6 +27,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var attribution: Attribution!
     private var operationDispatcher: MockOperationDispatcher!
     private var receiptFetcher: MockReceiptFetcher!
+    private var receiptParser: MockReceiptParser!
     private var customerInfoManager: MockCustomerInfoManager!
     private var backend: MockBackend!
     private var offerings: MockOfferingsAPI!
@@ -41,52 +42,54 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        try setUpSystemInfo()
+
+        try self.setUpSystemInfo()
 
         let mockUserID = "appUserID"
-        productsManager = MockProductsManager(systemInfo: systemInfo,
-                                              requestTimeout: Configuration.storeKitRequestTimeoutDefault)
-        operationDispatcher = MockOperationDispatcher()
-        receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo)
-        deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo)
-        backend = MockBackend()
-        offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
+        self.productsManager = MockProductsManager(systemInfo: self.systemInfo,
+                                                   requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        self.operationDispatcher = MockOperationDispatcher()
+        self.receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: self.systemInfo)
+        self.receiptParser = MockReceiptParser()
+        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo)
+        self.backend = MockBackend()
+        self.offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
 
-        mockOfferingsManager = MockOfferingsManager(deviceCache: deviceCache,
-                                                    operationDispatcher: operationDispatcher,
-                                                    systemInfo: self.systemInfo,
-                                                    backend: backend,
-                                                    offeringsFactory: OfferingsFactory(),
-                                                    productsManager: productsManager)
+        self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
+                                                         operationDispatcher: self.operationDispatcher,
+                                                         systemInfo: self.systemInfo,
+                                                         backend: self.backend,
+                                                         offeringsFactory: OfferingsFactory(),
+                                                         productsManager: self.productsManager)
 
-        customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
-                                                      deviceCache: deviceCache,
-                                                      backend: backend,
-                                                      systemInfo: systemInfo)
-        currentUserProvider = MockCurrentUserProvider(mockAppUserID: mockUserID)
-        transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser())
+        self.customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
+                                                           deviceCache: self.deviceCache,
+                                                           backend: self.backend,
+                                                           systemInfo: self.systemInfo)
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: mockUserID)
+        self.transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser())
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
-                                                        systemInfo: systemInfo)
-        subscriberAttributesManager = MockSubscriberAttributesManager(
-            backend: backend,
-            deviceCache: deviceCache,
+                                                        systemInfo: self.systemInfo)
+        self.subscriberAttributesManager = MockSubscriberAttributesManager(
+            backend: self.backend,
+            deviceCache: self.deviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
-        let attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                                  currentUserProvider: currentUserProvider,
-                                                  backend: backend,
+        let attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
+                                                  currentUserProvider: self.currentUserProvider,
+                                                  backend: self.backend,
                                                   attributionFetcher: attributionFetcher,
-                                                  subscriberAttributesManager: subscriberAttributesManager)
-        attribution = Attribution(subscriberAttributesManager: subscriberAttributesManager,
-                                  currentUserProvider: MockCurrentUserProvider(mockAppUserID: mockUserID),
-                                  attributionPoster: attributionPoster)
-        mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
-                                                             customerInfoManager: customerInfoManager,
-                                                             currentUserProvider: currentUserProvider)
-        mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo,
-                                                                    customerInfoManager: customerInfoManager,
-                                                                    currentUserProvider: currentUserProvider)
+                                                  subscriberAttributesManager: self.subscriberAttributesManager)
+        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
+                                       currentUserProvider: MockCurrentUserProvider(mockAppUserID: mockUserID),
+                                       attributionPoster: attributionPoster)
+        self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
+                                                                  customerInfoManager: self.customerInfoManager,
+                                                                  currentUserProvider: self.currentUserProvider)
+        self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: self.systemInfo,
+                                                                         customerInfoManager: self.customerInfoManager,
+                                                                         currentUserProvider: self.currentUserProvider)
         self.setupStoreKit1Wrapper()
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
@@ -128,6 +131,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   subscriberAttributes: self.attribution,
                                                   operationDispatcher: self.operationDispatcher,
                                                   receiptFetcher: self.receiptFetcher,
+                                                  receiptParser: self.receiptParser,
                                                   customerInfoManager: self.customerInfoManager,
                                                   backend: self.backend,
                                                   currentUserProvider: self.currentUserProvider,
@@ -150,6 +154,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   subscriberAttributes: self.attribution,
                                                   operationDispatcher: self.operationDispatcher,
                                                   receiptFetcher: self.receiptFetcher,
+                                                  receiptParser: self.receiptParser,
                                                   customerInfoManager: self.customerInfoManager,
                                                   backend: self.backend,
                                                   currentUserProvider: self.currentUserProvider,
