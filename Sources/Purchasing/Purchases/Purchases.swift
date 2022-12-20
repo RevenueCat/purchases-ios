@@ -497,8 +497,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         Self.purchases.value = nil
     }
 
-    static func setDefaultInstance(_ purchases: Purchases) {
-        self.purchases.modify { currentInstance in
+    @discardableResult
+    static func setDefaultInstance(_ purchases: @autoclosure () -> Purchases) -> Purchases {
+        return self.purchases.modify { currentInstance in
             if currentInstance != nil {
                 #if DEBUG
                 if ProcessInfo.isRunningRevenueCatTests {
@@ -506,9 +507,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 }
                 #endif
                 Logger.info(Strings.configure.purchase_instance_already_set)
+
+                // Clear existing instance to avoid multiple concurrent instances in memory.
+                currentInstance = nil
             }
 
-            currentInstance = purchases
+            let newInstance = purchases()
+            currentInstance = newInstance
+            return newInstance
         }
     }
 
@@ -1022,17 +1028,17 @@ public extension Purchases {
                                                       storeKitTimeout: TimeInterval,
                                                       networkTimeout: TimeInterval,
                                                       dangerousSettings: DangerousSettings?) -> Purchases {
-        let purchases = Purchases(apiKey: apiKey,
-                                  appUserID: appUserID,
-                                  userDefaults: userDefaults,
-                                  observerMode: observerMode,
-                                  platformInfo: platformInfo,
-                                  storeKit2Setting: storeKit2Setting,
-                                  storeKitTimeout: storeKitTimeout,
-                                  networkTimeout: networkTimeout,
-                                  dangerousSettings: dangerousSettings)
-        setDefaultInstance(purchases)
-        return purchases
+        return self.setDefaultInstance(
+            .init(apiKey: apiKey,
+                  appUserID: appUserID,
+                  userDefaults: userDefaults,
+                  observerMode: observerMode,
+                  platformInfo: platformInfo,
+                  storeKit2Setting: storeKit2Setting,
+                  storeKitTimeout: storeKitTimeout,
+                  networkTimeout: networkTimeout,
+                  dangerousSettings: dangerousSettings)
+        )
     }
 
 }
