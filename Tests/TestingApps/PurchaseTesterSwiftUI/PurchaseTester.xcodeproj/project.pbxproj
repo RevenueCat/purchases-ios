@@ -67,6 +67,7 @@
 		575642A1290C78DD00719219 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		575642A3290C7A2700719219 /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
 		575642A5290C7D3100719219 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
+		576B00A02950FA9700139C53 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; path = ../../PurchaseTester/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; sourceTree = "<group>"; };
 		57E9CF08290B0BE500EE12D1 /* AppIcon.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AppIcon.xcassets; sourceTree = "<group>"; };
 		57ED6A7F290886B6009580C6 /* ConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationView.swift; sourceTree = "<group>"; };
 		57ED6A8129089111009580C6 /* Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Identifiable.swift; sourceTree = "<group>"; };
@@ -147,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */,
+				576B00A02950FA9700139C53 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */,
 				2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */,
 				57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */,
 				575642A1290C78DD00719219 /* Logger.swift */,
