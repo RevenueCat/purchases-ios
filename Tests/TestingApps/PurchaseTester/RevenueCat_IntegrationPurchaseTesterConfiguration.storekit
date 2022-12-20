@@ -235,6 +235,31 @@
           "referenceName" : "annual free trial",
           "subscriptionGroupID" : "727DE911",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "911CDB66",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Annual subscription with no trial",
+              "displayName" : "Annual subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.annual_39.99.no_intro",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "annual no trial",
+          "subscriptionGroupID" : "727DE911",
+          "type" : "RecurringSubscription"
         }
       ]
     }

@@ -265,6 +265,16 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(eligibility) == .eligible
     }
 
+    func testIneligibleForIntroForDifferentProductInSameSubscriptionGroupAfterPurchase() async throws {
+        let product1 = try await self.annualPackage.storeProduct
+        let product2 = try await self.annualNoIntroProduct
+
+        _ = try await Purchases.shared.purchase(product: product2)
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product1)
+        expect(eligibility) == .ineligible
+    }
+
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
         let product = try await self.monthlyPackage.storeProduct
 

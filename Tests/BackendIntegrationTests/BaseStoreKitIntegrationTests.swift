@@ -69,6 +69,7 @@ extension BaseStoreKitIntegrationTests {
     static let entitlementIdentifier = "premium"
     static let consumable10Coins = "consumable.10_coins"
     static let monthlyNoIntroProductID = "com.revenuecat.monthly_4.99.no_intro"
+    static let annualNoIntroProductID = "com.revenuecat.annual_39.99.no_intro"
 
     private var currentOffering: Offering {
         get async throws {
@@ -90,9 +91,19 @@ extension BaseStoreKitIntegrationTests {
 
     var monthlyNoIntroProduct: StoreProduct {
         get async throws {
-            let products = await Purchases.shared.products([Self.monthlyNoIntroProductID])
-            return try XCTUnwrap(products.onlyElement)
+            return try await self.product(Self.monthlyNoIntroProductID)
         }
+    }
+
+    var annualNoIntroProduct: StoreProduct {
+        get async throws {
+            return try await self.product(Self.annualNoIntroProductID)
+        }
+    }
+
+    func product(_ identifier: String) async throws -> StoreProduct {
+        let products = await Purchases.shared.products([identifier])
+        return try XCTUnwrap(products.onlyElement)
     }
 
     @discardableResult
