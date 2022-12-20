@@ -9,8 +9,8 @@ Sign up for a free RevenueCat account [here](https://www.revenuecat.com).
 This sample uses:
 
 - SwiftUI
-- Xcode 12.2
-- iOS 14
+- Xcode 14.0
+- iOS 15.0
 - Swift 5
 
 See minimum platform version requirements for RevenueCat's *Purchases* SDK [here](https://github.com/RevenueCat/purchases-ios/blob/main/Package.swift#L65).
@@ -42,7 +42,7 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
 - Get your [API key](https://docs.revenuecat.com/docs/authentication#obtaining-api-keys) from your RevenueCat project.
 
 ### Steps to Run
-1. Open the file `Magic Weather SwiftUI.xcodeproj` in Xcode.
+1. Open the file `Magic Weather SwiftUI.xcworkspace` in Xcode.
 2. On the **General** tab of the project editor, match the bundle ID to your bundle ID in App Store Connect and RevenueCat.
     
     <img src="https://i.imgur.com/1z32GRo.png" alt="General tab in Xcode" width="250px" />
