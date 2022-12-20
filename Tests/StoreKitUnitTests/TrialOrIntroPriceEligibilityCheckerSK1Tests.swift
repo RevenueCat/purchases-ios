@@ -57,6 +57,8 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
     }
 
     func testSK1CheckTrialOrIntroPriceEligibilityDoesntCrash() throws {
+        self.mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = ([:], nil)
+
         waitUntil { completion in
             self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([]) { _ in
                 completion()
