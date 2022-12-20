@@ -40,7 +40,9 @@ class IntroEligibilityCalculator {
             resultDict[productId] = IntroEligibilityStatus.unknown
         }
         do {
-            let receipt = try receiptParser.parse(from: receiptData)
+            let receipt = try self.receiptParser.parse(from: receiptData)
+            Logger.debug(Strings.customerInfo.checking_intro_eligibility_locally_from_receipt(receipt))
+
             let purchasedProductIdsWithIntroOffersOrFreeTrials =
                 receipt.purchasedIntroOfferOrFreeTrialProductIdentifiers()
 
