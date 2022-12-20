@@ -56,11 +56,13 @@ struct ConfigurationView: View {
                 }
             }
         }
+        #if !os(macOS)
         .textInputAutocapitalization(.never)
+        #endif
         .autocorrectionDisabled(true)
         .navigationTitle("Purchase Tester")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: self.buttonPlacement) {
                 Button {
                     self.saveData()
                     self.onContinue(self.data)
@@ -101,6 +103,14 @@ struct ConfigurationView: View {
 
     private func saveData() {
         self.storedData = try? JSONEncoder().encode(self.data)
+    }
+
+    private var buttonPlacement: ToolbarItemPlacement {
+        #if os(macOS)
+        return .automatic
+        #else
+        return .navigationBarTrailing
+        #endif
     }
 
 }

@@ -18,36 +18,48 @@ struct PurchaseTesterApp: App {
     
     var body: some Scene {
         WindowGroup(id: Windows.default.rawValue) {
-            NavigationView {
+            Group {
                 if let configuration {
-                    ContentView(configuration: configuration)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button {
-                                    self.configuration = nil
-                                } label: {
-                                    Text("Reconfigure")
+                    NavigationView {
+                        ContentView(configuration: configuration)
+                            .toolbar {
+                                ToolbarItem(placement: .principal) {
+                                    Button {
+                                        self.configuration = nil
+                                    } label: {
+                                        Text("Reconfigure")
+                                    }
                                 }
                             }
-                        }
-                } else {
-                    ConfigurationView { data in
-                        self.configuration = .init(
-                            apiKey: data.apiKey,
-                            proxyURL: data.proxy.nonEmpty,
-                            useStoreKit2: data.storeKit2Enabled,
-                            observerMode: data.observerMode
-                        )
                     }
+                } else {
+                    #if os(macOS)
+                    self.configurationView
+                    #else
+                    NavigationView {
+                        self.configurationView
+                    }
+                    #endif
                 }
             }
-            .navigationViewStyle(.stack)
+            .navigationViewStyle(.automatic)
             .animation(.default, value: self.isConfigured)
             .transition(.opacity)
         }
 
         WindowGroup(id: Windows.logs.rawValue) {
             LoggerView(logger: ConfiguredPurchases.logger)
+        }
+    }
+
+    private var configurationView: some View {
+        ConfigurationView { data in
+            self.configuration = .init(
+                apiKey: data.apiKey,
+                proxyURL: data.proxy.nonEmpty,
+                useStoreKit2: data.storeKit2Enabled,
+                observerMode: data.observerMode
+            )
         }
     }
 
