@@ -21,13 +21,13 @@ import XCTest
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
-    var receiptFetcher: MockReceiptFetcher!
-    var trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker!
-    var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
-    var mockBackend: MockBackend!
-    var mockOfferingsAPI: MockOfferingsAPI!
-    var mockProductsManager: MockProductsManager!
-    var mockSystemInfo: MockSystemInfo!
+    private var receiptFetcher: MockReceiptFetcher!
+    private var trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker!
+    private var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
+    private var mockBackend: MockBackend!
+    private var mockOfferingsAPI: MockOfferingsAPI!
+    private var mockProductsManager: MockProductsManager!
+    private var mockSystemInfo: MockSystemInfo!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -45,19 +45,22 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         self.mockOfferingsAPI = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
         let mockOperationDispatcher = MockOperationDispatcher()
         let userProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
-        trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
-            systemInfo: mockSystemInfo,
-            receiptFetcher: receiptFetcher,
-            introEligibilityCalculator: mockIntroEligibilityCalculator,
-            backend: mockBackend,
+        self.trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
+            systemInfo: self.mockSystemInfo,
+            receiptFetcher: self.receiptFetcher,
+            introEligibilityCalculator: self.mockIntroEligibilityCalculator,
+            backend: self.mockBackend,
             currentUserProvider: userProvider,
             operationDispatcher: mockOperationDispatcher,
-            productsManager: mockProductsManager
+            productsManager: self.mockProductsManager
         )
     }
 
     func testSK1CheckTrialOrIntroPriceEligibilityDoesntCrash() throws {
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { _ in
+        waitUntil { completion in
+            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([]) { _ in
+                completion()
+            }
         }
     }
 
@@ -96,19 +99,20 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
             return StoreProduct(sk1Product: sk1Product)
         }
 
-        var finalResults: [String: IntroEligibility] = [:]
-
         self.mockProductsManager.stubbedProductsCompletionResult = .success(Set(storeProducts))
-        trialOrIntroPriceEligibilityChecker.productsWithKnownIntroEligibilityStatus(
-            productIdentifiers: productIdentifiers) { results in
-            finalResults = results
+
+        let finalResults: [String: IntroEligibility]? = waitUntilValue { completion in
+            self.trialOrIntroPriceEligibilityChecker.productsWithKnownIntroEligibilityStatus(
+                productIdentifiers: productIdentifiers,
+                completion: completion
+            )
         }
 
-        expect(finalResults.count) == 1
-        expect(finalResults["product_id"]?.status) == IntroEligibilityStatus.noIntroOfferExists
-        expect(finalResults["com.revenuecat.monthly_4.99.1_week_intro"]?.status) == nil
-        expect(finalResults["com.revenuecat.annual_39.99.2_week_intro"]?.status) == nil
-        expect(finalResults["lifetime"]?.status) == nil
+        expect(finalResults).to(haveCount(1))
+        expect(finalResults?["product_id"]?.status) == .noIntroOfferExists
+        expect(finalResults?["com.revenuecat.monthly_4.99.1_week_intro"]?.status) == nil
+        expect(finalResults?["com.revenuecat.annual_39.99.2_week_intro"]?.status) == nil
+        expect(finalResults?["lifetime"]?.status) == nil
     }
 
     func testSK1EligibilityIsFetchedFromBackendIfErrorCalculatingEligibilityAndStoreKitDoesNotHaveIt() throws {

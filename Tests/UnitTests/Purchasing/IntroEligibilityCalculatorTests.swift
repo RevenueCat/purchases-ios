@@ -6,19 +6,20 @@ import XCTest
 @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 class IntroEligibilityCalculatorTests: TestCase {
 
-    var calculator: IntroEligibilityCalculator!
-    var systemInfo: MockSystemInfo!
-    var mockProductsManager: MockProductsManager!
-    let mockReceiptParser = MockReceiptParser()
+    private var calculator: IntroEligibilityCalculator!
+    private var systemInfo: MockSystemInfo!
+    private var mockProductsManager: MockProductsManager!
+    private let mockReceiptParser = MockReceiptParser()
 
     override func setUpWithError() throws {
         try super.setUpWithError()
+
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
-        systemInfo = try MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
+        self.systemInfo = try MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
         self.mockProductsManager = MockProductsManager(systemInfo: systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
-        calculator = IntroEligibilityCalculator(productsManager: mockProductsManager,
-                                                receiptParser: mockReceiptParser)
+        self.calculator = IntroEligibilityCalculator(productsManager: mockProductsManager,
+                                                     receiptParser: mockReceiptParser)
     }
 
     func testCheckTrialOrIntroDiscountEligibilityReturnsEmptyIfNoProductIds() {
