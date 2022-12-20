@@ -46,6 +46,8 @@ enum StoreKitStrings {
 
     case no_cached_products_starting_store_products_request(identifiers: Set<String>)
 
+    case sk1_payment_queue_too_many_transactions(count: Int, isSandbox: Bool)
+
     case sk1_product_request_too_slow
 
     case sk2_product_request_too_slow
@@ -106,6 +108,14 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .no_cached_products_starting_store_products_request(let identifiers):
             return "No existing products cached, starting store products request for: \(identifiers)"
+
+        case let .sk1_payment_queue_too_many_transactions(count, isSandbox):
+            let messageSuffix = isSandbox
+            ? "This high number is unexpected and is likely due to using an old sandbox account on a new device. " +
+            "If this is impacting performance, using a new sandbox account is recommended."
+            : "This is a very high number and might impact performance."
+
+            return "SKPaymentQueue sent \(count) updated transactions. " + messageSuffix
 
         case .sk1_product_request_too_slow:
             return "StoreKit 1 product request took longer than expected"
