@@ -236,7 +236,7 @@ private struct CustomerInfoHeaderView: View {
 
                 Spacer()
 
-                #if targetEnvironment(macCatalyst)
+                #if targetEnvironment(macCatalyst) || os(macOS)
                 if #available(macCatalyst 16.0, *) {
                     OpenWindowButton()
                 }
@@ -286,7 +286,7 @@ private struct LocalizedAlertError: LocalizedError {
 
 }
 
-#if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst) || os(macOS)
 @available(macCatalyst 16.0, *)
 private struct OpenWindowButton: View {
 
