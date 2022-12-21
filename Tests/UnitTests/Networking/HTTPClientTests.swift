@@ -829,8 +829,8 @@ class HTTPClientTests: TestCase {
             }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == false
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == false
     }
 
     func testDNSCheckerIsCalledWhenPOSTRequestFailedWithUnknownError() {
@@ -851,8 +851,8 @@ class HTTPClientTests: TestCase {
             }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == false
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == false
     }
 
     func testDNSCheckedIsCalledWhenPOSTRequestFailedWithDNSError() {
@@ -877,8 +877,8 @@ class HTTPClientTests: TestCase {
             }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == false
     }
 
     func testDNSCheckedIsCalledWhenGETRequestFailedWithDNSError() {
@@ -902,8 +902,8 @@ class HTTPClientTests: TestCase {
             }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == false
     }
 
     func testOfflineConnectionError() {
@@ -953,8 +953,8 @@ class HTTPClientTests: TestCase {
             }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == false
         expect(obtainedError) == expectedDNSError
         expect(logHandler.messages.map(\.message))
             .to(contain(expectedMessage))
@@ -984,8 +984,8 @@ class HTTPClientTests: TestCase {
             }
         }
 
-        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == true
-        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == false
+        expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
+        expect(MockDNSChecker.invokedIsBlockedAPIError.value) == false
         expect(logHandler.messages.map(\.message))
             .toNot(contain(unexpectedDNSError.description))
     }

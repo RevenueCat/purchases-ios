@@ -351,8 +351,7 @@ private extension NetworkError {
 
     /// Creates a `NetworkError` from any request `Error`.
     init(_ error: Error, dnsChecker: DNSCheckerType.Type) {
-        if dnsChecker.isBlockedAPIError(error),
-           let blockedError = dnsChecker.errorWithBlockedHostFromError(error) {
+        if let blockedError = dnsChecker.errorWithBlockedHostFromError(error) {
             Logger.error(blockedError.description)
             self = blockedError
         } else {
