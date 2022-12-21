@@ -1298,7 +1298,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPackageType, "PackageType", open) {
 /// A wrapper for <code>SKPaymentQueue</code>
 SWIFT_PROTOCOL("_TtP10RevenueCat23PaymentQueueWrapperType_")
 @protocol PaymentQueueWrapperType
-- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction;
+- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction completion:(void (^ _Nonnull)(void))completion;
 - (void)presentCodeRedemptionSheet SWIFT_AVAILABILITY(maccatalyst,unavailable) SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(macos,unavailable) SWIFT_AVAILABILITY(ios,introduced=14.0);
 @end
 
@@ -1306,7 +1306,7 @@ SWIFT_PROTOCOL("_TtP10RevenueCat23PaymentQueueWrapperType_")
 /// Implementation of <code>PaymentQueueWrapperType</code> used when SK1 is not enabled.
 SWIFT_CLASS("_TtC10RevenueCat19PaymentQueueWrapper")
 @interface PaymentQueueWrapper : NSObject <PaymentQueueWrapperType>
-- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction;
+- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction completion:(void (^ _Nonnull)(void))completion;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -2787,7 +2787,7 @@ SWIFT_CLASS("_TtC10RevenueCat16StoreKit1Wrapper")
 
 
 @interface StoreKit1Wrapper (SWIFT_EXTENSION(RevenueCat)) <PaymentQueueWrapperType>
-- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction;
+- (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction completion:(void (^ _Nonnull)(void))completion;
 @end
 
 
