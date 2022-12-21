@@ -20,6 +20,7 @@ enum CustomerInfoStrings {
     case checking_intro_eligibility_locally_error(error: Error)
     case checking_intro_eligibility_locally_result(productIdentifiers: [String: IntroEligibilityStatus])
     case checking_intro_eligibility_locally
+    case checking_intro_eligibility_locally_from_receipt(AppleReceipt)
     case invalidating_customerinfo_cache
     case no_cached_customerinfo
     case customerinfo_stale_updating_in_background
@@ -43,6 +44,8 @@ extension CustomerInfoStrings: CustomStringConvertible {
             return "Local intro eligibility computed locally. Result: \(productIdentifiers)"
         case .checking_intro_eligibility_locally:
             return "Attempting to check intro eligibility locally"
+        case let .checking_intro_eligibility_locally_from_receipt(receipt):
+            return "Checking intro eligibility locally from receipt: \((try? receipt.prettyPrintedJSON) ?? "")"
         case .invalidating_customerinfo_cache:
             return "Invalidating CustomerInfo cache."
         case .no_cached_customerinfo:
