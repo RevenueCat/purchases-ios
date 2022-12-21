@@ -13,21 +13,38 @@
 
 import Foundation
 
-class GetCustomerInfoOperation: CacheableNetworkOperation {
+final class GetCustomerInfoOperation: CacheableNetworkOperation {
 
     private let customerInfoResponseHandler: CustomerInfoResponseHandler
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     private let configuration: UserSpecificConfiguration
 
-    init(configuration: UserSpecificConfiguration,
-         customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
-         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>) {
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
+        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
+    ) -> CacheableNetworkOperationFactory<GetCustomerInfoOperation> {
+        return .init({
+            .init(configuration: configuration,
+                  customerInfoResponseHandler: customerInfoResponseHandler,
+                  customerInfoCallbackCache: customerInfoCallbackCache,
+                  cacheKey: $0) },
+            individualizedCacheKeyPart: configuration.appUserID
+        )
+    }
+
+    private init(
+        configuration: UserSpecificConfiguration,
+        customerInfoResponseHandler: CustomerInfoResponseHandler,
+        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
+        cacheKey: String
+    ) {
         self.configuration = configuration
         self.customerInfoResponseHandler = customerInfoResponseHandler
         self.customerInfoCallbackCache = customerInfoCallbackCache
 
         super.init(configuration: configuration,
-                   individualizedCacheKeyPart: configuration.appUserID)
+                   cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {

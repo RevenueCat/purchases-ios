@@ -31,14 +31,14 @@ class IdentityAPI {
                completion: @escaping LogInResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
-        let loginOperation = LogInOperation(configuration: config,
-                                            newAppUserID: newAppUserID,
-                                            loginCallbackCache: self.logInCallbacksCache)
+        let factory = LogInOperation.createFactory(configuration: config,
+                                                   newAppUserID: newAppUserID,
+                                                   loginCallbackCache: self.logInCallbacksCache)
 
-        let loginCallback = LogInCallback(cacheKey: loginOperation.cacheKey, completion: completion)
+        let loginCallback = LogInCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.logInCallbacksCache.add(loginCallback)
 
-        self.backendConfig.operationQueue.addCacheableOperation(loginOperation, cacheStatus: cacheStatus)
+        self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
     }
 
 }

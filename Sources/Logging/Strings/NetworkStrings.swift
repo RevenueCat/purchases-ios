@@ -20,7 +20,7 @@ enum NetworkStrings {
     case api_request_started(HTTPRequest)
     case api_request_completed(_ request: HTTPRequest, httpCode: HTTPStatusCode)
     case api_request_failed(_ request: HTTPRequest, error: NetworkError)
-    case reusing_existing_request_for_operation(CacheableNetworkOperation)
+    case reusing_existing_request_for_operation(CacheableNetworkOperation.Type, String)
     case creating_json_error(error: String)
     case json_data_received(dataString: String)
     case parsing_json_error(error: Error)
@@ -49,9 +49,9 @@ extension NetworkStrings: CustomStringConvertible {
         case let .api_request_failed(request, error):
             return "API request failed: \(request.description): \(error.description)"
 
-        case let .reusing_existing_request_for_operation(operation):
-            return "Network operation '\(type(of: operation))' found with the same cache key " +
-            "'\(operation.individualizedCacheKeyPart.prefix(15))...'. Skipping request."
+        case let .reusing_existing_request_for_operation(operationType, cacheKey):
+            return "Network operation '\(operationType)' found with the same cache key " +
+            "'\(cacheKey.prefix(15))...'. Skipping request."
 
         case let .creating_json_error(error):
             return "Error creating request with body: \(error)"

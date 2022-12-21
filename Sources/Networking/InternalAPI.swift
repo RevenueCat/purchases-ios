@@ -26,13 +26,13 @@ final class InternalAPI {
     }
 
     func healthRequest(completion: @escaping ResponseHandler) {
-        let operation = HealthOperation(httpClient: self.backendConfig.httpClient,
-                                        callbackCache: self.callbackCache)
+        let factory = HealthOperation.createFactory(httpClient: self.backendConfig.httpClient,
+                                                    callbackCache: self.callbackCache)
 
-        let callback = HealthOperation.Callback(cacheKey: operation.cacheKey, completion: completion)
+        let callback = HealthOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.callbackCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(operation,
+        self.backendConfig.addCacheableOperation(with: factory,
                                                  withRandomDelay: false,
                                                  cacheStatus: cacheStatus)
     }
@@ -41,7 +41,7 @@ final class InternalAPI {
 
 // MARK: - Health
 
-private class HealthOperation: CacheableNetworkOperation {
+private final class HealthOperation: CacheableNetworkOperation {
 
     struct Callback: CacheKeyProviding {
 
@@ -58,12 +58,20 @@ private class HealthOperation: CacheableNetworkOperation {
 
     private let callbackCache: CallbackCache<Callback>
 
-    init(httpClient: HTTPClient,
-         callbackCache: CallbackCache<Callback>) {
+    static func createFactory(
+        httpClient: HTTPClient,
+        callbackCache: CallbackCache<Callback>
+    ) -> CacheableNetworkOperationFactory<HealthOperation> {
+        return .init({ .init(httpClient: httpClient, callbackCache: callbackCache, cacheKey: $0) },
+                     individualizedCacheKeyPart: "")
+    }
+
+    private init(httpClient: HTTPClient,
+                 callbackCache: CallbackCache<Callback>,
+                 cacheKey: String) {
         self.callbackCache = callbackCache
 
-        super.init(configuration: Configuration(httpClient: httpClient),
-                   individualizedCacheKeyPart: "")
+        super.init(configuration: Configuration(httpClient: httpClient), cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {

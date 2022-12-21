@@ -13,7 +13,7 @@
 
 import Foundation
 
-class PostReceiptDataOperation: CacheableNetworkOperation {
+final class PostReceiptDataOperation: CacheableNetworkOperation {
 
     struct PostData {
 
@@ -33,15 +33,12 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
     private let customerInfoResponseHandler: CustomerInfoResponseHandler
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
 
-    init(configuration: UserSpecificConfiguration,
-         postData: PostData,
-         customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
-         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>) {
-        self.customerInfoResponseHandler = customerInfoResponseHandler
-        self.customerInfoCallbackCache = customerInfoCallbackCache
-        self.postData = postData
-        self.configuration = configuration
-
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        postData: PostData,
+        customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
+        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
+    ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.asFetchToken)
@@ -50,7 +47,32 @@ class PostReceiptDataOperation: CacheableNetworkOperation {
         -\(postData.subscriberAttributesByKey?.debugDescription ?? "")"
         """
 
-        super.init(configuration: configuration, individualizedCacheKeyPart: cacheKey)
+        return .init({ cacheKey in
+                    .init(
+                        configuration: configuration,
+                        postData: postData,
+                        customerInfoResponseHandler: customerInfoResponseHandler,
+                        customerInfoCallbackCache: customerInfoCallbackCache,
+                        cacheKey: cacheKey
+                    )
+            },
+            individualizedCacheKeyPart: cacheKey
+        )
+    }
+
+    private init(
+        configuration: UserSpecificConfiguration,
+        postData: PostData,
+        customerInfoResponseHandler: CustomerInfoResponseHandler,
+        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
+        cacheKey: String
+    ) {
+        self.customerInfoResponseHandler = customerInfoResponseHandler
+        self.customerInfoCallbackCache = customerInfoCallbackCache
+        self.postData = postData
+        self.configuration = configuration
+
+        super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {

@@ -13,20 +13,38 @@
 
 import Foundation
 
-class LogInOperation: CacheableNetworkOperation {
+final class LogInOperation: CacheableNetworkOperation {
 
     private let loginCallbackCache: CallbackCache<LogInCallback>
     private let configuration: UserSpecificConfiguration
     private let newAppUserID: String
 
-    init(configuration: UserSpecificConfiguration,
-         newAppUserID: String,
-         loginCallbackCache: CallbackCache<LogInCallback>) {
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        newAppUserID: String,
+        loginCallbackCache: CallbackCache<LogInCallback>
+    ) -> CacheableNetworkOperationFactory<LogInOperation> {
+        return .init({
+            .init(
+                configuration: configuration,
+                newAppUserID: newAppUserID,
+                loginCallbackCache: loginCallbackCache,
+                cacheKey: $0
+            ) },
+                     individualizedCacheKeyPart: configuration.appUserID + newAppUserID)
+    }
+
+    private init(
+        configuration: UserSpecificConfiguration,
+        newAppUserID: String,
+        loginCallbackCache: CallbackCache<LogInCallback>,
+        cacheKey: String
+    ) {
         self.configuration = configuration
         self.newAppUserID = newAppUserID
         self.loginCallbackCache = loginCallbackCache
 
-        super.init(configuration: configuration, individualizedCacheKeyPart: configuration.appUserID + newAppUserID)
+        super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {
