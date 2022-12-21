@@ -497,6 +497,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         Self.purchases.value = nil
     }
 
+    /// - Parameter purchases: this is an `@autoclosure` to be able to clear the previous instance
+    /// from memory before creating the new one.
     @discardableResult
     static func setDefaultInstance(_ purchases: @autoclosure () -> Purchases) -> Purchases {
         return self.purchases.modify { currentInstance in
