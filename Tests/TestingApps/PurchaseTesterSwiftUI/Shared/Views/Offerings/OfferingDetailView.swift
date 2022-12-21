@@ -32,17 +32,15 @@ struct OfferingDetailView: View {
         @Binding var isPurchasing: Bool
 
         @EnvironmentObject private var observerModeManager: ObserverModeManager
-        @State private var isEligible: Bool? = nil
+        @State private var eligibility: IntroEligibilityStatus? = nil
         
-        func checkIntroEligibility() async {
-            guard self.isEligible == nil else {
-                return
-            }
+        private func checkIntroEligibility() async {
+            guard self.eligibility == nil else { return }
             
-            let productIdentifier = package.storeProduct.productIdentifier
+            let productIdentifier = self.package.storeProduct.productIdentifier
             let results = await Purchases.shared.checkTrialOrIntroDiscountEligibility(productIdentifiers: [productIdentifier])
 
-            self.isEligible = results[productIdentifier]?.status == .eligible
+            self.eligibility = results[productIdentifier]?.status ?? .unknown
         }
         
         var body: some View {
@@ -61,8 +59,8 @@ struct OfferingDetailView: View {
                             Text("**Sub Period:** -")
                         }
                         
-                        if let isEligible = self.isEligible {
-                            Text("**Intro Elig:** \(isEligible ? "yes" : "no")")
+                        if let eligibility = self.eligibility {
+                            Text("**Intro Elig:** \(eligibility.description)")
                         } else {
                             Text("**Intro Elig:** <loading>")
                         }
