@@ -19,7 +19,12 @@ public final class Logger: ObservableObject {
 
     @Published
     @MainActor
-    public var messages: [Entry] = []
+    public private(set) var messages: [Entry] = []
+
+    @MainActor
+    public func clearMessages() {
+        self.messages.removeAll(keepingCapacity: false)
+    }
 
     public init() {}
 
