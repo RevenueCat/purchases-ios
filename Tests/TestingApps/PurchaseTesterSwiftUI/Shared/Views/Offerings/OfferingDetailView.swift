@@ -55,8 +55,8 @@ struct OfferingDetailView: View {
                         Text("**Sub Group:** \(package.storeProduct.subscriptionGroupIdentifier ?? "-")")
                         Text("**Package type:** \(package.display)")
 
-                        if let period = package.storeProduct.sk1Product?.subscriptionPeriod?.unit.rawValue {
-                            Text("**Sub Period:** \(period)")
+                        if let period = package.storeProduct.subscriptionPeriod {
+                            Text("**\(period.debugDescription)**")
                         } else {
                             Text("**Sub Period:** -")
                         }
