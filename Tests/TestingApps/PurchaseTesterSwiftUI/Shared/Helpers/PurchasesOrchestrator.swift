@@ -49,7 +49,9 @@ final class PurchasesOrchestrator: NSObject {
             await transaction.finish()
 
             print("Successfully purchased SK2 product")
-        case let .success(.unverified(_, error)):
+        case let .success(.unverified(transaction, error)):
+            await transaction.finish()
+
             throw error
         case .userCancelled:
             return
