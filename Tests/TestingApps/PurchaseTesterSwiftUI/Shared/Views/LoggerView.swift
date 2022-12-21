@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+import Core
 import RevenueCat
 
 struct LoggerView: View {

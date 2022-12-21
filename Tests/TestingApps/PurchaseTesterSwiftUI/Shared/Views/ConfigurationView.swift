@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+import Core
 import RevenueCat
 
 struct ConfigurationView: View {

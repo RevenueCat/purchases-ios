@@ -7,9 +7,12 @@
 
 import Foundation
 import SwiftUI
+
+import Core
 import RevenueCat
 
 struct HomeView: View {
+    
     @EnvironmentObject var revenueCatCustomerData: RevenueCatCustomerData
     
     @State var offerings: [RevenueCat.Offering] = []

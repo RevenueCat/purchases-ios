@@ -6,5 +6,5 @@ storage_mode("git")
 type("appstore")
 platform("ios")
 
-app_identifier(["com.revenuecat.sampleapp"])
+app_identifier(["com.revenuecat.sampleapp", "com.revenuecat.sampleapp.watchkitapp"])
 

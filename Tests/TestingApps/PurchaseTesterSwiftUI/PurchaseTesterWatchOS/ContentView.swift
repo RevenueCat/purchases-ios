@@ -1,8 +1,8 @@
 //
 //  ContentView.swift
-//  Shared
+//  PurchaseTesterWatchOS Watch App
 //
-//  Created by Josh Holtz on 1/10/22.
+//  Created by Nacho Soto on 12/12/22.
 //
 
 import SwiftUI
@@ -26,6 +26,33 @@ struct ContentView: View {
                     self.revenueCatCustomerData.appUserID = self.configuration.purchases.appUserID
                 }
             }
+    }
+
+}
+
+struct HomeView: View {
+
+    @EnvironmentObject
+    var revenueCatCustomerData: RevenueCatCustomerData
+
+    var body: some View {
+        if let customerInfo = self.revenueCatCustomerData.customerInfo,
+           !customerInfo.entitlements.active.isEmpty {
+            Text("Thanks for buying a subscription!")
+        } else {
+            Button {
+                Task<Void, Never> {
+                    do {
+                        _ = try await Purchases.shared.restorePurchases()
+                    } catch {
+                        print("Error: \(error)")
+                    }
+                }
+            } label: {
+                Text("Restore purchases")
+            }
+        }
+
     }
 
 }

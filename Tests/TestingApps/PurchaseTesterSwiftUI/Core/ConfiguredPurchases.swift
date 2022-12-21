@@ -9,19 +9,19 @@ import Foundation
 
 import RevenueCat
 
-final class ConfiguredPurchases {
+public final class ConfiguredPurchases {
 
-    let purchases: Purchases
+    public let purchases: Purchases
     private let delegate: Delegate
 
-    init(purchases: Purchases) {
+    public init(purchases: Purchases) {
         self.purchases = purchases
         self.delegate = Delegate()
 
         self.purchases.delegate = self.delegate
     }
 
-    convenience init(
+    public convenience init(
         apiKey: String,
         proxyURL: String?,
         useStoreKit2: Bool,
@@ -46,7 +46,7 @@ final class ConfiguredPurchases {
 
     // MARK: -
 
-    static let logger: Logger = .init()
+    public static let logger: Logger = .init()
 
 }
 
