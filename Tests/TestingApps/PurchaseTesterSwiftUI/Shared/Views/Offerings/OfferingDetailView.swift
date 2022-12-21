@@ -10,21 +10,28 @@ import SwiftUI
 import RevenueCat
 
 struct OfferingDetailView: View {
+
     let offering: RevenueCat.Offering
+    @State var isPurchasing = false
     
     var body: some View {
         VStack(alignment: .leading) {
             List(offering.availablePackages) { package in
                 Section {
-                    PackageItem(package: package)
+                    PackageItem(package: package, isPurchasing: self.$isPurchasing)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
-        }.navigationTitle(offering.serverDescription)
+        }
+        .navigationTitle(offering.serverDescription)
     }
     
     struct PackageItem: View {
+
         let package: RevenueCat.Package
-        
+        @Binding var isPurchasing: Bool
+
+        @EnvironmentObject private var observerModeManager: ObserverModeManager
         @State private var isEligible: Bool? = nil
         
         func checkIntroEligibility() async {
@@ -68,63 +75,89 @@ struct OfferingDetailView: View {
                 }
                 
                 Divider()
-                
-                Text("Buy as Package")
-                    .foregroundColor(.blue)
-                    .padding(.vertical, 10)
-                    .onTapGesture {
-                        Task<Void, Never> {
-                            await self.purchaseAsPackage()
-                        }
-                    }
-                
-                Divider()
-                
-                Text("Buy as Product")
-                    .foregroundColor(.blue)
-                    .padding(.vertical, 10)
-                    .onTapGesture {
-                        Task<Void, Never> {
-                            await self.purchaseAsProduct()
-                        }
-                    }
+
+                self.button("Buy as Package") {
+                    try await self.purchaseAsPackage()
+                }
 
                 Divider()
+
+                self.button("Buy as Product") {
+                    try await self.purchaseAsProduct()
+                }
+
+                Divider()
+
+                if self.observerModeManager.observerModeEnabled {
+                    self.button("Buy directly from SK1 (w/o RevenueCat)") {
+                        try await self.purchaseAsSK1Product()
+                    }
+
+                    self.button("Buy directly from SK2 (w/o RevenueCat)") {
+                        try await self.purchaseAsSK2Product()
+                    }
+
+                    Divider()
+                }
                     
                 NavigationLink(destination: PromoOfferDetailsView(package: package)) {
                     Text("View Promo Offers")
                         .foregroundColor(.blue)
                         .padding(.vertical, 10)
                 }
-
-
-            }.task {
+            }
+            .disabled(self.isPurchasing)
+            .task {
                 await self.checkIntroEligibility()
             }
         }
         
-        private func purchaseAsPackage() async {
-            do {
-                let result = try await Purchases.shared.purchase(package: self.package)
-                self.completedPurchase(result)
-            } catch {
-                print("🚀 Failed purchase: 💁‍♂️ - Error: \(error)")
-            }
+        private func purchaseAsPackage() async throws {
+            self.isPurchasing = true
+
+            let result = try await Purchases.shared.purchase(package: self.package)
+            self.completedPurchase(result)
         }
         
-        private func purchaseAsProduct() async {
-            do {
-                let result = try await Purchases.shared.purchase(product: self.package.storeProduct)
-                self.completedPurchase(result)
-            } catch {
-                print("🚀 Purchase failed: 💁‍♂️ - Error: \(error)")
-            }
+        private func purchaseAsProduct() async throws {
+            self.isPurchasing = true
+
+            let result = try await Purchases.shared.purchase(product: self.package.storeProduct)
+            self.completedPurchase(result)
+        }
+
+        private func purchaseAsSK1Product() async throws {
+            self.isPurchasing = true
+            try await self.observerModeManager.purchaseAsSK1Product(self.package.storeProduct)
+            self.isPurchasing = false
+        }
+
+        private func purchaseAsSK2Product() async throws {
+            self.isPurchasing = true
+            try await self.observerModeManager.purchaseAsSK2Product(self.package.storeProduct)
+            self.isPurchasing = false
         }
 
         private func completedPurchase(_ data: PurchaseResultData) {
             print("🚀 Info 💁‍♂️ - Transaction: \(data.transaction?.description ?? "")")
             print("🚀 Info 💁‍♂️ - Info: \(data.customerInfo)")
             print("🚀 Info 💁‍♂️ - User Cancelled: \(data.userCancelled)")
+
+            self.isPurchasing = false
+        }
+
+        private func button(_ title: String, action: @escaping () async throws -> Void) -> some View {
+            Button(title) {
+                Task<Void, Never> {
+                    do {
+                        try await action()
+                    } catch {
+                        print("🚀 Error: \(error)")
+                    }
+                }
+            }
+            .foregroundColor(.blue)
+            .padding(.vertical, 10)
         }
     }
 }
