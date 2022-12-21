@@ -72,6 +72,21 @@ class ErrorUtilsTests: TestCase {
         }
     }
 
+    func testPurchasesErrorWithUntypedErrorCode() throws {
+        let error: ErrorCode = .apiEndpointBlockedError
+
+        expect(ErrorUtils.purchasesError(withUntypedError: error)).to(matchError(error))
+    }
+
+    func testPurchasesErrorWithUntypedPublicError() throws {
+        let error: PublicError = ErrorUtils.configurationError().asPublicError
+        let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
+        let userInfo = try XCTUnwrap(purchasesError.userInfo as? [String: String])
+
+        expect(error).to(matchError(purchasesError))
+        expect(userInfo) == error.userInfo as? [String: String]
+    }
+
     func testPurchasesErrorWithUntypedPurchasesError() throws {
         let error = ErrorUtils.offlineConnectionError()
 

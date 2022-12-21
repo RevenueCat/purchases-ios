@@ -296,6 +296,21 @@ enum ErrorUtils {
         withUntypedError error: Error,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
+        func handlePublicError(_ error: PublicError) -> PurchasesError {
+            if let errorCode = ErrorCode(rawValue: error.code) {
+                return .init(error: errorCode, userInfo: error.userInfo)
+            } else {
+                return createUnknownError()
+            }
+        }
+
+        func createUnknownError() -> PurchasesError {
+            ErrorUtils.unknownError(
+                error: error,
+                fileName: fileName, functionName: functionName, line: line
+            )
+        }
+
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
             switch error {
             case let purchasesError as PurchasesError:
@@ -303,11 +318,10 @@ enum ErrorUtils {
             // This line crashes on iOS 12.x only (see https://github.com/RevenueCat/purchases-ios/pull/1982).
             case let convertible as PurchasesErrorConvertible:
                 return convertible.asPurchasesError
+            case let error as PublicError where error.domain == ErrorCode.errorDomain:
+                return handlePublicError(error)
             default:
-                return ErrorUtils.unknownError(
-                    error: error,
-                    fileName: fileName, functionName: functionName, line: line
-                )
+                return createUnknownError()
             }
         } else {
             switch error {
@@ -320,11 +334,10 @@ enum ErrorUtils {
                 return backendError.asPurchasesError
             case let networkError as NetworkError:
                 return networkError.asPurchasesError
+            case let error as PublicError where error.domain == ErrorCode.errorDomain:
+                return handlePublicError(error)
             default:
-                return ErrorUtils.unknownError(
-                    error: error,
-                    fileName: fileName, functionName: functionName, line: line
-                )
+                return createUnknownError()
             }
         }
     }
