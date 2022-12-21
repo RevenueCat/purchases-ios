@@ -149,17 +149,53 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     }
 
     func testFinishesTransactions() {
-        let payment = SKPayment.init(product: SK1Product())
-        wrapper?.add(payment)
+        let payment = SKPayment(product: SK1Product())
+        self.wrapper.add(payment)
 
-        let transaction = MockTransaction()
-        transaction.mockPayment = payment
+        let transaction = Self.transaction(with: payment)
 
-        wrapper?.paymentQueue(paymentQueue, updatedTransactions: [transaction])
+        self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: [transaction])
 
-        wrapper?.finishTransaction(transaction)
+        waitUntil { completion in
+            self.wrapper.finishTransaction(transaction, completion: completion)
+
+            // `SKPaymentQueue.finishTransaction` is asynchronous, and this is how
+            // it notifies of finished transactions.
+            self.wrapper.paymentQueue(self.paymentQueue, removedTransactions: [transaction])
+        }
 
         expect(self.paymentQueue.finishedTransactions).to(contain(transaction))
+    }
+
+    func testFinishesTransactionOnlyOnceWhenRequestedMultipleTimesConcurrently() {
+        let payment = SKPayment(product: SK1Product())
+        self.wrapper.add(payment)
+
+        let transaction = Self.transaction(with: payment)
+
+        self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: [transaction])
+
+        var firstTransactionCompletionBlockedInvoked = false
+
+        // 1. Finish transaction
+        self.wrapper.finishTransaction(transaction) {
+            firstTransactionCompletionBlockedInvoked = true
+        }
+
+        waitUntil { completion in
+            // 2. Finish transaction again
+            self.wrapper.finishTransaction(transaction, completion: completion)
+
+            // 3. Notify of removed transaction
+            self.wrapper.paymentQueue(self.paymentQueue, removedTransactions: [transaction])
+        }
+
+        // 4. Verify transaction is only finished once
+        expect(self.paymentQueue.finishedTransactions).to(haveCount(1))
+        expect(self.paymentQueue.finishedTransactions).to(contain(transaction))
+
+        // 5. But both callbacks were invoked
+        expect(firstTransactionCompletionBlockedInvoked) == true
     }
 
     func testCallsRemovedTransactionDelegateMethod() {

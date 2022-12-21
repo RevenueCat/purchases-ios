@@ -60,6 +60,8 @@ class StoreKit1Wrapper: NSObject {
         }
     }
 
+    private let finishedTransactionCallbacks: Atomic<[SKPaymentTransaction: [() -> Void]]> = .init([:])
+
     private let paymentQueue: SKPaymentQueue
     private let operationDispatcher: OperationDispatcher
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
@@ -111,8 +113,18 @@ class StoreKit1Wrapper: NSObject {
 extension StoreKit1Wrapper: PaymentQueueWrapperType {
 
     @objc
-    func finishTransaction(_ transaction: SKPaymentTransaction) {
-        self.paymentQueue.finishTransaction(transaction)
+    func finishTransaction(_ transaction: SKPaymentTransaction, completion: @escaping () -> Void) {
+        let existingCompletion: Bool = self.finishedTransactionCallbacks.modify { callbacks in
+            let existingCompletion = callbacks[transaction] != nil
+
+            callbacks[transaction, default: []].append(completion)
+
+            return existingCompletion
+        }
+
+        if !existingCompletion {
+            self.paymentQueue.finishTransaction(transaction)
+        }
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
@@ -159,6 +171,10 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
             for transaction in transactions {
                 Logger.debug(Strings.purchase.paymentqueue_removed_transaction(self, transaction))
                 delegate.storeKit1Wrapper(self, removedTransaction: transaction)
+
+                if let callbacks = self.finishedTransactionCallbacks.value.removeValue(forKey: transaction) {
+                    callbacks.forEach { $0() }
+                }
             }
         }
     }

@@ -31,7 +31,7 @@ protocol PaymentQueueWrapperDelegate: AnyObject, Sendable {
 @objc
 protocol PaymentQueueWrapperType: AnyObject {
 
-    func finishTransaction(_ transaction: SKPaymentTransaction)
+    func finishTransaction(_ transaction: SKPaymentTransaction, completion: @escaping () -> Void)
 
     #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
@@ -77,8 +77,14 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
         super.init()
     }
 
-    func finishTransaction(_ transaction: SKPaymentTransaction) {
+    func finishTransaction(_ transaction: SKPaymentTransaction, completion: @escaping () -> Void) {
+        // See `StoreKit1Wrapper.finishTransaction(:completion:)`.
+        // Technically this is a race condition, because `SKPaymentQueue.finishTransaction` is asynchronous
+        // In practice this method won't be used, because this class is only used in SK2 mode,
+        // and those transactions are finished through `SK2StoreTransaction`.
+
         self.paymentQueue.finishTransaction(transaction)
+        completion()
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)

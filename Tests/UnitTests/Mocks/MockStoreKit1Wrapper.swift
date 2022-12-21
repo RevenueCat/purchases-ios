@@ -28,9 +28,11 @@ class MockStoreKit1Wrapper: StoreKit1Wrapper {
     var finishCalled = false
     var finishProductIdentifier: String?
 
-    override func finishTransaction(_ transaction: SKPaymentTransaction) {
+    override func finishTransaction(_ transaction: SKPaymentTransaction, completion: @escaping () -> Void) {
         self.finishCalled = true
         self.finishProductIdentifier = transaction.productIdentifier
+
+        completion()
     }
 
     weak var mockDelegate: StoreKit1WrapperDelegate?
