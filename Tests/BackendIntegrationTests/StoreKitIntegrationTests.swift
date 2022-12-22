@@ -285,7 +285,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let productWithTrial = try await self.annualPackage.storeProduct
 
         let customerInfo = try await Purchases.shared.purchase(product: productWithNoTrial).customerInfo
-        let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
 
         try await self.expireSubscription(entitlement)
 

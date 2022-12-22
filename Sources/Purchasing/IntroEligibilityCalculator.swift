@@ -42,7 +42,11 @@ class IntroEligibilityCalculator {
             Logger.debug(Strings.customerInfo.checking_intro_eligibility_locally_from_receipt(receipt))
 
             let activeSubscriptionProductIdentifiers = receipt.activeSubscriptionProductIdentifiers
-            let allProductIdentifiers = candidateProductIdentifiers.union(activeSubscriptionProductIdentifiers)
+            let purchasedProductIdsWithIntroOffersOrFreeTrials =
+            receipt.purchasedIntroOfferOrFreeTrialProductIdentifiers
+            let allProductIdentifiers = candidateProductIdentifiers
+                .union(activeSubscriptionProductIdentifiers)
+                .union(purchasedProductIdsWithIntroOffersOrFreeTrials)
 
             self.productsManager.products(withIdentifiers: allProductIdentifiers) {
                 let allProducts = $0.value ?? []
@@ -53,9 +57,15 @@ class IntroEligibilityCalculator {
                 let activeSubscriptionProducts = allProducts.filter {
                     activeSubscriptionProductIdentifiers.contains($0.productIdentifier)
                 }
+                let purchasedProductsWithIntroOffersOrFreeTrials = allProducts.filter {
+                    purchasedProductIdsWithIntroOffersOrFreeTrials.contains($0.productIdentifier)
+                }
 
-                let eligibility = self.checkEligibility(candidateProducts: candidateProducts,
-                                                        activeSubscriptionProducts: activeSubscriptionProducts)
+                let eligibility = self.checkEligibility(
+                    candidateProducts: candidateProducts,
+                    purchasedProductsWithIntroOffersOrFreeTrials: purchasedProductsWithIntroOffersOrFreeTrials,
+                    activeSubscriptionProducts: activeSubscriptionProducts
+                )
                 result.merge(eligibility, strategy: .overwriteValue)
 
                 Logger.debug(
@@ -82,6 +92,7 @@ private extension IntroEligibilityCalculator {
 
     func checkEligibility(
         candidateProducts: Set<StoreProduct>,
+        purchasedProductsWithIntroOffersOrFreeTrials: Set<StoreProduct>,
         activeSubscriptionProducts: Set<StoreProduct>
     ) -> [String: IntroEligibilityStatus] {
         var result: [String: IntroEligibilityStatus] = [:]
@@ -91,6 +102,12 @@ private extension IntroEligibilityCalculator {
                 result[candidate.productIdentifier] = IntroEligibilityStatus.unknown
                 continue
             }
+            let usedIntroForProductIdentifier = (
+                candidate.subscriptionGroupIdentifier != nil &&
+                purchasedProductsWithIntroOffersOrFreeTrials.contains { purchased in
+                    candidate.subscriptionGroupIdentifier == purchased.subscriptionGroupIdentifier
+                }
+            )
             let usedIntroInSubscriptionGroup = (
                 candidate.subscriptionGroupIdentifier != nil &&
                 activeSubscriptionProducts.contains { purchased in
@@ -101,7 +118,8 @@ private extension IntroEligibilityCalculator {
             if candidate.introductoryDiscount == nil {
                 result[candidate.productIdentifier] = .noIntroOfferExists
             } else {
-                result[candidate.productIdentifier] = usedIntroInSubscriptionGroup
+                // TODO: this isn't quite right, see failing tests
+                result[candidate.productIdentifier] = usedIntroForProductIdentifier || usedIntroInSubscriptionGroup
                     ? IntroEligibilityStatus.ineligible
                     : IntroEligibilityStatus.eligible
             }
