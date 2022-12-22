@@ -1121,15 +1121,11 @@ private extension PurchasesOrchestrator {
         with receiptData: Data,
         completion: @escaping (ProductRequestData?) -> Void
     ) {
-        guard let receipt = try? self.receiptParser.parse(from: receiptData) else { completion(nil); return }
-
-        // Find the latest purchased subscription
-        guard let productIdentifier = receipt.inAppPurchases
-            .lazy
-            .filter({ $0.isActiveSubscription })
-            .sorted(by: { $0.purchaseDate > $1.purchaseDate })
-            .first?
-            .productId else { completion(nil); return }
+        guard let receipt = try? self.receiptParser.parse(from: receiptData),
+        let productIdentifier = receipt.lastPurchasedSubscription?.productId else {
+            completion(nil)
+            return
+        }
 
         self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
             let result = products.value?.first.map {
