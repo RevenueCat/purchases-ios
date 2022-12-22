@@ -24,6 +24,7 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
   s.source_files = 'Sources/**/*.swift'
+  s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**'
   
   
 end
