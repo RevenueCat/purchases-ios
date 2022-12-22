@@ -25,7 +25,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
     private var requestFetcher: StoreKitRequestFetcher!
     private var systemInfo: SystemInfo!
     private var receiptFetcher: ReceiptFetcher!
-    private var parser: ReceiptParser!
+    private var parser: PurchasesReceiptParser!
 
     override func setUpWithError() throws {
         try super.setUpWithError()

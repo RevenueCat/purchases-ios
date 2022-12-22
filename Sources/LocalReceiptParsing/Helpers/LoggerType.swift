@@ -39,6 +39,60 @@ protocol LoggerType {
 
 }
 
+/// Enumeration of the different verbosity levels.
+///
+/// #### Related Symbols
+/// - ``Purchases/logLevel``
+@objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible, CaseIterable, Sendable {
+
+    // swiftlint:disable missing_docs
+
+    case verbose = 4
+    case debug = 0
+    case info = 1
+    case warn = 2
+    case error = 3
+
+    public var description: String {
+        switch self {
+        case .verbose: return "VERBOSE"
+        case .debug: return "DEBUG"
+        case .info: return "INFO"
+        case .warn: return "WARN"
+        case .error: return "ERROR"
+        }
+    }
+
+    // swiftlint:enable missing_docs
+}
+
+// swiftlint:disable:next function_parameter_count
+func defaultLogHandler(
+    framework: String,
+    verbose: Bool,
+    level: LogLevel,
+    message: String,
+    file: String?,
+    function: String?,
+    line: UInt
+) {
+    let fileContext: String
+    if verbose, let file = file, let function = function {
+        let fileName = (file as NSString)
+            .lastPathComponent
+            .replacingOccurrences(of: ".swift", with: "")
+            .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+
+        fileContext = "\t\(fileName).\(function):\(line)"
+    } else {
+        fileContext = ""
+    }
+
+    NSLog("%@", "[\(framework)] - \(level.description)\(fileContext): \(message)")
+}
+
+// MARK: -
+
 /// Default overloads to allow implicit values
 extension LoggerType {
 

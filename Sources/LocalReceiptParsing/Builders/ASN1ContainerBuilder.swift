@@ -19,7 +19,9 @@ class ASN1ContainerBuilder {
     func build(fromPayload payload: ArraySlice<UInt8>) throws -> ASN1Container {
         guard payload.count >= 2,
             let firstByte = payload.first else {
-            throw ReceiptParser.Error.asn1ParsingError(description: "payload needs to be at least 2 bytes long")
+            throw PurchasesReceiptParser.Error.asn1ParsingError(
+                description: "payload needs to be at least 2 bytes long"
+            )
         }
         let containerClass = try extractClass(byte: firstByte)
         let encodingType = try extractEncodingType(byte: firstByte)
@@ -31,7 +33,7 @@ class ASN1ContainerBuilder {
         let bytesUsedForMetadata = bytesUsedForIdentifier + length.bytesUsedForLength
 
         guard payload.count - bytesUsedForMetadata >= length.value else {
-            throw ReceiptParser.Error.asn1ParsingError(description: "payload is shorter than length value")
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: "payload is shorter than length value")
         }
         let internalPayload = payload.dropFirst(bytesUsedForMetadata).prefix(length.value)
 
@@ -64,57 +66,57 @@ private extension ASN1ContainerBuilder {
         return internalContainers
     }
 
-    /// - Throws `ReceiptParser.Error`
+    /// - Throws ``PurchasesReceiptParser/Error``
     func extractClass(byte: UInt8) throws -> ASN1Class {
         let firstTwoBits: UInt8
         do {
             firstTwoBits = try byte.valueInRange(from: 0, to: 1)
         } catch {
-            throw ReceiptParser.Error.asn1ParsingError(description: error.localizedDescription)
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: error.localizedDescription)
         }
 
         guard let asn1Class = ASN1Class(rawValue: firstTwoBits) else {
-            throw ReceiptParser.Error.asn1ParsingError(description: "couldn't determine asn1 class")
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: "couldn't determine asn1 class")
         }
         return asn1Class
     }
 
-    /// - Throws `ReceiptParser.Error`
+    /// - Throws ``PurchasesReceiptParser/Error``
     func extractEncodingType(byte: UInt8) throws -> ASN1EncodingType {
         let thirdBit: UInt8
 
         do {
             thirdBit = try byte.bitAtIndex(2)
         } catch {
-            throw ReceiptParser.Error.asn1ParsingError(description: error.localizedDescription)
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: error.localizedDescription)
         }
 
         guard let encodingType = ASN1EncodingType(rawValue: thirdBit) else {
-            throw ReceiptParser.Error.asn1ParsingError(description: "couldn't determine encoding type")
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: "couldn't determine encoding type")
         }
         return encodingType
     }
 
-    /// - Throws `ReceiptParser.Error`
+    /// - Throws ``PurchasesReceiptParser/Error``
     func extractIdentifier(byte: UInt8) throws -> ASN1Identifier {
         let lastFiveBits: UInt8
         do {
             lastFiveBits = try byte.valueInRange(from: 3, to: 7)
         } catch {
-            throw ReceiptParser.Error.asn1ParsingError(description: error.localizedDescription)
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: error.localizedDescription)
         }
 
         guard let asn1Identifier = ASN1Identifier(rawValue: lastFiveBits) else {
-            throw ReceiptParser.Error.asn1ParsingError(description: "couldn't determine identifier")
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: "couldn't determine identifier")
         }
         return asn1Identifier
     }
 
-    /// - Throws `ReceiptParser.Error`
+    /// - Throws ``PurchasesReceiptParser/Error``
     func extractLengthAndInternalContainers(data: ArraySlice<UInt8>,
                                             isConstructed: Bool) throws -> (ASN1Length, [ASN1Container]) {
         guard let firstByte = data.first else {
-            throw ReceiptParser.Error.asn1ParsingError(description: "length needs to be at least one byte")
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: "length needs to be at least one byte")
         }
 
         let isShortLength: Bool
@@ -126,7 +128,7 @@ private extension ASN1ContainerBuilder {
             isShortLength = lengthBit == 0
             firstByteValue = Int(try firstByte.valueInRange(from: 1, to: 7))
         } catch {
-            throw ReceiptParser.Error.asn1ParsingError(description: error.localizedDescription)
+            throw PurchasesReceiptParser.Error.asn1ParsingError(description: error.localizedDescription)
         }
 
         var bytesUsedForLength = 1

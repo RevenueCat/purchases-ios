@@ -11,8 +11,8 @@ class MockASN1ContainerBuilder: ASN1ContainerBuilder {
     var invokedBuild = false
     var invokedBuildCount = 0
     var invokedBuildParameters: (payload: ArraySlice<UInt8>, Void)?
-    var invokedBuildParametersList = [(payload: ArraySlice < UInt8>, Void)]()
-    var stubbedBuildError: Error?
+    var invokedBuildParametersList = [(payload: ArraySlice<UInt8>, Void)]()
+    var stubbedBuildError: PurchasesReceiptParser.Error?
     var stubbedBuildResult: ASN1Container!
 
     override func build(fromPayload payload: ArraySlice<UInt8>) throws -> ASN1Container {

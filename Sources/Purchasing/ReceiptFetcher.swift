@@ -17,7 +17,7 @@ import Foundation
 class ReceiptFetcher {
 
     private let requestFetcher: StoreKitRequestFetcher
-    private let receiptParser: ReceiptParser
+    private let receiptParser: PurchasesReceiptParser
     private let fileReader: FileReader
     private let clock: ClockType
 
@@ -28,7 +28,7 @@ class ReceiptFetcher {
     init(
         requestFetcher: StoreKitRequestFetcher,
         systemInfo: SystemInfo,
-        receiptParser: ReceiptParser = .default,
+        receiptParser: PurchasesReceiptParser = .default,
         fileReader: FileReader = DefaultFileReader(),
         clock: ClockType = Clock.default
     ) {
@@ -122,6 +122,14 @@ extension ReceiptFetcher {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension ReceiptFetcher: @unchecked Sendable {}
 
+extension PurchasesReceiptParser {
+
+    /// A default instance of ``PurchasesReceiptParser``
+    @objc
+    public static let `default`: PurchasesReceiptParser = .init(logger: Logger())
+
+}
+
 // MARK: -
 
 private extension ReceiptFetcher {
@@ -201,7 +209,7 @@ private extension ReceiptFetcher {
                 }
             }
 
-            Logger.debug(Strings.receipt.retrying_receipt_fetch_after(sleepDuration: sleepDuration))
+            Logger.debug(Strings.receipt.retrying_receipt_fetch_after(sleepDuration: sleepDuration.seconds))
             try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
         } while retries <= maximumRetries && !Task.isCancelled
 

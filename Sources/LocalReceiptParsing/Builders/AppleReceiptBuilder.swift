@@ -30,7 +30,7 @@ class AppleReceiptBuilder {
         self.inAppPurchaseBuilder = inAppPurchaseBuilder
     }
 
-    /// - Throws: `ReceiptParser.Error`
+    /// - Throws: ``PurchasesReceiptParser/Error``
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     func build(fromContainer container: ASN1Container) throws -> AppleReceipt {
         var bundleId: String?
@@ -43,7 +43,7 @@ class AppleReceiptBuilder {
         var inAppPurchases: [AppleReceipt.InAppPurchase] = []
 
         guard let internalContainer = container.internalContainers.first else {
-            throw ReceiptParser.Error.receiptParsingError
+            throw PurchasesReceiptParser.Error.receiptParsingError
         }
         var receiptContainer = try containerBuilder.build(fromPayload: internalContainer.internalPayload)
 
@@ -58,7 +58,7 @@ class AppleReceiptBuilder {
 
         for receiptAttribute in receiptContainer.internalContainers {
             guard receiptAttribute.internalContainers.count == expectedInternalContainersCount else {
-                throw ReceiptParser.Error.receiptParsingError
+                throw PurchasesReceiptParser.Error.receiptParsingError
             }
             let typeContainer = receiptAttribute.internalContainers[typeContainerIndex]
             let valueContainer = receiptAttribute.internalContainers[attributeTypeContainerIndex]
@@ -100,7 +100,7 @@ class AppleReceiptBuilder {
             let nonOptionalOpaqueValue = opaqueValue,
             let nonOptionalSha1Hash = sha1Hash,
             let nonOptionalCreationDate = creationDate else {
-            throw ReceiptParser.Error.receiptParsingError
+            throw PurchasesReceiptParser.Error.receiptParsingError
         }
 
         let receipt = AppleReceipt(bundleId: nonOptionalBundleId,
@@ -119,3 +119,31 @@ class AppleReceiptBuilder {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension AppleReceiptBuilder: @unchecked Sendable {}
+
+// swiftlint:disable nesting
+
+extension AppleReceipt {
+
+    /// See docs: https://rev.cat/apple-receipt-fields
+    struct Attribute {
+
+        enum AttributeType: Int {
+
+            case bundleId = 2,
+                 applicationVersion = 3,
+                 opaqueValue = 4,
+                 sha1Hash = 5,
+                 creationDate = 12,
+                 inAppPurchase = 17,
+                 originalApplicationVersion = 19,
+                 expirationDate = 21
+
+        }
+
+        let type: AttributeType
+        let version: Int
+        let value: String
+
+    }
+
+}

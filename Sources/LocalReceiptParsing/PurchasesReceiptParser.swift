@@ -7,60 +7,74 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ReceiptParser.swift
+//  PurchasesReceiptParser.swift
 //
 //  Created by Andrés Boedo on 7/22/20.
 //
 
 import Foundation
 
-class ReceiptParser {
+/// A type that can parse Apple receipts from a device.
+/// This implements parsing based on Apple's documentation: https://rev.cat/apple-receipt-fields
+public class PurchasesReceiptParser: NSObject {
 
-    static let `default`: ReceiptParser = .init()
-
+    private let logger: LoggerType
     private let containerBuilder: ASN1ContainerBuilder
     private let receiptBuilder: AppleReceiptBuilder
 
-    init(containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
-         receiptBuilder: AppleReceiptBuilder = AppleReceiptBuilder()) {
+    internal init(logger: LoggerType,
+                  containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
+                  receiptBuilder: AppleReceiptBuilder = AppleReceiptBuilder()) {
+        self.logger = logger
         self.containerBuilder = containerBuilder
         self.receiptBuilder = receiptBuilder
     }
 
-    func receiptHasTransactions(receiptData: Data) -> Bool {
-        Logger.info(Strings.receipt.parsing_receipt)
-        if let receipt = try? parse(from: receiptData) {
-            return receipt.inAppPurchases.count > 0
-        }
-
-        Logger.warn(Strings.receipt.parsing_receipt_failed(fileName: #fileID, functionName: #function))
-        return true
-    }
-
-    func parse(from receiptData: Data) throws -> AppleReceipt {
+    /// Returns the result of parsing the receipt from `receiptData`, or throws `ReceiptParser.Error`.
+    public func parse(from receiptData: Data) throws -> AppleReceipt {
         #if DEBUG
         Self.ensureRunningOutsideOfMainThread()
         #endif
 
+        self.logger.info(ReceiptStrings.parsing_receipt)
+
         let asn1Container = try self.containerBuilder.build(fromPayload: ArraySlice(receiptData))
         guard let receiptASN1Container = try self.findASN1Container(withObjectId: ASN1ObjectIdentifier.data,
                                                                     inContainer: asn1Container) else {
-            Logger.error(Strings.receipt.data_object_identifer_not_found_receipt)
+            self.logger.error(ReceiptStrings.data_object_identifer_not_found_receipt)
             throw Error.dataObjectIdentifierMissing
         }
-        let receipt = try receiptBuilder.build(fromContainer: receiptASN1Container)
-        Logger.info(Strings.receipt.parsing_receipt_success)
+
+        let receipt = try self.receiptBuilder.build(fromContainer: receiptASN1Container)
+        self.logger.info(ReceiptStrings.parsing_receipt_success)
         return receipt
     }
+
 }
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
-extension ReceiptParser: @unchecked Sendable {}
+extension PurchasesReceiptParser: @unchecked Sendable {}
 
-// MARK: -
+// MARK: - Internal
 
-private extension ReceiptParser {
+extension PurchasesReceiptParser {
+
+    @objc
+    func receiptHasTransactions(receiptData: Data) -> Bool {
+        if let receipt = try? self.parse(from: receiptData) {
+            return !receipt.inAppPurchases.isEmpty
+        }
+
+        self.logger.warn(ReceiptStrings.parsing_receipt_failed(fileName: #fileID, functionName: #function))
+        return true
+    }
+
+}
+
+// MARK: - Private
+
+private extension PurchasesReceiptParser {
 
     func findASN1Container(withObjectId objectId: ASN1ObjectIdentifier,
                            inContainer container: ASN1Container) throws -> ASN1Container? {
@@ -88,7 +102,7 @@ private extension ReceiptParser {
     static func ensureRunningOutsideOfMainThread() {
         // Only checking on integration tests.
         // Unit tests might run on the main thread when testing this class directly.
-        if ProcessInfo.isRunningIntegrationTests {
+        if ProcessInfo.processInfo.environment["RCRunningIntegrationTests"] == "1" {
             precondition(
                 !Thread.isMainThread,
                 "Receipt parsing should not run on the main thread."

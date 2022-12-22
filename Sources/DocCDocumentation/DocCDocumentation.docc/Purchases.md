@@ -77,6 +77,10 @@ Most features require configuring the SDK before using it.
 - ``Purchases/showManageSubscriptions()``
 - ``Purchases/showManageSubscriptions(completion:)``
 
+### Parsing Receipts
+- ``PurchasesReceiptParser``
+- ``AppleReceipt``
+
 ### Subscriber Attributes
 - ``Purchases/setAttributes(_:)``
 - ``Purchases/setAd(_:)``

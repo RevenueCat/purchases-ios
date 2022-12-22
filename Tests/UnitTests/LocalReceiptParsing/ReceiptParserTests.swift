@@ -4,18 +4,20 @@ import XCTest
 @testable import RevenueCat
 
 class ReceiptParserTests: TestCase {
-    var receiptParser: ReceiptParser!
-    var mockAppleReceiptBuilder: MockAppleReceiptBuilder!
-    var mockASN1ContainerBuilder: MockASN1ContainerBuilder!
 
+    private var receiptParser: PurchasesReceiptParser!
+    private var mockAppleReceiptBuilder: MockAppleReceiptBuilder!
+    private var mockASN1ContainerBuilder: MockASN1ContainerBuilder!
     private let containerFactory = ContainerFactory()
 
     override func setUp() {
         super.setUp()
-        mockAppleReceiptBuilder = MockAppleReceiptBuilder()
-        mockASN1ContainerBuilder = MockASN1ContainerBuilder()
-        receiptParser = ReceiptParser(containerBuilder: mockASN1ContainerBuilder,
-                                      receiptBuilder: mockAppleReceiptBuilder)
+
+        self.mockAppleReceiptBuilder = MockAppleReceiptBuilder()
+        self.mockASN1ContainerBuilder = MockASN1ContainerBuilder()
+        self.receiptParser = PurchasesReceiptParser(logger: Logger(),
+                                                    containerBuilder: self.mockASN1ContainerBuilder,
+                                                    receiptBuilder: self.mockAppleReceiptBuilder)
     }
 
     func testParseFromReceiptDataBuildsContainerAfterObjectIdentifier() throws {
@@ -77,9 +79,10 @@ class ReceiptParserTests: TestCase {
         let container = containerWithDataObjectIdentifier()
 
         mockASN1ContainerBuilder.stubbedBuildResult = container
-        mockAppleReceiptBuilder.stubbedBuildError = ReceiptParser.Error.receiptParsingError
+        mockAppleReceiptBuilder.stubbedBuildError = .receiptParsingError
 
-        expect { try self.receiptParser.parse(from: Data()) }.to(throwError(ReceiptParser.Error.receiptParsingError))
+        expect { try self.receiptParser.parse(from: Data()) }
+            .to(throwError(PurchasesReceiptParser.Error.receiptParsingError))
     }
 
     func testParseFromReceiptThrowsIfNoDataObjectIdentifierFound() {
@@ -91,7 +94,7 @@ class ReceiptParserTests: TestCase {
         mockASN1ContainerBuilder.stubbedBuildResult = container
 
         expect { try self.receiptParser.parse(from: Data()) }
-            .to(throwError(ReceiptParser.Error.dataObjectIdentifierMissing))
+            .to(throwError(PurchasesReceiptParser.Error.dataObjectIdentifierMissing))
     }
 
     func testParseFromReceiptThrowsIfReceiptPayloadIsntLocatedAfterDataObjectIdentifierContainer() {
@@ -103,7 +106,7 @@ class ReceiptParserTests: TestCase {
         mockASN1ContainerBuilder.stubbedBuildResult = container
 
         expect { try self.receiptParser.parse(from: Data()) }
-            .to(throwError(ReceiptParser.Error.dataObjectIdentifierMissing))
+            .to(throwError(PurchasesReceiptParser.Error.dataObjectIdentifierMissing))
     }
 
     func testReceiptHasTransactionsTrueIfReceiptHasTransactions() {
@@ -119,12 +122,13 @@ class ReceiptParserTests: TestCase {
     }
 
     func testReceiptHasTransactionsTrueIfReceiptCantBeParsed() {
-        mockASN1ContainerBuilder.stubbedBuildError = ReceiptParser.Error.receiptParsingError
+        mockASN1ContainerBuilder.stubbedBuildError = .receiptParsingError
         expect(self.receiptParser.receiptHasTransactions(receiptData: Data())) == true
     }
 }
 
 private extension ReceiptParserTests {
+
     func containerWithDataObjectIdentifier() -> ASN1Container {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [])
         let dataObjectIdentifierContainer = containerFactory.objectIdentifierContainer(.data)
@@ -183,4 +187,5 @@ private extension ReceiptParserTests {
                                       promotionalOfferIdentifier: nil)
                             ])
     }
+
 }
