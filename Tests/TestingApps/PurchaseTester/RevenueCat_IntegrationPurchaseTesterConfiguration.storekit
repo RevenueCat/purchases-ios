@@ -235,6 +235,40 @@
           "referenceName" : "annual free trial",
           "subscriptionGroupID" : "727DE911",
           "type" : "RecurringSubscription"
+        }
+      ]
+    },
+    {
+      "id" : "45445385",
+      "localizations" : [
+
+      ],
+      "name" : "subscription_group_3",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "70B67278",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly subscription with no trial",
+              "displayName" : "Monthly subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.monthly.1.99.no_intro",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "monthly no trial",
+          "subscriptionGroupID" : "45445385",
+          "type" : "RecurringSubscription"
         },
         {
           "adHocOffers" : [
@@ -243,22 +277,26 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "39.99",
+          "displayPrice" : "1.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "911CDB66",
-          "introductoryOffer" : null,
+          "internalID" : "38AF2E0E",
+          "introductoryOffer" : {
+            "internalID" : "A5963DDA",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
           "localizations" : [
             {
-              "description" : "Annual subscription with no trial",
-              "displayName" : "Annual subscription",
+              "description" : "Monthly subscription with free week",
+              "displayName" : "Monthly subscription",
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.revenuecat.annual_39.99.no_intro",
-          "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "annual no trial",
-          "subscriptionGroupID" : "727DE911",
+          "productID" : "com.revenuecat.monthly.1.99.1_free_week",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "monthly free trial",
+          "subscriptionGroupID" : "45445385",
           "type" : "RecurringSubscription"
         }
       ]
