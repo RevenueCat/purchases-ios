@@ -11,7 +11,7 @@ import XCTest
 
 final class ReceiptParserIntegrationTests: XCTestCase {
 
-    func testCanParseReceipts() throws {
+    func testParsingEmptyReceiptThrowsError() throws {
         do {
             _ = try PurchasesReceiptParser.default.parse(from: Data())
             XCTFail("Expected error")
