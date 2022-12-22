@@ -14,8 +14,8 @@
 
 import Foundation
 
-/// The contents of a parsed IAP receipt.
-/// See https://rev.cat/apple-receipt-fields for the official documentation.
+/// The contents of a parsed IAP receipt parsed by ``PurchasesReceiptParser``.
+/// - Seealso: [the official documentation](https://rev.cat/apple-receipt-fields).
 public struct AppleReceipt: Equatable {
 
     /// The app's bundle identifier.
