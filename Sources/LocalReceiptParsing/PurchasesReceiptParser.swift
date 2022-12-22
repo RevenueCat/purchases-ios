@@ -15,7 +15,7 @@
 import Foundation
 
 /// A type that can parse Apple receipts from a device.
-/// This implements parsing based on Apple's documentation: https://rev.cat/apple-receipt-fields
+/// This implements parsing based on [Apple's documentation](https://rev.cat/apple-receipt-fields).
 public class PurchasesReceiptParser: NSObject {
 
     private let logger: LoggerType
@@ -30,7 +30,7 @@ public class PurchasesReceiptParser: NSObject {
         self.receiptBuilder = receiptBuilder
     }
 
-    /// Returns the result of parsing the receipt from `receiptData`, or throws `ReceiptParser.Error`.
+    /// Returns the result of parsing the receipt from `receiptData`, or throws ``PurchasesReceiptParser/Error``.
     public func parse(from receiptData: Data) throws -> AppleReceipt {
         #if DEBUG
         Self.ensureRunningOutsideOfMainThread()
