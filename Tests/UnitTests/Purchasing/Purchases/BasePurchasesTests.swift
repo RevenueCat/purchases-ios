@@ -218,6 +218,7 @@ class BasePurchasesTests: TestCase {
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
             receiptFetcher: self.receiptFetcher,
+            receiptParser: self.mockReceiptParser,
             customerInfoManager: self.customerInfoManager,
             backend: self.backend,
             currentUserProvider: self.identityManager,

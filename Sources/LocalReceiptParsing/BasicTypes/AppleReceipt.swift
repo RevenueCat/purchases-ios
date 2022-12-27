@@ -90,6 +90,15 @@ extension AppleReceipt {
         )
     }
 
+    /// Returns the most recent subscription (see `InAppPurchase.isActiveSubscription`).
+    var mostRecentActiveSubscription: InAppPurchase? {
+        return self.inAppPurchases
+            .lazy
+            .filter { $0.isActiveSubscription }
+            .sorted { $0.purchaseDate > $1.purchaseDate }
+            .first
+    }
+
 }
 
 // MARK: - Conformances

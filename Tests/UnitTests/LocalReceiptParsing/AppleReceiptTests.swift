@@ -155,6 +155,50 @@ final class AppleReceiptTests: TestCase {
         ) == false
     }
 
+    // MARK: - mostRecentActiveSubscription
+
+    func testMostRecentActiveSubscriptionWithNoSubscriptionsReturnsNil() {
+        expect(
+            Self.create(with: [:]).mostRecentActiveSubscription
+        ) == nil
+    }
+
+    func testMostRecentActiveSubscriptionWithOneActiveSubscriptionsReturnsIt() {
+        let receipt = Self.create(with: [ Self.productIdentifier: Date().addingTimeInterval(10) ])
+        expect(receipt.mostRecentActiveSubscription) == receipt.inAppPurchases.onlyElement!
+    }
+
+    func testMostRecentActiveSubscriptionWithOneInactiveSubscriptionsReturnsNil() {
+        expect(
+            Self.create(with: [ Self.productIdentifier: Date().addingTimeInterval(-10) ])
+                .mostRecentActiveSubscription
+        ) == nil
+    }
+
+    func testMostRecentActiveSubscriptionWithOnlyOneActiveSubscriptionsReturnsIt() {
+        let receipt = Self.create(with: [
+            Self.productIdentifier: Date().addingTimeInterval(10),
+            "other product": Date().addingTimeInterval(-10),
+            "consumable": nil
+        ])
+        expect(receipt.mostRecentActiveSubscription?.productId) == Self.productIdentifier
+    }
+
+    func testMostRecentActiveSubscriptionWithTwoActiveSubscriptionsReturnsMostRecent() {
+        let product1 = "product1"
+        let product2 = "product2"
+
+        let receipt = Self.create(with: [
+            product1: Date().addingTimeInterval(10),
+            product2: Date().addingTimeInterval(10)
+        ],
+        purchaseDates: [
+            product1: Date().addingTimeInterval(-11),
+            product2: Date().addingTimeInterval(-10)
+        ])
+        expect(receipt.mostRecentActiveSubscription?.productId) == product2
+    }
+
     // MARK: -
 
     private static let productIdentifier = "com.revenuecat.product_a"
@@ -165,6 +209,14 @@ final class AppleReceiptTests: TestCase {
 private extension AppleReceiptTests {
 
     static func create(with expirationDatesByProductIdentifier: [String: Date?]) -> AppleReceipt {
+        return Self.create(with: expirationDatesByProductIdentifier,
+                           purchaseDates: expirationDatesByProductIdentifier.mapValues { _ in Date() })
+    }
+
+    static func create(
+        with expirationDatesByProductIdentifier: [String: Date?],
+        purchaseDates: [String: Date]
+    ) -> AppleReceipt {
         return .init(
             bundleId: "com.revenuecat.test_app",
             applicationVersion: "1.0",
@@ -178,7 +230,8 @@ private extension AppleReceiptTests {
                             ? .nonConsumable
                             : .autoRenewableSubscription,
                             identifier: identifier,
-                            expiration: expiration)
+                            expiration: expiration,
+                            purchase: purchaseDates[identifier] ?? Date())
             }
         )
     }
@@ -186,7 +239,8 @@ private extension AppleReceiptTests {
     static func create(
         with productType: AppleReceipt.InAppPurchase.ProductType,
         identifier: String = UUID().uuidString,
-        expiration: Date?
+        expiration: Date?,
+        purchase: Date = Date()
     ) -> AppleReceipt.InAppPurchase {
         return .init(
             quantity: 1,
@@ -194,7 +248,7 @@ private extension AppleReceiptTests {
             transactionId: "transaction-\(identifier)",
             originalTransactionId: nil,
             productType: productType,
-            purchaseDate: Date(),
+            purchaseDate: purchase,
             originalPurchaseDate: nil,
             expiresDate: expiration,
             cancellationDate: nil,

@@ -139,20 +139,21 @@ class PurchasesSubscriberAttributesTests: TestCase {
         Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
 
         self.mockIdentityManager.mockIsAnonymous = false
-        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
+        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: self.mockProductsManager,
                                                           paymentQueueWrapper: .left(self.mockStoreKit1Wrapper),
-                                                          systemInfo: systemInfo,
-                                                          subscriberAttributes: attribution,
-                                                          operationDispatcher: mockOperationDispatcher,
-                                                          receiptFetcher: mockReceiptFetcher,
-                                                          customerInfoManager: customerInfoManager,
-                                                          backend: mockBackend,
-                                                          currentUserProvider: mockIdentityManager,
-                                                          transactionsManager: mockTransactionsManager,
-                                                          deviceCache: mockDeviceCache,
-                                                          offeringsManager: mockOfferingsManager,
-                                                          manageSubscriptionsHelper: mockManageSubsHelper,
-                                                          beginRefundRequestHelper: mockBeginRefundRequestHelper)
+                                                          systemInfo: self.systemInfo,
+                                                          subscriberAttributes: self.attribution,
+                                                          operationDispatcher: self.mockOperationDispatcher,
+                                                          receiptFetcher: self.mockReceiptFetcher,
+                                                          receiptParser: self.mockReceiptParser,
+                                                          customerInfoManager: self.customerInfoManager,
+                                                          backend: self.mockBackend,
+                                                          currentUserProvider: self.mockIdentityManager,
+                                                          transactionsManager: self.mockTransactionsManager,
+                                                          deviceCache: self.mockDeviceCache,
+                                                          offeringsManager: self.mockOfferingsManager,
+                                                          manageSubscriptionsHelper: self.mockManageSubsHelper,
+                                                          beginRefundRequestHelper: self.mockBeginRefundRequestHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
             receiptFetcher: mockReceiptFetcher,
