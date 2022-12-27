@@ -47,48 +47,81 @@ class DictionaryExtensionsTests: TestCase {
 
 class DictionaryExtensionsMergingTests: TestCase {
 
-    func testMergeStrategyKeepOriginalValue() {
+    func testMergingStrategyKeepOriginalValue() {
         let dict = ["a": "1", "b": "1"]
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "1", "b": "1", "c": "2"]
 
         let obtainedDict = dict.merging(dict2, strategy: .keepOriginalValue)
 
-        expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
-        expect(obtainedDict).to(equal(expectedDict))
+        expect(obtainedDict).to(haveCount(expectedDict.keys.count))
+        expect(obtainedDict) == expectedDict
     }
 
-    func testMergeStrategyOverwriteValue() {
+    func testMergingStrategyOverwriteValue() {
         let dict = ["a": "1", "b": "1"]
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "2", "b": "2", "c": "2"]
 
         let obtainedDict = dict.merging(dict2, strategy: .overwriteValue)
 
-        expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
-        expect(obtainedDict).to(equal(expectedDict))
+        expect(obtainedDict).to(haveCount(expectedDict.keys.count))
+        expect(obtainedDict) == expectedDict
     }
 
-    func testDefaultMergeStrategy() {
+    func testMergingDefaultStrategy() {
         let dict = ["a": "1", "b": "1"]
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "2", "b": "2", "c": "2"]
 
         let obtainedDict = dict.merging(dict2)
 
-        expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
-        expect(obtainedDict).to(equal(expectedDict))
+        expect(obtainedDict).to(haveCount(expectedDict.keys.count))
+        expect(obtainedDict) == expectedDict
     }
 
-    func testMergeDictionariesByOperatorPlus() {
+    func testMergeStrategyKeepOriginalValue() {
+        var dict = ["a": "1", "b": "1"]
+        let dict2 = ["a": "2", "b": "2", "c": "2"]
+        let expectedDict = ["a": "1", "b": "1", "c": "2"]
+
+        dict.merge(dict2, strategy: .keepOriginalValue)
+
+        expect(dict).to(haveCount(expectedDict.keys.count))
+        expect(dict) == expectedDict
+    }
+
+    func testMergeStrategyOverwriteValue() {
+        var dict = ["a": "1", "b": "1"]
+        let dict2 = ["a": "2", "b": "2", "c": "2"]
+        let expectedDict = ["a": "2", "b": "2", "c": "2"]
+
+        dict.merge(dict2, strategy: .overwriteValue)
+
+        expect(dict).to(haveCount(expectedDict.keys.count))
+        expect(dict) == expectedDict
+    }
+
+    func testMergeDefaultStrategy() {
+        var dict = ["a": "1", "b": "1"]
+        let dict2 = ["a": "2", "b": "2", "c": "2"]
+        let expectedDict = ["a": "2", "b": "2", "c": "2"]
+
+        dict.merge(dict2)
+
+        expect(dict).to(haveCount(expectedDict.keys.count))
+        expect(dict) == expectedDict
+    }
+
+    func testMergingDictionariesByOperatorPlus() {
         let dict = ["a": "1", "b": "1"]
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "2", "b": "2", "c": "2"]
 
         let obtainedDict = dict + dict2
 
-        expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
-        expect(obtainedDict).to(equal(expectedDict))
+        expect(obtainedDict).to(haveCount(expectedDict.keys.count))
+        expect(obtainedDict) == expectedDict
     }
 
     func testAddEntriesToDictionaryWithOperatorPlusAddsValuesCorrectly() {
@@ -98,8 +131,8 @@ class DictionaryExtensionsMergingTests: TestCase {
 
         original += addedValues
 
-        expect(original.keys.count).to(equal(expectedDict.keys.count))
-        expect(original).to(equal(expectedDict))
+        expect(original).to(haveCount(expectedDict.keys.count))
+        expect(original) == expectedDict
     }
 
 }
