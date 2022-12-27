@@ -93,7 +93,7 @@ extension Dictionary {
     /// - Parameters:
     ///   - lhs: A dictionary to merge.
     ///   - rhs: Another dictionary to merge.
-    /// - Returns: An dictionary with keys and values from both.
+    /// - Returns: A dictionary with keys and values from both.
     static func += (lhs: inout [Key: Value], rhs: [Key: Value]) {
         lhs.merge(rhs)
     }
