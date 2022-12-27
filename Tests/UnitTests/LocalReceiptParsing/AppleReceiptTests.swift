@@ -155,36 +155,36 @@ final class AppleReceiptTests: TestCase {
         ) == false
     }
 
-    // MARK: - lastPurchasedSubscription
+    // MARK: - mostRecentActiveSubscription
 
-    func testLastPurchasedSubscriptionWithNoSubscriptionsReturnsNil() {
+    func testMostRecentActiveSubscriptionWithNoSubscriptionsReturnsNil() {
         expect(
-            Self.create(with: [:]).lastPurchasedSubscription
+            Self.create(with: [:]).mostRecentActiveSubscription
         ) == nil
     }
 
-    func testLastPurchasedSubscriptionWithOneActiveSubscriptionsReturnsIt() {
+    func testMostRecentActiveSubscriptionWithOneActiveSubscriptionsReturnsIt() {
         let receipt = Self.create(with: [ Self.productIdentifier: Date().addingTimeInterval(10) ])
-        expect(receipt.lastPurchasedSubscription) == receipt.inAppPurchases.onlyElement!
+        expect(receipt.mostRecentActiveSubscription) == receipt.inAppPurchases.onlyElement!
     }
 
-    func testLastPurchasedSubscriptionWithOneInactiveSubscriptionsReturnsNil() {
+    func testMostRecentActiveSubscriptionWithOneInactiveSubscriptionsReturnsNil() {
         expect(
             Self.create(with: [ Self.productIdentifier: Date().addingTimeInterval(-10) ])
-                .lastPurchasedSubscription
+                .mostRecentActiveSubscription
         ) == nil
     }
 
-    func testLastPurchasedSubscriptionWithOnlyOneActiveSubscriptionsReturnsIt() {
+    func testMostRecentActiveSubscriptionWithOnlyOneActiveSubscriptionsReturnsIt() {
         let receipt = Self.create(with: [
             Self.productIdentifier: Date().addingTimeInterval(10),
             "other product": Date().addingTimeInterval(-10),
             "consumable": nil
         ])
-        expect(receipt.lastPurchasedSubscription?.productId) == Self.productIdentifier
+        expect(receipt.mostRecentActiveSubscription?.productId) == Self.productIdentifier
     }
 
-    func testLastPurchasedSubscriptionWithTwoActiveSubscriptionsReturnsMostRecent() {
+    func testMostRecentActiveSubscriptionWithTwoActiveSubscriptionsReturnsMostRecent() {
         let product1 = "product1"
         let product2 = "product2"
 
@@ -196,7 +196,7 @@ final class AppleReceiptTests: TestCase {
             product1: Date().addingTimeInterval(-11),
             product2: Date().addingTimeInterval(-10)
         ])
-        expect(receipt.lastPurchasedSubscription?.productId) == product2
+        expect(receipt.mostRecentActiveSubscription?.productId) == product2
     }
 
     // MARK: -

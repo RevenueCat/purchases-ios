@@ -1122,7 +1122,7 @@ private extension PurchasesOrchestrator {
         completion: @escaping (ProductRequestData?) -> Void
     ) {
         guard let receipt = try? self.receiptParser.parse(from: receiptData),
-        let productIdentifier = receipt.lastPurchasedSubscription?.productId else {
+        let productIdentifier = receipt.mostRecentActiveSubscription?.productId else {
             completion(nil)
             return
         }

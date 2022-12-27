@@ -91,7 +91,7 @@ extension AppleReceipt {
     }
 
     /// Returns the most recent subscription (see `InAppPurchase.isActiveSubscription`).
-    var lastPurchasedSubscription: InAppPurchase? {
+    var mostRecentActiveSubscription: InAppPurchase? {
         return self.inAppPurchases
             .lazy
             .filter { $0.isActiveSubscription }
