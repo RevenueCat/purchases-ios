@@ -19,6 +19,7 @@ enum EligibilityStrings {
 
     case found_cached_eligibility_for_products(_ identifiers: Set<String>)
     case caching_intro_eligibility_for_products(_ identifiers: Set<String>)
+    case clearing_intro_eligibility_cache
     case unable_to_get_intro_eligibility_for_user(error: Error)
     case check_eligibility_no_identifiers
     case check_eligibility_failed(productIdentifier: String, error: Error)
@@ -33,6 +34,9 @@ extension EligibilityStrings: CustomStringConvertible {
 
         case let .caching_intro_eligibility_for_products(identifiers):
             return "Caching trial or intro eligibility for products: \(identifiers)"
+
+        case .clearing_intro_eligibility_cache:
+            return "Detected active subscriptions changed. Clearing trial or intro eligibility cache."
 
         case let .unable_to_get_intro_eligibility_for_user(error):
             return "Unable to get intro eligibility for appUserID: \(error.localizedDescription)"

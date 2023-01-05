@@ -19,10 +19,18 @@ import Foundation
 final class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
     private let checker: TrialOrIntroPriceEligibilityCheckerType
+
     private let cache: Atomic<[String: IntroEligibility]> = .init([:])
 
     init(checker: TrialOrIntroPriceEligibilityCheckerType) {
         self.checker = checker
+    }
+
+    // TODO: call
+    func clearCache() {
+        Logger.debug(Strings.eligibility.clearing_intro_eligibility_cache)
+
+        self.cache.value.removeAll(keepingCapacity: false)
     }
 
 }

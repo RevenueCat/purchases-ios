@@ -183,6 +183,33 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
         expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
     }
+
+    func testClearCache() async {
+        let expected: Result = [
+            Self.productID1: .init(eligibilityStatus: .eligible)
+        ]
+
+        // 1. Cache result
+
+        self.mockChecker.stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult = expected
+        _ = await self.caching.checkEligibility(productIdentifiers: [Self.productID1])
+
+        // 2. Clear cache
+
+        self.caching.clearCache()
+
+        // 3. Request again
+
+        let result = await self.caching.checkEligibility(productIdentifiers: [Self.productID1])
+        expect(result) == expected
+
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList) == [
+            [Self.productID1],
+            [Self.productID1]
+        ]
+    }
+
 }
 
 // MARK: -
