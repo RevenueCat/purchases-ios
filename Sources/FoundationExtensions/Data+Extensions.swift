@@ -78,7 +78,10 @@ extension Data {
     }
 
     private static func hexString(_ iterator: Array<UInt8>.Iterator) -> String {
-        return iterator.map { String(format: "%02x", $0) }.joined()
+        return iterator
+            .lazy
+            .map { String(format: "%02x", $0) }
+            .joined()
     }
 
 }
