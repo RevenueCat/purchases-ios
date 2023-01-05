@@ -68,8 +68,8 @@ extension Data {
             return Self.hexString(sha256.finalize().makeIterator())
         } else {
             let hash = self.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> [UInt8] in
-                var hash = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
-                CC_SHA1(bytes.baseAddress, CC_LONG(self.count), &hash)
+                var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+                CC_SHA256(bytes.baseAddress, CC_LONG(self.count), &hash)
                 return hash
             }
 
