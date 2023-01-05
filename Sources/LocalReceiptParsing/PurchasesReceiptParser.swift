@@ -16,6 +16,12 @@ import Foundation
 
 /// A type that can parse Apple receipts from a device.
 /// This implements parsing based on [Apple's documentation](https://rev.cat/apple-receipt-fields).
+///
+/// To use this class you must access ``PurchasesReceiptParser/default``:
+/// ```swift
+/// let parser = PurchasesReceiptParser.default
+/// let receipt = try parser.parse(from: data)
+/// ```
 public class PurchasesReceiptParser: NSObject {
 
     private let logger: LoggerType
