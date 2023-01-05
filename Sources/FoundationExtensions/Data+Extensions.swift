@@ -41,6 +41,19 @@ extension Data {
         return (self as NSData).asString()
     }
 
+    /// - Returns: `UUID` from the first 16 bytes of the underlying data.
+    var uuid: UUID? {
+        /// This implementation is equivalent to `return NSUUID(uuidBytes: [UInt8](self)) as UUID`
+        /// but ensures that the `Data` isn't unnecessarily copied in memory.
+        return self.withUnsafeBytes {
+            guard let baseAddress = $0.bindMemory(to: UInt8.self).baseAddress else {
+                return nil
+            }
+
+            return NSUUID(uuidBytes: baseAddress) as UUID
+        }
+    }
+
     /// - Returns: a string representing a fetch token.
     var asFetchToken: String {
         return self.base64EncodedString()

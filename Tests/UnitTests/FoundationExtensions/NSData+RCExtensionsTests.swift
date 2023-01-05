@@ -37,6 +37,10 @@ class NSDataExtensionsTests: TestCase {
         expect(storedReceiptData.asFetchToken).to(equal(storedReceiptText))
     }
 
+    func testStringDataAsUUID() {
+        expect("sample string".asData.uuid) == UUID(uuidString: "73616D70-6C65-2073-7472-696E67000000")
+    }
+
     func testStringDataAsHashString() {
         expect("sample string".asData.hashString) == "99ad9154f94977dd8913f3b7ea14091d00e52b8931c2bc1cfc7ea62b7c26727b"
     }
