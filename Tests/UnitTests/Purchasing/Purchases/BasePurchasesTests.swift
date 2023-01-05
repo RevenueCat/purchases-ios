@@ -174,6 +174,7 @@ class BasePurchasesTests: TestCase {
     var mockOfferingsManager: MockOfferingsManager!
     var purchasesOrchestrator: PurchasesOrchestrator!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
+    var cachingTrialOrIntroPriceEligibilityChecker: MockCachingTrialOrIntroPriceEligibilityChecker!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
@@ -237,6 +238,7 @@ class BasePurchasesTests: TestCase {
             operationDispatcher: self.mockOperationDispatcher,
             productsManager: self.mockProductsManager
         )
+        self.cachingTrialOrIntroPriceEligibilityChecker = .init(checker: self.trialOrIntroPriceEligibilityChecker)
 
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
@@ -257,7 +259,7 @@ class BasePurchasesTests: TestCase {
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
-                                   trialOrIntroPriceEligibilityChecker: self.trialOrIntroPriceEligibilityChecker)
+                                   trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker)
 
         self.purchasesOrchestrator.delegate = self.purchases
 

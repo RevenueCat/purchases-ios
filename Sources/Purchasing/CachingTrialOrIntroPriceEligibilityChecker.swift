@@ -16,17 +16,28 @@ import Foundation
 // swiftlint:disable type_name
 
 /// `TrialOrIntroPriceEligibilityCheckerType` decorator that adds caching behavior on each request.
-final class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
+class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
     private let checker: TrialOrIntroPriceEligibilityCheckerType
 
     private let cache: Atomic<[String: IntroEligibility]> = .init([:])
 
+    /// Creates a `CachingTrialOrIntroPriceEligibilityChecker` wrapping the underlying checker,
+    /// or returns `checker` if it already is this type.
+    static func create(
+        with checker: TrialOrIntroPriceEligibilityCheckerType
+    ) -> CachingTrialOrIntroPriceEligibilityChecker {
+        if let checker = checker as? Self {
+            return checker
+        } else {
+            return CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        }
+    }
+
     init(checker: TrialOrIntroPriceEligibilityCheckerType) {
         self.checker = checker
     }
 
-    // TODO: call
     func clearCache() {
         Logger.debug(Strings.eligibility.clearing_intro_eligibility_cache)
 

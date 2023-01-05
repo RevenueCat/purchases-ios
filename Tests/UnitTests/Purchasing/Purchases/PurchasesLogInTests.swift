@@ -196,6 +196,19 @@ class PurchasesLogInTests: BasePurchasesTests {
         logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
+    func testLogInClearsTrialEligibilityCache() {
+        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == false
+
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        waitUntil { completed in
+            self.purchases.logIn(Self.appUserID) { _, _, _ in completed() }
+        }
+
+        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == true
+        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount) == 1
+    }
+
 }
 
 // MARK: -

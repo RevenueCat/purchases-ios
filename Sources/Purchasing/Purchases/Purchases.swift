@@ -448,9 +448,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.purchasesOrchestrator = purchasesOrchestrator
-        self.trialOrIntroPriceEligibilityChecker = CachingTrialOrIntroPriceEligibilityChecker(
-            checker: trialOrIntroPriceEligibilityChecker
-        )
+        self.trialOrIntroPriceEligibilityChecker = .create(with: trialOrIntroPriceEligibilityChecker)
 
         super.init()
 
@@ -1241,8 +1239,8 @@ internal extension Purchases {
 private extension Purchases {
 
     func handleCustomerInfoChanged(_ customerInfo: CustomerInfo) {
-        self.delegate?.purchases?(self, receivedUpdated: customerInfo)
         self.trialOrIntroPriceEligibilityChecker.clearCache()
+        self.delegate?.purchases?(self, receivedUpdated: customerInfo)
     }
 
     @objc func applicationDidBecomeActive(notification: Notification) {

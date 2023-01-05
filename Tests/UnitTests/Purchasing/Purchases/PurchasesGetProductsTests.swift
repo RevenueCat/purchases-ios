@@ -48,7 +48,7 @@ class PurchasesGetProductsTests: BasePurchasesTests {
     }
 
     func testGetEligibility() {
-        self.purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: []) { (_) in }
+        self.purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: ["product 1"]) { (_) in }
 
         expect(
             self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore
