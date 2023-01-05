@@ -120,8 +120,8 @@ private extension IntroEligibilityCalculator {
             } else {
                 // TODO: this isn't quite right, see failing tests
                 result[candidate.productIdentifier] = usedIntroForProductIdentifier || usedIntroInSubscriptionGroup
-                    ? IntroEligibilityStatus.ineligible
-                    : IntroEligibilityStatus.eligible
+                    ? .ineligible
+                    : .eligible
             }
         }
         return result
