@@ -37,19 +37,19 @@ class NSDataExtensionsTests: TestCase {
         expect(storedReceiptData.asFetchToken).to(equal(storedReceiptText))
     }
 
-    func testStringDataAsUUID() {
-        expect("sample string".asData.uuid) == UUID(uuidString: "73616D70-6C65-2073-7472-696E67000000")
+    func testStringDataAsHashString() {
+        expect("sample string".asData.hashString) == "99ad9154f94977dd8913f3b7ea14091d00e52b8931c2bc1cfc7ea62b7c26727b"
     }
 
-    func testDataAsUUIDHashesTheEntireData() {
-        expect("a relatively long string that ends in 0".asData.uuid)
-        != "a relatively long string that ends in 1".asData.uuid
+    func testDataAsHashStringHashesTheEntireData() {
+        expect("a relatively long string that ends in 0".asData.hashString)
+        != "a relatively long string that ends in 1".asData.hashString
     }
 
-    func testReceiptDataAsUUID() {
+    func testReceiptDataAsHashString() {
         let storedReceiptData = Self.sampleReceiptData(receiptName: Self.receiptFilename)
 
-        expect(storedReceiptData.uuid) == UUID(uuidString: "308220E5-0609-2A86-4886-F70D010702A0")
+        expect(storedReceiptData.hashString) == "d18b7c0ffe3577a9dd732840a30ac4b3655b412e69d84f07d991f48e8d3273d8"
     }
 
 }
