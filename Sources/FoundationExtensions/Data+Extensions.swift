@@ -31,11 +31,6 @@ extension NSData {
         return deviceTokenString as String
     }
 
-    var uuid: UUID? {
-        let bytes = [UInt8](self)
-        return NSUUID(uuidBytes: bytes) as UUID
-    }
-
 }
 
 extension Data {
@@ -44,13 +39,22 @@ extension Data {
         return (self as NSData).asString()
     }
 
-    // Returns a string representing a fetch token.
+    /// - Returns: a string representing a fetch token.
     var asFetchToken: String {
         return self.base64EncodedString()
     }
 
+    /// Creates an `UUID` from the underlying bytes.
     var uuid: UUID? {
-        (self as NSData).uuid
+        /// This implementation is equivalent to `return NSUUID(uuidBytes: [UInt8](self)) as UUID`
+        /// but ensures that the `Data` isn't unnecessarily copied in memory.
+        return self.withUnsafeBytes {
+            guard let baseAddress = $0.bindMemory(to: UInt8.self).baseAddress else {
+                return nil
+            }
+
+            return NSUUID(uuidBytes: baseAddress) as UUID
+        }
     }
 
 }

@@ -29,14 +29,24 @@ class NSDataExtensionsTests: TestCase {
     }
 
     func testAsFetchToken() {
-        let receiptFilename = "base64EncodedReceiptSampleForDataExtension"
-        let storedReceiptText = NSDataExtensionsTests.readFile(named: receiptFilename)
-        let storedReceiptData = NSDataExtensionsTests.sampleReceiptData(receiptName: receiptFilename)
+        let storedReceiptText = NSDataExtensionsTests.readFile(named: Self.receiptFilename)
+        let storedReceiptData = NSDataExtensionsTests.sampleReceiptData(receiptName: Self.receiptFilename)
         let fetchToken = storedReceiptData.asFetchToken
 
         expect(fetchToken).to(equal(storedReceiptText))
         expect(storedReceiptData.asFetchToken).to(equal(storedReceiptText))
     }
+
+    func testStringDataAsUUID() {
+        expect("sample string".asData.uuid) == UUID(uuidString: "73616D70-6C65-2073-7472-696E67000000")
+    }
+
+    func testReceiptDataAsUUID() {
+        let storedReceiptData = Self.sampleReceiptData(receiptName: Self.receiptFilename)
+
+        expect(storedReceiptData.uuid) == UUID(uuidString: "308220E5-0609-2A86-4886-F70D010702A0")
+    }
+
 }
 
 extension NSDataExtensionsTests {
@@ -63,5 +73,7 @@ extension NSDataExtensionsTests {
     }
 
     private static let fileExtension = "txt"
+
+    private static let receiptFilename = "base64EncodedReceiptSampleForDataExtension"
 
 }
