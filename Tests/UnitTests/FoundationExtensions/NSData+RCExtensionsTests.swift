@@ -41,6 +41,11 @@ class NSDataExtensionsTests: TestCase {
         expect("sample string".asData.uuid) == UUID(uuidString: "73616D70-6C65-2073-7472-696E67000000")
     }
 
+    func testDataAsUUIDHashesTheEntireData() {
+        expect("a relatively long string that ends in 0".asData.uuid)
+        != "a relatively long string that ends in 1".asData.uuid
+    }
+
     func testReceiptDataAsUUID() {
         let storedReceiptData = Self.sampleReceiptData(receiptName: Self.receiptFilename)
 
