@@ -158,6 +158,54 @@ class IntroEligibilityCalculatorTests: TestCase {
         expect(result) == .ineligible
     }
 
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionInDifferentGroup() {
+        let receipt = AppleReceipt(
+            bundleId: "com.revenuecat.test",
+            applicationVersion: "3.4.5",
+            originalApplicationVersion: "3.2.1",
+            opaqueValue: Data(),
+            sha1Hash: Data(),
+            creationDate: Date(),
+            expirationDate: nil,
+            inAppPurchases: [
+                .init(quantity: 1,
+                      productId: "com.revenuecat.product1",
+                      transactionId: "65465265651323",
+                      originalTransactionId: "65465265651323",
+                      productType: .autoRenewableSubscription,
+                      purchaseDate: Date().addingTimeInterval(-1500),
+                      originalPurchaseDate: Date().addingTimeInterval(-1500),
+                      expiresDate: Date().addingTimeInterval(-1000),
+                      cancellationDate: nil,
+                      isInTrialPeriod: true,
+                      isInIntroOfferPeriod: false,
+                      webOrderLineItemId: 516854313,
+                      promotionalOfferIdentifier: nil)
+            ]
+        )
+        self.mockReceiptParser.stubbedParseResult = receipt
+
+        let product1 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
+                                      mockSubscriptionGroupIdentifier: "group1")
+        product1.mockDiscount = MockSKProductDiscount()
+        let product3 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product3",
+                                      mockSubscriptionGroupIdentifier: "group2")
+        product3.mockDiscount = MockSKProductDiscount()
+
+        mockProductsManager.stubbedProductsCompletionResult = .success(
+            Set([product1, product3].map(StoreProduct.init(sk1Product:)))
+        )
+
+        let result: IntroEligibilityStatus? = waitUntilValue { completed in
+            self.calculator.checkEligibility(
+                with: Data(),
+                productIdentifiers: [product3.productIdentifier]
+            ) { result, _ in completed(result[product3.productIdentifier]) }
+        }
+
+        expect(result) == .eligible
+    }
+
     func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleWithActiveSubscriptionInSameGroup() {
         let receipt = AppleReceipt(
             bundleId: "com.revenuecat.test",
@@ -202,6 +250,52 @@ class IntroEligibilityCalculatorTests: TestCase {
         }
 
         expect(result) == .ineligible
+    }
+
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleWithActiveSubscriptionInDifferentGroup() {
+        let receipt = AppleReceipt(
+            bundleId: "com.revenuecat.test",
+            applicationVersion: "3.4.5",
+            originalApplicationVersion: "3.2.1",
+            opaqueValue: Data(),
+            sha1Hash: Data(),
+            creationDate: Date(),
+            expirationDate: nil,
+            inAppPurchases: [
+                .init(quantity: 1,
+                      productId: "com.revenuecat.product2",
+                      transactionId: "65465265651322",
+                      originalTransactionId: "65465265651321",
+                      productType: .autoRenewableSubscription,
+                      purchaseDate: Date(),
+                      originalPurchaseDate: Date(),
+                      expiresDate: Date().addingTimeInterval(1000),
+                      cancellationDate: nil,
+                      isInTrialPeriod: false,
+                      isInIntroOfferPeriod: false,
+                      webOrderLineItemId: 64651321,
+                      promotionalOfferIdentifier: nil)
+            ]
+        )
+        self.mockReceiptParser.stubbedParseResult = receipt
+
+        let product2 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product2",
+                                      mockSubscriptionGroupIdentifier: "group1")
+        let product3 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product3",
+                                      mockSubscriptionGroupIdentifier: "group2")
+        product3.mockDiscount = MockSKProductDiscount()
+        let products = Set([product2, product3].map(StoreProduct.init(sk1Product:)))
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success(products)
+
+        let result: IntroEligibilityStatus? = waitUntilValue { completed in
+            self.calculator.checkEligibility(
+                with: Data(),
+                productIdentifiers: [product3.productIdentifier]
+            ) { result, _ in completed(result[product3.productIdentifier]) }
+        }
+
+        expect(result) == .eligible
     }
 
     func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleWithExpiredSubscriptionInSameGroup() {
