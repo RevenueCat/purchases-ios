@@ -272,7 +272,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
 
         let productWithNoTrial = try await self.product(Self.group3MonthlyNoTrialProductID)
-        let productWithTrial = try await self.annualPackage.storeProduct
+        let productWithTrial = try await self.product(Self.group3MonthlyTrialProductID)
 
         _ = try await Purchases.shared.purchase(product: productWithNoTrial)
 
