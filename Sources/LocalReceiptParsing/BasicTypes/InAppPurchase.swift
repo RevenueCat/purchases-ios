@@ -131,13 +131,13 @@ extension AppleReceipt.InAppPurchase {
     var isActiveSubscription: Bool {
         guard self.isSubscription, let expiration = self.expiresDate else { return false }
 
-        return expiration > Date()
+        return expiration >= Date()
     }
 
     var isExpiredSubscription: Bool {
         guard self.isSubscription, let expiration = self.expiresDate else { return false }
 
-        return expiration <= Date()
+        return expiration < Date()
     }
 
     var purchaseDateEqualsExpiration: Bool {
