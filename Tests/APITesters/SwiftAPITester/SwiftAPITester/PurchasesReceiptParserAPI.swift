@@ -13,6 +13,7 @@ func checkReceiptParserAPI() {
 
     do {
         let _: AppleReceipt = try parser.parse(from: Data())
+        let _: AppleReceipt = try parser.parse(base64String: "")
     } catch {}
 }
 
@@ -22,6 +23,7 @@ private func checkErrors(_ error: PurchasesReceiptParser.Error) {
     case let .asn1ParsingError(description): print(description)
     case .receiptParsingError: break
     case .inAppPurchaseParsingError: break
+    case .failedToDecodeBase64String: break
     @unknown default: break
     }
 }
