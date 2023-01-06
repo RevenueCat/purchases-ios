@@ -55,7 +55,6 @@ class IntroEligibilityCalculatorTests: TestCase {
     func testCheckTrialOrIntroDiscountEligibilityMakesOnlyOneProductsRequest() {
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
-        let receiptIdentifiers = receipt.activeSubscriptionProductIdentifiers
 
         mockProductsManager.stubbedProductsCompletionResult = .success(
             Set(
@@ -74,7 +73,9 @@ class IntroEligibilityCalculatorTests: TestCase {
         }
 
         expect(self.mockProductsManager.invokedProductsCount) == 1
-        expect(self.mockProductsManager.invokedProductsParameters) == candidateIdentifiers.union(receiptIdentifiers)
+        expect(self.mockProductsManager.invokedProductsParameters) == candidateIdentifiers
+            .union(receipt.activeSubscriptionsProductIdentifiers)
+            .union(receipt.expiredSubscriptionProductIdentifiers)
     }
 
     func testCheckTrialOrIntroDiscountEligibilityGetsCorrectResult() {
