@@ -31,6 +31,20 @@ extension Optional: OptionalType {
 
 }
 
+extension OptionalType {
+
+    /// - Returns: unwrapped value if present.
+    /// - Throws: `error` if the value is not present.
+    func orThrow(_ error: @autoclosure () -> Error) throws -> Wrapped {
+        if let value = self.asOptional {
+            return value
+        } else {
+            throw error()
+        }
+    }
+
+}
+
 // MARK: -
 
 internal extension Optional where Wrapped == String {

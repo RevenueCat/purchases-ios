@@ -134,34 +134,29 @@ extension PurchasesReceiptParser {
 
 private extension ReceiptFetcher {
 
-    func receiptData() -> Data? {
+    /// Returns non-empty `Data` for the receipt, or `nil` if it was empty or it couldn't be loaded.
+    private func receiptData() -> Data? {
         guard let receiptURL = self.receiptURL else {
             return nil
         }
 
-        guard let data = self.fileReader.contents(of: receiptURL) else {
-            Logger.debug(Strings.receipt.unable_to_load_receipt)
+        do {
+            let data = try self.fileReader.contents(of: receiptURL)
+            guard !data.isEmpty else { throw Error.loadedEmptyReceipt }
+
+            Logger.debug(Strings.receipt.loaded_receipt(url: receiptURL))
+            return data
+        } catch {
+            Logger.appleWarning(Strings.receipt.unable_to_load_receipt(error))
             return nil
         }
-
-        Logger.debug(Strings.receipt.loaded_receipt(url: receiptURL))
-
-        return data
     }
 
     func refreshReceipt(_ completion: @escaping (Data) -> Void) {
         self.lastReceiptRefreshRequest.value = self.clock.now
 
         self.requestFetcher.fetchReceiptData {
-            let data = self.receiptData()
-            guard let receiptData = data,
-                  !receiptData.isEmpty else {
-                      Logger.appleWarning(Strings.receipt.unable_to_load_receipt)
-                      completion(Data())
-                      return
-                  }
-
-            completion(receiptData)
+            completion(self.receiptData() ?? Data())
         }
     }
 
@@ -214,6 +209,25 @@ private extension ReceiptFetcher {
         } while retries <= maximumRetries && !Task.isCancelled
 
         return data
+    }
+
+}
+
+// MARK: -
+
+private extension ReceiptFetcher {
+
+    private enum Error: Swift.Error, CustomNSError {
+
+        case loadedEmptyReceipt
+
+        var errorUserInfo: [String: Any] {
+            switch self {
+            case .loadedEmptyReceipt:
+                return [ NSLocalizedDescriptionKey: "Receipt was empty" ]
+            }
+        }
+
     }
 
 }
