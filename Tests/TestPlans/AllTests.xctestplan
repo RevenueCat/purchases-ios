@@ -39,6 +39,14 @@
         "identifier" : "2DAC5F7126F13C9800C5258F",
         "name" : "StoreKitUnitTests"
       }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "5759B330296DF65D002472D5",
+        "name" : "ReceiptParserTests"
+      }
     }
   ],
   "version" : 1

@@ -9,7 +9,9 @@ import class Foundation.ProcessInfo
 let environmentVariables = ProcessInfo.processInfo.environment
 let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
-var dependencies: [Package.Dependency] = []
+var dependencies: [Package.Dependency] = [
+    .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0")
+]
 if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
@@ -34,6 +36,10 @@ let package = Package(
                 path: "Sources",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
         .target(name: "ReceiptParser",
-                path: "LocalReceiptParsing")
+                path: "LocalReceiptParsing",
+                linkerSettings: [
+			    	.unsafeFlags(["-Xlinker", "-no_application_extension"])
+			    ]),
+        .testTarget(name: "ReceiptParserTests", dependencies: ["ReceiptParser", "Nimble"])
     ]
 )
