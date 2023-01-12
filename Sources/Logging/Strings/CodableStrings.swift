@@ -38,7 +38,8 @@ extension CodableStrings: CustomStringConvertible {
             return "No value found for: \(value), codingPath: \(context.codingPath), description:\n\(description)"
         case let .keyNotFoundError(type, key, context):
             let description = context.debugDescription
-            return "Error deserializing `\(type)`. Key '\(key)' not found, codingPath: \(context.codingPath), description:\n\(description)"
+            return "Error deserializing `\(type)`. " +
+            "Key '\(key)' not found, codingPath: \(context.codingPath), description:\n\(description)"
         case let .invalid_json_error(jsonData):
             return "The given json data was not valid: \n\(jsonData)"
         case let .encoding_error(error):
