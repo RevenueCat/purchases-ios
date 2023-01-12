@@ -52,7 +52,7 @@ extension JSONDecoder {
             return try self.decode(type, from: jsonData)
         } catch {
             if logErrors {
-                ErrorUtils.logDecodingError(error)
+                ErrorUtils.logDecodingError(error, type: type)
             }
             throw error
         }
@@ -86,7 +86,7 @@ extension JSONDecoder {
 
 extension ErrorUtils {
 
-    static func logDecodingError(_ error: Error) {
+    static func logDecodingError(_ error: Error, type: Any.Type) {
         guard let decodingError = error as? DecodingError else {
             Logger.error(Strings.codable.decoding_error(error))
             return
@@ -97,7 +97,7 @@ extension ErrorUtils {
             Logger.error(Strings.codable.corrupted_data_error(context: context))
         case let .keyNotFound(key, context):
             // This is expected to happen occasionally, the backend doesn't always populate all key/values.
-            Logger.debug(Strings.codable.keyNotFoundError(key: key, context: context))
+            Logger.debug(Strings.codable.keyNotFoundError(type: type, key: key, context: context))
         case let .valueNotFound(value, context):
             Logger.debug(Strings.codable.valueNotFoundError(value: value, context: context))
         case let .typeMismatch(type, context):

@@ -18,7 +18,7 @@ enum CodableStrings {
 
     case unexpectedValueError(type: Any.Type, value: Any)
     case valueNotFoundError(value: Any.Type, context: DecodingError.Context)
-    case keyNotFoundError(key: CodingKey, context: DecodingError.Context)
+    case keyNotFoundError(type: Any.Type, key: CodingKey, context: DecodingError.Context)
     case invalid_json_error(jsonData: [String: Any])
     case encoding_error(_ error: Error)
     case decoding_error(_ error: Error)
@@ -36,9 +36,9 @@ extension CodableStrings: CustomStringConvertible {
         case let .valueNotFoundError(value, context):
             let description = context.debugDescription
             return "No value found for: \(value), codingPath: \(context.codingPath), description:\n\(description)"
-        case let .keyNotFoundError(key, context):
+        case let .keyNotFoundError(type, key, context):
             let description = context.debugDescription
-            return "Key '\(key)' not found, codingPath: \(context.codingPath), description:\n\(description)"
+            return "Error deserializing `\(type)`. Key '\(key)' not found, codingPath: \(context.codingPath), description:\n\(description)"
         case let .invalid_json_error(jsonData):
             return "The given json data was not valid: \n\(jsonData)"
         case let .encoding_error(error):
