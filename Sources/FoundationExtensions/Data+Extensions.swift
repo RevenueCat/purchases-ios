@@ -13,6 +13,8 @@
 //  Created by Josh Holtz on 6/28/21.
 //
 
+import CommonCrypto
+import CryptoKit
 import Foundation
 
 extension NSData {
@@ -31,11 +33,6 @@ extension NSData {
         return deviceTokenString as String
     }
 
-    var uuid: UUID? {
-        let bytes = [UInt8](self)
-        return NSUUID(uuidBytes: bytes) as UUID
-    }
-
 }
 
 extension Data {
@@ -44,13 +41,47 @@ extension Data {
         return (self as NSData).asString()
     }
 
-    // Returns a string representing a fetch token.
+    /// - Returns: `UUID` from the first 16 bytes of the underlying data.
+    var uuid: UUID? {
+        /// This implementation is equivalent to `return NSUUID(uuidBytes: [UInt8](self)) as UUID`
+        /// but ensures that the `Data` isn't unnecessarily copied in memory.
+        return self.withUnsafeBytes {
+            guard let baseAddress = $0.bindMemory(to: UInt8.self).baseAddress else {
+                return nil
+            }
+
+            return NSUUID(uuidBytes: baseAddress) as UUID
+        }
+    }
+
+    /// - Returns: a string representing a fetch token.
     var asFetchToken: String {
         return self.base64EncodedString()
     }
 
-    var uuid: UUID? {
-        (self as NSData).uuid
+    /// - Returns: a hash representation of the underlying bytes.
+    var hashString: String {
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            var sha256 = SHA256()
+            sha256.update(data: self)
+
+            return Self.hexString(sha256.finalize().makeIterator())
+        } else {
+            let hash = self.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> [UInt8] in
+                var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+                CC_SHA256(bytes.baseAddress, CC_LONG(self.count), &hash)
+                return hash
+            }
+
+            return Self.hexString(hash.makeIterator())
+        }
+    }
+
+    private static func hexString(_ iterator: Array<UInt8>.Iterator) -> String {
+        return iterator
+            .lazy
+            .map { String(format: "%02x", $0) }
+            .joined()
     }
 
 }

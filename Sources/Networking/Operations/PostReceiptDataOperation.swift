@@ -39,9 +39,17 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
+        /// Cache key comprises of the following:
+        /// - `appUserID`
+        /// - `isRestore`
+        /// - Receipt (`hashString` instead of `fetchToken` to avoid big receipts leading to a huge cache key)
+        /// - `ProductRequestData.cacheKey`
+        /// - `presentedOfferingIdentifier`
+        /// - `observerMode`
+        /// - `subscriberAttributesByKey`
         let cacheKey =
         """
-        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.asFetchToken)
+        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.hashString)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.debugDescription ?? "")"
