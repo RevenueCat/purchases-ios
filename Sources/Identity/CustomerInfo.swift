@@ -212,11 +212,18 @@ extension CustomerInfo {
         return self.data.schemaVersion
     }
 
-    var isInCurrentSchemaVersion: Bool {
-        return self.schemaVersion == Self.currentSchemaVersion
+    var schemaVersionIsCompatible: Bool {
+        guard let version = self.schemaVersion else { return false }
+
+        return Self.compatibleSchemaVersions.contains(version)
     }
 
     static let currentSchemaVersion = "3"
+
+    private static let compatibleSchemaVersions: Set<String> = [
+        "2",
+        CustomerInfo.currentSchemaVersion
+    ]
 
 }
 

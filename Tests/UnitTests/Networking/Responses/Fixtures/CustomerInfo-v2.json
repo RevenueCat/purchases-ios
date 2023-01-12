@@ -1,0 +1,81 @@
+{
+    "request_date_ms": 1673555557519,
+    "subscriber": {
+        "non_subscriptions": {},
+        "first_seen": "2023-01-12T20:15:09Z",
+        "original_application_version": "1.0",
+        "other_purchases": {},
+        "management_url": "https://apps.apple.com/account/subscriptions",
+        "subscriptions": {
+            "com.revenuecat.monthly_4.99.1_week_intro": {
+                "original_purchase_date": "2022-12-19T22:34:04Z",
+                "expires_date": "2023-01-12T20:34:44Z",
+                "is_sandbox": true,
+                "refunded_at": null,
+                "unsubscribe_detected_at": null,
+                "grace_period_expires_date": null,
+                "period_type": "normal",
+                "purchase_date": "2023-01-12T20:29:44Z",
+                "billing_issues_detected_at": null,
+                "ownership_type": "PURCHASED",
+                "store": "app_store",
+                "auto_resume_date": null
+            },
+            "com.revenuecat.intro_test.monthly.no_intro": {
+                "original_purchase_date": "2022-12-21T18:14:53Z",
+                "expires_date": "2022-12-21T18:39:49Z",
+                "is_sandbox": true,
+                "refunded_at": null,
+                "unsubscribe_detected_at": "2023-01-12T20:16:21Z",
+                "grace_period_expires_date": null,
+                "period_type": "normal",
+                "purchase_date": "2022-12-21T18:34:49Z",
+                "billing_issues_detected_at": null,
+                "ownership_type": "PURCHASED",
+                "store": "app_store",
+                "auto_resume_date": null
+            },
+            "com.revenuecat.annual_39.99.2_week_intro": {
+                "original_purchase_date": "2022-12-19T22:34:04Z",
+                "expires_date": "2022-12-20T09:34:35Z",
+                "is_sandbox": true,
+                "refunded_at": null,
+                "unsubscribe_detected_at": null,
+                "grace_period_expires_date": null,
+                "period_type": "normal",
+                "purchase_date": "2022-12-20T08:34:35Z",
+                "billing_issues_detected_at": null,
+                "ownership_type": "PURCHASED",
+                "store": "app_store",
+                "auto_resume_date": null
+            },
+            "com.revenuecat.intro_test.monthly.1_week_intro": {
+                "original_purchase_date": "2022-12-21T18:14:53Z",
+                "expires_date": "2022-12-21T19:17:44Z",
+                "is_sandbox": true,
+                "refunded_at": null,
+                "unsubscribe_detected_at": "2023-01-12T20:16:21Z",
+                "grace_period_expires_date": null,
+                "period_type": "normal",
+                "purchase_date": "2022-12-21T19:12:44Z",
+                "billing_issues_detected_at": null,
+                "ownership_type": "PURCHASED",
+                "store": "app_store",
+                "auto_resume_date": null
+            }
+        },
+        "entitlements": {
+            "premium": {
+                "grace_period_expires_date": null,
+                "purchase_date": "2023-01-12T20:29:44Z",
+                "product_identifier": "com.revenuecat.monthly_4.99.1_week_intro",
+                "expires_date": "2023-01-12T20:34:44Z"
+            }
+        },
+        "original_purchase_date": "2013-08-01T07:00:00Z",
+        "original_app_user_id": "$RCAnonymousID:8e603271a2e24df49f02f14704d8287c",
+        "last_seen": "2023-01-12T20:15:09Z"
+    },
+    "request_date": "2023-01-12T20:32:37Z",
+    "schema_version": "2"
+}
