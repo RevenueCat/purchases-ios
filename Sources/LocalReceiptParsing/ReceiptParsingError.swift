@@ -32,6 +32,10 @@ extension PurchasesReceiptParser {
         /// Failed to parse IAP.
         case inAppPurchaseParsingError
 
+        /// ``PurchasesReceiptParser/parse(base64String:)`` was unable
+        /// to decode the base64 string.
+        case failedToDecodeBase64String
+
     }
 }
 
@@ -48,6 +52,8 @@ extension PurchasesReceiptParser.Error: LocalizedError {
             return "Error while parsing the receipt. One or more attributes are missing."
         case .inAppPurchaseParsingError:
             return "Error while parsing in-app purchase. One or more attributes are missing or in the wrong format."
+        case .failedToDecodeBase64String:
+            return "Error decoding base64 string."
         }
     }
 

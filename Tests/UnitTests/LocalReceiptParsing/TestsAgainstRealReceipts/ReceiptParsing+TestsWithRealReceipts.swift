@@ -14,10 +14,8 @@ import XCTest
 
 class ReceiptParsingRealReceiptTests: TestCase {
 
-    let receipt1Name = "base64encodedreceiptsample1"
-
     func testBasicReceiptAttributesForSample1() throws {
-        let receiptData = sampleReceiptData(receiptName: receipt1Name)
+        let receiptData = Self.sampleReceiptData(receiptName: Self.receipt1Name)
         let receipt = try PurchasesReceiptParser.default.parse(from: receiptData)
 
         expect(receipt.applicationVersion) == "4"
@@ -28,11 +26,11 @@ class ReceiptParsingRealReceiptTests: TestCase {
     }
 
     func testInAppPurchasesAttributesForSample1() throws {
-        let receiptData = sampleReceiptData(receiptName: receipt1Name)
+        let receiptData = Self.sampleReceiptData(receiptName: Self.receipt1Name)
         let receipt = try PurchasesReceiptParser.default.parse(from: receiptData)
         let inAppPurchases = receipt.inAppPurchases
 
-        expect(inAppPurchases.count) == 9
+        expect(inAppPurchases).to(haveCount(9))
 
         let inAppPurchase0 = inAppPurchases[0]
         expect(inAppPurchase0.quantity) == 1
@@ -170,15 +168,26 @@ class ReceiptParsingRealReceiptTests: TestCase {
         expect(inAppPurchase8.promotionalOfferIdentifier).to(beNil())
     }
 
+    func testParseBase64String() throws {
+        let receiptContent = Self.readFile(named: Self.receipt1Name)
+        let receipt = try PurchasesReceiptParser.default.parse(base64String: receiptContent)
+
+        expect(receipt.applicationVersion) == "4"
+        expect(receipt.bundleId) == "com.revenuecat.sampleapp"
+        expect(receipt.originalApplicationVersion) == "1.0"
+    }
+
 }
 
 private extension ReceiptParsingRealReceiptTests {
 
-    func sampleReceiptData(receiptName: String) -> Data {
+    static let receipt1Name = "base64encodedreceiptsample1"
+
+    static func sampleReceiptData(receiptName: String) -> Data {
         NSDataExtensionsTests.sampleReceiptData(receiptName: receiptName)
     }
 
-    func readFile(named filename: String) -> String {
+    static func readFile(named filename: String) -> String {
         NSDataExtensionsTests.readFile(named: filename)
     }
 

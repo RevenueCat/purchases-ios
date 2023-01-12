@@ -30,7 +30,8 @@ public class PurchasesReceiptParser: NSObject {
         self.receiptBuilder = receiptBuilder
     }
 
-    /// Returns the result of parsing the receipt from `receiptData`, or throws ``PurchasesReceiptParser/Error``.
+    /// Returns the result of parsing the receipt from `receiptData`
+    /// - Throws: ``PurchasesReceiptParser/Error``.
     public func parse(from receiptData: Data) throws -> AppleReceipt {
         #if DEBUG
         Self.ensureRunningOutsideOfMainThread()
@@ -48,6 +49,20 @@ public class PurchasesReceiptParser: NSObject {
         let receipt = try self.receiptBuilder.build(fromContainer: receiptASN1Container)
         self.logger.info(ReceiptStrings.parsing_receipt_success)
         return receipt
+    }
+
+}
+
+public extension PurchasesReceiptParser {
+
+    /// Returns the result of parsing the receipt from a base64 encoded string.
+    /// - Throws: ``PurchasesReceiptParser/Error``.
+    func parse(base64String string: String) throws -> AppleReceipt {
+        guard let data = Data(base64Encoded: string) else {
+            throw Error.failedToDecodeBase64String
+        }
+
+        return try self.parse(from: data)
     }
 
 }
