@@ -221,6 +221,7 @@ extension CustomerInfo {
     static let currentSchemaVersion = "3"
 
     private static let compatibleSchemaVersions: Set<String> = [
+        // Version 3 is virtually identical to 2 (only difference is `Codable` vs manual decoding).
         "2",
         CustomerInfo.currentSchemaVersion
     ]
