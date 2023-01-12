@@ -10,22 +10,17 @@ import SwiftUI
 import RevenueCat
 
 struct EntitlementsView: View {
-    let customerInfo: RevenueCat.CustomerInfo
-    
-    let dateFormatter: DateFormatter = {
-        var df = DateFormatter()
-        df.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        return df
-    }()
-    
+
+    let customerInfo: CustomerInfo
+
     var active: [String] {
-        return customerInfo.entitlements.all.compactMap { (key, entitlement) -> String? in
+        return self.customerInfo.entitlements.all.compactMap { (key, entitlement) -> String? in
             return entitlement.isActive ? key : nil
         }
     }
     
     var inactive: [String] {
-        return customerInfo.entitlements.all.compactMap { (key, entitlement) -> String? in
+        return self.customerInfo.entitlements.all.compactMap { (key, entitlement) -> String? in
             return !entitlement.isActive ? key : nil
         }
     }
@@ -57,4 +52,5 @@ struct EntitlementsView: View {
             }
         }.padding(.horizontal, 20)
     }
+
 }

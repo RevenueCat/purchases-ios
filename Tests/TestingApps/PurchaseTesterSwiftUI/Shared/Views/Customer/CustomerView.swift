@@ -10,30 +10,33 @@ import SwiftUI
 import RevenueCat
 
 struct CustomerView: View {
-    let customerInfo: RevenueCat.CustomerInfo
+
+    let customerInfo: CustomerInfo
     
     var body: some View {
         TabView {
-            CustomerInfoView(customerInfo: customerInfo)
+            CustomerInfoView(customerInfo: self.customerInfo)
                 .tabItem {
                     Image(systemName: "1.square.fill")
                     Text("Info")
                 }
-            EntitlementsView(customerInfo: customerInfo)
+            EntitlementsView(customerInfo: self.customerInfo)
                 .tabItem {
                     Image(systemName: "2.square.fill")
                     Text("Entitlements")
                 }
-            TransactionsView(customerInfo: customerInfo)
+            TransactionsView(customerInfo: self.customerInfo)
                 .tabItem {
                     Image(systemName: "3.square.fill")
                     Text("Transactions")
                 }
-            SubscriberAttributesView(customerInfo: customerInfo)
+            SubscriberAttributesView(customerInfo: self.customerInfo)
                 .tabItem {
                     Image(systemName: "4.square.fill")
                     Text("Subscriber Atts")
                 }
-        }.navigationTitle("Customer Info")
+        }
+        .navigationTitle("Customer Info")
     }
+
 }
