@@ -154,7 +154,7 @@ extension Purchases {
                         return nil
                     } catch {
                         Logger.error(
-                            Strings.purchase.check_eligibility_failed(
+                            Strings.eligibility.check_eligibility_failed(
                                 productIdentifier: product.productIdentifier,
                                 error: error
                             )

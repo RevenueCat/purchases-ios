@@ -224,7 +224,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offeringsManager: OfferingsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
-    private let trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
+    private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
@@ -372,6 +372,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                            currentUserProvider: identityManager,
                                                                            operationDispatcher: operationDispatcher,
                                                                            productsManager: productsManager)
+
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,
@@ -445,7 +446,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.purchasesOrchestrator = purchasesOrchestrator
-        self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
+        self.trialOrIntroPriceEligibilityChecker = .create(with: trialOrIntroPriceEligibilityChecker)
 
         super.init()
 
@@ -480,7 +481,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
-            self.delegate?.purchases?(self, receivedUpdated: customerInfo)
+            self.handleCustomerInfoChanged(customerInfo)
         }
     }
 
@@ -1234,6 +1235,11 @@ internal extension Purchases {
 // MARK: Private
 
 private extension Purchases {
+
+    func handleCustomerInfoChanged(_ customerInfo: CustomerInfo) {
+        self.trialOrIntroPriceEligibilityChecker.clearCache()
+        self.delegate?.purchases?(self, receivedUpdated: customerInfo)
+    }
 
     @objc func applicationDidBecomeActive(notification: Notification) {
         Logger.debug(Strings.configure.application_active)

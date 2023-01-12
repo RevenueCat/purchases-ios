@@ -16,6 +16,7 @@ import Foundation
 import StoreKit
 
 // swiftlint:disable identifier_name
+
 enum PurchaseStrings {
 
     case storekit1_wrapper_init(StoreKit1Wrapper)
@@ -52,7 +53,6 @@ enum PurchaseStrings {
     case requested_products_not_found(request: SKRequest)
     case promo_purchase_product_not_found(productIdentifier: String)
     case callback_not_found_for_request(request: SKRequest)
-    case unable_to_get_intro_eligibility_for_user(error: Error)
     case duplicate_refund_request(details: String)
     case failed_refund_request(details: String)
     case unknown_refund_request_error(details: String)
@@ -66,8 +66,6 @@ enum PurchaseStrings {
     case begin_refund_multiple_active_entitlements
     case begin_refund_customer_info_error(entitlementID: String?)
     case cached_app_user_id_deleted
-    case check_eligibility_no_identifiers
-    case check_eligibility_failed(productIdentifier: String, error: Error)
     case missing_cached_customer_info
     case sk1_purchase_too_slow
     case sk2_purchase_too_slow
@@ -217,8 +215,6 @@ extension PurchaseStrings: CustomStringConvertible {
         case .callback_not_found_for_request(let request):
             return "callback not found for failing request: \(request)"
 
-        case .unable_to_get_intro_eligibility_for_user(let error):
-            return "Unable to get intro eligibility for appUserID: \(error.localizedDescription)"
         case .duplicate_refund_request(let details):
             return "Refund already requested for this product and is either pending, already denied, " +
             "or already approved: \(details)"
@@ -255,13 +251,6 @@ extension PurchaseStrings: CustomStringConvertible {
                 entries in user defaults don't get deleted by anything other than the SDK.
                 More info: https://rev.cat/userdefaults-crash
                 """
-        case .check_eligibility_no_identifiers:
-            return "Requested trial or introductory price eligibility with no identifiers. " +
-            "This is likely a program error."
-
-        case let .check_eligibility_failed(productIdentifier, error):
-            return "Error checking discount eligibility for product '\(productIdentifier)': \(error).\n" +
-            "Will be considered not eligible."
 
         case .missing_cached_customer_info:
             return "Requested a cached CustomerInfo but it's not available."
