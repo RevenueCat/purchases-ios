@@ -16,6 +16,13 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2StoreProduct: StoreProductType {
 
+    private static let decimalRoundingBehavior = NSDecimalNumberHandler(roundingMode: .up,
+                                                                        scale: 2,
+                                                                        raiseOnExactness: false,
+                                                                        raiseOnOverflow: false,
+                                                                        raiseOnUnderflow: false,
+                                                                        raiseOnDivideByZero: false)
+
     init(sk2Product: SK2Product) {
         #if swift(<5.7)
         self._underlyingSK2Product = sk2Product
@@ -58,7 +65,12 @@ internal struct SK2StoreProduct: StoreProductType {
         return offers?.first?["currencyCode"] as? String
     }
 
-    var price: Decimal { underlyingSK2Product.price }
+    var price: Decimal {
+        // See: https://github.com/RevenueCat/purchases-ios/issues/2207
+        // it seems like StoreKit 2 doesn't actually round decimals in a price-friendly fashion, so we do it
+        let priceNSDecimal = (underlyingSK2Product.price as NSDecimalNumber)
+        return priceNSDecimal.rounding(accordingToBehavior: Self.decimalRoundingBehavior) as Decimal
+    }
 
     var localizedPriceString: String { underlyingSK2Product.displayPrice }
 

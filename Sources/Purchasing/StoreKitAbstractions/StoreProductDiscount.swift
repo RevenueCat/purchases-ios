@@ -29,6 +29,13 @@ public typealias SK2ProductDiscount = StoreKit.Product.SubscriptionOffer
 @objc(RCStoreProductDiscount)
 public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
 
+    private static let decimalRoundingBehavior = NSDecimalNumberHandler(roundingMode: .up,
+                                                                        scale: 2,
+                                                                        raiseOnExactness: false,
+                                                                        raiseOnOverflow: false,
+                                                                        raiseOnUnderflow: false,
+                                                                        raiseOnDivideByZero: false)
+
     /// The payment mode for a `StoreProductDiscount`
     /// Indicates how the product discount price is charged.
     @objc(RCPaymentMode)
@@ -70,7 +77,13 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     @objc public var offerIdentifier: String? { self.discount.offerIdentifier }
     @objc public var currencyCode: String? { self.discount.currencyCode }
     // See also `priceDecimalNumber` for Objective-C
-    public var price: Decimal { self.discount.price }
+    public var price: Decimal {
+        // See: https://github.com/RevenueCat/purchases-ios/issues/2207
+        // it seems like StoreKit 2 doesn't actually round decimals in a price-friendly fashion, so we do it
+        let priceNSDecimal = (self.discount.price as NSDecimalNumber)
+        return priceNSDecimal.rounding(accordingToBehavior: Self.decimalRoundingBehavior) as Decimal
+    }
+
     @objc public var localizedPriceString: String { self.discount.localizedPriceString }
     @objc public var paymentMode: PaymentMode { self.discount.paymentMode }
     @objc public var subscriptionPeriod: SubscriptionPeriod { self.discount.subscriptionPeriod }
