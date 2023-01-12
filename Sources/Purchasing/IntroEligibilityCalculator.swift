@@ -44,9 +44,11 @@ class IntroEligibilityCalculator {
             let expiredSubscriptionProductIdentifiers = receipt.expiredSubscriptionProductIdentifiers
             let activeSubscriptionsProductIdentifiers = receipt
                 .activeSubscriptionsProductIdentifiers
+            let expiredTrialProductIdentifiers = receipt.expiredTrialProductIdentifiers
             let allProductIdentifiers = candidateProductIdentifiers
                 .union(expiredSubscriptionProductIdentifiers)
                 .union(activeSubscriptionsProductIdentifiers)
+                .union(expiredTrialProductIdentifiers)
 
             self.productsManager.products(withIdentifiers: allProductIdentifiers) {
                 let allProducts = $0.value ?? []
@@ -60,11 +62,15 @@ class IntroEligibilityCalculator {
                 let activeSubscriptionsProducts = allProducts.filter {
                     activeSubscriptionsProductIdentifiers.contains($0.productIdentifier)
                 }
+                let expiredTrialProducts = allProducts.filter {
+                    expiredTrialProductIdentifiers.contains($0.productIdentifier)
+                }
 
                 let eligibility = self.checkEligibility(
                     candidateProducts: candidateProducts,
                     activeSubscriptionsProducts: activeSubscriptionsProducts,
-                    expiredSubscriptionProducts: expiredSubscriptionProducts
+                    expiredSubscriptionProducts: expiredSubscriptionProducts,
+                    expiredTrialProducts: expiredTrialProducts
                 )
                 result.merge(eligibility, strategy: .overwriteValue)
 
@@ -93,7 +99,8 @@ private extension IntroEligibilityCalculator {
     func checkEligibility(
         candidateProducts: Set<StoreProduct>,
         activeSubscriptionsProducts: Set<StoreProduct>,
-        expiredSubscriptionProducts: Set<StoreProduct>
+        expiredSubscriptionProducts: Set<StoreProduct>,
+        expiredTrialProducts: Set<StoreProduct>
     ) -> [String: IntroEligibilityStatus] {
         var result: [String: IntroEligibilityStatus] = [:]
 
@@ -112,13 +119,21 @@ private extension IntroEligibilityCalculator {
                 .lazy
                 .map(\.productIdentifier)
                 .contains(candidate.productIdentifier)
+            let expiredTrialInGroup = (
+                candidate.subscriptionGroupIdentifier != nil &&
+                expiredTrialProducts.contains {
+                    $0.subscriptionGroupIdentifier == candidate.subscriptionGroupIdentifier
+                }
+            )
 
             if candidate.introductoryDiscount == nil {
                 result[candidate.productIdentifier] = .noIntroOfferExists
             } else {
-                result[candidate.productIdentifier] = activeSubscriptionInGroup || expiredSubscriptionForProduct
-                    ? .ineligible
-                    : .eligible
+                let isEligible = !activeSubscriptionInGroup && !expiredSubscriptionForProduct && !expiredTrialInGroup
+
+                result[candidate.productIdentifier] = isEligible
+                    ? .eligible
+                    : .ineligible
             }
         }
         return result

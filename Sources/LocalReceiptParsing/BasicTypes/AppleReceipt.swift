@@ -94,6 +94,16 @@ extension AppleReceipt {
         )
     }
 
+    var expiredTrialProductIdentifiers: Set<String> {
+        return Set(
+            self.inAppPurchases
+                .lazy
+                .filter(\.isExpiredSubscription)
+                .filter { $0.isInIntroOfferPeriod == true || $0.isInTrialPeriod == true }
+                .map(\.productId)
+        )
+    }
+
     func containsActivePurchase(forProductIdentifier identifier: String) -> Bool {
         return (
             self.inAppPurchases.contains { $0.isActiveSubscription } ||

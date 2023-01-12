@@ -293,6 +293,18 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(eligibility) == .eligible
     }
 
+    func testIneligibleForIntroForDifferentProductInSameSubscriptionGroupAfterTrialExpiration() async throws {
+        let monthlyWithTrial = try await self.product(Self.group3YearlyTrialProductID)
+        let annualWithTrial = try await self.product(Self.group3MonthlyTrialProductID)
+
+        let customerInfo = try await Purchases.shared.purchase(product: monthlyWithTrial).customerInfo
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+        try await self.expireSubscription(entitlement)
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: annualWithTrial)
+        expect(eligibility) == .ineligible
+    }
+
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
         let product = try await self.monthlyPackage.storeProduct
 

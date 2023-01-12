@@ -81,9 +81,9 @@ class IntroEligibilityCalculatorTests: TestCase {
     func testCheckTrialOrIntroDiscountEligibilityGetsCorrectResult() {
         self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
-                ("com.revenuecat.product1", nil),
-                ("com.revenuecat.product2", Date().addingTimeInterval(1000)),
-                ("com.revenuecat.product2", Date())
+                (productID: "com.revenuecat.product1", expiration: nil, inTrial: false),
+                (productID: "com.revenuecat.product2", expiration: Date().addingTimeInterval(1000), inTrial: false),
+                (productID: "com.revenuecat.product2", expiration: Date(), inTrial: false)
             ],
             productsInGroups: [
                 "com.revenuecat.product1": (groupID: "group1", hasTrial: true),
@@ -156,15 +156,15 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleWithExpiredSubscriptionInSameGroup() {
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleWithExpiredSubscriptionWithNoTrialInSameGroup() {
         self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
-                "com.revenuecat.product1": nil,
-                "com.revenuecat.product2": Date().addingTimeInterval(-1000)
+                ("com.revenuecat.product1", nil, false),
+                ("com.revenuecat.product2", Date().addingTimeInterval(-1000), false)
             ],
             productsInGroups: [
-                "com.revenuecat.product2": "group1",
-                "com.revenuecat.product3": "group1"
+                "com.revenuecat.product2": (groupID: "group1", hasTrial: true),
+                "com.revenuecat.product3": (groupID: "group1", hasTrial: true)
             ],
             expectedResult: [
                 "com.revenuecat.product3": .eligible
@@ -172,10 +172,26 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
+    func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleWithExpiredSubscriptionWithTrialInSameGroup() {
+        self.testEligibility(
+            purchaseExpirationsByProductIdentifier: [
+                ("com.revenuecat.product1", nil, false),
+                ("com.revenuecat.product2", Date().addingTimeInterval(-1000), true)
+            ],
+            productsInGroups: [
+                "com.revenuecat.product2": (groupID: "group1", hasTrial: true),
+                "com.revenuecat.product3": (groupID: "group1", hasTrial: true)
+            ],
+            expectedResult: [
+                "com.revenuecat.product3": .ineligible
+            ]
+        )
+    }
+
     func testCheckTrialOrIntroDiscountEligibilityForProductWithoutIntroTrialReturnsNoIntroOfferExists() {
         self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
-                ("com.revenuecat.product1", nil)
+                ("com.revenuecat.product1", nil, false)
             ],
             productsInGroups: [
                 "com.revenuecat.product1": (groupID: "group1", hasTrial: false)
@@ -224,7 +240,7 @@ private extension IntroEligibilityCalculatorTests {
         line: UInt = #line
     ) {
         return self.testEligibility(
-            purchaseExpirationsByProductIdentifier: purchaseExpirationsByProductIdentifier.map { ($0, $1) },
+            purchaseExpirationsByProductIdentifier: purchaseExpirationsByProductIdentifier.map { ($0, $1, false) },
             productsInGroups: productsInGroups.mapValues { (groupID: $0, hasTrial: true) },
             expectedResult: expectedResult,
             file: file,
@@ -233,7 +249,7 @@ private extension IntroEligibilityCalculatorTests {
     }
 
     func testEligibility(
-        purchaseExpirationsByProductIdentifier: [(productID: String, expiration: Date?)],
+        purchaseExpirationsByProductIdentifier: [(productID: String, expiration: Date?, inTrial: Bool)],
         productsInGroups: [String: (groupID: String, hasTrial: Bool)],
         expectedResult: [String: IntroEligibilityStatus],
         file: FileString = #file,
@@ -248,7 +264,7 @@ private extension IntroEligibilityCalculatorTests {
             creationDate: Date(),
             expirationDate: nil,
             inAppPurchases: purchaseExpirationsByProductIdentifier
-                .map { productIdentifier, expiration in
+                .map { productIdentifier, expiration, inTrial in
                         .init(quantity: 1,
                               productId: productIdentifier,
                               transactionId: "65465265651322",
@@ -258,8 +274,8 @@ private extension IntroEligibilityCalculatorTests {
                               originalPurchaseDate: Date(),
                               expiresDate: expiration,
                               cancellationDate: nil,
-                              isInTrialPeriod: false,
-                              isInIntroOfferPeriod: false,
+                              isInTrialPeriod: inTrial,
+                              isInIntroOfferPeriod: inTrial,
                               webOrderLineItemId: 64651321,
                               promotionalOfferIdentifier: nil)
                 }

@@ -298,6 +298,35 @@
           "referenceName" : "monthly free trial",
           "subscriptionGroupID" : "45445385",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "10.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "F9A3C72D",
+          "introductoryOffer" : {
+            "internalID" : "BDFE5F42",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Monthly subscription with free week",
+              "displayName" : "Monthly subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.annual.10.99.1_free_week",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "annual free trial",
+          "subscriptionGroupID" : "45445385",
+          "type" : "RecurringSubscription"
         }
       ]
     }
