@@ -220,6 +220,14 @@ private struct CustomerInfoHeaderView: View {
                 
                 Spacer()
 
+                NavigationLink {
+                    LocalReceiptView()
+                } label: {
+                    Text("Receipt")
+                }
+
+                Spacer()
+
                 if Purchases.shared.isAnonymous {
                     Button {
                         Task<Void, Never> {
