@@ -8,6 +8,7 @@
 import RevenueCat
 
 extension Package {
+
     var display: String {
         switch self.packageType {
         case .unknown:
@@ -32,4 +33,5 @@ extension Package {
             fatalError()
         }
     }
+
 }
