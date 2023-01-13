@@ -519,7 +519,7 @@ platform :ios do
     codesign_identity = "Apple Distribution: RevenueCat, Inc. (#{team_id})"
 
     match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
-    build_app(
+    build_mac_app(
       workspace: "PurchaseTester.xcworkspace",
       scheme: "PurchaseTester",
       destination: 'generic/platform=macOS',
@@ -528,7 +528,7 @@ platform :ios do
       codesigning_identity: codesign_identity,
       export_options: {
         provisioningProfiles: {
-          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp macOS"
+          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp macos"
         },
         installerSigningCertificate: installer_cert_name,
         signingCertificate: codesign_identity
