@@ -492,12 +492,12 @@ platform :ios do
 
   desc "Build and deploy PurchaseTesterSwiftUI"
   lane :deploy_purchase_tester do
+    # iOS
     increment_build_number(
-      build_number: latest_testflight_build_number + 1,
+      build_number: latest_testflight_build_number(platform: 'ios') + 1,
       xcodeproj: 'PurchaseTester.xcodeproj'
     )
 
-    # iOS
     match(readonly: true)
     build_ios_app(
       workspace: "PurchaseTester.xcworkspace",
@@ -514,6 +514,11 @@ platform :ios do
     )
 
     # macOS
+    increment_build_number(
+      build_number: latest_testflight_build_number(platform: 'osx') + 1,
+      xcodeproj: 'PurchaseTester.xcodeproj'
+    )
+
     match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
     build_mac_app(
       workspace: "PurchaseTester.xcworkspace",
