@@ -28,8 +28,8 @@
 		578DAA102947DD21001700FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 578DAA0F2947DD21001700FD /* Assets.xcassets */; };
 		578DAA162947DD21001700FD /* PurchaseTesterWatchOS.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 578DAA092947DD21001700FD /* PurchaseTesterWatchOS.app */; platformFilters = (watchos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		578DAA232947DD8C001700FD /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 578DAA222947DD8C001700FD /* Core.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		578DAA262947DD8C001700FD /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, macos, ); };
-		578DAA272947DD8C001700FD /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		578DAA262947DD8C001700FD /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, maccatalyst, macos, ); };
+		578DAA272947DD8C001700FD /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		578DAA2C2947DD90001700FD /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 578DAA2B2947DD90001700FD /* RevenueCat */; };
 		578DAA2D2947DE37001700FD /* ConfiguredPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */; };
 		578DAA2E2947DE59001700FD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A1290C78DD00719219 /* Logger.swift */; };
@@ -512,11 +512,19 @@
 		};
 		578DAA152947DD21001700FD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				watchos,
+			);
 			target = 578DAA082947DD21001700FD /* PurchaseTesterWatchOS */;
 			targetProxy = 578DAA142947DD21001700FD /* PBXContainerItemProxy */;
 		};
 		578DAA252947DD8C001700FD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+				maccatalyst,
+				macos,
+			);
 			target = 578DAA1F2947DD8C001700FD /* Core */;
 			targetProxy = 578DAA242947DD8C001700FD /* PBXContainerItemProxy */;
 		};
@@ -701,7 +709,7 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match Development com.revenuecat.sampleapp";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match Development com.revenuecat.sampleapp macos";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match Development com.revenuecat.sampleapp";
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator watchos watchsimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -744,7 +752,7 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.revenuecat.sampleapp";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.sampleapp macos";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match AppStore com.revenuecat.sampleapp";
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator watchos watchsimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;

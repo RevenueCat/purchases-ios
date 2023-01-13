@@ -522,7 +522,7 @@ platform :ios do
     build_app(
       workspace: "PurchaseTester.xcworkspace",
       scheme: "PurchaseTester",
-      destination: 'platform=macOS',
+      destination: 'generic/platform=macOS',
       xcodebuild_formatter: '',
       installer_cert_name: installer_cert_name,
       codesigning_identity: codesign_identity,
