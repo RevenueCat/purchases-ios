@@ -16,7 +16,6 @@
 		2C10F19427AC319A0078444D /* EntitlementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19327AC319A0078444D /* EntitlementsView.swift */; };
 		2C10F19727AC31B80078444D /* CustomerInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19627AC31B80078444D /* CustomerInfoView.swift */; };
 		2C10F19A27AC32840078444D /* SubscriberAttributesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19927AC32840078444D /* SubscriberAttributesView.swift */; };
-		2C8C610527C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */; };
 		2CD2C516278C9B02005D1CC2 /* PurchaseTesterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */; };
 		2CD2C518278C9B02005D1CC2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD2C4EF278C9B01005D1CC2 /* ContentView.swift */; };
 		2CD2C51A278C9B02005D1CC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CD2C4F0278C9B02005D1CC2 /* Assets.xcassets */; };
@@ -433,7 +432,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2CD2C51A278C9B02005D1CC2 /* Assets.xcassets in Resources */,
-				2C8C610527C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit in Resources */,
 				57E9CF09290B0E0600EE12D1 /* AppIcon.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
