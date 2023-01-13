@@ -699,7 +699,7 @@
 				PRODUCT_NAME = PurchaseTester;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match Development com.revenuecat.sampleapp";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match Development com.revenuecat.sampleapp catalyst";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match Development com.revenuecat.sampleapp macos";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match Development com.revenuecat.sampleapp";
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator watchos watchsimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -742,7 +742,7 @@
 				PRODUCT_NAME = PurchaseTester;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.revenuecat.sampleapp";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.sampleapp catalyst";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.sampleapp macos";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match AppStore com.revenuecat.sampleapp";
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator watchos watchsimulator";
 				SUPPORTS_MACCATALYST = YES;

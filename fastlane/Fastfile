@@ -513,7 +513,7 @@ platform :ios do
     #   run_precheck_before_submit: false
     # )
 
-    # Catalyst
+    # macOS
     team_id = "8SXR2327BM"
     installer_cert_name = "3rd Party Mac Developer Installer: RevenueCat, Inc. (#{team_id})"
     codesign_identity = "Apple Distribution: RevenueCat, Inc. (#{team_id})"
@@ -522,14 +522,13 @@ platform :ios do
     build_app(
       workspace: "PurchaseTester.xcworkspace",
       scheme: "PurchaseTester",
-      destination: 'platform=macOS,variant=Mac Catalyst',
+      destination: 'platform=macOS',
       xcodebuild_formatter: '',
-      catalyst_platform: 'ios',
       installer_cert_name: installer_cert_name,
       codesigning_identity: codesign_identity,
       export_options: {
         provisioningProfiles: {
-          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp catalyst"
+          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp macOS"
         },
         installerSigningCertificate: installer_cert_name,
         signingCertificate: codesign_identity
