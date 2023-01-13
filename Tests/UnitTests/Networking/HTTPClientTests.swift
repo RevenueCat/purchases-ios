@@ -80,6 +80,39 @@ class HTTPClientTests: TestCase {
         expect(headerPresent.value) == true
     }
 
+    func testRequestWithNoUUIDDoesNotContainSignatureHeader() {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).toNot(contain(HTTPClient.signatureHeaderName))
+    }
+
+    func testRequestIncludesSignature() {
+        let request = HTTPRequest.createSignedRequest(method: .get, path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).to(contain(HTTPClient.signatureHeaderName))
+        expect(headers?[HTTPClient.signatureHeaderName]) == request.signatureUUID?.uuidString
+    }
+
     func testAlwaysSetsContentTypeHeader() {
         let headerPresent: Atomic<Bool> = false
 

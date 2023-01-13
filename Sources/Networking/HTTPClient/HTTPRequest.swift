@@ -16,6 +16,23 @@ struct HTTPRequest {
 
     let method: Method
     let path: Path
+    /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
+    let signatureUUID: UUID?
+
+    init(method: Method, path: Path) {
+        self.init(method: method, path: path, signatureUUID: nil)
+    }
+
+    private init(method: Method, path: Path, signatureUUID: UUID?) {
+        self.method = method
+        self.path = path
+        self.signatureUUID = signatureUUID
+    }
+
+    /// Creates an `HTTPRequest` with a `signatureUUID`.
+    static func createSignedRequest(method: Method, path: Path) -> Self {
+        return .init(method: method, path: path, signatureUUID: .init())
+    }
 
 }
 
