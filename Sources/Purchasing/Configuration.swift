@@ -12,6 +12,7 @@
 //  Created by Joshua Liebowitz on 5/6/22.
 
 import Foundation
+import Security
 
 /**
  * ``Configuration`` can be used when configuring the ``Purchases`` instance. It is not required to be used, but
@@ -50,6 +51,7 @@ import Foundation
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
     let platformInfo: Purchases.PlatformInfo?
+    let publicKey: Signing.PublicKey?
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -63,6 +65,7 @@ import Foundation
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
         self.platformInfo = builder.platformInfo
+        self.publicKey = builder.publicKey
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -84,6 +87,7 @@ import Foundation
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
+        private(set) var publicKey: Signing.PublicKey?
 
         /**
          * Create a new builder with your API key.
@@ -170,6 +174,34 @@ import Foundation
             return self
         }
 
+        // TODO: add reference to docs here
+
+        /// Set `publicKey` loading it from `publicKeyURL`
+        /// - Throws: ``ErrorCode/configurationError`` if `publicKeyURL` cannot be read or loaded.
+        /// - Note: this must be a valid `X.509` certificate.
+        /// - Seealso: ``with(publicKey:)``
+        @objc public func with(publicKeyURL: URL) throws -> Builder {
+            let data: Data
+
+            do {
+                data = try .init(contentsOf: publicKeyURL)
+            } catch {
+                throw ErrorUtils.configurationError(message: "Could not load '\(publicKeyURL)'",
+                                                    underlyingError: error)
+            }
+
+            return try self.with(publicKey: data)
+        }
+
+        /// Set `publicKey` using the given `Data`
+        /// - Throws: ``ErrorCode/configurationError`` if `publicKeyURL` cannot be loaded.
+        /// - Note: this must be a valid `X.509` certificate.
+        /// - Seealso: ``with(publicKeyURL:)``
+        @objc public func with(publicKey: Data) throws -> Builder {
+            self.publicKey = try Signing.loadPublicKey(publicKey)
+            return self
+        }
+
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> Configuration {
             return Configuration(with: self)
@@ -190,6 +222,12 @@ import Foundation
         }
 
     }
+
+}
+
+// MARK: - Public Keys
+
+private extension Configuration {
 
 }
 

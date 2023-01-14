@@ -115,6 +115,7 @@ public extension Purchases {
             observerMode: observerMode,
             userDefaults: userDefaults,
             platformInfo: nil,
+            publicKey: nil,
             storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
             networkTimeout: Configuration.networkTimeoutDefault,
