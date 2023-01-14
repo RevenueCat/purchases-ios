@@ -329,6 +329,47 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.paymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
+    func testThrowsErrorIfPublicKeyFileDoesNotExist() throws {
+        let url = try XCTUnwrap(URL(string: "not_existing_file.cer"))
+
+        expect {
+            try Purchases.configure(with: .init(withAPIKey: "").with(publicKeyURL: url))
+        }.to(throwError { error in
+            expect(error).to(matchError(ErrorCode.configurationError))
+            expect(error.localizedDescription) == "There is an issue with your configuration. " +
+            "Check the underlying error for more details. Could not load 'not_existing_file.cer'"
+        })
+    }
+
+    func testThrowsErrorIfPublicKeyFileCannotBeParsed() throws {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "invalid_certificate",
+                                                           withExtension: "cer"))
+
+        expect {
+            try Purchases.configure(with: .init(withAPIKey: "").with(publicKeyURL: url))
+        }.to(throwError { error in
+            expect(error).to(matchError(ErrorCode.configurationError))
+            expect(error.localizedDescription) == "There is an issue with your configuration. " +
+            "Check the underlying error for more details. Failed to load public key. " +
+            "Ensure that it's a valid X.509 certificate."
+        })
+    }
+
+    func testLoadsSamplePublicKey() throws {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "sample_certificate",
+                                                           withExtension: "cer"))
+
+        let purchases = try Purchases.configure(with: .init(withAPIKey: "").with(publicKeyURL: url))
+        expect(purchases.publicKey).toNot(beNil())
+
+        let certificate = try XCTUnwrap(purchases.publicKey)
+
+        var name: CFString?
+        SecCertificateCopyCommonName(certificate, &name)
+
+        expect(name as String?) == "RevenueCatSampleCertificate"
+    }
+
     // MARK: - UserDefaults
 
     func testCustomUserDefaultsIsUsed() {

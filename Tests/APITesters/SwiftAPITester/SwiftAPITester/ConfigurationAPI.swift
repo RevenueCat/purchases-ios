@@ -22,5 +22,10 @@ func checkConfigurationAPI() {
         .with(usesStoreKit2IfAvailable: false)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
         .build()
+
+    _ = try? Configuration.Builder(withAPIKey: "")
+        .with(publicKey: Data())
+        .with(publicKeyURL: URL(string: "")!)
+
     print(configuration)
 }

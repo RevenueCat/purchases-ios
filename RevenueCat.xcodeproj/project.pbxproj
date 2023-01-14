@@ -397,6 +397,9 @@
 		57E4A52128BD8F610095C793 /* ErrorMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E4A52028BD8F610095C793 /* ErrorMatcher.swift */; };
 		57E4A52228BD8F610095C793 /* ErrorMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E4A52028BD8F610095C793 /* ErrorMatcher.swift */; };
 		57E6195028D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */; };
+		57E6C26C29722EDA001AFE98 /* invalid_certificate.cer in Resources */ = {isa = PBXBuildFile; fileRef = 57E6C26B29722EDA001AFE98 /* invalid_certificate.cer */; };
+		57E6C26E2972305C001AFE98 /* sample_certificate.cer in Resources */ = {isa = PBXBuildFile; fileRef = 57E6C26D2972305C001AFE98 /* sample_certificate.cer */; };
+		57E6C27C29723A94001AFE98 /* Signing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E6C27B29723A94001AFE98 /* Signing.swift */; };
 		57E6C2C72975AAE1001AFE98 /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B407296DFA75002472D5 /* FileReader.swift */; };
 		57E6C2C92975C777001AFE98 /* verifyReceiptSample1.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */; };
 		57E6C2CA2975C777001AFE98 /* base64encodedreceiptsample1.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */; };
@@ -978,6 +981,9 @@
 		57E415FE28469EAB00EA5460 /* PurchasesGetProductsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesGetProductsTests.swift; sourceTree = "<group>"; };
 		57E4A52028BD8F610095C793 /* ErrorMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMatcher.swift; sourceTree = "<group>"; };
 		57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2CachingProductsManagerTests.swift; sourceTree = "<group>"; };
+		57E6C26B29722EDA001AFE98 /* invalid_certificate.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = invalid_certificate.cer; sourceTree = "<group>"; };
+		57E6C26D2972305C001AFE98 /* sample_certificate.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = sample_certificate.cer; sourceTree = "<group>"; };
+		57E6C27B29723A94001AFE98 /* Signing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signing.swift; sourceTree = "<group>"; };
 		57E9CF0E290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingTrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
 		57E9CF10290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingTrialOrIntroPriceEligibilityCheckerTests.swift; sourceTree = "<group>"; };
 		57EAE526274324C60060EB74 /* Lock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lock.swift; sourceTree = "<group>"; };
@@ -1438,6 +1444,7 @@
 				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
 				5721360E28B4602C006C46BE /* Purchases+nonasync.swift */,
 				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
+				57E6C27B29723A94001AFE98 /* Signing.swift */,
 				57CFB98327FE2258002A6730 /* StoreKit2Setting.swift */,
 				57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */,
 				B3AA6237268B926F00894871 /* SystemInfo.swift */,
@@ -1452,6 +1459,7 @@
 		2DDE559824C8B5D100DCB087 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				57E6C26A29722EC6001AFE98 /* public_keys */,
 				2DDE559924C8B5E300DCB087 /* receipts */,
 			);
 			path = Resources;
@@ -2047,6 +2055,15 @@
 			path = Responses;
 			sourceTree = "<group>";
 		};
+		57E6C26A29722EC6001AFE98 /* public_keys */ = {
+			isa = PBXGroup;
+			children = (
+				57E6C26D2972305C001AFE98 /* sample_certificate.cer */,
+				57E6C26B29722EDA001AFE98 /* invalid_certificate.cer */,
+			);
+			path = public_keys;
+			sourceTree = "<group>";
+		};
 		B324DC482720C15300103EE9 /* Error Handling */ = {
 			isa = PBXGroup;
 			children = (
@@ -2523,8 +2540,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */,
+				57E6C26C29722EDA001AFE98 /* invalid_certificate.cer in Resources */,
 				2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */,
 				5774F9BE2805E71100997128 /* Fixtures in Resources */,
+				57E6C26E2972305C001AFE98 /* sample_certificate.cer in Resources */,
 				5791CE80273F26A000E50C4B /* base64encoded_sandboxReceipt.txt in Resources */,
 				B319514B26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt in Resources */,
 			);
@@ -2712,6 +2731,7 @@
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,
 				57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */,
 				F5714EE526DC2F1D00635477 /* CodableStrings.swift in Sources */,
+				57E6C27C29723A94001AFE98 /* Signing.swift in Sources */,
 				57C381DC27961547009E3940 /* SK2StoreProductDiscount.swift in Sources */,
 				B34605CA279A6E380031CA74 /* GetCustomerInfoOperation.swift in Sources */,
 				5751379527F4C4D80064AB2C /* Optional+Extensions.swift in Sources */,
