@@ -180,6 +180,7 @@ import Security
         /// - Throws: ``ErrorCode/configurationError`` if `publicKeyURL` cannot be read or loaded.
         /// - Note: this must be a valid `X.509` certificate.
         /// - Seealso: ``with(publicKey:)``
+        @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
         @objc public func with(publicKeyURL: URL) throws -> Builder {
             let data: Data
 
@@ -197,6 +198,7 @@ import Security
         /// - Throws: ``ErrorCode/configurationError`` if `publicKeyURL` cannot be loaded.
         /// - Note: this must be a valid `X.509` certificate.
         /// - Seealso: ``with(publicKeyURL:)``
+        @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
         @objc public func with(publicKey: Data) throws -> Builder {
             self.publicKey = try Signing.loadPublicKey(publicKey)
             return self

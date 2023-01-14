@@ -329,7 +329,10 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.paymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     func testThrowsErrorIfPublicKeyFileDoesNotExist() throws {
+        try AvailabilityChecks.iOS12APIAvailableOrSkipTest()
+
         let url = try XCTUnwrap(URL(string: "not_existing_file.cer"))
 
         expect {
@@ -341,7 +344,10 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         })
     }
 
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     func testThrowsErrorIfPublicKeyFileCannotBeParsed() throws {
+        try AvailabilityChecks.iOS12APIAvailableOrSkipTest()
+
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "invalid_certificate",
                                                            withExtension: "cer"))
 
@@ -350,24 +356,20 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         }.to(throwError { error in
             expect(error).to(matchError(ErrorCode.configurationError))
             expect(error.localizedDescription) == "There is an issue with your configuration. " +
-            "Check the underlying error for more details. Failed to load public key. " +
+            "Check the underlying error for more details. Failed to load certificate. " +
             "Ensure that it's a valid X.509 certificate."
         })
     }
 
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     func testLoadsSamplePublicKey() throws {
+        try AvailabilityChecks.iOS12APIAvailableOrSkipTest()
+
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "sample_certificate",
                                                            withExtension: "cer"))
 
         let purchases = try Purchases.configure(with: .init(withAPIKey: "").with(publicKeyURL: url))
         expect(purchases.publicKey).toNot(beNil())
-
-        let certificate = try XCTUnwrap(purchases.publicKey)
-
-        var name: CFString?
-        SecCertificateCopyCommonName(certificate, &name)
-
-        expect(name as String?) == "RevenueCatSampleCertificate"
     }
 
     // MARK: - UserDefaults

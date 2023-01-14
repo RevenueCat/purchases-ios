@@ -14,27 +14,37 @@
 import Foundation
 import Security
 
-/// Utilities for handling keys and signing.
+/// Utilities for handling certificates and keys.
 enum Signing {
 
     /// A type object representing an X.509 certificate.
-    typealias PublicKey = SecCertificate
+    typealias Certificate = SecCertificate
+    /// An object that represents a cryptographic key.
+    typealias PublicKey = SecKey
 
     /// Parses the binary `key` and returns a `PublicKey`
     /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     static func loadPublicKey(_ key: Data) throws -> PublicKey {
         guard !key.isEmpty else {
             throw ErrorUtils.configurationError(message: "Attempted to use an empty public key.")
         }
 
-        guard let result = SecCertificateCreateWithData(nil, key as CFData) else {
+        guard let certificate = SecCertificateCreateWithData(nil, key as CFData) else {
             // TODO: add reference to docs here
             throw ErrorUtils.configurationError(
-                message: "Failed to load public key. Ensure that it's a valid X.509 certificate."
+                message: "Failed to load certificate. Ensure that it's a valid X.509 certificate."
             )
         }
 
-        return result
+        guard let key = SecCertificateCopyKey(certificate) else {
+            // TODO: add reference to docs here
+            throw ErrorUtils.configurationError(
+                message: "Failed to copy key from certificate. Ensure that it's a valid X.509 certificate."
+            )
+        }
+
+        return key
     }
 
 }
