@@ -22,6 +22,8 @@ enum Signing {
     /// An object that represents a cryptographic key.
     typealias PublicKey = SecKey
 
+    static let keyAlgorithm: SecKeyAlgorithm = .ecdsaSignatureMessageX962SHA512
+
     /// Parses the binary `key` and returns a `PublicKey`
     /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
@@ -45,6 +47,36 @@ enum Signing {
         }
 
         return key
+    }
+
+    static func verify(
+        message: Data,
+        hasValidSignature signature: String,
+        with publicKey: PublicKey
+    ) -> Bool {
+        var error: Unmanaged<CFError>?
+
+        // TODO: extract warning Strings
+
+        guard let signature = Data(base64Encoded: signature) else {
+            Logger.warn("Signature is not base64: \(signature)")
+
+            return false
+        }
+
+        guard SecKeyVerifySignature(publicKey,
+                                    Self.keyAlgorithm,
+                                    message as CFData,
+                                    signature as CFData,
+                                    &error) else {
+            if let error = error {
+                Logger.warn("Signature failed validation: \(error.takeRetainedValue())")
+            }
+
+            return false
+        }
+
+        return true
     }
 
 }
