@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 2/27/22.
 
+import Foundation
+
 /// A request to be made by ``HTTPClient``
 struct HTTPRequest {
 
