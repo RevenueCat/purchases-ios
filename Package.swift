@@ -34,7 +34,10 @@ let package = Package(
     targets: [
         .target(name: "RevenueCat",
                 path: "Sources",
-                exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
+                exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
+                linkerSettings: [
+                    .unsafeFlags(["-Xlinker", "-no_application_extension"])
+                ]),
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing",
                 linkerSettings: [
