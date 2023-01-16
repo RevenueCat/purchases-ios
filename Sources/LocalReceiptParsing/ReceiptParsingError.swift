@@ -18,7 +18,7 @@ import Foundation
 extension PurchasesReceiptParser {
 
     /// An error thrown by ``PurchasesReceiptParser``
-    public enum Error: Swift.Error, Equatable {
+    public enum Error: Swift.Error {
 
         /// The data object identifier couldn't be found on the receipt.
         case dataObjectIdentifierMissing
@@ -35,6 +35,15 @@ extension PurchasesReceiptParser {
         /// ``PurchasesReceiptParser/parse(base64String:)`` was unable
         /// to decode the base64 string.
         case failedToDecodeBase64String
+
+        /// `Bundle.appStoreReceiptURL` returned `nil`.
+        case receiptNotPresent
+
+        /// Fetching the local receipt failed with an underlying error
+        case failedToLoadLocalReceipt(Swift.Error)
+
+        /// The receipt found on the device was found empty.
+        case foundEmptyLocalReceipt
 
     }
 }
@@ -54,6 +63,12 @@ extension PurchasesReceiptParser.Error: LocalizedError {
             return "Error while parsing in-app purchase. One or more attributes are missing or in the wrong format."
         case .failedToDecodeBase64String:
             return "Error decoding base64 string."
+        case .receiptNotPresent:
+            return "Error loading local receipt: Bundle.appStoreReceiptURL was nil."
+        case let .failedToLoadLocalReceipt(error):
+            return "Error loading local receipt: \(error)"
+        case .foundEmptyLocalReceipt:
+            return "Loaded receipt was found empty."
         }
     }
 
