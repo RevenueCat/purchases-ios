@@ -90,15 +90,15 @@ extension Data {
 /// Useful for mocking.
 protocol FileReader {
 
-    func contents(of url: URL) -> Data?
+    func contents(of url: URL) throws -> Data
 
 }
 
 /// Default implementation of `FileReader` that simply uses `Data`'s implementation.
 final class DefaultFileReader: FileReader {
 
-    func contents(of url: URL) -> Data? {
-        return try? Data(contentsOf: url)
+    func contents(of url: URL) throws -> Data {
+        return try Data(contentsOf: url)
     }
 
 }
