@@ -36,10 +36,7 @@ let package = Package(
                 path: "Sources",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
         .target(name: "ReceiptParser",
-                path: "LocalReceiptParsing",
-                linkerSettings: [
-			    	.unsafeFlags(["-Xlinker", "-no_application_extension"])
-			    ]),
+                path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests", dependencies: ["ReceiptParser", "Nimble"])
     ]
 )
