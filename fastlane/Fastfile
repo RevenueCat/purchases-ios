@@ -492,48 +492,53 @@ platform :ios do
 
   desc "Build and deploy PurchaseTesterSwiftUI"
   lane :deploy_purchase_tester do
-    # iOS
-    increment_build_number(
-      build_number: latest_testflight_build_number(platform: 'ios') + 1,
-      xcodeproj: 'PurchaseTester.xcodeproj'
-    )
+    def ios_build
+      increment_build_number(
+        build_number: latest_testflight_build_number(platform: 'ios') + 1,
+        xcodeproj: 'PurchaseTester.xcodeproj'
+      )
+  
+      match(readonly: true)
+      build_ios_app(
+        workspace: "PurchaseTester.xcworkspace",
+        scheme: "PurchaseTester",
+        destination: "generic/platform=ios",
+        xcodebuild_formatter: ''
+      )
+      upload_to_app_store(
+        skip_metadata: true,
+        skip_screenshots: true,
+        automatic_release: true,
+        submit_for_review: false,
+        run_precheck_before_submit: false
+      )
+    end
 
-    match(readonly: true)
-    build_ios_app(
-      workspace: "PurchaseTester.xcworkspace",
-      scheme: "PurchaseTester",
-      destination: "generic/platform=ios",
-      xcodebuild_formatter: ''
-    )
-    upload_to_app_store(
-      skip_metadata: true,
-      skip_screenshots: true,
-      automatic_release: true,
-      submit_for_review: false,
-      run_precheck_before_submit: false
-    )
+    def macos_build
+      increment_build_number(
+        build_number: latest_testflight_build_number(platform: 'osx') + 1,
+        xcodeproj: 'PurchaseTester.xcodeproj'
+      )
+  
+      match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
+      build_mac_app(
+        workspace: "PurchaseTester.xcworkspace",
+        scheme: "PurchaseTester",
+        destination: 'generic/platform=macOS',
+        xcodebuild_formatter: ''
+      )
+      upload_to_app_store(
+        skip_metadata: true,
+        skip_screenshots: true,
+        automatic_release: true,
+        submit_for_review: false,
+        run_precheck_before_submit: false,
+        platform: 'osx'
+      )
+    end
 
-    # macOS
-    increment_build_number(
-      build_number: latest_testflight_build_number(platform: 'osx') + 1,
-      xcodeproj: 'PurchaseTester.xcodeproj'
-    )
-
-    match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
-    build_mac_app(
-      workspace: "PurchaseTester.xcworkspace",
-      scheme: "PurchaseTester",
-      destination: 'generic/platform=macOS',
-      xcodebuild_formatter: ''
-    )
-    upload_to_app_store(
-      skip_metadata: true,
-      skip_screenshots: true,
-      automatic_release: true,
-      submit_for_review: false,
-      run_precheck_before_submit: false,
-      platform: 'osx'
-    )
+    ios_build
+    macos_build
   end
 
   desc "Create or delete sandbox testers"
