@@ -257,6 +257,9 @@
 		57554CC2282AE1E3009A7E58 /* TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57554CC0282AE1E3009A7E58 /* TestCase.swift */; };
 		575642B62910116900719219 /* EligibilityStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642B52910116900719219 /* EligibilityStrings.swift */; };
 		5759B322296DEF56002472D5 /* OptionalExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B321296DEF56002472D5 /* OptionalExtensionsTests.swift */; };
+		5759B3F4296DF65D002472D5 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B36824BD268FBC5B00957E4C /* XCTest.framework */; };
+		5759B3F7296DF65D002472D5 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B335296DF65D002472D5 /* Nimble */; };
+		5759B406296DF8EE002472D5 /* ReceiptParserFetchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B404296DF6C4002472D5 /* ReceiptParserFetchingTests.swift */; };
 		575A17AB2773A59300AA6F22 /* CurrentTestCaseTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575A17AA2773A59300AA6F22 /* CurrentTestCaseTracker.swift */; };
 		575A8EE12922C56300936709 /* AsyncTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575A8EE02922C56300936709 /* AsyncTestHelpers.swift */; };
 		575A8EE22922C56300936709 /* AsyncTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575A8EE02922C56300936709 /* AsyncTestHelpers.swift */; };
@@ -589,6 +592,13 @@
 			remoteGlobalIDString = 2DEAC2D926EFE46E006914ED;
 			remoteInfo = UnitTestsHostApp;
 		};
+		5759B420296DFEE2002472D5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 57D92C32293E4D0C00D1912A;
+			remoteInfo = ReceiptParser;
+		};
 		578BB35E2936BA9400E8AA8A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */;
@@ -829,6 +839,9 @@
 		57554CC0282AE1E3009A7E58 /* TestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCase.swift; sourceTree = "<group>"; };
 		575642B52910116900719219 /* EligibilityStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EligibilityStrings.swift; sourceTree = "<group>"; };
 		5759B321296DEF56002472D5 /* OptionalExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalExtensionsTests.swift; sourceTree = "<group>"; };
+		5759B401296DF65D002472D5 /* ReceiptParserTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReceiptParserTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5759B402296DF65D002472D5 /* ReceiptParserTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "ReceiptParserTests-Info.plist"; path = "/Users/nachosoto/dev/purchases-ios/ReceiptParserTests-Info.plist"; sourceTree = "<absolute>"; };
+		5759B404296DF6C4002472D5 /* ReceiptParserFetchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParserFetchingTests.swift; sourceTree = "<group>"; };
 		575A17AA2773A59300AA6F22 /* CurrentTestCaseTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentTestCaseTracker.swift; sourceTree = "<group>"; };
 		575A8EE02922C56300936709 /* AsyncTestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncTestHelpers.swift; sourceTree = "<group>"; };
 		575A8EE42922C9F300936709 /* MockStoreKit2TransactionListenerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2TransactionListenerDelegate.swift; sourceTree = "<group>"; };
@@ -1120,6 +1133,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5759B3F2296DF65D002472D5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5759B3F4296DF65D002472D5 /* XCTest.framework in Frameworks */,
+				5759B3F7296DF65D002472D5 /* Nimble in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		57D92C30293E4D0C00D1912A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1335,6 +1357,7 @@
 				2DDF41DD24F6F4F9005BC22D /* Mocks */,
 				35D832FE262FAD6900E60AC5 /* Networking */,
 				354235D624C11160008C84EE /* Purchasing */,
+				5759B403296DF68D002472D5 /* ReceiptParserTests */,
 				2DDE559824C8B5D100DCB087 /* Resources */,
 				F591492426B994A100D32E58 /* StoreKitExtensions */,
 				B36824BB268FBB9B00957E4C /* SubscriberAttributes */,
@@ -1592,6 +1615,7 @@
 				2DEAC2DA26EFE46E006914ED /* UnitTestsHostApp.app */,
 				2DAC5F7226F13C9800C5258F /* StoreKitUnitTests.xctest */,
 				57D92C33293E4D0C00D1912A /* ReceiptParser.framework */,
+				5759B401296DF65D002472D5 /* ReceiptParserTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1876,6 +1900,16 @@
 			);
 			path = "ReceiptParser-only-files";
 			sourceTree = "<group>";
+		};
+		5759B403296DF68D002472D5 /* ReceiptParserTests */ = {
+			isa = PBXGroup;
+			children = (
+				5759B402296DF65D002472D5 /* ReceiptParserTests-Info.plist */,
+				5759B404296DF6C4002472D5 /* ReceiptParserFetchingTests.swift */,
+			);
+			name = ReceiptParserTests;
+			path = Tests/ReceiptParserTests;
+			sourceTree = SOURCE_ROOT;
 		};
 		5766AABB283E809D00FA6091 /* Purchases */ = {
 			isa = PBXGroup;
@@ -2281,6 +2315,26 @@
 			productReference = 2DEAC2DA26EFE46E006914ED /* UnitTestsHostApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		5759B330296DF65D002472D5 /* ReceiptParserTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5759B3FE296DF65D002472D5 /* Build configuration list for PBXNativeTarget "ReceiptParserTests" */;
+			buildPhases = (
+				5759B33C296DF65D002472D5 /* Sources */,
+				5759B3F2296DF65D002472D5 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5759B421296DFEE2002472D5 /* PBXTargetDependency */,
+			);
+			name = ReceiptParserTests;
+			packageProductDependencies = (
+				5759B335296DF65D002472D5 /* Nimble */,
+			);
+			productName = PurchasesTests;
+			productReference = 5759B401296DF65D002472D5 /* ReceiptParserTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		57D92C32293E4D0C00D1912A /* ReceiptParser */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 57D92C37293E4D0C00D1912A /* Build configuration list for PBXNativeTarget "ReceiptParser" */;
@@ -2375,6 +2429,7 @@
 				2DC5621524EC63420031F69B /* RevenueCat */,
 				57D92C32293E4D0C00D1912A /* ReceiptParser */,
 				2DC5621D24EC63430031F69B /* UnitTests */,
+				5759B330296DF65D002472D5 /* ReceiptParserTests */,
 				2DE20B7E26409EB7004C597D /* BackendIntegrationTestsHostApp */,
 				2DE20B6B264087FB004C597D /* BackendIntegrationTests */,
 				2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */,
@@ -3013,6 +3068,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5759B33C296DF65D002472D5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5759B406296DF8EE002472D5 /* ReceiptParserFetchingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		57D92C2F293E4D0C00D1912A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3070,6 +3133,11 @@
 			isa = PBXTargetDependency;
 			target = 2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */;
 			targetProxy = 2DFF6C54270CA11400ECAFAB /* PBXContainerItemProxy */;
+		};
+		5759B421296DFEE2002472D5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 57D92C32293E4D0C00D1912A /* ReceiptParser */;
+			targetProxy = 5759B420296DFEE2002472D5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -3546,6 +3614,62 @@
 			};
 			name = Release;
 		};
+		5759B3FF296DF65D002472D5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				INFOPLIST_FILE = "ReceiptParserTests-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.ReceiptParserTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = "";
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TARGETED_DEVICE_FAMILY = "1,2,3,6";
+			};
+			name = Debug;
+		};
+		5759B400296DF65D002472D5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				INFOPLIST_FILE = "ReceiptParserTests-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.ReceiptParserTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = "";
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TARGETED_DEVICE_FAMILY = "1,2,3,6";
+			};
+			name = Release;
+		};
 		57D92C38293E4D0C00D1912A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3686,6 +3810,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		5759B3FE296DF65D002472D5 /* Build configuration list for PBXNativeTarget "ReceiptParserTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5759B3FF296DF65D002472D5 /* Debug */,
+				5759B400296DF65D002472D5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		57D92C37293E4D0C00D1912A /* Build configuration list for PBXNativeTarget "ReceiptParser" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -3712,6 +3845,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 9.0.0;
+			};
+		};
+		5759B336296DF65D002472D5 /* XCRemoteSwiftPackageReference "nimble" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/quick/nimble";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 10.0.0;
 			};
 		};
 		57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
@@ -3759,6 +3900,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
+		};
+		5759B335296DF65D002472D5 /* Nimble */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5759B336296DF65D002472D5 /* XCRemoteSwiftPackageReference "nimble" */;
+			productName = Nimble;
 		};
 		576C8ABD27D299860058FA6E /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
