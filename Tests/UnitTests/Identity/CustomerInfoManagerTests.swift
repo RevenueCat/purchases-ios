@@ -357,7 +357,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCachedCustomerInfoReturnsNilIfDifferentSchema() throws {
-        let oldSchemaVersion = Int(CustomerInfo.currentSchemaVersion)! - 1
+        let oldSchemaVersion = Int(CustomerInfo.currentSchemaVersion)! - 2
         let data: [String: Any] = [
             "request_date": "2019-08-16T10:30:42Z",
             "schema_version": "\(oldSchemaVersion)",
@@ -375,6 +375,27 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
         expect(receivedCustomerInfo).to(beNil())
+    }
+
+    func testCachedCustomerInfoParsesVersion2() throws {
+        let oldSchemaVersion = 2
+        let data: [String: Any] = [
+            "request_date": "2019-08-16T10:30:42Z",
+            "schema_version": "\(oldSchemaVersion)",
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
+                "other_purchases": [:]
+            ]
+        ]
+
+        let object = try JSONSerialization.data(withJSONObject: data, options: [])
+        let appUserID = "myUser"
+        self.mockDeviceCache.cachedCustomerInfo[appUserID] = object
+
+        let receivedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        expect(receivedCustomerInfo).toNot(beNil())
     }
 
     func testCacheCustomerInfoStoresCorrectly() {

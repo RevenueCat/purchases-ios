@@ -164,7 +164,7 @@ class CustomerInfoManager {
         do {
             let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
 
-            if info.isInCurrentSchemaVersion {
+            if info.schemaVersionIsCompatible {
                 return info
             } else {
                 return nil
