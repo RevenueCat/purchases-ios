@@ -85,15 +85,6 @@ extension AppleReceipt {
         )
     }
 
-    var expiredSubscriptionProductIdentifiers: Set<String> {
-        return Set(
-            self.inAppPurchases
-                .lazy
-                .filter(\.isExpiredSubscription)
-                .map(\.productId)
-        )
-    }
-
     var expiredTrialProductIdentifiers: Set<String> {
         return Set(
             self.inAppPurchases

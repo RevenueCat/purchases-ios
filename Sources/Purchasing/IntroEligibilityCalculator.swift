@@ -41,12 +41,10 @@ class IntroEligibilityCalculator {
             let receipt = try self.receiptParser.parse(from: receiptData)
             Logger.debug(Strings.customerInfo.checking_intro_eligibility_locally_from_receipt(receipt))
 
-            let expiredSubscriptionProductIdentifiers = receipt.expiredSubscriptionProductIdentifiers
             let activeSubscriptionsProductIdentifiers = receipt
                 .activeSubscriptionsProductIdentifiers
             let expiredTrialProductIdentifiers = receipt.expiredTrialProductIdentifiers
             let allProductIdentifiers = candidateProductIdentifiers
-                .union(expiredSubscriptionProductIdentifiers)
                 .union(activeSubscriptionsProductIdentifiers)
                 .union(expiredTrialProductIdentifiers)
 
@@ -55,9 +53,6 @@ class IntroEligibilityCalculator {
 
                 let candidateProducts = allProducts.filter {
                     candidateProductIdentifiers.contains($0.productIdentifier)
-                }
-                let expiredSubscriptionProducts = allProducts.filter {
-                    expiredSubscriptionProductIdentifiers.contains($0.productIdentifier)
                 }
                 let activeSubscriptionsProducts = allProducts.filter {
                     activeSubscriptionsProductIdentifiers.contains($0.productIdentifier)
@@ -69,10 +64,9 @@ class IntroEligibilityCalculator {
                 let eligibility = self.checkEligibility(
                     candidateProducts: candidateProducts,
                     activeSubscriptionsProducts: activeSubscriptionsProducts,
-                    expiredSubscriptionProducts: expiredSubscriptionProducts,
                     expiredTrialProducts: expiredTrialProducts
                 )
-                result.merge(eligibility, strategy: .overwriteValue)
+                result += eligibility
 
                 Logger.debug(
                     Strings.customerInfo.checking_intro_eligibility_locally_result(productIdentifiers: result)
@@ -99,7 +93,6 @@ private extension IntroEligibilityCalculator {
     func checkEligibility(
         candidateProducts: Set<StoreProduct>,
         activeSubscriptionsProducts: Set<StoreProduct>,
-        expiredSubscriptionProducts: Set<StoreProduct>,
         expiredTrialProducts: Set<StoreProduct>
     ) -> [String: IntroEligibilityStatus] {
         var result: [String: IntroEligibilityStatus] = [:]
@@ -115,10 +108,6 @@ private extension IntroEligibilityCalculator {
                     $0.subscriptionGroupIdentifier == candidate.subscriptionGroupIdentifier
                 }
             )
-            let expiredSubscriptionForProduct = expiredSubscriptionProducts
-                .lazy
-                .map(\.productIdentifier)
-                .contains(candidate.productIdentifier)
             let expiredTrialInGroup = (
                 candidate.subscriptionGroupIdentifier != nil &&
                 expiredTrialProducts.contains {
@@ -129,7 +118,7 @@ private extension IntroEligibilityCalculator {
             if candidate.introductoryDiscount == nil {
                 result[candidate.productIdentifier] = .noIntroOfferExists
             } else {
-                let isEligible = !activeSubscriptionInGroup && !expiredSubscriptionForProduct && !expiredTrialInGroup
+                let isEligible = !activeSubscriptionInGroup && !expiredTrialInGroup
 
                 result[candidate.productIdentifier] = isEligible
                     ? .eligible

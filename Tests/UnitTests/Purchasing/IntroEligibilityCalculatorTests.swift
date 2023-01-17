@@ -75,7 +75,6 @@ class IntroEligibilityCalculatorTests: TestCase {
         expect(self.mockProductsManager.invokedProductsCount) == 1
         expect(self.mockProductsManager.invokedProductsParameters) == candidateIdentifiers
             .union(receipt.activeSubscriptionsProductIdentifiers)
-            .union(receipt.expiredSubscriptionProductIdentifiers)
     }
 
     func testCheckTrialOrIntroDiscountEligibilityGetsCorrectResult() {
@@ -100,10 +99,10 @@ class IntroEligibilityCalculatorTests: TestCase {
     func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleForPreviouslyOwnedSubscription() {
         self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
-                "com.revenuecat.product1": Date().addingTimeInterval(-1000)
+                ("com.revenuecat.product1", Date().addingTimeInterval(-1000), true)
             ],
             productsInGroups: [
-                "com.revenuecat.product1": "group1"
+                "com.revenuecat.product1": (groupID: "group1", hasTrial: true)
             ],
             expectedResult: [
                 "com.revenuecat.product1": .ineligible
