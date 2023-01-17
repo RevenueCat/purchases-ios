@@ -13,8 +13,6 @@
 
 import Foundation
 
-@testable import RevenueCat
-
 final class MockBundle: Bundle {
 
     enum ReceiptURLResult {
@@ -56,38 +54,5 @@ final class MockBundle: Bundle {
 
     private static let mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
     private static let mockSandboxReceiptFileName = "base64encoded_sandboxReceipt"
-
-}
-
-final class MockFileReader: FileReader {
-
-    enum Error: Swift.Error {
-        case noMockedData
-        case emptyMockedData
-    }
-
-    var mockedURLContents: [URL: [Data?]] = [:]
-
-    func mock(url: URL, with data: Data) {
-        self.mockedURLContents[url] = [data]
-    }
-
-    var invokedContentsOfURL: [URL: Int] = [:]
-
-    func contents(of url: URL) throws -> Data {
-        let previouslyInvokedContentsOfURL = self.invokedContentsOfURL[url] ?? 0
-
-        self.invokedContentsOfURL[url, default: 0] += 1
-
-        guard let mockedData = self.mockedURLContents[url] else { throw Error.noMockedData }
-
-        if mockedData.isEmpty {
-            throw Error.emptyMockedData
-        } else if let data = mockedData.onlyElement {
-            return try data.orThrow(Error.noMockedData)
-        } else {
-            return try mockedData[previouslyInvokedContentsOfURL].orThrow(Error.noMockedData)
-        }
-    }
 
 }
