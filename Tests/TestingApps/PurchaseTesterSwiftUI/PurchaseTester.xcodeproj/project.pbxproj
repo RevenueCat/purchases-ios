@@ -35,7 +35,6 @@
 		578DAA232947DD8C001700FD /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 578DAA222947DD8C001700FD /* Core.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		578DAA262947DD8C001700FD /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, maccatalyst, macos, ); };
 		578DAA272947DD8C001700FD /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		578DAA2C2947DD90001700FD /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 578DAA2B2947DD90001700FD /* RevenueCat */; };
 		578DAA2D2947DE37001700FD /* ConfiguredPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */; };
 		578DAA2E2947DE59001700FD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A1290C78DD00719219 /* Logger.swift */; };
 		578DAA2F2947DFA6001700FD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CCAF2AB286232EB0004E2CA /* Constants.swift */; };
@@ -940,8 +939,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
-				branch = "receipt-parser-fetcher";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.14.0;
 			};
 		};
 		577E0E3B29159A8B0071E063 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
