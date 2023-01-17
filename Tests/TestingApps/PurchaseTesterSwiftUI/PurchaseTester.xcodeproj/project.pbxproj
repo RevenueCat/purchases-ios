@@ -16,7 +16,6 @@
 		2C10F19427AC319A0078444D /* EntitlementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19327AC319A0078444D /* EntitlementsView.swift */; };
 		2C10F19727AC31B80078444D /* CustomerInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19627AC31B80078444D /* CustomerInfoView.swift */; };
 		2C10F19A27AC32840078444D /* SubscriberAttributesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19927AC32840078444D /* SubscriberAttributesView.swift */; };
-		2C8C610527C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */; };
 		2CD2C516278C9B02005D1CC2 /* PurchaseTesterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */; };
 		2CD2C518278C9B02005D1CC2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD2C4EF278C9B01005D1CC2 /* ContentView.swift */; };
 		2CD2C51A278C9B02005D1CC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CD2C4F0278C9B02005D1CC2 /* Assets.xcassets */; };
@@ -28,8 +27,8 @@
 		578DAA102947DD21001700FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 578DAA0F2947DD21001700FD /* Assets.xcassets */; };
 		578DAA162947DD21001700FD /* PurchaseTesterWatchOS.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 578DAA092947DD21001700FD /* PurchaseTesterWatchOS.app */; platformFilters = (watchos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		578DAA232947DD8C001700FD /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 578DAA222947DD8C001700FD /* Core.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		578DAA262947DD8C001700FD /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, macos, ); };
-		578DAA272947DD8C001700FD /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		578DAA262947DD8C001700FD /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, maccatalyst, macos, ); };
+		578DAA272947DD8C001700FD /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		578DAA2C2947DD90001700FD /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 578DAA2B2947DD90001700FD /* RevenueCat */; };
 		578DAA2D2947DE37001700FD /* ConfiguredPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */; };
 		578DAA2E2947DE59001700FD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A1290C78DD00719219 /* Logger.swift */; };
@@ -433,7 +432,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2CD2C51A278C9B02005D1CC2 /* Assets.xcassets in Resources */,
-				2C8C610527C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit in Resources */,
 				57E9CF09290B0E0600EE12D1 /* AppIcon.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -512,11 +510,19 @@
 		};
 		578DAA152947DD21001700FD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				watchos,
+			);
 			target = 578DAA082947DD21001700FD /* PurchaseTesterWatchOS */;
 			targetProxy = 578DAA142947DD21001700FD /* PBXContainerItemProxy */;
 		};
 		578DAA252947DD8C001700FD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+				maccatalyst,
+				macos,
+			);
 			target = 578DAA1F2947DD8C001700FD /* Core */;
 			targetProxy = 578DAA242947DD8C001700FD /* PBXContainerItemProxy */;
 		};
@@ -675,30 +681,36 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_MODULES_AUTOLINK = YES;
 				CODE_SIGN_ENTITLEMENTS = PurchaseTester.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PurchaseTester-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Purchase Tester";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp;
 				PRODUCT_NAME = PurchaseTester;
-				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match Development com.revenuecat.sampleapp";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match Development com.revenuecat.sampleapp macos";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match Development com.revenuecat.sampleapp";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 			};
 			name = Debug;
 		};
@@ -710,30 +722,36 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_MODULES_AUTOLINK = YES;
 				CODE_SIGN_ENTITLEMENTS = PurchaseTester.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution: RevenueCat, Inc. (8SXR2327BM)";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PurchaseTester-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Purchase Tester";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp;
 				PRODUCT_NAME = PurchaseTester;
-				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.revenuecat.sampleapp";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.sampleapp macos";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match AppStore com.revenuecat.sampleapp";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
