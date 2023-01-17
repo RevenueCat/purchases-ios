@@ -110,6 +110,20 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionWithUnusedTrial() {
+        self.testEligibility(
+            purchaseExpirationsByProductIdentifier: [
+                ("com.revenuecat.product1", Date().addingTimeInterval(-1000), false)
+            ],
+            productsInGroups: [
+                "com.revenuecat.product1": (groupID: "group1", hasTrial: true)
+            ],
+            expectedResult: [
+                "com.revenuecat.product1": .eligible
+            ]
+        )
+    }
+
     func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionInDifferentGroup() {
         self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
