@@ -32,13 +32,11 @@ struct LocalReceiptView: View {
             Button {
                 // There's no public API to refresh the receipt other than this.
                 // This is the simplest way to force a receipt refresh before fetching it again.
-                Purchases.shared.restorePurchases { _, error in
-                    if let error = error {
-                        self.receipt = .failure(error)
-                    } else {
-                        Task<Void, Never> {
-                            await self.refreshReceipt()
-                        }
+                Purchases.shared.restorePurchases { _, _ in
+                    // Ignoring error, since the receipt might have actually been refreshed
+                    // and that's all we care about here.
+                    Task<Void, Never> {
+                        await self.refreshReceipt()
                     }
                 }
             } label: {
