@@ -395,7 +395,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
 
-    // swiftlint:disable:next function_body_length
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
          receiptFetcher: ReceiptFetcher,
@@ -454,15 +453,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.purchasesOrchestrator.delegate = self
 
-        systemInfo.isApplicationBackgrounded { isBackgrounded in
-            if isBackgrounded {
-                self.customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: self.appUserID)
-            } else {
-                self.operationDispatcher.dispatchOnWorkerThread {
-                    self.updateAllCaches(completion: nil)
-                }
-            }
-        }
+        // Don't update caches in the background to potentially avoid apps being launched through a notification
+        // all at the same time by too many users concurrently.
+        self.updateCachesIfInForeground()
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
@@ -1275,6 +1268,16 @@ private extension Purchases {
         }
     }
 
+    func updateCachesIfInForeground() {
+        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
+            if !isBackgrounded {
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    self.updateAllCaches(isAppBackgrounded: isBackgrounded, completion: nil)
+                }
+            }
+        }
+    }
+
     func updateAllCachesIfNeeded() {
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
@@ -1292,16 +1295,24 @@ private extension Purchases {
     }
 
     func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
-        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
-                                                               isAppBackgrounded: isAppBackgrounded) { @Sendable in
-                completion?($0.mapError { $0.asPublicError })
-            }
-
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isAppBackgrounded,
-                                                       completion: nil)
+        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.updateAllCaches(isAppBackgrounded: isAppBackgrounded,
+                                 completion: completion)
         }
+    }
+
+    func updateAllCaches(
+        isAppBackgrounded: Bool,
+        completion: ((Result<CustomerInfo, PublicError>) -> Void)?
+    ) {
+        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
+                                                           isAppBackgrounded: isAppBackgrounded) { @Sendable in
+            completion?($0.mapError { $0.asPublicError })
+        }
+
+        self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                   isAppBackgrounded: isAppBackgrounded,
+                                                   completion: nil)
     }
 
     // Used when delegate is being set
