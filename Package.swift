@@ -16,13 +16,6 @@ if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
 
-// Equivalent to `APPLICATION_EXTENSION_API_ONLY`
-// (see https://xcodebuildsettings.com/#application_extension_api_only)
-// This is the only way to set this flag for SPM at the moment.
-// The Xcode targets have this flag as well.
-// It allows users to embed these frameworks in a non-app target without receiving warnings.
-let noApplicationExtension: LinkerSetting = .unsafeFlags(["-Xlinker", "-no_application_extension"])
-
 let package = Package(
     name: "RevenueCat",
     platforms: [
@@ -41,15 +34,9 @@ let package = Package(
     targets: [
         .target(name: "RevenueCat",
                 path: "Sources",
-                exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
-                linkerSettings: [
-                    noApplicationExtension
-                ]),
+                exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
         .target(name: "ReceiptParser",
-                path: "LocalReceiptParsing",
-                linkerSettings: [
-                    noApplicationExtension
-                ]),
+                path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests", dependencies: ["ReceiptParser", "Nimble"])
     ]
 )
