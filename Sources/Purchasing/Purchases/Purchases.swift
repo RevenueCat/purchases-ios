@@ -1272,7 +1272,7 @@ private extension Purchases {
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             if !isBackgrounded {
                 self.operationDispatcher.dispatchOnWorkerThread {
-                    self.updateAllCaches(completion: nil)
+                    self.updateAllCaches(isAppBackgrounded: isBackgrounded, completion: nil)
                 }
             }
         }
@@ -1295,16 +1295,24 @@ private extension Purchases {
     }
 
     func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
-        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
-                                                               isAppBackgrounded: isAppBackgrounded) { @Sendable in
-                completion?($0.mapError { $0.asPublicError })
-            }
-
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isAppBackgrounded,
-                                                       completion: nil)
+        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.updateAllCaches(isAppBackgrounded: isAppBackgrounded,
+                                 completion: completion)
         }
+    }
+
+    func updateAllCaches(
+        isAppBackgrounded: Bool,
+        completion: ((Result<CustomerInfo, PublicError>) -> Void)?
+    ) {
+        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
+                                                           isAppBackgrounded: isAppBackgrounded) { @Sendable in
+            completion?($0.mapError { $0.asPublicError })
+        }
+
+        self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                   isAppBackgrounded: isAppBackgrounded,
+                                                   completion: nil)
     }
 
     // Used when delegate is being set
