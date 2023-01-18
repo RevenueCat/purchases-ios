@@ -17,21 +17,22 @@ class CustomerInfoManager {
 
     typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
 
-    private(set) var lastSentCustomerInfo: CustomerInfo?
+    var lastSentCustomerInfo: CustomerInfo? { return self.data.value.lastSentCustomerInfo }
+
     private let operationDispatcher: OperationDispatcher
-    private let deviceCache: DeviceCache
     private let backend: Backend
     private let systemInfo: SystemInfo
-    private let customerInfoCacheLock = Lock()
+    /// Underlying synchronized data.
+    private let data: Atomic<Data>
 
     init(operationDispatcher: OperationDispatcher,
          deviceCache: DeviceCache,
          backend: Backend,
          systemInfo: SystemInfo) {
         self.operationDispatcher = operationDispatcher
-        self.deviceCache = deviceCache
         self.backend = backend
         self.systemInfo = systemInfo
+        self.data = .init(.init(deviceCache: deviceCache))
     }
 
     func fetchAndCacheCustomerInfo(appUserID: String,
@@ -41,7 +42,7 @@ class CustomerInfoManager {
                                      withRandomDelay: isAppBackgrounded) { result in
             switch result {
             case let .failure(error):
-                self.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
+                self.withData { $0.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID) }
                 Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error))
 
             case let .success(info):
@@ -62,8 +63,9 @@ class CustomerInfoManager {
                                           isAppBackgrounded: Bool,
                                           completion: CustomerInfoCompletion?) {
         let cachedCustomerInfo = self.cachedCustomerInfo(appUserID: appUserID)
-        let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
-                                                                     isAppBackgrounded: isAppBackgrounded)
+        let isCacheStale = self.withData {
+            $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
+        }
 
         guard !isCacheStale, let customerInfo = cachedCustomerInfo else {
             Logger.debug(isAppBackgrounded
@@ -83,13 +85,14 @@ class CustomerInfoManager {
     }
 
     func sendCachedCustomerInfoIfAvailable(appUserID: String) {
-        guard let info = cachedCustomerInfo(appUserID: appUserID) else {
+        guard let info = self.cachedCustomerInfo(appUserID: appUserID) else {
             return
         }
 
-        sendUpdateIfChanged(customerInfo: info)
+        self.sendUpdateIfChanged(customerInfo: info)
     }
 
+    // swiftlint:disable:next function_body_length
     func customerInfo(
         appUserID: String,
         fetchPolicy: CacheFetchPolicy,
@@ -137,8 +140,9 @@ class CustomerInfoManager {
             let infoFromCache = self.cachedCustomerInfo(appUserID: appUserID)
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
-                                                                             isAppBackgrounded: isAppBackgrounded)
+                let isCacheStale = self.withData {
+                    $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
+                }
 
                 if let infoFromCache = infoFromCache, !isCacheStale {
                     Logger.debug(Strings.customerInfo.vending_cache)
@@ -157,9 +161,10 @@ class CustomerInfoManager {
     }
 
     func cachedCustomerInfo(appUserID: String) -> CustomerInfo? {
-        guard let customerInfoData = self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) else {
-            return nil
+        let cachedCustomerInfoData = self.withData {
+            $0.deviceCache.cachedCustomerInfoData(appUserID: appUserID)
         }
+        guard let customerInfoData = cachedCustomerInfoData else { return nil }
 
         do {
             let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
@@ -178,7 +183,7 @@ class CustomerInfoManager {
     func cache(customerInfo: CustomerInfo, appUserID: String) {
         do {
             let jsonData = try JSONEncoder.default.encode(customerInfo)
-            self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
+            self.withData { $0.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID) }
             self.sendUpdateIfChanged(customerInfo: customerInfo)
         } catch {
             Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
@@ -186,9 +191,9 @@ class CustomerInfoManager {
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
-        self.customerInfoCacheLock.perform {
-            self.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
-            self.lastSentCustomerInfo = nil
+        self.modifyData {
+            $0.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
+            $0.lastSentCustomerInfo = nil
         }
     }
 
@@ -205,45 +210,46 @@ class CustomerInfoManager {
         }
     }
 
-    /// Observers keyed by a monotonically increasing identifier.
-    /// This allows cancelling observations by deleting them from this dictionary.
-    /// These observers are used both for ``Purchases/customerInfoStream`` and
-    /// `PurchasesDelegate/purchases(_:receivedUpdated:)``.
-    private var customerInfoObserversByIdentifier: [Int: (CustomerInfo) -> Void] = [:]
-
     /// Allows monitoring changes to the active `CustomerInfo`.
     /// - Returns: closure that removes the created observation.
-    /// - Note: this method is not thread-safe.
     func monitorChanges(_ changes: @escaping (CustomerInfo) -> Void) -> () -> Void {
-        let lastIdentifier = self.customerInfoObserversByIdentifier.keys
-            .sorted()
-            .last
-        let nextIdentifier = lastIdentifier
-            .map { $0 + 1 } // Next index
+        self.modifyData {
+            let lastIdentifier = $0.customerInfoObserversByIdentifier.keys
+                .sorted()
+                .last
+            let nextIdentifier = lastIdentifier
+                .map { $0 + 1 } // Next index
             ?? 0 // Or default to 0
 
-        self.customerInfoObserversByIdentifier[nextIdentifier] = changes
+            $0.customerInfoObserversByIdentifier[nextIdentifier] = changes
 
-        return { [weak self] in
-            self?.customerInfoObserversByIdentifier.removeValue(forKey: nextIdentifier)
+            return { [weak self] in
+                self?.removeObserver(with: nextIdentifier)
+            }
+        }
+    }
+
+    private func removeObserver(with identifier: Int) {
+        self.modifyData {
+            $0.customerInfoObserversByIdentifier.removeValue(forKey: identifier)
         }
     }
 
     private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
-        self.customerInfoCacheLock.perform {
-            guard !self.customerInfoObserversByIdentifier.isEmpty,
-                  self.lastSentCustomerInfo != customerInfo else {
+        self.modifyData {
+            guard !$0.customerInfoObserversByIdentifier.isEmpty,
+                  $0.lastSentCustomerInfo != customerInfo else {
                       return
                   }
 
-            if lastSentCustomerInfo != nil {
+            if $0.lastSentCustomerInfo != nil {
                 Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
             } else {
                 Logger.debug(Strings.customerInfo.sending_latest_customerinfo_to_delegate)
             }
 
-            self.lastSentCustomerInfo = customerInfo
-            self.operationDispatcher.dispatchOnMainThread { [observers = self.customerInfoObserversByIdentifier] in
+            $0.lastSentCustomerInfo = customerInfo
+            self.operationDispatcher.dispatchOnMainThread { [observers = $0.customerInfoObserversByIdentifier] in
                 for closure in observers.values {
                     closure(customerInfo)
                 }
@@ -271,5 +277,37 @@ extension CustomerInfoManager {
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
-// - It has mutable state, but it's made thread-safe through `customerInfoCacheLock`.
 extension CustomerInfoManager: @unchecked Sendable {}
+
+// MARK: -
+
+private extension CustomerInfoManager {
+
+    /// Underlying data for `CustomerInfoManager`.
+    struct Data {
+
+        let deviceCache: DeviceCache
+        var lastSentCustomerInfo: CustomerInfo?
+        /// Observers keyed by a monotonically increasing identifier.
+        /// This allows cancelling observations by deleting them from this dictionary.
+        /// These observers are used both for ``Purchases/customerInfoStream`` and
+        /// `PurchasesDelegate/purchases(_:receivedUpdated:)``.
+        var customerInfoObserversByIdentifier: [Int: (CustomerInfo) -> Void]
+
+        init(deviceCache: DeviceCache) {
+            self.deviceCache = deviceCache
+            self.lastSentCustomerInfo = nil
+            self.customerInfoObserversByIdentifier = [:]
+        }
+
+    }
+
+    func withData<Result>(_ action: (Data) -> Result) -> Result {
+        return self.data.withValue(action)
+    }
+
+    @discardableResult
+    func modifyData<Result>(_ action: (inout Data) -> Result) -> Result {
+        return self.data.modify(action)
+    }
+}
