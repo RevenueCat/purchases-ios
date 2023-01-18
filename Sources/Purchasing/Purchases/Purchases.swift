@@ -395,7 +395,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
 
-    // swiftlint:disable:next function_body_length
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
          receiptFetcher: ReceiptFetcher,
@@ -454,15 +453,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.purchasesOrchestrator.delegate = self
 
-        systemInfo.isApplicationBackgrounded { isBackgrounded in
-            if isBackgrounded {
-                self.customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: self.appUserID)
-            } else {
-                self.operationDispatcher.dispatchOnWorkerThread {
-                    self.updateAllCaches(completion: nil)
-                }
-            }
-        }
+        // Don't update caches in the background to potentially avoid apps being launched through a notification
+        // all at the same time by too many users concurrently.
+        self.updateCachesIfInForeground()
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
@@ -1272,6 +1265,16 @@ private extension Purchases {
     func dispatchSyncSubscriberAttributes() {
         operationDispatcher.dispatchOnWorkerThread {
             self.syncSubscriberAttributes()
+        }
+    }
+
+    func updateCachesIfInForeground() {
+        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
+            if !isBackgrounded {
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    self.updateAllCaches(completion: nil)
+                }
+            }
         }
     }
 
