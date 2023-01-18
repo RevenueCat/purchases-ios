@@ -112,6 +112,7 @@ struct OfferingDetailView: View {
         
         private func purchaseAsPackage() async throws {
             self.isPurchasing = true
+            defer { self.isPurchasing = false }
 
             let result = try await Purchases.shared.purchase(package: self.package)
             self.completedPurchase(result)
@@ -119,6 +120,7 @@ struct OfferingDetailView: View {
         
         private func purchaseAsProduct() async throws {
             self.isPurchasing = true
+            defer { self.isPurchasing = false }
 
             let result = try await Purchases.shared.purchase(product: self.package.storeProduct)
             self.completedPurchase(result)
@@ -126,22 +128,22 @@ struct OfferingDetailView: View {
 
         private func purchaseAsSK1Product() async throws {
             self.isPurchasing = true
+            defer { self.isPurchasing = false }
+
             try await self.observerModeManager.purchaseAsSK1Product(self.package.storeProduct)
-            self.isPurchasing = false
         }
 
         private func purchaseAsSK2Product() async throws {
             self.isPurchasing = true
+            defer { self.isPurchasing = false }
+
             try await self.observerModeManager.purchaseAsSK2Product(self.package.storeProduct)
-            self.isPurchasing = false
         }
 
         private func completedPurchase(_ data: PurchaseResultData) {
             print("🚀 Info 💁‍♂️ - Transaction: \(data.transaction?.description ?? "")")
             print("🚀 Info 💁‍♂️ - Info: \(data.customerInfo)")
             print("🚀 Info 💁‍♂️ - User Cancelled: \(data.userCancelled)")
-
-            self.isPurchasing = false
         }
 
         private func button(_ title: String, action: @escaping () async throws -> Void) -> some View {
