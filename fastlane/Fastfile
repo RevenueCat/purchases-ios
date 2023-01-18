@@ -492,7 +492,9 @@ platform :ios do
 
   desc "Build and deploy PurchaseTesterSwiftUI"
   lane :deploy_purchase_tester do
-    def ios_build
+    changelog = "#{current_version_number} SDK release"
+
+    def ios_build(changelog)
       increment_build_number(
         build_number: latest_testflight_build_number(platform: 'ios') + 1,
         xcodeproj: 'PurchaseTester.xcodeproj'
@@ -505,16 +507,12 @@ platform :ios do
         destination: "generic/platform=ios",
         xcodebuild_formatter: ''
       )
-      upload_to_app_store(
-        skip_metadata: true,
-        skip_screenshots: true,
-        automatic_release: true,
-        submit_for_review: false,
-        run_precheck_before_submit: false
+      upload_to_testflight(
+        changelog: changelog
       )
     end
 
-    def macos_build
+    def macos_build(changelog)
       increment_build_number(
         build_number: latest_testflight_build_number(platform: 'osx') + 1,
         xcodeproj: 'PurchaseTester.xcodeproj'
@@ -527,18 +525,14 @@ platform :ios do
         destination: 'generic/platform=macOS',
         xcodebuild_formatter: ''
       )
-      upload_to_app_store(
-        skip_metadata: true,
-        skip_screenshots: true,
-        automatic_release: true,
-        submit_for_review: false,
-        run_precheck_before_submit: false,
-        platform: 'osx'
+      upload_to_testflight(
+        changelog: changelog,
+        app_platform: 'osx'
       )
     end
 
-    ios_build
-    macos_build
+    ios_build(changelog)
+    macos_build(changelog)
   end
 
   desc "Create or delete sandbox testers"
@@ -659,5 +653,5 @@ lane :check_pods do
 end
 
 def current_version_number
-  File.read("../.version").strip
+  File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
