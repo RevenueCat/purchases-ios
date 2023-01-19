@@ -492,7 +492,8 @@ platform :ios do
 
   desc "Build and deploy PurchaseTesterSwiftUI"
   lane :deploy_purchase_tester do
-    changelog = "#{current_version_number} SDK release"
+    latest_changelog = File.read("#{File.dirname(__FILE__)}/../#{changelog_latest_path}")
+    changelog = "Release #{current_version_number}:\n\n#{latest_changelog}"
 
     def ios_build(changelog)
       increment_build_number(
