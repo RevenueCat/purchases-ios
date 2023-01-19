@@ -126,10 +126,25 @@ class SystemInfo {
             : BundleSandboxEnvironmentDetector(bundle: bundle)
     }
 
+    /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
+    /// - Seealso: `isApplicationBackgrounded`
     func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
-        self.operationDispatcher.dispatchOnMainThread {
+        self.operationDispatcher.dispatchOnMainActor {
             completion(self.isApplicationBackgrounded)
         }
+    }
+
+    /// Synchronous API for callers in `@MainActor`.
+    /// - Seealso: `isApplicationBackgrounded(completion:)`
+    @MainActor
+    var isApplicationBackgrounded: Bool {
+    #if os(iOS) || os(tvOS)
+        return self.isApplicationBackgroundedIOSAndTVOS
+    #elseif os(macOS)
+        return false
+    #elseif os(watchOS)
+        return self.isApplicationBackgroundedWatchOS
+    #endif
     }
 
     func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
@@ -202,21 +217,12 @@ extension SystemInfo {
 
 private extension SystemInfo {
 
-    var isApplicationBackgrounded: Bool {
-    #if os(iOS) || os(tvOS)
-        return self.isApplicationBackgroundedIOSAndTVOS
-    #elseif os(macOS)
-        return false
-    #elseif os(watchOS)
-        return self.isApplicationBackgroundedWatchOS
-    #endif
-    }
-
     #if os(iOS) || os(tvOS)
 
     // iOS/tvOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
+    @MainActor
     var isApplicationBackgroundedIOSAndTVOS: Bool {
         if self.isAppExtension {
             return true
@@ -228,6 +234,7 @@ private extension SystemInfo {
 
     #elseif os(watchOS)
 
+    @MainActor
     var isApplicationBackgroundedWatchOS: Bool {
         var isSingleTargetApplication: Bool {
             return Bundle.main.infoDictionary?.keys.contains("WKApplication") == true

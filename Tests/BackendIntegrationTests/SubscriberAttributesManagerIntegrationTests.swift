@@ -39,7 +39,13 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     // MARK: -
 
     func testNothingToSync() {
-        expect(Purchases.shared.syncSubscriberAttributes()) == 0
+        waitUntil { completion in
+            let parameters = Purchases.shared.syncSubscriberAttributes(completion: {
+                completion()
+            })
+
+            expect(parameters) == 0
+        }
     }
 
     func testSyncOneAttribute() async throws {
