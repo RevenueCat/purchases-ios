@@ -132,7 +132,7 @@ extension OfferingStrings: CustomStringConvertible {
             return "Unknown subscription length for package '\(package.offeringIdentifier)'. Ignoring."
 
         case let .custom_package_type(package):
-            return "Package '\(package.offeringIdentifier)' has a custom duration. Ignoring."
+            return "Package '\(package.identifier)' in offering '\(package.offeringIdentifier)' has a custom duration. You can reference this package by its identifier ('\(package.identifier)') directly. More information: https://rev.cat/displaying-products"
         }
     }
 
