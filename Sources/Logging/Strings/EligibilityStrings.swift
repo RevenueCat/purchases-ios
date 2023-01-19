@@ -51,7 +51,7 @@ extension EligibilityStrings: CustomStringConvertible {
             "Will be considered not eligible."
 
         case .sk2_intro_eligibility_too_slow:
-            return "StoreKit 2 intro eligibility took longer than expected to determine."
+            return "StoreKit 2 intro eligibility took longer than expected to determine"
         }
     }
 
