@@ -23,6 +23,7 @@ enum EligibilityStrings {
     case unable_to_get_intro_eligibility_for_user(error: Error)
     case check_eligibility_no_identifiers
     case check_eligibility_failed(productIdentifier: String, error: Error)
+    case sk2_intro_eligibility_too_slow
 }
 
 extension EligibilityStrings: CustomStringConvertible {
@@ -48,6 +49,9 @@ extension EligibilityStrings: CustomStringConvertible {
         case let .check_eligibility_failed(productIdentifier, error):
             return "Error checking discount eligibility for product '\(productIdentifier)': \(error).\n" +
             "Will be considered not eligible."
+
+        case .sk2_intro_eligibility_too_slow:
+            return "StoreKit 2 intro eligibility took longer than expected to determine"
         }
     }
 

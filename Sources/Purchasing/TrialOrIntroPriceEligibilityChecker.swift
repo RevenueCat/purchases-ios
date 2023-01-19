@@ -110,7 +110,11 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             let eligibilityStatus: IntroEligibilityStatus
 
             if let subscription = sk2Product.subscription, subscription.introductoryOffer != nil {
-                let isEligible = await subscription.isEligibleForIntroOffer
+                let isEligible = await TimingUtil.measureAndLogIfTooSlow(
+                    threshold: .introEligibility,
+                    message: Strings.eligibility.sk2_intro_eligibility_too_slow.description) {
+                        return await subscription.isEligibleForIntroOffer
+                    }
                 eligibilityStatus = isEligible ? .eligible : .ineligible
             } else {
                 eligibilityStatus = .noIntroOfferExists
