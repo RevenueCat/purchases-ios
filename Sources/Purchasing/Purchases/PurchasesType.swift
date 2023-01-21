@@ -108,8 +108,8 @@ public protocol PurchasesType: AnyObject {
      *
      * #### Related Articles
      * - [Identifying Users](https://docs.revenuecat.com/docs/user-ids)
-     * - ``logIn(_:completion:)``
-     * - ``isAnonymous``
+     * - ``Purchases/logIn(_:)-arja``
+     * - ``Purchases/isAnonymous``
      * - ``Purchases/appUserID``
      */
     func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?)
@@ -122,8 +122,8 @@ public protocol PurchasesType: AnyObject {
      *
      * #### Related Articles
      * - [Identifying Users](https://docs.revenuecat.com/docs/user-ids)
-     * - ``logIn(_:)``
-     * - ``isAnonymous``
+     * - ``Purchases/logIn(_:)-arja``
+     * - ``Purchases/isAnonymous``
      * - ``Purchases/appUserID``
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
