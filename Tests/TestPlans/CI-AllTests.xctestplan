@@ -9,7 +9,15 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : false,
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:RevenueCat.xcodeproj",
+          "identifier" : "2DC5621524EC63420031F69B",
+          "name" : "RevenueCat"
+        }
+      ]
+    },
     "environmentVariableEntries" : [
       {
         "key" : "RCRunningTests",
