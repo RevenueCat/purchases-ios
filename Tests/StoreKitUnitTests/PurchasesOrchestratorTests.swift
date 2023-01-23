@@ -597,6 +597,34 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testStoreKit2TransactionListenerDoesNotFinishTransactionIfPostingReceiptFails() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.setUpStoreKit2Listener()
+
+        let expectedError: BackendError = .missingReceiptFile()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .failure(expectedError)
+
+        let transaction = MockStoreTransaction()
+
+        do {
+            try await self.orchestrator.storeKit2TransactionListener(
+                self.mockStoreKit2TransactionListener!,
+                updatedTransaction: transaction
+            )
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(expectedError.asPurchasesError))
+        }
+
+        expect(transaction.finishInvoked) == false
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testStoreKit2TransactionListenerDelegateWithObserverMode() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
