@@ -1582,10 +1582,10 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 ///     <a href="https://docs.revenuecat.com/docs/user-ids">Identifying Users</a>
 ///   </li>
 ///   <li>
-///     <code>logIn(_:completion:)</code>
+///     <code>Purchases/logIn(_:)-arja</code>
 ///   </li>
 ///   <li>
-///     <code>isAnonymous</code>
+///     <code>Purchases/isAnonymous</code>
 ///   </li>
 ///   <li>
 ///     <code>Purchases/appUserID</code>
@@ -1601,10 +1601,10 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 ///     <a href="https://docs.revenuecat.com/docs/user-ids">Identifying Users</a>
 ///   </li>
 ///   <li>
-///     <code>logIn(_:)</code>
+///     <code>Purchases/logIn(_:)-arja</code>
 ///   </li>
 ///   <li>
-///     <code>isAnonymous</code>
+///     <code>Purchases/isAnonymous</code>
 ///   </li>
 ///   <li>
 ///     <code>Purchases/appUserID</code>
