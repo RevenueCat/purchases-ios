@@ -215,6 +215,48 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
+    func testCheckTrialEligibilityReturnsIneligibleForProductWithNoSubscriptionGroupAndActiveSubscription() {
+        self.testEligibility(
+            purchaseExpirationsByProductIdentifier: [
+                "com.revenuecat.product1": Date().addingTimeInterval(1000)
+            ],
+            productsInGroups: [
+                "com.revenuecat.product1": nil
+            ],
+            expectedResult: [
+                "com.revenuecat.product1": .ineligible
+            ]
+        )
+    }
+
+    func testCheckTrialEligibilityReturnsEligibleForProductWithNoSubscriptionGroupAndExpiredSubscriptionWithNoTrial() {
+        self.testEligibility(
+            purchaseExpirationsByProductIdentifier: [
+                ("com.revenuecat.product1", Date().addingTimeInterval(-1000), false)
+            ],
+            productsInGroups: [
+                "com.revenuecat.product1": (groupID: nil, hasTrial: true)
+            ],
+            expectedResult: [
+                "com.revenuecat.product1": .eligible
+            ]
+        )
+    }
+
+    func testCheckTrialEligibilityReturnsIneligibleForProductWithNoSubscriptionGroupAndExpiredSubscriptionWithTrial() {
+        self.testEligibility(
+            purchaseExpirationsByProductIdentifier: [
+                ("com.revenuecat.product1", Date().addingTimeInterval(-1000), true)
+            ],
+            productsInGroups: [
+                "com.revenuecat.product1": (groupID: nil, hasTrial: true)
+            ],
+            expectedResult: [
+                "com.revenuecat.product1": .ineligible
+            ]
+        )
+    }
+
     func testCheckTrialOrIntroDiscountEligibilityForConsumableReturnsUnknown() {
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
@@ -247,7 +289,7 @@ private extension IntroEligibilityCalculatorTests {
 
     func testEligibility(
         purchaseExpirationsByProductIdentifier: [String: Date?],
-        productsInGroups: [String: String],
+        productsInGroups: [String: String?],
         expectedResult: [String: IntroEligibilityStatus],
         file: FileString = #file,
         line: UInt = #line
@@ -263,7 +305,7 @@ private extension IntroEligibilityCalculatorTests {
 
     func testEligibility(
         purchaseExpirationsByProductIdentifier: [(productID: String, expiration: Date?, inTrial: Bool)],
-        productsInGroups: [String: (groupID: String, hasTrial: Bool)],
+        productsInGroups: [String: (groupID: String?, hasTrial: Bool)],
         expectedResult: [String: IntroEligibilityStatus],
         file: FileString = #file,
         line: UInt = #line
