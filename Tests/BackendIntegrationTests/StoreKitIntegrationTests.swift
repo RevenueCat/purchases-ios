@@ -265,6 +265,46 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(eligibility) == .eligible
     }
 
+    func testIneligibleForIntroForDifferentProductInSameSubscriptionGroupAfterPurchase() async throws {
+        try XCTSkipIf(
+            Self.storeKit2Setting == .enabledForCompatibleDevices,
+            "This test currently does not pass with SK2 (see FB11889732)"
+        )
+
+        let productWithNoTrial = try await self.product(Self.group3MonthlyNoTrialProductID)
+        let productWithTrial = try await self.product(Self.group3MonthlyTrialProductID)
+
+        _ = try await Purchases.shared.purchase(product: productWithNoTrial)
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
+        expect(eligibility) == .ineligible
+    }
+
+    func testEligibleForIntroForDifferentProductInSameSubscriptionGroupAfterExpiration() async throws {
+        let productWithNoTrial = try await self.product(Self.group3MonthlyNoTrialProductID)
+        let productWithTrial = try await self.annualPackage.storeProduct
+
+        let customerInfo = try await Purchases.shared.purchase(product: productWithNoTrial).customerInfo
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+
+        try await self.expireSubscription(entitlement)
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
+        expect(eligibility) == .eligible
+    }
+
+    func testIneligibleForIntroForDifferentProductInSameSubscriptionGroupAfterTrialExpiration() async throws {
+        let monthlyWithTrial = try await self.product(Self.group3YearlyTrialProductID)
+        let annualWithTrial = try await self.product(Self.group3MonthlyTrialProductID)
+
+        let customerInfo = try await Purchases.shared.purchase(product: monthlyWithTrial).customerInfo
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+        try await self.expireSubscription(entitlement)
+
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: annualWithTrial)
+        expect(eligibility) == .ineligible
+    }
+
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
         let product = try await self.monthlyPackage.storeProduct
 

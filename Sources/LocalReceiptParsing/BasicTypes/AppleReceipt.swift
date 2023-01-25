@@ -76,11 +76,23 @@ extension AppleReceipt: @unchecked Sendable {}
 
 extension AppleReceipt {
 
-    func purchasedIntroOfferOrFreeTrialProductIdentifiers() -> Set<String> {
-        let productIdentifiers = self.inAppPurchases
-            .filter { $0.isInIntroOfferPeriod == true || $0.isInTrialPeriod == true }
-            .map { $0.productId }
-        return Set(productIdentifiers)
+    var activeSubscriptionsProductIdentifiers: Set<String> {
+        return Set(
+            self.inAppPurchases
+                .lazy
+                .filter(\.isActiveSubscription)
+                .map(\.productId)
+        )
+    }
+
+    var expiredTrialProductIdentifiers: Set<String> {
+        return Set(
+            self.inAppPurchases
+                .lazy
+                .filter(\.isExpiredSubscription)
+                .filter { $0.isInIntroOfferPeriod == true || $0.isInTrialPeriod == true }
+                .map(\.productId)
+        )
     }
 
     func containsActivePurchase(forProductIdentifier identifier: String) -> Bool {
