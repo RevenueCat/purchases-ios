@@ -29,11 +29,17 @@ final class MockStoreTransaction: StoreTransactionType {
     }
 
     private let _finishInvoked: Atomic<Bool> = false
-
     var finishInvoked: Bool { return self._finishInvoked.value }
+
+    private let _onFinishInvoked: Atomic<(() -> Void)?> = nil
+    var onFinishInvoked: (() -> Void)? {
+        get { return self._onFinishInvoked.value }
+        set { self._onFinishInvoked.value = newValue }
+    }
 
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         self._finishInvoked.value = true
+        self.onFinishInvoked?()
 
         completion()
     }

@@ -793,17 +793,17 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListener,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
-        await Async.call { completion in
-            self.finishTransactionIfNeeded(transaction) { @MainActor in
-                completion(())
-            }
-        }
-
         let isRestore = self.systemInfo.observerMode
 
         _ = try await self.syncPurchases(receiptRefreshPolicy: .always,
                                          isRestore: isRestore,
                                          initiationSource: .queue)
+
+        await Async.call { completion in
+            self.finishTransactionIfNeeded(transaction) { @MainActor in
+                completion(())
+            }
+        }
     }
 
 }

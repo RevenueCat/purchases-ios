@@ -23,6 +23,7 @@ class MockBackend: Backend {
     var stubbedPostReceiptResult: Result<CustomerInfo, BackendError>?
     var invokedPostReceiptDataParameters: PostReceiptParameters?
     var invokedPostReceiptDataParametersList: [PostReceiptParameters] = []
+    var onPostReceipt: (() -> Void)?
 
     public convenience init() {
         let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
@@ -78,6 +79,9 @@ class MockBackend: Backend {
                                                      initiationSource,
                                                      subscriberAttributesByKey,
                                                      completion))
+
+        self.onPostReceipt?()
+
         completion(stubbedPostReceiptResult ?? .failure(.missingAppUserID()))
     }
 
