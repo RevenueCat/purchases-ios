@@ -709,7 +709,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.makeAPurchase()
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
     }
 
     func testPaymentSheetCancelledErrorIsParsedCorrectly() throws {

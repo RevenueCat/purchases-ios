@@ -781,7 +781,7 @@ private extension PurchasesOrchestrator {
                                              maximumRetries: Self.receiptRetryCount,
                                              sleepDuration: Self.receiptRetrySleepDuration)
         } else {
-            return .always
+            return .onlyIfEmpty
         }
     }
 }

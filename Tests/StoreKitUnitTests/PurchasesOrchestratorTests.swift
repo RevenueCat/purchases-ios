@@ -193,7 +193,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         }
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
@@ -408,7 +408,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
@@ -435,7 +435,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         _ = try await orchestrator.purchase(sk2Product: product, package: package, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
