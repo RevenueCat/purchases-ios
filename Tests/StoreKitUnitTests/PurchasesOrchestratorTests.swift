@@ -625,6 +625,37 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testStoreKit2TransactionListenerOnlyFinishesTransactionsAfterPostingReceipt() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.setUpStoreKit2Listener()
+
+        enum Operation {
+            case receiptPost
+            case finishTransaction
+        }
+
+        var operations: [Operation] = []
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.backend.onPostReceipt = { operations.append(.receiptPost) }
+
+        let transaction = MockStoreTransaction()
+        transaction.onFinishInvoked = { operations.append(.finishTransaction) }
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: transaction
+        )
+
+        expect(operations) == [
+            .receiptPost,
+            .finishTransaction
+        ]
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testStoreKit2TransactionListenerDelegateWithObserverMode() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
