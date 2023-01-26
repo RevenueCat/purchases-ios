@@ -51,6 +51,25 @@ struct PurchaseTesterApp: App {
         WindowGroup(id: Windows.logs.rawValue) {
             LoggerView(logger: ConfiguredPurchases.logger)
         }
+
+        #if os(macOS)
+        MenuBarExtra("ReceiptParser", systemImage: "doc.text.magnifyingglass") {
+            VStack {
+                ReceiptInspectorView()
+
+                Divider()
+
+                Button("Quit") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .keyboardShortcut("q")
+                .padding()
+            }
+        }
+        .menuBarExtraStyle(.window)
+        .defaultSize(width: 800, height: 1000)
+        #endif
+
     }
 
     private var configurationView: some View {
