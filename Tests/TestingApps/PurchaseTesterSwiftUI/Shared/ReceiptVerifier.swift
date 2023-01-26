@@ -38,7 +38,7 @@ struct ReceiptVerifier {
         request.httpMethod = "POST"
 
         var parameters = [ "receipt-data": base64Encoded ]
-        if let sharedSecret = sharedSecret {
+        if let sharedSecret = sharedSecret, !sharedSecret.isEmpty {
             parameters["password"] = sharedSecret
         }
 

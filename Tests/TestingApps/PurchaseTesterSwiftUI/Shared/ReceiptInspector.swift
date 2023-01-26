@@ -12,7 +12,8 @@ struct ReceiptInspectorView: View {
     @State private var encodedReceipt: String = ""
     @State private var parsedReceipt: String = ""
     @State private var verifyReceiptResult: String = ""
-    
+    @State private var sharedSecret: String = ""
+
 
     var body: some View {
         VStack {
@@ -22,20 +23,19 @@ struct ReceiptInspectorView: View {
 
             TextField("Enter receipt text here (base64 encoded)", text: $encodedReceipt, onEditingChanged: { isEditing in
                     if !isEditing {
-                        do {
-                            print("did set")
-                            parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: encodedReceipt).debugDescription
-                            Task {
-                                verifyReceiptResult = await ReceiptVerifier().verifyReceipt(base64Encoded: encodedReceipt)
-                            }
-                        } catch {
-                            parsedReceipt = "Couldn't decode receipt. Error:\n\(error)"
-                        }
+                        inspectReceipt()
                     }
                 })
                     .textFieldStyle(.roundedBorder)
                     .padding()
 
+            TextField("Enter shared secret here", text: $sharedSecret, onEditingChanged: { isEditing in
+                    if !isEditing {
+                        inspectReceipt()
+                    }
+                })
+                    .textFieldStyle(.roundedBorder)
+                    .padding()
 
             Divider()
             Text("Parsed Receipt")
@@ -62,6 +62,18 @@ struct ReceiptInspectorView: View {
                     .textSelection(.enabled)
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }.frame(minWidth: 800, maxWidth: .infinity, minHeight: 1000, maxHeight: .infinity, alignment: .center)
+    }
+
+    func inspectReceipt() {
+        do {
+            guard !encodedReceipt.isEmpty else { return }
+            parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: encodedReceipt).debugDescription
+            Task {
+                verifyReceiptResult = await ReceiptVerifier().verifyReceipt(base64Encoded: encodedReceipt, sharedSecret: sharedSecret)
+            }
+        } catch {
+            parsedReceipt = "Couldn't decode receipt. Error:\n\(error)"
+        }
     }
 }
 
