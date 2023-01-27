@@ -26,8 +26,7 @@ struct ReceiptVerifier {
     ]
 
     private static let internalDataAccessError = "Internal data access error."
-    private static let internalDataAccessErrorMinRange = 21100
-    private static let internalDataAccessErrorMaxRange = 21199
+    private static let internalDataAccessErrorRange = 21100...21199
 
     private static let sandboxUrl = URL(string: "https://sandbox.itunes.apple.com/verifyReceipt")!
     private static let productionUrl = URL(string: "https://buy.itunes.apple.com/verifyReceipt")!
@@ -76,7 +75,7 @@ struct ReceiptVerifier {
             return message
         }
 
-        if code >= Self.internalDataAccessErrorMinRange && code <= Self.internalDataAccessErrorMaxRange {
+        if Self.internalDataAccessErrorRange.contains(code) {
             return Self.internalDataAccessError
         }
 
