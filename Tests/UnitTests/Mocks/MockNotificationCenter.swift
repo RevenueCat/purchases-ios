@@ -4,6 +4,8 @@
 //
 import Foundation
 
+@testable import RevenueCat
+
 class MockNotificationCenter: NotificationCenter {
 
     typealias ObserversWithSelector = (observer: WeakBox<AnyObject>,
