@@ -23,7 +23,9 @@ struct ReceiptInspectorView: View {
 
             TextField("Enter receipt text here (base64 encoded)", text: $encodedReceipt, onEditingChanged: { isEditing in
                     if !isEditing {
-                        inspectReceipt()
+                        Task {
+                            await inspectReceipt()
+                        }
                     }
                 })
                     .textFieldStyle(.roundedBorder)
@@ -31,7 +33,9 @@ struct ReceiptInspectorView: View {
 
             TextField("Enter shared secret here", text: $sharedSecret, onEditingChanged: { isEditing in
                     if !isEditing {
-                        inspectReceipt()
+                        Task {
+                            await inspectReceipt()
+                        }
                     }
                 })
                     .textFieldStyle(.roundedBorder)
@@ -64,13 +68,12 @@ struct ReceiptInspectorView: View {
         }.frame(minWidth: 800, maxWidth: .infinity, minHeight: 1000, maxHeight: .infinity, alignment: .center)
     }
 
-    func inspectReceipt() {
+    func inspectReceipt() async {
         do {
             guard !encodedReceipt.isEmpty else { return }
             parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: encodedReceipt).debugDescription
-            Task {
-                verifyReceiptResult = await ReceiptVerifier().verifyReceipt(base64Encoded: encodedReceipt, sharedSecret: sharedSecret)
-            }
+            verifyReceiptResult = await ReceiptVerifier().verifyReceipt(base64Encoded: encodedReceipt,
+                                                                        sharedSecret: sharedSecret)
         } catch {
             parsedReceipt = "Couldn't decode receipt. Error:\n\(error)"
         }

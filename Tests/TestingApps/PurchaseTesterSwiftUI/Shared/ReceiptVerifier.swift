@@ -64,10 +64,10 @@ struct ReceiptVerifier {
                     return jsonString ?? "Verify receipt result was empty for url: \(url)"
                 }
             } catch {
-                return "Verify receipt result parsing failed for url: \(url)"
+                return "Verify receipt result parsing failed for url: \(url)\nError: \(error.localizedDescription)"
             }
         } catch {
-            return "Verify receipt request failed for url: \(url)"
+            return "Verify receipt request failed for url: \(url)\nError: \(error.localizedDescription)"
         }
     }
 
