@@ -18,7 +18,7 @@ internal struct SK2StoreProduct: StoreProductType {
 
     init(sk2Product: SK2Product) {
         #if swift(<5.7)
-        self._underlyingSK2Product = sk2Product
+        self._underlyingSK2Product = .init(sk2Product)
         #else
         self.underlyingSK2Product = sk2Product
         #endif
@@ -27,13 +27,9 @@ internal struct SK2StoreProduct: StoreProductType {
     #if swift(<5.7)
     // We can't directly store instances of StoreKit.Product, since that causes
     // linking issues in iOS < 15, even with @available checks correctly in place.
-    // So instead, we store the underlying product as Any and wrap it with casting.
-    // https://openradar.appspot.com/radar?id=4970535809187840
-    private let _underlyingSK2Product: Any
-    var underlyingSK2Product: SK2Product {
-        // swiftlint:disable:next force_cast
-        _underlyingSK2Product as! SK2Product
-    }
+    // See https://openradar.appspot.com/radar?id=4970535809187840 / https://github.com/apple/swift/issues/58099
+    private let _underlyingSK2Product: Box<SK2Product>
+    var underlyingSK2Product: SK2Product { self._underlyingSK2Product.value }
     #else
     let underlyingSK2Product: SK2Product
     #endif
