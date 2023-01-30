@@ -23,6 +23,7 @@ enum Signing {
     typealias PublicKey = SecKey
 
     static let keyAlgorithm: SecKeyAlgorithm = .ecdsaSignatureMessageX962SHA512
+    private static let saltSize = 16
 
     /// Parses the binary `key` and returns a `PublicKey`
     /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
@@ -51,6 +52,7 @@ enum Signing {
 
     static func verify(
         message: Data,
+        nonce: Data,
         hasValidSignature signature: String,
         with publicKey: PublicKey
     ) -> Bool {
@@ -64,10 +66,14 @@ enum Signing {
             return false
         }
 
+        let salt = signature.subdata(in: 0..<Self.saltSize)
+        let signatureToVerify = signature.subdata(in: Self.saltSize..<signature.count)
+        let messageToVerify = salt + nonce + message
+
         guard SecKeyVerifySignature(publicKey,
                                     Self.keyAlgorithm,
-                                    message as CFData,
-                                    signature as CFData,
+                                    messageToVerify as CFData,
+                                    signatureToVerify as CFData,
                                     &error) else {
             if let error = error {
                 Logger.warn("Signature failed validation: \(error.takeRetainedValue())")

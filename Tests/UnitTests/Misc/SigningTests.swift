@@ -30,9 +30,11 @@ class SigningTests: TestCase {
         let logger = TestLogHandler()
 
         let message = "Hello World"
+        let nonce = "nonce"
         let signature = "this is not a signature"
 
         expect(Signing.verify(message: message.asData,
+                              nonce: nonce.asData,
                               hasValidSignature: signature,
                               with: self.key)) == false
 
@@ -43,6 +45,7 @@ class SigningTests: TestCase {
         let logger = TestLogHandler()
 
         expect(Signing.verify(message: "Hello World".asData,
+                              nonce: "nonce".asData,
                               hasValidSignature: "invalid signature".asData.base64EncodedString(),
                               with: self.key)) == false
 
@@ -51,10 +54,15 @@ class SigningTests: TestCase {
 
     func testVerifySignatureWithValidSignature() throws {
         let message = "Hello World"
-        let signature = try self.sign(message: message)
+        let nonce = "nonce"
+        let salt = "salt"
+        let signature = try self.sign(message: message, nonce: nonce, salt: salt)
+        let fullSignature = salt.asData + signature
+        let fullMessage = salt.asData + nonce.asData + message.asData
 
-        expect(Signing.verify(message: message.asData,
-                              hasValidSignature: signature.base64EncodedString(),
+        expect(Signing.verify(message: fullMessage,
+                              nonce: nonce.asData,
+                              hasValidSignature: fullSignature.base64EncodedString(),
                               with: self.key)) == true
     }
 
@@ -82,11 +90,12 @@ private extension SigningTests {
         return key
     }
 
-    func sign(message: String) throws -> Data {
+    func sign(message: String, nonce: String, salt: String) throws -> Data {
         var error: Unmanaged<CFError>?
+        let fullMessage = salt.asData + nonce.asData + message.asData
         guard let signature = SecKeyCreateSignature(self.key,
                                                     Signing.keyAlgorithm,
-                                                    Data(message.utf8) as CFData,
+                                                    fullMessage as CFData,
                                                     &error) else {
             throw error!.takeRetainedValue() as Error
         }
