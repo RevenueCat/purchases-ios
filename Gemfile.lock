@@ -255,6 +255,7 @@ GEM
     memoist (0.16.2)
     mini_magick (4.12.0)
     mini_mime (1.1.2)
+    mini_portile2 (2.8.1)
     minitest (5.17.0)
     molinillo (0.8.0)
     multi_json (1.15.0)
@@ -300,6 +301,8 @@ GEM
     simctl (1.6.10)
       CFPropertyList
       naturally
+    sqlite3 (1.6.0)
+      mini_portile2 (~> 2.8.0)
     sqlite3 (1.6.0-arm64-darwin)
     terminal-notifier (2.0.0)
     terminal-table (1.8.0)
@@ -336,8 +339,8 @@ GEM
     zeitwerk (2.6.6)
 
 PLATFORMS
+  arm64-darwin
   ruby
-  arm64-darwin-21
 
 DEPENDENCIES
   cocoapods
