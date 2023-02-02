@@ -71,8 +71,7 @@ extension HTTPClient {
     }
 
     static let authorizationHeaderName = "Authorization"
-    // TODO: confirm this name
-    static let signatureHeaderName = "X-Request-UUID"
+    static let signatureHeaderName = "X-Nonce"
 
 }
 
