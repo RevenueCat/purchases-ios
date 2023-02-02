@@ -102,18 +102,12 @@ private extension IntroEligibilityCalculator {
                 result[candidate.productIdentifier] = .unknown
                 continue
             }
-            let activeSubscriptionInGroup = (
-                candidate.subscriptionGroupIdentifier != nil &&
-                activeSubscriptionsProducts.contains {
-                    $0.subscriptionGroupIdentifier == candidate.subscriptionGroupIdentifier
-                }
-            )
-            let expiredTrialInGroup = (
-                candidate.subscriptionGroupIdentifier != nil &&
-                expiredTrialProducts.contains {
-                    $0.subscriptionGroupIdentifier == candidate.subscriptionGroupIdentifier
-                }
-            )
+            let activeSubscriptionInGroup = activeSubscriptionsProducts.contains {
+                $0.subscriptionGroupIdentifier == candidate.subscriptionGroupIdentifier
+            }
+            let expiredTrialInGroup = expiredTrialProducts.contains {
+                $0.subscriptionGroupIdentifier == candidate.subscriptionGroupIdentifier
+            }
 
             if candidate.introductoryDiscount == nil {
                 result[candidate.productIdentifier] = .noIntroOfferExists
