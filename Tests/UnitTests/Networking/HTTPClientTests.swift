@@ -838,7 +838,7 @@ class HTTPClientTests: TestCase {
                          headers: nil)
         }
 
-        let response: HTTPResponse<Data>.Result? = waitUntilValue(timeout: .seconds(1)) { completion in
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
                 completion(result)
             }
