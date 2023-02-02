@@ -25,7 +25,7 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
 
         self.operationDispatcher = .init()
         self.paymentQueue = .init()
-        self.sandboxEnvironmentDetector = .init(isSandbox: .random())
+        self.sandboxEnvironmentDetector = .init(isSandbox: true)
 
         self.wrapper = StoreKit1Wrapper(paymentQueue: self.paymentQueue,
                                         operationDispatcher: self.operationDispatcher,
