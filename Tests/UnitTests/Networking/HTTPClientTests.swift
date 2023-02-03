@@ -799,24 +799,29 @@ class HTTPClientTests: TestCase {
 
     func testRequestIsRetriedIfResponseFromETagManagerIsNil() {
         let path: HTTPRequest.Path = .mockPath
+        let requests: Atomic<Int> = .init(0)
 
-        let firstTimeCalled: Atomic<Bool> = false
         stub(condition: isPath(path)) { _ in
-            if firstTimeCalled.value {
+            defer { requests.value += 1 }
+
+            if requests.value > 0 {
                 self.eTagManager.shouldReturnResultFromBackend = true
             }
-            firstTimeCalled.value = true
+
             return .emptySuccessResponse
         }
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
 
-        waitUntil { completion in
-            self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
-                completion()
+        let result: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path)) {
+                completion($0)
             }
         }
+
+        expect(result).to(beSuccess())
+        expect(requests.value) == 2
     }
 
     func testGetsResponseFromETagManagerWhenStatusCodeIsNotModified() throws {
