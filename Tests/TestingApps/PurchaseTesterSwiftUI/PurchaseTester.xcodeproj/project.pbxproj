@@ -20,6 +20,8 @@
 		2CD2C518278C9B02005D1CC2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD2C4EF278C9B01005D1CC2 /* ContentView.swift */; };
 		2CD2C51A278C9B02005D1CC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CD2C4F0278C9B02005D1CC2 /* Assets.xcassets */; };
 		2CF428692863EEAC007E6A78 /* Package+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF428682863EEAC007E6A78 /* Package+Extensions.swift */; };
+		2DD2CBB129831A09004A3A6A /* ReceiptInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */; };
+		2DD2CBB329831A22004A3A6A /* ReceiptVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */; };
 		575642A4290C7A2700719219 /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A3290C7A2700719219 /* LoggerView.swift */; };
 		575642A6290C7D3100719219 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A5290C7D3100719219 /* Windows.swift */; };
 		5759B472296F9B3B002472D5 /* LocalReceiptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B471296F9B3B002472D5 /* LocalReceiptView.swift */; };
@@ -128,6 +130,8 @@
 		2CD2C4F0278C9B02005D1CC2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2CD2C4F5278C9B02005D1CC2 /* PurchaseTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PurchaseTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CF428682863EEAC007E6A78 /* Package+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Package+Extensions.swift"; sourceTree = "<group>"; };
+		2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiptInspector.swift; sourceTree = "<group>"; };
+		2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiptVerifier.swift; sourceTree = "<group>"; };
 		575642A1290C78DD00719219 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		575642A3290C7A2700719219 /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
 		575642A5290C7D3100719219 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
@@ -236,6 +240,8 @@
 		2CD2C4ED278C9B01005D1CC2 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */,
+				2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */,
 				2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */,
 				576B00A02950FA9700139C53 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */,
 				2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */,
@@ -483,7 +489,9 @@
 				57B5795629536B8C003EAA40 /* ObserverModeManager.swift in Sources */,
 				2CD2C516278C9B02005D1CC2 /* PurchaseTesterApp.swift in Sources */,
 				575642A4290C7A2700719219 /* LoggerView.swift in Sources */,
+				2DD2CBB329831A22004A3A6A /* ReceiptVerifier.swift in Sources */,
 				2C10F18227A9943D0078444D /* PromoOfferDetailsView.swift in Sources */,
+				2DD2CBB129831A09004A3A6A /* ReceiptInspector.swift in Sources */,
 				575642A6290C7D3100719219 /* Windows.swift in Sources */,
 				57B5795729536B8C003EAA40 /* ProductFetcherSK1.swift in Sources */,
 				2C10F19727AC31B80078444D /* CustomerInfoView.swift in Sources */,
