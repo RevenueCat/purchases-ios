@@ -1,0 +1,18 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "fetch_token" : "AQID",
+      "product_identifiers" : [
+        "producta",
+        "productb",
+        "productc",
+        "productd"
+      ]
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/subscribers/user/intro_eligibility"
+  }
+}

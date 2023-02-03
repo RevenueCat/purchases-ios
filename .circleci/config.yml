@@ -1,40 +1,93 @@
-release-tags-and-branches: &release-tags-and-branches
-  filters:
-    tags:
-      ignore: /^.*-SNAPSHOT/
-    branches:
-      only: /^release\/.*/
-
-release-branches: &release-branches
-  filters:
-    tags:
-      ignore: /.*/
-    branches:
-      only: /^release\/.*/
-
-release-tags: &release-tags
-  filters: 
-    tags:
-      ignore: /^.*-SNAPSHOT/
-    branches:
-      ignore: /.*/
-
 orbs:
-   macos: circleci/macos@2.0.1
+  macos: circleci/macos@2.0.1
+  slack: circleci/slack@4.10.1
+  codecov: codecov/codecov@3.2.4
 
 version: 2.1
+
+parameters:
+  action:
+    type: enum
+    enum: [default, bump]
+    default: default
+
+aliases:
+  base-job: &base-job
+    resource_class: macos.x86.medium.gen2
+    macos:
+      xcode: << parameters.xcode_version >>
+    parameters:
+      xcode_version:
+        type: string
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+  release-branches: &release-branches
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only: /^release\/.*/
+  release-tags: &release-tags
+    filters:
+      tags:
+        ignore: /^.*-SNAPSHOT/
+      branches:
+        ignore: /.*/
+  release-branches-and-main: &release-branches-and-main
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only:
+          - main
+          - /^release\/.*/
+  only-main-branch: &only-main-branch
+    filters:
+      tags:
+        ignore: /.*/
+      branches:
+        only: main
+  non-patch-release-branches: &non-patch-release-branches
+    filters: 
+      tags:
+        ignore: /.*/
+      branches:
+        only: /^release\/.*\.0$/
+
 commands:
-  install-dependencies:
+  install-and-create-sim:
+    parameters:
+      install-name:
+        type: string
+      sim-device-type:
+        type: string
+      sim-device-runtime:
+        type: string
+      sim-name:
+        type: string
+    steps:
+      - run:
+          name: Install xcode-install
+          command: gem install xcode-install
+      - run:
+          name: Install simulator
+          command: | # Print all available simulators and install required one
+              xcversion simulators
+              xcversion simulators --install="<< parameters.install-name >>"
+      - run:
+          name: Create simulator
+          command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
+
+  install-bundle-dependencies:
     parameters:
       directory:
         type: string
         default: .
     steps:
-      # Bundler
       - restore_cache:
-          keys: 
-            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
-      - run: 
+          keys:
+            - v2-gem-cache-{{ checksum "Gemfile.lock" }}
+      - run:
           name: Bundle install
           working_directory: << parameters.directory >>
           command: |
@@ -42,19 +95,85 @@ commands:
               bundle config set --local path 'vendor/bundle'
               bundle install
       - save_cache:
-          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+  
+  install-dependencies:
+    parameters:
+      directory:
+        type: string
+        default: .
+    steps:
+      - install-bundle-dependencies:
+          directory: << parameters.directory >>
+      - restore_cache:
+          keys:
+            - homebrew-cache-{{ checksum "Brewfile.lock.json" }}
+      - install-brew-dependency:
+          dependency_name: 'xcbeautify'
+      - install-brew-dependency:
+          dependency_name: 'swiftlint'
+      - save_cache:
+          key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}
+          paths:
+            - /usr/local/Cellar/swiftlint/
+            - /usr/local/Cellar/xcbeautify/
+            - /Users/$USER/Library/Caches/Homebrew/
+  
+  install-brew-dependency:
+    parameters:
+      dependency_name:
+        type: string
+    steps:
       - run:
-          name: Install swiftlint
-          command: brew install swiftlint
+          name: Install << parameters.dependency_name >>
+          command: |
+            # Link dependency in case it was found in the cache
+            brew link << parameters.dependency_name >> || true
+
+            if which << parameters.dependency_name >> > /dev/null 2>&1; then
+                echo "Skipping installation, already found."
+                exit 0;
+            fi
+            brew install << parameters.dependency_name >>
+          environment:
+            HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+  install-rubydocker-dependencies:
+    steps:
+      - restore_cache:
+          keys:
+            - v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}
+      - run:
+          name: Bundle install
+          command: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+
+  compress_result_bundle:
+    parameters:
+      directory:
+        type: string
+      bundle_name:
+        type: string
+    steps:
+      - run:
+          name: Compress result bundle
+          command: |
+             tar -czf xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
+             rm -r << parameters.bundle_name >>.xcresult
+          working_directory: << parameters.directory >>
+          when: always
 
   scan-and-archive:
     parameters:
       directory:
         type: string
     steps:
-      - run: 
+      - run:
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
       - run:
@@ -94,7 +213,7 @@ commands:
           working_directory: << parameters.directory >>
           command: |
               bundle exec fastlane archive_all_platforms
-  
+
   install-dependencies-scan-and-archive:
     parameters:
       directory:
@@ -104,6 +223,14 @@ commands:
           directory: << parameters.directory >>
       - scan-and-archive:
           directory: << parameters.directory >>
+
+  setup-git-credentials:
+     steps:
+       - run:
+           name: Setup Git config
+           command: |
+             git config --global user.email $GIT_EMAIL
+             git config --global user.name $GIT_USERNAME
 
   trust-github-key:
     steps:
@@ -115,7 +242,7 @@ commands:
               ssh-keyscan $ip; \
               done 2>/dev/null >> ~/.ssh/known_hosts
 
-  update-spm-integration-commit:
+  update-spm-installation-commit:
     steps:
       - install-dependencies
       - run:
@@ -123,95 +250,235 @@ commands:
           command: |
               bundle exec fastlane update_swift_package_commit
 
-  update-carthage-integration-commit:
+  update-carthage-installation-commit:
     steps:
       - install-dependencies
       - run:
-          name: Update git commit in Carthage Integration tests
-          working_directory: IntegrationTests/CarthageIntegration/
+          name: Update git commit in Carthage Installation tests
+          working_directory: Tests/InstallationTests/CarthageInstallation/
           command: |
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  runtest:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+  spm-release-build:
+    <<: *base-job
     steps:
       - checkout
-      
+      - run:
+          name: SPM Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+  spm-receipt-parser:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Receipt Parser
+          command: swift build -c release --target ReceiptParser
+          no_output_timeout: 30m
+
+  run-test-ios-16:
+    <<: *base-job
+    steps:
+      - checkout
       - install-dependencies
-      
       - run:
           name: Run tests
-          command: bundle exec fastlane test
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 14 (16.2)
+      - codecov/upload:
+          xtra_args: "-v --xc --xp fastlane/test_output/xctest/ios/RevenueCat.xcresult"
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-  buildTvWatchAndMacOS:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+
+  run-test-ios-15:
+    <<: *base-job
     steps:
       - checkout
+      - install-dependencies
       - run:
-          name: Install swiftlint
-          command: brew install swiftlint
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 13 (15.5)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  compile-xcode-13-2:
+    <<: *base-job
+    steps:
+      - setup-git-credentials
+      - restore_cache:
+          keys:
+            - homebrew-tap-cache-3
+      - run:
+          name: Install swiftlint 0.48.0
+          command: |
+              brew update --preinstall
+              brew tap-new $USER/local-tap
+              brew extract --version=0.48.0 swiftlint $USER/local-tap
+              brew install swiftlint@0.48.0
+      - save_cache:
+          key: homebrew-tap-cache-3
+          paths:
+            - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
+            - /Users/$USER/Library/Caches/Homebrew/
+      - checkout
+      - install-bundle-dependencies
+      - run:
+          name: SPM Build
+          # Not using `pod lib lint` because that fails on this old Xcode
+          command: swift build
+          no_output_timeout: 5m
+
+  run-test-tvos:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_tvos
+          no_output_timeout: 5m
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/tvos
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  run-test-ios-14:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 8 (14.5)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+  run-test-ios-13:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - install-and-create-sim:
+          install-name: iOS 13.7 Simulator
+          sim-device-type: iPhone-8
+          sim-device-runtime: iOS-13-7
+          sim-name: iPhone 8 (13.7)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 8 (13.7)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  run-test-ios-12:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - install-and-create-sim:
+          install-name: iOS 12.4 Simulator
+          sim-device-type: iPhone-6
+          sim-device-runtime: iOS-12-4
+          sim-name: iPhone 6 (12.4)
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 6 (12.4)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
+  build-tv-watch-and-macos:
+    <<: *base-job
+    steps:
+      - checkout
       - install-dependencies
       - run:
           name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
+          no_output_timeout: 30m
 
-  backend_integration_tests:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+  backend-integration-tests:
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
-      
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests
+          no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 11 Pro (15.2)
+            SCAN_DEVICE: iPhone 14 (16.2)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: BackendIntegrationTests
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-
-  release-checks: 
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+  release-checks:
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
-
       # Bundler
       - restore_cache:
-          keys: 
-            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
+          keys:
+            - v2-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
-      
-      - update-spm-integration-commit
-      
+      - update-spm-installation-commit
       - run:
           name: Deployment checks
           command: bundle exec fastlane release_checks
@@ -222,52 +489,43 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
-          
+
   docs-deploy:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
+      - setup-git-credentials
       - checkout
-      - install-dependencies
-      - run:
-          name: Install SourceKitten
-          command: brew install sourcekitten
+      - install-bundle-dependencies
       - run:
           name: Build docs
           command: bundle exec fastlane generate_docs
-      - run:
-          name: Install awscli
-          command: sudo python3 -m pip install awscli
-      - run:
-          name: Deploy to S3
-          command: aws s3 sync generated_docs s3://purchases-docs/ios --delete
-      - run:
-          name: Invalidate CloudFront caches
-          command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
-  
+          environment:
+            DOCS_IOS_VERSION: "16.1"
+
   make-release:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
-      - update-spm-integration-commit
+      - update-spm-installation-commit
       - run:
           name: Deploy new version
           command: bundle exec fastlane release
+          no_output_timeout: 30m
+
+  push-pods:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-bundle-dependencies
+      - trust-github-key
+      - run:
+          name: Deploy new version
+          command: bundle exec fastlane push_pods
+          no_output_timeout: 30m
 
   prepare-next-version:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+    <<: *base-job
     steps:
       - checkout
       - install-dependencies
@@ -276,83 +534,75 @@ jobs:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
 
-  integration-tests-cocoapods:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+  installation-tests-cocoapods:
+    <<: *base-job
     steps:
       - checkout
-      
       - install-dependencies
       - install-dependencies:
-          directory: IntegrationTests/CocoapodsIntegration
-
+          directory: Tests/InstallationTests/CocoapodsInstallation
       - run:
           name: Install Pods
-          working_directory: IntegrationTests/CocoapodsIntegration/
+          working_directory: Tests/InstallationTests/CocoapodsInstallation/
           command: |
               pod install
-      
       - scan-and-archive:
-          directory: IntegrationTests/CocoapodsIntegration
-      
-  integration-tests-swift-package-manager:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - trust-github-key
-      - update-spm-integration-commit
-      - install-dependencies:
-          directory: IntegrationTests/SPMIntegration/
-      - scan-and-archive-all-platforms:
-          directory: IntegrationTests/SPMIntegration/
+          directory: Tests/InstallationTests/CocoapodsInstallation
 
-  integration-tests-carthage:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
+  installation-tests-swift-package-manager:
+    <<: *base-job
     steps:
       - checkout
       - trust-github-key
-      - update-carthage-integration-commit
+      - update-spm-installation-commit
+      - install-dependencies:
+          directory: Tests/InstallationTests/SPMInstallation/
+      - scan-and-archive-all-platforms:
+          directory: Tests/InstallationTests/SPMInstallation/
+
+  installation-tests-receipt-parser:
+    <<: *base-job
+    steps:
+      - checkout
+      - trust-github-key
+      - update-spm-installation-commit
+      - install-dependencies:
+          directory: Tests/InstallationTests/ReceiptParserInstallation/
+      - scan-and-archive-all-platforms:
+          directory: Tests/InstallationTests/ReceiptParserInstallation/
+
+  installation-tests-carthage:
+    <<: *base-job
+    steps:
+      - checkout
+      - trust-github-key
+      - update-carthage-installation-commit
       # Carthage
       - run:
           name: Carthage Update
-          working_directory: IntegrationTests/CarthageIntegration/
+          working_directory: Tests/InstallationTests/CarthageInstallation/
           # install without building, then remove the tests and build, so that carthage
-          # doesn't try to build the other integration tests
+          # doesn't try to build the other installation tests
           command: |
               ./carthage.sh update --no-build
-              rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
+              rm -rf Carthage/Checkouts/purchases-root/Tests/InstallationTests/
               ./carthage.sh build --use-xcframeworks
-      
-      - install-dependencies-scan-and-archive:
-          directory: IntegrationTests/CarthageIntegration/
 
-  integration-tests-xcode-direct-integration:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
+      - install-dependencies-scan-and-archive:
+          directory: Tests/InstallationTests/CarthageInstallation/
+
+  installation-tests-xcode-direct-integration:
+    <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
 
       - install-dependencies-scan-and-archive:
-          directory: IntegrationTests/XcodeDirectIntegration/
+          directory: Tests/InstallationTests/XcodeDirectInstallation/
 
   lint:
-    resource_class: macos.x86.medium.gen2
-    macos:
-      xcode: "13.2.0"
+    <<: *base-job
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -370,25 +620,226 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
 
+  danger:
+    docker:
+      - image: cimg/ruby:3.1.2
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - install-rubydocker-dependencies
+      - run:
+          name: Run Danger
+          command: bundle exec danger --verbose
+
+  tag-release-branch:
+    docker:
+      - image: cimg/ruby:3.1.2
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-rubydocker-dependencies
+      - run:
+          name: Tag branch
+          command: bundle exec fastlane tag_current_branch
+
+  release-train:
+    <<: *base-job
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - run:
+          name: Create automatic PR
+          command: bundle exec fastlane automatic_bump github_rate_limit:10
+
+  deploy-purchase-tester:
+    <<: *base-job
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - run:
+          name: Submit Purchase Tester
+          working_directory: "Tests/TestingApps/PurchaseTesterSwiftUI"
+          command: bundle exec fastlane deploy_purchase_tester
+
+  notify-on-non-patch-release-branches:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          custom: |
+              {
+                "text": "Public facing changes detected",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "REMINDER :raised_hand:",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Do *public docs* need to be updated?"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Does the *SDK parity spreadsheet* need to be updated?"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Branch*: $CIRCLE_BRANCH"
+                      }
+                    ]
+                  }
+                ]
+              }
+
 workflows:
   version: 2
   build-test:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
-      - lint
-      - runtest
-      - buildTvWatchAndMacOS
-      - release-checks: *release-branches
-      - backend_integration_tests:
-        filters:
-            branches:
-              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-              ignore: /pull\/[0-9]+/
-      - integration-tests-cocoapods: *release-tags-and-branches
-      - integration-tests-swift-package-manager: *release-tags-and-branches
-      - integration-tests-carthage: *release-tags-and-branches
-      - integration-tests-xcode-direct-integration: *release-tags-and-branches
+      - lint:
+          xcode_version: '14.2.0'
+      - spm-release-build:
+          xcode_version: '14.2.0'
+      - spm-receipt-parser:
+          xcode_version: '14.2.0'
+      - run-test-ios-16:
+          xcode_version: '14.2.0'
+      - run-test-ios-15:
+          xcode_version: '14.2.0'
+      - run-test-tvos:
+          xcode_version: '14.2.0'
+      - run-test-ios-14:
+          # Simulator fails to install on Xcode 14
+          xcode_version: '13.4.1'
+      - run-test-ios-13:
+          # Simulator fails to install on Xcode 14
+          xcode_version: '13.4.1'
+          <<: *release-branches-and-main
+      - run-test-ios-12:
+          # Simulator fails to install on Xcode 14
+          xcode_version: '13.4.1'
+          <<: *release-branches-and-main
+      - build-tv-watch-and-macos:
+          xcode_version: '14.2.0'
+      # To ensure we don't break compilation with Xcode 13.2.1
+      - compile-xcode-13-2:
+          name: xcode-13.2.1
+          xcode_version: '13.2.1'
+          <<: *release-branches-and-main
+      - backend-integration-tests:
+          xcode_version: '14.2.0'
+          filters:
+              branches:
+                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+                ignore: /pull\/[0-9]+/
   deploy:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
-      - make-release: *release-tags
-      # - prepare-next-version: *release-tags Disabled for beta releases.
-      # - docs-deploy: *release-tags Disabled for beta releases.
+      - release-checks:
+          xcode_version: '14.2.0'
+          <<: *release-branches
+      - installation-tests-cocoapods:
+          xcode_version: '14.2.0'
+          <<: *release-branches
+      - installation-tests-swift-package-manager:
+          xcode_version: '14.2.0'
+          <<: *release-branches
+      - installation-tests-receipt-parser:
+          xcode_version: '14.1.0'
+          <<: *release-branches
+      - installation-tests-carthage:
+          xcode_version: '14.2.0'
+          <<: *release-branches
+      - installation-tests-xcode-direct-integration:
+          xcode_version: '14.2.0'
+          <<: *release-branches
+      - hold:
+          type: approval
+          requires:
+            - release-checks
+            - installation-tests-cocoapods
+            - installation-tests-swift-package-manager
+            - installation-tests-carthage
+            - installation-tests-xcode-direct-integration
+            - installation-tests-receipt-parser
+          <<: *release-branches
+      - tag-release-branch:
+          requires:
+            - hold
+          <<: *release-branches
+      - make-release:
+          xcode_version: '14.2.0'
+          <<: *release-tags
+      - push-pods:
+          # Xcode 14 not supported until https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
+          # This runs as its own job until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
+          xcode_version: '13.4.1'
+          requires:
+            - make-release
+          <<: *release-tags
+      - docs-deploy:
+          xcode_version: '14.2.0'
+          <<: *release-tags
+      - deploy-purchase-tester:
+          xcode_version: '14.2.0'
+          <<: *release-tags
+      - notify-on-non-patch-release-branches:
+          requires:
+            - make-release
+          <<: *non-patch-release-branches
+          context: slack-secrets
+  snapshot-bump:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+    jobs:
+      - prepare-next-version:
+          xcode_version: '14.2.0'
+          <<: *only-main-branch
+  danger:
+    jobs:
+      - danger
+  weekly-run-workflow:
+    when:
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ "release-train", << pipeline.schedule.name >> ]
+    jobs:
+      - release-train:
+          xcode_version: '14.2.0'
+  
+  manual-trigger-bump:
+    when:
+      equal: [ bump, << pipeline.parameters.action >> ]
+    jobs:
+      - release-train:
+          xcode_version: '14.2.0'

@@ -4,41 +4,16 @@
 import PackageDescription
 import class Foundation.ProcessInfo
 
-func resolveTargets() -> [Target] {
-    let baseTargets: [Target] = [
-        .target(name: "RevenueCat",
-                path: ".",
-                exclude: [
-                    "APITesters",
-                    "BackendIntegrationTestApp",
-                    "BackendIntegrationTests",
-                    "CHANGELOG.latest.md",
-                    "CHANGELOG.md",
-                    "CODE_OF_CONDUCT.md",
-                    "CONTRIBUTING.md",
-                    "docs",
-                    "Examples",
-                    "fastlane",
-                    "Gemfile",
-                    "Gemfile.lock",
-                    "IntegrationTests",
-                    "LICENSE",
-                    "Purchases/Info.plist",
-                    "PurchasesTests",
-                    "README.md",
-                    "RELEASING.md",
-                    "RevenueCat.podspec",
-                    "scripts",
-                    "StoreKitUnitTests",
-                    "SwiftStyleGuide.swift",
-                    "TestPlans",
-                    "UnitTestsHostApp"
-                    ],
-                sources: ["Purchases"]
-        )
-    ]
+// Only add DocC Plugin when building docs, so that clients of this library won't
+// unnecessarily also get the DocC Plugin
+let environmentVariables = ProcessInfo.processInfo.environment
+let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
-    return baseTargets
+var dependencies: [Package.Dependency] = [
+    .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0")
+]
+if shouldIncludeDocCPlugin {
+    dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
 
 let package = Package(
@@ -51,8 +26,17 @@ let package = Package(
     ],
     products: [
         .library(name: "RevenueCat",
-                 targets: ["RevenueCat"])
+                 targets: ["RevenueCat"]),
+        .library(name: "ReceiptParser",
+                 targets: ["ReceiptParser"])
     ],
-    dependencies: [],
-    targets: resolveTargets()
+    dependencies: dependencies,
+    targets: [
+        .target(name: "RevenueCat",
+                path: "Sources",
+                exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
+        .target(name: "ReceiptParser",
+                path: "LocalReceiptParsing"),
+        .testTarget(name: "ReceiptParserTests", dependencies: ["ReceiptParser", "Nimble"])
+    ]
 )

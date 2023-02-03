@@ -1,0 +1,15 @@
+
+target 'PurchaseTester' do
+  platform :ios, '12.1'
+  # Pods for PurchaseTester
+  pod 'RevenueCat', :path => '../../../'
+
+end
+
+target 'WatchPurchaseTester Extension' do
+  platform :watchos, '6.2'
+
+  # Pods for PurchaseTester
+  pod 'RevenueCat', :path => '../../../'
+
+end

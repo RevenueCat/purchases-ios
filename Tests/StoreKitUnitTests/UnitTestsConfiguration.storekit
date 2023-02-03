@@ -1,0 +1,138 @@
+{
+  "identifier" : "B495CDA2",
+  "nonRenewingSubscriptions" : [
+    {
+      "displayPrice" : "1.69",
+      "familyShareable" : false,
+      "internalID" : "DD970C3E",
+      "localizations" : [
+        {
+          "description" : "Non Renewable Subscription",
+          "displayName" : "Non Renewable Subscription",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.revenuecat.non_renewable",
+      "referenceName" : "Non Renewable",
+      "type" : "NonRenewingSubscription"
+    }
+  ],
+  "products" : [
+    {
+      "displayPrice" : "199.99",
+      "familyShareable" : true,
+      "internalID" : "319A9C2C",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "Lifetime subscription",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "lifetime",
+      "referenceName" : "lifetime",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.49",
+      "familyShareable" : false,
+      "internalID" : "9CF3BDC4",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "Consumable IAP",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.revenuecat.consumable",
+      "referenceName" : "Consumable IAP",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_timeRate" : 6
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "7096FF06",
+      "localizations" : [
+
+      ],
+      "name" : "subscription_group",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+            {
+              "displayPrice" : "40.99",
+              "internalID" : "FF459F3D",
+              "offerID" : "com.revenuecat.monthly_4.99.1_week_intro.year_discount",
+              "paymentMode" : "payUpFront",
+              "referenceName" : "year discount",
+              "subscriptionPeriod" : "P1Y"
+            },
+            {
+              "displayPrice" : "20.15",
+              "internalID" : "DE6B065C",
+              "numberOfPeriods" : 2,
+              "offerID" : "com.revenuecat.monthly_4.99.1_week_intro.pay_as_you_go",
+              "paymentMode" : "payAsYouGo",
+              "referenceName" : "pay as you go",
+              "subscriptionPeriod" : "P1M"
+            }
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "E5E51B92",
+          "introductoryOffer" : {
+            "internalID" : "D4FA46D0",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3M"
+          },
+          "localizations" : [
+            {
+              "description" : "Monthly subscription with a 1-week free trial",
+              "displayName" : "Monthly Free Trial",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.monthly_4.99.1_week_intro",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "monthly free trial",
+          "subscriptionGroupID" : "7096FF06",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "F04B58DC",
+          "introductoryOffer" : {
+            "internalID" : "0539C216",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P2W"
+          },
+          "localizations" : [
+            {
+              "description" : "Annual Subscription with 2 weeks Free Trial",
+              "displayName" : "Annual Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.annual_39.99.2_week_intro",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "annual free trial",
+          "subscriptionGroupID" : "7096FF06",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 1,
+    "minor" : 1
+  }
+}

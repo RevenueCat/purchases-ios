@@ -1,12 +1,12 @@
 excluded:
   - Carthage
-  - Pods
   - Examples
-  - IntegrationTests
-  - BackendIntegrationTests
-  - PublicSDKAPITester
+  - Tests/InstallationTests
+  - Tests/TestingApps
   - vendor
   - scan_derived_data
+  - .git
+  - .build
 
 opt_in_rules:
   - sorted_imports
@@ -16,8 +16,27 @@ opt_in_rules:
   - vertical_parameter_alignment
   - vertical_parameter_alignment_on_call
 
+disabled_rules:
+  - orphaned_doc_comment
+
+custom_rules:
+  xctestcase_superclass:
+    included: ".*\\.swift"
+    excluded:
+      - Tests/BackendIntegrationTests
+      - Tests/ReceiptParserTests
+    regex: "\\: XCTestCase \\{"
+    name: "XCTestCase Superclass"
+    message: "Test classes must inherit `TestCase` instead."
+
 identifier_name:
   max_length: 
     warning: 60 
     error: 80
 
+large_tuple:
+  warning: 4
+  error: 5
+
+missing_docs:
+  excludes_inherited_types: false

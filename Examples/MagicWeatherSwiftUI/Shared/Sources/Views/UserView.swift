@@ -42,7 +42,9 @@ struct UserView: View {
                 Spacer()
 
                 Button("Logout") {
-                    model.logout()
+                    Task {
+                        await model.logout()
+                    }
                 }
                 .foregroundColor(.red)
                 .font(.headline)
@@ -58,10 +60,10 @@ struct UserView: View {
                 TextField("Enter App User ID", text: $newUserId) { (isEditing) in
                     
                 } onCommit: {
-                    guard !newUserId.isEmpty else { return }
-                    
-                    model.login(userId: newUserId)
-                    newUserId = ""
+                    guard !self.newUserId.isEmpty else { return }
+
+                    _ = Task { await self.model.login(userId: newUserId) }
+                    self.newUserId = ""
                     
                 }.multilineTextAlignment(.center)
                 .padding(.top, 8.0)
@@ -71,7 +73,9 @@ struct UserView: View {
                        
             /// - You should always give users the option to restore purchases to connect their purchase to their current app user ID
             Button("Restore Purchases") {
-                Purchases.shared.restorePurchases(completion: nil)
+                Task {
+                    try? await Purchases.shared.restorePurchases()
+                }
             }
             .foregroundColor(.blue)
             .font(.headline)

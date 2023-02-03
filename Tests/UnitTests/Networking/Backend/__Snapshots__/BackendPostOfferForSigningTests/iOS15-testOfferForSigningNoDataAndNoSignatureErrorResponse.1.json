@@ -1,0 +1,20 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "fetch_token" : "YW4gYXdlc29tZSBkaXNjb3VudA==",
+      "generate_offers" : [
+        {
+          "offer_id" : "offerid",
+          "product_id" : "a_great_product",
+          "subscription_group" : "sub_group"
+        }
+      ]
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/offers"
+  }
+}

@@ -1,82 +1,66 @@
-<h3 align="center">😻 In-App Subscriptions Made Easy 😻</h1>
+<h3 align="center">😻 In-App Subscriptions Made Easy 😻</h3>
 
 [![License](https://img.shields.io/cocoapods/l/RevenueCat.svg?style=flat)](http://cocoapods.org/pods/RevenueCat)
-[![Version](https://img.shields.io/cocoapods/v/Purchases.svg?style=flat)](https://cocoapods.org/pods/RevenueCat)
 [![Version](https://img.shields.io/cocoapods/v/RevenueCat.svg?style=flat)](https://cocoapods.org/pods/RevenueCat)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://docs.revenuecat.com/docs/ios#section-install-via-carthage)
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-orange.svg)](https://docs.revenuecat.com/docs/ios#section-install-via-swift-package-manager)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FRevenueCat%2Fpurchases-ios%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/RevenueCat/purchases-ios)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FRevenueCat%2Fpurchases-ios%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/RevenueCat/purchases-ios)
 
-## Purchases.framework (currently supported)
-We're in the process of migrating the entire framework over to Swift 🎉. The new framework is called `RevenueCat.framework`. While this migration is happening, you can (and should) still use the currently supported production version you know and love. If you'd like to help us by testing our beta, please feel free!
+RevenueCat is a powerful, reliable, and free to use in-app purchase server with cross-platform support. Our open-source framework provides a backend and a wrapper around StoreKit and Google Play Billing to make implementing in-app purchases and subscriptions easy. 
 
-### **IMPORTANT:** SPM integration note for users of our stable release:
-Swift Package Manager (SPM) integration is currently not working as expected. If you wish to use the currently supported and stable `Purchases` framework (version 3.13.1), you'll need to specify `< 4.0.0` or for your dependencies in Xcode. By default, Xcode will specify `exactly 4.0.0` and that won't work because we haven't released that version yet, only `4.0.0-beta.x`.
+Whether you are building a new app or already have millions of customers, you can use RevenueCat to:
 
-## RevenueCat.framework Beta
+  * Fetch products, make purchases, and check subscription status with our [native SDKs](https://docs.revenuecat.com/docs/installation). 
+  * Host and [configure products](https://docs.revenuecat.com/docs/entitlements) remotely from our dashboard. 
+  * Analyze the most important metrics for your app business [in one place](https://docs.revenuecat.com/docs/charts).
+  * See customer transaction histories, chart lifetime value, and [grant promotional subscriptions](https://docs.revenuecat.com/docs/customers).
+  * Get notified of real-time events through [webhooks](https://docs.revenuecat.com/docs/webhooks).
+  * Send enriched purchase events to analytics and attribution tools with our easy integrations.
 
-*Purchases* and *RevenueCat* are clients for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system.
+Sign up to [get started for free](https://app.revenuecat.com/signup).
 
-**Purchases** is the currently supported, production-ready, open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing in-app subscriptions in `Swift` or `Objective-C` easy - receipt validation and status tracking included! 
+## RevenueCat.framework
 
-**RevenueCat** is our next big release (what we've been calling Purchases V4). It is a rename of `Purchases` to `RevenueCat`, and now, 100% `Swift` (while maintaining `Objective-C` compatibility). It contains all the same functionality (and almost exactly the same API) as `Purchases`. It's not a brand-new framework, but rather, a migration of the ObjC bits over to Swift with improved nullability, various bug fixes, and some new features. You can see what's changed in the [API updates doc](https://rev.cat/uet).
+*RevenueCat* is the client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It's 100% `Swift` and compatible with `Objective-C`.
 
-It also includes `StoreKit2` support! You can enable it when setting up the framework:
-```swift
-Purchases.configure(
-	withAPIKey: "your_api_key",
-	appUserID: nil,
-	observerMode: false,
-	userDefaults: nil,
-	useStoreKit2IfAvailable: true
-)
-```
-The framework is nearly production-ready, but we're going to keep it in beta while we continue to work on the `StoreKit2` bits and iron out any remaining bugs folks find.
-
-### ⚠️ Beta build warning
-Are you here because you saw a build warning about being on the Beta?
-
-If you're cool being in the beta, there's nothing more for you to do 🎉
-If you think you've made a mistake:
-
-### Getting out of the beta 😿
-#### Swift package manager
-
-- First, you'll need to remove the ReveneCat package from your project.
-- Next, re-add it, but make sure you update the package's repo rules to use `3.0.0 < 4.0.0`
-
-#### Cocoapods
-
-- You need to use `Purchases` pod instead of `RevenueCat`
-
-#### Carthage
-
-- You need to use `github "RevenueCat/purchases-ios" ~> 3.12` in your `Cartfile`
-
-#### Direct Integration
-
-- You'll want to check out one of the `3.x`[Purchases.framework tags](https://github.com/RevenueCat/purchases-ios/tags).
-
-#### After you get out of the beta
-
-Once you revert to version 3 of the framework you'll need to do a reverse migration. While not explicitly outlined in our [API updates doc](https://rev.cat/uet).
-You can see the differences between v3 and V4. The changes are mostly naming updates, so don't worry about having to refactor things beyond that.
+## Migrating from Purchases v3
+- See our [Migration guide](https://revenuecat-docs.netlify.app/documentation/revenuecat/v4_api_migration_guide)
 
 ## RevenueCat SDK Features
 |   | RevenueCat |
 | --- | --- |
 ✅ | Server-side receipt validation
 ➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more
-🖥 | macOS support
+🖥 | iOS, tvOS, macOS and watchOS support
 🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web
 📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn
-📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date
+📝 | [Online documentation](https://docs.revenuecat.com/docs) and [SDK Reference](http://revenuecat.github.io/purchases-ios-docs/) up to date
 🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it
 💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)
-📮 | Great support - [Help Center](https://community.revenuecat.com)
+📮 | Great support - [Contact us](https://revenuecat.com/support)
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
 
-Or browse our iOS sample apps:
+Please follow the [Quickstart Guide](https://docs.revenuecat.com/docs/) for more information on how to install the SDK.
+
+Or view our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
+
+## Requirements
+- Xcode 13.2+
+
+| Platform | Minimum target |
+| --- | --- |
+| iOS | 11.0+ |
+| tvOS | 11.0+ |
+| macOS | 10.13+ |
+| watchOS | 6.2+ |
+
+## SDK Reference
+Our full SDK reference [can be found here](https://revenuecat.github.io/purchases-ios-docs).
+
+## Contributing
+Contributions are always welcome! To learn how you can contribute, please see the [Contributing Guide](./Contributing/CONTRIBUTING.md).

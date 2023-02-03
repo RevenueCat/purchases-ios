@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCat"
-  s.version          = "4.0.0-beta.10"
+  s.version          = "4.18.0-SNAPSHOT"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
-                       Save yourself the hastle of implementing a subscriptions backend. Use RevenueCat instead https://www.revenuecat.com/
+                       Save yourself the hassle of implementing a subscriptions backend. Use RevenueCat instead https://www.revenuecat.com/
                        DESC
 
   s.homepage         = "https://www.revenuecat.com/"
@@ -23,7 +23,8 @@ Pod::Spec.new do |s|
   
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
-  s.source_files = 'Purchases/**/*.swift'
+  s.source_files = 'Sources/**/*.swift'
+  s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**'
   
   
 end

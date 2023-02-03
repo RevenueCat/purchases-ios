@@ -13,6 +13,7 @@ import RevenueCat
  */
 
 struct WeatherView: View {
+
     @Binding var paywallPresented: Bool
     @ObservedObject var model = WeatherViewModel.shared
     @ObservedObject var userModel = UserViewModel.shared
@@ -40,12 +41,11 @@ struct WeatherView: View {
             /// - we'll change the environment in a future update, disable for now
             .allowsHitTesting(false)
 
-            
             Spacer()
             
             /// - The magic button that is disabled behind our paywall
             Button("✨ Change the Weather") {
-                performMagic()
+                self.performMagic()
             }
             .foregroundColor(.white)
             .font(.headline)
@@ -56,18 +56,15 @@ struct WeatherView: View {
 
     }
     
-    func performMagic() {
+    private func performMagic() {
         /*
          We should check if we can magically change the weather (subscription active) and if not, display the paywall.
          */
-        Purchases.shared.getCustomerInfo { (_, _) in
-            if userModel.subscriptionActive {
-                self.model.currentData = SampleWeatherData.generateSampleData(for: self.model.currentEnvironment)
-            } else {
-                self.paywallPresented.toggle()
-            }
+        if self.userModel.subscriptionActive {
+            self.model.currentData = SampleWeatherData.generateSampleData(for: self.model.currentEnvironment)
+        } else {
+            self.paywallPresented.toggle()
         }
     }
+
 }
-
-

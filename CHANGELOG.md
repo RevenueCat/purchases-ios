@@ -1,10 +1,851 @@
+## 4.17.4
+### Bugfixes
+* `CustomerInfoManager`: improved thread-safety (#2224) via NachoSoto (@NachoSoto)
+### Other Changes
+* `StoreKitIntegrationTests`: replaced `XCTSkipIf` with `XCTExpectFailure` (#2244) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: changed `ReceiptRefreshPolicy.always` to `.onlyIfEmpty` after a purchase (#2245) via NachoSoto (@NachoSoto)
+
+## 4.17.3
+### Bugfixes
+* `IntroEligibilityCalculator`: fixed logic for subscriptions in same group (#2174) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: finish SK2 transactions from `StoreKit.Transaction.updates` after posting receipt (#2243) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Purchases`: fixed documentation warnings (#2241) via NachoSoto (@NachoSoto)
+* Code coverage (#2242) via NachoSoto (@NachoSoto)
+* Improve logging for custom package durations (#2240) via Cody Kerns (@codykerns)
+* `TrialOrIntroPriceEligibilityChecker`: use `TimingUtil` to log when it takes too long (#2238) via NachoSoto (@NachoSoto)
+* Update `fastlane-plugin-revenuecat_internal` (#2239) via NachoSoto (@NachoSoto)
+* Simplified `OperationDispatcher.dispatchOnMainActor` (#2236) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: added contents of `CHANGELOG.latest.md` to `TestFlight` changelog (#2233) via NachoSoto (@NachoSoto)
+* `SystemInfo.isApplicationBackgrounded`: added overload for `@MainActor` (#2230) via NachoSoto (@NachoSoto)
+
+## 4.17.2
+### Bugfixes
+* `Purchases`: avoid potential crash when initializing in the background (#2231) via NachoSoto (@NachoSoto)
+### Other Changes
+* `PurchaseTester`: ignore errors when restoring purchases (#2228) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: fixed `isPurchasing` state when purchasing fails (#2229) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: setting `changelog` when submitting to `TestFlight` (#2232) via NachoSoto (@NachoSoto)
+* Revert "`SPM`: added `APPLICATION_EXTENSION_API_ONLY` flag to `RevenueCat` and `ReceiptParser` (#2217)" (#2225) via NachoSoto (@NachoSoto)
+
+## 4.17.1
+### Other Changes
+* set flag to extract objc info for swift symbols (#2218) via Andy Boedo (@aboedo)
+* Produce a compilation error when using an old `Xcode` version (#2222) via NachoSoto (@NachoSoto)
+* `SPM`: added `APPLICATION_EXTENSION_API_ONLY` flag to `RevenueCat` and `ReceiptParser` (#2217) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: added section to visualize `AppleReceipt` (#2211) via NachoSoto (@NachoSoto)
+
+## 4.17.0
+### New Features
+* Added new `ReceiptParser.fetchAndParseLocalReceipt` (#2204) via NachoSoto (@NachoSoto)
+* `PurchasesReceiptParser`: added API to parse receipts from `base64` string (#2200) via NachoSoto (@NachoSoto)
+### Bugfixes
+* `CustomerInfo`: support parsing schema version 2 to restore SDK `v3.x` compatibility (#2213) via NachoSoto (@NachoSoto)
+### Other Changes
+* `JSONDecoder`: added decoding type when logging `DecodingError.keyNotFound` (#2212) via NachoSoto (@NachoSoto)
+* Added `ReceiptParserTests` (#2203) via NachoSoto (@NachoSoto)
+* Deploy `PurchaseTester` for `macOS` (#2011) via NachoSoto (@NachoSoto)
+* `ReceiptFetcher`: refactored implementation to log error when failing to fetch receipt (#2202) via NachoSoto (@NachoSoto)
+* `PostReceiptDataOperation`: replaced receipt `base64` with `hash` for cache key (#2199) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: small refactor to simplify `Date` formatting (#2210) via NachoSoto (@NachoSoto)
+* `PurchasesReceiptParser`: improved documentation to reference `default` (#2197) via NachoSoto (@NachoSoto)
+* Created `CachingTrialOrIntroPriceEligibilityChecker` (#2007) via NachoSoto (@NachoSoto)
+* Update Gemfile.lock (#2205) via Cesar de la Vega (@vegaro)
+* remove stalebot in favor of SLAs in Zendesk (#2196) via Andy Boedo (@aboedo)
+* Update fastlane-plugin-revenuecat_internal to latest version (#2194) via Cesar de la Vega (@vegaro)
+
+## 4.16.0
+### New Features
+* Created `ReceiptParser` SPM (#2155) via NachoSoto (@NachoSoto)
+* Exposed `PurchasesReceiptParser` and `AppleReceipt` (#2153) via NachoSoto (@NachoSoto)
+### Bugfixes
+* `Restore purchases`: post product data when posting receipts (#2178) via NachoSoto (@NachoSoto)
+### Other Changes
+* Added `Dictionary.merge` (#2190) via NachoSoto (@NachoSoto)
+* `CircleCI`: use Xcode 14.2.0 (#2187) via NachoSoto (@NachoSoto)
+* `ReceiptParser`: a few documentation improvements (#2189) via NachoSoto (@NachoSoto)
+* `Purchase Tester`: fixed `TestFlight` deployment (#2188) via NachoSoto (@NachoSoto)
+* `Purchase Tester`: display specific `IntroEligibilityStatus` (#2184) via NachoSoto (@NachoSoto)
+* `Purchase Tester`: fixed `SubscriptionPeriod` (#2185) via NachoSoto (@NachoSoto)
+
+## 4.15.5
+### Bugfixes
+* `ErrorUtils.purchasesError(withUntypedError:)`: handle `PublicError`s (#2165) via NachoSoto (@NachoSoto)
+* Fixed race condition finishing `SK1` transactions (#2148) via NachoSoto (@NachoSoto)
+* `IntroEligibilityStatus`: added `CustomStringConvertible` implementation (#2182) via NachoSoto (@NachoSoto)
+* `BundleSandboxEnvironmentDetector`: fixed logic for `macOS` (#2176) via NachoSoto (@NachoSoto)
+* Fixed `AttributionFetcher.adServicesToken` hanging when called in simulator (#2157) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Purchase Tester`: added ability to purchase products directly with `StoreKit` (#2172) via NachoSoto (@NachoSoto)
+* `DNSChecker`: simplified `NetworkError` initialization (#2166) via NachoSoto (@NachoSoto)
+* `Purchases` initialization: refactor to avoid multiple concurrent instances in memory (#2180) via NachoSoto (@NachoSoto)
+* `Purchase Tester`: added button to clear messages on logger view (#2179) via NachoSoto (@NachoSoto)
+* `NetworkOperation`: added assertion to ensure that subclasses call completion (#2138) via NachoSoto (@NachoSoto)
+* `CacheableNetworkOperation`: avoid unnecessarily creating operations for cache hits (#2135) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: fixed `macOS` support (#2175) via NachoSoto (@NachoSoto)
+* `IntroEligibilityCalculator`: added log including `AppleReceipt` (#2181) via NachoSoto (@NachoSoto)
+* `Purchase Tester`: fixed scene manifest (#2170) via NachoSoto (@NachoSoto)
+* `HTTPClientTests`: refactored to use `waitUntil` (#2168) via NachoSoto (@NachoSoto)
+* `Integration Tests`: split up tests in smaller files (#2158) via NachoSoto (@NachoSoto)
+* `StoreKitRequestFetcher`: removed unnecessary dispatch (#2152) via NachoSoto (@NachoSoto)
+* `Purchase Tester`: added companion `watchOS` app (#2140) via NachoSoto (@NachoSoto)
+* `StoreKit1Wrapper`: added warning if receiving too many updated transactions (#2117) via NachoSoto (@NachoSoto)
+* `StoreKitTestHelpers`: cleaned up unnecessary log (#2177) via NachoSoto (@NachoSoto)
+* `TrialOrIntroPriceEligibilityCheckerSK1Tests`: use `waitUntilValue` (#2173) via NachoSoto (@NachoSoto)
+* `DNSChecker`: added log with resolved host (#2167) via NachoSoto (@NachoSoto)
+* `MagicWeatherSwiftUI`: updated `README` to point to workspace (#2142) via NachoSoto (@NachoSoto)
+* `Purchase Tester`: fixed `.storekit` config file reference (#2171) via NachoSoto (@NachoSoto)
+* `Purchase Tester`: fixed error alerts (#2169) via NachoSoto (@NachoSoto)
+* `CI`: don't make releases until `release-checks` pass (#2162) via NachoSoto (@NachoSoto)
+* `Fastfile`: changed `match` to `readonly` (#2161) via NachoSoto (@NachoSoto)
+
+## 4.15.4
+### Bugfixes
+* Fix sending presentedOfferingIdentifier in StoreKit2 (#2156) via Toni Rico (@tonidero)
+* `ReceiptFetcher`: throttle receipt refreshing to avoid `StoreKit` throttle errors (#2146) via NachoSoto (@NachoSoto)
+### Other Changes
+* Added integration and unit tests to verify observer mode behavior (#2069) via NachoSoto (@NachoSoto)
+* Created `ClockType` and `TestClock` to be able to mock time (#2145) via NachoSoto (@NachoSoto)
+* Extracted `asyncWait` to poll `async` conditions in tests (#2134) via NachoSoto (@NachoSoto)
+* `StoreKitRequestFetcher`: added log when starting/ending requests (#2151) via NachoSoto (@NachoSoto)
+* `CI`: fixed `PurchaseTester` deployment (#2147) via NachoSoto (@NachoSoto)
+
+## 4.15.3
+### Bugfixes
+* Un-deprecate `Purchases.configure(withAPIKey:appUserID:)` and `Purchases.configure(withAPIKey:appUserID:observerMode:)` (#2129) via NachoSoto (@NachoSoto)
+### Other Changes
+* `ReceiptFetcherTests`: refactored tests using `waitUntilValue` (#2144) via NachoSoto (@NachoSoto)
+* Added a few performance improvements for `ReceiptParser` (#2124) via NachoSoto (@NachoSoto)
+* `CallbackCache`: fixed reference (#2143) via NachoSoto (@NachoSoto)
+* `PostReceiptDataOperation`: clarified receipt debug log (#2128) via NachoSoto (@NachoSoto)
+* `CallbackCache`: avoid exposing internal mutable cache (#2136) via NachoSoto (@NachoSoto)
+* `CallbackCache`: added assertion for tests to ensure we don't leak callbacks (#2137) via NachoSoto (@NachoSoto)
+* `NetworkOperation`: made `Atomic` references immutable (#2139) via NachoSoto (@NachoSoto)
+* `ReceiptParser`: ensure parsing never happens in the main thread (#2123) via NachoSoto (@NachoSoto)
+* `PostReceiptDataOperation`: also print receipt data with `verbose` logs (#2127) via NachoSoto (@NachoSoto)
+* `BasePurchasesTests`: detecting and fixing many `DeviceCache` leaks (#2105) via NachoSoto (@NachoSoto)
+* `StoreKitIntegrationTests`: added test to check applying a promotional offer during subscription (#1588) via NachoSoto (@NachoSoto)
+
+## 4.15.2
+### Bugfixes
+* Fixed purchasing with `PromotionalOffer`s using `StoreKit 2` (#2020) via NachoSoto (@NachoSoto)
+### Other Changes
+* `CircleCI`: cache Homebrew installation (#2103) via NachoSoto (@NachoSoto)
+* `Integration Tests`: fixed `Purchases` leak through `PurchasesDiagnostics` (#2126) via NachoSoto (@NachoSoto)
+* `HTTPClient`: replaced `X-StoreKit2-Setting` with `X-StoreKit2-Enabled` (#2118) via NachoSoto (@NachoSoto)
+* `BasePurchasesTests`: added assertion to ensure `Purchases` does not leak (#2104) via NachoSoto (@NachoSoto)
+* `ReceiptParser.parse` always throws `ReceiptParser.Error` (#2099) via NachoSoto (@NachoSoto)
+* `Tests`: ensure `Purchases` is not configured multiple times (#2100) via NachoSoto (@NachoSoto)
+* Extracted `LoggerType` (#2098) via NachoSoto (@NachoSoto)
+* `Integration Tests`: verify `Purchases` does not leak across tests (#2106) via NachoSoto (@NachoSoto)
+* `StoreKit2` listeners: set `Task` `priority` to `.utility` (#2070) via NachoSoto (@NachoSoto)
+* `Installation Tests`: remove unused code in `Fastfile` (#2097) via NachoSoto (@NachoSoto)
+* `DeviceCache`: added verbose logs for `init`/`deinit` (#2101) via NachoSoto (@NachoSoto)
+* `StoreKit1Wrapper`: process transactions in a background thread (#2115) via NachoSoto (@NachoSoto)
+* update CONTRIBUTING.md link in bug report template (#2119) via Nate Lowry (@natelowry)
+
+## 4.15.1
+### Bugfixes
+* `Configuration.with(appUserID:)`: allow passing `nil` and added new tests (#2110) via NachoSoto (@NachoSoto)
+### Other Changes
+* Fix documentation typo (#2113) via Bas Broek (@BasThomas)
+
+## 4.15.0
+### New Features
+* Added `LogLevel.verbose` (#2080) via NachoSoto (@NachoSoto)
+### Other Changes
+* Fixed `LogLevel` ordering and added tests (#2102) via NachoSoto (@NachoSoto)
+* `TimingUtil`: fixed Xcode 13.2 compilation (#2088) via NachoSoto (@NachoSoto)
+* Generate documentation for `iOS` instead of `macOS` (#2089) via NachoSoto (@NachoSoto)
+* Update `fastlane` (#2090) via NachoSoto (@NachoSoto)
+* CI: speed up `docs-deploy` by only installing `bundle` dependencies (#2092) via NachoSoto (@NachoSoto)
+* `Tests`: replaced `toEventually` with new `waitUntilValue` to simplify tests (#2071) via NachoSoto (@NachoSoto)
+* `CircleCI`: fixed `docs-deploy` git credentials (#2087) via NachoSoto (@NachoSoto)
+* Added `verbose` logs for `Purchases` and `StoreKit1Wrapper` lifetime (#2082) via NachoSoto (@NachoSoto)
+* `StoreKit`: added logs when purchasing and product requests are too slow (#2061) via NachoSoto (@NachoSoto)
+* Created `TimingUtil` to measure and log methods that are too slow (#2059) via NachoSoto (@NachoSoto)
+* `SKTestSession`: finish all unfinished transactions before starting each test (#2066) via NachoSoto (@NachoSoto)
+* `CircleCI`: lowered `no_output_timeout` to 5 minutes (#2084) via NachoSoto (@NachoSoto)
+* Removed unused `APITesters.xcworkspace` and created `RevenueCat.xcworkspace` (#2075) via NachoSoto (@NachoSoto)
+* `Atomic`: added new test to verify each instance gets its own `Lock` (#2077) via NachoSoto (@NachoSoto)
+* `Logger`: exposed generic `log` method (#2058) via NachoSoto (@NachoSoto)
+
+## 4.14.3
+### Bugfixes
+* Changed default `UserDefaults` from `.standard` to our own Suite (#2046) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Logging`: added log when configuring SDK in observer mode (#2065) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: added observer mode setting (#2052) via NachoSoto (@NachoSoto)
+* Exposed `SystemInfo.observerMode` to simplify code (#2064) via NachoSoto (@NachoSoto)
+* `Result.init(catching:)` with `async` method (#2060) via NachoSoto (@NachoSoto)
+* Updated schemes and project for Xcode 14.1 (#2081) via NachoSoto (@NachoSoto)
+* `PurchasesSubscriberAttributesTests`: simplified tests (#2056) via NachoSoto (@NachoSoto)
+* `DeviceCache`: removed `fatalError` for users not overriding `UserDefaults` (#2079) via NachoSoto (@NachoSoto)
+* `DeviceCache`: changed `NotificationCenter` observation to be received on posting thread (#2078) via NachoSoto (@NachoSoto)
+* `StoreKit1Wrapper`: added instance address when detecting transactions (#2055) via NachoSoto (@NachoSoto)
+* Fixed lint issues with `SwiftLint 0.5.0` (#2076) via NachoSoto (@NachoSoto)
+* `NSData+RCExtensionsTests`: improved errors (#2043) via NachoSoto (@NachoSoto)
+* `APITester`: fixed warning in `SubscriptionPeriodAPI` (#2054) via NachoSoto (@NachoSoto)
+* `Integration Tests`: always run them in random order locally (#2068) via NachoSoto (@NachoSoto)
+
+## 4.14.2
+### Bugfixes
+* `StoreKit 2`: don't finish transactions in observer mode (#2053) via NachoSoto (@NachoSoto)
+### Other Changes
+* `CircleCI`: added ability to create a release manually (#2067) via NachoSoto (@NachoSoto)
+* Changelog: Fix links to V4 API Migration guide (#2051) via Kevin Quisquater (@KevinQuisquater)
+* `HTTPClient`: added log for failed requests (#2048) via NachoSoto (@NachoSoto)
+* `ErrorResponse.asBackendError`: serialize attribute errors as `NSDictionary` (#2034) via NachoSoto (@NachoSoto)
+* `ErrorCode.unknownBackendError`: include original error code (#2032) via NachoSoto (@NachoSoto)
+* `CI`: fixed `push-pods` job (#2045) via NachoSoto (@NachoSoto)
+* `PostReceiptDataOperation`: log Apple error when purchase equals expiration date (#2038) via NachoSoto (@NachoSoto)
+* Update Fastlane plugin (#2041) via Cesar de la Vega (@vegaro)
+
+## 4.14.1
+### Bugfixes
+* `ISO8601DateFormatter.withMilliseconds`: fixed iOS 11 crash (#2037) via NachoSoto (@NachoSoto)
+* Changed `StoreKit2Setting.default` back to `.enabledOnlyForOptimizations` (#2022) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Integration Tests`: changed weekly to monthly subscriptions to work around 0-second subscriptions (#2042) via NachoSoto (@NachoSoto)
+* `Integration Tests`: fixed `testPurchaseWithAskToBuyPostsReceipt` (#2040) via NachoSoto (@NachoSoto)
+* `ReceiptRefreshPolicy.retryUntilProductIsFound`: default to returning "invalid" receipt (#2024) via NachoSoto (@NachoSoto)
+* `CachingProductsManager`: use partial cached products (#2014) via NachoSoto (@NachoSoto)
+* Added `BackendErrorCode.purchasedProductMissingInAppleReceipt` (#2033) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: replaced `Purchases` dependency with `SPM` (#2027) via NachoSoto (@NachoSoto)
+* `Integration Tests`: changed log output to `raw` (#2031) via NachoSoto (@NachoSoto)
+* `Integration Tests`: run on iOS 16 (#2035) via NachoSoto (@NachoSoto)
+* CI: fixed `iOS 14` tests Xcode version (#2030) via NachoSoto (@NachoSoto)
+* `Async.call`: added non-throwing overload (#2006) via NachoSoto (@NachoSoto)
+* Documentation: Fixed references in `V4_API_Migration_guide.md` (#2018) via NachoSoto (@NachoSoto)
+* `eligiblePromotionalOffers`: don't log error if response is ineligible (#2019) via NachoSoto (@NachoSoto)
+* Runs push-pods after make-release (#2025) via Cesar de la Vega (@vegaro)
+* Some updates on notify-on-non-patch-release-branches: (#2026) via Cesar de la Vega (@vegaro)
+* Deploy `PurchaseTesterSwiftUI` to TestFlight (#2003) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: added "logs" screen (#2012) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: allow configuring API key at runtime (#1999) via NachoSoto (@NachoSoto)
+
+## 4.14.0
+### New Features
+* Introduced `PurchasesDiagnostics` to help diagnose SDK configuration errors (#1977) via NachoSoto (@NachoSoto)
+### Bugfixes
+* Avoid posting empty receipts by making`TransactionsManager` always use `SK1` implementation (#2015) via NachoSoto (@NachoSoto)
+* `NetworkOperation`: workaround for iOS 12 crashes (#2008) via NachoSoto (@NachoSoto)
+### Other Changes
+* Makes hold job wait for installation tests to pass (#2017) via Cesar de la Vega (@vegaro)
+* Update fastlane-plugin-revenuecat_internal (#2016) via Cesar de la Vega (@vegaro)
+* `bug_report.md`: changed SK2 wording (#2010) via NachoSoto (@NachoSoto)
+* Added `Set + Set` and `Set += Set` operators (#2013) via NachoSoto (@NachoSoto)
+* fix the link to StoreKit Config file from watchOS purchaseTester (#2009) via Andy Boedo (@aboedo)
+* `PurchaseTesterSwiftUI`: combined targets into one multi-platform and fixed `macOS` (#1996) via NachoSoto (@NachoSoto)
+* Less Array() (#2005) via SabinaHuseinova (@SabinaHuseinova)
+* Docs: fixed `logIn` references (#2002) via NachoSoto (@NachoSoto)
+* CI: use `Xcode 14.1` (#1992) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: fixed warnings and simplified code using `async` methods (#1985) via NachoSoto (@NachoSoto)
+
+## 4.13.4
+### Bugfixes
+* Fixed Xcode 13.2.x / Swift 5.5 compatibility (#1994) via NachoSoto (@NachoSoto)
+### Other Changes
+* Update `fastlane` (#1998) via NachoSoto (@NachoSoto)
+* Documentation: fixed missing docs from inherited symbols (#1997) via NachoSoto (@NachoSoto)
+* CI: added job to test compilation with `Xcode 13.2.1` / `Swift 5.5` (#1990) via NachoSoto (@NachoSoto)
+* Extracted `TrialOrIntroPriceEligibilityCheckerType` (#1983) via NachoSoto (@NachoSoto)
+* CI: removed redundant `swiftlint` installation (#1993) via NachoSoto (@NachoSoto)
+* `Nimble`: use a fixed version (#1991) via NachoSoto (@NachoSoto)
+* Update fastlane-plugin-revenuecat_internal (#1989) via Cesar de la Vega (@vegaro)
+* `Purchases.logIn`: log warning if attempting to use a static `appUserID` (#1958) via NachoSoto (@NachoSoto)
+* Created `InternalAPI` for "health" request (#1971) via NachoSoto (@NachoSoto)
+
+## 4.13.3
+### Other Changes
+* `TrialOrIntroPriceEligibilityChecker`: only use SK2 implementation if enabled (#1984) via NachoSoto (@NachoSoto)
+
+## 4.13.2
+### Bugfixes
+* Purchasing: fixed consumable purchases by fixing transaction-finishing (#1965) via NachoSoto (@NachoSoto)
+* `ErrorUtils`: improved logging and `localizedDescription` to include underlying errors (#1974) via NachoSoto (@NachoSoto)
+* `PaymentQueueWrapper`: also implement `shouldShowPriceConsent` (#1963) via NachoSoto (@NachoSoto)
+* `ReceiptFetcher`: added retry mechanism (#1945) via NachoSoto (@NachoSoto)
+* `PaymentQueueWrapper`: also conform to `SKPaymentTransactionObserver` to fix promoted purchases (#1962) via NachoSoto (@NachoSoto)
+### Other Changes
+*  Updating great support link via Miguel José Carranza Guisado (@MiguelCarranza)
+* `OfferingsManager`: added ability to fail if any product is not found (#1976) via NachoSoto (@NachoSoto)
+* `OfferingsManager`: added missing test for ignoring missing products (#1975) via NachoSoto (@NachoSoto)
+* `PaymentQueueWrapper`: improved abstraction for active `SKPaymentQueue` wrapper (#1968) via NachoSoto (@NachoSoto)
+* `ErrorUtils.purchasesError(withUntypedError:)` handle `PurchasesErrorConvertible` (#1973) via NachoSoto (@NachoSoto)
+* Renamed `CallbackCache.add(callback:)` (#1970) via NachoSoto (@NachoSoto)
+* Fixed iOS 12/13 test snapshots (#1972) via NachoSoto (@NachoSoto)
+* Moved `SKPaymentQueue.presentCodeRedemptionSheet` to `StoreKitWorkarounds` (#1967) via NachoSoto (@NachoSoto)
+* `Async.call` method to convert completion-block call to `async` (#1969) via NachoSoto (@NachoSoto)
+* Remind about updating docs and parity spreadsheet on minor releases (#1955) via Cesar de la Vega (@vegaro)
+* `PostReceiptDataOperation`: added `initiationSource` parameter (#1957) via NachoSoto (@NachoSoto)
+* `StoreKit1Wrapper`: separated `SKPaymentTransactionObserver` and `SKPaymentQueueDelegate` implementations (#1961) via NachoSoto (@NachoSoto)
+* Refactored `Error.isCancelledError` into `Error+Extensions` (#1960) via NachoSoto (@NachoSoto)
+* Update fastlane plugin (#1959) via Cesar de la Vega (@vegaro)
+* `Integration Tests`: simplified `testIneligibleForIntroAfterPurchaseExpires` to fix flakiness (#1952) via NachoSoto (@NachoSoto)
+* fix typo in comment (#1956) via Andy Boedo (@aboedo)
+
+## 4.13.1
+### Other Changes
+* `ProductsFetcherSK2`: removed now redundant caching logic (#1908) via NachoSoto (@NachoSoto)
+* Created `CachingProductsManager` to provide consistent caching logic when fetching products (#1907) via NachoSoto (@NachoSoto)
+* Refactored `ReceiptFetcher.receiptData` (#1941) via NachoSoto (@NachoSoto)
+* Abstracted conversion from `async` to completion-block APIs (#1943) via NachoSoto (@NachoSoto)
+* Moved `InAppPurchase` into `AppleReceipt` (#1942) via NachoSoto (@NachoSoto)
+* `Purchases+async`: combined `@available` statements into a single one (#1944) via NachoSoto (@NachoSoto)
+* `Integration Tests`: don't initialize `Purchases` until the `SKTestSession` has been re-created (#1946) via NachoSoto (@NachoSoto)
+* `PostReceiptDataOperation`: print receipt data if `debug` logs are enabled (#1940) via NachoSoto (@NachoSoto)
+
+## 4.13.0
+### New Features
+* 🚨 `StoreKit 2` is now enabled by default 🚨 (#1922) via NachoSoto (@NachoSoto)
+* Extracted `PurchasesType` and `PurchasesSwiftType` (#1912) via NachoSoto (@NachoSoto)
+### Bugfixes
+* `StoreKit 1`: changed result of cancelled purchases to be consistent with `StoreKit 2` (#1910) via NachoSoto (@NachoSoto)
+* `PaymentQueueWrapper`: handle promotional purchase requests from App Store when SK1 is disabled (#1901) via NachoSoto (@NachoSoto)
+### Other Changes
+* Fixed iOS 12 tests (#1936) via NachoSoto (@NachoSoto)
+* `CacheableNetworkOperation`: fixed race condition in new test (#1932) via NachoSoto (@NachoSoto)
+* `BasePurchasesTests`: changed default back to SK1 (#1935) via NachoSoto (@NachoSoto)
+* `Logger`: refactored default `LogLevel` definition (#1934) via NachoSoto (@NachoSoto)
+* `AppleReceipt`: refactored declarations into nested types (#1933) via NachoSoto (@NachoSoto)
+* `Integration Tests`: relaunch tests when retrying failures (#1925) via NachoSoto (@NachoSoto)
+* `CircleCI`: downgraded release jobs to Xcode 13.x (#1927) via NachoSoto (@NachoSoto)
+* `ErrorUtils`: added test to verify that `PublicError`s can be `catch`'d as `ErrorCode` (#1924) via NachoSoto (@NachoSoto)
+* `StoreKitIntegrationTests`: print `AppleReceipt` data whenever `verifyEntitlementWentThrough` fails (#1929) via NachoSoto (@NachoSoto)
+* `OperationQueue`: log debug message when requests are found in cache and skipped (#1926) via NachoSoto (@NachoSoto)
+* `GetCustomerInfoAPI`: avoid making a request if there's any `PostReceiptDataOperation` in progress (#1911) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: allow HTTP requests and enable setting `ProxyURL` (#1917) via NachoSoto (@NachoSoto)
+## 4.12.1
+### Bugfixes
+* `Purchases.beginRefundRequest`: ensured errors are `PublicError` (#1913) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: fixed macOS target (#1915) via NachoSoto (@NachoSoto)
+### Other Changes
+* Fixed `tvOS` tests (#1928) via NachoSoto (@NachoSoto)
+* `SnapshotTesting`: require version 1.9.0 to keep supporting iOS 12/13 tests (#1931) via NachoSoto (@NachoSoto)
+* `pre-commit` hook: also verify leftover API keys in `PurchaseTester` (#1914) via NachoSoto (@NachoSoto)
+* `CircleCI`: changed iOS 12/13 to use Xcode 13 (#1918) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: removed unnecessary `UIApplicationDelegate` (#1916) via NachoSoto (@NachoSoto)
+* `CircleCI`: changed all jobs to use Xcode 14 (#1909) via NachoSoto (@NachoSoto)
+* `Atomic`: added unit test to verify `value`'s setter (#1905) via NachoSoto (@NachoSoto)
+* `spm build` CI job: changed to release build (#1903) via NachoSoto (@NachoSoto)
+* `StoreKitUnitTests`:  compile on iOS 11.0+ (#1904) via NachoSoto (@NachoSoto)
+* `Purchases`: only expose testing data on `DEBUG` (#1902) via NachoSoto (@NachoSoto)
+* `Integration Tests`: added test to verify re-subscription behavior (#1898) via NachoSoto (@NachoSoto)
+* `IntegrationTests`: simplified `testExpireSubscription` to fix flaky test (#1899) via NachoSoto (@NachoSoto)
+* `Integration Tests`: actually verify that entitlement is active (#1880) via NachoSoto (@NachoSoto)
+
+## 4.12.0
+### Bugfixes
+* `watchOS`: fixed crash when ran on single-target apps with Xcode 14 and before `watchOS 9.0` (#1895) via NachoSoto (@NachoSoto)
+* `CustomerInfoManager`/`OfferingsManager`: improved display of underlying errors (#1888) via NachoSoto (@NachoSoto)
+* `Offering`: improved confusing log for `PackageType.custom` (#1884) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: don't log warning if `allowSharingAppStoreAccount` setting was never explicitly set (#1885) via NachoSoto (@NachoSoto)
+* Introduced type-safe `PurchasesError` and fixed some incorrect returned error types (#1879) via NachoSoto (@NachoSoto)
+* `CustomerInfoManager`: fixed thread-unsafe implementation (#1878) via NachoSoto (@NachoSoto)
+### New Features
+* Disable SK1's `StoreKitWrapper` if SK2 is enabled and available (#1882) via NachoSoto (@NachoSoto)
+* `Sendable` support (#1795) via NachoSoto (@NachoSoto)
+### Other Changes
+* Renamed `StoreKitWrapper` to `StoreKit1Wrapper` (#1886) via NachoSoto (@NachoSoto)
+* Enabled `DEAD_CODE_STRIPPING` (#1887) via NachoSoto (@NachoSoto)
+* `HTTPClient`: added `X-Client-Bundle-ID` and logged on SDK initialization (#1883) via NachoSoto (@NachoSoto)
+* add link to SDK reference (#1872) via Andy Boedo (@aboedo)
+* Added `StoreKit2Setting.shouldOnlyUseStoreKit2` (#1881) via NachoSoto (@NachoSoto)
+* Introduced `TestLogHandler` to simplify how we test logged messages (#1858) via NachoSoto (@NachoSoto)
+* `Integration Tests`: added test for purchasing `StoreProduct` instead of `Package` (#1875) via NachoSoto (@NachoSoto)
+* `ErrorUtils`: added test to verify that returned errors can be converted to `ErrorCode` (#1871) via NachoSoto (@NachoSoto)
+
+## 4.11.0
+### Bugfixes
+* Fixed crash on `async` SK1 cancelled purchase (#1869) via NachoSoto (@NachoSoto)
+### New Features
+* Added `beginRefundRequest` overload with completion block (#1861) via NachoSoto (@NachoSoto)
+### Other Changes
+* Skip release if needed and adds automatic release to PR title and body (#1870) via Cesar de la Vega (@vegaro)
+
+## 4.10.3
+### Bugfixes
+* `TrialOrIntroPriceEligibilityChecker`: return `.noIntroOfferExists` if the product has no introductory offer (#1859) via NachoSoto (@NachoSoto)
+* `watchOS`: fixed crash on single-target apps (#1849) via NachoSoto (@NachoSoto)
+### Other Changes
+* Update fastlane-plugin-revenuecat_internal and fix release-train job (#1866) via Cesar de la Vega (@vegaro)
+* fix typo in comment (#1863) via Andy Boedo (@aboedo)
+* Use Dangerfile repository (#1864) via Cesar de la Vega (@vegaro)
+* `CircleCI`: added job for building SDK with `SPM` (#1860) via NachoSoto (@NachoSoto)
+* `Lock`: changed default implementation to use `NSLock` (#1819) via NachoSoto (@NachoSoto)
+* `Offering`/`StoreProductType`: `Sendable` conformance (#1826) via NachoSoto (@NachoSoto)
+* `ReceiptParser: Sendable` conformance (#1825) via NachoSoto (@NachoSoto)
+* `CustomerInfo: Sendable` conformance (#1824) via NachoSoto (@NachoSoto)
+* Added `Collection.onlyElement` (#1857) via NachoSoto (@NachoSoto)
+* README updates (#1856) via rglanz-rc (@rglanz-rc)
+* `IntegrationTests`: actually fail test if tests aren't configured (#1855) via NachoSoto (@NachoSoto)
+* `Configuration.with(usesStoreKit2IfAvailable:)`: removed "experimental" warning (#1845) via NachoSoto (@NachoSoto)
+* Build fix- Update package requirements for MagicWeather (#1852) via Joshua Liebowitz (@taquitos)
+* `Fastfile`: `test_tvos` lane had duplicate parameter (#1846) via NachoSoto (@NachoSoto)
+
+## 4.10.2
+### Bugfixes
+* `ErrorResponse`: don't add attribute errors to message if empty (#1844) via NachoSoto (@NachoSoto)
+* Purchase cancellations: unify behavior between SK1 and SK2 (#1841) via NachoSoto (@NachoSoto)
+* StoreKit 2: `PurchasesOrchestrator`: don't log "purchased product" if it was cancelled (#1840) via NachoSoto (@NachoSoto)
+* `Backend`: fixed potential race conditions introduced by `OperationDispatcher.dispatchOnWorkerThread(withRandomDelay:)` (#1827) via NachoSoto (@NachoSoto)
+* `DeviceCache`: `Sendable` conformance and fixed thread-safety (#1823) via NachoSoto (@NachoSoto)
+* Directly send delegate customer info when delegate is set (always sends cached CustomerInfo value) (#1828) via Josh Holtz (@joshdholtz)
+* `SystemInfo.finishTransactions`: made thread-safe (#1807) via NachoSoto (@NachoSoto)
+* `Purchases.shared` and `Purchases.isConfigured` are now thread-safe (#1813) via NachoSoto (@NachoSoto)
+* `PriceFormatterProvider: Sendable` conformance and fixed thread-safety (#1818) via NachoSoto (@NachoSoto)
+* `StoreKitConfigTestCase.changeStorefront`: re-enabled on iOS 16 (#1811) via NachoSoto (@NachoSoto)
+
+### Other Changes
+* `DeviceCache`: no longer set cache timestamp before beginning request (#1839) via NachoSoto (@NachoSoto)
+* `MagicWeatherSwiftUI`: updated to use `async` APIs (#1843) via NachoSoto (@NachoSoto)
+* Release train (#1842) via Cesar de la Vega (@vegaro)
+* Adds hotfixes section to RELEASING doc (#1837) via Cesar de la Vega (@vegaro)
+* Update fastlane plugin (#1838) via Toni Rico (@tonidero)
+* Update migration doc from didReceiveUpdatedCustomerInfo to receivedUpdatedCustomerInfo (#1836) via Josh Holtz (@joshdholtz)
+* `PurchasesDelegate`: added test for latest cached customer info always being sent (#1830) via NachoSoto (@NachoSoto)
+* `CallbackCache: Sendable` conformance (#1835) via NachoSoto (@NachoSoto)
+* `CallbackCache`: simplified implementation using `Atomic` (#1834) via NachoSoto (@NachoSoto)
+* `PurchasesLogInTests`: added test to verify `logIn` updates offerings cache (#1833) via NachoSoto (@NachoSoto)
+* Created `PurchasesLoginTests` (#1832) via NachoSoto (@NachoSoto)
+* `SwiftLint`: cleaned up output (#1821) via NachoSoto (@NachoSoto)
+* Link to sdk reference (#1831) via aboedo (@aboedo)
+* `Atomic: ExpressibleByBooleanLiteral` (#1822) via NachoSoto (@NachoSoto)
+* `SwiftLint`: fixed build warning (#1820) via NachoSoto (@NachoSoto)
+* Adds an approval job that will tag the release (#1815) via Cesar de la Vega (@vegaro)
+* `Atomic: ExpressibleByNilLiteral` (#1804) via NachoSoto (@NachoSoto)
+* `PurchasesAttributionDataTests`: fixed potential race condition in flaky test (#1805) via NachoSoto (@NachoSoto)
+* Fixed warnings for unnecessary `try` (#1816) via NachoSoto (@NachoSoto)
+* Moved `AttributionFetcherError` inside `AttributionFetcher` (#1808) via NachoSoto (@NachoSoto)
+* Update documentation for presentCodeRedemptionSheet (#1817) via Joshua Liebowitz (@taquitos)
+* `Dangerfile`: added "next_release" as supported label (#1810) via NachoSoto (@NachoSoto)
+* PurchaseTester- Update Podfile.lock (#1814) via Joshua Liebowitz (@taquitos)
+* Update to latest fastlane plugin (#1802) via Toni Rico (@tonidero)
+* Clean up: moved `BackendIntegrationTests.xctestplan` to `TestPlans` folder (#1812) via NachoSoto (@NachoSoto)
+* `SK2StoreProduct`: conditionally removed `@available` workaround (#1794) via NachoSoto (@NachoSoto)
+* `SwiftLint`: fixed deprecation warning (#1809) via NachoSoto (@NachoSoto)
+* Update gems (#1791) via Joshua Liebowitz (@taquitos)
+* Replace usages of replace_in with replace_text_in_files action (#1803) via Toni Rico (@tonidero)
+
+## 4.10.1
+### Bugfixes
+* Directly send delegate customer info when delegate is set (always sends cached CustomerInfo value) (#1828) via Josh Holtz (@joshdholtz)
+
+## 4.10.0
+### New Features
+* New AdServices Integration (#1727) via Josh Holtz (@joshdholtz)
+### Bugfixes
+* `OfferingsManager`: expose underlying error when `ProductsManager` returns an error (#1792) via NachoSoto (@NachoSoto)
+* Add missing logs to ProductsFetcherSK2 (#1780) via beylmk (@beylmk)
+### Other Changes
+* AdServices: Fix failing tests on main in iOS 12 and 13 - IOSAttributionPosterTests (#1797) via Josh Holtz (@joshdholtz)
+* Invalidates gem caches and separates danger and macOS caches (#1798) via Cesar de la Vega (@vegaro)
+* Pass CircleCI branch to prepare_next_version job (#1796) via Toni Rico (@tonidero)
+* Configure Danger, enforce labels (#1761) via Cesar de la Vega (@vegaro)
+* Support for new fastlane internal plugin for automation (#1779) via Toni Rico (@tonidero)
+
+## 4.9.1
+### Fixes:
+* `CustomerInfoResponseHandler`: return `CustomerInfo` instead of error if the response was successful (#1778) via NachoSoto (@NachoSoto)
+* Error logging: `logErrorIfNeeded` no longer prints message if it's the same as the error description (#1776) via NachoSoto (@NachoSoto)
+* fix another broken link in docC docs (#1777) via aboedo (@aboedo)
+* fix links to restorePurchase (#1775) via aboedo (@aboedo)
+* fix getProducts docs broken link (#1772) via aboedo (@aboedo)
+
+### Improvements:
+* `Logger`: wrap `message` in `@autoclosure` to avoid creating when `LogLevel` is disabled (#1781) via NachoSoto (@NachoSoto)
+
+### Other changes:
+* Lint: fixed `SubscriberAttributesManager` (#1774) via NachoSoto (@NachoSoto)
+## 4.9.0
+* Update Configuration.swift to include platformInfo. Used by PurchasesHybridCommon (#1760) via Joshua Liebowitz (@taquitos)
+
+## 4.8.0
+### New API
+
+* `EntitlementInfo`: added `isActiveInCurrentEnvironment` and `isActiveInAnyEnvironment` (#1755) via NachoSoto (@NachoSoto)
+
+### Other Changes
+* Plumb platformInfo in Configuration for PHC use (#1757) via Joshua Liebowitz (@taquitos)
+* added a log when `autoSyncPurchases` is disabled (#1749) via aboedo (@aboedo)
+* Re-fetch cached offerings and products after Storefront changes (3/4)  (#1743) via Juanpe Catalán (@Juanpe)
+* `bug_report.md`: clarify SK2 support (#1752) via NachoSoto (@NachoSoto)
+* `logErrorIfNeeded`: also log message if present (#1754) via NachoSoto (@NachoSoto)
+
+## 4.7.0
+### Changes:
+* Replaced `CustomerInfo.nonSubscriptionTransactions` with a new non-`StoreTransaction` type (#1733) via NachoSoto (@NachoSoto)
+* `Purchases.configure`: added overload taking a `Configuration.Builder` (#1720) via NachoSoto (@NachoSoto)
+* Extract Attribution logic out of Purchases (#1693) via Joshua Liebowitz (@taquitos)
+* Remove create alias (#1695) via Joshua Liebowitz (@taquitos)
+
+All attribution APIs can now be accessed from `Purchases.shared.attribution`.
+
+### Improvements:
+* Improved purchasing logs, added promotional offer information (#1725) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: don't log attribute errors if there are none (#1742) via NachoSoto (@NachoSoto)
+* `FatalErrorUtil`: don't override `fatalError` on release builds (#1736) via NachoSoto (@NachoSoto)
+* `SKPaymentTransaction`: added more context to warnings about missing properties (#1731) via NachoSoto (@NachoSoto)
+* New SwiftUI Purchase Tester example (#1722) via Josh Holtz (@joshdholtz)
+* update docs for `showManageSubscriptions` (#1729) via aboedo (@aboedo)
+* `PurchasesOrchestrator`: unify finish transactions between SK1 and SK2 (#1704) via NachoSoto (@NachoSoto)
+* `SubscriberAttribute`: converted into `struct` (#1648) via NachoSoto (@NachoSoto)
+* `CacheFetchPolicy.notStaleCachedOrFetched`: added warning to docstring (#1708) via NachoSoto (@NachoSoto)
+* Clear cached offerings and products after Storefront changes (2/4) (#1583) via Juanpe Catalán (@Juanpe)
+* `ROT13`: optimized initialization and removed magic numbers (#1702) via NachoSoto (@NachoSoto)
+
+### Fixes:
+* `logIn`/`logOut`: sync attributes before aliasing (#1716) via NachoSoto (@NachoSoto)
+* `Purchases.customerInfo(fetchPolicy:)`: actually use `fetchPolicy` parameter (#1721) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: fix behavior dealing with `nil` `SKPaymentTransaction.productIdentifier` during purchase (#1680) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator.handlePurchasedTransaction`: always refresh receipt data (#1703) via NachoSoto (@NachoSoto)
+
+## 4.6.1
+### Bug fixes
+
+* `EntitlementInfo.isActive` returns true if `requestDate == expirationDate` (#1684) via beylmk (@beylmk)
+* Fixed usages of `seealso` (#1689) via NachoSoto (@NachoSoto)
+* Fixed `ROT13.string` thread-safety (#1686) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: replaced calls to `syncPurchases` with posting receipt for an individual product during SK2 purchases (#1666) via NachoSoto (@NachoSoto)
+
+## 4.6.0
+_This release is compatible with Xcode 14 beta 1_
+
+### New Features
+
+* `EntitlementInfos`: added `activeInAnyEnvironment` and `activeInCurrentEnvironment` (#1647) via NachoSoto (@NachoSoto)
+
+In addition to `EntitlementInfos.active`, two new methods are added to allow detecting entitlements from sandbox and production environments:
+```swift
+customerInfo.entitlements.activeInCurrentEnvironment
+customerInfo.entitlements.activeInAnyEnvironment
+```
+
+### Bug fixes
+
+* `MacDevice`: changed usage of `kIOMasterPortDefault` to fix Catalyst compilation on Xcode 14 (#1676) via NachoSoto (@NachoSoto)
+* `Result.init(value:error:)`: avoid creating error if value is provided (#1672) via NachoSoto (@NachoSoto)
+
+## 4.5.2
+_This version supports Xcode 14 beta 1_
+
+* `PurchasesOrchestrator.handleDeferredTransaction`: check `NSError.domain` too (#1665) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: replaced manual `Lock` with `Atomic` (#1664) via NachoSoto (@NachoSoto)
+* `CodableStrings.decoding_error`: added underlying error information (#1668) via NachoSoto (@NachoSoto)
+* Fixed Xcode 14 compilation: avoid `@available` properties (#1661) via NachoSoto (@NachoSoto)
+
+## 4.5.1
+### Fixes
+
+- Fix an issue where entitlement identifiers and product identifiers would get converted to snake case and returned as empty.
+    https://github.com/RevenueCat/purchases-ios/pull/1651
+    https://github.com/RevenueCat/purchases-ios/issues/1650
+
+## 4.5.0
+### New Features
+* `Purchases.customerInfo()`: added overload with a new `CacheFetchPolicy` (#1608) via NachoSoto (@NachoSoto)
+* `Storefront`: added `sk1CurrentStorefront` for Objective-C (#1614) via NachoSoto (@NachoSoto)
+
+### Bug Fixes
+* Fix for not being able to read receipts on watchOS (#1625) via Patrick Busch (@patrickbusch)
+
+### Other Changes
+* Added tests for `PurchasesOrchestrator` invoking `listenForTransactions` only if SK2 is enabled (#1618) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: removed `lazy` hack for properties with `@available` (#1596) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator.purchase(sk2Product:promotionalOffer:)`: simplified implementation with new operator (#1602) via NachoSoto (@NachoSoto)
+
+## 4.4.0
+### New Features
+* Added new API key validation (#1581) via NachoSoto (@NachoSoto)
+* Sending `X-Is-Sandbox` header in API requests (#1582) via NachoSoto (@NachoSoto)
+* Added `AmazonStore` to `Store` enum (#1586) via Will Taylor (@fire-at-will)
+* Added `Configuration` object and API to configure Purchases (#1556) via Joshua Liebowitz (@taquitos)
+* Exposed `shouldShowPriceConsent` on `PurchasesDelegate` (#1520) via Joshua Liebowitz (@taquitos)
+
+### Fixes
+* `ManageSubscriptionsHelper`: fixed discrepancy between `SystemInfo.isAppleSubscription(managementURL:)` and `SystemInfo.appleSubscriptionsURL` (#1607) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: don't listen for StoreKit 2 transactions if it's disabled (#1593) via NachoSoto (@NachoSoto)
+* Added tests and fix to ensure `RawDataContainer` includes all data (#1565) via NachoSoto (@NachoSoto)
+* Added obsoletion for `DeferredPromotionalPurchaseBlock` (#1600) via NachoSoto (@NachoSoto)
+* `StoreKit 2` purchases: don't throw when purchase is cancelled (#1603) via NachoSoto (@NachoSoto)
+* Ensure `SubscriptionPeriod`s are represented as 1week instead of 7days (#1591) via Will Taylor (@fire-at-will)
+* `PurchaseStrings`: fixed transaction message formatting (#1571) via NachoSoto (@NachoSoto)
+* `willRenew` update comment for lifetime will be false (#1579) via Josh Holtz (@joshdholtz)
+* `SK1StoreProductDiscount`: handle `SKProductDiscount.priceLocale` being `nil` and created `StoreKitWorkarounds` (#1545) via NachoSoto (@NachoSoto)
+* Fixed `ErrorUtils.logDecodingError` (#1539) via NachoSoto (@NachoSoto)
+
+### Other changes
+* `GetIntroEligibilityOperation`: replaced response parsing with `Decodable` (#1576) via NachoSoto (@NachoSoto)
+* `PostOfferForSigningOperation`: changed response parsing to using `Decodable` (#1573) via NachoSoto (@NachoSoto)
+* Converted `CustomerInfo` and related types to use `Codable` (#1496) via NachoSoto (@NachoSoto)
+* `MagicWeatherSwiftUI`: fixed usage of `PurchaseDelegate` (#1601) via NachoSoto (@NachoSoto)
+* Added tests for `PeriodType`/`PurchaseOwnershipType`/`Store` (#1558) via NachoSoto (@NachoSoto)
+* Fix description of `StoreTransaction` (#1584) via aboedo (@aboedo)
+* Prepare the codebase to listen to the Storefront changes (1/4) (#1557) via Juanpe Catalán (@Juanpe)
+* `Purchases.canMakePayments`: moved implementation to `StoreKitWrapper` (#1580) via NachoSoto (@NachoSoto)
+* `BackendGetIntroEligibilityTests`: fixed test that was passing before anything ran (#1575) via NachoSoto (@NachoSoto)
+* `PeriodType`/`PurchaseOwnershipType`/`Store`: conform to `Encodable` (#1551) via NachoSoto (@NachoSoto)
+* Improved `EntitlementInfosTests` (#1547) via NachoSoto (@NachoSoto)
+* `ProductRequestData`: added `Storefront` for receipt posting (#1505) via NachoSoto (@NachoSoto)
+* Added `RawDataContainer` conformances to APITesters (#1550) via NachoSoto (@NachoSoto)
+* Simplified `EntitlementInfo.isEqual` (#1548) via NachoSoto (@NachoSoto)
+* `CustomerInfo`: moved deprecated property to `Deprecations` (#1549) via NachoSoto (@NachoSoto)
+* `PackageType`: simplified `typesByDescription` and implemented `CustomDebugStringConvertible` (#1531) via NachoSoto (@NachoSoto)
+
+## 4.3.0
+
+#### API updates:
+
+- Introduced new `Storefront` type to abstract SK1's `SKStorefront` and SK2's `StoreKit.Storefront`.
+- Exposed `Storefront.currentStorefront`.
+- Added new `ErrorCode.offlineConnectionError` to differenciate offline errors versus the more generic `.networkError`.
+- Added `Purchases-setFirebaseAppInstanceID` to allow associating RevenueCat users with Firebase.
+- Added `Purchases.setPushTokenString` as an overload to `Purchases.setPushToken`.
+- Renamed `PurchasesDelegate.purchases(_:shouldPurchasePromoProduct:defermentBlock:)` to `PurchasesDelegate.purchases(_ purchases: Purchases, readyForPromotedProduct product: StoreProduct, purchase:)` to clarify its usage (see #1460).
+
+#### Other:
+
+- Many improvements to error reporting and logging to help debugging.
+- Optimized StoreKit 2 purchasing by eliminating a duplicate API request.
+- A lot of under-the-hood improvements, mainly focusing on networking. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
+
+
+## 4.2.1
+
+- Fixed a potential race condition when syncing user attributes #1479
+
+## 4.2.0
+#### API updates:
+
+- Added new method `setMixpanelDistinctID` as a convenience method for setting the required attribute for the Mixpanel integration #1397
+
+- `getPromotionalOffer` has been deprecated in favor of `promotionalOffer` #1405
+
+- `getEligiblePromotionalOffers` has been deprecated in favor of `eligiblePromotionalOffers` #1405
+
+- `StoreProductDiscount` now includes the `numberOfPeriods` property #1428
+
+
+#### Other:
+
+- Added workaround for StoreKit 1 incorrectly reporting purchase cancellations #1450
+
+- MagicWeatherSwiftUI now includes an example for using `purchases(:shouldPurchasePromoProduct:defermentBlock:)` #1459
+
+- Various documentation improvements
+
+- Additional under-the-hood improvements, continuing to focus on network requests and tests.
+
+## 4.1.0
+
+#### API updates: 
+
+- Added new method `checkTrialOrIntroDiscountEligibility(product:)`, which allows you to check for intro or discount eligibility for a single `StoreProduct`. 
+    https://github.com/RevenueCat/purchases-ios/pull/1354
+
+- Added explicit parameter name for `checkTrialOrIntroDiscountEligibility(productIdentifiers:)`. 
+The existing method without the parameter name still work, but is now deprecated. Xcode will offer an auto fix-it for it. 
+    https://github.com/RevenueCat/purchases-ios/pull/1362
+
+- Made `StoreProduct` initializers public so they can be used for testing. 
+
+#### Other:
+
+- Added auto-fix-it for `invalidatePurchaserInfoCache` rename
+    https://github.com/RevenueCat/purchases-ios/pull/1379
+
+- Docs improvements
+- A lot of under-the-hood improvements, mainly focusing on network requests and tests.
+
+
+## 4.0.0
+
+RevenueCat iOS SDK v4 is here!! 
+
+![Dancing cats](https://media.giphy.com/media/lkbNG2zqzHZUA/giphy.gif)
+
+[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/main...4.0.0)
+
+### Migration Guide
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
+**Note:** This release is based off of 4.0.0-rc.4. Developers migrating from that version shouldn't see any changes. 
+
+### API changes:
+There have been a lot of changes since v3! 
+
+Here are the highlights:
+
+#### Async / Await alternative APIs
+New `async / await` alternatives for all APIs that have completion blocks, as well as an `AsyncStream` for CustomerInfo. 
+
+#### New types and cleaned up naming
+New types that wrap StoreKit's native types, and we cleaned up the naming of other types and methods for a more consistent experience. 
+
+#### New APIs for Customer Support
+You can now use `showManageSubscriptions()` and `beginRefundRequest()` to help your users manage their subscriptions right from the app.
+
+#### Rewritten in Swift 
+We [rewrote the SDK in 100% Swift](https://www.revenuecat.com/blog/migrating-our-objective-c-sdk-to-swift). This made the code more uniform and easy to maintain, and helps us better support StoreKit 2. 
+
+#### StoreKit 2 Support [Beta]
+**[Experimental]** Introduced support for using StoreKit 2 under the hood for compatible devices. This is currently in beta phase, and disabled by default. 
+When enabled, StoreKit 2 APIs will be used under the hood for purchases in compatible devices. You can enable this by configuring the SDK passing `useStoreKit2IfAvailable: true`. 
+On devices that don't support StoreKit 2, StoreKit 1 will be used automatically instead. 
+ 
+#### Full API changes list
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
+
+### Documentation: 
+
+We built a new Documentation site with Docc with cleaner and more detailed docs. 
+The new documentation can be found [here](https://revenuecat-docs.netlify.app/documentation/Revenuecat). 
+
+## 4.0.0-RC.4
+
+- Fourth RC for RevenueCat framework v4 🎉
+    100% Swift framework + ObjC support.
+
+[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-rc.3...4.0.0-rc.4)
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
+
+RC 4 introduces the following updates:
+
+### API changes:
+
+#### Breaking changes: 
+- Replaced `checkPromotionalDiscountEligibility` with `getPromotionalOffer`, which returns a `PromotionalOffer`. 
+- Renamed `Purchases/purchase(package:discount:)` and its variants to `Purchases/purchase(package:promotionalOffer:)`. They now take a `PromotionalOffer` instead of a `StoreProductDiscount`.
+- [Objective-C only]: Updated type of `StoreProduct.price` and `StoreProductDiscount.price` from `NSDecimal` to the much more useful `NSDecimalNumber`. 
+
+#### Additions:
+- Added `StoreProduct.ProductType`, and `StoreProduct.ProductCategory`, which provide extra information about whether a product is a consumable, non-consumable, auto-renewable or non-auto-renewable subscription.
+- Added `currencyCode` to `StoreProduct` and `StoreProductDiscount`.
+- Added `localizedPriceString` to `StoreProductDiscount`.
+
+### Documentation: 
+
+- Documentation can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat. 
+- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK. 
+
+### Other changes: 
+- There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
+
+### Changes from previous RC
+
+These changes add to all of the changes from beta RC 2, [listed here.](https://github.com/RevenueCat/purchases-ios/blob/4.0.0-rc.3/CHANGELOG.latest.md).
+
+## 4.0.0-RC.3
+
+- Third RC for RevenueCat framework v4 🎉
+    100% Swift framework + ObjC support.
+
+[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-rc.2...4.0.0-rc.3)
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
+
+RC 3 introduces the following updates:
+
+### API changes:
+
+- Added `setCleverTapID`, for integration with CleverTap.
+- Added `.noIntroOfferExists` as an `IntroEligibilityStatus`, for more granularity when checking for intro pricing eligibility.
+- Added `StoreProductDiscount.type`, which allows you to easily tell whether a discount represents a Promo Offer or an Intro Pricing.
+
+### Documentation: 
+
+- Documentation can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat. 
+- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK. 
+
+### Migration fixes
+
+- Fixed a few instances where Xcode's automatic migration tools wouldn't automatically suggest a fix-it for updated code.
+
+### Other changes: 
+- There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
+
+### Changes from previous RC
+
+These changes add to all of the changes from beta RC 2, [listed here.](https://github.com/RevenueCat/purchases-ios/blob/4.0.0-rc.2/CHANGELOG.latest.md).
+
+## 4.0.0-RC.2
+
+- Second RC for RevenueCat framework v4 🎉
+    100% Swift framework + ObjC support.
+
+[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-rc.1...4.0.0-rc.2)
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
+
+RC 2 introduces the following updates:
+
+### API changes:
+
+- Removed `SubscriptionPeriod.Unit.unknown`. Subscriptions with empty `SubscriptionPeriod` values will have `nil` `subscriptionPeriod` instead.
+- Removed `StoreProductDiscount.none`, since it wasn't needed.
+- Added `useStoreKit2IfAvailable` (Experimental) configuration option. This is disabled by default.
+If enabled, the SDK will use StoreKit 2 APIs for purchases under the hood.
+**This is currently in an experimental phase, and we don't recommend using it in production in this build.**
+
+### Documentation: 
+
+- Documentation is now using DocC and it can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat. 
+- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK. 
+
+### Migration fixes
+
+- Fixed a few instances where Xcode's automatic migration tools wouldn't correctly update the code.
+
+### Other changes: 
+- There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
+
+### Changes from previous RC
+
+These changes add to all of the changes from beta RC 1, [listed here.](https://github.com/RevenueCat/purchases-ios/blob/4.0.0-rc.1/CHANGELOG.latest.md).
+
+
+## 4.0.0-RC.1
+
+- First RC for RevenueCat framework v4 🎉
+    100% Swift framework + ObjC support.
+
+[Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.10...4.0.0-rc.1)
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
+
+RC 1 introduces the following updates:
+
+### API changes:
+
+- `Purchases.paymentDiscount(forProductDiscount:product:completion:)` and `Purchases.paymentDiscount(forProductDiscount:product:)` have been removed. Now, instead of obtaining the `SKPaymentDiscount` from a `SKProductDiscount` to then call `purchase(package:discount:)`, you check eligibility for the promo offer by calling `checkPromotionalDiscountEligibility(forProductDiscount:product:)`, then get the `StoreProductDiscount` directly from the `StoreProduct` and pass that into `purchase(package:discount:)`. 
+
+- `StoreProduct` and `StoreProductDiscount`, replace `SKProduct` and `SKProductDiscount` in the following methods:
+    - `Purchases.getProducts(_:completion:)`
+    - `Purchases.products(_:)`
+    - `Purchases.purchase(product:completion:)`
+    - `Purchases.purchase(product:)`
+    - `Purchases.purchase(product:discount:completion:)`
+    - `Purchases.purchase(product:discount:)`
+    - `Purchases.purchase(package:discount:completion:)`
+    - `Purchases.purchase(package:discount:)`
+    - `PurchasesDelegate.purchases(shouldPurchasePromoProduct:defermentBlock:)`
+- `StoreProduct.introductoryPrice` has been renamed to `StoreProduct.introductoryDiscount`
+- `StoreTransaction` now includes `quantity`
+- Renamed `Purchases.restoreTransactions` to `Purchases.restorePurchases`
+- Lowered `StoreProduct.introductoryDiscount` availability to iOS 11.2 and equivalent OS versions
+- Added several `@available` annotations for automatic migration from StoreKit types
+
+In addition to all of the changes from beta 10, [listed here.](https://github.com/RevenueCat/purchases-ios/blob/4.0.0-beta.10/CHANGELOG.latest.md)
+
+
+### Other changes: 
+- There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
+
+
 ## 4.0.0-beta.10
 
 - Tenth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.9...4.0.0-beta.10)
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 Beta 10 introduces the following updates:
 
@@ -31,7 +872,7 @@ https://github.com/RevenueCat/purchases-ios/blob/4.0.0-beta.9/CHANGELOG.latest.m
     100% Swift framework + ObjC support.
 
 [Full Changelog](https://github.com/revenuecat/purchases-ios/compare/4.0.0-beta.8...4.0.0-beta.9)
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 ### Breaking changes:
 - `identify`, previously deprecated, has been removed in favor of `logIn`.
@@ -80,7 +921,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.8
 - Eighth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Replaced custom DateFormatter with new ISO8601DateFormatter
     https://github.com/RevenueCat/purchases-ios/pull/998
 - Put CustomerInfo Logging into LoginHandler function
@@ -93,7 +934,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.7
 - Seventh beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - macOS: improved ErrorCode.storeProblemError to indicate potential cancellation
     https://github.com/RevenueCat/purchases-ios/pull/943
 - Log when duplicate subscription time lengths exist during Offering init
@@ -108,14 +949,14 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.6
 - Sixth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Add more specific backend error subcodes
     https://github.com/RevenueCat/purchases-ios/pull/927
 
 ## 4.0.0-beta.5
 - Fifth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Improve error handling for backend errors
     https://github.com/RevenueCat/purchases-ios/pull/922
 - Replaced #file with #fileID
@@ -126,7 +967,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.4
 - Fourth beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Purchaser to Customer rename
     https://github.com/RevenueCat/purchases-ios/pull/878
     https://github.com/RevenueCat/purchases-ios/pull/899
@@ -145,7 +986,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.3
 - Third beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Fix bug logging the incorrect missing product IDs in `getOfferings`
 - Fix MagicWeather sample app with latest updates
 - Add caching of completion blocks for `createAlias` and `identify` calls to avoid sending calls with the same parameters at the same time
@@ -153,7 +994,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.2
 - Second beta for RevenueCat framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Our API is now more consistent, `completionBlock` -> `completion` across Swift/ObjC
 - Fixed SPM warning relating to excluding `RequiresXcode13` 
 - Make parameter labels that were optional pre-migration optional again
@@ -161,7 +1002,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ## 4.0.0-beta.1
 - First beta for RevenueCat (previously Purchases) framework 🎉
     100% Swift framework + ObjC support.
-- See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
+- See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
 ## 3.12.5
 - Cache callbacks for `createAlias` and `identify` to avoid sending multiple calls with same parameters at the same time

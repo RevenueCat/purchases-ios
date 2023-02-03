@@ -26,6 +26,9 @@ struct PaywallView: View {
     
     private let footerText = "Don't forget to add your subscription terms and conditions. Read more about this here: https://www.revenuecat.com/blog/schedule-2-section-3-8-b"
     
+    @State private var error: NSError?
+    @State private var displayError: Bool = false
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -39,15 +42,19 @@ struct PaywallView: View {
                                 isPurchasing = true
                                 
                                 /// - Purchase a package
-                                Purchases.shared.purchase(package: package) { (transaction, info, error, userCancelled) in
-                                    
+                                do {
+                                    let result = try await Purchases.shared.purchase(package: package)
+
                                     /// - Set 'isPurchasing' state to `false`
-                                    isPurchasing = false
-                                    
-                                    /// - If the user didn't cancel and there wasn't an error with the purchase, close the paywall
-                                    if !userCancelled, error == nil {
-                                        isPresented = false
+                                    self.isPurchasing = false
+
+                                    if !result.userCancelled {
+                                        self.isPresented = false
                                     }
+                                } catch {
+                                    self.isPurchasing = false
+                                    self.error = error as NSError
+                                    self.displayError = true
                                 }
                             }
                         }
@@ -68,15 +75,37 @@ struct PaywallView: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .colorScheme(.dark)
+        .alert(
+            isPresented: self.$displayError,
+            error: self.error,
+            actions: { _ in
+                Button(role: .cancel,
+                       action: { self.displayError = false },
+                       label: { Text("OK") })
+            },
+            message: { Text($0.recoverySuggestion ?? "Please try again") }
+        )
     }
 }
 
 /* The cell view for each package */
 struct PackageCellView: View {
+
     let package: Package
-    let onSelection: (Package) -> Void
+    let onSelection: (Package) async -> Void
     
     var body: some View {
+        Button {
+            Task {
+                await self.onSelection(self.package)
+            }
+        } label: {
+            self.buttonLabel
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var buttonLabel: some View {
         HStack {
             VStack {
                 HStack {
@@ -102,8 +131,14 @@ struct PackageCellView: View {
                 .bold()
         }
         .contentShape(Rectangle()) // Make the whole cell tappable
-        .onTapGesture {
-            onSelection(package)
-        }
     }
+
+}
+
+extension NSError: LocalizedError {
+
+    public var errorDescription: String? {
+        return self.localizedDescription
+    }
+
 }

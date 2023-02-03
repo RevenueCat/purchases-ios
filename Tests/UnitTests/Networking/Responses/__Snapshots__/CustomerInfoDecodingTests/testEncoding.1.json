@@ -1,0 +1,53 @@
+{
+  "request_date" : 668454178,
+  "schema_version" : "3",
+  "subscriber" : {
+    "entitlements" : {
+      "premium" : {
+        "expires_date" : -326323164,
+        "product_identifier" : "com.revenuecat.monthly_4.99.1_week_intro",
+        "purchase_date" : -326323164
+      },
+      "tip" : {
+        "product_identifier" : "com.revenuecat.product.tip",
+        "purchase_date" : -323644764
+      }
+    },
+    "first_seen" : 668454178,
+    "management_url" : "https:\/\/apps.apple.com\/account\/subscriptions",
+    "non_subscriptions" : {
+      "com.revenuecat.product.tip" : [
+        {
+          "id" : "17459f5ff7",
+          "is_sandbox" : false,
+          "original_purchase_date" : 668563468,
+          "purchase_date" : 666230608,
+          "store" : "app_store"
+        }
+      ]
+    },
+    "original_app_user_id" : "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
+    "original_application_version" : "1.0",
+    "original_purchase_date" : 671414604,
+    "subscriptions" : {
+      "com.revenuecat.ABCDNA12U.ProductName" : {
+        "expires_date" : 671414615,
+        "is_sandbox" : true,
+        "original_purchase_date" : 671414608,
+        "ownership_type" : "PURCHASED",
+        "period_type" : "intro",
+        "purchase_date" : 671414608,
+        "store" : "app_store"
+      },
+      "com.revenuecat.monthly_4.99.1_week_intro" : {
+        "expires_date" : 671414615,
+        "is_sandbox" : true,
+        "original_purchase_date" : 671414608,
+        "ownership_type" : "PURCHASED",
+        "period_type" : "intro",
+        "purchase_date" : 671414608,
+        "store" : "app_store"
+      }
+    }
+  }
+}

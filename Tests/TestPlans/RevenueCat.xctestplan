@@ -1,0 +1,32 @@
+{
+  "configurations" : [
+    {
+      "id" : "6EE88B1C-2739-4847-85D2-D560E881945B",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "RCRunningTests",
+        "value" : "1"
+      }
+    ],
+    "testExecutionOrdering" : "random"
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DC5621D24EC63430031F69B",
+        "name" : "UnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}

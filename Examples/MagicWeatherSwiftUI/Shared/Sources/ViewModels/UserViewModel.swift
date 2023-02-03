@@ -34,18 +34,18 @@ class UserViewModel: ObservableObject {
      Read more about Identifying Users here: https://docs.revenuecat.com/docs/user-ids
      */
     #warning("Public-facing usernames aren't optimal for user ID's - you should use something non-guessable, like a non-public database ID. For more information, visit https://docs.revenuecat.com/docs/user-ids.")
-    func login(userId: String) {
-        Purchases.shared.logIn(userId) { _, _, _ in }
+    func login(userId: String) async {
+        _ = try? await Purchases.shared.logIn(userId)
     }
     
-    func logout() {
+    func logout() async {
         /**
          The current user ID is no longer valid for your instance of *Purchases* since the user is logging out, and is no longer authorized to access customerInfo for that user ID.
          
-         `reset` clears the cache and regenerates a new anonymous user ID.
+         `logOut` clears the cache and regenerates a new anonymous user ID.
          
-         - Note: Each time you call `reset`, a new installation will be logged in the RevenueCat dashboard as that metric tracks unique user ID's that are in-use. Since this method generates a new anonymous ID, it counts as a new user ID in-use.
+         - Note: Each time you call `logOut`, a new installation will be logged in the RevenueCat dashboard as that metric tracks unique user ID's that are in-use. Since this method generates a new anonymous ID, it counts as a new user ID in-use.
          */
-        Purchases.shared.logOut(completion: nil)
+        _ = try? await Purchases.shared.logOut()
     }
 }
