@@ -27,16 +27,16 @@ class HTTPClientTests: TestCase {
     override func setUp() {
         super.setUp()
 
-        userDefaults = MockUserDefaults()
-        eTagManager = MockETagManager(userDefaults: userDefaults)
-        operationDispatcher = OperationDispatcher()
+        self.userDefaults = MockUserDefaults()
+        self.eTagManager = MockETagManager(userDefaults: self.userDefaults)
+        self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
 
-        client = HTTPClient(apiKey: apiKey,
-                            systemInfo: systemInfo,
-                            eTagManager: eTagManager,
-                            dnsChecker: MockDNSChecker.self,
-                            requestTimeout: 3)
+        self.client = HTTPClient(apiKey: self.apiKey,
+                                 systemInfo: self.systemInfo,
+                                 eTagManager: self.eTagManager,
+                                 dnsChecker: MockDNSChecker.self,
+                                 requestTimeout: 3)
     }
 
     override func tearDown() {
@@ -51,7 +51,7 @@ class HTTPClientTests: TestCase {
         let host = try XCTUnwrap(SystemInfo.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             hostCorrect.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .get, path: .mockPath)
@@ -68,7 +68,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("Authorization")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -85,7 +85,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("content-type", value: "application/json")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -102,7 +102,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform", value: SystemInfo.platformHeader)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -119,7 +119,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -136,7 +136,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -156,7 +156,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed(headerName)) { request in
             header.value = request.value(forHTTPHeaderField: headerName)
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -176,7 +176,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed(headerName)) { request in
             header.value = request.value(forHTTPHeaderField: headerName)
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -195,7 +195,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: isPath(request.path)) { _ in
             pathHit.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -213,7 +213,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasBody(bodyData)) { _ in
             pathHit.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let request = HTTPRequest(method: .post(body), path: .mockPath)
 
@@ -228,7 +228,7 @@ class HTTPClientTests: TestCase {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         stub(condition: isPath(request.path)) { _ in
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -243,7 +243,7 @@ class HTTPClientTests: TestCase {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath(request.path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -390,7 +390,7 @@ class HTTPClientTests: TestCase {
     func testServerSide200s() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        let responseData = "{\"message\": \"something is great up in the cloud\"}".data(using: String.Encoding.utf8)!
+        let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
 
         stub(condition: isPath(request.path)) { _ in
             return HTTPStubsResponse(data: responseData,
@@ -444,9 +444,9 @@ class HTTPClientTests: TestCase {
 
         let version = SystemInfo.appVersion
 
-        stub(condition: hasHeaderNamed("X-Client-Version", value: version )) { _ in
+        stub(condition: hasHeaderNamed("X-Client-Version", value: version)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -465,7 +465,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Build-Version", value: version )) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -484,7 +484,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Bundle-ID", value: bundleID)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -504,7 +504,7 @@ class HTTPClientTests: TestCase {
         stub(condition: hasHeaderNamed("X-StoreKit2-Enabled",
                                        value: enabled)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -525,7 +525,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -554,7 +554,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -572,7 +572,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -589,16 +589,16 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
 
-        let client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         waitUntil { completion in
-            client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -611,15 +611,15 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor-Version", value: "1.2.3")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
-        let client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         waitUntil { completion in
-            client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -632,13 +632,13 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "false")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
-        let client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         waitUntil { completion in
-            client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -651,13 +651,13 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "true")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
-        let client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         waitUntil { completion in
-            client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -669,7 +669,7 @@ class HTTPClientTests: TestCase {
         let completionCallCount: Atomic<Int> = .init(0)
 
         stub(condition: isPath(path)) { request in
-            let requestNumber = self.extractRequestNumber(from: request)
+            let requestNumber = Self.extractRequestNumber(from: request)
             expect(requestNumber) == completionCallCount.value
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
@@ -681,11 +681,16 @@ class HTTPClientTests: TestCase {
 
         let serialRequests = 10
         for requestNumber in 0..<serialRequests {
+            let expectation = self.expectation(description: "Request \(requestNumber)")
+
             client.perform(.init(method: .requestNumber(requestNumber), path: path)) { (_: HTTPResponse<Data>.Result) in
                 completionCallCount.value += 1
+                expectation.fulfill()
             }
         }
-        expect(completionCallCount.value).toEventually(equal(serialRequests), timeout: .seconds(5))
+
+        self.waitForExpectations(timeout: 1)
+        expect(completionCallCount.value) == serialRequests
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
@@ -696,7 +701,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: isPath(path)) { request in
             usleep(30)
-            let requestNumber = self.extractRequestNumber(from: request)
+            let requestNumber = Self.extractRequestNumber(from: request)
             if requestNumber == 2 {
                 expect(firstRequestFinished.value) == true
             }
@@ -708,16 +713,25 @@ class HTTPClientTests: TestCase {
                 .responseTime(0.1)
         }
 
+        let expectations = [
+            self.expectation(description: "Request 1"),
+            self.expectation(description: "Request 2")
+        ]
+
         self.client.perform(.init(method: .requestNumber(1), path: path)) { (_: HTTPResponse<Data>.Result) in
             firstRequestFinished.value = true
+            expectations[0].fulfill()
         }
 
         self.client.perform(.init(method: .requestNumber(2), path: path)) { (_: HTTPResponse<Data>.Result) in
             secondRequestFinished.value = true
+            expectations[1].fulfill()
         }
 
-        expect(firstRequestFinished.value).toEventually(beTrue())
-        expect(secondRequestFinished.value).toEventually(beTrue())
+        self.waitForExpectations(timeout: 1)
+
+        expect(firstRequestFinished.value) == true
+        expect(secondRequestFinished.value) == true
     }
 
     func testPerformSerialRequestWaitsUntilRequestsAreDoneBeforeStartingNext() {
@@ -728,7 +742,7 @@ class HTTPClientTests: TestCase {
         let thirdRequestFinished: Atomic<Bool> = false
 
         stub(condition: isPath(path)) { request in
-            let requestNumber = self.extractRequestNumber(from: request)
+            let requestNumber = Self.extractRequestNumber(from: request)
             var responseTime = 0.5
             if requestNumber == 1 {
                 expect(secondRequestFinished.value) == false
@@ -750,21 +764,32 @@ class HTTPClientTests: TestCase {
                 .responseTime(responseTime)
         }
 
+        let expectations = [
+            self.expectation(description: "Request 1"),
+            self.expectation(description: "Request 2"),
+            self.expectation(description: "Request 3")
+        ]
+
         self.client.perform(.init(method: .requestNumber(1), path: path)) { (_: HTTPResponse<Data>.Result) in
             firstRequestFinished.value = true
+            expectations[0].fulfill()
         }
 
         self.client.perform(.init(method: .requestNumber(2), path: path)) { (_: HTTPResponse<Data>.Result) in
             secondRequestFinished.value = true
+            expectations[1].fulfill()
         }
 
         self.client.perform(.init(method: .requestNumber(3), path: path)) { (_: HTTPResponse<Data>.Result) in
             thirdRequestFinished.value = true
+            expectations[2].fulfill()
         }
 
-        expect(firstRequestFinished.value).toEventually(beTrue(), timeout: .seconds(1))
-        expect(secondRequestFinished.value).toEventually(beTrue(), timeout: .seconds(2))
-        expect(thirdRequestFinished.value).toEventually(beTrue(), timeout: .seconds(3))
+        self.waitForExpectations(timeout: 3)
+
+        expect(firstRequestFinished.value) == true
+        expect(secondRequestFinished.value) == true
+        expect(thirdRequestFinished.value) == true
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() throws {
@@ -785,7 +810,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: isPath(path)) { _ in
             httpCallMade.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -800,23 +825,29 @@ class HTTPClientTests: TestCase {
     func testRequestIsRetriedIfResponseFromETagManagerIsNil() {
         let path: HTTPRequest.Path = .mockPath
 
-        let firstTimeCalled: Atomic<Bool> = false
-        stub(condition: isPath(path)) { _ in
-            if firstTimeCalled.value {
-                self.eTagManager.shouldReturnResultFromBackend = true
+        let requests: Atomic<Int> = .init(0)
+
+        stub(condition: isPath(path)) { [eTagManager = self.eTagManager!] _ in
+            defer { requests.value += 1 }
+
+            if requests.value > 0 {
+                eTagManager.shouldReturnResultFromBackend = true
             }
-            firstTimeCalled.value = true
-            return .emptySuccessResponse
+
+            return .emptySuccessResponse()
         }
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
 
-        waitUntil { completion in
-            self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
-                completion()
+        let result: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path)) {
+                completion($0)
             }
         }
+
+        expect(result).to(beSuccess())
+        expect(requests.value) == 2
     }
 
     func testGetsResponseFromETagManagerWhenStatusCodeIsNotModified() throws {
@@ -856,7 +887,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -878,7 +909,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -904,7 +935,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = true
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = nsErrorWithUserInfo
             return response
         }
@@ -930,7 +961,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = true
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = nsErrorWithUserInfo
             return response
         }
@@ -950,7 +981,7 @@ class HTTPClientTests: TestCase {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -980,7 +1011,7 @@ class HTTPClientTests: TestCase {
         let logHandler = TestLogHandler()
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -1011,7 +1042,7 @@ class HTTPClientTests: TestCase {
         let logHandler = TestLogHandler()
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -1063,7 +1094,7 @@ extension HTTPRequest.Method {
 
 private extension HTTPClientTests {
 
-    func extractRequestNumber(from urlRequest: URLRequest) -> Int? {
+    static func extractRequestNumber(from urlRequest: URLRequest) -> Int? {
         do {
             let requestData = urlRequest.ohhttpStubs_httpBody!
             let requestBodyDict = try XCTUnwrap(try JSONSerialization.jsonObject(with: requestData,
@@ -1085,9 +1116,13 @@ private func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
 
 private extension HTTPStubsResponse {
 
-    static let emptySuccessResponse: HTTPStubsResponse = .init(data: Data(),
-                                                               statusCode: .success,
-                                                               headers: nil)
+    static func emptySuccessResponse() -> HTTPStubsResponse {
+        // `HTTPStubsResponse` doesn't have value semantics, it's a mutable class!
+        // This creates a new response each time so modifications in one test don't affect others.
+        return .init(data: Data(),
+                     statusCode: .success,
+                     headers: nil)
+    }
 
     convenience init(data: Data, statusCode: HTTPStatusCode, headers: HTTPClient.RequestHeaders?) {
         self.init(data: data, statusCode: Int32(statusCode.rawValue), headers: headers)
