@@ -51,7 +51,7 @@ import Security
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
     let platformInfo: Purchases.PlatformInfo?
-    let publicKey: Signing.PublicKey?
+    let entitlementVerificationLevel: Signing.EntitlementVerificationLevel
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -65,7 +65,7 @@ import Security
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
         self.platformInfo = builder.platformInfo
-        self.publicKey = builder.publicKey
+        self.entitlementVerificationLevel = builder.entitlementVerificationLevel
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -87,7 +87,7 @@ import Security
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
-        private(set) var publicKey: Signing.PublicKey?
+        private(set) var entitlementVerificationLevel: Signing.EntitlementVerificationLevel = .disabled
 
         /**
          * Create a new builder with your API key.
@@ -174,33 +174,12 @@ import Security
             return self
         }
 
-        // TODO: add reference to docs here
-
-        /// Set `publicKey` loading it from `publicKeyURL`
-        /// - Throws: ``ErrorCode/configurationError`` if `publicKeyURL` cannot be read or loaded.
-        /// - Note: this must be a valid `X.509` certificate.
-        /// - Seealso: ``with(publicKey:)``
+        /// Set ``Configuration/EntitlementVerificationLevel``
+        /// - Note: this requires iOS 12+
+        /// - Throws: ``ErrorCode/configurationError`` if the key cannot be loaded
         @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
-        @objc public func with(publicKeyURL: URL) throws -> Builder {
-            let data: Data
-
-            do {
-                data = try .init(contentsOf: publicKeyURL)
-            } catch {
-                throw ErrorUtils.configurationError(message: "Could not load '\(publicKeyURL)'",
-                                                    underlyingError: error)
-            }
-
-            return try self.with(publicKey: data)
-        }
-
-        /// Set `publicKey` using the given `Data`
-        /// - Throws: ``ErrorCode/configurationError`` if `publicKeyURL` cannot be loaded.
-        /// - Note: this must be a valid `X.509` certificate.
-        /// - Seealso: ``with(publicKeyURL:)``
-        @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
-        @objc public func with(publicKey: Data) throws -> Builder {
-            self.publicKey = try Signing.loadPublicKey(publicKey)
+        @objc internal func with(entitlementVerificationLevel level: EntitlementVerificationLevel) throws -> Builder {
+            self.entitlementVerificationLevel = try Signing.verificationLevel(with: level)
             return self
         }
 
@@ -229,7 +208,22 @@ import Security
 
 // MARK: - Public Keys
 
-private extension Configuration {
+internal extension Configuration {
+
+    /// Defines how strict ``EntitlementInfo`` verification ought to be.
+    @objc(RCEntitlementVerificationLevel)
+    enum EntitlementVerificationLevel: Int {
+
+        /// The SDK will perform no entitlement verification.
+        case disabled = 0
+
+        /// The SDK will verify entitlements, but will not fail to parse them if verification failed.
+        case informationOnly = 1
+
+        /// The SDK will verify entitlements, and it will throw an error if verification failed.
+        case enforced = 2
+
+    }
 
 }
 

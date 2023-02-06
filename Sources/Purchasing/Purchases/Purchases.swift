@@ -238,7 +238,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      userDefaults: UserDefaults? = nil,
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
-                     publicKey: Signing.PublicKey?,
+                     entitlementVerificationLevel: Signing.EntitlementVerificationLevel,
                      storeKit2Setting: StoreKit2Setting = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
@@ -257,7 +257,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                         finishTransactions: !observerMode,
                                         operationDispatcher: operationDispatcher,
                                         storeKit2Setting: storeKit2Setting,
-                                        publicKey: publicKey,
+                                        entitlementVerificationLevel: entitlementVerificationLevel,
                                         dangerousSettings: dangerousSettings)
         } catch {
             fatalError(error.localizedDescription)
@@ -909,7 +909,7 @@ public extension Purchases {
                   observerMode: configuration.observerMode,
                   userDefaults: configuration.userDefaults,
                   platformInfo: configuration.platformInfo,
-                  publicKey: configuration.publicKey,
+                  entitlementVerificationLevel: configuration.entitlementVerificationLevel,
                   storeKit2Setting: configuration.storeKit2Setting,
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
@@ -1020,23 +1020,25 @@ public extension Purchases {
     }
 
     // swiftlint:disable:next function_parameter_count
-    @discardableResult internal static func configure(withAPIKey apiKey: String,
-                                                      appUserID: String?,
-                                                      observerMode: Bool,
-                                                      userDefaults: UserDefaults?,
-                                                      platformInfo: PlatformInfo?,
-                                                      publicKey: Signing.PublicKey?,
-                                                      storeKit2Setting: StoreKit2Setting,
-                                                      storeKitTimeout: TimeInterval,
-                                                      networkTimeout: TimeInterval,
-                                                      dangerousSettings: DangerousSettings?) -> Purchases {
+    @discardableResult internal static func configure(
+        withAPIKey apiKey: String,
+        appUserID: String?,
+        observerMode: Bool,
+        userDefaults: UserDefaults?,
+        platformInfo: PlatformInfo?,
+        entitlementVerificationLevel: Signing.EntitlementVerificationLevel,
+        storeKit2Setting: StoreKit2Setting,
+        storeKitTimeout: TimeInterval,
+        networkTimeout: TimeInterval,
+        dangerousSettings: DangerousSettings?
+    ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
                   appUserID: appUserID,
                   userDefaults: userDefaults,
                   observerMode: observerMode,
                   platformInfo: platformInfo,
-                  publicKey: publicKey,
+                  entitlementVerificationLevel: entitlementVerificationLevel,
                   storeKit2Setting: storeKit2Setting,
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
@@ -1227,7 +1229,7 @@ internal extension Purchases {
     }
 
     var publicKey: Signing.PublicKey? {
-        return self.systemInfo.publicKey
+        return self.systemInfo.entitlementVerificationLevel.publicKey
     }
 
 }

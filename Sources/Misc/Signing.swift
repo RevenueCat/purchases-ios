@@ -25,22 +25,100 @@ enum Signing {
     /// Parses the binary `key` and returns a `PublicKey`
     /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
-    static func loadPublicKey(_ key: Data) throws -> PublicKey {
-        guard !key.isEmpty else {
-            throw ErrorUtils.configurationError(message: "Attempted to use an empty public key.")
+    static func loadPublicKey() throws -> PublicKey {
+        guard let url = Bundle(for: BundleToken.self)
+            .url(forResource: Self.publicKeyFileName, withExtension: Self.publicKeyFileExtension) else {
+            throw ErrorUtils.configurationError(
+                message: Strings.configure.public_key_could_not_be_found(
+                    fileName: "\(Self.publicKeyFileName).\(Self.publicKeyFileExtension)"
+                ).description
+            )
         }
 
-        guard let certificate = SecCertificateCreateWithData(nil, key as CFData) else {
-            // TODO: add reference to docs here
+        return try Self.loadPublicKey(in: url)
+    }
+
+    /// - Throws: ``ErrorCode/configurationError``
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
+    static func verificationLevel(
+        with setting: Configuration.EntitlementVerificationLevel
+    ) throws -> EntitlementVerificationLevel {
+        switch setting {
+        case .disabled: return .disabled
+        case .informationOnly: return try .informationOnly(Self.loadPublicKey())
+        case .enforced: return try .enforced(Self.loadPublicKey())
+        }
+    }
+
+    // MARK: -
+
+    private static let publicKeyFileName = "public_key"
+    private static let publicKeyFileExtension = "cer"
+
+}
+
+extension Signing {
+
+    /// Verification level with a loaded `PublicKey`
+    /// - Seealso: ``Configuration/EntitlementVerificationLevel``
+    enum EntitlementVerificationLevel {
+
+        case disabled
+        case informationOnly(PublicKey)
+        case enforced(PublicKey)
+
+        static let `default`: Self = .disabled
+
+        var publicKey: PublicKey? {
+            switch self {
+            case .disabled: return nil
+            case let .informationOnly(key): return key
+            case let .enforced(key): return key
+            }
+        }
+
+    }
+
+}
+
+// MARK: - Internal implementation (visible for tests)
+
+extension Signing {
+
+    /// Loads the key in `url` and returns a `PublicKey`
+    /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
+    static func loadPublicKey(in url: URL) throws -> PublicKey {
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+        } catch {
             throw ErrorUtils.configurationError(
-                message: "Failed to load certificate. Ensure that it's a valid X.509 certificate."
+                message: Strings.configure.public_key_could_not_be_found(fileName: url.relativeString).description,
+                underlyingError: error
+            )
+        }
+
+        return try Self.loadPublicKey(with: data)
+    }
+
+    /// Parses the binary `key` and returns a `PublicKey`
+    /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
+    static func loadPublicKey(with data: Data) throws -> PublicKey {
+        guard !data.isEmpty else {
+            throw ErrorUtils.configurationError(message: Strings.configure.public_key_is_empty.description)
+        }
+
+        guard let certificate = SecCertificateCreateWithData(nil, data as CFData) else {
+            throw ErrorUtils.configurationError(
+                message: Strings.configure.public_key_could_not_load_certificate.description
             )
         }
 
         guard let key = SecCertificateCopyKey(certificate) else {
-            // TODO: add reference to docs here
             throw ErrorUtils.configurationError(
-                message: "Failed to copy key from certificate. Ensure that it's a valid X.509 certificate."
+                message: Strings.configure.public_key_could_not_copy_certificate.description
             )
         }
 
@@ -48,3 +126,7 @@ enum Signing {
     }
 
 }
+
+// MARK: - Private
+
+private final class BundleToken: NSObject {}
