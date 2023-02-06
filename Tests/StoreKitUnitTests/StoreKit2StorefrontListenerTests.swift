@@ -77,29 +77,6 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-private final class MockAsyncSequence<Element>: AsyncSequence, AsyncIteratorProtocol {
-
-    init(with elements: [Element]) {
-        self.elements = elements
-    }
-
-    func next() async throws -> Element? {
-        return self.getNextElement()
-    }
-
-    func makeAsyncIterator() -> MockAsyncSequence {
-        return self
-    }
-
-    private var elements: [Element]
-
-    private func getNextElement() -> Element? {
-        return self.elements.popFirst()
-    }
-
-}
-
 private final class MockStoreKit2StorefrontListenerDelegate: StoreKit2StorefrontListenerDelegate {
 
     let invokedStorefrontDidUpdateStorefronts: Atomic<[RevenueCat.Storefront]> = .init([])
