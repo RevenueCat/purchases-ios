@@ -40,9 +40,9 @@ class HTTPClientTests: TestCase {
     }
 
     override func tearDown() {
-        super.tearDown()
-
         HTTPStubs.removeAllStubs()
+
+        super.tearDown()
     }
 
     func testUsesTheCorrectHost() throws {
