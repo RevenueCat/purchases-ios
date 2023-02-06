@@ -25,9 +25,10 @@ final class InternalAPI {
         self.callbackCache = .init()
     }
 
-    func healthRequest(completion: @escaping ResponseHandler) {
+    func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
         let factory = HealthOperation.createFactory(httpClient: self.backendConfig.httpClient,
-                                                    callbackCache: self.callbackCache)
+                                                    callbackCache: self.callbackCache,
+                                                    signatureVerification: signatureVerification)
 
         let callback = HealthOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.callbackCache.add(callback)
@@ -57,27 +58,34 @@ private final class HealthOperation: CacheableNetworkOperation {
     }
 
     private let callbackCache: CallbackCache<Callback>
+    private let signatureVerification: Bool
 
     static func createFactory(
         httpClient: HTTPClient,
-        callbackCache: CallbackCache<Callback>
+        callbackCache: CallbackCache<Callback>,
+        signatureVerification: Bool
     ) -> CacheableNetworkOperationFactory<HealthOperation> {
-        return .init({ .init(httpClient: httpClient, callbackCache: callbackCache, cacheKey: $0) },
+        return .init({ .init(httpClient: httpClient,
+                             callbackCache: callbackCache,
+                             cacheKey: $0,
+                             signatureVerification: signatureVerification) },
                      individualizedCacheKeyPart: "")
     }
 
     private init(httpClient: HTTPClient,
                  callbackCache: CallbackCache<Callback>,
-                 cacheKey: String) {
+                 cacheKey: String,
+                 signatureVerification: Bool) {
         self.callbackCache = callbackCache
+        self.signatureVerification = signatureVerification
 
         super.init(configuration: Configuration(httpClient: httpClient), cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {
-        self.httpClient.perform(
-            .init(method: .get, path: .health)
-        ) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+        self.httpClient.perform(self.createRequest()) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+            // TODO: verify signature in response
+
             self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(
                     response
@@ -88,6 +96,16 @@ private final class HealthOperation: CacheableNetworkOperation {
 
             completion()
         }
+    }
+
+    private func createRequest() -> HTTPRequest {
+        var request: HTTPRequest = .init(method: .get, path: .health)
+
+        if self.signatureVerification, #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            request.addRandomNonce()
+        }
+
+        return request
     }
 
 }

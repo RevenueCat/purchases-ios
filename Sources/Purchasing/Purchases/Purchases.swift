@@ -1156,9 +1156,9 @@ extension Purchases: @unchecked Sendable {}
 extension Purchases: InternalPurchasesType {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    internal func healthRequest() async throws {
+    internal func healthRequest(signatureVerification: Bool) async throws {
         do {
-            try await self.backend.healthRequest()
+            try await self.backend.healthRequest(signatureVerification: signatureVerification)
         } catch {
             throw NewErrorUtils.purchasesError(withUntypedError: error)
         }

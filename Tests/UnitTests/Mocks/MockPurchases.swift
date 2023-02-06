@@ -45,7 +45,7 @@ final class MockPurchases {
 extension MockPurchases: InternalPurchasesType {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func healthRequest() async throws {
+    func healthRequest(signatureVerification: Bool) async throws {
         return try self.mockedHealthRequestResponse.get()
     }
 

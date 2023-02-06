@@ -16,10 +16,10 @@ import Foundation
 /// A request to be made by ``HTTPClient``
 struct HTTPRequest {
 
-    let method: Method
-    let path: Path
+    var method: Method
+    var path: Path
     /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
-    let nonce: Data?
+    var nonce: Data?
 
     init(method: Method, path: Path) {
         self.init(method: method, path: path, nonce: nil)
@@ -34,10 +34,20 @@ struct HTTPRequest {
         self.nonce = nonce
     }
 
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+extension HTTPRequest {
+
     /// Creates an `HTTPRequest` with a `nonce`.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func createWithResponseVerification(method: Method, path: Path) -> Self {
         return .init(method: method, path: path, nonce: Data.randomNonce())
+    }
+
+    /// Add a nonce to the request
+    mutating func addRandomNonce() {
+        self.nonce = Data.randomNonce()
     }
 
 }

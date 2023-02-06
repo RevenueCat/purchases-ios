@@ -950,7 +950,7 @@ internal protocol InternalPurchasesType: AnyObject {
     /// Performs an unauthenticated request to the API to verify connectivity.
     /// - Throws: `PublicError` if request failed.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func healthRequest() async throws
+    func healthRequest(signatureVerification: Bool) async throws
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings

@@ -129,9 +129,9 @@ extension Backend {
 
     /// - Throws: `NetworkError`
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func healthRequest() async throws {
+    func healthRequest(signatureVerification: Bool) async throws {
         try await Async.call { completion in
-            self.internalAPI.healthRequest { error in
+            self.internalAPI.healthRequest(signatureVerification: signatureVerification) { error in
                 completion(.init(error))
             }
         }
