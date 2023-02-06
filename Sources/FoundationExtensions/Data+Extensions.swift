@@ -89,8 +89,19 @@ extension Data {
 extension Data {
 
     static func randomNonce() -> Data {
-        return UUID().asData
+        var bytes = [UInt8](repeating: 0, count: Self.nonceLength)
+        let status = SecRandomCopyBytes(kSecRandomDefault, Self.nonceLength, &bytes)
+        if status == errSecSuccess {
+            return Data(bytes)
+        } else {
+            // It's very unlikely that `SecRandomCopyBytes` would fail, but if it does we don't want to
+            // crash. As a fallback we use `UUID`, which is not as cryptographically secure, but it's a good
+            // valid alternative.
+            return UUID().asData
+        }
     }
+
+    private static let nonceLength = 16
 
 }
 
