@@ -66,12 +66,12 @@ extension HTTPClient {
         return [Self.authorizationHeaderName: "Bearer \(apiKey)"]
     }
 
-    static func signatureUUIDHeader(with uuid: UUID) -> RequestHeaders {
-        return [Self.signatureHeaderName: uuid.uuidString]
+    static func nonceHeader(with data: Data) -> RequestHeaders {
+        return [Self.nonceHeaderName: data.base64EncodedString()]
     }
 
     static let authorizationHeaderName = "Authorization"
-    static let signatureHeaderName = "X-Nonce"
+    static let nonceHeaderName = "X-Nonce"
 
 }
 
@@ -341,8 +341,8 @@ private extension HTTPRequest {
             result += authHeaders
         }
 
-        if let signatureUUID = self.signatureUUID {
-            result += HTTPClient.signatureUUIDHeader(with: signatureUUID)
+        if let nonce = self.nonce {
+            result += HTTPClient.nonceHeader(with: nonce)
         }
 
         return result

@@ -56,6 +56,17 @@ class NSDataExtensionsTests: TestCase {
         expect(storedReceiptData.hashString) == "d18b7c0ffe3577a9dd732840a30ac4b3655b412e69d84f07d991f48e8d3273d8"
     }
 
+    func testRandomNonceIs16Bytes() {
+        expect(Data.randomNonce().count) == 16
+    }
+
+    func testRandomNonceIsRandom() {
+        let random1 = Data.randomNonce()
+        let random2 = Data.randomNonce()
+
+        expect(random1) != random2
+    }
+
 }
 
 extension NSDataExtensionsTests {

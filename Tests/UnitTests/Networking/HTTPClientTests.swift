@@ -80,7 +80,7 @@ class HTTPClientTests: TestCase {
         expect(headerPresent.value) == true
     }
 
-    func testRequestWithNoUUIDDoesNotContainSignatureHeader() {
+    func testRequestWithNoNonceDoesNotContainNonceHeader() {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         let headers: [String: String]? = waitUntilValue { completion in
@@ -93,10 +93,10 @@ class HTTPClientTests: TestCase {
         }
 
         expect(headers).toNot(beEmpty())
-        expect(headers?.keys).toNot(contain(HTTPClient.signatureHeaderName))
+        expect(headers?.keys).toNot(contain(HTTPClient.nonceHeaderName))
     }
 
-    func testRequestIncludesSignature() {
+    func testRequestIncludesRandomNonce() {
         let request = HTTPRequest.createSignedRequest(method: .get, path: .mockPath)
 
         let headers: [String: String]? = waitUntilValue { completion in
@@ -109,8 +109,28 @@ class HTTPClientTests: TestCase {
         }
 
         expect(headers).toNot(beEmpty())
-        expect(headers?.keys).to(contain(HTTPClient.signatureHeaderName))
-        expect(headers?[HTTPClient.signatureHeaderName]) == request.signatureUUID?.uuidString
+        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
+        expect(headers?[HTTPClient.nonceHeaderName]) == request.nonce?.base64EncodedString()
+    }
+
+    func testRequestIncludesNonceInBase64() {
+        let nonce = "1234567890abcdef".asData
+        let request = HTTPRequest(method: .get,
+                                  path: .mockPath,
+                                  nonce: nonce)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
+        expect(headers?[HTTPClient.nonceHeaderName]) == "MTIzNDU2Nzg5MGFiY2RlZg=="
     }
 
     func testAlwaysSetsContentTypeHeader() {
