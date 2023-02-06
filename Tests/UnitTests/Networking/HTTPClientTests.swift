@@ -51,7 +51,7 @@ class HTTPClientTests: TestCase {
         let host = try XCTUnwrap(SystemInfo.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             hostCorrect.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .get, path: .mockPath)
@@ -68,7 +68,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("Authorization")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -85,7 +85,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("content-type", value: "application/json")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -102,7 +102,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform", value: SystemInfo.platformHeader)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -119,7 +119,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -136,7 +136,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -156,7 +156,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed(headerName)) { request in
             header.value = request.value(forHTTPHeaderField: headerName)
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -176,7 +176,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed(headerName)) { request in
             header.value = request.value(forHTTPHeaderField: headerName)
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
@@ -195,7 +195,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: isPath(request.path)) { _ in
             pathHit.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -213,7 +213,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasBody(bodyData)) { _ in
             pathHit.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let request = HTTPRequest(method: .post(body), path: .mockPath)
 
@@ -228,7 +228,7 @@ class HTTPClientTests: TestCase {
         let request = HTTPRequest(method: .get, path: .mockPath)
 
         stub(condition: isPath(request.path)) { _ in
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -243,7 +243,7 @@ class HTTPClientTests: TestCase {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath(request.path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -446,7 +446,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Version", value: version)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -465,7 +465,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Build-Version", value: version )) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -484,7 +484,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Bundle-ID", value: bundleID)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -504,7 +504,7 @@ class HTTPClientTests: TestCase {
         stub(condition: hasHeaderNamed("X-StoreKit2-Enabled",
                                        value: enabled)) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -525,7 +525,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -554,7 +554,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -572,7 +572,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -589,7 +589,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
@@ -611,7 +611,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor-Version", value: "1.2.3")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
@@ -632,7 +632,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "false")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
         self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
@@ -651,7 +651,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "true")) { _ in
             headerPresent.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
         let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
         self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
@@ -810,7 +810,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: isPath(path)) { _ in
             httpCallMade.value = true
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         waitUntil { completion in
@@ -834,7 +834,7 @@ class HTTPClientTests: TestCase {
                 eTagManager.shouldReturnResultFromBackend = true
             }
 
-            return .emptySuccessResponse
+            return .emptySuccessResponse()
         }
 
         self.eTagManager.shouldReturnResultFromBackend = false
@@ -887,7 +887,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -909,7 +909,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -935,7 +935,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = true
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = nsErrorWithUserInfo
             return response
         }
@@ -961,7 +961,7 @@ class HTTPClientTests: TestCase {
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = true
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = nsErrorWithUserInfo
             return response
         }
@@ -981,7 +981,7 @@ class HTTPClientTests: TestCase {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -1011,7 +1011,7 @@ class HTTPClientTests: TestCase {
         let logHandler = TestLogHandler()
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -1042,7 +1042,7 @@ class HTTPClientTests: TestCase {
         let logHandler = TestLogHandler()
 
         stub(condition: isPath(path)) { _ in
-            let response = HTTPStubsResponse.emptySuccessResponse
+            let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
             return response
         }
@@ -1116,7 +1116,7 @@ private func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
 
 private extension HTTPStubsResponse {
 
-    static var emptySuccessResponse: HTTPStubsResponse {
+    static func emptySuccessResponse() -> HTTPStubsResponse {
         // `HTTPStubsResponse` doesn't have value semantics, it's a mutable class!
         // This creates a new response each time so modifications in one test don't affect others.
         return .init(data: Data(),
