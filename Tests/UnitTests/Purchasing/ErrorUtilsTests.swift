@@ -121,6 +121,21 @@ class ErrorUtilsTests: TestCase {
         self.expectLoggedError(error, .rcError)
     }
 
+    func testNetworkErrorsLogUnderlyingError() throws {
+        let underlyingError = NSError(domain: NSURLErrorDomain, code: NSURLErrorDNSLookupFailed)
+        let networkError = ErrorUtils.networkError(withUnderlyingError: underlyingError)
+
+        let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
+
+        expect(loggedMessage.level) == .error
+        expect(loggedMessage.message) == [
+            LogIntent.rcError.prefix,
+            networkError.error.description,
+            underlyingError.localizedDescription
+        ]
+            .joined(separator: " ")
+    }
+
     func testLoggedErrorsWithNoMessage() throws {
         let error = ErrorUtils.customerInfoError()
 
