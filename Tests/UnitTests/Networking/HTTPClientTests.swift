@@ -86,7 +86,7 @@ class HTTPClientTests: TestCase {
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
                 completion(request.allHTTPHeaderFields)
-                return .emptySuccessResponse
+                return .emptySuccessResponse()
             }
 
             self.client.perform(request) { (_: EmptyResponse) in }
@@ -102,7 +102,7 @@ class HTTPClientTests: TestCase {
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
                 completion(request.allHTTPHeaderFields)
-                return .emptySuccessResponse
+                return .emptySuccessResponse()
             }
 
             self.client.perform(request) { (_: EmptyResponse) in }
@@ -114,15 +114,12 @@ class HTTPClientTests: TestCase {
     }
 
     func testRequestIncludesNonceInBase64() {
-        let nonce = "1234567890abcdef".asData
-        let request = HTTPRequest(method: .get,
-                                  path: .mockPath,
-                                  nonce: nonce)
+        let request = HTTPRequest(method: .get, path: .mockPath, nonce: "1234567890abcdef".asData)
 
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
                 completion(request.allHTTPHeaderFields)
-                return .emptySuccessResponse
+                return .emptySuccessResponse()
             }
 
             self.client.perform(request) { (_: EmptyResponse) in }
