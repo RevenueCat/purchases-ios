@@ -290,6 +290,15 @@ extension OfferingsManager.Error: CustomNSError {
         ]
     }
 
+    var errorDescription: String? {
+        switch self {
+        case .backendError: return nil
+        case let .configurationError(message, _, _): return message
+        case .noOfferingsFound: return nil
+        case .missingProducts: return nil
+        }
+    }
+
     fileprivate var underlyingError: Error? {
         switch self {
         case let .backendError(.networkError(error)): return error

@@ -180,6 +180,36 @@ extension OfferingsManagerTests {
         }
     }
 
+    func testOfferingsLogsErrorInformationIfBackendReturnsEmpty() throws {
+        let logger = TestLogHandler()
+
+        // given
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
+            .init(currentOfferingId: "", offerings: [])
+        )
+        self.mockOfferingsFactory.emptyOfferings = true
+
+        // when
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(result).to(beFailure())
+
+        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.onlyElement)
+
+        expect(error.message) == [
+            LogIntent.appleError.prefix,
+            "Error fetching offerings -",
+            OfferingsManager.Error.configurationError("", underlyingError: nil).localizedDescription +
+            "\n" + Strings.offering.configuration_error_no_products_for_offering.description
+        ]
+            .joined(separator: " ")
+    }
+
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)

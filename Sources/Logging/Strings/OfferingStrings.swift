@@ -55,6 +55,10 @@ extension OfferingStrings: CustomStringConvertible {
         case let .fetching_offerings_error(error, underlyingError):
             var result = "Error fetching offerings - \(error.localizedDescription)"
 
+            if let message = error.errorDescription {
+                result += "\n\(message)"
+            }
+
             if let underlyingError = underlyingError {
                 result += "\nUnderlying error: \(underlyingError.localizedDescription)"
             }
@@ -116,7 +120,7 @@ extension OfferingStrings: CustomStringConvertible {
             return "There are no products registered in the RevenueCat dashboard for your offerings. " +
             "If you don't want to use the offerings system, you can safely ignore this message. " +
             "To configure offerings and their products, follow the instructions in " +
-            "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
+            "https://rev.cat/how-to-configure-offerings.\nMore information: https://rev.cat/why-are-offerings-empty"
 
         case .offering_empty(let offeringIdentifier):
             return "There's a problem with your configuration. No packages could be found for offering with  " +
