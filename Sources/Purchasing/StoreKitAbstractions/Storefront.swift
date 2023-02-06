@@ -127,12 +127,12 @@ internal protocol StorefrontType: Sendable {
 extension Storefront {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
-    internal convenience init?(sk1Storefront: SKStorefront) {
+    internal convenience init(sk1Storefront: SKStorefront) {
         self.init(SK1Storefront(sk1Storefront))
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    internal convenience init?(sk2Storefront: StoreKit.Storefront) {
+    internal convenience init(sk2Storefront: StoreKit.Storefront) {
         self.init(SK2Storefront(sk2Storefront))
     }
 

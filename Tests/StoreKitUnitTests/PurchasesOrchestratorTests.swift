@@ -710,7 +710,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     func testClearCachedProductsAndOfferingsAfterStorefrontChangesWithSK2() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        self.orchestrator.storefrontDidUpdate()
+        self.orchestrator.storefrontDidUpdate(with: MockStorefront(countryCode: "ESP"))
 
         expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
         expect(self.productsManager.invokedClearCacheCount) == 1
