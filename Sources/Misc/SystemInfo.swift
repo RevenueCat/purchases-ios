@@ -35,7 +35,7 @@ class SystemInfo {
     let platformFlavor: String
     let platformFlavorVersion: String?
     let bundle: Bundle
-    let entitlementVerificationLevel: Signing.EntitlementVerificationLevel
+    let responseVerificationLevel: Signing.ResponseVerificationLevel
     let dangerousSettings: DangerousSettings
 
     var finishTransactions: Bool {
@@ -115,7 +115,7 @@ class SystemInfo {
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
          storeKit2Setting: StoreKit2Setting = .default,
-         entitlementVerificationLevel: Signing.EntitlementVerificationLevel = .disabled,
+         responseVerificationLevel: Signing.ResponseVerificationLevel = .disabled,
          dangerousSettings: DangerousSettings? = nil) throws {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
@@ -124,7 +124,7 @@ class SystemInfo {
         self._finishTransactions = .init(finishTransactions)
         self.operationDispatcher = operationDispatcher
         self.storeKit2Setting = storeKit2Setting
-        self.entitlementVerificationLevel = entitlementVerificationLevel
+        self.responseVerificationLevel = responseVerificationLevel
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.sandboxEnvironmentDetector = bundle === Bundle.main
             ? BundleSandboxEnvironmentDetector.default

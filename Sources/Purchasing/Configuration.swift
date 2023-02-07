@@ -51,7 +51,7 @@ import Security
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
     let platformInfo: Purchases.PlatformInfo?
-    let entitlementVerificationLevel: Signing.EntitlementVerificationLevel
+    let responseVerificationLevel: Signing.ResponseVerificationLevel
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -65,7 +65,7 @@ import Security
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
         self.platformInfo = builder.platformInfo
-        self.entitlementVerificationLevel = builder.entitlementVerificationLevel
+        self.responseVerificationLevel = builder.responseVerificationLevel
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -87,7 +87,7 @@ import Security
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
-        private(set) var entitlementVerificationLevel: Signing.EntitlementVerificationLevel = .disabled
+        private(set) var responseVerificationLevel: Signing.ResponseVerificationLevel = .disabled
 
         /**
          * Create a new builder with your API key.
@@ -179,7 +179,7 @@ import Security
         /// - Throws: ``ErrorCode/configurationError`` if the key cannot be loaded
         @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
         @objc internal func with(entitlementVerificationLevel level: EntitlementVerificationLevel) throws -> Builder {
-            self.entitlementVerificationLevel = try Signing.verificationLevel(with: level)
+            self.responseVerificationLevel = try Signing.verificationLevel(with: level)
             return self
         }
 

@@ -40,7 +40,7 @@ enum Signing {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func verificationLevel(
         with setting: Configuration.EntitlementVerificationLevel
-    ) throws -> EntitlementVerificationLevel {
+    ) throws -> ResponseVerificationLevel {
         switch setting {
         case .disabled: return .disabled
         case .informationOnly: return try .informationOnly(Self.loadPublicKey())
@@ -59,7 +59,7 @@ extension Signing {
 
     /// Verification level with a loaded `PublicKey`
     /// - Seealso: ``Configuration/EntitlementVerificationLevel``
-    enum EntitlementVerificationLevel {
+    enum ResponseVerificationLevel {
 
         case disabled
         case informationOnly(PublicKey)
