@@ -61,9 +61,7 @@ enum ConfigureStrings {
 
     case public_key_is_empty
 
-    case public_key_could_not_load_certificate
-
-    case public_key_could_not_copy_certificate
+    case public_key_could_not_load_key
 
 }
 
@@ -140,11 +138,8 @@ extension ConfigureStrings: CustomStringConvertible {
         case .public_key_is_empty:
             return "Attempted to load an empty public key."
 
-        case .public_key_could_not_load_certificate:
-            return "Failed to load certificate. Ensure that it's a valid X.509 certificate."
-
-        case .public_key_could_not_copy_certificate:
-            return "Failed to copy key from certificate. Ensure that it's a valid X.509 certificate."
+        case .public_key_could_not_load_key:
+            return "Failed to load public key. Ensure that it's a valid ed25519 key."
         }
     }
 

@@ -11,31 +11,25 @@
 //
 //  Created by Nacho Soto on 1/13/23.
 
+import CryptoKit
 import Nimble
 import XCTest
 
 @testable import RevenueCat
 
-@available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class SigningTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS12APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
     }
 
     func testLoadDefaultPublicKey() throws {
-        let key = try Signing.loadPublicKey()
+        let key = try XCTUnwrap(try Signing.loadPublicKey() as? CryptoKit.Curve25519.Signing.PublicKey)
 
-        let attributes = try XCTUnwrap(SecKeyCopyAttributes(key) as? [CFString: Any])
-        expect(attributes[kSecAttrKeyType] as? String) == kSecAttrKeyTypeRSA as String
-        expect(attributes[kSecAttrKeyClass] as? String) == kSecAttrKeyClassPublic as String
-        expect(attributes[kSecAttrKeySizeInBits] as? Int) == 2048
-
-        XCTExpectFailure("This needs the final production key") {
-             expect(attributes[kSecAttrIssuer] as? String) == "RevenueCat"
-        }
+        expect(key.rawRepresentation).toNot(beEmpty())
     }
 
     func testThrowsErrorIfPublicKeyFileDoesNotExist() throws {
@@ -59,8 +53,8 @@ class SigningTests: TestCase {
         }.to(throwError { error in
             expect(error).to(matchError(ErrorCode.configurationError))
             expect(error.localizedDescription) == "There is an issue with your configuration. " +
-            "Check the underlying error for more details. Failed to load certificate. " +
-            "Ensure that it's a valid X.509 certificate."
+            "Check the underlying error for more details. Failed to load public key. " +
+            "Ensure that it's a valid ed25519 key."
         })
     }
 
