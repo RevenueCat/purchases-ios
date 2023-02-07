@@ -42,10 +42,8 @@ enum Signing {
         hasValidSignature signature: String,
         with publicKey: PublicKey
     ) -> Bool {
-        // TODO: extract warning Strings
-
         guard let signature = Data(base64Encoded: signature) else {
-            Logger.warn("Signature is not base64: \(signature)")
+            Logger.warn(Strings.signing.signature_not_base64(signature))
             return false
         }
 
@@ -56,7 +54,7 @@ enum Signing {
         let isValid = publicKey.isValidSignature(signatureToVerify, for: messageToVerify)
 
         if !isValid {
-            Logger.warn("Signature failed validation")
+            Logger.warn(Strings.signing.signature_failed_verification)
         }
 
         return isValid

@@ -118,5 +118,5 @@ extension SigningTests {
 
         return try key.signature(for: fullMessage)
     }
-    
+
 }
