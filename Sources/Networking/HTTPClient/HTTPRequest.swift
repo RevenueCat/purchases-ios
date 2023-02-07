@@ -26,12 +26,15 @@ struct HTTPRequest {
     }
 
     init(method: Method, path: Path, nonce: Data?) {
+        assert(nonce == nil || nonce?.count == Data.nonceLength)
+
         self.method = method
         self.path = path
         self.nonce = nonce
     }
 
-    /// Creates an `HTTPRequest` with a `signatureUUID`.
+    /// Creates an `HTTPRequest` with a `nonce`.
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func createSignedRequest(method: Method, path: Path) -> Self {
         return .init(method: method, path: path, nonce: Data.randomNonce())
     }

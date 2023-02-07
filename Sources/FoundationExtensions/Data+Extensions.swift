@@ -88,33 +88,11 @@ extension Data {
 
 extension Data {
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func randomNonce() -> Data {
-        var bytes = [UInt8](repeating: 0, count: Self.nonceLength)
-        let status = SecRandomCopyBytes(kSecRandomDefault, Self.nonceLength, &bytes)
-        if status == errSecSuccess {
-            return Data(bytes)
-        } else {
-            // It's very unlikely that `SecRandomCopyBytes` would fail, but if it does we don't want to
-            // crash. As a fallback we use `UUID`, which is not as cryptographically secure, but it's a good
-            // valid alternative.
-            return UUID().asData
-        }
+        return Data(ChaChaPoly.Nonce())
     }
 
-    private static let nonceLength = 16
-
-}
-
-private extension UUID {
-
-    private var asUInt8Array: [UInt8] {
-        // swiftlint:disable:next identifier_name
-        let (u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, u11, u12, u13, u14, u15, u16) = self.uuid
-        return [u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, u11, u12, u13, u14, u15, u16]
-    }
-
-    var asData: Data {
-        return Data(self.asUInt8Array)
-    }
+    static let nonceLength = 12
 
 }

@@ -56,11 +56,17 @@ class NSDataExtensionsTests: TestCase {
         expect(storedReceiptData.hashString) == "d18b7c0ffe3577a9dd732840a30ac4b3655b412e69d84f07d991f48e8d3273d8"
     }
 
-    func testRandomNonceIs16Bytes() {
-        expect(Data.randomNonce().count) == 16
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testRandomNonceHasCorrectSize() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        expect(Data.randomNonce().count) == Data.nonceLength
     }
 
-    func testRandomNonceIsRandom() {
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testRandomNonceIsRandom() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
         let random1 = Data.randomNonce()
         let random2 = Data.randomNonce()
 

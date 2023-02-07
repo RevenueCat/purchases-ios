@@ -96,7 +96,10 @@ class HTTPClientTests: TestCase {
         expect(headers?.keys).toNot(contain(HTTPClient.nonceHeaderName))
     }
 
-    func testRequestIncludesRandomNonce() {
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testRequestIncludesRandomNonce() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
         let request = HTTPRequest.createSignedRequest(method: .get, path: .mockPath)
 
         let headers: [String: String]? = waitUntilValue { completion in
@@ -114,7 +117,7 @@ class HTTPClientTests: TestCase {
     }
 
     func testRequestIncludesNonceInBase64() {
-        let request = HTTPRequest(method: .get, path: .mockPath, nonce: "1234567890abcdef".asData)
+        let request = HTTPRequest(method: .get, path: .mockPath, nonce: "1234567890ab".asData)
 
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
@@ -127,7 +130,7 @@ class HTTPClientTests: TestCase {
 
         expect(headers).toNot(beEmpty())
         expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
-        expect(headers?[HTTPClient.nonceHeaderName]) == "MTIzNDU2Nzg5MGFiY2RlZg=="
+        expect(headers?[HTTPClient.nonceHeaderName]) == "MTIzNDU2Nzg5MGFi"
     }
 
     func testAlwaysSetsContentTypeHeader() {
