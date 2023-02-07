@@ -13,10 +13,11 @@
 
 import Foundation
 
-// Workaround for https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825
+// Workaround for https://openradar.appspot.com/radar?id=4970535809187840 / https://github.com/apple/swift/issues/58099
+/// Holds a reference to a value.
 final class Box<T> {
 
-    var value: T
+    let value: T
 
     init(_ value: T) { self.value = value }
 

@@ -25,19 +25,14 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
 
     var mockSK2Error: Error?
 
-    // We can't directly store instances of StoreKit.Transaction.RefundRequestStatus, since that causes
+    // We can't directly store instances of `StoreKit.Transaction.RefundRequestStatus`, since that causes
     // linking issues in iOS < 15, even with @available checks correctly in place.
-    // So instead, we store the underlying product as Any and wrap it with casting.
     // https://openradar.appspot.com/radar?id=4970535809187840
-    private var untypedSK2Status: Any?
+    // https://github.com/apple/swift/issues/58099
+    private var untypedSK2Status: Box<StoreKit.Transaction.RefundRequestStatus?> = .init(nil)
     var mockSK2Status: StoreKit.Transaction.RefundRequestStatus? {
-        get {
-            // swiftlint:disable:next force_cast
-            return untypedSK2Status as! StoreKit.Transaction.RefundRequestStatus?
-        }
-        set {
-            untypedSK2Status = newValue
-        }
+        get { return self.untypedSK2Status.value }
+        set { self.untypedSK2Status = .init(newValue) }
     }
 
     var transactionVerified = true
