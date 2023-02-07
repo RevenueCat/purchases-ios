@@ -20,6 +20,9 @@ import XCTest
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class SigningTests: TestCase {
 
+    private typealias PrivateKey = Curve25519.Signing.PrivateKey
+    private typealias PublicKey = Curve25519.Signing.PublicKey
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -27,7 +30,7 @@ class SigningTests: TestCase {
     }
 
     func testLoadDefaultPublicKey() throws {
-        let key = try XCTUnwrap(try Signing.loadPublicKey() as? CryptoKit.Curve25519.Signing.PublicKey)
+        let key = try XCTUnwrap(try Signing.loadPublicKey() as? PublicKey)
 
         expect(key.rawRepresentation).toNot(beEmpty())
     }
@@ -58,4 +61,62 @@ class SigningTests: TestCase {
         })
     }
 
+    func testVerifySignatureWithInvalidSignatureReturnsFalseAndLogsError() throws {
+        let logger = TestLogHandler()
+
+        let message = "Hello World"
+        let nonce = "nonce"
+        let signature = "this is not a signature"
+
+        expect(Signing.verify(message: message.asData,
+                              nonce: nonce.asData,
+                              hasValidSignature: signature,
+                              with: try Signing.loadPublicKey())) == false
+
+        logger.verifyMessageWasLogged("Signature is not base64: \(signature)")
+    }
+
+    func testVerifySignatureReturnsFalseAndLogsError() throws {
+        let logger = TestLogHandler()
+
+        expect(Signing.verify(message: "Hello World".asData,
+                              nonce: "nonce".asData,
+                              hasValidSignature: "invalid signature".asData.base64EncodedString(),
+                              with: try Signing.loadPublicKey())) == false
+
+        logger.verifyMessageWasLogged("Signature failed validation")
+    }
+
+    func testVerifySignatureWithValidSignature() throws {
+        let (privateKey, publicKey) = Self.createRandomKey()
+        let message = "Hello World"
+        let nonce = "nonce"
+        let salt = Array(repeating: "a", count: Signing.saltSize).joined()
+
+        let signature = try self.sign(key: privateKey, message: message, nonce: nonce, salt: salt)
+        let fullSignature = salt.asData + signature
+
+        expect(Signing.verify(message: message.asData,
+                              nonce: nonce.asData,
+                              hasValidSignature: fullSignature.base64EncodedString(),
+                              with: publicKey)) == true
+    }
+
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+extension SigningTests {
+
+    private static func createRandomKey() -> (PrivateKey, PublicKey) {
+        let key = PrivateKey()
+
+        return (key, key.publicKey)
+    }
+
+    private func sign(key: PrivateKey, message: String, nonce: String, salt: String) throws -> Data {
+        let fullMessage = salt.asData + nonce.asData + message.asData
+
+        return try key.signature(for: fullMessage)
+    }
+    
 }
