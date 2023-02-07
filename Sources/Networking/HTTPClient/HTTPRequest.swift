@@ -26,7 +26,8 @@ struct HTTPRequest {
     }
 
     init(method: Method, path: Path, nonce: Data?) {
-        assert(nonce == nil || nonce?.count == Data.nonceLength)
+        assert(nonce == nil || nonce?.count == Data.nonceLength,
+               "Invalid nonce: \(nonce?.description ?? "")")
 
         self.method = method
         self.path = path
