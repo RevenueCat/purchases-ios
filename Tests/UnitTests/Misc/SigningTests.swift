@@ -76,15 +76,22 @@ class SigningTests: TestCase {
         logger.verifyMessageWasLogged("Signature is not base64: \(signature)")
     }
 
-    func testVerifySignatureReturnsFalseAndLogsError() throws {
-        let logger = TestLogHandler()
-
+    func testVerifySignatureWithInvalidSignature() throws {
         expect(Signing.verify(message: "Hello World".asData,
                               nonce: "nonce".asData,
                               hasValidSignature: "invalid signature".asData.base64EncodedString(),
                               with: try Signing.loadPublicKey())) == false
+    }
 
-        logger.verifyMessageWasLogged("Signature failed validation")
+    func testVerifySignatureLogsWarningWhenFail() throws {
+        let logger = TestLogHandler()
+
+        _ = Signing.verify(message: "Hello World".asData,
+                           nonce: "nonce".asData,
+                           hasValidSignature: "invalid signature".asData.base64EncodedString(),
+                           with: try Signing.loadPublicKey())
+
+        logger.verifyMessageWasLogged("Signature failed validation", level: .warn)
     }
 
     func testVerifySignatureWithValidSignature() throws {
