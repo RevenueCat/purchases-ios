@@ -30,6 +30,10 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
     }
 
     var isSandbox: Bool {
+        #if targetEnvironment(simulator)
+        return true
+        #endif
+        
         guard let path = self.bundle.appStoreReceiptURL?.path else {
             return false
         }
