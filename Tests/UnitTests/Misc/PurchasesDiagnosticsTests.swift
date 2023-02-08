@@ -91,6 +91,20 @@ class PurchasesDiagnosticsTests: TestCase {
         }
     }
 
+    func testFailingSignatureVerification() async throws {
+        let expectedError = ErrorUtils.signatureVerificationFailedError(path: .health)
+        self.purchases.mockedHealthRequestWithSignatureVerificationResponse = .failure(expectedError.asPublicError)
+
+        do {
+            try await self.diagnostics.testSDKHealth()
+            fail("Expected error")
+        } catch let PurchasesDiagnostics.Error.failedMakingSignedRequest(error) {
+            expect(error).to(matchError(expectedError))
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
     func testSuccessfulTest() async throws {
         do {
             try await self.diagnostics.testSDKHealth()

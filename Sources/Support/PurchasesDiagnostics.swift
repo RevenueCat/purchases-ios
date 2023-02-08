@@ -143,6 +143,9 @@ private extension PurchasesDiagnostics {
         case .invalidCredentialsError:
             return Error.invalidAPIKey
 
+        case .signatureVerificationFailed:
+            return Error.failedMakingSignedRequest(error)
+
         default:
             return Error.unknown(error)
         }
