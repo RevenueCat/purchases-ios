@@ -80,6 +80,59 @@ class HTTPClientTests: TestCase {
         expect(headerPresent.value) == true
     }
 
+    func testRequestWithNoNonceDoesNotContainNonceHeader() {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).toNot(contain(HTTPClient.nonceHeaderName))
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testRequestIncludesRandomNonce() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let request = HTTPRequest.createIntegrityEnforcedRequestRequest(method: .get, path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
+        expect(headers?[HTTPClient.nonceHeaderName]) == request.nonce?.base64EncodedString()
+    }
+
+    func testRequestIncludesNonceInBase64() {
+        let request = HTTPRequest(method: .get, path: .mockPath, nonce: "1234567890ab".asData)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
+        expect(headers?[HTTPClient.nonceHeaderName]) == "MTIzNDU2Nzg5MGFi"
+    }
+
     func testAlwaysSetsContentTypeHeader() {
         let headerPresent: Atomic<Bool> = false
 

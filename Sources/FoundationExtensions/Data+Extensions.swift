@@ -85,3 +85,14 @@ extension Data {
     }
 
 }
+
+extension Data {
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    static func randomNonce() -> Data {
+        return Data(ChaChaPoly.Nonce())
+    }
+
+    static let nonceLength = 12
+
+}

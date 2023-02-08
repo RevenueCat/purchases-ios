@@ -11,11 +11,34 @@
 //
 //  Created by Nacho Soto on 2/27/22.
 
+import Foundation
+
 /// A request to be made by ``HTTPClient``
 struct HTTPRequest {
 
     let method: Method
     let path: Path
+    /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
+    let nonce: Data?
+
+    init(method: Method, path: Path) {
+        self.init(method: method, path: path, nonce: nil)
+    }
+
+    init(method: Method, path: Path, nonce: Data?) {
+        assert(nonce == nil || nonce?.count == Data.nonceLength,
+               "Invalid nonce: \(nonce?.description ?? "")")
+
+        self.method = method
+        self.path = path
+        self.nonce = nonce
+    }
+
+    /// Creates an `HTTPRequest` with a `nonce`.
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    static func createIntegrityEnforcedRequestRequest(method: Method, path: Path) -> Self {
+        return .init(method: method, path: path, nonce: Data.randomNonce())
+    }
 
 }
 

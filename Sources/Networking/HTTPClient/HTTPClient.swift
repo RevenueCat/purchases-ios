@@ -50,7 +50,7 @@ class HTTPClient {
 
     func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
         self.perform(request: .init(httpRequest: request,
-                                    headers: request.path.authenticated ? self.authHeaders : [:],
+                                    authHeaders: self.authHeaders,
                                     completionHandler: completionHandler))
     }
 
@@ -63,8 +63,15 @@ class HTTPClient {
 extension HTTPClient {
 
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
-        return ["Authorization": "Bearer \(apiKey)"]
+        return [Self.authorizationHeaderName: "Bearer \(apiKey)"]
     }
+
+    static func nonceHeader(with data: Data) -> RequestHeaders {
+        return [Self.nonceHeaderName: data.base64EncodedString()]
+    }
+
+    static let authorizationHeaderName = "Authorization"
+    static let nonceHeaderName = "X-Nonce"
 
 }
 
@@ -91,10 +98,10 @@ private extension HTTPClient {
         var retried: Bool = false
 
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
-                                      headers: HTTPClient.RequestHeaders,
+                                      authHeaders: HTTPClient.RequestHeaders,
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest
-            self.headers = headers
+            self.headers = httpRequest.headers(with: authHeaders)
 
             if let completionHandler = completionHandler {
                 self.completionHandler = { result in
@@ -307,7 +314,7 @@ private extension HTTPClient {
         var urlRequest = URLRequest(url: requestURL)
         urlRequest.httpMethod = request.method.httpMethod
 
-        let eTagHeader = eTagManager.eTagHeader(for: urlRequest, refreshETag: request.retried)
+        let eTagHeader = self.eTagManager.eTagHeader(for: urlRequest, refreshETag: request.retried)
         let headersWithETag = request.headers.merging(eTagHeader)
 
         urlRequest.allHTTPHeaderFields = headersWithETag
@@ -324,6 +331,24 @@ private extension HTTPClient {
 }
 
 // MARK: - Extensions
+
+private extension HTTPRequest {
+
+    func headers(with authHeaders: HTTPClient.RequestHeaders) -> HTTPClient.RequestHeaders {
+        var result: HTTPClient.RequestHeaders = [:]
+
+        if self.path.authenticated {
+            result += authHeaders
+        }
+
+        if let nonce = self.nonce {
+            result += HTTPClient.nonceHeader(with: nonce)
+        }
+
+        return result
+    }
+
+}
 
 extension HTTPRequest.Path {
 
