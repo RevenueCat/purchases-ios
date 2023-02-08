@@ -15,25 +15,25 @@ import Foundation
 
 extension HTTPResponse where Body == Data {
 
-    static func createAndValidate(with response: HTTPURLResponse,
-                                  body: Data,
-                                  request: HTTPRequest,
-                                  publicKey: Signing.PublicKey?,
-                                  signing: SigningType.Type = Signing.self) -> Self {
-        return Self.createAndValidate(body: body,
-                                      statusCode: .init(rawValue: response.statusCode),
-                                      headers: response.allHeaderFields,
-                                      request: request,
-                                      publicKey: publicKey,
-                                      signing: signing)
+    static func create(with response: HTTPURLResponse,
+                       body: Data,
+                       request: HTTPRequest,
+                       publicKey: Signing.PublicKey?,
+                       signing: SigningType.Type = Signing.self) -> Self {
+        return Self.create(with: body,
+                           statusCode: .init(rawValue: response.statusCode),
+                           headers: response.allHeaderFields,
+                           request: request,
+                           publicKey: publicKey,
+                           signing: signing)
     }
 
-    static func createAndValidate(body: Data,
-                                  statusCode: HTTPStatusCode,
-                                  headers: HTTPClient.ResponseHeaders,
-                                  request: HTTPRequest,
-                                  publicKey: Signing.PublicKey?,
-                                  signing: SigningType.Type = Signing.self) -> Self {
+    static func create(with body: Data,
+                       statusCode: HTTPStatusCode,
+                       headers: HTTPClient.ResponseHeaders,
+                       request: HTTPRequest,
+                       publicKey: Signing.PublicKey?,
+                       signing: SigningType.Type = Signing.self) -> Self {
         return .init(
             statusCode: statusCode,
             responseHeaders: headers,
@@ -83,18 +83,16 @@ extension Result where Success == Data?, Failure == NetworkError {
 
     /// Converts a `Result<Data?, NetworkError>` into `Result<HTTPResponse<Data?>, NetworkError>`
     func mapToResponse(
-        responseHeaders: HTTPClient.ResponseHeaders,
-        statusCode: HTTPStatusCode,
+        response: HTTPURLResponse,
         request: HTTPRequest,
         signing: SigningType.Type,
         verificationLevel: Signing.ResponseVerificationLevel
     ) -> Result<HTTPResponse<Data?>, Failure> {
         return self.flatMap { body in
             if let body = body {
-                let response = HTTPResponse.createAndValidate(
+                let response = HTTPResponse.create(
+                    with: response,
                     body: body,
-                    statusCode: statusCode,
-                    headers: responseHeaders,
                     request: request,
                     publicKey: verificationLevel.publicKey,
                     signing: signing
@@ -110,8 +108,8 @@ extension Result where Success == Data?, Failure == NetworkError {
                 // so the response will be fetched from `ETagManager`.
                 return .success(
                     .init(
-                        statusCode: statusCode,
-                        responseHeaders: responseHeaders,
+                        statusCode: HTTPStatusCode(rawValue: response.statusCode),
+                        responseHeaders: response.allHeaderFields,
                         body: body,
                         validationResult: .notRequested
                     )

@@ -21,11 +21,11 @@ class HTTPResponseTests: TestCase {
 
     func testResponseValidationNotRequestedWithNoPublicKey() {
         let request = HTTPRequest(method: .get, path: .health)
-        let response = HTTPResponse.createAndValidate(body: Data(),
-                                                      statusCode: .success,
-                                                      headers: [:],
-                                                      request: request,
-                                                      publicKey: nil)
+        let response = HTTPResponse.create(with: Data(),
+                                           statusCode: .success,
+                                           headers: [:],
+                                           request: request,
+                                           publicKey: nil)
 
         expect(response.validationResult) == .notRequested
     }
@@ -37,11 +37,11 @@ class HTTPResponseTests: TestCase {
         let key = Curve25519.Signing.PrivateKey().publicKey
 
         let request = HTTPRequest(method: .get, path: .health)
-        let response = HTTPResponse.createAndValidate(body: Data(),
-                                                      statusCode: .success,
-                                                      headers: [:],
-                                                      request: request,
-                                                      publicKey: key)
+        let response = HTTPResponse.create(with: Data(),
+                                           statusCode: .success,
+                                           headers: [:],
+                                           request: request,
+                                           publicKey: key)
 
         expect(response.validationResult) == .notRequested
     }

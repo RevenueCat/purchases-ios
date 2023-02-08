@@ -112,30 +112,30 @@ class SigningTests: TestCase {
 
     func testResponseValidationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let response = HTTPResponse.createAndValidate(body: Data(),
-                                                      statusCode: .success,
-                                                      headers: [:],
-                                                      request: request,
-                                                      publicKey: nil)
+        let response = HTTPResponse.create(with: Data(),
+                                           statusCode: .success,
+                                           headers: [:],
+                                           request: request,
+                                           publicKey: nil)
 
         expect(response.validationResult) == .notRequested
     }
 
     func testResponseValidationWithNoSignatureInResponse() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let response = HTTPResponse.createAndValidate(body: Data(),
-                                                      statusCode: .success,
-                                                      headers: [:],
-                                                      request: request,
-                                                      publicKey: self.publicKey)
+        let response = HTTPResponse.create(with: Data(),
+                                           statusCode: .success,
+                                           headers: [:],
+                                           request: request,
+                                           publicKey: self.publicKey)
 
         expect(response.validationResult) == .failedValidation
     }
 
     func testResponseValidationWithInvalidSignature() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let response = HTTPResponse.createAndValidate(
-            body: Data(),
+        let response = HTTPResponse.create(
+            with: Data(),
             statusCode: .success,
             headers: [
                 HTTPClient.responseSignatureHeaderName: "invalid_signature"
@@ -156,8 +156,8 @@ class SigningTests: TestCase {
         let fullSignature = salt.asData + signature
 
         let request = HTTPRequest(method: .get, path: .health, nonce: nonce.asData)
-        let response = HTTPResponse.createAndValidate(
-            body: message.asData,
+        let response = HTTPResponse.create(
+            with: message.asData,
             statusCode: .success,
             headers: [
                 HTTPClient.responseSignatureHeaderName: fullSignature.base64EncodedString()

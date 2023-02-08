@@ -226,8 +226,7 @@ private extension HTTPClient {
 
         return Result
             .success(dataIfAvailable(statusCode))
-            .mapToResponse(responseHeaders: httpURLResponse.allHeaderFields,
-                           statusCode: statusCode,
+            .mapToResponse(response: httpURLResponse,
                            request: request.httpRequest,
                            signing: self.signing,
                            verificationLevel: self.systemInfo.responseVerificationLevel)
