@@ -83,18 +83,14 @@ private final class HealthOperation: CacheableNetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        self.httpClient.perform(self.createRequest()) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
-            // TODO: verify signature in response
+        let request = self.createRequest()
 
-            self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                callback.completion(
-                    response
-                        .mapError(BackendError.networkError)
-                        .error
-                )
+        self.httpClient.perform(request) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+            if self.signatureVerification, response.value?.validationResult == .failedValidation {
+                self.finish(with: .failure(.signatureVerificationFailed(path: request.path)), completion: completion)
+            } else {
+                self.finish(with: response, completion: completion)
             }
-
-            completion()
         }
     }
 
@@ -106,6 +102,19 @@ private final class HealthOperation: CacheableNetworkOperation {
         }
 
         return request
+    }
+
+    private func finish(with response: HTTPResponse<HTTPEmptyResponseBody>.Result,
+                        completion: () -> Void) {
+        self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+            callback.completion(
+                response
+                    .mapError(BackendError.networkError)
+                    .error
+            )
+        }
+
+        completion()
     }
 
 }
