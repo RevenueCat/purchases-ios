@@ -16,7 +16,7 @@ import StoreKit
 
 protocol StoreKit2StorefrontListenerDelegate: AnyObject, Sendable {
 
-    func storefrontDidUpdate()
+    func storefrontDidUpdate(with storefront: StorefrontType)
 
 }
 
@@ -32,17 +32,31 @@ class StoreKit2StorefrontListener {
     }
 
     weak var delegate: StoreKit2StorefrontListenerDelegate?
+    private let updates: AsyncStream<StorefrontType>
 
-    init(delegate: StoreKit2StorefrontListenerDelegate?) {
+    convenience init(delegate: StoreKit2StorefrontListenerDelegate?) {
+        self.init(
+            delegate: delegate,
+            updates: StoreKit.Storefront.updates.map(Storefront.init(sk2Storefront:))
+        )
+    }
+
+    /// Creates a listener with an `AsyncSequence` of `StorefrontType`s
+    /// By default `StoreKit.Storefront.updates` is used, but a custom one can be passed for testing.
+    init<S: AsyncSequence>(
+        delegate: StoreKit2StorefrontListenerDelegate?,
+        updates: S
+    ) where S.Element == StorefrontType {
         self.delegate = delegate
+        self.updates = updates.toAsyncStream()
     }
 
     func listenForStorefrontChanges() {
-        self.taskHandle = Task(priority: .utility) { [weak self] in
-            for await _ in StoreKit.Storefront.updates {
+        self.taskHandle = Task(priority: .utility) { [weak self, updates = self.updates] in
+            for await storefront in updates {
                 guard let delegate = self?.delegate else { break }
                 await MainActor.run { @Sendable in
-                    delegate.storefrontDidUpdate()
+                    delegate.storefrontDidUpdate(with: storefront)
                 }
             }
         }
@@ -51,6 +65,18 @@ class StoreKit2StorefrontListener {
     deinit {
         self.taskHandle?.cancel()
         self.taskHandle = nil
+    }
+
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+private extension AsyncSequence {
+
+    func toAsyncStream() -> AsyncStream<Element> {
+        var asyncIterator = self.makeAsyncIterator()
+        return AsyncStream<Element> {
+            try? await asyncIterator.next()
+        }
     }
 
 }

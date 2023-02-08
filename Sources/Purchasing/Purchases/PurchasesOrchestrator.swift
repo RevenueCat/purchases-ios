@@ -811,8 +811,8 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
-    func storefrontDidUpdate() {
-        handleStorefrontChange()
+    func storefrontDidUpdate(with storefront: StorefrontType) {
+        self.handleStorefrontChange()
     }
 
 }
