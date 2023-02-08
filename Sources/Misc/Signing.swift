@@ -120,6 +120,7 @@ extension Signing {
         }
 
         do {
+            // Fix-me: figure out the prefix with the final production key.
             return try CryptoKit.Curve25519.Signing.PublicKey(rawRepresentation: data.prefix(32))
         } catch {
             throw ErrorUtils.configurationError(
