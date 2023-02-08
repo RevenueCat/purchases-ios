@@ -36,6 +36,30 @@ enum Signing {
         return try Self.loadPublicKey(in: url)
     }
 
+    static func verify(
+        message: Data,
+        nonce: Data,
+        hasValidSignature signature: String,
+        with publicKey: PublicKey
+    ) -> Bool {
+        guard let signature = Data(base64Encoded: signature) else {
+            Logger.warn(Strings.signing.signature_not_base64(signature))
+            return false
+        }
+
+        let salt = signature.subdata(in: 0..<Self.saltSize)
+        let signatureToVerify = signature.subdata(in: Self.saltSize..<signature.count)
+        let messageToVerify = salt + nonce + message
+
+        let isValid = publicKey.isValidSignature(signatureToVerify, for: messageToVerify)
+
+        if !isValid {
+            Logger.warn(Strings.signing.signature_failed_verification)
+        }
+
+        return isValid
+    }
+
     /// - Throws: ``ErrorCode/configurationError``
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func verificationLevel(
@@ -53,6 +77,7 @@ enum Signing {
     private static let publicKeyFileName = "public_key"
     private static let publicKeyFileExtension = "der"
 
+    internal static let saltSize = 16
 }
 
 extension Signing {

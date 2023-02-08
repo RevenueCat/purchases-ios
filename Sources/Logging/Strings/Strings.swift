@@ -26,6 +26,7 @@ enum Strings {
     static let purchase = PurchaseStrings.self
     static let receipt = ReceiptStrings.self
     static let restore = RestoreStrings.self
+    static let signing = SigningStrings.self
     static let storeKit = StoreKitStrings.self
 
 }
