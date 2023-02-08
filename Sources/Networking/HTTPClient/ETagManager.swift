@@ -41,22 +41,19 @@ class ETagManager {
         return [ETagManager.eTagHeaderName: storedETag]
     }
 
-    func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                      data: Data?,
+    func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
                                       request: URLRequest,
                                       retried: Bool) -> HTTPResponse<Data>? {
-        let statusCode: HTTPStatusCode = .init(rawValue: response.statusCode)
-        let resultFromBackend = HTTPResponse(statusCode: statusCode, body: data)
-            .asOptionalResponse
-
-        let headersInResponse = response.allHeaderFields
+        let statusCode: HTTPStatusCode = response.statusCode
+        let resultFromBackend = response.asOptionalResponse
+        let headersInResponse = response.responseHeaders
 
         let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
         headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
 
         guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
-        if shouldUseCachedVersion(responseCode: statusCode) {
-            if let storedResponse = storedHTTPResponse(for: request) {
+        if self.shouldUseCachedVersion(responseCode: statusCode) {
+            if let storedResponse = self.storedHTTPResponse(for: request) {
                 return storedResponse
             }
             if retried {
@@ -69,10 +66,12 @@ class ETagManager {
             }
             return nil
         }
-        storeStatusCodeAndResponseIfNoError(
+
+        // TODO: also store validation result
+        self.storeStatusCodeAndResponseIfNoError(
                 for: request,
                 statusCode: statusCode,
-                data: data,
+                data: response.body,
                 eTag: eTagInResponse
         )
         return resultFromBackend
@@ -166,7 +165,10 @@ extension ETagManager.Response {
     fileprivate var asResponse: HTTPResponse<Data> {
         return HTTPResponse(
             statusCode: self.statusCode,
-            body: self.data
+            responseHeaders: [:], // TODO:
+            body: self.data,
+            // TODO: store validation?
+            validationResult: .notRequested // TODO: ?
         )
     }
 }

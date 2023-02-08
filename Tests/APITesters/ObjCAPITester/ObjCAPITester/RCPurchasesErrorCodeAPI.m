@@ -57,6 +57,7 @@
         case RCAPIEndpointBlocked:
         case RCInvalidPromotionalOfferError:
         case RCOfflineConnectionError:
+        case RCSignatureVerificationFailed:
             NSLog(@"%ld", (long)errCode);
     }
 }

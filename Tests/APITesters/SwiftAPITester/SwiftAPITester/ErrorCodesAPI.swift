@@ -51,7 +51,8 @@ func checkPurchasesErrorCodeEnums() {
          .productRequestTimedOut,
          .apiEndpointBlockedError,
          .invalidPromotionalOfferError,
-         .offlineConnectionError:
+         .offlineConnectionError,
+         .signatureVerificationFailed:
         print(errCode!)
     @unknown default:
         fatalError()

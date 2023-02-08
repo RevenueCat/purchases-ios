@@ -168,8 +168,13 @@ class ErrorCodeTests: TestCase {
                                               expectedRawValue: 35)
     }
 
+    func testSignatureVerificationFailedError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .signatureVerificationFailed,
+                                              expectedRawValue: 36)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases).to(haveCount(35))
+        expect(ErrorCode.allCases).to(haveCount(36))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {

@@ -14,8 +14,20 @@
 import CryptoKit
 import Foundation
 
-/// Utilities for handling certificates and keys.
-enum Signing {
+/// A type that can verify signatures
+protocol SigningType {
+
+    static func verify(
+        message: Data,
+        nonce: Data,
+        hasValidSignature signature: String,
+        with publicKey: Signing.PublicKey
+    ) -> Bool
+
+}
+
+/// Utilities for handling signature verification.
+enum Signing: SigningType {
 
     /// An object that represents a cryptographic key.
     typealias PublicKey = SigningPublicKey
@@ -114,6 +126,73 @@ protocol SigningPublicKey {
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension CryptoKit.Curve25519.Signing.PublicKey: SigningPublicKey {}
+
+// MARK: - HTTPResponse validation
+
+extension HTTPResponse where Body == Data {
+
+    static func createAndValidate(with response: HTTPURLResponse,
+                                  body: Data,
+                                  request: HTTPRequest,
+                                  publicKey: Signing.PublicKey?,
+                                  signing: SigningType.Type = Signing.self) -> Self {
+        return Self.createAndValidate(body: body,
+                                      statusCode: .init(rawValue: response.statusCode),
+                                      headers: response.allHeaderFields,
+                                      request: request,
+                                      publicKey: publicKey,
+                                      signing: signing)
+    }
+
+    static func createAndValidate(body: Data,
+                                  statusCode: HTTPStatusCode,
+                                  headers: HTTPClient.ResponseHeaders,
+                                  request: HTTPRequest,
+                                  publicKey: Signing.PublicKey?,
+                                  signing: SigningType.Type = Signing.self) -> Self {
+        return .init(
+            statusCode: statusCode,
+            responseHeaders: headers,
+            body: body,
+            validationResult: Self.validationResult(
+                body: body,
+                headers: headers,
+                request: request,
+                publicKey: publicKey,
+                signing: signing
+            )
+        )
+    }
+
+    private static func validationResult(
+        body: Data,
+        headers: HTTPClient.ResponseHeaders,
+        request: HTTPRequest,
+        publicKey: Signing.PublicKey?,
+        signing: SigningType.Type
+    ) -> HTTPResponseValidationResult {
+        guard let nonce = request.nonce,
+              let publicKey = publicKey,
+              #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
+            return .notRequested
+        }
+
+        guard let signature = headers[HTTPClient.responseSignatureHeaderName] as? String else {
+            // TODO: log warning and test
+            return .failedValidation
+        }
+
+        if signing.verify(message: body,
+                          nonce: nonce,
+                          hasValidSignature: signature,
+                          with: publicKey) {
+            return .validated
+        } else {
+            return .failedValidation
+        }
+    }
+
+}
 
 // MARK: - Internal implementation (visible for tests)
 

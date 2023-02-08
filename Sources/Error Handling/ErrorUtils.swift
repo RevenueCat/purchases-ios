@@ -60,6 +60,16 @@ enum ErrorUtils {
     }
 
     /**
+     * Constructs an NSError with the ``ErrorCode/signatureVerificationFailed`` code.
+     */
+    static func signatureVerificationFailedError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return error(with: .signatureVerificationFailed,
+                     fileName: fileName, functionName: functionName, line: line)
+    }
+
+    /**
      * Maps a ``BackendErrorCode`` code to a ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
      * `NSUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
      * ``BackendErrorCode/toPurchasesErrorCode()``.
@@ -624,7 +634,8 @@ private extension ErrorUtils {
                 .beginRefundRequestError,
                 .apiEndpointBlockedError,
                 .invalidPromotionalOfferError,
-                .offlineConnectionError:
+                .offlineConnectionError,
+                .signatureVerificationFailed:
                 Logger.error(
                     localizedDescription,
                     fileName: fileName,

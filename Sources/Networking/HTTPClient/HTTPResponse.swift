@@ -18,19 +18,48 @@ struct HTTPResponse<Body: HTTPResponseBody> {
 
     typealias Result = Swift.Result<Self, NetworkError>
 
-    let statusCode: HTTPStatusCode
-    let body: Body
+    var statusCode: HTTPStatusCode
+    var responseHeaders: HTTPClient.ResponseHeaders
+    var body: Body
+    var validationResult: HTTPResponseValidationResult = .notRequested
+
+}
+
+/// Information about the validity of an `HTTPResponse`.
+/// - Seealso: `Signing`
+enum HTTPResponseValidationResult {
+
+    /// `HTTPRequest` did not have a `nonce`, validation was not performed.
+    case notRequested
+
+    /// Response passed validation.
+    case validated
+
+    /// Response failed to validate.
+    case failedValidation
+
+    // TODO: 304s?
 
 }
 
 extension HTTPResponse: CustomStringConvertible {
 
     var description: String {
-        if let bodyDescription = (self.body as? CustomStringConvertible)?.description {
-            return "HTTPResponse(statusCode: \(self.statusCode.rawValue), body: \(bodyDescription))"
-        } else {
-            return "HTTPResponse(statusCode: \(self.statusCode.rawValue), body: \(type(of: self.body))"
-        }
+        let body: String = {
+            if let bodyDescription = (self.body as? CustomStringConvertible)?.description {
+                return bodyDescription
+            } else {
+                return "\(type(of: self.body))"
+            }
+        }()
+
+        return """
+        HTTPResponse(" +
+        statusCode: \(self.statusCode.rawValue),
+        body: \(body),
+        validation: \(self.validationResult)
+        )
+        """
     }
 
 }
@@ -43,7 +72,10 @@ extension HTTPResponse where Body: OptionalType, Body.Wrapped: HTTPResponseBody 
             return nil
         }
 
-        return .init(statusCode: self.statusCode, body: body)
+        return .init(statusCode: self.statusCode,
+                     responseHeaders: self.responseHeaders,
+                     body: body,
+                     validationResult: self.validationResult) // TODO: test copy
     }
 
 }
@@ -51,7 +83,10 @@ extension HTTPResponse where Body: OptionalType, Body.Wrapped: HTTPResponseBody 
 extension HTTPResponse {
 
     func mapBody<NewBody>(_ mapping: (Body) throws -> NewBody) rethrows -> HTTPResponse<NewBody> {
-        return .init(statusCode: self.statusCode, body: try mapping(self.body))
+        return .init(statusCode: self.statusCode,
+                     responseHeaders: self.responseHeaders,
+                     body: try mapping(self.body),
+                     validationResult: self.validationResult)
     }
 
 }

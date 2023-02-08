@@ -307,6 +307,7 @@
 		5791CE80273F26A000E50C4B /* base64encoded_sandboxReceipt.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5791CE7F273F26A000E50C4B /* base64encoded_sandboxReceipt.txt */; };
 		5791FC7A2991D31600F1FEDA /* public_key.der in Resources */ = {isa = PBXBuildFile; fileRef = 5791FC792991D31600F1FEDA /* public_key.der */; };
 		5791FCF32992D3EC00F1FEDA /* SigningStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */; };
+		5791FDBE299419D900F1FEDA /* MockSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FDBD299419D900F1FEDA /* MockSigning.swift */; };
 		579234E327F7788900B39C68 /* BaseBackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */; };
 		579234E527F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */; };
 		5793397028E77A5100C1232C /* PaymentQuueWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5793396F28E77A5100C1232C /* PaymentQuueWrapperTests.swift */; };
@@ -916,6 +917,7 @@
 		5791CE7F273F26A000E50C4B /* base64encoded_sandboxReceipt.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base64encoded_sandboxReceipt.txt; sourceTree = "<group>"; };
 		5791FC792991D31600F1FEDA /* public_key.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = public_key.der; sourceTree = "<group>"; };
 		5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningStrings.swift; sourceTree = "<group>"; };
+		5791FDBD299419D900F1FEDA /* MockSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSigning.swift; sourceTree = "<group>"; };
 		579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseBackendIntegrationTests.swift; sourceTree = "<group>"; };
 		579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManagerIntegrationTests.swift; sourceTree = "<group>"; };
 		5793396F28E77A5100C1232C /* PaymentQuueWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentQuueWrapperTests.swift; sourceTree = "<group>"; };
@@ -1567,6 +1569,7 @@
 				37E354B13440508B46C9A530 /* MockReceiptParser.swift */,
 				351B517926D44FF000BD2BD7 /* MockRequestFetcher.swift */,
 				57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */,
+				5791FDBD299419D900F1FEDA /* MockSigning.swift */,
 				2DDF41E524F6F5DC005BC22D /* MockSK1Product.swift */,
 				A55D08312722471200D919E0 /* MockSK2BeginRefundRequestHelper.swift */,
 				2DDF41E724F6F61B005BC22D /* MockSKProductDiscount.swift */,
@@ -3088,6 +3091,7 @@
 				A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
 				2DA85A8A26DEA7DC00F1136D /* MockProductsRequestFactory.swift in Sources */,
 				5793397028E77A5100C1232C /* PaymentQuueWrapperTests.swift in Sources */,
+				5791FDBE299419D900F1FEDA /* MockSigning.swift in Sources */,
 				57FDAA9A2846C2BD009A48F1 /* PurchasesDelegateTests.swift in Sources */,
 				351B516026D44BB600BD2BD7 /* MockAttributionDataMigrator.swift in Sources */,
 				2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */,
