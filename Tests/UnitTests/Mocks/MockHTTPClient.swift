@@ -147,7 +147,7 @@ private extension HTTPRequest {
             return self
         } else {
             var copy = self
-            copy.nonce = "1234567890abcdef".asData
+            copy.nonce = "1234567890ab".asData
 
             return copy
         }
