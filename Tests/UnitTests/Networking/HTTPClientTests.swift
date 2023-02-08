@@ -944,7 +944,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
             statusCode: .success,
             responseHeaders: [:],
-            body: mockedCachedResponse
+            body: mockedCachedResponse,
+            validationResult: .notRequested
         )
 
         stub(condition: isPath(path)) { _ in

@@ -21,7 +21,7 @@ struct HTTPResponse<Body: HTTPResponseBody> {
     var statusCode: HTTPStatusCode
     var responseHeaders: HTTPClient.ResponseHeaders
     var body: Body
-    var validationResult: HTTPResponseValidationResult = .notRequested
+    var validationResult: HTTPResponseValidationResult
 
 }
 
