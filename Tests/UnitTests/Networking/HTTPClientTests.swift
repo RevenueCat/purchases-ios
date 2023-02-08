@@ -100,7 +100,7 @@ class HTTPClientTests: TestCase {
     func testRequestIncludesRandomNonce() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        let request = HTTPRequest.createSignedRequest(method: .get, path: .mockPath)
+        let request = HTTPRequest.createIntegrityEnforcedRequestRequest(method: .get, path: .mockPath)
 
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
