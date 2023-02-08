@@ -115,7 +115,7 @@ class SystemInfo {
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
          storeKit2Setting: StoreKit2Setting = .default,
-         responseVerificationLevel: Signing.ResponseVerificationLevel = .disabled,
+         responseVerificationLevel: Signing.ResponseVerificationLevel = .default,
          dangerousSettings: DangerousSettings? = nil) throws {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version

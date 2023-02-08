@@ -87,7 +87,7 @@ import Security
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
-        private(set) var responseVerificationLevel: Signing.ResponseVerificationLevel = .disabled
+        private(set) var responseVerificationLevel: Signing.ResponseVerificationLevel = .default
 
         /**
          * Create a new builder with your API key.
