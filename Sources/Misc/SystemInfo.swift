@@ -23,8 +23,6 @@ import WatchKit
 import AppKit
 #endif
 
-import Security
-
 class SystemInfo {
 
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!

@@ -12,7 +12,6 @@
 //  Created by Joshua Liebowitz on 5/6/22.
 
 import Foundation
-import Security
 
 /**
  * ``Configuration`` can be used when configuring the ``Purchases`` instance. It is not required to be used, but
