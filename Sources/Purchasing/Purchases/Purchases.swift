@@ -238,6 +238,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      userDefaults: UserDefaults? = nil,
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
+                     responseVerificationLevel: Signing.ResponseVerificationLevel,
                      storeKit2Setting: StoreKit2Setting = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
@@ -256,6 +257,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                         finishTransactions: !observerMode,
                                         operationDispatcher: operationDispatcher,
                                         storeKit2Setting: storeKit2Setting,
+                                        responseVerificationLevel: responseVerificationLevel,
                                         dangerousSettings: dangerousSettings)
         } catch {
             fatalError(error.localizedDescription)
@@ -907,6 +909,7 @@ public extension Purchases {
                   observerMode: configuration.observerMode,
                   userDefaults: configuration.userDefaults,
                   platformInfo: configuration.platformInfo,
+                  responseVerificationLevel: configuration.responseVerificationLevel,
                   storeKit2Setting: configuration.storeKit2Setting,
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
@@ -1017,21 +1020,25 @@ public extension Purchases {
     }
 
     // swiftlint:disable:next function_parameter_count
-    @discardableResult internal static func configure(withAPIKey apiKey: String,
-                                                      appUserID: String?,
-                                                      observerMode: Bool,
-                                                      userDefaults: UserDefaults?,
-                                                      platformInfo: PlatformInfo?,
-                                                      storeKit2Setting: StoreKit2Setting,
-                                                      storeKitTimeout: TimeInterval,
-                                                      networkTimeout: TimeInterval,
-                                                      dangerousSettings: DangerousSettings?) -> Purchases {
+    @discardableResult internal static func configure(
+        withAPIKey apiKey: String,
+        appUserID: String?,
+        observerMode: Bool,
+        userDefaults: UserDefaults?,
+        platformInfo: PlatformInfo?,
+        responseVerificationLevel: Signing.ResponseVerificationLevel,
+        storeKit2Setting: StoreKit2Setting,
+        storeKitTimeout: TimeInterval,
+        networkTimeout: TimeInterval,
+        dangerousSettings: DangerousSettings?
+    ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
                   appUserID: appUserID,
                   userDefaults: userDefaults,
                   observerMode: observerMode,
                   platformInfo: platformInfo,
+                  responseVerificationLevel: responseVerificationLevel,
                   storeKit2Setting: storeKit2Setting,
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
@@ -1219,6 +1226,10 @@ internal extension Purchases {
 
     var configuredUserDefaults: UserDefaults {
         return self.userDefaults
+    }
+
+    var publicKey: Signing.PublicKey? {
+        return self.systemInfo.responseVerificationLevel.publicKey
     }
 
 }

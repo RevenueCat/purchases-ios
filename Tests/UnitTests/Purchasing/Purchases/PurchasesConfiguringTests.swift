@@ -158,6 +158,39 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.appUserID) == Self.appUserID
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testEntitlementVerificationLevelDisabledDoesNotSetPublicKey() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let purchases = Purchases.configure(
+            with: try .init(withAPIKey: "")
+                .with(entitlementVerificationLevel: .disabled)
+        )
+        expect(purchases.publicKey).to(beNil())
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testEntitlementVerificationLevelInformationOnlySetsPublicKey() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let purchases = Purchases.configure(
+            with: try .init(withAPIKey: "")
+                .with(entitlementVerificationLevel: .informationOnly)
+        )
+        expect(purchases.publicKey).toNot(beNil())
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testEntitlementVerificationLevelEnforcedSetsPublicKey() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let purchases = Purchases.configure(
+            with: try .init(withAPIKey: "")
+                .with(entitlementVerificationLevel: .enforced)
+        )
+        expect(purchases.publicKey).toNot(beNil())
+    }
+
     func testFirstInitializationCallDelegate() {
         self.setupPurchases()
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))

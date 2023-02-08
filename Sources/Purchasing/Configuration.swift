@@ -50,6 +50,7 @@ import Foundation
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
     let platformInfo: Purchases.PlatformInfo?
+    let responseVerificationLevel: Signing.ResponseVerificationLevel
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -63,6 +64,7 @@ import Foundation
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
         self.platformInfo = builder.platformInfo
+        self.responseVerificationLevel = builder.responseVerificationLevel
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -84,6 +86,7 @@ import Foundation
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
+        private(set) var responseVerificationLevel: Signing.ResponseVerificationLevel = .default
 
         /**
          * Create a new builder with your API key.
@@ -170,6 +173,15 @@ import Foundation
             return self
         }
 
+        /// Set ``Configuration/EntitlementVerificationLevel``
+        /// - Note: this requires iOS 13+
+        /// - Throws: ``ErrorCode/configurationError`` if the key cannot be loaded
+        @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+        @objc internal func with(entitlementVerificationLevel level: EntitlementVerificationLevel) throws -> Builder {
+            self.responseVerificationLevel = try Signing.verificationLevel(with: level)
+            return self
+        }
+
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> Configuration {
             return Configuration(with: self)
@@ -188,6 +200,27 @@ import Foundation
 
             return timeout
         }
+
+    }
+
+}
+
+// MARK: - Public Keys
+
+internal extension Configuration {
+
+    /// Defines how strict ``EntitlementInfo`` verification ought to be.
+    @objc(RCEntitlementVerificationLevel)
+    enum EntitlementVerificationLevel: Int {
+
+        /// The SDK will perform no entitlement verification.
+        case disabled = 0
+
+        /// The SDK will verify entitlements, but will not fail to parse them if verification failed.
+        case informationOnly = 1
+
+        /// The SDK will verify entitlements, and it will throw an error if verification failed.
+        case enforced = 2
 
     }
 

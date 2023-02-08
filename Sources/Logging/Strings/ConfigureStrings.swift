@@ -57,6 +57,12 @@ enum ConfigureStrings {
 
     case using_user_defaults_suite_name
 
+    case public_key_could_not_be_found(fileName: String)
+
+    case public_key_is_empty
+
+    case public_key_could_not_load_key
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
@@ -126,6 +132,14 @@ extension ConfigureStrings: CustomStringConvertible {
         case .using_user_defaults_suite_name:
             return "Configuring SDK using RevenueCat's UserDefaults suite."
 
+        case let .public_key_could_not_be_found(fileName):
+            return "Could not find public key '\(fileName)'"
+
+        case .public_key_is_empty:
+            return "Attempted to load an empty public key."
+
+        case .public_key_could_not_load_key:
+            return "Failed to load public key. Ensure that it's a valid ed25519 key."
         }
     }
 

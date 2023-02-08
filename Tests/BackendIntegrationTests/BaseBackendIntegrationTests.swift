@@ -97,6 +97,7 @@ private extension BaseBackendIntegrationTests {
                             observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
                             platformInfo: nil,
+                            responseVerificationLevel: .default,
                             storeKit2Setting: Self.storeKit2Setting,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
                             networkTimeout: Configuration.networkTimeoutDefault,
