@@ -607,6 +607,7 @@ SWIFT_CLASS_NAMED("Configuration")
 @class NSUserDefaults;
 @class RCDangerousSettings;
 @class RCPlatformInfo;
+enum RCEntitlementVerificationLevel : NSInteger;
 
 /// The Builder for <code>Configuration</code>.
 SWIFT_CLASS_NAMED("Builder")
@@ -651,11 +652,32 @@ SWIFT_CLASS_NAMED("Builder")
 - (RCConfigurationBuilder * _Nonnull)withStoreKit1Timeout:(NSTimeInterval)storeKit1Timeout SWIFT_WARN_UNUSED_RESULT;
 /// Set <code>platformInfo</code>.
 - (RCConfigurationBuilder * _Nonnull)withPlatformInfo:(RCPlatformInfo * _Nonnull)platformInfo SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>Configuration/EntitlementVerificationLevel</code>
+/// note:
+/// this requires iOS 13+
+///
+/// throws:
+/// <code>ErrorCode/configurationError</code> if the key cannot be loaded
+- (RCConfigurationBuilder * _Nullable)withEntitlementVerificationLevel:(enum RCEntitlementVerificationLevel)level error:(NSError * _Nullable * _Nullable)error SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
+
+@interface RCConfiguration (SWIFT_EXTENSION(RevenueCat))
+@end
+
+/// Defines how strict <code>EntitlementInfo</code> verification ought to be.
+typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationLevel, "EntitlementVerificationLevel", closed) {
+/// The SDK will perform no entitlement verification.
+  RCEntitlementVerificationLevelDisabled = 0,
+/// The SDK will verify entitlements, but will not fail to parse them if verification failed.
+  RCEntitlementVerificationLevelInformationOnly = 1,
+/// The SDK will verify entitlements, and it will throw an error if verification failed.
+  RCEntitlementVerificationLevelEnforced = 2,
+};
 
 
 
@@ -1036,10 +1058,10 @@ SWIFT_CLASS_NAMED("IntroEligibility")
 
 
 
-
 @interface RCIntroEligibility (SWIFT_EXTENSION(RevenueCat))
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 @end
+
 
 /// Enum of different possible states for intro price eligibility status.
 /// <ul>
@@ -1239,6 +1261,13 @@ SWIFT_CLASS_NAMED("Package")
 
 
 
+@class SKProduct;
+
+@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
+/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
+@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
+@end
+
 
 @interface RCPackage (SWIFT_EXTENSION(RevenueCat))
 /// \param packageType A <code>PackageType</code>.
@@ -1253,13 +1282,6 @@ SWIFT_CLASS_NAMED("Package")
 /// returns:
 /// a <code>PackageType</code> for the given string.
 + (enum RCPackageType)packageTypeFrom:(NSString * _Nonnull)string SWIFT_WARN_UNUSED_RESULT;
-@end
-
-@class SKProduct;
-
-@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
-/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
-@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
 @end
 
 
@@ -2721,6 +2743,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 @end
 
 
+
 SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0)
 @interface RCPurchasesDiagnostics (SWIFT_EXTENSION(RevenueCat))
 /// Perform tests to ensure SDK is configured correctly.
@@ -2731,7 +2754,6 @@ SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13
 /// </ul>
 - (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler;
 @end
-
 
 
 
@@ -2753,10 +2775,10 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
+
 
 
 
@@ -2924,13 +2946,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 @property (nonatomic, readonly, copy) NSLocale * _Nonnull priceLocale SWIFT_AVAILABILITY(macos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(watchos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(tvos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(ios,unavailable,message="Use localizedPriceString instead");
 @end
 
-
-@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
-- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
-/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
-@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
-@end
-
 @class NSDecimalNumber;
 
 @interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
@@ -2955,6 +2970,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryPrice</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
+@end
+
+
+@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
+- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
+/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
+@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
 @end
 
 enum RCPaymentMode : NSInteger;
