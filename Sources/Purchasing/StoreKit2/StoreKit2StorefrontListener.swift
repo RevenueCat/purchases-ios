@@ -41,6 +41,8 @@ class StoreKit2StorefrontListener {
         )
     }
 
+    /// Creates a listener with an `AsyncSequence` of `StorefrontType`s
+    /// By default `StoreKit.Storefront.updates` is used, but a custom one can be passed for testing.
     init<S: AsyncSequence>(
         delegate: StoreKit2StorefrontListenerDelegate?,
         updates: S
