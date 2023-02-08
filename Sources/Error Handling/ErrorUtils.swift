@@ -43,7 +43,7 @@ enum ErrorUtils {
         }
 
         return error(with: errorCode,
-                     message: message,
+                     message: message ?? underlyingError?.localizedDescription,
                      underlyingError: underlyingError,
                      extraUserInfo: extraUserInfo,
                      fileName: fileName, functionName: functionName, line: line)
