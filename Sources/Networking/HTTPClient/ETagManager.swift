@@ -35,28 +35,27 @@ class ETagManager {
 
     func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
         var storedETag = ""
-        if !refreshETag, let storedETagAndResponse = storedETagAndResponse(for: urlRequest) {
+        if !refreshETag,
+           let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest),
+           storedETagAndResponse.validationResult != .failedValidation {
             storedETag = storedETagAndResponse.eTag
         }
         return [ETagManager.eTagHeaderName: storedETag]
     }
 
-    func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                      data: Data?,
+    func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
                                       request: URLRequest,
                                       retried: Bool) -> HTTPResponse<Data>? {
-        let statusCode: HTTPStatusCode = .init(rawValue: response.statusCode)
-        let resultFromBackend = HTTPResponse(statusCode: statusCode, body: data)
-            .asOptionalResponse
-
-        let headersInResponse = response.allHeaderFields
+        let statusCode: HTTPStatusCode = response.statusCode
+        let resultFromBackend = response.asOptionalResponse
+        let headersInResponse = response.responseHeaders
 
         let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
         headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
 
         guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
-        if shouldUseCachedVersion(responseCode: statusCode) {
-            if let storedResponse = storedHTTPResponse(for: request) {
+        if self.shouldUseCachedVersion(responseCode: statusCode) {
+            if let storedResponse = self.storedHTTPResponse(for: request) {
                 return storedResponse
             }
             if retried {
@@ -69,10 +68,10 @@ class ETagManager {
             }
             return nil
         }
-        storeStatusCodeAndResponseIfNoError(
+
+        self.storeStatusCodeAndResponseIfNoError(
                 for: request,
-                statusCode: statusCode,
-                data: data,
+                response: response,
                 eTag: eTagInResponse
         )
         return resultFromBackend
@@ -105,16 +104,21 @@ private extension ETagManager {
     }
 
     func storedHTTPResponse(for request: URLRequest) -> HTTPResponse<Data>? {
-        return storedETagAndResponse(for: request)?.asResponse
+        return self.storedETagAndResponse(for: request)?.asResponse
     }
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
-                                             statusCode: HTTPStatusCode,
-                                             data: Data?,
+                                             response: HTTPResponse<Data?>,
                                              eTag: String) {
-        if let data = data, statusCode != .notModified && !statusCode.isServerError,
-           let cacheKey = eTagDefaultCacheKey(for: request) {
-            let eTagAndResponse = Response(eTag: eTag, statusCode: statusCode, data: data)
+        if let data = response.body,
+           response.shouldStore,
+           let cacheKey = self.eTagDefaultCacheKey(for: request) {
+            let eTagAndResponse = Response(
+                eTag: eTag,
+                statusCode: response.statusCode,
+                data: data,
+                validationResult: response.validationResult
+            )
             if let dataToStore = eTagAndResponse.asData() {
                 self.userDefaults.write {
                     $0.set(dataToStore, forKey: cacheKey)
@@ -150,6 +154,7 @@ extension ETagManager {
         let eTag: String
         let statusCode: HTTPStatusCode
         let data: Data
+        let validationResult: HTTPResponseValidationResult
 
     }
 
@@ -166,7 +171,24 @@ extension ETagManager.Response {
     fileprivate var asResponse: HTTPResponse<Data> {
         return HTTPResponse(
             statusCode: self.statusCode,
-            body: self.data
+            responseHeaders: [:],
+            body: self.data,
+            validationResult: self.validationResult
         )
     }
+
+}
+
+// MARK: -
+
+private extension HTTPResponse {
+
+    var shouldStore: Bool {
+        return (
+            self.statusCode != .notModified &&
+            !self.statusCode.isServerError &&
+            self.validationResult != .failedValidation
+        )
+    }
+
 }

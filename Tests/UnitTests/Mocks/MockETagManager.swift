@@ -30,8 +30,7 @@ class MockETagManager: ETagManager {
     }
 
     private struct InvokedHTTPResultFromCacheOrBackendParams {
-        let response: HTTPURLResponse
-        let body: Data?
+        let response: HTTPResponse<Data?>
         let request: URLRequest
         let retried: Bool
     }
@@ -43,26 +42,23 @@ class MockETagManager: ETagManager {
     var stubbedHTTPResultFromCacheOrBackendResult: HTTPResponse<Data>!
     var shouldReturnResultFromBackend = true
 
-    override func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                               data: Data?,
+    override func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
                                                request: URLRequest,
                                                retried: Bool) -> HTTPResponse<Data>? {
-        return lock.perform {
-            invokedHTTPResultFromCacheOrBackend = true
-            invokedHTTPResultFromCacheOrBackendCount += 1
+        return self.lock.perform {
+            self.invokedHTTPResultFromCacheOrBackend = true
+            self.invokedHTTPResultFromCacheOrBackendCount += 1
             let params = InvokedHTTPResultFromCacheOrBackendParams(
                 response: response,
-                body: data,
                 request: request,
                 retried: retried
             )
-            invokedHTTPResultFromCacheOrBackendParameters = params
-            invokedHTTPResultFromCacheOrBackendParametersList.append(params)
-            if shouldReturnResultFromBackend {
-                return HTTPResponse(statusCode: .init(rawValue: response.statusCode), body: data)
-                    .asOptionalResponse
+            self.invokedHTTPResultFromCacheOrBackendParameters = params
+            self.invokedHTTPResultFromCacheOrBackendParametersList.append(params)
+            if self.shouldReturnResultFromBackend {
+                return response.asOptionalResponse
             }
-            return stubbedHTTPResultFromCacheOrBackendResult
+            return self.stubbedHTTPResultFromCacheOrBackendResult
         }
     }
 

@@ -18,6 +18,7 @@ import Foundation
 class HTTPClient {
 
     typealias RequestHeaders = [String: String]
+    typealias ResponseHeaders = [AnyHashable: Any]
     typealias Completion<Value: HTTPResponseBody> = (HTTPResponse<Value>.Result) -> Void
 
     let systemInfo: SystemInfo
@@ -29,11 +30,13 @@ class HTTPClient {
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
     private let dnsChecker: DNSCheckerType.Type
+    private let signing: SigningType.Type
 
     init(apiKey: String,
          systemInfo: SystemInfo,
          eTagManager: ETagManager,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
+         signing: SigningType.Type = Signing.self,
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
@@ -43,6 +46,7 @@ class HTTPClient {
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
         self.dnsChecker = dnsChecker
+        self.signing = signing
         self.timeout = requestTimeout
         self.apiKey = apiKey
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
@@ -72,6 +76,7 @@ extension HTTPClient {
 
     static let authorizationHeaderName = "Authorization"
     static let nonceHeaderName = "X-Nonce"
+    static let responseSignatureHeaderName = "x-signature"
 
 }
 
@@ -221,10 +226,13 @@ private extension HTTPClient {
 
         return Result
             .success(dataIfAvailable(statusCode))
-            .mapSuccessToOptionalHTTPResult(statusCode)
+            .mapToResponse(responseHeaders: httpURLResponse.allHeaderFields,
+                           statusCode: statusCode,
+                           request: request.httpRequest,
+                           signing: self.signing,
+                           verificationLevel: self.systemInfo.responseVerificationLevel)
             .map {
-                self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
-                                                              data: $0.body,
+                self.eTagManager.httpResultFromCacheOrBackend(with: $0,
                                                               request: urlRequest,
                                                               retried: request.retried)
             }
@@ -426,15 +434,6 @@ extension Result where Success == HTTPResponse<Data>, Failure == NetworkError {
             // Convert decoding errors into `NetworkError.decoding`
             .mapError { NetworkError.decoding($0, response.body) }
         }
-    }
-
-}
-
-private extension Result where Success == Data? {
-
-    /// Converts a `Result<Data?, Error>` into `Result<HTTPResponse<Data?>, Failure>`
-    func mapSuccessToOptionalHTTPResult(_ statusCode: HTTPStatusCode) -> Result<HTTPResponse<Data?>, Failure> {
-        return self.map { HTTPResponse(statusCode: statusCode, body: $0) }
     }
 
 }

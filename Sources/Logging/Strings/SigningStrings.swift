@@ -20,6 +20,8 @@ enum SigningStrings {
 
     case signature_failed_verification
 
+    case signature_was_requested_but_not_provided(HTTPRequest)
+
 }
 
 extension SigningStrings: CustomStringConvertible {
@@ -31,6 +33,10 @@ extension SigningStrings: CustomStringConvertible {
 
         case .signature_failed_verification:
             return "Signature failed validation"
+
+        case let .signature_was_requested_but_not_provided(request):
+            return "Request to '\(request.path)' required a signature but none was provided. " +
+            "This will be reported as a validation failure."
         }
     }
 

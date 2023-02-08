@@ -51,14 +51,14 @@ class ETagManagerTests: TestCase {
         let request = URLRequest(url: url)
         let cachedResponse = mockStoredETagResponse(for: url, statusCode: .success, eTag: eTag)
 
-        let httpURLResponse = self.httpURLResponseForTest(url: url,
-                                                          eTag: eTag,
-                                                          statusCode: .notModified)
-
-        let response = eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
-                                                                data: nil,
-                                                                request: request,
-                                                                retried: false)
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: nil,
+                                       eTag: eTag,
+                                       statusCode: .notModified),
+            request: request,
+            retried: false
+        )
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .success
         expect(response?.body) == cachedResponse
@@ -70,10 +70,11 @@ class ETagManagerTests: TestCase {
         let request = URLRequest(url: url)
         _ = mockStoredETagResponse(for: url, statusCode: .success, eTag: eTag)
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
-        let httpURLResponse = httpURLResponseForTest(url: url, eTag: eTag, statusCode: .success)
 
-        let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, data: responseObject, request: request, retried: false
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url, body: responseObject, eTag: eTag, statusCode: .success),
+            request: request,
+            retried: false
         )
 
         expect(response).toNot(beNil())
@@ -86,14 +87,17 @@ class ETagManagerTests: TestCase {
         let url = urlForTest()
         let request = URLRequest(url: url)
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
-        let httpURLResponse = httpURLResponseForTest(
-            url: url,
-            eTag: eTag,
-            statusCode: .notModified
-        )
 
-        let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, data: responseObject, request: request, retried: true)
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(
+                url: url,
+                body: responseObject,
+                eTag: eTag,
+                statusCode: .notModified
+            ),
+            request: request,
+            retried: true
+        )
 
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .notModified
@@ -105,30 +109,70 @@ class ETagManagerTests: TestCase {
         let url = urlForTest()
         let request = URLRequest(url: url)
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
-        let httpURLResponse = httpURLResponseForTest(
-            url: url,
-            eTag: eTag,
-            statusCode: .notModified
-        )
 
-        let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, data: responseObject, request: request, retried: false)
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(
+                url: url,
+                body: responseObject,
+                eTag: eTag,
+                statusCode: .notModified
+            ),
+            request: request,
+            retried: false
+        )
 
         expect(response).to(beNil())
     }
 
-    func testResponseIsStoredIfResponseCodeIs200() throws {
+    func testResponseIsStoredIfResponseCodeIs200AndValidationWasNotRequested() throws {
         let eTag = "an_etag"
         let url = urlForTest()
         let request = URLRequest(url: url)
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
-        let httpURLResponse = httpURLResponseForTest(
-            url: url,
-            eTag: eTag,
-            statusCode: .success
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(
+                url: url,
+                body: responseObject,
+                eTag: eTag,
+                statusCode: .success,
+                validationResult: .notRequested
+            ),
+            request: request,
+            retried: false
         )
-        let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, data: responseObject, request: request, retried: false)
+
+        expect(response).toNot(beNil())
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
+
+        let cacheKey = url.absoluteString
+        expect(self.mockUserDefaults.mockValues[cacheKey]).toNot(beNil())
+        let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
+
+        expect(setData).toNot(beNil())
+        let expectedCachedValue = "https://api.revenuecat.com/v1/subscribers/appUserID"
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedCachedValue
+
+        let eTagResponse = try ETagManager.Response.with(setData)
+        expect(eTagResponse.eTag) == eTag
+        expect(eTagResponse.data) == responseObject
+    }
+
+    func testResponseIsStoredIfResponseCodeIs200AndValidationSucceded() throws {
+        let eTag = "an_etag"
+        let url = urlForTest()
+        let request = URLRequest(url: url)
+        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(
+                url: url,
+                body: responseObject,
+                eTag: eTag,
+                statusCode: .success,
+                validationResult: .validated
+            ),
+            request: request,
+            retried: false
+        )
 
         expect(response).toNot(beNil())
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
@@ -152,17 +196,47 @@ class ETagManagerTests: TestCase {
         let request = URLRequest(url: url)
         let responseObject = Data()
 
-        let httpURLResponse = httpURLResponseForTest(
-            url: url,
-            eTag: eTag,
-            statusCode: .internalServerError
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(
+                url: url,
+                body: responseObject,
+                eTag: eTag,
+                statusCode: .internalServerError
+            ),
+            request: request,
+            retried: false
         )
-        let response = eTagManager.httpResultFromCacheOrBackend(
-            with: httpURLResponse, data: responseObject, request: request, retried: false)
 
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .internalServerError
         expect(response?.body) == responseObject
+
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
+
+        let cacheKey = url.absoluteString
+        expect(self.mockUserDefaults.mockValues[cacheKey]).to(beNil())
+    }
+
+    func testResponseIsNotStoredIfValidationFailed() {
+        let eTag = "an_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let responseObject = Data()
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(
+                url: url,
+                body: responseObject,
+                eTag: eTag,
+                statusCode: .success,
+                validationResult: .failedValidation
+            ),
+            request: request,
+            retried: false
+        )
+
+        expect(response).toNot(beNil())
+        expect(response?.validationResult) == .failedValidation
 
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
 
@@ -212,17 +286,214 @@ class ETagManagerTests: TestCase {
                                  ])
         self.mockUserDefaults.mockValues[cacheKey] = wrapper.asData
 
-        let httpURLResponse = self.httpURLResponseForTest(url: url,
-                                                          eTag: eTag,
-                                                          statusCode: .notModified)
-
-        let response = eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
-                                                                data: actualResponse,
-                                                                request: request,
-                                                                retried: true)
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: actualResponse,
+                                       eTag: eTag,
+                                       statusCode: .notModified),
+            request: request,
+            retried: true
+        )
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .notModified
         expect(response?.body) == actualResponse
+        expect(response?.validationResult) == .notRequested
+    }
+
+    func testETagHeaderIsNotFoundIfItsMissingResponseValidation() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = """
+        {
+        "e_tag": "\(eTag)",
+        "status_code": 200,
+        "data": "\(actualResponse.asFetchToken)"
+        }
+        """.asData
+
+        let response = self.eTagManager.eTagHeader(for: request)
+        expect(response[ETagManager.eTagHeaderName]).to(beEmpty())
+    }
+
+    func testETagHeaderIsIgnoredIfValidationFailed() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = ETagManager.Response(
+            eTag: eTag,
+            statusCode: .success,
+            data: actualResponse,
+            validationResult: .failedValidation
+        ).asData()
+
+        let response = self.eTagManager.eTagHeader(for: request)
+        expect(response[ETagManager.eTagHeaderName]).to(beEmpty())
+    }
+
+    func testETagHeaderIsReturnedIfValidationSucceded() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = ETagManager.Response(
+            eTag: eTag,
+            statusCode: .success,
+            data: actualResponse,
+            validationResult: .validated
+        ).asData()
+
+        let response = self.eTagManager.eTagHeader(for: request)
+        expect(response[ETagManager.eTagHeaderName]) == eTag
+    }
+
+    func testETagHeaderIsIgnoredIfValidationWasNotRequested() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = ETagManager.Response(
+            eTag: eTag,
+            statusCode: .success,
+            data: actualResponse,
+            validationResult: .notRequested
+        ).asData()
+
+        let response = self.eTagManager.eTagHeader(for: request)
+        expect(response[ETagManager.eTagHeaderName]) == eTag
+    }
+
+    func testCachedResponseWithNoValidationResultIsIgnored() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = """
+        {
+        "e_tag": "\(eTag)",
+        "status_code": 200,
+        "data": "\(actualResponse.asFetchToken)"
+        }
+        """.asData
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: nil,
+                                       eTag: eTag,
+                                       statusCode: .notModified),
+            request: request,
+            retried: false
+        )
+        expect(response).to(beNil())
+    }
+
+    func testCachedResponseIsFoundIfValidationWasNotRequested() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = ETagManager.Response(
+            eTag: eTag,
+            statusCode: .success,
+            data: actualResponse,
+            validationResult: .notRequested
+        ).asData()
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: nil,
+                                       eTag: eTag,
+                                       statusCode: .notModified),
+            request: request,
+            retried: true
+        )
+        expect(response).toNot(beNil())
+        expect(response?.statusCode) == .success
+        expect(response?.body) == actualResponse
+        expect(response?.validationResult) == .notRequested
+    }
+
+    func testCachedResponseIsFoundIfValidationSucceeded() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = """
+        {
+        "e_tag": "\(eTag)",
+        "status_code": 200,
+        "data": "\(actualResponse.asFetchToken)",
+        "validation_result": 1
+        }
+        """.asData
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: nil,
+                                       eTag: eTag,
+                                       statusCode: .notModified),
+            request: request,
+            retried: true
+        )
+        expect(response).toNot(beNil())
+        expect(response?.statusCode) == .success
+        expect(response?.body) == actualResponse
+        expect(response?.validationResult) == .validated
+    }
+
+    func testCachedResponseIsReturnedEvenIfValidationFailed() {
+        // Technically, as tested by `testResponseIsNotStoredIfValidationFailed`
+        // a response can't be stored if validation failed, but useful to test just in case.
+
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = ETagManager.Response(
+            eTag: eTag,
+            statusCode: .success,
+            data: actualResponse,
+            validationResult: .failedValidation
+        ).asData()
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: nil,
+                                       eTag: eTag,
+                                       statusCode: .notModified),
+            request: request,
+            retried: true
+        )
+        expect(response).toNot(beNil())
+        expect(response?.statusCode) == .success
+        expect(response?.body) == actualResponse
+        expect(response?.validationResult) == .failedValidation
     }
 
 }
@@ -246,14 +517,16 @@ private extension ETagManagerTests {
 
     func mockStoredETagResponse(for url: URL,
                                 statusCode: HTTPStatusCode = .success,
-                                eTag: String = "an_etag") -> Data {
+                                eTag: String = "an_etag",
+                                validationResult: HTTPResponseValidationResult = .notRequested) -> Data {
         // swiftlint:disable:next force_try
         let data = try! JSONSerialization.data(withJSONObject: ["arg": "value"])
 
         let etagAndResponse = ETagManager.Response(
             eTag: eTag,
             statusCode: statusCode,
-            data: data
+            data: data,
+            validationResult: validationResult
         )
         let cacheKey = url.absoluteString
         self.mockUserDefaults.mockValues[cacheKey] = etagAndResponse.asData()!
@@ -268,16 +541,17 @@ private extension ETagManagerTests {
         return url
     }
 
-    func httpURLResponseForTest(url: URL, eTag: String, statusCode: HTTPStatusCode) -> HTTPURLResponse {
-        guard let httpURLResponse = HTTPURLResponse(
-            url: url,
-            statusCode: statusCode.rawValue,
-            httpVersion: "HTTP/1.1",
-            headerFields: getHeaders(eTag: eTag)
-        ) else {
-            fatalError("Error initializing HTTPURLResponse")
-        }
-        return httpURLResponse
+    func responseForTest(
+        url: URL,
+        body: Data?,
+        eTag: String,
+        statusCode: HTTPStatusCode,
+        validationResult: HTTPResponseValidationResult = .notRequested
+    ) -> HTTPResponse<Data?> {
+        return .init(statusCode: statusCode,
+                     responseHeaders: self.getHeaders(eTag: eTag),
+                     body: body,
+                     validationResult: validationResult)
     }
 
 }

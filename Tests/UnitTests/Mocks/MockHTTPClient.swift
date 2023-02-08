@@ -31,7 +31,7 @@ class MockHTTPClient: HTTPClient {
             // swiftlint:disable:next force_try
             let data = try! JSONSerialization.data(withJSONObject: response)
 
-            self.init(response: .success(.init(statusCode: statusCode, body: data)),
+            self.init(response: .success(.init(statusCode: statusCode, responseHeaders: [:], body: data)),
                       delay: delay)
         }
 

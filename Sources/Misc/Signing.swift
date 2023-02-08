@@ -14,8 +14,20 @@
 import CryptoKit
 import Foundation
 
-/// Utilities for handling certificates and keys.
-enum Signing {
+/// A type that can verify signatures
+protocol SigningType {
+
+    static func verify(
+        message: Data,
+        nonce: Data,
+        hasValidSignature signature: String,
+        with publicKey: Signing.PublicKey
+    ) -> Bool
+
+}
+
+/// Utilities for handling signature verification.
+enum Signing: SigningType {
 
     /// An object that represents a cryptographic key.
     typealias PublicKey = SigningPublicKey
