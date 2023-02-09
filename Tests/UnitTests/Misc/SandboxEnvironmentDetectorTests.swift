@@ -17,36 +17,39 @@ import XCTest
 @testable import RevenueCat
 
 class SandboxEnvironmentDetectorTests: TestCase {
-
+    
     func testIsSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.sandboxReceipt).isSandbox) == true
+        expect(try SystemInfo.withReceiptResult(.sandboxReceipt, inSimulator: false).isSandbox) == true
     }
 
     func testIsNotSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.receiptWithData).isSandbox) == false
+        expect(try SystemInfo.withReceiptResult(.receiptWithData, inSimulator: false).isSandbox) == false
     }
 
     func testIsNotSandboxIfNoReceiptURL() throws {
-        expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
+        expect(try SystemInfo.withReceiptResult(.nilURL, inSimulator: false).isSandbox) == false
     }
 
     func testMacSandboxReceiptIsSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.macOSSandboxReceipt).isSandbox) == true
+        expect(try SystemInfo.withReceiptResult(.macOSSandboxReceipt, inSimulator: false).isSandbox) == true
     }
 
     func testMacAppStoreReceiptIsNotSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.macOSAppStoreReceipt).isSandbox) == false
+        expect(try SystemInfo.withReceiptResult(.macOSAppStoreReceipt, inSimulator: false).isSandbox) == false
     }
 
+    func testIsSandboxIfRunningInSimulator() {
+        expect(try SystemInfo.withReceiptResult(.receiptWithData, inSimulator: true).isSandbox) == true
+    }
 }
 
 private extension SandboxEnvironmentDetector {
 
-    static func withReceiptResult(_ result: MockBundle.ReceiptURLResult) throws -> SandboxEnvironmentDetector {
+    static func withReceiptResult(_ result: MockBundle.ReceiptURLResult, inSimulator isRunningInSimulator: Bool) throws -> SandboxEnvironmentDetector {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
-        return BundleSandboxEnvironmentDetector(bundle: bundle)
+        return BundleSandboxEnvironmentDetector(bundle: bundle, isRunningInSimulator: isRunningInSimulator)
     }
 
 }

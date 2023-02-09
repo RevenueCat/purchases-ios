@@ -24,15 +24,17 @@ protocol SandboxEnvironmentDetector: Sendable {
 final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
     private let bundle: Bundle
+    private let isRunningInSimulator: Bool
 
-    init(bundle: Bundle = .main) {
+    init(bundle: Bundle = .main, isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator) {
         self.bundle = bundle
+        self.isRunningInSimulator = isRunningInSimulator
     }
 
     var isSandbox: Bool {
-        #if targetEnvironment(simulator)
-        return true
-        #endif
+        guard !isRunningInSimulator else {
+            return true
+        }
         
         guard let path = self.bundle.appStoreReceiptURL?.path else {
             return false
