@@ -150,6 +150,12 @@ class SystemInfo {
     #endif
     }
 
+    #if targetEnvironment(simulator)
+    static let isRunningInSimulator = true
+    #else
+    static let isRunningInSimulator = false
+    #endif
+
     func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }

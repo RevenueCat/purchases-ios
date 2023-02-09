@@ -57,18 +57,6 @@ class SystemInfoTests: TestCase {
         expect(systemInfo.observerMode) == !finishTransactions
     }
 
-    func testIsSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.sandboxReceipt).isSandbox) == true
-    }
-
-    func testIsNotSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.receiptWithData).isSandbox) == false
-    }
-
-    func testIsNotSandboxIfNoReceiptURL() throws {
-        expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
-    }
-
     func testIsAppleSubscriptionURLWithAnotherURL() {
         expect(SystemInfo.isAppleSubscription(managementURL: URL(string: "www.google.com")!)) == false
     }

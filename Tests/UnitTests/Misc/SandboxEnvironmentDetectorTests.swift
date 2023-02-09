@@ -19,34 +19,43 @@ import XCTest
 class SandboxEnvironmentDetectorTests: TestCase {
 
     func testIsSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.sandboxReceipt).isSandbox) == true
+        expect(try SystemInfo.with(receiptReceipt: .sandboxReceipt, inSimulator: false).isSandbox) == true
     }
 
     func testIsNotSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.receiptWithData).isSandbox) == false
+        expect(try SystemInfo.with(receiptReceipt: .receiptWithData, inSimulator: false).isSandbox) == false
     }
 
     func testIsNotSandboxIfNoReceiptURL() throws {
-        expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
+        expect(try SystemInfo.with(receiptReceipt: .nilURL, inSimulator: false).isSandbox) == false
     }
 
     func testMacSandboxReceiptIsSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.macOSSandboxReceipt).isSandbox) == true
+        expect(try SystemInfo.with(receiptReceipt: .macOSSandboxReceipt, inSimulator: false).isSandbox) == true
     }
 
     func testMacAppStoreReceiptIsNotSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.macOSAppStoreReceipt).isSandbox) == false
+        expect(try SystemInfo.with(receiptReceipt: .macOSAppStoreReceipt, inSimulator: false).isSandbox) == false
+    }
+
+    func testIsAlwaysSandboxIfRunningInSimulator() {
+        expect(try SystemInfo.with(receiptReceipt: .sandboxReceipt, inSimulator: true).isSandbox) == true
+        expect(try SystemInfo.with(receiptReceipt: .receiptWithData, inSimulator: true).isSandbox) == true
+        expect(try SystemInfo.with(receiptReceipt: .nilURL, inSimulator: true).isSandbox) == true
     }
 
 }
 
 private extension SandboxEnvironmentDetector {
 
-    static func withReceiptResult(_ result: MockBundle.ReceiptURLResult) throws -> SandboxEnvironmentDetector {
+    static func with(
+        receiptReceipt result: MockBundle.ReceiptURLResult,
+        inSimulator: Bool
+    ) throws -> SandboxEnvironmentDetector {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
-        return BundleSandboxEnvironmentDetector(bundle: bundle)
+        return BundleSandboxEnvironmentDetector(bundle: bundle, isRunningInSimulator: inSimulator)
     }
 
 }
