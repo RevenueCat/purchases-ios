@@ -32,7 +32,7 @@ class SigningTests: TestCase {
     }
 
     func testLoadDefaultPublicKey() throws {
-        let key = try XCTUnwrap(try Signing.loadPublicKey() as? PublicKey)
+        let key = try XCTUnwrap(Signing.loadPublicKey() as? PublicKey)
 
         expect(key.rawRepresentation).toNot(beEmpty())
     }
@@ -73,7 +73,7 @@ class SigningTests: TestCase {
         expect(Signing.verify(message: message.asData,
                               nonce: nonce.asData,
                               hasValidSignature: signature,
-                              with: try Signing.loadPublicKey())) == false
+                              with: Signing.loadPublicKey())) == false
 
         logger.verifyMessageWasLogged("Signature is not base64: \(signature)")
     }
@@ -82,7 +82,7 @@ class SigningTests: TestCase {
         expect(Signing.verify(message: "Hello World".asData,
                               nonce: "nonce".asData,
                               hasValidSignature: "invalid signature".asData.base64EncodedString(),
-                              with: try Signing.loadPublicKey())) == false
+                              with: Signing.loadPublicKey())) == false
     }
 
     func testVerifySignatureLogsWarningWhenFail() throws {
@@ -91,7 +91,7 @@ class SigningTests: TestCase {
         _ = Signing.verify(message: "Hello World".asData,
                            nonce: "nonce".asData,
                            hasValidSignature: "invalid signature".asData.base64EncodedString(),
-                           with: try Signing.loadPublicKey())
+                           with: Signing.loadPublicKey())
 
         logger.verifyMessageWasLogged("Signature failed validation", level: .warn)
     }
@@ -108,6 +108,37 @@ class SigningTests: TestCase {
                               nonce: nonce.asData,
                               hasValidSignature: fullSignature.base64EncodedString(),
                               with: self.publicKey)) == true
+    }
+
+    func testVerifyKnownSignature() throws {
+        /*
+         Signature retrieved with:
+        curl -v 'https://api.revenuecat.com/v1/subscribers/identify' \
+        -X POST \
+        -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
+        -H 'Authorization: Bearer {api_key}' \
+        -H 'content-type: application/json' \
+        -H 'Host: api.revenuecat.com' \
+        -H 'Connection: close' \
+        -H 'Content-Length: 54' \
+        -d '{"app_user_id": "test", "new_app_user_id": "new_user"}'
+         */
+
+        // swiftlint:disable line_length
+        let response = """
+        {"request_date":"2023-02-14T17:10:11Z","request_date_ms":1676394611556,"subscriber":{"entitlements":{},"first_seen":"2023-02-07T18:26:02Z","last_seen":"2023-02-07T18:26:02Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"new_user","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
+        """
+        let expectedSignature = "Jmax3TdnBIe0/zFeHT5KJrFNoGxWtQAOuYTjnEXDHa0z3/npDG9nRB4vrUkt/ZxVh7SU+P++O3LnObxeuz3tFAILs75bxIqXwp6LqdV7Tgo="
+        // swiftlint:enable line_length
+
+        let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
+
+        expect(
+            Signing.verify(message: response.asData,
+                           nonce: nonce,
+                           hasValidSignature: expectedSignature,
+                           with: Signing.loadPublicKey())
+        ) == true
     }
 
     func testResponseValidationWithNoProvidedKey() throws {
@@ -181,9 +212,13 @@ extension SigningTests {
     }
 
     private func sign(message: String, nonce: String, salt: String) throws -> Data {
-        let fullMessage = salt.asData + nonce.asData + message.asData
-
-        return try self.privateKey.signature(for: fullMessage)
+        return try self.sign(key: self.privateKey,
+                             message: message.asData,
+                             nonce: nonce.asData,
+                             salt: salt.asData)
+    }
+    private func sign(key: PrivateKey, message: Data, nonce: Data, salt: Data) throws -> Data {
+        return try key.signature(for: salt + nonce + message)
     }
 
     private static func createSalt() -> String {

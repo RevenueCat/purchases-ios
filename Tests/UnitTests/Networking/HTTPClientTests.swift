@@ -1330,7 +1330,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     private func changeClient(_ verificationLevel: Configuration.EntitlementVerificationLevel) throws {
-        let level = try Signing.verificationLevel(with: verificationLevel)
+        let level = Signing.verificationLevel(with: verificationLevel)
 
         self.systemInfo = try MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,

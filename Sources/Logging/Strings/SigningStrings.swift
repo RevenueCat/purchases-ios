@@ -16,6 +16,8 @@ import Foundation
 // swiftlint:disable identifier_name
 enum SigningStrings {
 
+    case invalid_public_key(String)
+
     case signature_not_base64(String)
 
     case signature_failed_verification
@@ -28,6 +30,9 @@ extension SigningStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case let .invalid_public_key(key):
+            return "Public key could not be loaded: \(key)"
+
         case let .signature_not_base64(signature):
             return "Signature is not base64: \(signature)"
 

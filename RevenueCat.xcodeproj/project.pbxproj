@@ -307,7 +307,6 @@
 		5791CE80273F26A000E50C4B /* base64encoded_sandboxReceipt.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5791CE7F273F26A000E50C4B /* base64encoded_sandboxReceipt.txt */; };
 		5791FBD2299184EF00F1FEDA /* MockAsyncSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FBD1299184EF00F1FEDA /* MockAsyncSequence.swift */; };
 		5791FBD3299184EF00F1FEDA /* MockAsyncSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FBD1299184EF00F1FEDA /* MockAsyncSequence.swift */; };
-		5791FC7A2991D31600F1FEDA /* public_key.der in Resources */ = {isa = PBXBuildFile; fileRef = 5791FC792991D31600F1FEDA /* public_key.der */; };
 		5791FCF32992D3EC00F1FEDA /* SigningStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */; };
 		5791FDBE299419D900F1FEDA /* MockSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FDBD299419D900F1FEDA /* MockSigning.swift */; };
 		5791FE4A2994453500F1FEDA /* Signing+ResponseValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FE492994453500F1FEDA /* Signing+ResponseValidation.swift */; };
@@ -919,7 +918,6 @@
 		5791A1C72767FC9400C972AA /* ManageSubscriptionsHelperTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsHelperTests.swift; sourceTree = "<group>"; };
 		5791CE7F273F26A000E50C4B /* base64encoded_sandboxReceipt.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base64encoded_sandboxReceipt.txt; sourceTree = "<group>"; };
 		5791FBD1299184EF00F1FEDA /* MockAsyncSequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAsyncSequence.swift; sourceTree = "<group>"; };
-		5791FC792991D31600F1FEDA /* public_key.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = public_key.der; sourceTree = "<group>"; };
 		5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningStrings.swift; sourceTree = "<group>"; };
 		5791FDBD299419D900F1FEDA /* MockSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSigning.swift; sourceTree = "<group>"; };
 		5791FE492994453500F1FEDA /* Signing+ResponseValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Signing+ResponseValidation.swift"; sourceTree = "<group>"; };
@@ -1836,7 +1834,6 @@
 				35E840C5270FB47C00899AE2 /* ManageSubscriptionsHelper.swift */,
 				578C5F2B28DB82DD00A56F02 /* PurchasesDiagnostics.swift */,
 				57F2C60B29784C11009EE527 /* SwiftVersionCheck.swift */,
-				5791FC792991D31600F1FEDA /* public_key.der */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -2550,7 +2547,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5791FC7A2991D31600F1FEDA /* public_key.der in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

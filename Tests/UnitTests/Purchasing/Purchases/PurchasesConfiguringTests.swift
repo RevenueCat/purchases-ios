@@ -163,7 +163,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let purchases = Purchases.configure(
-            with: try .init(withAPIKey: "")
+            with: .init(withAPIKey: "")
                 .with(entitlementVerificationLevel: .disabled)
         )
         expect(purchases.publicKey).to(beNil())
@@ -174,7 +174,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let purchases = Purchases.configure(
-            with: try .init(withAPIKey: "")
+            with: .init(withAPIKey: "")
                 .with(entitlementVerificationLevel: .informationOnly)
         )
         expect(purchases.publicKey).toNot(beNil())
@@ -185,7 +185,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let purchases = Purchases.configure(
-            with: try .init(withAPIKey: "")
+            with: .init(withAPIKey: "")
                 .with(entitlementVerificationLevel: .enforced)
         )
         expect(purchases.publicKey).toNot(beNil())

@@ -33,19 +33,23 @@ enum Signing: SigningType {
     typealias PublicKey = SigningPublicKey
 
     /// Parses the binary `key` and returns a `PublicKey`
-    /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    static func loadPublicKey() throws -> PublicKey {
-        guard let url = Bundle(for: BundleToken.self)
-            .url(forResource: Self.publicKeyFileName, withExtension: Self.publicKeyFileExtension) else {
-            throw ErrorUtils.configurationError(
-                message: Strings.configure.public_key_could_not_be_found(
-                    fileName: "\(Self.publicKeyFileName).\(Self.publicKeyFileExtension)"
-                ).description
-            )
+    static func loadPublicKey() -> PublicKey {
+        func fail(_ error: CustomStringConvertible) -> Never {
+            // This would crash the SDK, but the key is known at compile time
+            // so if it's encoded incorrectly we would know during tests
+            fatalError(error.description)
         }
 
-        return try Self.loadPublicKey(in: url)
+        guard let key = Data(base64Encoded: Self.publicKey) else {
+            fail(Strings.signing.invalid_public_key(Self.publicKey))
+        }
+
+        do {
+            return try Curve25519.Signing.PublicKey(rawRepresentation: key)
+        } catch {
+            fail(Strings.signing.invalid_public_key(error.localizedDescription))
+        }
     }
 
     static func verify(
@@ -72,22 +76,20 @@ enum Signing: SigningType {
         return isValid
     }
 
-    /// - Throws: ``ErrorCode/configurationError``
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func verificationLevel(
         with setting: Configuration.EntitlementVerificationLevel
-    ) throws -> ResponseVerificationLevel {
+    ) -> ResponseVerificationLevel {
         switch setting {
         case .disabled: return .disabled
-        case .informationOnly: return try .informationOnly(Self.loadPublicKey())
-        case .enforced: return try .enforced(Self.loadPublicKey())
+        case .informationOnly: return .informationOnly(Self.loadPublicKey())
+        case .enforced: return .enforced(Self.loadPublicKey())
         }
     }
 
     // MARK: -
 
-    private static let publicKeyFileName = "public_key"
-    private static let publicKeyFileExtension = "der"
+    private static let publicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
 
     internal static let saltSize = 16
 }
