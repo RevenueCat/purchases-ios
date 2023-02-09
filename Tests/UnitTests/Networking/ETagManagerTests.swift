@@ -446,7 +446,7 @@ class ETagManagerTests: TestCase {
         "e_tag": "\(eTag)",
         "status_code": 200,
         "data": "\(actualResponse.asFetchToken)",
-        "validation_result": 1
+        "validation_result": \(HTTPResponseValidationResult.validated.rawValue)
         }
         """.asData
 
