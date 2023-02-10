@@ -313,9 +313,8 @@ private extension HTTPClient {
 
         var urlRequest = URLRequest(url: requestURL)
         urlRequest.httpMethod = request.method.httpMethod
+        urlRequest.allHTTPHeaderFields = self.headers(for: request, urlRequest: urlRequest)
 
-        urlRequest.allHTTPHeaderFields = self.headers(for: request,
-                                                      urlRequest: urlRequest)
         do {
             urlRequest.httpBody = try request.httpRequest.requestBody?.asData()
         } catch {

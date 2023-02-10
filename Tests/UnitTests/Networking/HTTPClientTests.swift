@@ -490,6 +490,46 @@ class HTTPClientTests: TestCase {
         expect(result?.value?.statusCode) == .success
     }
 
+    func testCachedRequestsIncludeETagHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let eTag = "ETAG"
+
+        let headerPresent: Atomic<Bool> = false
+
+        self.eTagManager.stubbedETagHeaderResult = [
+            ETagManager.eTagHeaderName: eTag
+        ]
+
+        stub(condition: isPath(request.path)) { request in
+            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagHeaderName] == eTag
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+        }
+
+        expect(headerPresent.value) == true
+        expect(self.eTagManager.invokedETagHeader) == true
+    }
+
+    func testNotCachedRequestsIncludeETagHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .health)
+        let headerPresent: Atomic<Bool?> = nil
+
+        stub(condition: isPath(request.path)) { request in
+            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(ETagManager.eTagHeaderName) == true
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+        }
+
+        expect(headerPresent.value) == false
+        expect(self.eTagManager.invokedETagHeader) == false
+    }
+
     func testAlwaysPassesClientVersion() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
