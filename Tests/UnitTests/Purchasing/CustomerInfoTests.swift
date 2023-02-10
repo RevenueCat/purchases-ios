@@ -796,6 +796,37 @@ class BasicCustomerInfoTests: TestCase {
         == Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"])
     }
 
+    func testCopyWithVerificationResultVerified() throws {
+        self.verifyCopy(of: try CustomerInfo(data: Self.validSubscriberResponse),
+                        onlyModifiesEntitlementVerification: .verified)
+    }
+
+    func testCopyWithVerificationResultFailedVerified() throws {
+        self.verifyCopy(of: try CustomerInfo(data: Self.validSubscriberResponse),
+                        onlyModifiesEntitlementVerification: .failed)
+    }
+
+    func testCopyWithVerificationResultNotVerified() throws {
+        self.verifyCopy(of: try CustomerInfo(data: Self.validSubscriberResponse).copy(with: .verified),
+                        onlyModifiesEntitlementVerification: .notVerified)
+    }
+
+    private func verifyCopy(
+        of customerInfo: CustomerInfo,
+        onlyModifiesEntitlementVerification newVerification: VerificationResult
+    ) {
+        let copy = customerInfo.copy(with: newVerification)
+        expect(customerInfo) != copy
+
+        if #available(iOS 13.0, *) {
+            expect(copy.entitlementVerification) == newVerification
+            expect(copy.entitlements.verification) == newVerification
+
+            let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlementVerification)
+            expect(copyWithOriginalVerification) == customerInfo
+        }
+    }
+
 }
 
 extension CustomerInfo {
@@ -810,5 +841,37 @@ extension CustomerInfo {
             return nil
         }
     }
+
+}
+
+private extension BasicCustomerInfoTests {
+
+    static let sampleTestDataWithEntitlements: [String: Any] = [
+        "request_date": "2018-12-21T02:40:36Z",
+        "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "",
+            "subscriptions": [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2019-07-26T23:50:40Z",
+                    "is_sandbox": true,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ]
+            ],
+            "non_subscriptions": [:],
+            "entitlements": [
+                "pro": [
+                    "product_identifier": "monthly_freetrial",
+                    "expires_date": "2018-12-19T02:40:36Z",
+                    "purchase_date": "2018-07-26T23:30:41Z"
+                ]
+            ]
+        ]
+    ]
 
 }

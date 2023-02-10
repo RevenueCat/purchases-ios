@@ -23,6 +23,7 @@
 		5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */; };
 		5738F42127866F8F0096D623 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
 		5738F42A278673A80096D623 /* SubscriptionPeriodAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */; };
+		5740FCD52996D7B800E049F9 /* VerificationResultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5740FCD42996D7B800E049F9 /* VerificationResultAPI.swift */; };
 		5753ED9D294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5753ED9C294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift */; };
 		5758859C2748272A00CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; };
 		5758859D2748272A00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -56,6 +57,7 @@
 		570FAF552864EE1D00D3C769 /* NonSubscriptionTransactionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransactionAPI.swift; sourceTree = "<group>"; };
 		5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductDiscountAPI.swift; sourceTree = "<group>"; };
 		5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPeriodAPI.swift; sourceTree = "<group>"; };
+		5740FCD42996D7B800E049F9 /* VerificationResultAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationResultAPI.swift; sourceTree = "<group>"; };
 		5753ED9C294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesReceiptParserAPI.swift; sourceTree = "<group>"; };
 		575885972748271100CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758859B2748272A00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -148,6 +150,7 @@
 				5758EE572786542200B3B703 /* StoreTransactionAPI.swift */,
 				5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */,
 				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,
+				5740FCD42996D7B800E049F9 /* VerificationResultAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -246,6 +249,7 @@
 				2DD778EC270E23460079CBD4 /* TransactionAPI.swift in Sources */,
 				B32554422825E5EA00DA62EA /* ConfigurationAPI.swift in Sources */,
 				5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */,
+				5740FCD52996D7B800E049F9 /* VerificationResultAPI.swift in Sources */,
 				5758EE582786542200B3B703 /* StoreTransactionAPI.swift in Sources */,
 				B3A4C834280DE72600D4AE17 /* PromotionalOfferAPI.swift in Sources */,
 				5738F42A278673A80096D623 /* SubscriptionPeriodAPI.swift in Sources */,

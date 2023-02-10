@@ -14,7 +14,7 @@
 import CryptoKit
 import Foundation
 
-/// A type that can verify signatures
+/// A type that can verify signatures.
 protocol SigningType {
 
     static func verify(
@@ -77,9 +77,9 @@ enum Signing: SigningType {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    static func verificationLevel(
-        with setting: Configuration.EntitlementVerificationLevel
-    ) -> ResponseVerificationLevel {
+    static func verificationMode(
+        with setting: Configuration.EntitlementVerificationMode
+    ) -> ResponseVerificationMode {
         switch setting {
         case .disabled: return .disabled
         case .informationOnly: return .informationOnly(Self.loadPublicKey())
@@ -97,8 +97,8 @@ enum Signing: SigningType {
 extension Signing {
 
     /// Verification level with a loaded `PublicKey`
-    /// - Seealso: ``Configuration/EntitlementVerificationLevel``
-    enum ResponseVerificationLevel {
+    /// - Seealso: ``Configuration/EntitlementVerificationMode``
+    enum ResponseVerificationMode {
 
         case disabled
         case informationOnly(PublicKey)

@@ -37,11 +37,11 @@ extension SigningStrings: CustomStringConvertible {
             return "Signature is not base64: \(signature)"
 
         case .signature_failed_verification:
-            return "Signature failed validation"
+            return "Signature failed verification"
 
         case let .signature_was_requested_but_not_provided(request):
             return "Request to '\(request.path)' required a signature but none was provided. " +
-            "This will be reported as a validation failure."
+            "This will be reported as a verification failure."
         }
     }
 

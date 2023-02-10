@@ -20,7 +20,7 @@ import XCTest
 extension XCTestCase {
 
     private enum Error: Swift.Error {
-        case invalidTransactions([VerificationResult<Transaction>])
+        case invalidTransactions([StoreKit.VerificationResult<Transaction>])
     }
 
     func verifyNoUnfinishedTransactions(line: UInt = #line) async {
@@ -56,14 +56,14 @@ extension XCTestCase {
         }
     }
 
-    private var unfinishedTransactions: [VerificationResult<Transaction>] {
+    private var unfinishedTransactions: [StoreKit.VerificationResult<Transaction>] {
         get async { return await StoreKit.Transaction.unfinished.extractValues() }
     }
 
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension VerificationResult where SignedType == Transaction {
+extension StoreKit.VerificationResult where SignedType == Transaction {
 
     var underlyingTransaction: Transaction {
         switch self {
@@ -77,7 +77,7 @@ extension VerificationResult where SignedType == Transaction {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension Product.PurchaseResult {
 
-    var verificationResult: VerificationResult<Transaction>? {
+    var verificationResult: StoreKit.VerificationResult<Transaction>? {
         switch self {
         case let .success(verificationResult): return verificationResult
         case .userCancelled: return nil

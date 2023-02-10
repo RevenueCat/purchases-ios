@@ -26,7 +26,7 @@ class MockHTTPClient: HTTPClient {
         init(
             statusCode: HTTPStatusCode,
             response: [String: Any] = [:],
-            validationResult: HTTPResponseValidationResult = .notRequested,
+            verificationResult: VerificationResult = .defaultValue,
             delay: DispatchTimeInterval = .never
         ) {
             // swiftlint:disable:next force_try
@@ -36,7 +36,7 @@ class MockHTTPClient: HTTPClient {
                 statusCode: statusCode,
                 responseHeaders: [:],
                 body: data,
-                validationResult: validationResult
+                verificationResult: verificationResult
             )
 
             self.init(response: .success(response), delay: delay)

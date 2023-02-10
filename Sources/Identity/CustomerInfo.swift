@@ -45,6 +45,13 @@ import Foundation
      */
     @objc public let nonSubscriptions: [NonSubscriptionTransaction]
 
+    /// Whether the entitlements were verified.
+    ///
+    /// ### Related Symbols
+    /// - ``VerificationResult``
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    @objc public var entitlementVerification: VerificationResult { self.entitlements.verification }
+
     /**
      * Returns the fetch date of this CustomerInfo.
      */
@@ -116,7 +123,8 @@ import Foundation
             return false
         }
 
-        return self.data.response == other.data.response
+        return (self.data.response == other.data.response &&
+                self.data.entitlementVerification == other.data.entitlementVerification)
     }
 
     public override var hash: Int {
@@ -155,8 +163,12 @@ import Foundation
     private let data: Contents
 
     /// Initializes a `CustomerInfo` with the underlying data in the current schema version
-    convenience init(response: CustomerInfoResponse, sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
-        self.init(data: .init(response: response, schemaVersion: Self.currentSchemaVersion),
+    convenience init(response: CustomerInfoResponse,
+                     entitlementVerification: VerificationResult,
+                     sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
+        self.init(data: .init(response: response,
+                              entitlementVerification: entitlementVerification,
+                              schemaVersion: Self.currentSchemaVersion),
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
@@ -178,7 +190,8 @@ import Foundation
             entitlements: subscriber.entitlements,
             purchases: subscriber.allPurchasesByProductId,
             requestDate: response.requestDate,
-            sandboxEnvironmentDetector: sandboxEnvironmentDetector
+            sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+            verification: data.entitlementVerification
         )
         self.nonSubscriptions = TransactionsFactory.nonSubscriptionTransactions(
             withSubscriptionsData: subscriber.nonSubscriptions
@@ -225,6 +238,17 @@ extension CustomerInfo {
         "2",
         CustomerInfo.currentSchemaVersion
     ]
+
+}
+
+extension CustomerInfo {
+
+    /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult``.
+    func copy(with entitlementVerification: VerificationResult) -> Self {
+        var copy = self.data
+        copy.entitlementVerification = entitlementVerification
+        return .init(data: copy)
+    }
 
 }
 
@@ -277,10 +301,14 @@ private extension CustomerInfo {
     struct Contents {
 
         var response: CustomerInfoResponse
+        var entitlementVerification: VerificationResult
         var schemaVersion: String?
 
-        init(response: CustomerInfoResponse, schemaVersion: String?) {
+        init(response: CustomerInfoResponse,
+             entitlementVerification: VerificationResult,
+             schemaVersion: String?) {
             self.response = response
+            self.entitlementVerification = entitlementVerification
             self.schemaVersion = schemaVersion
         }
 
@@ -295,6 +323,7 @@ extension CustomerInfo.Contents: Codable {
     private enum CodingKeys: String, CodingKey {
 
         case response
+        case entitlementVerification
         case schemaVersion
 
     }
@@ -303,6 +332,7 @@ extension CustomerInfo.Contents: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         try self.response.encode(to: encoder)
+        try container.encode(self.entitlementVerification, forKey: .entitlementVerification)
         // Always use current schema version when encoding
         try container.encode(CustomerInfo.currentSchemaVersion, forKey: .schemaVersion)
     }
@@ -311,6 +341,10 @@ extension CustomerInfo.Contents: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.response = try CustomerInfoResponse(from: decoder)
+        self.entitlementVerification = try container.decodeIfPresent(
+            VerificationResult.self,
+            forKey: .entitlementVerification
+        ) ?? .notVerified
         self.schemaVersion = try container.decodeIfPresent(String.self, forKey: .schemaVersion)
     }
 

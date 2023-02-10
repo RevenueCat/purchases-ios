@@ -31,8 +31,18 @@ import Foundation
         return self.all[key]
     }
 
+    /// Whether these entitlements were verified.
+    /// ### Related Symbols
+    /// - ``VerificationResult``
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    @objc public var verification: VerificationResult { return self._verification }
+
     public override var description: String {
-        return "<\(NSStringFromClass(Self.self)): self.all=\(self.all), self.active=\(self.active)>"
+        return "<\(NSStringFromClass(Self.self)): " +
+        "self.all=\(self.all), " +
+        "self.active=\(self.active)," +
+        "self.verification=\(self._verification)" +
+        ">"
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
@@ -45,8 +55,12 @@ import Foundation
 
     // MARK: -
 
-    init(entitlements: [String: EntitlementInfo]) {
+    init(
+        entitlements: [String: EntitlementInfo],
+        verification: VerificationResult
+    ) {
         self.all = entitlements
+        self._verification = verification
     }
 
     private func isEqual(to other: EntitlementInfos?) -> Bool {
@@ -58,8 +72,10 @@ import Foundation
             return true
         }
 
-        return self.all == other.all
+        return self.all == other.all && self._verification == other._verification
     }
+
+    private let _verification: VerificationResult
 
 }
 
@@ -101,7 +117,8 @@ extension EntitlementInfos {
         entitlements: [String: CustomerInfoResponse.Entitlement],
         purchases: [String: CustomerInfoResponse.Subscription],
         requestDate: Date?,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+        verification: VerificationResult
     ) {
         let allEntitlements: [String: EntitlementInfo] = .init(
             uniqueKeysWithValues: entitlements.compactMap { identifier, entitlement in
@@ -115,12 +132,13 @@ extension EntitlementInfos {
                                     entitlement: entitlement,
                                     subscription: subscription,
                                     sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+                                    verification: verification,
                                     requestDate: requestDate)
                 )
             }
         )
 
-        self.init(entitlements: allEntitlements)
+        self.init(entitlements: allEntitlements, verification: verification)
     }
 
 }

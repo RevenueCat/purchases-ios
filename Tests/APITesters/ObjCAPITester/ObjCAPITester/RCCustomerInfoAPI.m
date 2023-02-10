@@ -16,6 +16,7 @@
     // RCCustomerInfo initializer is publically unavailable.
     RCCustomerInfo *ci = nil;
     RCEntitlementInfos *ei = ci.entitlements;
+    RCVerificationResult vr = ci.entitlementVerification;
     NSSet<NSString *> *as = ci.activeSubscriptions;
     NSSet<NSString *> *appis = ci.allPurchasedProductIdentifiers;
     NSDate *led = ci.latestExpirationDate;
@@ -38,7 +39,7 @@
 
     NSDictionary<NSString *, id> *rawData = [ci rawData];
     
-    NSLog(ci, ei, as, appis, led, ncp, ns, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d, rawData);
+    NSLog(ci, ei, vr, as, appis, led, ncp, ns, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d, rawData);
 }
 
 + (void)checkCacheFetchPolicyEnum:(RCCacheFetchPolicy) policy {

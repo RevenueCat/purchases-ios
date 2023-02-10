@@ -238,7 +238,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      userDefaults: UserDefaults? = nil,
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
-                     responseVerificationLevel: Signing.ResponseVerificationLevel,
+                     responseVerificationMode: Signing.ResponseVerificationMode,
                      storeKit2Setting: StoreKit2Setting = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
@@ -257,7 +257,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                         finishTransactions: !observerMode,
                                         operationDispatcher: operationDispatcher,
                                         storeKit2Setting: storeKit2Setting,
-                                        responseVerificationLevel: responseVerificationLevel,
+                                        responseVerificationMode: responseVerificationMode,
                                         dangerousSettings: dangerousSettings)
         } catch {
             fatalError(error.localizedDescription)
@@ -909,7 +909,7 @@ public extension Purchases {
                   observerMode: configuration.observerMode,
                   userDefaults: configuration.userDefaults,
                   platformInfo: configuration.platformInfo,
-                  responseVerificationLevel: configuration.responseVerificationLevel,
+                  responseVerificationMode: configuration.responseVerificationMode,
                   storeKit2Setting: configuration.storeKit2Setting,
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
@@ -1026,7 +1026,7 @@ public extension Purchases {
         observerMode: Bool,
         userDefaults: UserDefaults?,
         platformInfo: PlatformInfo?,
-        responseVerificationLevel: Signing.ResponseVerificationLevel,
+        responseVerificationMode: Signing.ResponseVerificationMode,
         storeKit2Setting: StoreKit2Setting,
         storeKitTimeout: TimeInterval,
         networkTimeout: TimeInterval,
@@ -1038,7 +1038,7 @@ public extension Purchases {
                   userDefaults: userDefaults,
                   observerMode: observerMode,
                   platformInfo: platformInfo,
-                  responseVerificationLevel: responseVerificationLevel,
+                  responseVerificationMode: responseVerificationMode,
                   storeKit2Setting: storeKit2Setting,
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
@@ -1229,7 +1229,7 @@ internal extension Purchases {
     }
 
     var publicKey: Signing.PublicKey? {
-        return self.systemInfo.responseVerificationLevel.publicKey
+        return self.systemInfo.responseVerificationMode.publicKey
     }
 
 }

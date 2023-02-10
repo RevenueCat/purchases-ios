@@ -949,7 +949,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
             statusCode: .success,
             responseHeaders: [:],
             body: mockedCachedResponse,
-            validationResult: .validated
+            verificationResult: .verified
         )
 
         stub(condition: isPath(path)) { response in
@@ -969,7 +969,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success
         expect(response?.value?.body) == mockedCachedResponse
-        expect(response?.value?.validationResult) == .validated
+        expect(response?.value?.verificationResult) == .verified
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
         expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == false
@@ -1182,7 +1182,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(headers?[HTTPClient.nonceHeaderName]) == request.nonce?.base64EncodedString()
     }
 
-    func testFailedValidationIfResponseContainsNoSignature() throws {
+    func testFailedVerificationIfResponseContainsNoSignature() throws {
         let logger = TestLogHandler()
 
         try self.changeClient(.informationOnly)
@@ -1196,7 +1196,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.validationResult) == .failedValidation
+        expect(response?.value?.verificationResult) == .failed
         expect(MockSigning.requests).to(beEmpty())
 
         logger.verifyMessageWasLogged(
@@ -1205,7 +1205,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         )
     }
 
-    func testValidSignatureWithVerificationLevelInformationOnly() throws {
+    func testValidSignatureWithVerificationModeInformationOnly() throws {
         let signature = "signature"
 
         try self.changeClient(.informationOnly)
@@ -1220,7 +1220,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.validationResult) == .validated
+        expect(response?.value?.verificationResult) == .verified
 
         expect(MockSigning.requests).to(haveCount(1))
         expect(MockSigning.requests.onlyElement?.message) == Data()
@@ -1238,12 +1238,12 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.validationResult) == .notRequested
+        expect(response?.value?.verificationResult) == .notVerified
 
         expect(MockSigning.requests).to(beEmpty())
     }
 
-    func testValidSignatureWithVerificationLevelEnforced() throws {
+    func testValidSignatureWithVerificationModeEnforced() throws {
         try self.changeClient(.enforced)
         self.mockResponse(signature: "signature")
 
@@ -1255,11 +1255,11 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.validationResult) == .validated
+        expect(response?.value?.verificationResult) == .verified
         expect(MockSigning.requests).to(haveCount(1))
     }
 
-    func testIncorrectSignatureWithVerificationLevelInformationOnlyReturnsResponse() throws {
+    func testIncorrectSignatureWithVerificationModeInformationOnlyReturnsResponse() throws {
         let signature = "signature"
 
         try self.changeClient(.informationOnly)
@@ -1273,11 +1273,11 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.validationResult) == .failedValidation
+        expect(response?.value?.verificationResult) == .failed
         expect(MockSigning.requests).to(haveCount(1))
     }
 
-    func testIncorrectSignatureWithVerificationLevelEnforcedReturnsError() throws {
+    func testIncorrectSignatureWithVerificationModeEnforcedReturnsError() throws {
         let signature = "signature"
 
         try self.changeClient(.enforced)
@@ -1294,7 +1294,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: .mockPath)))
     }
 
-    func testIgnoresResponseFromETagManagerIfItHadNotBeenValidated() throws {
+    func testIgnoresResponseFromETagManagerIfItHadNotBeenVerified() throws {
         let path: HTTPRequest.Path = .mockPath
 
         try self.changeClient(.informationOnly)
@@ -1326,15 +1326,15 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success
-        expect(response?.value?.validationResult) == .validated
+        expect(response?.value?.verificationResult) == .verified
     }
 
-    private func changeClient(_ verificationLevel: Configuration.EntitlementVerificationLevel) throws {
-        let level = Signing.verificationLevel(with: verificationLevel)
+    private func changeClient(_ verificationMode: Configuration.EntitlementVerificationMode) throws {
+        let mode = Signing.verificationMode(with: verificationMode)
 
         self.systemInfo = try MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
-                                             responseVerificationLevel: level)
+                                             responseVerificationMode: mode)
         self.client = self.createClient()
     }
 

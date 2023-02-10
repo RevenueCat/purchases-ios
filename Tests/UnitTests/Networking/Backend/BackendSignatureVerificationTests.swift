@@ -26,7 +26,7 @@ class BackendSignatureVerificationTests: BaseBackendTests {
     func testRequestContainsSignatureHeader() throws {
         self.httpClient.mock(
             requestPath: .health,
-            response: .init(statusCode: .success, validationResult: .validated)
+            response: .init(statusCode: .success, verificationResult: .verified)
         )
 
         let error = waitUntilValue { completed in
@@ -39,7 +39,7 @@ class BackendSignatureVerificationTests: BaseBackendTests {
     func testRequestFailsIfSignatureVerificationFails() throws {
         self.httpClient.mock(
             requestPath: .health,
-            response: .init(statusCode: .success, validationResult: .failedValidation)
+            response: .init(statusCode: .success, verificationResult: .failed)
         )
 
         let error = waitUntilValue { completed in

@@ -40,7 +40,7 @@ class ETagManager {
     ) -> [String: String] {
         var storedETag = ""
         if !refreshETag, let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest) {
-            if !signatureVerificationEnabled || storedETagAndResponse.validationResult == .validated {
+            if !signatureVerificationEnabled || storedETagAndResponse.verificationResult == .verified {
                 storedETag = storedETagAndResponse.eTag
             }
         }
@@ -122,7 +122,7 @@ private extension ETagManager {
                 eTag: eTag,
                 statusCode: response.statusCode,
                 data: data,
-                validationResult: response.validationResult
+                verificationResult: response.verificationResult
             )
             if let dataToStore = eTagAndResponse.asData() {
                 self.userDefaults.write {
@@ -159,19 +159,19 @@ extension ETagManager {
         var eTag: String
         var statusCode: HTTPStatusCode
         var data: Data
-        @DefaultValue<HTTPResponseValidationResult>
-        var validationResult: HTTPResponseValidationResult
+        @DefaultValue<VerificationResult>
+        var verificationResult: VerificationResult
 
         init(
             eTag: String,
             statusCode: HTTPStatusCode,
             data: Data,
-            validationResult: HTTPResponseValidationResult
+            verificationResult: VerificationResult
         ) {
             self.eTag = eTag
             self.statusCode = statusCode
             self.data = data
-            self.validationResult = validationResult
+            self.verificationResult = verificationResult
         }
 
     }
@@ -191,7 +191,7 @@ extension ETagManager.Response {
             statusCode: self.statusCode,
             responseHeaders: [:],
             body: self.data,
-            validationResult: self.validationResult
+            verificationResult: self.verificationResult
         )
     }
 
@@ -205,7 +205,7 @@ private extension HTTPResponse {
         return (
             self.statusCode != .notModified &&
             !self.statusCode.isServerError &&
-            self.validationResult != .failedValidation
+            self.verificationResult != .failed
         )
     }
 

@@ -161,6 +161,13 @@ extension PeriodType: DefaultValueProvider {
      */
     @objc public var ownershipType: PurchaseOwnershipType { self.contents.ownershipType }
 
+    /// Whether this entitlement was verified.
+    ///
+    /// ### Related Symbols
+    /// - ``VerificationResult``
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    @objc public var verification: VerificationResult { self.contents.verification }
+
     // Docs inherited from protocol
     // swiftlint:disable:next missing_docs
     @objc public let rawData: [String: Any]
@@ -182,7 +189,8 @@ extension PeriodType: DefaultValueProvider {
             isSandbox=\(self.isSandbox),
             unsubscribeDetectedAt=\(String(describing: self.unsubscribeDetectedAt)),
             billingIssueDetectedAt=\(String(describing: self.billingIssueDetectedAt)),
-            ownershipType=\(self.ownershipType)
+            ownershipType=\(self.ownershipType),
+            verification=\(self.contents.verification)
             >
             """
     }
@@ -211,6 +219,7 @@ extension PeriodType: DefaultValueProvider {
         entitlement: CustomerInfoResponse.Entitlement,
         subscription: CustomerInfoResponse.Subscription,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+        verification: VerificationResult,
         requestDate: Date?
     ) {
         self.contents = .init(
@@ -229,7 +238,8 @@ extension PeriodType: DefaultValueProvider {
             isSandbox: subscription.isSandbox,
             unsubscribeDetectedAt: subscription.unsubscribeDetectedAt,
             billingIssueDetectedAt: subscription.billingIssuesDetectedAt,
-            ownershipType: subscription.ownershipType
+            ownershipType: subscription.ownershipType,
+            verification: verification
         )
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
 
@@ -323,6 +333,7 @@ private extension EntitlementInfo {
         let unsubscribeDetectedAt: Date?
         let billingIssueDetectedAt: Date?
         let ownershipType: PurchaseOwnershipType
+        let verification: VerificationResult
 
     }
 
