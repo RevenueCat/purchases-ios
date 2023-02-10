@@ -37,6 +37,9 @@ class HTTPRequestTests: TestCase {
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
+    private static let notCachedPaths: Set<HTTPRequest.Path> = [
+        .health
+    ]
 
     func testPathsDontHaveLeadingSlash() {
         for path in Self.paths {
@@ -64,6 +67,24 @@ class HTTPRequestTests: TestCase {
             expect(path.authenticated).to(
                 beFalse(),
                 description: "Path '\(path)' should not be authenticated"
+            )
+        }
+    }
+
+    func testPathsAreCached() {
+        for path in Self.paths where !Self.notCachedPaths.contains(path) {
+            expect(path.isCached).to(
+                beTrue(),
+                description: "Path '\(path)' should be cached"
+            )
+        }
+    }
+
+    func testPathsIsNotCached() {
+        for path in Self.notCachedPaths {
+            expect(path.isCached).to(
+                beFalse(),
+                description: "Path '\(path)' should not be cached"
             )
         }
     }

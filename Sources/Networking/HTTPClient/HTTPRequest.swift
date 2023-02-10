@@ -119,6 +119,24 @@ extension HTTPRequest.Path {
         }
     }
 
+    /// Whether requests to this path can be cached using `ETagManager`
+    var isCached: Bool {
+        switch self {
+        case .getCustomerInfo,
+                .getOfferings,
+                .getIntroEligibility,
+                .logIn,
+                .postAttributionData,
+                .postOfferForSigning,
+                .postReceiptData,
+                .postSubscriberAttributes,
+                .postAdServicesToken:
+            return true
+        case .health:
+            return false
+        }
+    }
+
 }
 
 extension HTTPRequest.Path: Hashable {}
