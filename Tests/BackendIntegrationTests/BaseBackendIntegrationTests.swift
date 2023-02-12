@@ -37,10 +37,6 @@ class BaseBackendIntegrationTests: XCTestCase {
     class var storeKit2Setting: StoreKit2Setting { return .default }
     class var observerMode: Bool { return false }
 
-    override class func setUp() {
-        BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector()
-    }
-
     @MainActor
     override func setUp() async throws {
         try await super.setUp()
@@ -123,11 +119,5 @@ private extension BaseBackendIntegrationTests {
         return .init(autoSyncPurchases: true,
                      internalSettings: .init(enableReceiptFetchRetry: true))
     }
-
-}
-
-private final class MockSandboxEnvironmentDetector: SandboxEnvironmentDetector {
-
-    let isSandbox: Bool = true
 
 }

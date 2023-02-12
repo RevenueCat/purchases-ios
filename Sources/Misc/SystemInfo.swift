@@ -112,6 +112,7 @@ class SystemInfo {
          finishTransactions: Bool,
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
+         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storeKit2Setting: StoreKit2Setting = .default,
          responseVerificationLevel: Signing.ResponseVerificationLevel = .default,
          dangerousSettings: DangerousSettings? = nil) throws {
@@ -122,11 +123,9 @@ class SystemInfo {
         self._finishTransactions = .init(finishTransactions)
         self.operationDispatcher = operationDispatcher
         self.storeKit2Setting = storeKit2Setting
+        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.responseVerificationLevel = responseVerificationLevel
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
-        self.sandboxEnvironmentDetector = bundle === Bundle.main
-            ? BundleSandboxEnvironmentDetector.default
-            : BundleSandboxEnvironmentDetector(bundle: bundle)
     }
 
     /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
@@ -149,6 +148,12 @@ class SystemInfo {
         return self.isApplicationBackgroundedWatchOS
     #endif
     }
+
+    #if targetEnvironment(simulator)
+    static let isRunningInSimulator = true
+    #else
+    static let isRunningInSimulator = false
+    #endif
 
     func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)

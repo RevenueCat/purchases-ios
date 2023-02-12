@@ -58,15 +58,17 @@ class SystemInfoTests: TestCase {
     }
 
     func testIsSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.sandboxReceipt).isSandbox) == true
+        let sandboxDetector = MockSandboxEnvironmentDetector(isSandbox: true)
+
+        expect(try SystemInfo.withReceiptResult(.sandboxReceipt, sandboxDetector).isSandbox) == true
+        expect(try SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == true
     }
 
     func testIsNotSandbox() throws {
-        expect(try SystemInfo.withReceiptResult(.receiptWithData).isSandbox) == false
-    }
+        let sandboxDetector = MockSandboxEnvironmentDetector(isSandbox: false)
 
-    func testIsNotSandboxIfNoReceiptURL() throws {
-        expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
+        expect(try SystemInfo.withReceiptResult(.sandboxReceipt, sandboxDetector).isSandbox) == false
+        expect(try SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == false
     }
 
     func testIsAppleSubscriptionURLWithAnotherURL() {
@@ -94,13 +96,19 @@ class SystemInfoTests: TestCase {
 
 private extension SystemInfo {
 
-    static func withReceiptResult(_ result: MockBundle.ReceiptURLResult) throws -> SystemInfo {
+    static func withReceiptResult(
+        _ result: MockBundle.ReceiptURLResult,
+        _ sandboxEnvironmentDetector: SandboxEnvironmentDetector? = nil
+    ) throws -> SystemInfo {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
+        let sandboxDetector = sandboxEnvironmentDetector ?? BundleSandboxEnvironmentDetector(bundle: bundle)
+
         return try SystemInfo(platformInfo: nil,
                               finishTransactions: false,
-                              bundle: bundle)
+                              bundle: bundle,
+                              sandboxEnvironmentDetector: sandboxDetector)
     }
 
 }
