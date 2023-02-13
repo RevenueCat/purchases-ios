@@ -37,6 +37,9 @@ class HTTPRequestTests: TestCase {
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
+    private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
+        .health
+    ]
 
     func testPathsDontHaveLeadingSlash() {
         for path in Self.paths {
@@ -64,6 +67,24 @@ class HTTPRequestTests: TestCase {
             expect(path.authenticated).to(
                 beFalse(),
                 description: "Path '\(path)' should not be authenticated"
+            )
+        }
+    }
+
+    func testPathsSendETag() {
+        for path in Self.paths where !Self.pathsWithoutETags.contains(path) {
+            expect(path.shouldSendEtag).to(
+                beTrue(),
+                description: "Path '\(path)' should send etag"
+            )
+        }
+    }
+
+    func testPathsDontSendEtag() {
+        for path in Self.pathsWithoutETags {
+            expect(path.shouldSendEtag).to(
+                beFalse(),
+                description: "Path '\(path)' should not send etag"
             )
         }
     }

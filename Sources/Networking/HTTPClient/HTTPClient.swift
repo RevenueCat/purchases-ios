@@ -313,11 +313,8 @@ private extension HTTPClient {
 
         var urlRequest = URLRequest(url: requestURL)
         urlRequest.httpMethod = request.method.httpMethod
+        urlRequest.allHTTPHeaderFields = self.headers(for: request, urlRequest: urlRequest)
 
-        let eTagHeader = self.eTagManager.eTagHeader(for: urlRequest, refreshETag: request.retried)
-        let headersWithETag = request.headers.merging(eTagHeader)
-
-        urlRequest.allHTTPHeaderFields = headersWithETag
         do {
             urlRequest.httpBody = try request.httpRequest.requestBody?.asData()
         } catch {
@@ -326,6 +323,15 @@ private extension HTTPClient {
         }
 
         return urlRequest
+    }
+
+    private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
+        if request.httpRequest.path.shouldSendEtag {
+            let eTagHeader = self.eTagManager.eTagHeader(for: urlRequest, refreshETag: request.retried)
+            return request.headers.merging(eTagHeader)
+        } else {
+            return request.headers
+        }
     }
 
 }
