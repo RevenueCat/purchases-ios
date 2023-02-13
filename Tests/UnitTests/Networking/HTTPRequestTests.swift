@@ -37,7 +37,7 @@ class HTTPRequestTests: TestCase {
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
-    private static let notCachedPaths: Set<HTTPRequest.Path> = [
+    private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health
     ]
 
@@ -72,7 +72,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testPathsSendETag() {
-        for path in Self.paths where !Self.notCachedPaths.contains(path) {
+        for path in Self.paths where !Self.pathsWithoutETags.contains(path) {
             expect(path.shouldSendEtag).to(
                 beTrue(),
                 description: "Path '\(path)' should send etag"
@@ -81,7 +81,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testPathsDontSendEtag() {
-        for path in Self.notCachedPaths {
+        for path in Self.pathsWithoutETags {
             expect(path.shouldSendEtag).to(
                 beFalse(),
                 description: "Path '\(path)' should not send etag"
