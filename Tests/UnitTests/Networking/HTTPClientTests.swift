@@ -513,7 +513,7 @@ class HTTPClientTests: TestCase {
         expect(self.eTagManager.invokedETagHeader) == true
     }
 
-    func testNotCachedRequestsIncludeETagHeader() {
+    func testNotCachedRequestsDontIncludeETagHeader() {
         let request = HTTPRequest(method: .post([:]), path: .health)
         let headerPresent: Atomic<Bool?> = nil
 
