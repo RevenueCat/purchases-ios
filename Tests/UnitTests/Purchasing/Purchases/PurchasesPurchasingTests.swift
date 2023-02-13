@@ -702,7 +702,21 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.deviceCache.cacheCustomerInfoCount).toEventually(equal(2))
     }
 
-    func testWhenNoReceiptDataReceiptIsRefreshed() {
+    func testReceiptIsAlwaysRefreshedInSandbox() {
+        self.systemInfo.stubbedIsSandbox = true
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.receiptFetcher.shouldReturnZeroBytesReceipt = true
+
+        self.makeAPurchase()
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+    }
+
+    func testReceiptIsOnlyRefreshedIfEmptyInProduction() {
+        self.systemInfo.stubbedIsSandbox = false
+
         self.receiptFetcher.shouldReturnReceipt = true
         self.receiptFetcher.shouldReturnZeroBytesReceipt = true
 

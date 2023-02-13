@@ -193,18 +193,18 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         }
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
     }
 
-    func testSK1PurchaseAlwaysRefreshesReceiptInSandbox() async throws {
+    func testSK1PurchaseDoesNotAlwaysRefreshReceiptInProduction() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
-        self.systemInfo.stubbedIsSandbox = true
+        self.systemInfo.stubbedIsSandbox = false
 
         let product = try await self.fetchSk1Product()
         let storeProduct = try await self.fetchSk1StoreProduct()
@@ -216,16 +216,18 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let payment = self.storeKit1Wrapper.payment(with: product)
 
         _ = await withCheckedContinuation { continuation in
-            self.orchestrator.purchase(sk1Product: product,
-                                       payment: payment,
-                                       package: package,
-                                       wrapper: self.storeKit1Wrapper) { transaction, customerInfo, error, userCancelled in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
     }
 
     func testGetSK1PromotionalOffer() async throws {
@@ -436,7 +438,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
@@ -444,14 +446,14 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testSK2PurchaseAlwaysRefreshesReceiptInSandbox() async throws {
+    func testSK2PurchaseDoesNotAlwaysRefreshReceiptInProduction() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let mockListener = try XCTUnwrap(
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
         )
 
-        self.systemInfo.stubbedIsSandbox = true
+        self.systemInfo.stubbedIsSandbox = false
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
@@ -462,7 +464,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                             promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -485,7 +487,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         _ = try await orchestrator.purchase(sk2Product: product, package: package, promotionalOffer: nil)
 
         expect(self.receiptFetcher.receiptDataCalled) == true
-        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
