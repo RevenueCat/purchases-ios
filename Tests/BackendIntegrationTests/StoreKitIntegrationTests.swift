@@ -86,6 +86,19 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         verifyPurchase(info2)
     }
 
+    func testCanPurchaseMultipleSubscriptions() async throws {
+        let product1 = try await self.monthlyPackage.storeProduct
+        let product2 = try await self.annualPackage.storeProduct
+
+        _ = try await Purchases.shared.purchase(product: product1)
+        let info = try await Purchases.shared.purchase(product: product2).customerInfo
+
+        expect(info.allPurchasedProductIdentifiers) == [
+            product1.productIdentifier,
+            product2.productIdentifier
+        ]
+    }
+
     func testSubscriptionIsSandbox() async throws {
         let info = try await self.purchaseMonthlyOffering().customerInfo
 

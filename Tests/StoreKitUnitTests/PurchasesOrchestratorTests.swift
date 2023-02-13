@@ -200,6 +200,34 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
     }
 
+    func testSK1PurchaseAlwaysRefreshesReceiptInSandbox() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        self.systemInfo.stubbedIsSandbox = true
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = try await self.fetchSk1StoreProduct()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(sk1Product: product,
+                                       payment: payment,
+                                       package: package,
+                                       wrapper: self.storeKit1Wrapper) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+    }
+
     func testGetSK1PromotionalOffer() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
@@ -413,6 +441,28 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(beNil())
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSK2PurchaseAlwaysRefreshesReceiptInSandbox() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+
+        self.systemInfo.stubbedIsSandbox = true
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        mockListener.mockTransaction = .init(try await self.createTransactionWithPurchase())
+
+        _ = try await orchestrator.purchase(sk2Product: self.fetchSk2Product(),
+                                            package: nil,
+                                            promotionalOffer: nil)
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
