@@ -26,7 +26,7 @@ import Foundation
     @objc public let all: [String: EntitlementInfo]
 
     /// #### Related Symbols
-    /// `- `all``
+    /// - ``all``
     @objc public subscript(key: String) -> EntitlementInfo? {
         return self.all[key]
     }
