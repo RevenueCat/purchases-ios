@@ -326,7 +326,7 @@ private extension HTTPClient {
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
-        if request.httpRequest.path.isCached {
+        if request.httpRequest.path.shouldSendEtag {
             let eTagHeader = self.eTagManager.eTagHeader(for: urlRequest, refreshETag: request.retried)
             return request.headers.merging(eTagHeader)
         } else {

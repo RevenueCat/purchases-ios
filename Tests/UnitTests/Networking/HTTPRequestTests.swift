@@ -71,20 +71,20 @@ class HTTPRequestTests: TestCase {
         }
     }
 
-    func testPathsAreCached() {
+    func testPathsSendETag() {
         for path in Self.paths where !Self.notCachedPaths.contains(path) {
-            expect(path.isCached).to(
+            expect(path.shouldSendEtag).to(
                 beTrue(),
-                description: "Path '\(path)' should be cached"
+                description: "Path '\(path)' should send etag"
             )
         }
     }
 
-    func testPathsIsNotCached() {
+    func testPathsDontSendEtag() {
         for path in Self.notCachedPaths {
-            expect(path.isCached).to(
+            expect(path.shouldSendEtag).to(
                 beFalse(),
-                description: "Path '\(path)' should not be cached"
+                description: "Path '\(path)' should not send etag"
             )
         }
     }

@@ -120,7 +120,7 @@ extension HTTPRequest.Path {
     }
 
     /// Whether requests to this path can be cached using `ETagManager`
-    var isCached: Bool {
+    var shouldSendEtag: Bool {
         switch self {
         case .getCustomerInfo,
                 .getOfferings,
