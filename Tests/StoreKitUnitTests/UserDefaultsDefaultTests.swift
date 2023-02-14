@@ -25,7 +25,10 @@ final class UserDefaultsDefaultTests: TestCase {
     override func setUp() {
         super.setUp()
 
-        UserDefaults.standard.removeObject(forKey: Self.appUserKey)
+        // We don't care if `DeviceCache` detects the modification of `UserDefaults` from this test.
+        self.ignoreFatalErrors {
+            UserDefaults.standard.removeObject(forKey: Self.appUserKey)
+        }
     }
 
     func testRevenueCatSuiteIsNotStandard() {
