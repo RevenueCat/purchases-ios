@@ -1154,6 +1154,17 @@ final class HTTPClientTests: BaseHTTPClientTests {
             .toNot(contain(unexpectedDNSError.description))
     }
 
+    func testAddNonceIfRequiredForOldVersion() throws {
+        if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
+            throw XCTSkip("Test only for older versions")
+        }
+
+        var request: HTTPRequest = .init(method: .get, path: .mockPath)
+        self.client.addNonceIfRequired(&request)
+
+        expect(request.nonce).to(beNil())
+    }
+
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -1180,6 +1191,25 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(headers).toNot(beEmpty())
         expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
         expect(headers?[HTTPClient.nonceHeaderName]) == request.nonce?.base64EncodedString()
+    }
+
+    func testAutomaticallyAddsNonceIfRequired() throws {
+        try self.changeClient(.informational)
+
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"))
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
+        expect(headers?[HTTPClient.nonceHeaderName]).toNot(beNil())
     }
 
     func testFailedVerificationIfResponseContainsNoSignature() throws {
@@ -1230,7 +1260,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testSignatureNotRequested() throws {
-        try self.changeClient(.enforced)
+        try self.changeClient(.disabled)
         self.mockResponse()
 
         let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
@@ -1327,6 +1357,52 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success
         expect(response?.value?.verificationResult) == .verified
+    }
+
+    func testAddNonceIfRequiredWithExistingNonce() throws {
+        try self.changeClient(.enforced)
+
+        let existingNonce = Data.randomNonce()
+        var request: HTTPRequest = .init(method: .get, path: .health, nonce: existingNonce)
+        self.client.addNonceIfRequired(&request)
+
+        expect(request.nonce) == existingNonce
+    }
+
+    func testAddNonceIfRequiredWithDisabledVerification() throws {
+        try self.changeClient(.disabled)
+
+        var request: HTTPRequest = .init(method: .get, path: .mockPath)
+        self.client.addNonceIfRequired(&request)
+
+        expect(request.nonce).to(beNil())
+    }
+
+    func testAddNonceIfRequiredWithPathWithNoSignatureValidation() throws {
+        try self.changeClient(.enforced)
+
+        var request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
+        self.client.addNonceIfRequired(&request)
+
+        expect(request.nonce).to(beNil())
+    }
+
+    func testAddNonceIfRequiredForPathWithSignatureValidationWhenEnforced() throws {
+        try self.changeClient(.enforced)
+
+        var request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        self.client.addNonceIfRequired(&request)
+
+        expect(request.nonce).toNot(beNil())
+    }
+
+    func testAddNonceIfRequiredForPathWithSignatureValidationWhenModeInformational() throws {
+        try self.changeClient(.informational)
+
+        var request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        self.client.addNonceIfRequired(&request)
+
+        expect(request.nonce).toNot(beNil())
     }
 
     private func changeClient(_ verificationMode: Configuration.EntitlementVerificationMode) throws {

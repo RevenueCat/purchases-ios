@@ -53,6 +53,9 @@ class HTTPClient {
     }
 
     func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
+        var request = request
+        self.addNonceIfRequired(&request)
+
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
                                     completionHandler: completionHandler))
@@ -65,6 +68,15 @@ class HTTPClient {
 }
 
 extension HTTPClient {
+
+    func addNonceIfRequired(_ request: inout HTTPRequest) {
+        if request.nonce == nil,
+           request.path.hasSignatureValidation,
+           self.systemInfo.responseVerificationMode.isEnabled,
+           #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            request.addRandomNonce()
+        }
+    }
 
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
         return [Self.authorizationHeaderName: "Bearer \(apiKey)"]

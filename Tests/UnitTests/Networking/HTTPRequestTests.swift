@@ -40,6 +40,12 @@ class HTTPRequestTests: TestCase {
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health
     ]
+    private static let pathsWithSignatureValidation: Set<HTTPRequest.Path> = [
+        .getCustomerInfo(appUserID: userID),
+        .logIn,
+        .postReceiptData,
+        .health
+    ]
 
     func testPathsDontHaveLeadingSlash() {
         for path in Self.paths {
@@ -85,6 +91,24 @@ class HTTPRequestTests: TestCase {
             expect(path.shouldSendEtag).to(
                 beFalse(),
                 description: "Path '\(path)' should not send etag"
+            )
+        }
+    }
+
+    func testPathsHaveSignatureValidation() {
+        for path in Self.pathsWithSignatureValidation {
+            expect(path.hasSignatureValidation).to(
+                beTrue(),
+                description: "Path '\(path)' should have signature validation"
+            )
+        }
+    }
+
+    func testPathsWithoutSignatureValidation() {
+        for path in Self.paths where !Self.pathsWithSignatureValidation.contains(path) {
+            expect(path.hasSignatureValidation).to(
+                beFalse(),
+                description: "Path '\(path)' should not have signature validation"
             )
         }
     }

@@ -83,7 +83,7 @@ private final class HealthOperation: CacheableNetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let request = self.createRequest()
+        let request: HTTPRequest = .init(method: .get, path: .health)
 
         self.httpClient.perform(request) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
             if self.signatureVerification, response.value?.verificationResult != .verified {
@@ -92,16 +92,6 @@ private final class HealthOperation: CacheableNetworkOperation {
                 self.finish(with: response, completion: completion)
             }
         }
-    }
-
-    private func createRequest() -> HTTPRequest {
-        var request: HTTPRequest = .init(method: .get, path: .health)
-
-        if self.signatureVerification, #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            request.addRandomNonce()
-        }
-
-        return request
     }
 
     private func finish(with response: HTTPResponse<HTTPEmptyResponseBody>.Result,

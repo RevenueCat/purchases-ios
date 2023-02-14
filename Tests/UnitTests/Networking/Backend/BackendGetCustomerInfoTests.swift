@@ -193,3 +193,37 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
     }
 
 }
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+class BackendGetCustomerInfoSignatureTests: BaseBackendTests {
+
+    override var verificationMode: Configuration.EntitlementVerificationMode {
+        return .informational
+    }
+
+    override func createClient() -> MockHTTPClient {
+        super.createClient(#file)
+    }
+
+    override func setUpWithError() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        try super.setUpWithError()
+    }
+
+    func testSendsNonceWhenEnabled() {
+        self.httpClient.mock(
+            requestPath: .getCustomerInfo(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let result = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+        }
+        let request = self.httpClient.calls.onlyElement
+
+        expect(result).to(beSuccess())
+        expect(request?.request.nonce).toNot(beNil())
+    }
+
+}

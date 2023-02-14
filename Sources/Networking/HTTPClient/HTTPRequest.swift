@@ -21,11 +21,7 @@ struct HTTPRequest {
     /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
     var nonce: Data?
 
-    init(method: Method, path: Path) {
-        self.init(method: method, path: path, nonce: nil)
-    }
-
-    init(method: Method, path: Path, nonce: Data?) {
+    init(method: Method, path: Path, nonce: Data? = nil) {
         assert(nonce == nil || nonce?.count == Data.nonceLength,
                "Invalid nonce: \(nonce?.description ?? "")")
 
@@ -129,7 +125,7 @@ extension HTTPRequest.Path {
         }
     }
 
-    /// Whether requests to this path can be cached using `ETagManager`
+    /// Whether requests to this path can be cached using `ETagManager`.
     var shouldSendEtag: Bool {
         switch self {
         case .getCustomerInfo,
@@ -143,6 +139,24 @@ extension HTTPRequest.Path {
                 .postAdServicesToken:
             return true
         case .health:
+            return false
+        }
+    }
+
+    // Whether the endpoint will perform signature validation.
+    var hasSignatureValidation: Bool {
+        switch self {
+        case .getCustomerInfo,
+                .logIn,
+                .postReceiptData,
+                .health:
+            return true
+        case .getOfferings,
+                .getIntroEligibility,
+                .postSubscriberAttributes,
+                .postAttributionData,
+                .postAdServicesToken,
+                .postOfferForSigning:
             return false
         }
     }
