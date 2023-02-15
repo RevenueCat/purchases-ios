@@ -76,7 +76,7 @@ extension HTTPClient {
 
     static let authorizationHeaderName = "Authorization"
     static let nonceHeaderName = "X-Nonce"
-    static let responseSignatureHeaderName = "x-signature"
+    static let responseSignatureHeaderName = "X-Signature"
 
 }
 
@@ -334,7 +334,11 @@ private extension HTTPClient {
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
         if request.httpRequest.path.shouldSendEtag {
-            let eTagHeader = self.eTagManager.eTagHeader(for: urlRequest, refreshETag: request.retried)
+            let eTagHeader = self.eTagManager.eTagHeader(
+                for: urlRequest,
+                refreshETag: request.retried,
+                signatureVerificationEnabled: request.httpRequest.nonce != nil
+            )
             return request.headers.merging(eTagHeader)
         } else {
             return request.headers
