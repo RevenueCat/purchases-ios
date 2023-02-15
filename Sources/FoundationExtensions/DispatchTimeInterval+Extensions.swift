@@ -21,6 +21,12 @@ extension DispatchTimeInterval {
         self = .milliseconds(Int(timeInterval * 1000))
     }
 
+    static func days(_ days: Int) -> Self {
+        precondition(days >= 0, "Days must be positive: \(days)")
+
+        return .seconds(days * 60 * 60 * 24)
+    }
+
     /// `DispatchTimeInterval` can only be used by specifying a unit of time.
     /// This allows us to easily convert any `DispatchTimeInterval` into nanoseconds.
     var nanoseconds: Int {
@@ -45,6 +51,10 @@ extension DispatchTimeInterval {
         case .never: return 0
         @unknown default: fatalError("Unknown value: \(self)")
         }
+    }
+
+    var days: Double {
+        return self.seconds / (60 * 60 * 24)
     }
 
 }

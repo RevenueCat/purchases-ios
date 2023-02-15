@@ -122,8 +122,8 @@ class EntitlementInfosTests: TestCase {
         expect(subscriberInfo.entitlements.active["pro_cat"]).toNot(beNil())
     }
 
-    func testActiveSubscription() throws {
-        stubResponse(
+    func testSubscriptionIsActiveIfExpirationIsInFutureAndNoRequestDate() throws {
+        self.stubResponse(
                 entitlements: [
                     "pro_cat": [
                         "expires_date": "2200-07-26T23:50:40Z",
@@ -145,12 +145,14 @@ class EntitlementInfosTests: TestCase {
                 ]
         )
 
-        try verifyEntitlementActive()
+        try self.verifyEntitlementActive()
     }
 
     func testSubscriptionActiveIfExpiresDateEqualsRequestDate() throws {
-        let expirationAndRequestDate = "2019-08-16T10:30:42Z"
-        stubResponse(
+        let expirationAndRequestDate = Self.formatter.string(
+            from: Date().addingTimeInterval(EntitlementInfo.requestDateGracePeriod.seconds / -2)
+        )
+        self.stubResponse(
                 entitlements: [
                     "pro_cat": [
                         "expires_date": expirationAndRequestDate,
@@ -174,7 +176,73 @@ class EntitlementInfosTests: TestCase {
                 requestDate: expirationAndRequestDate
         )
 
-        try verifyEntitlementActive()
+        try self.verifyEntitlementActive()
+    }
+
+    func testRequestDateGracePeriodIsLongerThanOneDay() {
+        expect(EntitlementInfo.requestDateGracePeriod.days) > 1
+    }
+
+    func testSubscriptionActiveIfExpiresDateAfterRequestDateAndRequestDateWithinGracePeriod() throws {
+        let requestDate = Date().addingTimeInterval(EntitlementInfo.requestDateGracePeriod.seconds / -2)
+        let expirationDate = requestDate.addingTimeInterval(100)
+
+        self.stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": Self.formatter.string(from: expirationDate),
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "1999-07-26T23:30:41Z"
+                ]
+            ],
+            nonSubscriptions: [:],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "1999-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "1999-07-26T23:30:41Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ]
+            ],
+            requestDate: Self.formatter.string(from: requestDate)
+        )
+
+        try self.verifyEntitlementActive()
+    }
+
+    func testSubscriptionNotActiveIfExpiresDateAfterRequestDateButRequestDateIsOlderThanGracePeriod() throws {
+        let requestDate = Date().addingTimeInterval(EntitlementInfo.requestDateGracePeriod.seconds * -1)
+        let expirationDate = requestDate.addingTimeInterval(100)
+
+        self.stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": Self.formatter.string(from: expirationDate),
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "1999-07-26T23:30:41Z"
+                ]
+            ],
+            nonSubscriptions: [:],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "1999-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "1999-07-26T23:30:41Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ]
+            ],
+            requestDate: Self.formatter.string(from: requestDate)
+        )
+
+        try self.verifyEntitlementActive(false)
     }
 
     func testInactiveSubscription() throws {
@@ -1208,7 +1276,12 @@ private extension EntitlementInfosTests {
         expect(file: file, line: line, subscriberInfo.entitlements.all.keys.contains(entitlement)) == true
         expect(file: file, line: line, subscriberInfo.entitlements.active.keys.contains(entitlement))
         == expectedEntitlementActive
-        expect(file: file, line: line, proCat.isActive) == expectedEntitlementActive
+        expect(file: file, line: line, proCat.isActive).to(
+            equal(expectedEntitlementActive),
+            description: expectedEntitlementActive
+            ? "Entitlement should be active"
+            : "Entitlement should not be active"
+        )
     }
 
     private func extractEntitlements(identifier: String,
