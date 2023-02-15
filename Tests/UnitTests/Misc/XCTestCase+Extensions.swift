@@ -68,6 +68,15 @@ extension XCTestCase {
         }
     }
 
+    func ignoreFatalErrors(_ closure: () -> Void) {
+        FatalErrorUtil.replaceFatalError { _, _, _ in
+            self.unreachable()
+        }
+
+        closure()
+        FatalErrorUtil.restoreFatalError()
+    }
+
 }
 
 /// Similar to `XCTUnrap` but it allows an `async` closure.
