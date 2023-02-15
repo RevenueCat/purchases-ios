@@ -302,8 +302,15 @@ private extension EntitlementInfo {
             return true
         }
 
-        let referenceDate = Self.referenceDate(for: requestDate)
-        return expirationDate.timeIntervalSince(referenceDate) >= 0
+        let (referenceDate, inGracePeriod) = Self.referenceDate(for: requestDate)
+        let isActive = expirationDate.timeIntervalSince(referenceDate) >= 0
+
+        if !inGracePeriod && !isActive {
+            Logger.warn(Strings.purchase.entitlement_expired_outside_grace_period(expiration: expirationDate,
+                                                                                  reference: requestDate ?? Date()))
+        }
+
+        return isActive
     }
 
     static func willRenewWithExpirationDate(expirationDate: Date?,
@@ -318,13 +325,14 @@ private extension EntitlementInfo {
         return !(isPromo || isLifetime || hasUnsubscribed || hasBillingIssues)
     }
 
-    private static func referenceDate(for requestDate: Date?) -> Date {
-        guard let requestDate = requestDate else { return Date() }
+    private static func referenceDate(for requestDate: Date?) -> (Date, inGracePeriod: Bool) {
+        guard let requestDate = requestDate else { return (Date(), true) }
 
         if Date().timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
-            return requestDate
+            return (requestDate, true)
         } else {
-            return Date()
+
+            return (Date(), false)
         }
     }
 

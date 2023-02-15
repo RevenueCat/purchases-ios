@@ -25,6 +25,7 @@ enum PurchaseStrings {
     case device_cache_deinit(DeviceCache)
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
+    case entitlement_expired_outside_grace_period(expiration: Date, reference: Date)
     case finishing_transaction(StoreTransactionType)
     case purchasing_with_observer_mode_and_finish_transactions_false_warning
     case paymentqueue_revoked_entitlements_for_product_identifiers(productIdentifiers: [String])
@@ -96,6 +97,10 @@ extension PurchaseStrings: CustomStringConvertible {
         case .entitlements_revoked_syncing_purchases(let productIdentifiers):
             return "Entitlements revoked for product " +
             "identifiers: \(productIdentifiers). \nsyncing purchases"
+
+        case let .entitlement_expired_outside_grace_period(expiration, reference):
+            return "Entitlement is no longer active (expired \(expiration)) " +
+            "and it's outside grace period window (last updated \(reference))"
 
         case let .finishing_transaction(transaction):
             return "Finishing transaction '\(transaction.transactionIdentifier)' " +
