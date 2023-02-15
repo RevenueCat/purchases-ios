@@ -781,7 +781,22 @@ private extension PurchasesOrchestrator {
                                              maximumRetries: Self.receiptRetryCount,
                                              sleepDuration: Self.receiptRetrySleepDuration)
         } else {
+            // See https://github.com/RevenueCat/purchases-ios/pull/2245 and
+            // https://github.com/RevenueCat/purchases-ios/issues/2260
+            // - Release or production builds:
+            //      We don't _want_ to always refresh receipts to avoid throttling errors
+            //      We don't _need_ to because the receipt will be refreshed by the backend using /verifyReceipt
+            // - Debug and sandbox builds (potentially using StoreKit config files):
+            //      We need to always refresh the receipt because the backend does not use /verifyReceipt
+            //          when it was generated locally with SK config files.
+
+            #if DEBUG
+            return self.systemInfo.isSandbox
+            ? .always
+            : .onlyIfEmpty
+            #else
             return .onlyIfEmpty
+            #endif
         }
     }
 }
