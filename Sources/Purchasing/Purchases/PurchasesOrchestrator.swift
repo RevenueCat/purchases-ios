@@ -787,7 +787,8 @@ private extension PurchasesOrchestrator {
             //      We don't _want_ to always refresh receipts to avoid throttling errors
             //      We don't _need_ to because the receipt will be refreshed by the backend using /verifyReceipt
             // - Debug and sandbox builds (potentially using StoreKit config files):
-            //      We need to always refresh the receipt because the backend might not use /verifyReceipt
+            //      We need to always refresh the receipt because the backend does not use /verifyReceipt
+            //          when it was generated locally with SK config files.
 
             #if DEBUG
             return self.systemInfo.isSandbox
