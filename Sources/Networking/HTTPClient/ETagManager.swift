@@ -33,13 +33,18 @@ class ETagManager {
         self.userDefaults = .init(userDefaults: userDefaults)
     }
 
-    func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
+    func eTagHeader(
+        for urlRequest: URLRequest,
+        refreshETag: Bool = false,
+        signatureVerificationEnabled: Bool
+    ) -> [String: String] {
         var storedETag = ""
-        if !refreshETag,
-           let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest),
-           storedETagAndResponse.validationResult != .failedValidation {
-            storedETag = storedETagAndResponse.eTag
+        if !refreshETag, let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest) {
+            if !signatureVerificationEnabled || storedETagAndResponse.validationResult == .validated {
+                storedETag = storedETagAndResponse.eTag
+            }
         }
+
         return [ETagManager.eTagHeaderName: storedETag]
     }
 
@@ -151,10 +156,23 @@ extension ETagManager {
 
     struct Response {
 
-        let eTag: String
-        let statusCode: HTTPStatusCode
-        let data: Data
-        let validationResult: HTTPResponseValidationResult
+        var eTag: String
+        var statusCode: HTTPStatusCode
+        var data: Data
+        @DefaultValue<HTTPResponseValidationResult>
+        var validationResult: HTTPResponseValidationResult
+
+        init(
+            eTag: String,
+            statusCode: HTTPStatusCode,
+            data: Data,
+            validationResult: HTTPResponseValidationResult
+        ) {
+            self.eTag = eTag
+            self.statusCode = statusCode
+            self.data = data
+            self.validationResult = validationResult
+        }
 
     }
 

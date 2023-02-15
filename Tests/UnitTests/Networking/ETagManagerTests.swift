@@ -27,7 +27,7 @@ class ETagManagerTests: TestCase {
     func testETagIsEmptyIfThereIsNoETagSavedForThatRequest() {
         let url = urlForTest()
         let request = URLRequest(url: url)
-        let header = eTagManager.eTagHeader(for: request)
+        let header = eTagManager.eTagHeader(for: request, signatureVerificationEnabled: false)
         let value2: String? = header[ETagManager.eTagHeaderName]
 
         expect(value2).toNot(beNil())
@@ -38,7 +38,7 @@ class ETagManagerTests: TestCase {
         let url = urlForTest()
         _ = mockStoredETagResponse(for: url)
         let request = URLRequest(url: url)
-        let header = eTagManager.eTagHeader(for: request)
+        let header = eTagManager.eTagHeader(for: request, signatureVerificationEnabled: false)
         let value2: String? = header[ETagManager.eTagHeaderName]
 
         expect(value2).toNot(beNil())
@@ -300,7 +300,7 @@ class ETagManagerTests: TestCase {
         expect(response?.validationResult) == .notRequested
     }
 
-    func testETagHeaderIsNotFoundIfItsMissingResponseValidation() {
+    func testETagHeaderIsNotFoundIfItsMissingResponseValidationAndVerificationEnabled() {
         let eTag = "the_etag"
         let url = self.urlForTest()
         let request = URLRequest(url: url)
@@ -316,8 +316,30 @@ class ETagManagerTests: TestCase {
         }
         """.asData
 
-        let response = self.eTagManager.eTagHeader(for: request)
+        let response = self.eTagManager.eTagHeader(for: request,
+                                                   signatureVerificationEnabled: true)
         expect(response[ETagManager.eTagHeaderName]).to(beEmpty())
+    }
+
+    func testETagHeaderIsFoundIfItsMissingResponseValidationAndVerificationIsDisabled() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = """
+        {
+        "e_tag": "\(eTag)",
+        "status_code": 200,
+        "data": "\(actualResponse.asFetchToken)"
+        }
+        """.asData
+
+        let response = self.eTagManager.eTagHeader(for: request,
+                                                   signatureVerificationEnabled: false)
+        expect(response[ETagManager.eTagHeaderName]) == eTag
     }
 
     func testETagHeaderIsIgnoredIfValidationFailed() {
@@ -335,7 +357,7 @@ class ETagManagerTests: TestCase {
             validationResult: .failedValidation
         ).asData()
 
-        let response = self.eTagManager.eTagHeader(for: request)
+        let response = self.eTagManager.eTagHeader(for: request, signatureVerificationEnabled: true)
         expect(response[ETagManager.eTagHeaderName]).to(beEmpty())
     }
 
@@ -354,7 +376,8 @@ class ETagManagerTests: TestCase {
             validationResult: .validated
         ).asData()
 
-        let response = self.eTagManager.eTagHeader(for: request)
+        let response = self.eTagManager.eTagHeader(for: request,
+                                                   signatureVerificationEnabled: false)
         expect(response[ETagManager.eTagHeaderName]) == eTag
     }
 
@@ -373,11 +396,12 @@ class ETagManagerTests: TestCase {
             validationResult: .notRequested
         ).asData()
 
-        let response = self.eTagManager.eTagHeader(for: request)
+        let response = self.eTagManager.eTagHeader(for: request,
+                                                   signatureVerificationEnabled: false)
         expect(response[ETagManager.eTagHeaderName]) == eTag
     }
 
-    func testCachedResponseWithNoValidationResultIsIgnored() {
+    func testCachedResponseWithNoValidationResultIsNotIgnored() {
         let eTag = "the_etag"
         let url = self.urlForTest()
         let request = URLRequest(url: url)
@@ -401,7 +425,8 @@ class ETagManagerTests: TestCase {
             request: request,
             retried: false
         )
-        expect(response).to(beNil())
+        expect(response?.validationResult) == .notRequested
+        expect(response?.body) == actualResponse
     }
 
     func testCachedResponseIsFoundIfValidationWasNotRequested() {

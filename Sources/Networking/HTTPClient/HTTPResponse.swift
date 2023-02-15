@@ -42,6 +42,12 @@ enum HTTPResponseValidationResult: Int {
 
 extension HTTPResponseValidationResult: Codable {}
 
+extension HTTPResponseValidationResult: DefaultValueProvider {
+
+    static let defaultValue: Self = .notRequested
+
+}
+
 extension HTTPResponse: CustomStringConvertible {
 
     var description: String {

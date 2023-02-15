@@ -939,16 +939,22 @@ final class HTTPClientTests: BaseHTTPClientTests {
         let mockedCachedResponse = try JSONSerialization.data(withJSONObject: [
             "test": "data"
         ])
+        let eTag = "tag"
 
+        self.eTagManager.stubbedETagHeaderResult = [
+            ETagManager.eTagHeaderName: eTag
+        ]
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
             statusCode: .success,
             responseHeaders: [:],
             body: mockedCachedResponse,
-            validationResult: .notRequested
+            validationResult: .validated
         )
 
-        stub(condition: isPath(path)) { _ in
+        stub(condition: isPath(path)) { response in
+            expect(response.allHTTPHeaderFields?[ETagManager.eTagHeaderName]) == eTag
+
             return .init(data: Data(),
                          statusCode: .notModified,
                          headers: nil)
@@ -963,6 +969,10 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success
         expect(response?.value?.body) == mockedCachedResponse
+        expect(response?.value?.validationResult) == .validated
+
+        expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
+        expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == false
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
@@ -1282,6 +1292,41 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
         expect(response).to(beFailure())
         expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: .mockPath)))
+    }
+
+    func testIgnoresResponseFromETagManagerIfItHadNotBeenValidated() throws {
+        let path: HTTPRequest.Path = .mockPath
+
+        try self.changeClient(.informationOnly)
+        MockSigning.stubbedVerificationResult = true
+
+        stub(condition: isPath(path)) { request in
+            expect(request.allHTTPHeaderFields?.keys).toNot(contain(ETagManager.eTagHeaderName))
+
+            return .init(data: Data(),
+                         statusCode: .success,
+                         headers: [
+                            HTTPClient.responseSignatureHeaderName: "signature"
+                         ])
+        }
+
+        self.eTagManager.shouldReturnResultFromBackend = true
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(
+                .createWithResponseVerification(method: .get, path: path)
+            ) { (result: HTTPResponse<Data>.Result) in
+                completion(result)
+            }
+        }
+
+        expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
+        expect(self.eTagManager.invokedETagHeaderParameters?.refreshETag) == false
+        expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == true
+
+        expect(response).toNot(beNil())
+        expect(response?.value?.statusCode) == .success
+        expect(response?.value?.validationResult) == .validated
     }
 
     private func changeClient(_ verificationLevel: Configuration.EntitlementVerificationLevel) throws {
