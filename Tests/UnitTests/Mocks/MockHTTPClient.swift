@@ -31,13 +31,14 @@ class MockHTTPClient: HTTPClient {
             // swiftlint:disable:next force_try
             let data = try! JSONSerialization.data(withJSONObject: response)
 
-            self.init(response: .success(.init(
+            let response = HTTPResponse(
                 statusCode: statusCode,
                 responseHeaders: [:],
                 body: data,
                 validationResult: .notRequested
-            )),
-                      delay: delay)
+            )
+
+            self.init(response: .success(response), delay: delay)
         }
 
         init(error: NetworkError, delay: DispatchTimeInterval = .never) {
