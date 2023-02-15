@@ -58,7 +58,7 @@ class BaseBackendTests: TestCase {
     }
 
     func createClient() -> MockHTTPClient {
-        XCTFail("This method must be overriden by subclasses")
+        XCTFail("\(#function) must be overriden by subclasses")
         return self.createClient(#file)
     }
 
