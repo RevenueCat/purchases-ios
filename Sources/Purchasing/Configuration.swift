@@ -175,10 +175,9 @@ import Foundation
 
         /// Set ``Configuration/EntitlementVerificationLevel``
         /// - Note: this requires iOS 13+
-        /// - Throws: ``ErrorCode/configurationError`` if the key cannot be loaded
         @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-        @objc internal func with(entitlementVerificationLevel level: EntitlementVerificationLevel) throws -> Builder {
-            self.responseVerificationLevel = try Signing.verificationLevel(with: level)
+        @objc internal func with(entitlementVerificationLevel level: EntitlementVerificationLevel) -> Builder {
+            self.responseVerificationLevel = Signing.verificationLevel(with: level)
             return self
         }
 
