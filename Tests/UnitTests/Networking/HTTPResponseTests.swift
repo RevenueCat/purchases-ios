@@ -11,10 +11,42 @@
 //
 //  Created by Nacho Soto on 3/9/22.
 
+import CryptoKit
 import Nimble
 import XCTest
 
 @testable import RevenueCat
+
+class HTTPResponseTests: TestCase {
+
+    func testResponseValidationNotRequestedWithNoPublicKey() {
+        let request = HTTPRequest(method: .get, path: .health)
+        let response = HTTPResponse.create(with: Data(),
+                                           statusCode: .success,
+                                           headers: [:],
+                                           request: request,
+                                           publicKey: nil)
+
+        expect(response.validationResult) == .notRequested
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testResponseValidationNotRequestedWithPublicKey() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let key = Curve25519.Signing.PrivateKey().publicKey
+
+        let request = HTTPRequest(method: .get, path: .health)
+        let response = HTTPResponse.create(with: Data(),
+                                           statusCode: .success,
+                                           headers: [:],
+                                           request: request,
+                                           publicKey: key)
+
+        expect(response.validationResult) == .notRequested
+    }
+
+}
 
 class ErrorResponseTests: TestCase {
 

@@ -23,6 +23,8 @@ class SigningTests: TestCase {
     private typealias PrivateKey = Curve25519.Signing.PrivateKey
     private typealias PublicKey = Curve25519.Signing.PublicKey
 
+    private let (privateKey, publicKey) = SigningTests.createRandomKey()
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -95,18 +97,76 @@ class SigningTests: TestCase {
     }
 
     func testVerifySignatureWithValidSignature() throws {
-        let (privateKey, publicKey) = Self.createRandomKey()
         let message = "Hello World"
         let nonce = "nonce"
-        let salt = Array(repeating: "a", count: Signing.saltSize).joined()
+        let salt = Self.createSalt()
 
-        let signature = try self.sign(key: privateKey, message: message, nonce: nonce, salt: salt)
+        let signature = try self.sign(message: message, nonce: nonce, salt: salt)
         let fullSignature = salt.asData + signature
 
         expect(Signing.verify(message: message.asData,
                               nonce: nonce.asData,
                               hasValidSignature: fullSignature.base64EncodedString(),
-                              with: publicKey)) == true
+                              with: self.publicKey)) == true
+    }
+
+    func testResponseValidationWithNoProvidedKey() throws {
+        let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
+        let response = HTTPResponse.create(with: Data(),
+                                           statusCode: .success,
+                                           headers: [:],
+                                           request: request,
+                                           publicKey: nil)
+
+        expect(response.validationResult) == .notRequested
+    }
+
+    func testResponseValidationWithNoSignatureInResponse() throws {
+        let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
+        let response = HTTPResponse.create(with: Data(),
+                                           statusCode: .success,
+                                           headers: [:],
+                                           request: request,
+                                           publicKey: self.publicKey)
+
+        expect(response.validationResult) == .failedValidation
+    }
+
+    func testResponseValidationWithInvalidSignature() throws {
+        let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
+        let response = HTTPResponse.create(
+            with: Data(),
+            statusCode: .success,
+            headers: [
+                HTTPClient.responseSignatureHeaderName: "invalid_signature"
+            ],
+            request: request,
+            publicKey: self.publicKey
+        )
+
+        expect(response.validationResult) == .failedValidation
+    }
+
+    func testResponseValidationWithValidSignature() throws {
+        let message = "Hello World"
+        let nonce = "0123456789ab"
+        let salt = Self.createSalt()
+
+        let signature = try self.sign(message: message, nonce: nonce, salt: salt)
+        let fullSignature = salt.asData + signature
+
+        let request = HTTPRequest(method: .get, path: .health, nonce: nonce.asData)
+        let response = HTTPResponse.create(
+            with: message.asData,
+            statusCode: .success,
+            headers: [
+                HTTPClient.responseSignatureHeaderName: fullSignature.base64EncodedString()
+            ],
+            request: request,
+            publicKey: self.publicKey
+        )
+
+        expect(response.validationResult) == .validated
     }
 
 }
@@ -120,10 +180,14 @@ extension SigningTests {
         return (key, key.publicKey)
     }
 
-    private func sign(key: PrivateKey, message: String, nonce: String, salt: String) throws -> Data {
+    private func sign(message: String, nonce: String, salt: String) throws -> Data {
         let fullMessage = salt.asData + nonce.asData + message.asData
 
-        return try key.signature(for: fullMessage)
+        return try self.privateKey.signature(for: fullMessage)
+    }
+
+    private static func createSalt() -> String {
+        return Array(repeating: "a", count: Signing.saltSize).joined()
     }
 
 }

@@ -13,16 +13,16 @@ import XCTest
 
 @testable import RevenueCat
 
-class HTTPClientTests: TestCase {
+class BaseHTTPClientTests: TestCase {
 
-    private typealias EmptyResponse = HTTPResponse<HTTPEmptyResponseBody>.Result
+    fileprivate typealias EmptyResponse = HTTPResponse<HTTPEmptyResponseBody>.Result
 
-    private let apiKey = "MockAPIKey"
-    private let systemInfo = MockSystemInfo(finishTransactions: true)
-    private var client: HTTPClient!
-    private var userDefaults: UserDefaults!
-    private var eTagManager: MockETagManager!
-    private var operationDispatcher: OperationDispatcher!
+    fileprivate let apiKey = "MockAPIKey"
+    fileprivate var systemInfo = MockSystemInfo(finishTransactions: true)
+    fileprivate var client: HTTPClient!
+    fileprivate var userDefaults: UserDefaults!
+    fileprivate var eTagManager: MockETagManager!
+    fileprivate var operationDispatcher: OperationDispatcher!
 
     override func setUp() {
         super.setUp()
@@ -31,12 +31,9 @@ class HTTPClientTests: TestCase {
         self.eTagManager = MockETagManager(userDefaults: self.userDefaults)
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
+        MockSigning.resetData()
 
-        self.client = HTTPClient(apiKey: self.apiKey,
-                                 systemInfo: self.systemInfo,
-                                 eTagManager: self.eTagManager,
-                                 dnsChecker: MockDNSChecker.self,
-                                 requestTimeout: 3)
+        self.client = self.createClient()
     }
 
     override func tearDown() {
@@ -44,6 +41,19 @@ class HTTPClientTests: TestCase {
 
         super.tearDown()
     }
+
+    fileprivate final func createClient() -> HTTPClient {
+        return HTTPClient(apiKey: self.apiKey,
+                          systemInfo: self.systemInfo,
+                          eTagManager: self.eTagManager,
+                          dnsChecker: MockDNSChecker.self,
+                          signing: MockSigning.self,
+                          requestTimeout: 3)
+    }
+
+}
+
+final class HTTPClientTests: BaseHTTPClientTests {
 
     func testUsesTheCorrectHost() throws {
         let hostCorrect: Atomic<Bool> = false
@@ -94,26 +104,6 @@ class HTTPClientTests: TestCase {
 
         expect(headers).toNot(beEmpty())
         expect(headers?.keys).toNot(contain(HTTPClient.nonceHeaderName))
-    }
-
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func testRequestIncludesRandomNonce() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
-        let request = HTTPRequest.createIntegrityEnforcedRequestRequest(method: .get, path: .mockPath)
-
-        let headers: [String: String]? = waitUntilValue { completion in
-            stub(condition: isPath(request.path)) { request in
-                completion(request.allHTTPHeaderFields)
-                return .emptySuccessResponse()
-            }
-
-            self.client.perform(request) { (_: EmptyResponse) in }
-        }
-
-        expect(headers).toNot(beEmpty())
-        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
-        expect(headers?[HTTPClient.nonceHeaderName]) == request.nonce?.base64EncodedString()
     }
 
     func testRequestIncludesNonceInBase64() {
@@ -949,14 +939,22 @@ class HTTPClientTests: TestCase {
         let mockedCachedResponse = try JSONSerialization.data(withJSONObject: [
             "test": "data"
         ])
+        let eTag = "tag"
 
+        self.eTagManager.stubbedETagHeaderResult = [
+            ETagManager.eTagHeaderName: eTag
+        ]
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
             statusCode: .success,
-            body: mockedCachedResponse
+            responseHeaders: [:],
+            body: mockedCachedResponse,
+            validationResult: .validated
         )
 
-        stub(condition: isPath(path)) { _ in
+        stub(condition: isPath(path)) { response in
+            expect(response.allHTTPHeaderFields?[ETagManager.eTagHeaderName]) == eTag
+
             return .init(data: Data(),
                          statusCode: .notModified,
                          headers: nil)
@@ -971,6 +969,10 @@ class HTTPClientTests: TestCase {
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success
         expect(response?.value?.body) == mockedCachedResponse
+        expect(response?.value?.validationResult) == .validated
+
+        expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
+        expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == false
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
@@ -1154,6 +1156,204 @@ class HTTPClientTests: TestCase {
 
 }
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
+
+    override func setUpWithError() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        try super.setUpWithError()
+    }
+
+    func testRequestIncludesRandomNonce() throws {
+        let request = HTTPRequest.createWithResponseVerification(method: .get, path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
+        expect(headers?[HTTPClient.nonceHeaderName]) == request.nonce?.base64EncodedString()
+    }
+
+    func testFailedValidationIfResponseContainsNoSignature() throws {
+        let logger = TestLogHandler()
+
+        try self.changeClient(.informationOnly)
+        self.mockResponse()
+
+        MockSigning.stubbedVerificationResult = true
+
+        let request: HTTPRequest = .createWithResponseVerification(method: .get, path: .mockPath)
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.validationResult) == .failedValidation
+        expect(MockSigning.requests).to(beEmpty())
+
+        logger.verifyMessageWasLogged(
+            Strings.signing.signature_was_requested_but_not_provided(request),
+            level: .warn
+        )
+    }
+
+    func testValidSignatureWithVerificationLevelInformationOnly() throws {
+        let signature = "signature"
+
+        try self.changeClient(.informationOnly)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = true
+
+        let request: HTTPRequest = .createWithResponseVerification(method: .get, path: .mockPath)
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.validationResult) == .validated
+
+        expect(MockSigning.requests).to(haveCount(1))
+        expect(MockSigning.requests.onlyElement?.message) == Data()
+        expect(MockSigning.requests.onlyElement?.nonce) == request.nonce
+        expect(MockSigning.requests.onlyElement?.signature) == signature
+        expect(MockSigning.requests.onlyElement?.publicKey).toNot(beNil())
+    }
+
+    func testSignatureNotRequested() throws {
+        try self.changeClient(.enforced)
+        self.mockResponse()
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: .mockPath), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.validationResult) == .notRequested
+
+        expect(MockSigning.requests).to(beEmpty())
+    }
+
+    func testValidSignatureWithVerificationLevelEnforced() throws {
+        try self.changeClient(.enforced)
+        self.mockResponse(signature: "signature")
+
+        MockSigning.stubbedVerificationResult = true
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .mockPath),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.validationResult) == .validated
+        expect(MockSigning.requests).to(haveCount(1))
+    }
+
+    func testIncorrectSignatureWithVerificationLevelInformationOnlyReturnsResponse() throws {
+        let signature = "signature"
+
+        try self.changeClient(.informationOnly)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = false
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .mockPath),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.validationResult) == .failedValidation
+        expect(MockSigning.requests).to(haveCount(1))
+    }
+
+    func testIncorrectSignatureWithVerificationLevelEnforcedReturnsError() throws {
+        let signature = "signature"
+
+        try self.changeClient(.enforced)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = false
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .mockPath),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: .mockPath)))
+    }
+
+    func testIgnoresResponseFromETagManagerIfItHadNotBeenValidated() throws {
+        let path: HTTPRequest.Path = .mockPath
+
+        try self.changeClient(.informationOnly)
+        MockSigning.stubbedVerificationResult = true
+
+        stub(condition: isPath(path)) { request in
+            expect(request.allHTTPHeaderFields?.keys).toNot(contain(ETagManager.eTagHeaderName))
+
+            return .init(data: Data(),
+                         statusCode: .success,
+                         headers: [
+                            HTTPClient.responseSignatureHeaderName: "signature"
+                         ])
+        }
+
+        self.eTagManager.shouldReturnResultFromBackend = true
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(
+                .createWithResponseVerification(method: .get, path: path)
+            ) { (result: HTTPResponse<Data>.Result) in
+                completion(result)
+            }
+        }
+
+        expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
+        expect(self.eTagManager.invokedETagHeaderParameters?.refreshETag) == false
+        expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == true
+
+        expect(response).toNot(beNil())
+        expect(response?.value?.statusCode) == .success
+        expect(response?.value?.validationResult) == .validated
+    }
+
+    private func changeClient(_ verificationLevel: Configuration.EntitlementVerificationLevel) throws {
+        let level = try Signing.verificationLevel(with: verificationLevel)
+
+        self.systemInfo = try MockSystemInfo(platformInfo: nil,
+                                             finishTransactions: false,
+                                             responseVerificationLevel: level)
+        self.client = self.createClient()
+    }
+
+    private func mockResponse(signature: String? = nil) {
+        stub(condition: isPath(HTTPRequest.Path.mockPath)) { _ in
+            if let signature = signature {
+                return .init(data: Data(),
+                             statusCode: .success,
+                             headers: [
+                                HTTPClient.responseSignatureHeaderName: signature
+                             ])
+            } else {
+                return .emptySuccessResponse()
+            }
+        }
+    }
+
+}
+
 // MARK: - Extensions
 
 private extension HTTPRequest.Path {
@@ -1185,7 +1385,7 @@ extension HTTPRequest.Method {
 
 }
 
-private extension HTTPClientTests {
+private extension BaseHTTPClientTests {
 
     static func extractRequestNumber(from urlRequest: URLRequest) -> Int? {
         do {

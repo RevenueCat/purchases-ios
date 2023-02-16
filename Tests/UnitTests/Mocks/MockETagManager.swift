@@ -13,25 +13,39 @@ import Foundation
 // swiftlint:disable type_name
 class MockETagManager: ETagManager {
 
+    struct ETagHeaderRequest {
+        var urlRequest: URLRequest
+        var refreshETag: Bool
+        var signatureVerificationEnabled: Bool
+    }
+
     var invokedETagHeader = false
     var invokedETagHeaderCount = 0
-    var invokedETagHeaderParameters: (urlRequest: URLRequest, refreshETag: Bool)?
-    var invokedETagHeaderParametersList = [(urlRequest: URLRequest, refreshETag: Bool)]()
+    var invokedETagHeaderParameters: ETagHeaderRequest?
+    var invokedETagHeaderParametersList: [ETagHeaderRequest] = []
     var stubbedETagHeaderResult: [String: String]! = [:]
 
-    override func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
-        return lock.perform {
-            invokedETagHeader = true
-            invokedETagHeaderCount += 1
-            invokedETagHeaderParameters = (urlRequest, refreshETag)
-            invokedETagHeaderParametersList.append((urlRequest, refreshETag))
-            return stubbedETagHeaderResult
+    override func eTagHeader(
+        for urlRequest: URLRequest,
+        refreshETag: Bool = false,
+        signatureVerificationEnabled: Bool
+    ) -> [String: String] {
+        return self.lock.perform {
+            let request: ETagHeaderRequest = .init(urlRequest: urlRequest,
+                                                   refreshETag: refreshETag,
+                                                   signatureVerificationEnabled: signatureVerificationEnabled)
+
+            self.invokedETagHeader = true
+            self.invokedETagHeaderCount += 1
+            self.invokedETagHeaderParameters = request
+            self.invokedETagHeaderParametersList.append(request)
+
+            return self.stubbedETagHeaderResult
         }
     }
 
     private struct InvokedHTTPResultFromCacheOrBackendParams {
-        let response: HTTPURLResponse
-        let body: Data?
+        let response: HTTPResponse<Data?>
         let request: URLRequest
         let retried: Bool
     }
@@ -43,26 +57,23 @@ class MockETagManager: ETagManager {
     var stubbedHTTPResultFromCacheOrBackendResult: HTTPResponse<Data>!
     var shouldReturnResultFromBackend = true
 
-    override func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                               data: Data?,
+    override func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
                                                request: URLRequest,
                                                retried: Bool) -> HTTPResponse<Data>? {
-        return lock.perform {
-            invokedHTTPResultFromCacheOrBackend = true
-            invokedHTTPResultFromCacheOrBackendCount += 1
+        return self.lock.perform {
+            self.invokedHTTPResultFromCacheOrBackend = true
+            self.invokedHTTPResultFromCacheOrBackendCount += 1
             let params = InvokedHTTPResultFromCacheOrBackendParams(
                 response: response,
-                body: data,
                 request: request,
                 retried: retried
             )
-            invokedHTTPResultFromCacheOrBackendParameters = params
-            invokedHTTPResultFromCacheOrBackendParametersList.append(params)
-            if shouldReturnResultFromBackend {
-                return HTTPResponse(statusCode: .init(rawValue: response.statusCode), body: data)
-                    .asOptionalResponse
+            self.invokedHTTPResultFromCacheOrBackendParameters = params
+            self.invokedHTTPResultFromCacheOrBackendParametersList.append(params)
+            if self.shouldReturnResultFromBackend {
+                return response.asOptionalResponse
             }
-            return stubbedHTTPResultFromCacheOrBackendResult
+            return self.stubbedHTTPResultFromCacheOrBackendResult
         }
     }
 

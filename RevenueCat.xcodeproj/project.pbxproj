@@ -309,6 +309,8 @@
 		5791FBD3299184EF00F1FEDA /* MockAsyncSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FBD1299184EF00F1FEDA /* MockAsyncSequence.swift */; };
 		5791FC7A2991D31600F1FEDA /* public_key.der in Resources */ = {isa = PBXBuildFile; fileRef = 5791FC792991D31600F1FEDA /* public_key.der */; };
 		5791FCF32992D3EC00F1FEDA /* SigningStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */; };
+		5791FDBE299419D900F1FEDA /* MockSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FDBD299419D900F1FEDA /* MockSigning.swift */; };
+		5791FE4A2994453500F1FEDA /* Signing+ResponseValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791FE492994453500F1FEDA /* Signing+ResponseValidation.swift */; };
 		579234E327F7788900B39C68 /* BaseBackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */; };
 		579234E527F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */; };
 		5793397028E77A5100C1232C /* PaymentQuueWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5793396F28E77A5100C1232C /* PaymentQuueWrapperTests.swift */; };
@@ -919,6 +921,8 @@
 		5791FBD1299184EF00F1FEDA /* MockAsyncSequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAsyncSequence.swift; sourceTree = "<group>"; };
 		5791FC792991D31600F1FEDA /* public_key.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = public_key.der; sourceTree = "<group>"; };
 		5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningStrings.swift; sourceTree = "<group>"; };
+		5791FDBD299419D900F1FEDA /* MockSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSigning.swift; sourceTree = "<group>"; };
+		5791FE492994453500F1FEDA /* Signing+ResponseValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Signing+ResponseValidation.swift"; sourceTree = "<group>"; };
 		579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseBackendIntegrationTests.swift; sourceTree = "<group>"; };
 		579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManagerIntegrationTests.swift; sourceTree = "<group>"; };
 		5793396F28E77A5100C1232C /* PaymentQuueWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentQuueWrapperTests.swift; sourceTree = "<group>"; };
@@ -1455,6 +1459,7 @@
 				5721360E28B4602C006C46BE /* Purchases+nonasync.swift */,
 				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
 				57E6C27B29723A94001AFE98 /* Signing.swift */,
+				5791FE492994453500F1FEDA /* Signing+ResponseValidation.swift */,
 				57CFB98327FE2258002A6730 /* StoreKit2Setting.swift */,
 				57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */,
 				B3AA6237268B926F00894871 /* SystemInfo.swift */,
@@ -1570,6 +1575,7 @@
 				37E354B13440508B46C9A530 /* MockReceiptParser.swift */,
 				351B517926D44FF000BD2BD7 /* MockRequestFetcher.swift */,
 				57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */,
+				5791FDBD299419D900F1FEDA /* MockSigning.swift */,
 				2DDF41E524F6F5DC005BC22D /* MockSK1Product.swift */,
 				A55D08312722471200D919E0 /* MockSK2BeginRefundRequestHelper.swift */,
 				2DDF41E724F6F61B005BC22D /* MockSKProductDiscount.swift */,
@@ -2783,6 +2789,7 @@
 				57ABA76D28F08DDA003D9181 /* Either.swift in Sources */,
 				35F82BB426A9A74D0051DF03 /* HTTPClient.swift in Sources */,
 				B3A55B7D26C452A7007EFC56 /* AttributionPoster.swift in Sources */,
+				5791FE4A2994453500F1FEDA /* Signing+ResponseValidation.swift in Sources */,
 				2DC19195255F36D10039389A /* Logger.swift in Sources */,
 				2DDF419F24F6F331005BC22D /* ReceiptParsingError.swift in Sources */,
 				57BB070E28D27A2B007F5DF0 /* CachingProductsManager.swift in Sources */,
@@ -3094,6 +3101,7 @@
 				A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
 				2DA85A8A26DEA7DC00F1136D /* MockProductsRequestFactory.swift in Sources */,
 				5793397028E77A5100C1232C /* PaymentQuueWrapperTests.swift in Sources */,
+				5791FDBE299419D900F1FEDA /* MockSigning.swift in Sources */,
 				57FDAA9A2846C2BD009A48F1 /* PurchasesDelegateTests.swift in Sources */,
 				351B516026D44BB600BD2BD7 /* MockAttributionDataMigrator.swift in Sources */,
 				2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */,
