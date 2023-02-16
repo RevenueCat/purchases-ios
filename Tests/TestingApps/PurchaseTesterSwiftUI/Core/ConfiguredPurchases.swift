@@ -25,7 +25,8 @@ public final class ConfiguredPurchases {
         apiKey: String,
         proxyURL: String?,
         useStoreKit2: Bool,
-        observerMode: Bool
+        observerMode: Bool,
+        entitlementVerificationMode: Configuration.EntitlementVerificationMode
     ) {
         Purchases.logLevel = .debug
         Purchases.logHandler = Self.logger.logHandler
@@ -38,6 +39,7 @@ public final class ConfiguredPurchases {
             with: .builder(withAPIKey: apiKey)
                 .with(usesStoreKit2IfAvailable: useStoreKit2)
                 .with(observerMode: observerMode)
+                .with(entitlementVerificationMode: entitlementVerificationMode)
                 .build()
         )
 

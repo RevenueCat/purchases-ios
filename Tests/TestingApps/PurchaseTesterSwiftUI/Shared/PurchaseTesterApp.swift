@@ -78,7 +78,8 @@ struct PurchaseTesterApp: App {
                 apiKey: data.apiKey,
                 proxyURL: data.proxy.nonEmpty,
                 useStoreKit2: data.storeKit2Enabled,
-                observerMode: data.observerMode
+                observerMode: data.observerMode,
+                entitlementVerificationMode: data.verificationMode
             )
         }
     }
