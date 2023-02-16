@@ -27,7 +27,7 @@ import Foundation
 /// let purchases = Purchases.configure(
 ///   with: Configuration
 ///     .builder(withAPIKey: "")
-///     .with(entitlementVerificationMode: .informationOnly)
+///     .with(entitlementVerificationMode: .informational)
 /// )
 ///
 /// let customerInfo = try await purchases.customerInfo()

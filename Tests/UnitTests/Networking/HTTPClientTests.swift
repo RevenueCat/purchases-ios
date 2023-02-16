@@ -1185,7 +1185,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     func testFailedVerificationIfResponseContainsNoSignature() throws {
         let logger = TestLogHandler()
 
-        try self.changeClient(.informationOnly)
+        try self.changeClient(.informational)
         self.mockResponse()
 
         MockSigning.stubbedVerificationResult = true
@@ -1205,10 +1205,10 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         )
     }
 
-    func testValidSignatureWithVerificationModeInformationOnly() throws {
+    func testValidSignatureWithVerificationModeInformational() throws {
         let signature = "signature"
 
-        try self.changeClient(.informationOnly)
+        try self.changeClient(.informational)
         self.mockResponse(signature: signature)
 
         MockSigning.stubbedVerificationResult = true
@@ -1259,10 +1259,10 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(MockSigning.requests).to(haveCount(1))
     }
 
-    func testIncorrectSignatureWithVerificationModeInformationOnlyReturnsResponse() throws {
+    func testIncorrectSignatureWithVerificationModeInformationalReturnsResponse() throws {
         let signature = "signature"
 
-        try self.changeClient(.informationOnly)
+        try self.changeClient(.informational)
         self.mockResponse(signature: signature)
 
         MockSigning.stubbedVerificationResult = false
@@ -1297,7 +1297,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     func testIgnoresResponseFromETagManagerIfItHadNotBeenVerified() throws {
         let path: HTTPRequest.Path = .mockPath
 
-        try self.changeClient(.informationOnly)
+        try self.changeClient(.informational)
         MockSigning.stubbedVerificationResult = true
 
         stub(condition: isPath(path)) { request in

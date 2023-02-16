@@ -170,12 +170,12 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func testEntitlementVerificationModeInformationOnlySetsPublicKey() throws {
+    func testEntitlementVerificationModeInformationalSetsPublicKey() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
-                .with(entitlementVerificationMode: .informationOnly)
+                .with(entitlementVerificationMode: .informational)
         )
         expect(purchases.publicKey).toNot(beNil())
     }

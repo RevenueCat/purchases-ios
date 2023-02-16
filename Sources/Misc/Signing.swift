@@ -82,7 +82,7 @@ enum Signing: SigningType {
     ) -> ResponseVerificationMode {
         switch setting {
         case .disabled: return .disabled
-        case .informationOnly: return .informationOnly(Self.loadPublicKey())
+        case .informational: return .informational(Self.loadPublicKey())
         case .enforced: return .enforced(Self.loadPublicKey())
         }
     }
@@ -101,7 +101,7 @@ extension Signing {
     enum ResponseVerificationMode {
 
         case disabled
-        case informationOnly(PublicKey)
+        case informational(PublicKey)
         case enforced(PublicKey)
 
         static let `default`: Self = .disabled
@@ -109,7 +109,7 @@ extension Signing {
         var publicKey: PublicKey? {
             switch self {
             case .disabled: return nil
-            case let .informationOnly(key): return key
+            case let .informational(key): return key
             case let .enforced(key): return key
             }
         }

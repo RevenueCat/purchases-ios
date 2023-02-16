@@ -25,7 +25,7 @@
 
     switch (mode) {
         case RCEntitlementVerificationModeDisabled:
-        case RCEntitlementVerificationModeInformationOnly:
+        case RCEntitlementVerificationModeInformational:
         case RCEntitlementVerificationModeEnforced:
             break;
     }

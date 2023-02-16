@@ -231,7 +231,7 @@ public extension Configuration {
         /// but parsing will not fail.
         /// 
         /// This can be useful if you want to handle validation failures but still grant access.
-        case informationOnly = 1
+        case informational = 1
 
         /// Enable entitlement verification.
         ///

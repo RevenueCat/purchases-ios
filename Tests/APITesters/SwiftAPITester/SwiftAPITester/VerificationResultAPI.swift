@@ -12,7 +12,7 @@ func checkVerificationResultAPI(_ mode: EntitlementVerificationMode = .disabled,
                                 _ result: VerificationResult = .notVerified) {
     switch mode {
     case .disabled,
-            .informationOnly,
+            .informational,
             .enforced:
         break
 
