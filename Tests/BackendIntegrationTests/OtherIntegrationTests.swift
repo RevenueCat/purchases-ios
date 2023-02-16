@@ -19,7 +19,11 @@ import XCTest
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     func testHealthRequest() async throws {
-        try await Purchases.shared.healthRequest()
+        try await Purchases.shared.healthRequest(signatureVerification: false)
+    }
+
+    func testHealthRequestWithVerification() async throws {
+        try await Purchases.shared.healthRequest(signatureVerification: true)
     }
 
 }

@@ -26,6 +26,7 @@ class MockHTTPClient: HTTPClient {
         init(
             statusCode: HTTPStatusCode,
             response: [String: Any] = [:],
+            validationResult: HTTPResponseValidationResult = .notRequested,
             delay: DispatchTimeInterval = .never
         ) {
             // swiftlint:disable:next force_try
@@ -35,7 +36,7 @@ class MockHTTPClient: HTTPClient {
                 statusCode: statusCode,
                 responseHeaders: [:],
                 body: data,
-                validationResult: .notRequested
+                validationResult: validationResult
             )
 
             self.init(response: .success(response), delay: delay)
@@ -68,8 +69,10 @@ class MockHTTPClient: HTTPClient {
     private let sourceTestFile: StaticString
 
     override func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
+        let request = request.withHardcodedNonce
+
         let call = Call(request: request,
-                        headers: request.path.authenticated ? self.authHeaders : [:])
+                        headers: request.headers(with: self.authHeaders))
 
         DispatchQueue.main.async {
             self.calls.append(call)
@@ -134,6 +137,23 @@ extension HTTPRequest: Encodable {
 extension MockHTTPClient.Call: Encodable { }
 
 // MARK: -
+
+private extension HTTPRequest {
+
+    /// Creates a copy of the request replacing the `nonce` with a fixed value
+    /// to make snapshot tests deterministic
+    var withHardcodedNonce: Self {
+        if self.nonce == nil {
+            return self
+        } else {
+            var copy = self
+            copy.nonce = "1234567890ab".asData
+
+            return copy
+        }
+    }
+
+}
 
 private extension Encodable {
     func encode<Container: KeyedEncodingContainerProtocol>(

@@ -39,14 +39,19 @@ final class MockPurchases {
 
     var invokedHealthRequest = false
     var mockedHealthRequestResponse: Result<Void, PublicError> = .success(())
+    var mockedHealthRequestWithSignatureVerificationResponse: Result<Void, PublicError> = .success(())
 
 }
 
 extension MockPurchases: InternalPurchasesType {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func healthRequest() async throws {
-        return try self.mockedHealthRequestResponse.get()
+    func healthRequest(signatureVerification: Bool) async throws {
+        if signatureVerification {
+            return try self.mockedHealthRequestWithSignatureVerificationResponse.get()
+        } else {
+            return try self.mockedHealthRequestResponse.get()
+        }
     }
 
 }

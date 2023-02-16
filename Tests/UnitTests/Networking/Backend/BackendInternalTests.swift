@@ -27,7 +27,7 @@ class BackendInternalTests: BaseBackendTests {
         self.httpClient.mock(requestPath: .health, response: .init(statusCode: .success))
 
         let error = waitUntilValue { completed in
-            self.internalAPI.healthRequest(completion: completed)
+            self.internalAPI.healthRequest(signatureVerification: false, completion: completed)
         }
 
         expect(error).to(beNil())
@@ -35,7 +35,7 @@ class BackendInternalTests: BaseBackendTests {
 
     func testHealthRequestIsNotAuthenticated() {
         waitUntil { completed in
-            self.internalAPI.healthRequest { _ in
+            self.internalAPI.healthRequest(signatureVerification: false) { _ in
                 completed()
             }
         }
@@ -49,7 +49,7 @@ class BackendInternalTests: BaseBackendTests {
         self.httpClient.mock(requestPath: .health, response: .init(error: expectedError))
 
         let error = waitUntilValue { completed in
-            self.internalAPI.healthRequest(completion: completed)
+            self.internalAPI.healthRequest(signatureVerification: false, completion: completed)
         }
 
         expect(error).to(matchError(BackendError.networkError(expectedError)))

@@ -27,6 +27,9 @@ func checkDiagnosticsErrors(_ error: PurchasesDiagnostics.Error) {
     case let .failedFetchingOfferings(error):
         print(error)
 
+    case let .failedMakingSignedRequest(error):
+        print(error)
+
     case let .unknown(error):
         print(error)
 

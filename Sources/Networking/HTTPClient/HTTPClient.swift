@@ -76,7 +76,7 @@ extension HTTPClient {
 
     static let authorizationHeaderName = "Authorization"
     static let nonceHeaderName = "X-Nonce"
-    static let responseSignatureHeaderName = "X-Signature"
+    static let responseSignatureHeaderName = "x-signature"
 
 }
 
@@ -349,7 +349,7 @@ private extension HTTPClient {
 
 // MARK: - Extensions
 
-private extension HTTPRequest {
+extension HTTPRequest {
 
     func headers(with authHeaders: HTTPClient.RequestHeaders) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = [:]
