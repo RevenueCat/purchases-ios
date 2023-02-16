@@ -68,6 +68,7 @@ enum ErrorUtils {
     ) -> PurchasesError {
         return error(
             with: .signatureVerificationFailed,
+            message: "Request to \(path.relativePath) failed verification",
             extraUserInfo: [
                 "request_path": path.relativePath
             ],
