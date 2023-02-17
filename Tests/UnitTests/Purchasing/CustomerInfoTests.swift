@@ -818,7 +818,7 @@ class BasicCustomerInfoTests: TestCase {
         let copy = customerInfo.copy(with: newVerification)
         expect(customerInfo) != copy
 
-        if #available(iOS 13.0, *) {
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
             expect(copy.entitlementVerification) == newVerification
             expect(copy.entitlements.verification) == newVerification
 
