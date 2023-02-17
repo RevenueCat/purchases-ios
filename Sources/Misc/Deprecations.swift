@@ -399,9 +399,10 @@ public extension Configuration.Builder {
     /// However, apps using it should work correctly.
     ///
     @available(*, deprecated, message: """
-    RevenueCat currently uses StoreKit 1 for purchases, as its stability in production scenarios has overall
-    proved more better than StoreKit 2.
-    However, in the future the SDK will be opinionated and selectively use StoreKit 2 APIs for certain features where
+    RevenueCat currently uses StoreKit 1 for purchases, as its stability in production scenarios has
+    proven to be more performant than StoreKit 2.
+
+    In the future the SDK will selectively use StoreKit 2 APIs for certain features where 
     StoreKit 2 APIs have been proven to perform better than StoreKit 1.
     Simply remove this method call to let RevenueCat decide for you which StoreKit implementation to use. 
     """)
