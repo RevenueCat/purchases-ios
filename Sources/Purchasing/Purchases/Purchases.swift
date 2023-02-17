@@ -894,7 +894,6 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
-     *               .with(usesStoreKit2IfAvailable: true)
      *               .with(observerMode: false)
      *               .with(appUserID: "<app_user_id>")
      *               .build()
@@ -933,7 +932,6 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: .init(withAPIKey: Constants.apiKey)
-     *               .with(usesStoreKit2IfAvailable: true)
      *               .with(observerMode: false)
      *               .with(appUserID: "<app_user_id>")
      *      )
