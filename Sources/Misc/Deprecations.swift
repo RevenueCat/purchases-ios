@@ -391,12 +391,19 @@ extension CustomerInfo {
 }
 
 public extension Configuration.Builder {
-    /**
-     * Set `usesStoreKit2IfAvailable`.
-     * - Parameter usesStoreKit2IfAvailable: opt in using StoreKit 2 on devices that support it.
-     * Defaults to  `false`.
-     */
-    @available(*, deprecated, message: "Use NonSubscriptionTransaction")
+    ///
+    /// Set `usesStoreKit2IfAvailable`. If `true`, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
+    /// - Parameter usesStoreKit2IfAvailable: enable StoreKit 2 on devices that support it.
+    /// Defaults to  `false`.
+    /// - Important: This configuration flag has been deprecated, and will be replaced by automatic remote configuration in the future.
+    /// However, apps using it should work correctly. 
+    ///
+    @available(*, deprecated, message: """
+    RevenueCat currently uses StoreKit 1 for purchases, as its stability in production scenarios has overall
+    proved more better than StoreKit 2.
+    However, in the future the SDK will be opinionated and selectively use StoreKit 2 APIs for certain features where
+    StoreKit 2 APIs have been proven to perform better than StoreKit 1.
+    """)
     @objc func with(usesStoreKit2IfAvailable: Bool) -> Configuration.Builder {
         self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
         return self

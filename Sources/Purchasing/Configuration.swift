@@ -31,7 +31,6 @@ import Foundation
  *                                  .with(userDefaults: myUserDefaults)
  *                                  .with(networkTimeout: 15)
  *                                  .with(storeKit1Timeout: 15)
- *                                  .with(usesStoreKit2IfAvailable: true)
  *                                  .build()
  *  Purchases.configure(with: configuration)
  * ```
