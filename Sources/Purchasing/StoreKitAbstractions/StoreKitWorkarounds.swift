@@ -37,7 +37,7 @@ extension SKPaymentTransaction {
     /// Due to that an optional reference is created so that the compiler would allow us to check for nullability.
     var paymentIfPresent: SKPayment? {
         guard let payment = self.payment as SKPayment? else {
-            Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
+            Logger.verbose(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
             return nil
         }
 
