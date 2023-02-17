@@ -402,9 +402,9 @@ public extension Configuration.Builder {
     RevenueCat currently uses StoreKit 1 for purchases, as its stability in production scenarios has
     proven to be more performant than StoreKit 2.
 
-    In the future the SDK will selectively use StoreKit 2 APIs for certain features where 
+    In the future the SDK will selectively use StoreKit 2 APIs for certain features where
     StoreKit 2 APIs have been proven to perform better than StoreKit 1.
-    Simply remove this method call to let RevenueCat decide for you which StoreKit implementation to use. 
+    Simply remove this method call to let RevenueCat decide for you which StoreKit implementation to use.
     """)
     @objc func with(usesStoreKit2IfAvailable: Bool) -> Configuration.Builder {
         self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
