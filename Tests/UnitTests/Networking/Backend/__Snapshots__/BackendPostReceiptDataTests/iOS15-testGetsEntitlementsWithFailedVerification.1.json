@@ -8,7 +8,7 @@
       "attributes" : {
         "$attConsentStatus" : {
           "updated_at_ms" : 1678307200000,
-          "value" : "notDetermined"
+          "value" : "authorized"
         }
       },
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
@@ -17,6 +17,6 @@
       "observer_mode" : false
     },
     "method" : "POST",
-    "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
+    "url" : "https://api.revenuecat.com/v1/receipts"
   }
 }
