@@ -75,13 +75,15 @@ import Foundation
     /// The Builder for ```Configuration```.
     @objc(RCConfigurationBuilder) public class Builder: NSObject {
 
+        // made internal to access it in Deprecations.swift
+        var storeKit2Setting: StoreKit2Setting = .default
+
         private static let minimumTimeout: TimeInterval = 5
 
         private(set) var apiKey: String
         private(set) var appUserID: String?
         private(set) var observerMode: Bool = false
         private(set) var userDefaults: UserDefaults?
-        private(set) var storeKit2Setting: StoreKit2Setting = .default
         private(set) var dangerousSettings: DangerousSettings?
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
@@ -133,16 +135,6 @@ import Foundation
          */
         @objc public func with(userDefaults: UserDefaults) -> Builder {
             self.userDefaults = userDefaults
-            return self
-        }
-
-        /**
-         * Set `usesStoreKit2IfAvailable`.
-         * - Parameter usesStoreKit2IfAvailable: opt in using StoreKit 2 on devices that support it.
-         * Defaults to  `false`.
-         */
-        @objc public func with(usesStoreKit2IfAvailable: Bool) -> Builder {
-            self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
             return self
         }
 

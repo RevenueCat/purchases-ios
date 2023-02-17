@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable line_length missing_docs
+// swiftlint:disable line_length missing_docs file_length
 
 public extension Purchases {
 
@@ -389,3 +389,18 @@ extension CustomerInfo {
     }
 
 }
+
+public extension Configuration.Builder {
+    /**
+     * Set `usesStoreKit2IfAvailable`.
+     * - Parameter usesStoreKit2IfAvailable: opt in using StoreKit 2 on devices that support it.
+     * Defaults to  `false`.
+     */
+    @available(*, deprecated, message: "Use NonSubscriptionTransaction")
+    @objc func with(usesStoreKit2IfAvailable: Bool) -> Configuration.Builder {
+        self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
+        return self
+    }
+}
+
+// swiftlint:enable line_length missing_docs file_length
