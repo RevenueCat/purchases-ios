@@ -957,23 +957,12 @@ private extension PurchasesOrchestrator {
             case let .failure(error):
                 let purchasesError = error.asPublicError
 
-                #if swift(>=5.6)
-                @MainActor
-                func complete() {
-                    completion?(transaction, nil, purchasesError, false)
-                }
-                #else
-                @Sendable
-                @MainActor
-                func complete() {
-                    completion?(transaction, nil, purchasesError, false)
-                }
-                #endif
-
                 if finishable {
-                    self.finishTransactionIfNeeded(transaction) { complete() }
+                    self.finishTransactionIfNeeded(transaction) {
+                        completion?(transaction, nil, purchasesError, false)
+                    }
                 } else {
-                    complete()
+                    completion?(transaction, nil, purchasesError, false)
                 }
             }
         }
