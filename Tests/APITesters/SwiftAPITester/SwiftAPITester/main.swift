@@ -20,7 +20,6 @@ func main() -> Int {
 
     checkEntitlementInfoAPI()
     checkEntitlementInfoEnums()
-
     checkEntitlementInfosAPI()
 
     checkIntroEligibilityAPI()
@@ -62,6 +61,8 @@ func main() -> Int {
     checkSubscriptionPeriodUnit()
 
     checkStorefrontAPI()
+
+    checkVerificationResultAPI()
 
     return 0
 }

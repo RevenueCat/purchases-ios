@@ -88,7 +88,7 @@ private extension StoreKit2TransactionListener {
     /// - Throws: ``ErrorCode`` if the transaction fails to verify.
     /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.
     func handle(
-        transactionResult: VerificationResult<StoreKit.Transaction>,
+        transactionResult: StoreKit.VerificationResult<StoreKit.Transaction>,
         fromTransactionUpdate: Bool
     ) async throws -> SK2Transaction {
         switch transactionResult {

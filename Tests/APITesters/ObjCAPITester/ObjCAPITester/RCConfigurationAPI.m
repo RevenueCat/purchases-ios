@@ -13,15 +13,16 @@
 
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
-    RCConfiguration *config = [[[[[[[[[[[builder withApiKey:@""]
-                                       withObserverMode:false]
-                                      withUserDefaults:NSUserDefaults.standardUserDefaults]
-                                     withAppUserID:@""]
-                                    withAppUserID:nil]
-                                    withDangerousSettings:[[RCDangerousSettings alloc] init]]
-                                   withNetworkTimeout:1]
-                                  withStoreKit1Timeout: 1]
-                                 withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
+    RCConfiguration *config = [[[[[[[[[[[[builder withApiKey:@""]
+                                         withObserverMode:false]
+                                        withUserDefaults:NSUserDefaults.standardUserDefaults]
+                                       withAppUserID:@""]
+                                      withAppUserID:nil]
+                                     withDangerousSettings:[[RCDangerousSettings alloc] init]]
+                                    withNetworkTimeout:1]
+                                   withStoreKit1Timeout: 1]
+                                  withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
+                                 withEntitlementVerificationMode:RCEntitlementVerificationModeEnforced]
                                 withUsesStoreKit2IfAvailable:false] build];
     NSLog(@"%@", config);
 }

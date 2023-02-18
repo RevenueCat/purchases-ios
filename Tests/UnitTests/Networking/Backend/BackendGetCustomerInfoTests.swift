@@ -68,6 +68,11 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         }
 
         expect(customerInfo).to(beSuccess())
+
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            expect(customerInfo?.value?.entitlementVerification) == .notVerified
+            expect(customerInfo?.value?.entitlements.verification) == .notVerified
+        }
     }
 
     func testEncodesCustomerUserID() {
@@ -148,4 +153,43 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         expect(self.httpClient.calls.map { $0.request.path }) == [path]
     }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testGetCustomerInfoWithVerifiedResponse() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        self.httpClient.mock(
+            requestPath: .getCustomerInfo(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: Self.validCustomerResponse, verificationResult: .verified)
+        )
+
+        let customerInfo = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+        }
+
+        expect(customerInfo).to(beSuccess())
+        expect(customerInfo?.value?.entitlementVerification) == .verified
+        expect(customerInfo?.value?.entitlements.verification) == .verified
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testGetCustomerInfoWithFailedVerification() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        self.httpClient.mock(
+            requestPath: .getCustomerInfo(appUserID: Self.userID),
+            response: .init(statusCode: .success,
+                            response: Self.validCustomerResponse,
+                            verificationResult: .failed)
+        )
+
+        let customerInfo = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+        }
+
+        expect(customerInfo).to(beSuccess())
+        expect(customerInfo?.value?.entitlementVerification) == .failed
+        expect(customerInfo?.value?.entitlements.verification) == .failed
+    }
+
 }

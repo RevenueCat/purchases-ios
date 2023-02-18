@@ -21,30 +21,7 @@ struct HTTPResponse<Body: HTTPResponseBody> {
     var statusCode: HTTPStatusCode
     var responseHeaders: HTTPClient.ResponseHeaders
     var body: Body
-    var validationResult: HTTPResponseValidationResult
-
-}
-
-/// Information about the validity of an `HTTPResponse`.
-/// - Seealso: `Signing`
-enum HTTPResponseValidationResult: Int {
-
-    /// `HTTPRequest` did not have a `nonce`, validation was not performed.
-    case notRequested = 0
-
-    /// Response passed validation.
-    case validated = 1
-
-    /// Response failed to validate.
-    case failedValidation = 2
-
-}
-
-extension HTTPResponseValidationResult: Codable {}
-
-extension HTTPResponseValidationResult: DefaultValueProvider {
-
-    static let defaultValue: Self = .notRequested
+    var verificationResult: VerificationResult
 
 }
 
@@ -63,7 +40,7 @@ extension HTTPResponse: CustomStringConvertible {
         HTTPResponse(" +
         statusCode: \(self.statusCode.rawValue),
         body: \(body),
-        validation: \(self.validationResult)
+        verification: \(self.verificationResult)
         )
         """
     }
@@ -81,7 +58,7 @@ extension HTTPResponse where Body: OptionalType, Body.Wrapped: HTTPResponseBody 
         return .init(statusCode: self.statusCode,
                      responseHeaders: self.responseHeaders,
                      body: body,
-                     validationResult: self.validationResult)
+                     verificationResult: self.verificationResult)
     }
 
 }
@@ -92,7 +69,7 @@ extension HTTPResponse {
         return .init(statusCode: self.statusCode,
                      responseHeaders: self.responseHeaders,
                      body: try mapping(self.body),
-                     validationResult: self.validationResult)
+                     verificationResult: self.verificationResult)
     }
 
 }

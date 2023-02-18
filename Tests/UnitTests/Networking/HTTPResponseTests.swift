@@ -19,7 +19,7 @@ import XCTest
 
 class HTTPResponseTests: TestCase {
 
-    func testResponseValidationNotRequestedWithNoPublicKey() {
+    func testResponseVerificationNotRequestedWithNoPublicKey() {
         let request = HTTPRequest(method: .get, path: .health)
         let response = HTTPResponse.create(with: Data(),
                                            statusCode: .success,
@@ -27,11 +27,11 @@ class HTTPResponseTests: TestCase {
                                            request: request,
                                            publicKey: nil)
 
-        expect(response.validationResult) == .notRequested
+        expect(response.verificationResult) == .notVerified
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func testResponseValidationNotRequestedWithPublicKey() throws {
+    func testResponseVerificationNotRequestedWithPublicKey() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let key = Curve25519.Signing.PrivateKey().publicKey
@@ -43,7 +43,7 @@ class HTTPResponseTests: TestCase {
                                            request: request,
                                            publicKey: key)
 
-        expect(response.validationResult) == .notRequested
+        expect(response.verificationResult) == .notVerified
     }
 
 }

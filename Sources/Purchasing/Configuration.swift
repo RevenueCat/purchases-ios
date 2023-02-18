@@ -50,7 +50,7 @@ import Foundation
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
     let platformInfo: Purchases.PlatformInfo?
-    let responseVerificationLevel: Signing.ResponseVerificationLevel
+    let responseVerificationMode: Signing.ResponseVerificationMode
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -64,7 +64,7 @@ import Foundation
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
         self.platformInfo = builder.platformInfo
-        self.responseVerificationLevel = builder.responseVerificationLevel
+        self.responseVerificationMode = builder.responseVerificationMode
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -86,7 +86,7 @@ import Foundation
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
-        private(set) var responseVerificationLevel: Signing.ResponseVerificationLevel = .default
+        private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
 
         /**
          * Create a new builder with your API key.
@@ -173,11 +173,16 @@ import Foundation
             return self
         }
 
-        /// Set ``Configuration/EntitlementVerificationLevel``
-        /// - Note: this requires iOS 13+
+        /// Set ``Configuration/EntitlementVerificationMode``.
+        /// Defaults to ``Configuration/EntitlementVerificationMode/disabled``.
+        /// - Note: This requires iOS 13+
+        ///
+        /// ### Related Symbols
+        /// - ``Configuration/EntitlementVerificationMode``
+        /// - ``VerificationResult``
         @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-        @objc internal func with(entitlementVerificationLevel level: EntitlementVerificationLevel) -> Builder {
-            self.responseVerificationLevel = Signing.verificationLevel(with: level)
+        @objc public func with(entitlementVerificationMode mode: EntitlementVerificationMode) -> Builder {
+            self.responseVerificationMode = Signing.verificationMode(with: mode)
             return self
         }
 
@@ -206,19 +211,32 @@ import Foundation
 
 // MARK: - Public Keys
 
-internal extension Configuration {
+public extension Configuration {
 
     /// Defines how strict ``EntitlementInfo`` verification ought to be.
-    @objc(RCEntitlementVerificationLevel)
-    enum EntitlementVerificationLevel: Int {
+    ///
+    /// ### Related Symbols
+    /// - ``VerificationResult``
+    /// - ``Configuration/Builder/with(entitlementVerificationMode:)``
+    /// - ``EntitlementInfos/verification``
+    @objc(RCEntitlementVerificationMode)
+    enum EntitlementVerificationMode: Int {
 
-        /// The SDK will perform no entitlement verification.
+        /// The SDK will not perform any entitlement verification.
         case disabled = 0
 
-        /// The SDK will verify entitlements, but will not fail to parse them if verification failed.
-        case informationOnly = 1
+        /// Enable entitlement verification.
+        ///
+        /// If verification fails, this will be indicated with ``VerificationResult/failed``
+        /// but parsing will not fail.
+        /// 
+        /// This can be useful if you want to handle validation failures but still grant access.
+        case informational = 1
 
-        /// The SDK will verify entitlements, and it will throw an error if verification failed.
+        /// Enable entitlement verification.
+        ///
+        /// If verification fails when fetching ``CustomerInfo`` and/or ``EntitlementInfos``
+        /// ``ErrorCode/signatureVerificationFailed`` will be thrown.
         case enforced = 2
 
     }

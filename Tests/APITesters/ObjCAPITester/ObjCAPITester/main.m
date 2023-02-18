@@ -27,6 +27,7 @@
 #import "RCStoreProductDiscountAPI.h"
 #import "RCSubscriptionPeriodAPI.h"
 #import "RCTransactionAPI.h"
+#import "RCVerificationResultAPI.h"
 
 @import StoreKit;
 
@@ -39,7 +40,6 @@ int main(int argc, const char * argv[]) {
 
         [RCEntitlementInfoAPI checkAPI];
         [RCEntitlementInfoAPI checkEnums];
-
         [RCEntitlementInfosAPI checkAPI];
 
         [RCIntroEligibilityAPI checkAPI];
@@ -78,6 +78,8 @@ int main(int argc, const char * argv[]) {
         [RCSubscriptionPeriodAPI checkUnitEnum];
 
         [RCTransactionAPI checkAPI];
+
+        [RCVerificationResultAPI checkAPI];
     }
     return 0;
 }

@@ -229,7 +229,7 @@ private extension HTTPClient {
             .mapToResponse(response: httpURLResponse,
                            request: request.httpRequest,
                            signing: self.signing,
-                           verificationLevel: self.systemInfo.responseVerificationLevel)
+                           verificationMode: self.systemInfo.responseVerificationMode)
             .map {
                 self.eTagManager.httpResultFromCacheOrBackend(with: $0,
                                                               request: urlRequest,

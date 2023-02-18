@@ -17,6 +17,7 @@ import RevenueCat
 var customerInfo: CustomerInfo!
 func checkCustomerInfoAPI() {
     let entitlementInfo: EntitlementInfos = customerInfo.entitlements
+    let evr: VerificationResult = customerInfo.entitlementVerification
     let asubs: Set<String> = customerInfo.activeSubscriptions
     let appis: Set<String> = customerInfo.allPurchasedProductIdentifiers
     let led: Date? = customerInfo.latestExpirationDate
@@ -38,8 +39,8 @@ func checkCustomerInfoAPI() {
 
     let rawData: [String: Any] = customerInfo.rawData
 
-    print(customerInfo!, entitlementInfo, asubs, appis, led!, nst, oav!, opd!, rDate!, fSeen, oaud!, murl!,
-          edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData)
+    print(customerInfo!, entitlementInfo, evr, asubs, appis, led!, nst, oav!, opd!, rDate!, fSeen,
+          oaud!, murl!, edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData)
 }
 
 func checkCacheFetchPolicyEnum(_ policy: CacheFetchPolicy) {

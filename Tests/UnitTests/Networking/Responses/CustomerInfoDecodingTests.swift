@@ -142,6 +142,16 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         assertSnapshot(matching: self.customerInfo, as: .backwardsCompatibleFormattedJson)
     }
 
+    func testEncodingWithVerifiedResponse() {
+        assertSnapshot(matching: self.customerInfo.copy(with: .verified),
+                       as: .backwardsCompatibleFormattedJson)
+    }
+
+    func testEncodingWithFailedVerificationResponse() {
+        assertSnapshot(matching: self.customerInfo.copy(with: .failed),
+                       as: .backwardsCompatibleFormattedJson)
+    }
+
 }
 
 class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
@@ -209,6 +219,34 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
 
     func testReencoding() {
         expect(try self.customerInfo.encodeAndDecode()) == self.customerInfo
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testDecodingDefaultsToEntitlementsNotValidated() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        expect(self.customerInfo.entitlementVerification) == .notVerified
+        expect(self.customerInfo.entitlements.verification) == .notVerified
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testVerificationIsEncoded() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let reencoded = try self.customerInfo.copy(with: .verified).encodeAndDecode()
+
+        expect(reencoded.entitlementVerification) == .verified
+        expect(reencoded.entitlements.verification) == .verified
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testFailedVerificationIsEncoded() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let reencoded = try self.customerInfo.copy(with: .failed).encodeAndDecode()
+
+        expect(reencoded.entitlementVerification) == .failed
+        expect(reencoded.entitlements.verification) == .failed
     }
 
 }

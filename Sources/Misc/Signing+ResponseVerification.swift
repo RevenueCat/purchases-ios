@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Signing+ResponseValidation.swift
+//  Signing+ResponseVerification.swift
 //
 //  Created by Nacho Soto on 2/8/23.
 
@@ -38,7 +38,7 @@ extension HTTPResponse where Body == Data {
             statusCode: statusCode,
             responseHeaders: headers,
             body: body,
-            validationResult: Self.validationResult(
+            verificationResult: Self.verificationResult(
                 body: body,
                 headers: headers,
                 request: request,
@@ -48,32 +48,32 @@ extension HTTPResponse where Body == Data {
         )
     }
 
-    private static func validationResult(
+    private static func verificationResult(
         body: Data,
         headers: HTTPClient.ResponseHeaders,
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
         signing: SigningType.Type
-    ) -> HTTPResponseValidationResult {
+    ) -> VerificationResult {
         guard let nonce = request.nonce,
               let publicKey = publicKey,
               #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
-            return .notRequested
+            return .notVerified
         }
 
         guard let signature = headers[HTTPClient.responseSignatureHeaderName] as? String else {
             Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
 
-            return .failedValidation
+            return .failed
         }
 
         if signing.verify(message: body,
                           nonce: nonce,
                           hasValidSignature: signature,
                           with: publicKey) {
-            return .validated
+            return .verified
         } else {
-            return .failedValidation
+            return .failed
         }
     }
 
@@ -86,7 +86,7 @@ extension Result where Success == Data?, Failure == NetworkError {
         response: HTTPURLResponse,
         request: HTTPRequest,
         signing: SigningType.Type,
-        verificationLevel: Signing.ResponseVerificationLevel
+        verificationMode: Signing.ResponseVerificationMode
     ) -> Result<HTTPResponse<Data?>, Failure> {
         return self.flatMap { body in
             if let body = body {
@@ -94,11 +94,11 @@ extension Result where Success == Data?, Failure == NetworkError {
                     with: response,
                     body: body,
                     request: request,
-                    publicKey: verificationLevel.publicKey,
+                    publicKey: verificationMode.publicKey,
                     signing: signing
                 )
 
-                if response.validationResult == .failedValidation, case .enforced = verificationLevel {
+                if response.verificationResult == .failed, case .enforced = verificationMode {
                     return .failure(.signatureVerificationFailed(path: request.path))
                 } else {
                     return .success(response.mapBody(Optional.some))
@@ -111,7 +111,7 @@ extension Result where Success == Data?, Failure == NetworkError {
                         statusCode: HTTPStatusCode(rawValue: response.statusCode),
                         responseHeaders: response.allHeaderFields,
                         body: body,
-                        validationResult: .notRequested
+                        verificationResult: .notVerified
                     )
                 )
             }

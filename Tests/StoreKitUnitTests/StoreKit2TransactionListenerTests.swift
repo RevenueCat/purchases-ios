@@ -89,8 +89,8 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transaction = try await self.createTransactionWithPurchase()
-        let error: VerificationResult<Transaction>.VerificationError = .invalidSignature
-        let result: VerificationResult<Transaction> = .unverified(transaction, error)
+        let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
+        let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction, error)
 
         // Note: can't use `expect().to(throwError)` or `XCTAssertThrowsError`
         // because neither of them accept `async`
@@ -157,7 +157,7 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
     func testHandleUnverifiedPurchase() async throws {
         let (_, _, transaction) = try await self.purchase()
 
-        let verificationError: VerificationResult<Transaction>.VerificationError = .invalidSignature
+        let verificationError: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
 
         do {
             _ = try await self.listener.handle(
@@ -198,7 +198,7 @@ private extension StoreKit2TransactionListenerTests {
 
     func purchase() async throws -> (
         result: Product.PurchaseResult,
-        verificationResult: VerificationResult<Transaction>,
+        verificationResult: StoreKit.VerificationResult<Transaction>,
         transaction: Transaction
     ) {
         let result = try await self.fetchSk2Product().purchase()

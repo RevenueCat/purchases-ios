@@ -21,6 +21,7 @@ func checkConfigurationAPI() {
         .with(storeKit1Timeout: 1)
         .with(usesStoreKit2IfAvailable: false)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
+        .with(entitlementVerificationMode: .enforced)
         .build()
     print(configuration)
 }

@@ -93,7 +93,7 @@ class SigningTests: TestCase {
                            hasValidSignature: "invalid signature".asData.base64EncodedString(),
                            with: Signing.loadPublicKey())
 
-        logger.verifyMessageWasLogged("Signature failed validation", level: .warn)
+        logger.verifyMessageWasLogged("Signature failed verification", level: .warn)
     }
 
     func testVerifySignatureWithValidSignature() throws {
@@ -141,7 +141,7 @@ class SigningTests: TestCase {
         ) == true
     }
 
-    func testResponseValidationWithNoProvidedKey() throws {
+    func testResponseVerificationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let response = HTTPResponse.create(with: Data(),
                                            statusCode: .success,
@@ -149,10 +149,10 @@ class SigningTests: TestCase {
                                            request: request,
                                            publicKey: nil)
 
-        expect(response.validationResult) == .notRequested
+        expect(response.verificationResult) == .notVerified
     }
 
-    func testResponseValidationWithNoSignatureInResponse() throws {
+    func testResponseVerificationWithNoSignatureInResponse() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let response = HTTPResponse.create(with: Data(),
                                            statusCode: .success,
@@ -160,10 +160,10 @@ class SigningTests: TestCase {
                                            request: request,
                                            publicKey: self.publicKey)
 
-        expect(response.validationResult) == .failedValidation
+        expect(response.verificationResult) == .failed
     }
 
-    func testResponseValidationWithInvalidSignature() throws {
+    func testResponseVerificationWithInvalidSignature() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let response = HTTPResponse.create(
             with: Data(),
@@ -175,10 +175,10 @@ class SigningTests: TestCase {
             publicKey: self.publicKey
         )
 
-        expect(response.validationResult) == .failedValidation
+        expect(response.verificationResult) == .failed
     }
 
-    func testResponseValidationWithValidSignature() throws {
+    func testResponseVerificationWithValidSignature() throws {
         let message = "Hello World"
         let nonce = "0123456789ab"
         let salt = Self.createSalt()
@@ -197,7 +197,7 @@ class SigningTests: TestCase {
             publicKey: self.publicKey
         )
 
-        expect(response.validationResult) == .validated
+        expect(response.verificationResult) == .verified
     }
 
 }
