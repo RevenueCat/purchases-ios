@@ -21,8 +21,15 @@ struct PaywallView: View {
     @State
     private(set) var isPurchasing: Bool = false
     
+    /// - This can change during the lifetime of the PaywallView (e.g. if poor network conditions mean that loading offerings is slow)
+    /// So set this as an observed object to trigger view updates as necessary
+    @ObservedObject var userViewModel = UserViewModel.shared
+    
     /// - The current offering saved from PurchasesDelegateHandler
-    private(set) var offering: Offering? = UserViewModel.shared.offerings?.current
+    ///  if this is nil, then you might want to show a loading indicator or similar
+    private var offering: Offering? {
+        userViewModel.offerings?.current
+    }
     
     private let footerText = "Don't forget to add your subscription terms and conditions. Read more about this here: https://www.revenuecat.com/blog/schedule-2-section-3-8-b"
     
