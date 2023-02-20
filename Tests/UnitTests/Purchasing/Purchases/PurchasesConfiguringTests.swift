@@ -324,6 +324,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.delegate) === self.purchasesOrchestrator
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSetsSelfAsStoreKit1WrapperDelegateForSK1() {
         let configurationBuilder = Configuration.Builder(withAPIKey: "")
             .with(usesStoreKit2IfAvailable: false)
@@ -332,6 +333,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.isStoreKit1Configured) == true
     }
 
+    @available(*, deprecated) // Ignore deprecation warnings
     func testDoesNotInitializeSK1IfSK2Enabled() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 

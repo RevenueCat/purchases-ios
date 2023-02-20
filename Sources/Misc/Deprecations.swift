@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable line_length missing_docs
+// swiftlint:disable line_length missing_docs file_length
 
 public extension Purchases {
 
@@ -389,3 +389,29 @@ extension CustomerInfo {
     }
 
 }
+
+public extension Configuration.Builder {
+
+    /// Set `usesStoreKit2IfAvailable`. If `true`, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
+    /// - Parameter usesStoreKit2IfAvailable: enable StoreKit 2 on devices that support it.
+    /// Defaults to  `false`.
+    /// - Important: This configuration flag has been deprecated, and will be replaced by automatic remote configuration in the future.
+    /// However, apps using it should work correctly.
+    ///
+    @available(*, deprecated, message: """
+    RevenueCat currently uses StoreKit 1 for purchases, as its stability in production scenarios has
+    proven to be more performant than StoreKit 2.
+
+    We're collecting more data on the best approach, but StoreKit 1 vs StoreKit 2 is an implementation detail
+    that you shouldn't need to care about.
+
+    Simply remove this method call to let RevenueCat decide for you which StoreKit implementation to use.
+    """)
+    @objc func with(usesStoreKit2IfAvailable: Bool) -> Configuration.Builder {
+        self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
+        return self
+    }
+
+}
+
+// swiftlint:enable line_length missing_docs file_length
