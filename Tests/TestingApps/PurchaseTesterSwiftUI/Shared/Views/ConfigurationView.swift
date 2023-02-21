@@ -50,9 +50,9 @@ struct ConfigurationView: View {
 
             Section(header: Text("Settings")) {
                 Picker("Entitlement Verification", selection: self.$data.verificationMode) {
-                    Text("Disabled").tag(Configuration.EntitlementVerificationMode.disabled)
-                    Text("Information Only").tag(Configuration.EntitlementVerificationMode.informational)
-                    Text("Enforced").tag(Configuration.EntitlementVerificationMode.enforced)
+                    ForEach(Configuration.EntitlementVerificationMode.all) { mode in
+                        Text(mode.label).tag(mode)
+                    }
                 }
 
                 Toggle(isOn: self.$data.storeKit2Enabled) {

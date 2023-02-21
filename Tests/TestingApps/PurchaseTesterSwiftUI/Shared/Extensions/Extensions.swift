@@ -21,6 +21,30 @@ extension String {
 
 }
 
+extension Configuration.EntitlementVerificationMode {
+
+    var label: String {
+        switch self {
+        case .disabled: return "Disabled"
+        case .informational: return "Information Only"
+        case .enforced: return "Enforced"
+        }
+    }
+
+    static let all: [Self] = [
+        .disabled,
+        .informational,
+        .enforced
+    ]
+
+}
+
+extension Configuration.EntitlementVerificationMode: Identifiable {
+
+    public var id: Int { return self.rawValue }
+
+}
+
 extension VerificationResult: CustomStringConvertible {
 
     public var description: String {
