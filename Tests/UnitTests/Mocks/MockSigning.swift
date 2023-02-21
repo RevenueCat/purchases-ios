@@ -16,9 +16,8 @@
 final class MockSigning: SigningType {
 
     struct VerificationRequest {
-        let message: Data
-        let nonce: Data
         let signature: String
+        let parameters: Signing.SignatureParameters
         let publicKey: Signing.PublicKey
     }
 
@@ -26,15 +25,13 @@ final class MockSigning: SigningType {
     static var stubbedVerificationResult: Bool?
 
     static func verify(
-        message: Data,
-        nonce: Data,
-        hasValidSignature signature: String,
-        with publicKey: Signing.PublicKey
+        signature: String,
+        with parameters: Signing.SignatureParameters,
+        publicKey: Signing.PublicKey
     ) -> Bool {
         Self.requests.append(.init(
-            message: message,
-            nonce: nonce,
             signature: signature,
+            parameters: parameters,
             publicKey: publicKey
         ))
 

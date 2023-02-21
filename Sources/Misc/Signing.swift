@@ -18,10 +18,9 @@ import Foundation
 protocol SigningType {
 
     static func verify(
-        message: Data,
-        nonce: Data,
-        hasValidSignature signature: String,
-        with publicKey: Signing.PublicKey
+        signature: String,
+        with parameters: Signing.SignatureParameters,
+        publicKey: Signing.PublicKey
     ) -> Bool
 
 }
@@ -31,6 +30,18 @@ enum Signing: SigningType {
 
     /// An object that represents a cryptographic key.
     typealias PublicKey = SigningPublicKey
+
+    /// Parameters used for signature creation / verification.
+    struct SignatureParameters {
+
+        /// Whether the response had `HTTPStatusCode.notModified`
+        let notModifiedResponse: Bool
+        let message: Data
+        let nonce: Data
+        let requestTime: Int
+        let eTag: String?
+
+    }
 
     /// Parses the binary `key` and returns a `PublicKey`
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -53,10 +64,9 @@ enum Signing: SigningType {
     }
 
     static func verify(
-        message: Data,
-        nonce: Data,
-        hasValidSignature signature: String,
-        with publicKey: PublicKey
+        signature: String,
+        with parameters: SignatureParameters,
+        publicKey: Signing.PublicKey
     ) -> Bool {
         guard let signature = Data(base64Encoded: signature) else {
             Logger.warn(Strings.signing.signature_not_base64(signature))
@@ -65,7 +75,7 @@ enum Signing: SigningType {
 
         let salt = signature.subdata(in: 0..<Self.saltSize)
         let signatureToVerify = signature.subdata(in: Self.saltSize..<signature.count)
-        let messageToVerify = salt + nonce + message
+        let messageToVerify = salt + parameters.asData
 
         let isValid = publicKey.isValidSignature(signatureToVerify, for: messageToVerify)
 
@@ -166,14 +176,30 @@ extension Signing {
         }
 
         do {
-            // Fix-me: figure out the prefix with the final production key.
-            return try CryptoKit.Curve25519.Signing.PublicKey(rawRepresentation: data.prefix(32))
+            return try CryptoKit.Curve25519.Signing.PublicKey(rawRepresentation: data)
         } catch {
             throw ErrorUtils.configurationError(
                 message: Strings.configure.public_key_could_not_load_key.description,
                 underlyingError: error
             )
         }
+    }
+
+}
+
+extension Signing.SignatureParameters {
+
+    var asData: Data {
+        // Not modified responses sign the Etag
+        let payload: Data = self.notModifiedResponse
+        ? self.eTag?.asData ?? Data()
+        : self.message
+
+        return (
+            self.nonce +
+            String(self.requestTime).asData +
+            payload
+        )
     }
 
 }

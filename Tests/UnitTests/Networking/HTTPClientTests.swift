@@ -103,7 +103,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(headers).toNot(beEmpty())
-        expect(headers?.keys).toNot(contain(HTTPClient.nonceHeaderName))
+        expect(headers?.keys).toNot(contain(HTTPClient.RequestHeader.nonce.rawValue))
     }
 
     func testRequestIncludesNonceInBase64() {
@@ -119,8 +119,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(headers).toNot(beEmpty())
-        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
-        expect(headers?[HTTPClient.nonceHeaderName]) == "MTIzNDU2Nzg5MGFi"
+        expect(headers?.keys).to(contain(HTTPClient.RequestHeader.nonce.rawValue))
+        expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]) == "MTIzNDU2Nzg5MGFi"
     }
 
     func testAlwaysSetsContentTypeHeader() {
@@ -486,12 +486,10 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
         let headerPresent: Atomic<Bool> = false
 
-        self.eTagManager.stubbedETagHeaderResult = [
-            ETagManager.eTagHeaderName: eTag
-        ]
+        self.eTagManager.stubResponseEtag(eTag)
 
         stub(condition: isPath(request.path)) { request in
-            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagHeaderName] == eTag
+            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagResponseHeaderName] == eTag
             return .emptySuccessResponse()
         }
 
@@ -508,7 +506,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         let headerPresent: Atomic<Bool?> = nil
 
         stub(condition: isPath(request.path)) { request in
-            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(ETagManager.eTagHeaderName) == true
+            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(ETagManager.eTagResponseHeaderName) == true
             return .emptySuccessResponse()
         }
 
@@ -941,9 +939,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         ])
         let eTag = "tag"
 
-        self.eTagManager.stubbedETagHeaderResult = [
-            ETagManager.eTagHeaderName: eTag
-        ]
+        self.eTagManager.stubResponseEtag(eTag)
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
             statusCode: .success,
@@ -953,7 +949,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         )
 
         stub(condition: isPath(path)) { response in
-            expect(response.allHTTPHeaderFields?[ETagManager.eTagHeaderName]) == eTag
+            expect(response.allHTTPHeaderFields?[ETagManager.eTagResponseHeaderName]) == eTag
 
             return .init(data: Data(),
                          statusCode: .notModified,
@@ -1165,6 +1161,10 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         try super.setUpWithError()
     }
 
+    private let sampleSignature = "signature"
+    private let sampleETag = "e-tag"
+    private let requestTime = Date().millisecondsSince1970
+
     func testRequestIncludesRandomNonce() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .mockPath)
 
@@ -1178,8 +1178,8 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(headers).toNot(beEmpty())
-        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
-        expect(headers?[HTTPClient.nonceHeaderName]) == request.nonce?.base64EncodedString()
+        expect(headers?.keys).to(contain(HTTPClient.RequestHeader.nonce.rawValue))
+        expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]) == request.nonce?.base64EncodedString()
     }
 
     func testAutomaticallyAddsNonceIfRequired() throws {
@@ -1197,8 +1197,8 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(headers).toNot(beEmpty())
-        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
-        expect(headers?[HTTPClient.nonceHeaderName]).toNot(beNil())
+        expect(headers?.keys).to(contain(HTTPClient.RequestHeader.nonce.rawValue))
+        expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]).toNot(beNil())
     }
 
     func testFailedVerificationIfResponseContainsNoSignature() throws {
@@ -1224,16 +1224,15 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         )
     }
 
-    func testSignatureHeaderIsCaseInsensitive() throws {
-        let signature = "signature"
-
+    func testHeadersAreCaseInsensitive() throws {
         try self.changeClient(.informational)
 
         stub(condition: isPath(.mockPath)) { _ in
             return .init(data: Data(),
                          statusCode: .success,
                          headers: [
-                            "x-signature": signature
+                            "x-signature": self.sampleSignature,
+                            "x-revenuecat-request-time": String(self.requestTime)
                          ])
         }
 
@@ -1250,11 +1249,12 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testValidSignatureWithVerificationModeInformational() throws {
-        let signature = "signature"
+        let body = "body".asData
 
         try self.changeClient(.informational)
-        self.mockResponse(signature: signature)
-
+        self.mockResponse(signature: self.sampleSignature,
+                          requestTime: self.requestTime,
+                          body: body)
         MockSigning.stubbedVerificationResult = true
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: .mockPath)
@@ -1267,10 +1267,55 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response?.value?.verificationResult) == .verified
 
         expect(MockSigning.requests).to(haveCount(1))
-        expect(MockSigning.requests.onlyElement?.message) == Data()
-        expect(MockSigning.requests.onlyElement?.nonce) == request.nonce
-        expect(MockSigning.requests.onlyElement?.signature) == signature
-        expect(MockSigning.requests.onlyElement?.publicKey).toNot(beNil())
+        let signingRequest = try XCTUnwrap(MockSigning.requests.onlyElement)
+
+        expect(signingRequest.parameters.notModifiedResponse) == false
+        expect(signingRequest.parameters.message) == body
+        expect(signingRequest.parameters.nonce) == request.nonce
+        expect(signingRequest.parameters.requestTime) == self.requestTime
+        expect(signingRequest.parameters.eTag).to(beNil())
+        expect(signingRequest.signature) == self.sampleSignature
+        expect(signingRequest.publicKey).toNot(beNil())
+    }
+
+    func testValidSignatureWithETagResponse() throws {
+        let body = "body".asData
+
+        try self.changeClient(.informational)
+        self.mockResponse(signature: self.sampleSignature,
+                          requestTime: self.requestTime,
+                          eTag: self.sampleETag,
+                          statusCode: .notModified)
+        MockSigning.stubbedVerificationResult = true
+
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
+            statusCode: .success,
+            responseHeaders: [:],
+            body: body,
+            verificationResult: .verified
+        )
+
+        let request: HTTPRequest = .createWithResponseVerification(method: .get, path: .mockPath)
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+        expect(response?.value?.body) == body
+
+        expect(MockSigning.requests).to(haveCount(1))
+        let signingRequest = try XCTUnwrap(MockSigning.requests.onlyElement)
+
+        expect(signingRequest.parameters.notModifiedResponse) == true
+        expect(signingRequest.parameters.message) == .init()
+        expect(signingRequest.parameters.nonce) == request.nonce
+        expect(signingRequest.parameters.requestTime) == self.requestTime
+        expect(signingRequest.parameters.eTag) == self.sampleETag
+        expect(signingRequest.signature) == self.sampleSignature
+        expect(signingRequest.publicKey).toNot(beNil())
     }
 
     func testSignatureNotRequested() throws {
@@ -1289,7 +1334,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
     func testValidSignatureWithVerificationModeEnforced() throws {
         try self.changeClient(.enforced)
-        self.mockResponse(signature: "signature")
+        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
 
         MockSigning.stubbedVerificationResult = true
 
@@ -1304,10 +1349,8 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testIncorrectSignatureWithVerificationModeInformationalReturnsResponse() throws {
-        let signature = "signature"
-
         try self.changeClient(.informational)
-        self.mockResponse(signature: signature)
+        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1322,10 +1365,8 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testIncorrectSignatureWithVerificationModeEnforcedReturnsError() throws {
-        let signature = "signature"
-
         try self.changeClient(.enforced)
-        self.mockResponse(signature: signature)
+        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1339,10 +1380,8 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testPerformRequestWithEnforcedModeOverridesIt() throws {
-        let signature = "signature"
-
         try self.changeClient(.disabled)
-        self.mockResponse(signature: signature)
+        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1357,10 +1396,8 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testPerformRequestWithInformationalModeOverridesIt() throws {
-        let signature = "signature"
-
         try self.changeClient(.disabled)
-        self.mockResponse(signature: signature)
+        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1375,10 +1412,8 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testPerformRequestWithDisabledModeOverridesIt() throws {
-        let signature = "signature"
-
         try self.changeClient(.enforced)
-        self.mockResponse(signature: signature)
+        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1398,12 +1433,13 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         MockSigning.stubbedVerificationResult = true
 
         stub(condition: isPath(path)) { request in
-            expect(request.allHTTPHeaderFields?.keys).toNot(contain(ETagManager.eTagHeaderName))
+            expect(request.allHTTPHeaderFields?.keys).toNot(contain(ETagManager.eTagResponseHeaderName))
 
             return .init(data: Data(),
                          statusCode: .success,
                          headers: [
-                            HTTPClient.responseSignatureHeaderName: "signature"
+                            HTTPClient.ResponseHeader.signature.rawValue: self.sampleSignature,
+                            HTTPClient.ResponseHeader.requestTime.rawValue: String(self.requestTime)
                          ])
         }
 
@@ -1435,14 +1471,28 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         self.client = self.createClient()
     }
 
-    private func mockResponse(signature: String? = nil) {
-        stub(condition: isPath(HTTPRequest.Path.mockPath)) { _ in
-            if let signature = signature {
-                return .init(data: Data(),
-                             statusCode: .success,
-                             headers: [
-                                HTTPClient.responseSignatureHeaderName: signature
-                             ])
+    private func mockResponse() {
+        self.mockResponse(signature: nil, requestTime: nil)
+    }
+
+    private func mockResponse(
+        signature: String?,
+        requestTime: Int?,
+        eTag: String? = nil,
+        body: Data = .init(),
+        statusCode: HTTPStatusCode = .success
+    ) {
+        stub(condition: isPath(.mockPath)) { _ in
+            if let signature = signature, let requestTime = requestTime {
+                let headers: [String: String?] = [
+                    HTTPClient.ResponseHeader.signature.rawValue: signature,
+                    HTTPClient.ResponseHeader.eTag.rawValue: eTag,
+                    HTTPClient.ResponseHeader.requestTime.rawValue: String(requestTime)
+                ]
+
+                return .init(data: body,
+                             statusCode: statusCode,
+                             headers: headers.compactMapValues { $0 })
             } else {
                 return .emptySuccessResponse()
             }

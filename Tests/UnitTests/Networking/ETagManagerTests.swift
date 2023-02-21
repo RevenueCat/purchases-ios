@@ -28,7 +28,7 @@ class ETagManagerTests: TestCase {
         let url = urlForTest()
         let request = URLRequest(url: url)
         let header = eTagManager.eTagHeader(for: request, signatureVerificationEnabled: false)
-        let value2: String? = header[ETagManager.eTagHeaderName]
+        let value2: String? = header[ETagManager.eTagRequestHeaderName]
 
         expect(value2).toNot(beNil())
         expect(value2) == ""
@@ -39,7 +39,7 @@ class ETagManagerTests: TestCase {
         _ = mockStoredETagResponse(for: url)
         let request = URLRequest(url: url)
         let header = eTagManager.eTagHeader(for: request, signatureVerificationEnabled: false)
-        let value2: String? = header[ETagManager.eTagHeaderName]
+        let value2: String? = header[ETagManager.eTagRequestHeaderName]
 
         expect(value2).toNot(beNil())
         expect(value2) == "an_etag"
@@ -318,7 +318,7 @@ class ETagManagerTests: TestCase {
 
         let response = self.eTagManager.eTagHeader(for: request,
                                                    signatureVerificationEnabled: true)
-        expect(response[ETagManager.eTagHeaderName]).to(beEmpty())
+        expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
     func testETagHeaderIsFoundIfItsMissingResponseVerificationAndVerificationIsDisabled() {
@@ -339,7 +339,7 @@ class ETagManagerTests: TestCase {
 
         let response = self.eTagManager.eTagHeader(for: request,
                                                    signatureVerificationEnabled: false)
-        expect(response[ETagManager.eTagHeaderName]) == eTag
+        expect(response[ETagManager.eTagResponseHeaderName]) == eTag
     }
 
     func testETagHeaderIsIgnoredIfVerificationFailed() {
@@ -358,7 +358,7 @@ class ETagManagerTests: TestCase {
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, signatureVerificationEnabled: true)
-        expect(response[ETagManager.eTagHeaderName]).to(beEmpty())
+        expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
     func testETagHeaderIsReturnedIfVerificationSucceded() {
@@ -378,7 +378,7 @@ class ETagManagerTests: TestCase {
 
         let response = self.eTagManager.eTagHeader(for: request,
                                                    signatureVerificationEnabled: false)
-        expect(response[ETagManager.eTagHeaderName]) == eTag
+        expect(response[ETagManager.eTagResponseHeaderName]) == eTag
     }
 
     func testETagHeaderIsIgnoredIfVerificationWasNotRequested() {
@@ -398,7 +398,7 @@ class ETagManagerTests: TestCase {
 
         let response = self.eTagManager.eTagHeader(for: request,
                                                    signatureVerificationEnabled: false)
-        expect(response[ETagManager.eTagHeaderName]) == eTag
+        expect(response[ETagManager.eTagResponseHeaderName]) == eTag
     }
 
     func testCachedResponseWithNoVerificationResultIsNotIgnored() {
@@ -535,7 +535,7 @@ private extension ETagManagerTests {
             "X-Client-Locale": "en-US",
             "X-Client-Version": "1.0",
             "X-Observer-Mode-Enabled": "false",
-            ETagManager.eTagHeaderName: eTag
+            ETagManager.eTagRequestHeaderName: eTag
         ]
             .merging(HTTPClient.authorizationHeader(withAPIKey: "apikey"))
     }
