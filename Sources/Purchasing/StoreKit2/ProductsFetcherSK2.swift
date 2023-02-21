@@ -49,9 +49,15 @@ extension ProductsFetcherSK2.Error: CustomNSError {
         switch self {
         case let .productsRequestError(inner):
             return [
-                NSUnderlyingErrorKey: inner
+                NSUnderlyingErrorKey: inner,
+                NSLocalizedDescriptionKey: self.localizedDescription
             ]
         }
     }
 
+    var localizedDescription: String {
+        switch self {
+        case let .productsRequestError(innerError): return "Products request error: \(innerError.localizedDescription)"
+        }
+    }
 }
