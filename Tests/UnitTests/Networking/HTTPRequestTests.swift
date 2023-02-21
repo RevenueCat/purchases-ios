@@ -167,4 +167,5 @@ class HTTPRequestTests: TestCase {
         let request: HTTPRequest = .init(method: .get, path: .logIn)
         expect(request.requestAddingNonceIfRequired(with: .disabled).nonce).to(beNil())
     }
+
 }
