@@ -43,7 +43,7 @@ class BackendSignatureVerificationTests: BaseBackendTests {
     func testRequestFailsIfSignatureVerificationFails() throws {
         self.httpClient.mock(
             requestPath: .health,
-            response: .init(statusCode: .success, verificationResult: .failed)
+            response: .init(error: .signatureVerificationFailed(path: .health))
         )
 
         let error = waitUntilValue { completed in
