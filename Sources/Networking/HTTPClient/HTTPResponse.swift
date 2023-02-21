@@ -17,8 +17,11 @@ import Foundation
 struct HTTPResponse<Body: HTTPResponseBody> {
 
     typealias Result = Swift.Result<Self, NetworkError>
+    typealias Headers = [AnyHashable: Any]
 
     var statusCode: HTTPStatusCode
+    /// Because this property is a standard Swift dictionary, its keys are case-sensitive.
+    /// To perform a case-insensitive header lookup, use the `value(forHeaderField:)` method instead.
     var responseHeaders: HTTPClient.ResponseHeaders
     var body: Body
     var verificationResult: VerificationResult
@@ -43,6 +46,25 @@ extension HTTPResponse: CustomStringConvertible {
         verification: \(self.verificationResult)
         )
         """
+    }
+
+}
+
+extension HTTPResponse {
+
+    /// Equivalent to `HTTPURLResponse.value(forHTTPHeaderField:)`
+    /// In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
+    func value(forHeaderField field: String) -> String? {
+        return Self.value(forCaseInsensitiveHeaderField: field, in: self.responseHeaders)
+    }
+
+    static func value(forCaseInsensitiveHeaderField field: String, in headers: Headers) -> String? {
+        let header = headers
+            .first { (key, _) in
+                (key as? String)?.caseInsensitiveCompare(field) == .orderedSame
+            }
+
+        return header?.value as? String
     }
 
 }
