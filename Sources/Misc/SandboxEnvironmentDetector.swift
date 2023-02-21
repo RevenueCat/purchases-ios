@@ -23,11 +23,11 @@ protocol SandboxEnvironmentDetector: Sendable {
 /// ``SandboxEnvironmentDetector`` that uses a `Bundle` to detect the environment
 final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
-    private let bundle: Bundle
+    private let bundle: Atomic<Bundle>
     private let isRunningInSimulator: Bool
 
     init(bundle: Bundle = .main, isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator) {
-        self.bundle = bundle
+        self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
     }
 
@@ -36,7 +36,7 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
             return true
         }
 
-        guard let path = self.bundle.appStoreReceiptURL?.path else {
+        guard let path = self.bundle.value.appStoreReceiptURL?.path else {
             return false
         }
 
@@ -53,7 +53,4 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
 }
 
-#if swift(<5.8)
-// `Bundle` is not `Sendable` as of Swift 5.7, but this class performs no mutations.
-extension BundleSandboxEnvironmentDetector: @unchecked Sendable {}
-#endif
+extension BundleSandboxEnvironmentDetector: Sendable {}
