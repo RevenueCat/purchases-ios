@@ -21,6 +21,32 @@ extension String {
 
 }
 
+extension CacheFetchPolicy {
+
+    var label: String {
+        switch self {
+        case .cachedOrFetched: return "Cached or fetched"
+        case .fetchCurrent: return "Fetch current"
+        case .fromCacheOnly: return "Cache only"
+        case .notStaleCachedOrFetched: return "Not stale cached or fetched"
+        }
+    }
+
+    static let all: [Self] = [
+         .cachedOrFetched,
+         .fetchCurrent,
+         .fromCacheOnly,
+         .notStaleCachedOrFetched
+    ]
+
+}
+
+extension CacheFetchPolicy: Identifiable {
+
+    public var id: Int { return self.rawValue }
+
+}
+
 extension Configuration.EntitlementVerificationMode {
 
     var label: String {
