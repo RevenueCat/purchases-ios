@@ -1154,17 +1154,6 @@ final class HTTPClientTests: BaseHTTPClientTests {
             .toNot(contain(unexpectedDNSError.description))
     }
 
-    func testAddNonceIfRequiredForOldVersion() throws {
-        if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-            throw XCTSkip("Test only for older versions")
-        }
-
-        var request: HTTPRequest = .init(method: .get, path: .mockPath)
-        self.client.addNonceIfRequired(&request)
-
-        expect(request.nonce).to(beNil())
-    }
-
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -1324,6 +1313,59 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: .mockPath)))
     }
 
+    func testPerformRequestWithEnforcedModeOverridesIt() throws {
+        let signature = "signature"
+
+        try self.changeClient(.disabled)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = false
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
+                                with: Signing.verificationMode(with: .enforced),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: .mockPath)))
+    }
+
+    func testPerformRequestWithInformationalModeOverridesIt() throws {
+        let signature = "signature"
+
+        try self.changeClient(.disabled)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = false
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
+                                with: Signing.verificationMode(with: .informational),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed
+    }
+
+    func testPerformRequestWithDisabledModeOverridesIt() throws {
+        let signature = "signature"
+
+        try self.changeClient(.enforced)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = false
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .mockPath),
+                                with: .disabled,
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+    }
+
     func testIgnoresResponseFromETagManagerIfItHadNotBeenVerified() throws {
         let path: HTTPRequest.Path = .mockPath
 
@@ -1359,52 +1401,6 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response?.value?.verificationResult) == .verified
     }
 
-    func testAddNonceIfRequiredWithExistingNonce() throws {
-        try self.changeClient(.enforced)
-
-        let existingNonce = Data.randomNonce()
-        var request: HTTPRequest = .init(method: .get, path: .health, nonce: existingNonce)
-        self.client.addNonceIfRequired(&request)
-
-        expect(request.nonce) == existingNonce
-    }
-
-    func testAddNonceIfRequiredWithDisabledVerification() throws {
-        try self.changeClient(.disabled)
-
-        var request: HTTPRequest = .init(method: .get, path: .mockPath)
-        self.client.addNonceIfRequired(&request)
-
-        expect(request.nonce).to(beNil())
-    }
-
-    func testAddNonceIfRequiredWithPathWithNoSignatureValidation() throws {
-        try self.changeClient(.enforced)
-
-        var request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
-        self.client.addNonceIfRequired(&request)
-
-        expect(request.nonce).to(beNil())
-    }
-
-    func testAddNonceIfRequiredForPathWithSignatureValidationWhenEnforced() throws {
-        try self.changeClient(.enforced)
-
-        var request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
-        self.client.addNonceIfRequired(&request)
-
-        expect(request.nonce).toNot(beNil())
-    }
-
-    func testAddNonceIfRequiredForPathWithSignatureValidationWhenModeInformational() throws {
-        try self.changeClient(.informational)
-
-        var request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
-        self.client.addNonceIfRequired(&request)
-
-        expect(request.nonce).toNot(beNil())
-    }
-
     private func changeClient(_ verificationMode: Configuration.EntitlementVerificationMode) throws {
         let mode = Signing.verificationMode(with: verificationMode)
 
@@ -1432,7 +1428,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
 // MARK: - Extensions
 
-private extension HTTPRequest.Path {
+extension HTTPRequest.Path {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn

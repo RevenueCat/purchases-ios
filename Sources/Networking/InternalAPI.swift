@@ -85,12 +85,11 @@ private final class HealthOperation: CacheableNetworkOperation {
     override func begin(completion: @escaping () -> Void) {
         let request: HTTPRequest = .init(method: .get, path: .health)
 
-        self.httpClient.perform(request) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
-            if self.signatureVerification, response.value?.verificationResult != .verified {
-                self.finish(with: .failure(.signatureVerificationFailed(path: request.path)), completion: completion)
-            } else {
-                self.finish(with: response, completion: completion)
-            }
+        self.httpClient.perform(
+            request,
+            with: self.verificationMode
+        ) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+            self.finish(with: response, completion: completion)
         }
     }
 
@@ -105,6 +104,14 @@ private final class HealthOperation: CacheableNetworkOperation {
         }
 
         completion()
+    }
+
+    private var verificationMode: Signing.ResponseVerificationMode {
+        if self.signatureVerification, #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            return Signing.verificationMode(with: .enforced)
+        } else {
+            return .disabled
+        }
     }
 
 }

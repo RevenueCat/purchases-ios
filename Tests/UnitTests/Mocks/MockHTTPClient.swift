@@ -68,9 +68,13 @@ class MockHTTPClient: HTTPClient {
 
     private let sourceTestFile: StaticString
 
-    override func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
+    override func perform<Value: HTTPResponseBody>(
+        _ request: HTTPRequest,
+        with verificationMode: Signing.ResponseVerificationMode? = nil,
+        completionHandler: Completion<Value>?
+    ) {
         let request = request
-            .addNonceIfRequired(self)
+            .requestAddingNonceIfRequired(with: verificationMode ?? self.systemInfo.responseVerificationMode)
             .withHardcodedNonce
 
         let call = Call(request: request,
@@ -153,12 +157,6 @@ private extension HTTPRequest {
 
             return copy
         }
-    }
-
-    func addNonceIfRequired(_ client: HTTPClient) -> Self {
-        var copy = self
-        client.addNonceIfRequired(&copy)
-        return copy
     }
 
 }

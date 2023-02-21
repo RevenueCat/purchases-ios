@@ -52,12 +52,15 @@ class HTTPClient {
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
     }
 
-    func perform<Value: HTTPResponseBody>(_ request: HTTPRequest, completionHandler: Completion<Value>?) {
-        var request = request
-        self.addNonceIfRequired(&request)
-
+    /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
+    func perform<Value: HTTPResponseBody>(
+        _ request: HTTPRequest,
+        with verificationMode: Signing.ResponseVerificationMode? = nil,
+        completionHandler: Completion<Value>?
+    ) {
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
+                                    verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
                                     completionHandler: completionHandler))
     }
 
@@ -68,15 +71,6 @@ class HTTPClient {
 }
 
 extension HTTPClient {
-
-    func addNonceIfRequired(_ request: inout HTTPRequest) {
-        if request.nonce == nil,
-           request.path.hasSignatureValidation,
-           self.systemInfo.responseVerificationMode.isEnabled,
-           #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            request.addRandomNonce()
-        }
-    }
 
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
         return [Self.authorizationHeaderName: "Bearer \(apiKey)"]
@@ -111,14 +105,17 @@ private extension HTTPClient {
 
         var httpRequest: HTTPRequest
         var headers: HTTPClient.RequestHeaders
+        var verificationMode: Signing.ResponseVerificationMode
         var completionHandler: HTTPClient.Completion<Data>?
         var retried: Bool = false
 
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
+                                      verificationMode: Signing.ResponseVerificationMode,
                                       completionHandler: HTTPClient.Completion<Value>?) {
-            self.httpRequest = httpRequest
-            self.headers = httpRequest.headers(with: authHeaders)
+            self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
+            self.headers = self.httpRequest.headers(with: authHeaders)
+            self.verificationMode = verificationMode
 
             if let completionHandler = completionHandler {
                 self.completionHandler = { result in
@@ -241,7 +238,7 @@ private extension HTTPClient {
             .mapToResponse(response: httpURLResponse,
                            request: request.httpRequest,
                            signing: self.signing,
-                           verificationMode: self.systemInfo.responseVerificationMode)
+                           verificationMode: request.verificationMode)
             .map {
                 self.eTagManager.httpResultFromCacheOrBackend(with: $0,
                                                               request: urlRequest,
@@ -362,6 +359,21 @@ private extension HTTPClient {
 // MARK: - Extensions
 
 extension HTTPRequest {
+
+    func requestAddingNonceIfRequired(
+        with verificationMode: Signing.ResponseVerificationMode
+    ) -> HTTPRequest {
+        var result = self
+
+        if result.nonce == nil,
+           result.path.hasSignatureValidation,
+           verificationMode.isEnabled,
+           #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            result.addRandomNonce()
+        }
+
+        return result
+    }
 
     func headers(with authHeaders: HTTPClient.RequestHeaders) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = [:]
