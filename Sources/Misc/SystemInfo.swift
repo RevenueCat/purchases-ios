@@ -32,7 +32,6 @@ class SystemInfo {
     let operationDispatcher: OperationDispatcher
     let platformFlavor: String
     let platformFlavorVersion: String?
-    let bundle: Bundle
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
 
@@ -41,10 +40,13 @@ class SystemInfo {
         set { self._finishTransactions.value = newValue }
     }
 
+    var bundle: Bundle { return self._bundle.value }
+
     var observerMode: Bool { return !self.finishTransactions }
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let _finishTransactions: Atomic<Bool>
+    private let _bundle: Atomic<Bundle>
 
     var isSandbox: Bool {
         return self.sandboxEnvironmentDetector.isSandbox
@@ -118,7 +120,7 @@ class SystemInfo {
          dangerousSettings: DangerousSettings? = nil) throws {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
-        self.bundle = bundle
+        self._bundle = .init(bundle)
 
         self._finishTransactions = .init(finishTransactions)
         self.operationDispatcher = operationDispatcher
@@ -176,7 +178,6 @@ extension SystemInfo: SandboxEnvironmentDetector {}
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
-// - It includes `Bundle`, which isn't `Sendable` as of Swift 5.7.
 extension SystemInfo: @unchecked Sendable {}
 
 extension SystemInfo {
