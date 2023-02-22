@@ -20,6 +20,7 @@ struct HomeView: View {
     
     @State private var showingAlert = false
     @State private var newAppUserID: String = ""
+    @State private var cacheFetchPolicy: CacheFetchPolicy = .default
 
     @State private var error: Error?
     
@@ -71,6 +72,26 @@ struct HomeView: View {
                         Text("Sync Purchases")
                     }
                     
+                    HStack {
+                        Picker("CustomerInfo", selection: self.$cacheFetchPolicy) {
+                            ForEach(CacheFetchPolicy.all) { policy in
+                                Text(policy.label).tag(policy)
+                            }
+                        }
+                        
+                        Button {
+                            Task<Void, Never> {
+                                do {
+                                    _ = try await Purchases.shared.customerInfo(fetchPolicy: self.cacheFetchPolicy)
+                                } catch {
+                                    print("🚀 Info 💁‍♂️ - Error: \(error)")
+                                }
+                            }
+                        } label: {
+                            Text("Go")
+                        }
+                    }
+
                     #if os(iOS) && !targetEnvironment(macCatalyst)
                     Button {
                         Purchases.shared.presentCodeRedemptionSheet()
@@ -171,6 +192,7 @@ struct HomeView: View {
 }
 
 private struct CustomerInfoHeaderView: View {
+    
     @EnvironmentObject var revenueCatCustomerData: RevenueCatCustomerData
     
     typealias Completion = (Action) async -> ()
