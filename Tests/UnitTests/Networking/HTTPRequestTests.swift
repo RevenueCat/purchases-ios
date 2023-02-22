@@ -95,18 +95,18 @@ class HTTPRequestTests: TestCase {
         }
     }
 
-    func testPathsHaveSignatureValidation() {
+    func testPathsSupportingSignatureSignatureValidation() {
         for path in Self.pathsWithSignatureValidation {
-            expect(path.hasSignatureValidation).to(
+            expect(path.supportsSignatureValidation).to(
                 beTrue(),
                 description: "Path '\(path)' should have signature validation"
             )
         }
     }
 
-    func testPathsWithoutSignatureValidation() {
+    func testPathsNotSupportingSignatureValidation() {
         for path in Self.paths where !Self.pathsWithSignatureValidation.contains(path) {
-            expect(path.hasSignatureValidation).to(
+            expect(path.supportsSignatureValidation).to(
                 beFalse(),
                 description: "Path '\(path)' should not have signature validation"
             )

@@ -366,7 +366,7 @@ extension HTTPRequest {
         var result = self
 
         if result.nonce == nil,
-           result.path.hasSignatureValidation,
+           result.path.supportsSignatureValidation,
            verificationMode.isEnabled,
            #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
             result.addRandomNonce()

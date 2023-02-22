@@ -144,7 +144,7 @@ extension HTTPRequest.Path {
     }
 
     // Whether the endpoint will perform signature validation.
-    var hasSignatureValidation: Bool {
+    var supportsSignatureValidation: Bool {
         switch self {
         case .getCustomerInfo,
                 .logIn,
