@@ -443,4 +443,46 @@ class DeviceCacheTests: TestCase {
             [AttributionNetwork.adServices: token]
     }
 
+    func testCopySubscriberAttributesDoesNothingIfOldUserIdHasNoUnsyncedAttributes() {
+        let oldAppUserId = "test-user-id"
+        let newAppUserId = "new-test-user-id"
+        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
+        let key = "band"
+        let unsyncedSubscriberAttribute = SubscriberAttribute(withKey: key,
+                                                              value: "La Renga",
+                                                              isSynced: true,
+                                                              setTime: Date()).asDictionary()
+        let mockAttributes: [String: [String: [String: NSObject]]] = [
+            oldAppUserId: [key: unsyncedSubscriberAttribute]
+        ]
+        self.mockUserDefaults.mockValues[attributesKey] = mockAttributes
+
+        self.deviceCache.copySubscriberAttributes(oldAppUserID: oldAppUserId, newAppUserID: newAppUserId)
+
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue).to(beNil())
+    }
+
+    func testCopySubscriberAttributesCopiesAttributesAndDeletesOldAttributesIfOldUserIdHasUnsyncedAttributes() {
+        let oldAppUserId = "test-user-id"
+        let newAppUserId = "new-test-user-id"
+        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
+        let key = "band"
+        let unsyncedSubscriberAttribute = SubscriberAttribute(withKey: key,
+                                                              value: "La Renga",
+                                                              isSynced: false,
+                                                              setTime: Date()).asDictionary()
+        let originalAttributesSet: [String: [String: [String: NSObject]]] = [
+            oldAppUserId: [key: unsyncedSubscriberAttribute]
+        ]
+        let expectedAttributesSet: [String: [String: [String: NSObject]]] = [
+            newAppUserId: [key: unsyncedSubscriberAttribute]
+        ]
+        self.mockUserDefaults.mockValues[attributesKey] = originalAttributesSet
+
+        self.deviceCache.copySubscriberAttributes(oldAppUserID: oldAppUserId, newAppUserID: newAppUserId)
+
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == attributesKey
+        let storedAttributes = self.mockUserDefaults.mockValues[attributesKey]
+        expect(storedAttributes as? [String: [String: [String: NSObject]]]) == expectedAttributesSet
+    }
 }

@@ -223,13 +223,7 @@ class DeviceCache {
         }
 
         self.userDefaults.write {
-            var groupedSubscriberAttributes = Self.storedAttributesForAllUsers($0)
-            var subscriberAttributesForAppUserID = groupedSubscriberAttributes[appUserID] as? [String: Any] ?? [:]
-            for (key, attributes) in subscriberAttributesByKey {
-                subscriberAttributesForAppUserID[key] = attributes.asDictionary()
-            }
-            groupedSubscriberAttributes[appUserID] = subscriberAttributesForAppUserID
-            $0.setValue(groupedSubscriberAttributes, forKey: .subscriberAttributes)
+            Self.store($0, subscriberAttributesByKey: subscriberAttributesByKey, appUserID: appUserID)
         }
     }
 
@@ -281,13 +275,21 @@ class DeviceCache {
             guard Self.unsyncedAttributesByKey($0, appUserID: appUserID).isEmpty else {
                 return
             }
-            var groupedAttributes = Self.storedAttributesForAllUsers($0)
-            let attibutesForAppUserID = groupedAttributes.removeValue(forKey: appUserID)
-            guard attibutesForAppUserID != nil else {
-                Logger.warn(Strings.identity.deleting_synced_attributes_none_found)
+            Self.deleteAllAttributes($0, appUserID: appUserID)
+        }
+    }
+
+    func copySubscriberAttributes(oldAppUserID: String, newAppUserID: String) {
+        self.userDefaults.write {
+            let unsyncedAttributesToCopy = Self.unsyncedAttributesByKey($0, appUserID: oldAppUserID)
+            guard !unsyncedAttributesToCopy.isEmpty else {
                 return
             }
-            $0.setValue(groupedAttributes, forKey: .subscriberAttributes)
+
+            Logger.info(Strings.attribution.copying_attributes_from_to_user(oldAppUserID: oldAppUserID,
+                                                                            newAppUserID: newAppUserID))
+            Self.store($0, subscriberAttributesByKey: unsyncedAttributesToCopy, appUserID: newAppUserID)
+            Self.deleteAllAttributes($0, appUserID: oldAppUserID)
         }
     }
 
@@ -416,6 +418,33 @@ private extension DeviceCache {
             unsyncedAttributesByKey[attribute.key] = attribute
         }
         return unsyncedAttributesByKey
+    }
+
+    static func store(
+        _ userDefaults: UserDefaults,
+        subscriberAttributesByKey: [String: SubscriberAttribute],
+        appUserID: String
+    ) {
+        var groupedSubscriberAttributes = Self.storedAttributesForAllUsers(userDefaults)
+        var subscriberAttributesForAppUserID = groupedSubscriberAttributes[appUserID] as? [String: Any] ?? [:]
+        for (key, attributes) in subscriberAttributesByKey {
+            subscriberAttributesForAppUserID[key] = attributes.asDictionary()
+        }
+        groupedSubscriberAttributes[appUserID] = subscriberAttributesForAppUserID
+        userDefaults.setValue(groupedSubscriberAttributes, forKey: .subscriberAttributes)
+    }
+
+    static func deleteAllAttributes(
+        _ userDefaults: UserDefaults,
+        appUserID: String
+    ) {
+        var groupedAttributes = Self.storedAttributesForAllUsers(userDefaults)
+        let attributesForAppUserID = groupedAttributes.removeValue(forKey: appUserID)
+        guard attributesForAppUserID != nil else {
+            Logger.warn(Strings.identity.deleting_attributes_none_found)
+            return
+        }
+        userDefaults.setValue(groupedAttributes, forKey: .subscriberAttributes)
     }
 
     static func setCustomerInfoCache(

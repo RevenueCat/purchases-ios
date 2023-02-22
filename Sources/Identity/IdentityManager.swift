@@ -107,6 +107,7 @@ extension IdentityManager {
 private extension IdentityManager {
 
     func performLogIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        let oldAppUserID = currentAppUserID
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_empty_appuserid)
@@ -114,9 +115,9 @@ private extension IdentityManager {
             return
         }
 
-        guard newAppUserID != currentAppUserID else {
+        guard newAppUserID != oldAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
-            self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
+            self.customerInfoManager.customerInfo(appUserID: oldAppUserID,
                                                   fetchPolicy: .cachedOrFetched) { @Sendable result in
                 completion(
                     result.map { (info: $0, created: false) }
@@ -125,10 +126,12 @@ private extension IdentityManager {
             return
         }
 
-        self.backend.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) { result in
+        self.backend.identity.logIn(currentAppUserID: oldAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
-                self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: newAppUserID)
+                self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
+                self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
+                                                                       newAppUserID: newAppUserID)
             }
 
             completion(result)
@@ -161,6 +164,13 @@ private extension IdentityManager {
         deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: Self.generateRandomID())
         deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         backend.clearHTTPClientCaches()
+    }
+
+    func copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: String, newAppUserID: String) {
+        guard Self.userIsAnonymous(oldAppUserID) else {
+            return
+        }
+        self.deviceCache.copySubscriberAttributes(oldAppUserID: oldAppUserID, newAppUserID: newAppUserID)
     }
 
 }
