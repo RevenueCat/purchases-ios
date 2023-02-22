@@ -53,10 +53,8 @@ class ETagManager {
                                       retried: Bool) -> HTTPResponse<Data>? {
         let statusCode: HTTPStatusCode = response.statusCode
         let resultFromBackend = response.asOptionalResponse
-        let headersInResponse = response.responseHeaders
 
-        let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
-        headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
+        let eTagInResponse = response.value(forHeaderField: ETagManager.eTagHeaderName)
 
         guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
         if self.shouldUseCachedVersion(responseCode: statusCode) {

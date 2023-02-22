@@ -61,7 +61,8 @@ extension HTTPResponse where Body == Data {
             return .notVerified
         }
 
-        guard let signature = headers[HTTPClient.responseSignatureHeaderName] as? String else {
+        guard let signature = HTTPResponse.value(forCaseInsensitiveHeaderField: HTTPClient.responseSignatureHeaderName,
+                                                 in: headers) else {
             Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
 
             return .failed

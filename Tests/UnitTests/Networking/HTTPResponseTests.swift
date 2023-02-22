@@ -46,7 +46,32 @@ class HTTPResponseTests: TestCase {
         expect(response.verificationResult) == .notVerified
     }
 
+    func testValueForHeaderFieldWithNonExistingField() {
+        expect(HTTPResponse.create([:]).value(forHeaderField: "test")).to(beNil())
+    }
+
+    func testValueForHeaderFieldWithCaseSensitiveFieldName() {
+        expect(HTTPResponse.create(["TeSt": "test"]).value(forHeaderField: "TeSt")) == "test"
+    }
+
+    func testValueForHeaderFieldIsCaseInsensitive() {
+        expect(HTTPResponse.create(["x-signature": "test"]).value(forHeaderField: "X-Signature")) == "test"
+    }
+
 }
+
+private extension HTTPResponse where Body == HTTPEmptyResponseBody {
+
+    static func create(_ headers: HTTPResponse.Headers) -> Self {
+        return .init(statusCode: .success,
+                     responseHeaders: headers,
+                     body: .init(),
+                     verificationResult: .notVerified)
+    }
+
+}
+
+// MARK: - ErrorResponse
 
 class ErrorResponseTests: TestCase {
 

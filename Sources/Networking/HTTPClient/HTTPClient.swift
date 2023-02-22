@@ -17,8 +17,8 @@ import Foundation
 
 class HTTPClient {
 
-    typealias RequestHeaders = [String: String]
-    typealias ResponseHeaders = [AnyHashable: Any]
+    typealias RequestHeaders = HTTPRequest.Headers
+    typealias ResponseHeaders = HTTPResponse<HTTPEmptyResponseBody>.Headers
     typealias Completion<Value: HTTPResponseBody> = (HTTPResponse<Value>.Result) -> Void
 
     let systemInfo: SystemInfo
@@ -82,7 +82,7 @@ extension HTTPClient {
 
     static let authorizationHeaderName = "Authorization"
     static let nonceHeaderName = "X-Nonce"
-    static let responseSignatureHeaderName = "x-signature"
+    static let responseSignatureHeaderName = "X-Signature"
 
 }
 

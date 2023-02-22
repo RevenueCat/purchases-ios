@@ -1224,6 +1224,31 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         )
     }
 
+    func testSignatureHeaderIsCaseInsensitive() throws {
+        let signature = "signature"
+
+        try self.changeClient(.informational)
+
+        stub(condition: isPath(.mockPath)) { _ in
+            return .init(data: Data(),
+                         statusCode: .success,
+                         headers: [
+                            "x-signature": signature
+                         ])
+        }
+
+        MockSigning.stubbedVerificationResult = true
+
+        let request: HTTPRequest = .createWithResponseVerification(method: .get, path: .mockPath)
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+    }
+
     func testValidSignatureWithVerificationModeInformational() throws {
         let signature = "signature"
 

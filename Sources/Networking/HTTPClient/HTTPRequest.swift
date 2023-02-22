@@ -16,6 +16,8 @@ import Foundation
 /// A request to be made by ``HTTPClient``
 struct HTTPRequest {
 
+    typealias Headers = [String: String]
+
     var method: Method
     var path: Path
     /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
