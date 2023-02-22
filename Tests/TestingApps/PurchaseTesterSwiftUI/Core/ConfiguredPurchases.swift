@@ -27,7 +27,7 @@ public final class ConfiguredPurchases {
         useStoreKit2: Bool,
         observerMode: Bool
     ) {
-        Purchases.logLevel = .debug
+        Purchases.logLevel = .verbose
         Purchases.logHandler = Self.logger.logHandler
 
         if let proxyURL {
