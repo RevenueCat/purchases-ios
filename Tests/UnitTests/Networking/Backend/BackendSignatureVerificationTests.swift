@@ -19,6 +19,10 @@ import XCTest
 
 class BackendSignatureVerificationTests: BaseBackendTests {
 
+    override var verificationMode: Configuration.EntitlementVerificationMode {
+        return .informational
+    }
+
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
     }
@@ -39,7 +43,7 @@ class BackendSignatureVerificationTests: BaseBackendTests {
     func testRequestFailsIfSignatureVerificationFails() throws {
         self.httpClient.mock(
             requestPath: .health,
-            response: .init(statusCode: .success, verificationResult: .failed)
+            response: .init(error: .signatureVerificationFailed(path: .health))
         )
 
         let error = waitUntilValue { completed in

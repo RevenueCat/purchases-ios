@@ -40,6 +40,12 @@ class HTTPRequestTests: TestCase {
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health
     ]
+    private static let pathsWithSignatureValidation: Set<HTTPRequest.Path> = [
+        .getCustomerInfo(appUserID: userID),
+        .logIn,
+        .postReceiptData,
+        .health
+    ]
 
     func testPathsDontHaveLeadingSlash() {
         for path in Self.paths {
@@ -87,6 +93,79 @@ class HTTPRequestTests: TestCase {
                 description: "Path '\(path)' should not send etag"
             )
         }
+    }
+
+    func testPathsSupportingSignatureSignatureValidation() {
+        for path in Self.pathsWithSignatureValidation {
+            expect(path.supportsSignatureValidation).to(
+                beTrue(),
+                description: "Path '\(path)' should have signature validation"
+            )
+        }
+    }
+
+    func testPathsNotSupportingSignatureValidation() {
+        for path in Self.paths where !Self.pathsWithSignatureValidation.contains(path) {
+            expect(path.supportsSignatureValidation).to(
+                beFalse(),
+                description: "Path '\(path)' should not have signature validation"
+            )
+        }
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testAddNonceIfRequiredWithExistingNonceDoesNotReplaceNonce() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let existingNonce = Data.randomNonce()
+        let request: HTTPRequest = .init(method: .get, path: .health, nonce: existingNonce)
+        let mode = Signing.verificationMode(with: .enforced)
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce) == existingNonce
+    }
+
+    func testAddNonceIfRequiredWithDisabledVerification() throws {
+        let request: HTTPRequest = .init(method: .get, path: .mockPath)
+        expect(request.requestAddingNonceIfRequired(with: .disabled).nonce).to(beNil())
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testAddNonceIfRequiredWithPathWithNoSignatureValidation() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
+        let mode = Signing.verificationMode(with: .enforced)
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testAddNonceIfRequiredForPathWithSignatureValidationWhenEnforced() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        let mode = Signing.verificationMode(with: .enforced)
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testAddNonceIfRequiredForPathWithSignatureValidationWhenModeInformational() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        let mode = Signing.verificationMode(with: .informational)
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
+    }
+
+    func testAddNonceIfRequiredForOldVersions() throws {
+        if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
+            throw XCTSkip("Test only for older versions")
+        }
+
+        let request: HTTPRequest = .init(method: .get, path: .logIn)
+        expect(request.requestAddingNonceIfRequired(with: .disabled).nonce).to(beNil())
     }
 
 }

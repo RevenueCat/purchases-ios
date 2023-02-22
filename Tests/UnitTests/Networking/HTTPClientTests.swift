@@ -1182,6 +1182,25 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(headers?[HTTPClient.nonceHeaderName]) == request.nonce?.base64EncodedString()
     }
 
+    func testAutomaticallyAddsNonceIfRequired() throws {
+        try self.changeClient(.informational)
+
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"))
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).to(contain(HTTPClient.nonceHeaderName))
+        expect(headers?[HTTPClient.nonceHeaderName]).toNot(beNil())
+    }
+
     func testFailedVerificationIfResponseContainsNoSignature() throws {
         let logger = TestLogHandler()
 
@@ -1230,7 +1249,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testSignatureNotRequested() throws {
-        try self.changeClient(.enforced)
+        try self.changeClient(.disabled)
         self.mockResponse()
 
         let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
@@ -1292,6 +1311,59 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
         expect(response).to(beFailure())
         expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: .mockPath)))
+    }
+
+    func testPerformRequestWithEnforcedModeOverridesIt() throws {
+        let signature = "signature"
+
+        try self.changeClient(.disabled)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = false
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
+                                with: Signing.verificationMode(with: .enforced),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: .mockPath)))
+    }
+
+    func testPerformRequestWithInformationalModeOverridesIt() throws {
+        let signature = "signature"
+
+        try self.changeClient(.disabled)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = false
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
+                                with: Signing.verificationMode(with: .informational),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed
+    }
+
+    func testPerformRequestWithDisabledModeOverridesIt() throws {
+        let signature = "signature"
+
+        try self.changeClient(.enforced)
+        self.mockResponse(signature: signature)
+
+        MockSigning.stubbedVerificationResult = false
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: .mockPath),
+                                with: .disabled,
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
     }
 
     func testIgnoresResponseFromETagManagerIfItHadNotBeenVerified() throws {
@@ -1356,7 +1428,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
 // MARK: - Extensions
 
-private extension HTTPRequest.Path {
+extension HTTPRequest.Path {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
