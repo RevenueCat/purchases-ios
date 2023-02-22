@@ -28,7 +28,7 @@ public final class ConfiguredPurchases {
         observerMode: Bool,
         entitlementVerificationMode: Configuration.EntitlementVerificationMode
     ) {
-        Purchases.logLevel = .debug
+        Purchases.logLevel = .verbose
         Purchases.logHandler = Self.logger.logHandler
 
         if let proxyURL {

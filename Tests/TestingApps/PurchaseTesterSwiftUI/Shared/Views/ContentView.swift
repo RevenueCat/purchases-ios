@@ -32,7 +32,7 @@ struct ContentView: View {
         HomeView()
             .environmentObject(self.revenueCatCustomerData)
             .environmentObject(self.observerModeManager)
-            .task {
+            .task(id: self.configuration.purchases) {
                 for await customerInfo in self.configuration.purchases.customerInfoStream {
                     self.revenueCatCustomerData.customerInfo = customerInfo
                     self.revenueCatCustomerData.appUserID = self.configuration.purchases.appUserID
