@@ -44,7 +44,7 @@ enum AttributionStrings {
     case adservices_token_post_succeeded
     case adservices_token_unavailable_in_simulator
     case latest_attribution_sent_user_defaults_invalid(networkKey: String)
-    case copying_attributes_from_to_user(oldAppUserID: String, newAppUserID: String)
+    case copying_attributes(oldAppUserID: String, newAppUserID: String)
 
 }
 
@@ -140,7 +140,7 @@ extension AttributionStrings: CustomStringConvertible {
         case .latest_attribution_sent_user_defaults_invalid(let networkKey):
             return "Attribution data stored in UserDefaults has invalid format for network key: \(networkKey)"
 
-        case .copying_attributes_from_to_user(let oldAppUserID, let newAppUserID):
+        case .copying_attributes(let oldAppUserID, let newAppUserID):
             return "Copying unsynced subscriber attributes from user \(oldAppUserID) to user \(newAppUserID)"
 
         }

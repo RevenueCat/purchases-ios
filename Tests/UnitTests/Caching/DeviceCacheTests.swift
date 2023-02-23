@@ -10,6 +10,8 @@ import XCTest
 
 class DeviceCacheTests: TestCase {
 
+    private let subscriberAttributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
+
     private var sandboxEnvironmentDetector: MockSandboxEnvironmentDetector! = nil
     private var mockUserDefaults: MockUserDefaults! = nil
     private var deviceCache: DeviceCache! = nil
@@ -69,7 +71,6 @@ class DeviceCacheTests: TestCase {
 
     func testClearCachesForAppUserIDAndSaveNewUserIDDoesntRemoveCachedSubscriberAttributesIfUnsynced() {
         let userID = "andy"
-        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
         let unsyncedSubscriberAttribute = SubscriberAttribute(withKey: key,
                                                               value: "La Renga",
@@ -78,31 +79,30 @@ class DeviceCacheTests: TestCase {
         let mockAttributes: [String: [String: [String: NSObject]]] = [
             userID: [key: unsyncedSubscriberAttribute]
         ]
-        mockUserDefaults.mockValues[attributesKey] = mockAttributes
+        mockUserDefaults.mockValues[self.subscriberAttributesKey] = mockAttributes
 
         self.deviceCache.clearCaches(oldAppUserID: userID, andSaveWithNewUserID: "newUser")
-        let mockValues = self.mockUserDefaults.mockValues[attributesKey]
+        let mockValues = self.mockUserDefaults.mockValues[self.subscriberAttributesKey]
         expect(mockValues as? [String: [String: [String: NSObject]]]) == mockAttributes
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedSubscriberAttributesIfSynced() {
         let userID = "andy"
-        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
         let unsyncedSubscriberAttribute = SubscriberAttribute(withKey: key,
                                                               value: "La Renga",
                                                               isSynced: true,
                                                               setTime: Date()).asDictionary()
 
-        mockUserDefaults.mockValues[attributesKey] = [
+        mockUserDefaults.mockValues[self.subscriberAttributesKey] = [
             userID: [key: unsyncedSubscriberAttribute]
         ]
 
-        expect(self.mockUserDefaults.mockValues[attributesKey] as? [String: NSObject]).notTo(beEmpty())
+        expect(self.mockUserDefaults.mockValues[self.subscriberAttributesKey] as? [String: NSObject]).notTo(beEmpty())
 
         self.deviceCache.clearCaches(oldAppUserID: userID, andSaveWithNewUserID: "newUser")
 
-        expect(self.mockUserDefaults.mockValues[attributesKey] as? [String: NSObject]).to(beEmpty())
+        expect(self.mockUserDefaults.mockValues[self.subscriberAttributesKey] as? [String: NSObject]).to(beEmpty())
 
     }
 
@@ -446,7 +446,6 @@ class DeviceCacheTests: TestCase {
     func testCopySubscriberAttributesDoesNothingIfOldUserIdHasNoUnsyncedAttributes() {
         let oldAppUserId = "test-user-id"
         let newAppUserId = "new-test-user-id"
-        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
         let unsyncedSubscriberAttribute = SubscriberAttribute(withKey: key,
                                                               value: "La Renga",
@@ -455,7 +454,7 @@ class DeviceCacheTests: TestCase {
         let mockAttributes: [String: [String: [String: NSObject]]] = [
             oldAppUserId: [key: unsyncedSubscriberAttribute]
         ]
-        self.mockUserDefaults.mockValues[attributesKey] = mockAttributes
+        self.mockUserDefaults.mockValues[self.subscriberAttributesKey] = mockAttributes
 
         self.deviceCache.copySubscriberAttributes(oldAppUserID: oldAppUserId, newAppUserID: newAppUserId)
 
@@ -465,7 +464,6 @@ class DeviceCacheTests: TestCase {
     func testCopySubscriberAttributesCopiesAttributesAndDeletesOldAttributesIfOldUserIdHasUnsyncedAttributes() {
         let oldAppUserId = "test-user-id"
         let newAppUserId = "new-test-user-id"
-        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
         let unsyncedSubscriberAttribute = SubscriberAttribute(withKey: key,
                                                               value: "La Renga",
@@ -477,12 +475,13 @@ class DeviceCacheTests: TestCase {
         let expectedAttributesSet: [String: [String: [String: NSObject]]] = [
             newAppUserId: [key: unsyncedSubscriberAttribute]
         ]
-        self.mockUserDefaults.mockValues[attributesKey] = originalAttributesSet
+        self.mockUserDefaults.mockValues[self.subscriberAttributesKey] = originalAttributesSet
 
         self.deviceCache.copySubscriberAttributes(oldAppUserID: oldAppUserId, newAppUserID: newAppUserId)
 
-        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == attributesKey
-        let storedAttributes = self.mockUserDefaults.mockValues[attributesKey]
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == self.subscriberAttributesKey
+        let storedAttributes = self.mockUserDefaults.mockValues[self.subscriberAttributesKey]
         expect(storedAttributes as? [String: [String: [String: NSObject]]]) == expectedAttributesSet
     }
+
 }

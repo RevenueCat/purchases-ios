@@ -286,8 +286,7 @@ class DeviceCache {
                 return
             }
 
-            Logger.info(Strings.attribution.copying_attributes_from_to_user(oldAppUserID: oldAppUserID,
-                                                                            newAppUserID: newAppUserID))
+            Logger.info(Strings.attribution.copying_attributes(oldAppUserID: oldAppUserID, newAppUserID: newAppUserID))
             Self.store($0, subscriberAttributesByKey: unsyncedAttributesToCopy, appUserID: newAppUserID)
             Self.deleteAllAttributes($0, appUserID: oldAppUserID)
         }

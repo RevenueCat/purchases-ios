@@ -321,7 +321,7 @@ class IdentityManagerTests: TestCase {
             }
         }
 
-        expect(self.mockDeviceCache.invokedCopySubscriberAttributes).to(beFalse())
+        expect(self.mockDeviceCache.invokedCopySubscriberAttributes) == false
     }
 }
 
