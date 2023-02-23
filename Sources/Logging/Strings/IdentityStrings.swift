@@ -32,7 +32,7 @@ enum IdentityStrings {
 
     case null_currentappuserid
 
-    case deleting_synced_attributes_none_found
+    case deleting_attributes_none_found
 
 }
 
@@ -60,8 +60,8 @@ extension IdentityStrings: CustomStringConvertible {
             return "Identifying App User ID"
         case .null_currentappuserid:
             return "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared."
-        case .deleting_synced_attributes_none_found:
-            return "Attempt to delete synced attributes for user, but there were none to delete"
+        case .deleting_attributes_none_found:
+            return "Attempt to delete attributes for user, but there were none to delete"
         }
     }
 

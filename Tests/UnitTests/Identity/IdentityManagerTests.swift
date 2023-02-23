@@ -293,6 +293,36 @@ class IdentityManagerTests: TestCase {
         expect(self.mockAttributeSyncing.invokedSyncAttributesUserIDs) == ["nacho"]
     }
 
+    func testLogInCopiesAttributesToNewUserIfPreviousUserWasAnonymous() {
+        let manager = self.create(appUserID: nil)
+        let anonymousUserID = manager.currentAppUserID
+
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+
+        waitUntil { completed in
+            manager.logIn(appUserID: "test-user-id") { _ in
+                completed()
+            }
+        }
+
+        expect(self.mockDeviceCache.invokedCopySubscriberAttributesCount) == 1
+        expect(self.mockDeviceCache.invokedCopySubscriberAttributesParameters?.oldAppUserID) == anonymousUserID
+        expect(self.mockDeviceCache.invokedCopySubscriberAttributesParameters?.newAppUserID) == "test-user-id"
+    }
+
+    func testLogInDoesNotCopyAttributesToNewUserIfPreviousUserWasNotAnonymous() {
+        let manager = self.create(appUserID: "old-user-id")
+
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+
+        waitUntil { completed in
+            manager.logIn(appUserID: "test-user-id") { _ in
+                completed()
+            }
+        }
+
+        expect(self.mockDeviceCache.invokedCopySubscriberAttributes) == false
+    }
 }
 
 private extension IdentityManagerTests {

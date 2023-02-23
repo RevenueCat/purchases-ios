@@ -252,4 +252,16 @@ class MockDeviceCache: DeviceCache {
         return invokedSetLatestNetworkAndAdvertisingIdsSentParameters?.adIdsByNetwork ?? [:]
     }
 
+    var invokedCopySubscriberAttributes = false
+    var invokedCopySubscriberAttributesCount = 0
+    var invokedCopySubscriberAttributesParameters: (oldAppUserID: String, newAppUserID: String)?
+    var invokedCopySubscriberAttributesParametersList = [(oldAppUserID: String, newAppUserID: String)]()
+
+    override func copySubscriberAttributes(oldAppUserID: String, newAppUserID: String) {
+        invokedCopySubscriberAttributes = true
+        invokedCopySubscriberAttributesCount += 1
+        invokedCopySubscriberAttributesParameters = (oldAppUserID, newAppUserID)
+        invokedCopySubscriberAttributesParametersList.append((oldAppUserID, newAppUserID))
+    }
+
 }
