@@ -437,6 +437,10 @@ public protocol PurchasesType: AnyObject {
      * - Note: This may force your users to enter the App Store password so should only be performed on request of
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     *
+     * - Warning: Receiving a ``CustomerInfo`` instead of an error does not imply that the user has any
+     * entitlements, simply that the process was successful. You must verify the ``CustomerInfo/entitlements``
+     * to confirm that they are active.
      */
     func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?)
 
@@ -452,6 +456,10 @@ public protocol PurchasesType: AnyObject {
      * - Note: This may force your users to enter the App Store password so should only be performed on request of
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     *
+     * - Warning: Receiving a ``CustomerInfo`` instead of an error does not imply that the user has any
+     * entitlements, simply that the process was successful. You must verify the ``CustomerInfo/entitlements``
+     * to confirm that they are active.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func restorePurchases() async throws -> CustomerInfo
