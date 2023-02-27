@@ -85,13 +85,15 @@ extension HTTPResponse where Body == Data {
         let eTag = HTTPResponse.value(forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.eTag.rawValue,
                                       in: headers)
 
+        let messageToSign = statusCode == .notModified
+            ? eTag?.asData ?? .init()
+            : body
+
         if signing.verify(signature: signature,
                           with: .init(
-                            notModifiedResponse: statusCode == .notModified,
-                            message: body,
+                            message: messageToSign,
                             nonce: nonce,
-                            requestTime: requestTime,
-                            eTag: eTag
+                            requestTime: requestTime
                           ),
                           publicKey: publicKey) {
             return .verified

@@ -74,11 +74,9 @@ class SigningTests: TestCase {
         expect(Signing.verify(
             signature: signature,
             with: .init(
-                notModifiedResponse: false,
                 message: message.asData,
                 nonce: nonce.asData,
-                requestTime: requestTime,
-                eTag: nil
+                requestTime: requestTime
             ),
             publicKey: Signing.loadPublicKey()
         )) == false
@@ -90,11 +88,9 @@ class SigningTests: TestCase {
         expect(Signing.verify(
             signature: "invalid signature".asData.base64EncodedString(),
             with: .init(
-                notModifiedResponse: false,
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
-                requestTime: 1677005916012,
-                eTag: nil
+                requestTime: 1677005916012
             ),
             publicKey: Signing.loadPublicKey()
         )) == false
@@ -105,11 +101,9 @@ class SigningTests: TestCase {
 
         _ = Signing.verify(signature: "invalid signature".asData.base64EncodedString(),
                            with: .init(
-                            notModifiedResponse: false,
                             message: "Hello World".asData,
                             nonce: "nonce".asData,
-                            requestTime: 1677005916012,
-                            eTag: nil
+                            requestTime: 1677005916012
                            ),
                            publicKey: Signing.loadPublicKey())
 
@@ -124,11 +118,9 @@ class SigningTests: TestCase {
 
         let signature = try self.sign(
             parameters: .init(
-                notModifiedResponse: false,
                 message: message.asData,
                 nonce: nonce.asData,
-                requestTime: requestTime,
-                eTag: nil
+                requestTime: requestTime
             ),
             salt: salt.asData
         )
@@ -137,11 +129,9 @@ class SigningTests: TestCase {
         expect(Signing.verify(
             signature: fullSignature.base64EncodedString(),
             with: .init(
-                notModifiedResponse: false,
                 message: message.asData,
                 nonce: nonce.asData,
-                requestTime: requestTime,
-                eTag: nil
+                requestTime: requestTime
             ),
             publicKey: self.publicKey
         )) == true
@@ -171,11 +161,9 @@ class SigningTests: TestCase {
             Signing.verify(
                 signature: expectedSignature,
                 with: .init(
-                    notModifiedResponse: false,
                     message: response.asData,
                     nonce: nonce,
-                    requestTime: requestTime,
-                    eTag: nil
+                    requestTime: requestTime
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -193,7 +181,6 @@ class SigningTests: TestCase {
          -H 'Host: api.revenuecat.com'
          */
 
-        let response = ""
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
         let requestTime = 1677013582768
         let eTag = "b7bd9a697c7fd1a2"
@@ -205,11 +192,9 @@ class SigningTests: TestCase {
             Signing.verify(
                 signature: expectedSignature,
                 with: .init(
-                    notModifiedResponse: true,
-                    message: response.asData,
+                    message: eTag.asData,
                     nonce: nonce,
-                    requestTime: requestTime,
-                    eTag: eTag
+                    requestTime: requestTime
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -259,11 +244,9 @@ class SigningTests: TestCase {
         let requestTime = Date().millisecondsSince1970
         let salt = Self.createSalt()
 
-        let signature = try self.sign(parameters: .init(notModifiedResponse: false,
-                                                        message: message.asData,
+        let signature = try self.sign(parameters: .init(message: message.asData,
                                                         nonce: nonce.asData,
-                                                        requestTime: requestTime,
-                                                        eTag: nil),
+                                                        requestTime: requestTime),
                                       salt: salt.asData)
         let fullSignature = salt.asData + signature
 
@@ -289,11 +272,9 @@ class SigningTests: TestCase {
         let requestTime = Date().millisecondsSince1970
         let salt = Self.createSalt()
 
-        let signature = try self.sign(parameters: .init(notModifiedResponse: true,
-                                                        message: message.asData,
+        let signature = try self.sign(parameters: .init(message: etag.asData,
                                                         nonce: nonce.asData,
-                                                        requestTime: requestTime,
-                                                        eTag: etag),
+                                                        requestTime: requestTime),
                                       salt: salt.asData)
         let fullSignature = salt.asData + signature
 

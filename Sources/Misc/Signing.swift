@@ -34,12 +34,9 @@ enum Signing: SigningType {
     /// Parameters used for signature creation / verification.
     struct SignatureParameters {
 
-        /// Whether the response had `HTTPStatusCode.notModified`
-        let notModifiedResponse: Bool
         let message: Data
         let nonce: Data
         let requestTime: Int
-        let eTag: String?
 
     }
 
@@ -190,15 +187,10 @@ extension Signing {
 extension Signing.SignatureParameters {
 
     var asData: Data {
-        // Not modified responses sign the Etag
-        let payload: Data = self.notModifiedResponse
-        ? self.eTag?.asData ?? Data()
-        : self.message
-
         return (
             self.nonce +
             String(self.requestTime).asData +
-            payload
+            self.message
         )
     }
 

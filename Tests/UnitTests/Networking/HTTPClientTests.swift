@@ -1269,11 +1269,9 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(MockSigning.requests).to(haveCount(1))
         let signingRequest = try XCTUnwrap(MockSigning.requests.onlyElement)
 
-        expect(signingRequest.parameters.notModifiedResponse) == false
         expect(signingRequest.parameters.message) == body
         expect(signingRequest.parameters.nonce) == request.nonce
         expect(signingRequest.parameters.requestTime) == self.requestTime
-        expect(signingRequest.parameters.eTag).to(beNil())
         expect(signingRequest.signature) == self.sampleSignature
         expect(signingRequest.publicKey).toNot(beNil())
     }
@@ -1309,11 +1307,9 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(MockSigning.requests).to(haveCount(1))
         let signingRequest = try XCTUnwrap(MockSigning.requests.onlyElement)
 
-        expect(signingRequest.parameters.notModifiedResponse) == true
-        expect(signingRequest.parameters.message) == .init()
+        expect(signingRequest.parameters.message) == self.sampleETag.asData
         expect(signingRequest.parameters.nonce) == request.nonce
         expect(signingRequest.parameters.requestTime) == self.requestTime
-        expect(signingRequest.parameters.eTag) == self.sampleETag
         expect(signingRequest.signature) == self.sampleSignature
         expect(signingRequest.publicKey).toNot(beNil())
     }
