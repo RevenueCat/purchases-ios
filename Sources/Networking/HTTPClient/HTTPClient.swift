@@ -73,16 +73,28 @@ class HTTPClient {
 extension HTTPClient {
 
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
-        return [Self.authorizationHeaderName: "Bearer \(apiKey)"]
+        return [RequestHeader.authorization.rawValue: "Bearer \(apiKey)"]
     }
 
     static func nonceHeader(with data: Data) -> RequestHeaders {
-        return [Self.nonceHeaderName: data.base64EncodedString()]
+        return [RequestHeader.nonce.rawValue: data.base64EncodedString()]
     }
 
-    static let authorizationHeaderName = "Authorization"
-    static let nonceHeaderName = "X-Nonce"
-    static let responseSignatureHeaderName = "X-Signature"
+    enum RequestHeader: String {
+
+        case authorization = "Authorization"
+        case nonce = "X-Nonce"
+        case eTag = "X-RevenueCat-ETag"
+
+    }
+
+    enum ResponseHeader: String {
+
+        case eTag = "X-RevenueCat-ETag"
+        case signature = "X-Signature"
+        case requestTime = "X-RevenueCat-Request-Time"
+
+    }
 
 }
 

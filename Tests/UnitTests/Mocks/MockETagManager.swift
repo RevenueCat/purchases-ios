@@ -25,6 +25,10 @@ class MockETagManager: ETagManager {
     var invokedETagHeaderParametersList: [ETagHeaderRequest] = []
     var stubbedETagHeaderResult: [String: String]! = [:]
 
+    func stubResponseEtag(_ tag: String) {
+        self.stubbedETagHeaderResult[ETagManager.eTagResponseHeaderName] = tag
+    }
+
     override func eTagHeader(
         for urlRequest: URLRequest,
         refreshETag: Bool = false,

@@ -40,6 +40,7 @@ extension HTTPResponse where Body == Data {
             body: body,
             verificationResult: Self.verificationResult(
                 body: body,
+                statusCode: statusCode,
                 headers: headers,
                 request: request,
                 publicKey: publicKey,
@@ -48,8 +49,10 @@ extension HTTPResponse where Body == Data {
         )
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func verificationResult(
         body: Data,
+        statusCode: HTTPStatusCode,
         headers: HTTPClient.ResponseHeaders,
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
@@ -61,17 +64,38 @@ extension HTTPResponse where Body == Data {
             return .notVerified
         }
 
-        guard let signature = HTTPResponse.value(forCaseInsensitiveHeaderField: HTTPClient.responseSignatureHeaderName,
-                                                 in: headers) else {
+        guard let signature = HTTPResponse.value(
+            forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.signature.rawValue,
+            in: headers
+        ) else {
             Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
 
             return .failed
         }
 
-        if signing.verify(message: body,
-                          nonce: nonce,
-                          hasValidSignature: signature,
-                          with: publicKey) {
+        guard let requestTimeString = HTTPResponse.value(
+            forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.requestTime.rawValue,
+            in: headers
+        ), let requestTime = Int(requestTimeString) else {
+            Logger.warn(Strings.signing.request_time_missing_from_headers(request))
+
+            return .failed
+        }
+
+        let eTag = HTTPResponse.value(forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.eTag.rawValue,
+                                      in: headers)
+
+        let messageToSign = statusCode == .notModified
+            ? eTag?.asData ?? .init()
+            : body
+
+        if signing.verify(signature: signature,
+                          with: .init(
+                            message: messageToSign,
+                            nonce: nonce,
+                            requestTime: requestTime
+                          ),
+                          publicKey: publicKey) {
             return .verified
         } else {
             return .failed
@@ -90,31 +114,18 @@ extension Result where Success == Data?, Failure == NetworkError {
         verificationMode: Signing.ResponseVerificationMode
     ) -> Result<HTTPResponse<Data?>, Failure> {
         return self.flatMap { body in
-            if let body = body {
-                let response = HTTPResponse.create(
-                    with: response,
-                    body: body,
-                    request: request,
-                    publicKey: verificationMode.publicKey,
-                    signing: signing
-                )
+            let response = HTTPResponse.create(
+                with: response,
+                body: body ?? .init(),
+                request: request,
+                publicKey: verificationMode.publicKey,
+                signing: signing
+            )
 
-                if response.verificationResult == .failed, case .enforced = verificationMode {
-                    return .failure(.signatureVerificationFailed(path: request.path))
-                } else {
-                    return .success(response.mapBody(Optional.some))
-                }
+            if response.verificationResult == .failed, case .enforced = verificationMode {
+                return .failure(.signatureVerificationFailed(path: request.path))
             } else {
-                // No body means that the status code `HTTPStatusCode.notModified`
-                // so the response will be fetched from `ETagManager`.
-                return .success(
-                    .init(
-                        statusCode: HTTPStatusCode(rawValue: response.statusCode),
-                        responseHeaders: response.allHeaderFields,
-                        body: body,
-                        verificationResult: .notVerified
-                    )
-                )
+                return .success(response.mapBody(Optional.some))
             }
         }
     }

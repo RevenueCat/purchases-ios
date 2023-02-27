@@ -24,6 +24,8 @@ enum SigningStrings {
 
     case signature_was_requested_but_not_provided(HTTPRequest)
 
+    case request_time_missing_from_headers(HTTPRequest)
+
 }
 
 extension SigningStrings: CustomStringConvertible {
@@ -38,6 +40,10 @@ extension SigningStrings: CustomStringConvertible {
 
         case .signature_failed_verification:
             return "Signature failed verification"
+
+        case let .request_time_missing_from_headers(request):
+            return "Request to '\(request.path)' required a request time but none was provided. " +
+            "This will be reported as a verification failure."
 
         case let .signature_was_requested_but_not_provided(request):
             return "Request to '\(request.path)' required a signature but none was provided. " +
