@@ -81,7 +81,7 @@ extension StoreKitStrings: CustomStringConvertible {
             return "Store products request finished"
 
         case .store_product_request_received_response:
-            return "Store products request request received response"
+            return "Store products request received response"
 
         case let .skunknown_payment_mode(name):
             return "Unrecognized PaymentMode: \(name)"
