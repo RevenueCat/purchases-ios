@@ -32,7 +32,7 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
     func testCachedCustomerInfoHasSchemaVersion() throws {
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
 
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
         self.deviceCache.cachedCustomerInfo[self.identityManager.currentAppUserID] = object
 
         self.setupPurchases()
@@ -68,7 +68,7 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
     func testSendsCachedCustomerInfoToGetter() throws {
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
 
-        self.deviceCache.cachedCustomerInfo[self.identityManager.currentAppUserID] = try info.asData()
+        self.deviceCache.cachedCustomerInfo[self.identityManager.currentAppUserID] = try info.asJSONEncodedData()
 
         self.setupPurchases()
 
@@ -83,7 +83,7 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
     func testCustomerInfoCompletionBlockCalledExactlyOnceWhenInfoCached() throws {
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
 
-        self.deviceCache.cachedCustomerInfo[self.identityManager.currentAppUserID] = try info.asData()
+        self.deviceCache.cachedCustomerInfo[self.identityManager.currentAppUserID] = try info.asJSONEncodedData()
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
 
         self.setupPurchases()

@@ -24,6 +24,7 @@ struct HTTPResponse<Body: HTTPResponseBody> {
     /// To perform a case-insensitive header lookup, use the `value(forHeaderField:)` method instead.
     var responseHeaders: HTTPClient.ResponseHeaders
     var body: Body
+    var requestDate: Date?
     var verificationResult: VerificationResult
 
 }
@@ -80,6 +81,7 @@ extension HTTPResponse where Body: OptionalType, Body.Wrapped: HTTPResponseBody 
         return .init(statusCode: self.statusCode,
                      responseHeaders: self.responseHeaders,
                      body: body,
+                     requestDate: self.requestDate,
                      verificationResult: self.verificationResult)
     }
 
@@ -91,7 +93,18 @@ extension HTTPResponse {
         return .init(statusCode: self.statusCode,
                      responseHeaders: self.responseHeaders,
                      body: try mapping(self.body),
+                     requestDate: self.requestDate,
                      verificationResult: self.verificationResult)
+    }
+
+    func copy(with newVerificationResult: VerificationResult) -> Self {
+        return .init(
+            statusCode: self.statusCode,
+            responseHeaders: self.responseHeaders,
+            body: self.body,
+            requestDate: self.requestDate,
+            verificationResult: newVerificationResult
+        )
     }
 
 }

@@ -34,14 +34,18 @@ extension HTTPResponse where Body == Data {
                        request: HTTPRequest,
                        publicKey: Signing.PublicKey?,
                        signing: SigningType.Type = Signing.self) -> Self {
+        let requestDate = Self.parseRequestDate(headers: headers)
+
         return .init(
             statusCode: statusCode,
             responseHeaders: headers,
             body: body,
+            requestDate: requestDate,
             verificationResult: Self.verificationResult(
                 body: body,
                 statusCode: statusCode,
                 headers: headers,
+                requestDate: requestDate,
                 request: request,
                 publicKey: publicKey,
                 signing: signing
@@ -54,6 +58,7 @@ extension HTTPResponse where Body == Data {
         body: Data,
         statusCode: HTTPStatusCode,
         headers: HTTPClient.ResponseHeaders,
+        requestDate: Date?,
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
         signing: SigningType.Type
@@ -73,11 +78,8 @@ extension HTTPResponse where Body == Data {
             return .failed
         }
 
-        guard let requestTimeString = HTTPResponse.value(
-            forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.requestTime.rawValue,
-            in: headers
-        ), let requestTime = Int(requestTimeString) else {
-            Logger.warn(Strings.signing.request_time_missing_from_headers(request))
+        guard let requestDate = requestDate else {
+            Logger.warn(Strings.signing.request_date_missing_from_headers(request))
 
             return .failed
         }
@@ -93,7 +95,7 @@ extension HTTPResponse where Body == Data {
                           with: .init(
                             message: messageToSign,
                             nonce: nonce,
-                            requestTime: requestTime
+                            requestDate: requestDate.millisecondsSince1970
                           ),
                           publicKey: publicKey) {
             return .verified
@@ -128,6 +130,34 @@ extension Result where Success == Data?, Failure == NetworkError {
                 return .success(response.mapBody(Optional.some))
             }
         }
+    }
+
+}
+
+extension HTTPResponse {
+
+    /// Creates an `HTTPResponse` extracting the `requestDate` from its headers
+    init(
+        statusCode: HTTPStatusCode,
+        responseHeaders: HTTPClient.ResponseHeaders,
+        body: Body,
+        verificationResult: VerificationResult
+    ) {
+        self.statusCode = statusCode
+        self.responseHeaders = responseHeaders
+        self.body = body
+        self.requestDate = Self.parseRequestDate(headers: responseHeaders)
+        self.verificationResult = verificationResult
+    }
+
+    static func parseRequestDate(headers: Self.Headers) -> Date? {
+        guard let stringValue = Self.value(
+            forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.requestDate.rawValue,
+            in: headers
+        ),
+              let intValue = Int(stringValue) else { return nil }
+
+        return .init(millisecondsSince1970: intValue)
     }
 
 }

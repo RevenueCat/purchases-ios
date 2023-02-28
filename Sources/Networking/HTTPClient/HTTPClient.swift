@@ -92,7 +92,7 @@ extension HTTPClient {
 
         case eTag = "X-RevenueCat-ETag"
         case signature = "X-Signature"
-        case requestTime = "X-RevenueCat-Request-Time"
+        case requestDate = "X-RevenueCat-Request-Time"
 
     }
 
@@ -251,10 +251,18 @@ private extension HTTPClient {
                            request: request.httpRequest,
                            signing: self.signing,
                            verificationMode: request.verificationMode)
-            .map {
-                self.eTagManager.httpResultFromCacheOrBackend(with: $0,
-                                                              request: urlRequest,
-                                                              retried: request.retried)
+            .map { (response) -> HTTPResponse<Data>? in
+                guard let cachedResponse = self.eTagManager.httpResultFromCacheOrBackend(
+                    with: response,
+                    request: urlRequest,
+                    retried: request.retried
+                ) else {
+                    return nil
+                }
+
+                return cachedResponse
+                    .copy(with: .from(cache: cachedResponse.verificationResult,
+                                      response: response.verificationResult))
             }
             .asOptionalResult?
             .convertUnsuccessfulResponseToError()
@@ -469,9 +477,23 @@ extension Result where Success == HTTPResponse<Data>, Failure == NetworkError {
                 try response.mapBody { data in     // Convert the body of `HTTPResponse<Data>` from `Data` -> `Value`
                     try Value.create(with: data)   // Decode `Data` into `Value`
                 }
+                .copyWithNewRequestDate()         // Update request date for 304 responses
             }
             // Convert decoding errors into `NetworkError.decoding`
             .mapError { NetworkError.decoding($0, response.body) }
+        }
+    }
+
+}
+
+extension HTTPResponse {
+
+    fileprivate func copyWithNewRequestDate() -> Self {
+        // Update request time from server unless it failed verification.
+        guard self.verificationResult != .failed, let requestDate = self.requestDate else { return self }
+
+        return self.mapBody {
+            return $0.copy(with: requestDate)
         }
     }
 

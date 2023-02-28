@@ -43,7 +43,7 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
                 "original_purchase_date": "2018-10-26T23:17:53Z"
             ]])
 
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         self.mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
@@ -73,7 +73,7 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
                 "original_purchase_date": "2018-10-26T23:17:53Z"
             ]])
 
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         self.mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true

@@ -26,6 +26,7 @@ class MockHTTPClient: HTTPClient {
         init(
             statusCode: HTTPStatusCode,
             response: [String: Any] = [:],
+            responseHeaders: HTTPResponse.Headers = [:],
             verificationResult: VerificationResult = .defaultValue,
             delay: DispatchTimeInterval = .never
         ) {
@@ -34,7 +35,7 @@ class MockHTTPClient: HTTPClient {
 
             let response = HTTPResponse(
                 statusCode: statusCode,
-                responseHeaders: [:],
+                responseHeaders: responseHeaders,
                 body: data,
                 verificationResult: verificationResult
             )

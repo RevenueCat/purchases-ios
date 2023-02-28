@@ -19,6 +19,19 @@ protocol HTTPResponseBody {
 
     static func create(with data: Data) throws -> Self
 
+    /// Returns a copy of this response body updating only the request date
+    /// This is useful for types that include a response date (like `CustomerInfo`), that need to
+    /// get the most up-to-date time coming from the response header.
+    ///
+    /// - Note: The default implementation is a no-op.
+    func copy(with newRequestDate: Date) -> Self
+
+}
+
+extension HTTPResponseBody {
+
+    func copy(with newRequestDate: Date) -> Self { return self }
+
 }
 
 /// An empty `HTTPResponseBody` for responses with no content.

@@ -14,6 +14,14 @@
 @testable import RevenueCat
 import XCTest
 
+extension Encodable {
+
+    func asJSONEncodedData() throws -> Data {
+        return try JSONEncoder.default.encode(self)
+    }
+
+}
+
 extension CustomerInfo {
 
     /// Initializes the customer with a dictionary
@@ -26,16 +34,14 @@ extension CustomerInfo {
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
-    func asData() throws -> Data {
-        return try JSONEncoder.default.encode(self)
-    }
-
 }
 
 extension CustomerInfo {
 
     func asData(withNewSchemaVersion version: Any?) throws -> Data {
-        var dictionary = try XCTUnwrap(JSONSerialization.jsonObject(with: try self.asData()) as? [String: Any])
+        var dictionary = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: try self.asJSONEncodedData()) as? [String: Any]
+        )
 
         if let version = version {
             dictionary["schema_version"] = version

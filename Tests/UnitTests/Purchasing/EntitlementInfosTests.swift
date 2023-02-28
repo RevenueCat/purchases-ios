@@ -1201,7 +1201,7 @@ private extension EntitlementInfosTests {
         file: FileString = #file,
         line: UInt = #line
     ) throws {
-        let subscriberInfo = try CustomerInfo(data: response)
+        let subscriberInfo = try CustomerInfo(data: self.response)
         let proCat = try XCTUnwrap(subscriberInfo.entitlements[entitlement])
 
         expect(file: file, line: line, proCat.identifier) == entitlement

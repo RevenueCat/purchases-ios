@@ -938,6 +938,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
             "test": "data"
         ])
         let eTag = "tag"
+        let requestDate = Date().addingTimeInterval(-1000000)
 
         self.eTagManager.stubResponseEtag(eTag)
         self.eTagManager.shouldReturnResultFromBackend = false
@@ -945,7 +946,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
             statusCode: .success,
             responseHeaders: [:],
             body: mockedCachedResponse,
-            verificationResult: .verified
+            requestDate: requestDate,
+            verificationResult: .notVerified
         )
 
         stub(condition: isPath(path)) { response in
@@ -965,7 +967,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success
         expect(response?.value?.body) == mockedCachedResponse
-        expect(response?.value?.verificationResult) == .verified
+        expect(response?.value?.requestDate) == requestDate
+        expect(response?.value?.verificationResult) == .notVerified
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
         expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == false
@@ -1150,7 +1153,86 @@ final class HTTPClientTests: BaseHTTPClientTests {
             .toNot(contain(unexpectedDNSError.description))
     }
 
+    func testResponseFromServerUpdatesRequestDate() throws {
+        let path: HTTPRequest.Path = .mockPath
+        let mockedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-3000000))
+        let encodedResponse = try mockedResponse.asJSONEncodedData()
+        let requestDate = Date().addingTimeInterval(-100000)
+
+        stub(condition: isPath(path)) { _ in
+            return HTTPStubsResponse(
+                data: encodedResponse,
+                statusCode: .success,
+                headers: [
+                    HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate.millisecondsSince1970)
+                ]
+            )
+        }
+
+        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body.requestDate).to(beCloseTo(requestDate, within: 1))
+    }
+
+    func testCachedResponseUpdatesRequestDate() throws {
+        let path: HTTPRequest.Path = .mockPath
+        let eTag = "etag"
+        let mockedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-30000000))
+        let encodedResponse = try mockedResponse.asJSONEncodedData()
+        let requestDate = Date().addingTimeInterval(-1000000)
+
+        self.eTagManager.stubResponseEtag(eTag)
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
+            statusCode: .success,
+            responseHeaders: [:],
+            body: encodedResponse,
+            requestDate: requestDate,
+            verificationResult: .notVerified
+        )
+
+        stub(condition: isPath(path)) { _ in
+            return HTTPStubsResponse(
+                data: .init(),
+                statusCode: .notModified,
+                headers: [
+                    HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate.millisecondsSince1970)
+                ]
+            )
+        }
+
+        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body.requestDate).to(beCloseTo(requestDate, within: 1))
+        expect(response?.value?.verificationResult) == .notVerified
+
+        expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
+    }
+
 }
+
+private extension BaseHTTPClientTests {
+
+    struct BodyWithDate: Equatable, Codable, HTTPResponseBody {
+        var data: String
+        var requestDate: Date
+
+        func copy(with newRequestDate: Date) -> HTTPClientTests.BodyWithDate {
+            var copy = self
+            copy.requestDate = newRequestDate
+            return copy
+        }
+    }
+
+}
+
+// MARK: - Signing tests
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
@@ -1163,7 +1245,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
     private let sampleSignature = "signature"
     private let sampleETag = "e-tag"
-    private let requestTime = Date().millisecondsSince1970
+    private let requestDate = Date().millisecondsSince1970
 
     func testRequestIncludesRandomNonce() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .mockPath)
@@ -1232,7 +1314,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
                          statusCode: .success,
                          headers: [
                             "x-signature": self.sampleSignature,
-                            "x-revenuecat-request-time": String(self.requestTime)
+                            "x-revenuecat-request-time": String(self.requestDate)
                          ])
         }
 
@@ -1253,7 +1335,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
         try self.changeClient(.informational)
         self.mockResponse(signature: self.sampleSignature,
-                          requestTime: self.requestTime,
+                          requestDate: self.requestDate,
                           body: body)
         MockSigning.stubbedVerificationResult = true
 
@@ -1271,7 +1353,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
         expect(signingRequest.parameters.message) == body
         expect(signingRequest.parameters.nonce) == request.nonce
-        expect(signingRequest.parameters.requestTime) == self.requestTime
+        expect(signingRequest.parameters.requestDate) == self.requestDate
         expect(signingRequest.signature) == self.sampleSignature
         expect(signingRequest.publicKey).toNot(beNil())
     }
@@ -1281,7 +1363,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
         try self.changeClient(.informational)
         self.mockResponse(signature: self.sampleSignature,
-                          requestTime: self.requestTime,
+                          requestDate: self.requestDate,
                           eTag: self.sampleETag,
                           statusCode: .notModified)
         MockSigning.stubbedVerificationResult = true
@@ -1309,7 +1391,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
         expect(signingRequest.parameters.message) == self.sampleETag.asData
         expect(signingRequest.parameters.nonce) == request.nonce
-        expect(signingRequest.parameters.requestTime) == self.requestTime
+        expect(signingRequest.parameters.requestDate) == self.requestDate
         expect(signingRequest.signature) == self.sampleSignature
         expect(signingRequest.publicKey).toNot(beNil())
     }
@@ -1330,7 +1412,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
     func testValidSignatureWithVerificationModeEnforced() throws {
         try self.changeClient(.enforced)
-        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
+        self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = true
 
@@ -1346,7 +1428,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
     func testIncorrectSignatureWithVerificationModeInformationalReturnsResponse() throws {
         try self.changeClient(.informational)
-        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
+        self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1362,7 +1444,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
     func testIncorrectSignatureWithVerificationModeEnforcedReturnsError() throws {
         try self.changeClient(.enforced)
-        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
+        self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1377,7 +1459,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
     func testPerformRequestWithEnforcedModeOverridesIt() throws {
         try self.changeClient(.disabled)
-        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
+        self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1393,7 +1475,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
     func testPerformRequestWithInformationalModeOverridesIt() throws {
         try self.changeClient(.disabled)
-        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
+        self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1409,7 +1491,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
 
     func testPerformRequestWithDisabledModeOverridesIt() throws {
         try self.changeClient(.enforced)
-        self.mockResponse(signature: self.sampleSignature, requestTime: self.requestTime)
+        self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
 
@@ -1435,7 +1517,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
                          statusCode: .success,
                          headers: [
                             HTTPClient.ResponseHeader.signature.rawValue: self.sampleSignature,
-                            HTTPClient.ResponseHeader.requestTime.rawValue: String(self.requestTime)
+                            HTTPClient.ResponseHeader.requestDate.rawValue: String(self.requestDate)
                          ])
         }
 
@@ -1458,6 +1540,49 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response?.value?.verificationResult) == .verified
     }
 
+    func testCachedResponseDoesNotUpdateRequestDateIfNewResponseIsNotVerified() throws {
+        try self.changeClient(.informational)
+
+        let path: HTTPRequest.Path = .mockPath
+        let eTag = "etag"
+        let cachedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-30000000))
+        let encodedCachedResponse = try cachedResponse.asJSONEncodedData()
+        let newRequestDate = Date().addingTimeInterval(-1000000)
+
+        self.eTagManager.stubResponseEtag(eTag)
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
+            statusCode: .success,
+            responseHeaders: [:],
+            body: encodedCachedResponse,
+            verificationResult: .notVerified
+        )
+
+        MockSigning.stubbedVerificationResult = false
+
+        stub(condition: isPath(path)) { _ in
+            return HTTPStubsResponse(
+                data: .init(),
+                statusCode: .notModified,
+                headers: [
+                    HTTPClient.ResponseHeader.signature.rawValue: self.sampleSignature,
+                    HTTPClient.ResponseHeader.requestDate.rawValue: String(newRequestDate.millisecondsSince1970)
+                ]
+            )
+        }
+
+        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: path),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body.requestDate).to(beCloseTo(cachedResponse.requestDate, within: 1))
+        expect(response?.value?.verificationResult) == .failed
+    }
+
+    // MARK: - Private
+
     private func changeClient(_ verificationMode: Configuration.EntitlementVerificationMode) throws {
         let mode = Signing.verificationMode(with: verificationMode)
 
@@ -1468,22 +1593,22 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     private func mockResponse() {
-        self.mockResponse(signature: nil, requestTime: nil)
+        self.mockResponse(signature: nil, requestDate: nil)
     }
 
     private func mockResponse(
         signature: String?,
-        requestTime: Int?,
+        requestDate: Int?,
         eTag: String? = nil,
         body: Data = .init(),
         statusCode: HTTPStatusCode = .success
     ) {
         stub(condition: isPath(.mockPath)) { _ in
-            if let signature = signature, let requestTime = requestTime {
+            if let signature = signature, let requestDate = requestDate {
                 let headers: [String: String?] = [
                     HTTPClient.ResponseHeader.signature.rawValue: signature,
                     HTTPClient.ResponseHeader.eTag.rawValue: eTag,
-                    HTTPClient.ResponseHeader.requestTime.rawValue: String(requestTime)
+                    HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
                 ]
 
                 return .init(data: body,

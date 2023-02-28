@@ -69,3 +69,29 @@ extension VerificationResult: DefaultValueProvider {
     static let defaultValue: Self = .notVerified
 
 }
+
+extension VerificationResult {
+
+    /// - Returns: the most restrictive ``VerificationResult`` based on the cached verification and
+    /// the response verification.
+    static func from(cache cachedResult: Self, response responseResult: Self) -> Self {
+        switch (cachedResult, responseResult) {
+        case (.notVerified, .notVerified),
+            (.verified, .verified),
+            (.failed, .failed):
+            return cachedResult
+
+        // These shouldn't happen because `ETagManager` will ignore not verified cached responses
+        // if verification is enabled
+        case (.notVerified, .verified): return .notVerified
+        case (.notVerified, .failed): return .failed
+
+        case (.verified, .notVerified): return .notVerified
+        case (.verified, .failed): return .failed
+
+        case (.failed, .notVerified): return .failed
+        case (.failed, .verified): return .failed
+        }
+    }
+
+}

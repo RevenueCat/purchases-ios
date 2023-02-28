@@ -41,12 +41,19 @@ extension CustomerInfoResponseHandler {
 
     struct Response: HTTPResponseBody {
 
-        let customerInfo: CustomerInfo
-        let errorResponse: ErrorResponse
+        var customerInfo: CustomerInfo
+        var errorResponse: ErrorResponse
 
         static func create(with data: Data) throws -> Self {
             return .init(customerInfo: try CustomerInfo.create(with: data),
                          errorResponse: ErrorResponse.from(data))
+        }
+
+        func copy(with newRequestDate: Date) -> Self {
+            var copy = self
+            copy.customerInfo = copy.customerInfo.copy(with: newRequestDate)
+
+            return copy
         }
 
     }
