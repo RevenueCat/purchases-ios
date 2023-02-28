@@ -45,7 +45,7 @@ extension ISO8601DateFormatter {
             }
 
             func string(from date: Date) -> String {
-                return ISO8601DateFormatter.withMilliseconds.string(from: date)
+                return ISO8601DateFormatter.noMilliseconds.string(from: date)
             }
         }
 
