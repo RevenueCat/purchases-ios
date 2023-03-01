@@ -58,6 +58,25 @@ class HTTPResponseTests: TestCase {
         expect(HTTPResponse.create(["x-signature": "test"]).value(forHeaderField: "X-Signature")) == "test"
     }
 
+    func testRequestDate() {
+        let date = Date().addingTimeInterval(-100_000_000)
+        let response = HTTPResponse.create([
+            HTTPClient.ResponseHeader.requestDate.rawValue: String(date.millisecondsSince1970)
+        ])
+
+        expect(response.requestDate).to(beCloseTo(date, within: 0.01))
+    }
+
+    func testRequestDateParsedAsNilIfItsMissing() {
+        let response = HTTPResponse.create([:])
+        expect(response.requestDate).to(beNil())
+    }
+
+    func testRequestDateParsedAsNilIfItCantBeParsed() {
+        let response = HTTPResponse.create([HTTPClient.ResponseHeader.requestDate.rawValue: "unknown"])
+        expect(response.requestDate).to(beNil())
+    }
+
 }
 
 private extension HTTPResponse where Body == HTTPEmptyResponseBody {
@@ -67,6 +86,21 @@ private extension HTTPResponse where Body == HTTPEmptyResponseBody {
                      responseHeaders: headers,
                      body: .init(),
                      verificationResult: .notVerified)
+    }
+
+}
+
+// MARK: - HTTPResponseBody
+
+class HTTPResponseBodyTests: TestCase {
+
+    func copyWithNewRequestDateDefaultsToSameData() {
+        struct Body: Equatable, Codable, HTTPResponseBody {
+            var data: String
+        }
+
+        let body = Body(data: "test")
+        expect(body.copy(with: Date())) == body
     }
 
 }

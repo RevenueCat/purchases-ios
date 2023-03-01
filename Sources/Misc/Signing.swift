@@ -36,7 +36,7 @@ enum Signing: SigningType {
 
         let message: Data
         let nonce: Data
-        let requestTime: Int
+        let requestDate: Int
 
     }
 
@@ -189,7 +189,7 @@ extension Signing.SignatureParameters {
     var asData: Data {
         return (
             self.nonce +
-            String(self.requestTime).asData +
+            String(self.requestDate).asData +
             self.message
         )
     }

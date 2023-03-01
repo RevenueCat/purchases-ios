@@ -212,7 +212,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.systemInfo.stubbedIsApplicationBackgrounded = true
 
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
 
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
@@ -224,7 +224,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testSettingTheDelegateAfterInitializationSendsCachedCustomerInfo() throws {
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
 
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
@@ -238,7 +238,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testSettingTheDelegateLaterPastInitializationSendsCachedCustomerInfo() throws {
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
 
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 

@@ -24,6 +24,10 @@ extension NSDate {
 
 extension Date {
 
+    init(millisecondsSince1970: Int) {
+        self.init(timeIntervalSince1970: TimeInterval(millisecondsSince1970) / 1000)
+    }
+
     var millisecondsSince1970: Int {
         return Int(self.timeIntervalSince1970 * 1000.0)
     }

@@ -196,7 +196,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "other_purchases": [:]
             ]])
 
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
         self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
@@ -214,7 +214,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "other_purchases": [:]
             ]])
 
-        var object = try oldInfo.asData()
+        var object = try oldInfo.asJSONEncodedData()
 
         mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
@@ -229,7 +229,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "other_purchases": [:]
             ]])
 
-        object = try newInfo.asData()
+        object = try newInfo.asJSONEncodedData()
         mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
@@ -246,7 +246,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "other_purchases": [:]
             ]])
 
-        let object = try oldInfo.asData()
+        let object = try oldInfo.asJSONEncodedData()
         mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
@@ -310,7 +310,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "other_purchases": [:]
             ]])
 
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
         self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
         let receivedCustomerInfo = try XCTUnwrap(self.customerInfoManager.cachedCustomerInfo(appUserID: Self.appUserID))
@@ -340,7 +340,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "other_purchases": [:]
             ]])
 
-        let object = try info.asData()
+        let object = try info.asJSONEncodedData()
         mockDeviceCache.cachedCustomerInfo["firstUser"] = object
 
         let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: "secondUser")

@@ -70,9 +70,14 @@ class ETagManagerTests: TestCase {
         let request = URLRequest(url: url)
         _ = mockStoredETagResponse(for: url, statusCode: .success, eTag: eTag)
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+        let requestDate = Date().addingTimeInterval(-100000)
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
-            with: self.responseForTest(url: url, body: responseObject, eTag: eTag, statusCode: .success),
+            with: self.responseForTest(url: url,
+                                       body: responseObject,
+                                       eTag: eTag,
+                                       statusCode: .success,
+                                       requestDate: requestDate),
             request: request,
             retried: false
         )
@@ -80,6 +85,7 @@ class ETagManagerTests: TestCase {
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .success
         expect(response?.body) == responseObject
+        expect(response?.requestDate) == requestDate
     }
 
     func testBackendResponseIsReturnedIf304AndCantFindCachedAndItHasAlreadyRetried() throws {
@@ -361,6 +367,25 @@ class ETagManagerTests: TestCase {
         expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
+    func testETagHeaderIsIgnoredIfVerificationWasNotEnabled() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = ETagManager.Response(
+            eTag: eTag,
+            statusCode: .success,
+            data: actualResponse,
+            verificationResult: .notVerified
+        ).asData()
+
+        let response = self.eTagManager.eTagHeader(for: request, signatureVerificationEnabled: true)
+        expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
+    }
+
     func testETagHeaderIsReturnedIfVerificationSucceded() {
         let eTag = "the_etag"
         let url = self.urlForTest()
@@ -381,7 +406,7 @@ class ETagManagerTests: TestCase {
         expect(response[ETagManager.eTagResponseHeaderName]) == eTag
     }
 
-    func testETagHeaderIsIgnoredIfVerificationWasNotRequested() {
+    func testETagHeaderIsReturnedIfVerificationWasNotRequested() {
         let eTag = "the_etag"
         let url = self.urlForTest()
         let request = URLRequest(url: url)
@@ -399,6 +424,35 @@ class ETagManagerTests: TestCase {
         let response = self.eTagManager.eTagHeader(for: request,
                                                    signatureVerificationEnabled: false)
         expect(response[ETagManager.eTagResponseHeaderName]) == eTag
+    }
+
+    func testResponseReturnsRequestDateFromServer() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+        let requestDate = Date().addingTimeInterval(-100000)
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = """
+        {
+        "e_tag": "\(eTag)",
+        "status_code": 200,
+        "data": "\(actualResponse.asFetchToken)"
+        }
+        """.asData
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: nil,
+                                       eTag: eTag,
+                                       statusCode: .notModified,
+                                       requestDate: requestDate),
+            request: request,
+            retried: false
+        )
+        expect(response?.requestDate) == requestDate
     }
 
     func testCachedResponseWithNoVerificationResultIsNotIgnored() {
@@ -571,11 +625,13 @@ private extension ETagManagerTests {
         body: Data?,
         eTag: String,
         statusCode: HTTPStatusCode,
+        requestDate: Date? = nil,
         verificationResult: RevenueCat.VerificationResult = .defaultValue
     ) -> HTTPResponse<Data?> {
         return .init(statusCode: statusCode,
                      responseHeaders: self.getHeaders(eTag: eTag),
                      body: body,
+                     requestDate: requestDate,
                      verificationResult: verificationResult)
     }
 

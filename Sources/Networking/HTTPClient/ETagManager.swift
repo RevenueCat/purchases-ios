@@ -59,7 +59,7 @@ class ETagManager {
 
         guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
         if self.shouldUseCachedVersion(responseCode: statusCode) {
-            if let storedResponse = self.storedHTTPResponse(for: request) {
+            if let storedResponse = self.storedHTTPResponse(for: request, withRequestDate: response.requestDate) {
                 return storedResponse
             }
             if retried {
@@ -107,8 +107,8 @@ private extension ETagManager {
         }
     }
 
-    func storedHTTPResponse(for request: URLRequest) -> HTTPResponse<Data>? {
-        return self.storedETagAndResponse(for: request)?.asResponse
+    func storedHTTPResponse(for request: URLRequest, withRequestDate requestDate: Date?) -> HTTPResponse<Data>? {
+        return self.storedETagAndResponse(for: request)?.asResponse(withRequestDate: requestDate)
     }
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
@@ -185,11 +185,12 @@ extension ETagManager.Response {
         return try? JSONEncoder.default.encode(self)
     }
 
-    fileprivate var asResponse: HTTPResponse<Data> {
+    fileprivate func asResponse(withRequestDate requestDate: Date?) -> HTTPResponse<Data> {
         return HTTPResponse(
             statusCode: self.statusCode,
             responseHeaders: [:],
             body: self.data,
+            requestDate: requestDate,
             verificationResult: self.verificationResult
         )
     }

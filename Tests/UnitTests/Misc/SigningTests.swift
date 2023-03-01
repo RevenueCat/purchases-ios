@@ -68,7 +68,7 @@ class SigningTests: TestCase {
 
         let message = "Hello World"
         let nonce = "nonce"
-        let requestTime = 1677005916012
+        let requestDate = 1677005916012
         let signature = "this is not a signature"
 
         expect(Signing.verify(
@@ -76,7 +76,7 @@ class SigningTests: TestCase {
             with: .init(
                 message: message.asData,
                 nonce: nonce.asData,
-                requestTime: requestTime
+                requestDate: requestDate
             ),
             publicKey: Signing.loadPublicKey()
         )) == false
@@ -90,7 +90,7 @@ class SigningTests: TestCase {
             with: .init(
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
-                requestTime: 1677005916012
+                requestDate: 1677005916012
             ),
             publicKey: Signing.loadPublicKey()
         )) == false
@@ -103,7 +103,7 @@ class SigningTests: TestCase {
                            with: .init(
                             message: "Hello World".asData,
                             nonce: "nonce".asData,
-                            requestTime: 1677005916012
+                            requestDate: 1677005916012
                            ),
                            publicKey: Signing.loadPublicKey())
 
@@ -113,14 +113,14 @@ class SigningTests: TestCase {
     func testVerifySignatureWithValidSignature() throws {
         let message = "Hello World"
         let nonce = "nonce"
-        let requestTime = 1677005916012
+        let requestDate = 1677005916012
         let salt = Self.createSalt()
 
         let signature = try self.sign(
             parameters: .init(
                 message: message.asData,
                 nonce: nonce.asData,
-                requestTime: requestTime
+                requestDate: requestDate
             ),
             salt: salt.asData
         )
@@ -131,7 +131,7 @@ class SigningTests: TestCase {
             with: .init(
                 message: message.asData,
                 nonce: nonce.asData,
-                requestTime: requestTime
+                requestDate: requestDate
             ),
             publicKey: self.publicKey
         )) == true
@@ -155,7 +155,7 @@ class SigningTests: TestCase {
         // swiftlint:enable line_length
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
-        let requestTime = 1677005916012
+        let requestDate = 1677005916012
 
         expect(
             Signing.verify(
@@ -163,7 +163,7 @@ class SigningTests: TestCase {
                 with: .init(
                     message: response.asData,
                     nonce: nonce,
-                    requestTime: requestTime
+                    requestDate: requestDate
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -182,7 +182,7 @@ class SigningTests: TestCase {
          */
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
-        let requestTime = 1677013582768
+        let requestDate = 1677013582768
         let eTag = "b7bd9a697c7fd1a2"
 
         // swiftlint:disable:next line_length
@@ -194,7 +194,7 @@ class SigningTests: TestCase {
                 with: .init(
                     message: eTag.asData,
                     nonce: nonce,
-                    requestTime: requestTime
+                    requestDate: requestDate
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -241,12 +241,12 @@ class SigningTests: TestCase {
     func testResponseVerificationWithValidSignature() throws {
         let message = "Hello World"
         let nonce = "0123456789ab"
-        let requestTime = Date().millisecondsSince1970
+        let requestDate = Date().millisecondsSince1970
         let salt = Self.createSalt()
 
         let signature = try self.sign(parameters: .init(message: message.asData,
                                                         nonce: nonce.asData,
-                                                        requestTime: requestTime),
+                                                        requestDate: requestDate),
                                       salt: salt.asData)
         let fullSignature = salt.asData + signature
 
@@ -256,7 +256,7 @@ class SigningTests: TestCase {
             statusCode: .success,
             headers: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
-                HTTPClient.ResponseHeader.requestTime.rawValue: String(requestTime)
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
             ],
             request: request,
             publicKey: self.publicKey
@@ -269,12 +269,12 @@ class SigningTests: TestCase {
         let message = "Hello World"
         let nonce = "0123456789ab"
         let etag = "etag"
-        let requestTime = Date().millisecondsSince1970
+        let requestDate = Date().millisecondsSince1970
         let salt = Self.createSalt()
 
         let signature = try self.sign(parameters: .init(message: etag.asData,
                                                         nonce: nonce.asData,
-                                                        requestTime: requestTime),
+                                                        requestDate: requestDate),
                                       salt: salt.asData)
         let fullSignature = salt.asData + signature
 
@@ -285,13 +285,40 @@ class SigningTests: TestCase {
             headers: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
                 HTTPClient.ResponseHeader.eTag.rawValue: etag,
-                HTTPClient.ResponseHeader.requestTime.rawValue: String(requestTime)
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
             ],
             request: request,
             publicKey: self.publicKey
         )
 
         expect(response.verificationResult) == .verified
+    }
+
+    func testVerificationResultWithSameCachedAndResponseResult() {
+        expect(VerificationResult.from(cache: .notVerified, response: .notVerified)) == .notVerified
+        expect(VerificationResult.from(cache: .verified, response: .verified)) == .verified
+        expect(VerificationResult.from(cache: .failed, response: .failed)) == .failed
+    }
+
+    func testNotVerifiedCachedResult() {
+        expect(VerificationResult.from(cache: .notVerified,
+                                       response: .verified)) == .notVerified
+        expect(VerificationResult.from(cache: .notVerified,
+                                       response: .failed)) == .failed
+    }
+
+    func testVerifiedCachedResult() {
+        expect(VerificationResult.from(cache: .verified,
+                                       response: .notVerified)) == .notVerified
+        expect(VerificationResult.from(cache: .verified,
+                                       response: .failed)) == .failed
+    }
+
+    func testFailedVerificationCachedResult() {
+        expect(VerificationResult.from(cache: .failed,
+                                       response: .notVerified)) == .failed
+        expect(VerificationResult.from(cache: .failed,
+                                       response: .verified)) == .failed
     }
 
 }

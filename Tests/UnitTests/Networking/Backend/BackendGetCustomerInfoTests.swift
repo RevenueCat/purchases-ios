@@ -192,6 +192,28 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(customerInfo?.value?.entitlements.verification) == .failed
     }
 
+    func testUpdatesRequestDateFromResponseHeader() {
+        let requestDate = Date().addingTimeInterval(-10000)
+
+        self.httpClient.mock(
+            requestPath: .getCustomerInfo(appUserID: Self.userID),
+            response: .init(
+                statusCode: .success,
+                response: Self.validCustomerResponse,
+                responseHeaders: [
+                    HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate.millisecondsSince1970)
+                ]
+            )
+        )
+
+        let response = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.requestDate).to(beCloseTo(requestDate, within: 0.01))
+    }
+
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

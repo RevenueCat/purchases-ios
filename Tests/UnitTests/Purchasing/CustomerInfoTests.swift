@@ -797,19 +797,36 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testCopyWithVerificationResultVerified() throws {
-        self.verifyCopy(of: try CustomerInfo(data: Self.validSubscriberResponse),
+        self.verifyCopy(of: self.customerInfo,
                         onlyModifiesEntitlementVerification: .verified)
     }
 
     func testCopyWithVerificationResultFailedVerified() throws {
-        self.verifyCopy(of: try CustomerInfo(data: Self.validSubscriberResponse),
+        self.verifyCopy(of: self.customerInfo,
                         onlyModifiesEntitlementVerification: .failed)
     }
 
     func testCopyWithVerificationResultNotVerified() throws {
-        self.verifyCopy(of: try CustomerInfo(data: Self.validSubscriberResponse).copy(with: .verified),
+        self.verifyCopy(of: self.customerInfo.copy(with: .verified),
                         onlyModifiesEntitlementVerification: .notVerified)
     }
+
+    func testCopyWithNewRequestDateModifiesOnlyRequestDate() throws {
+        self.verifyCopy(of: self.customerInfo,
+                        onlyModifiesRequestDate: Date().addingTimeInterval(-1000000))
+    }
+
+    func testCopyWithNewRequestDateUpdatesEntitlements() throws {
+        expect(self.customerInfo.entitlements.active).to(haveCount(2))
+        expect(self.customerInfo.entitlements["old_pro"]?.isActive) == false
+
+        let newRequestTime = try XCTUnwrap(ISO8601DateFormatter.default.date(from: "1990-01-30T02:40:36Z"))
+        let updatedCustomerInfo: CustomerInfo = self.customerInfo.copy(with: newRequestTime)
+        expect(updatedCustomerInfo.entitlements.active).to(haveCount(3))
+        expect(updatedCustomerInfo.entitlements["old_pro"]?.isActive) == true
+    }
+
+    // MARK: - Private
 
     private func verifyCopy(
         of customerInfo: CustomerInfo,
@@ -825,6 +842,20 @@ class BasicCustomerInfoTests: TestCase {
             let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlementVerification)
             expect(copyWithOriginalVerification) == customerInfo
         }
+    }
+
+    private func verifyCopy(
+        of customerInfo: CustomerInfo,
+        onlyModifiesRequestDate newRequestDate: Date
+    ) {
+        let originalDate = customerInfo.requestDate
+
+        let copy = customerInfo.copy(with: newRequestDate)
+        expect(copy.requestDate) == newRequestDate
+        expect(customerInfo.requestDate) == originalDate
+
+        let copyWithOriginalDate = copy.copy(with: originalDate)
+        expect(copyWithOriginalDate) == customerInfo
     }
 
 }
