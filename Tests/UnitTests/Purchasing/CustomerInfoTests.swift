@@ -13,12 +13,19 @@ import XCTest
 @testable import RevenueCat
 
 class EmptyCustomerInfoTests: TestCase {
+
     func testEmptyDataFails() throws {
-        expect(try CustomerInfo(data: [:])).to(throwError())
+        expect(try CustomerInfo(data: [:])).to(throwError(ErrorCode.customerInfoError))
     }
+
 }
 
 class BasicCustomerInfoTests: TestCase {
+
+    private static func date(withDaysAgo days: Int) throws -> Date {
+        return try XCTUnwrap(Calendar.current.date(byAdding: .day, value: days, to: Date()))
+    }
+
     static let validSubscriberResponse: [String: Any] = [
         "request_date": "2018-10-19T02:40:36Z",
         "request_date_ms": Int64(1563379533946),
@@ -54,6 +61,14 @@ class BasicCustomerInfoTests: TestCase {
                     "expires_date": "2100-08-30T02:40:36Z",
                     "product_identifier": "onemonth_freetrial",
                     "purchase_date": "2018-10-26T23:17:53Z"
+                ],
+                "expired_pro": [
+                    "expires_date": ISO8601DateFormatter.default.string(
+                        // swiftlint:disable:next force_try
+                        from: try! BasicCustomerInfoTests.date(withDaysAgo: -1)
+                    ),
+                    "product_identifier": "threemonth_freetrial",
+                    "purchase_date": "1990-06-30T02:40:36Z"
                 ],
                 "old_pro": [
                     "expires_date": "1990-08-30T02:40:36Z",
@@ -818,12 +833,12 @@ class BasicCustomerInfoTests: TestCase {
 
     func testCopyWithNewRequestDateUpdatesEntitlements() throws {
         expect(self.customerInfo.entitlements.active).to(haveCount(2))
-        expect(self.customerInfo.entitlements["old_pro"]?.isActive) == false
+        expect(self.customerInfo.entitlements["expired_pro"]?.isActive) == false
 
-        let newRequestTime = try XCTUnwrap(ISO8601DateFormatter.default.date(from: "1990-01-30T02:40:36Z"))
+        let newRequestTime = try Self.date(withDaysAgo: -2)
         let updatedCustomerInfo: CustomerInfo = self.customerInfo.copy(with: newRequestTime)
         expect(updatedCustomerInfo.entitlements.active).to(haveCount(3))
-        expect(updatedCustomerInfo.entitlements["old_pro"]?.isActive) == true
+        expect(updatedCustomerInfo.entitlements["expired_pro"]?.isActive) == true
     }
 
     // MARK: - Private

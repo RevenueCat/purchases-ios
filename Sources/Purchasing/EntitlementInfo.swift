@@ -224,7 +224,7 @@ extension PeriodType: DefaultValueProvider {
     ) {
         self.contents = .init(
             identifier: identifier,
-            isActive: Self.isDateActive(expirationDate: entitlement.expiresDate, forRequestDate: requestDate),
+            isActive: Self.isDateActive(expirationDate: entitlement.expiresDate, for: requestDate),
             willRenew: Self.willRenewWithExpirationDate(expirationDate: subscription.expiresDate,
                                                         store: subscription.store,
                                                         unsubscribeDetectedAt: subscription.unsubscribeDetectedAt,
@@ -282,29 +282,58 @@ public extension EntitlementInfo {
 
 }
 
+// MARK: - Internal
+
+extension EntitlementInfo {
+
+    /// This grace period allows apps to continue functioning if the backend is down, but for a limited time.
+    /// We don't want to continue granting entitlements with an outdated `requestDate` forever,
+    /// since that would allow a user to get a free trial, then go offline and keep the entitlement with no time limit.
+    static let requestDateGracePeriod: DispatchTimeInterval = .days(3)
+
+}
+
 // MARK: - Private
 
 private extension EntitlementInfo {
 
-    class func isDateActive(expirationDate: Date?, forRequestDate requestDate: Date?) -> Bool {
+    static func isDateActive(expirationDate: Date?, for requestDate: Date?) -> Bool {
         guard let expirationDate = expirationDate else {
             return true
         }
 
-        let referenceDate: Date = requestDate ?? Date()
-        return expirationDate.timeIntervalSince(referenceDate) >= 0
+        let (referenceDate, inGracePeriod) = Self.referenceDate(for: requestDate)
+        let isActive = expirationDate.timeIntervalSince(referenceDate) >= 0
+
+        if !inGracePeriod && !isActive {
+            Logger.warn(Strings.purchase.entitlement_expired_outside_grace_period(expiration: expirationDate,
+                                                                                  reference: requestDate ?? Date()))
+        }
+
+        return isActive
     }
 
-    class func willRenewWithExpirationDate(expirationDate: Date?,
-                                           store: Store,
-                                           unsubscribeDetectedAt: Date?,
-                                           billingIssueDetectedAt: Date?) -> Bool {
+    static func willRenewWithExpirationDate(expirationDate: Date?,
+                                            store: Store,
+                                            unsubscribeDetectedAt: Date?,
+                                            billingIssueDetectedAt: Date?) -> Bool {
         let isPromo = store == .promotional
         let isLifetime = expirationDate == nil
         let hasUnsubscribed = unsubscribeDetectedAt != nil
         let hasBillingIssues = billingIssueDetectedAt != nil
 
         return !(isPromo || isLifetime || hasUnsubscribed || hasBillingIssues)
+    }
+
+    private static func referenceDate(for requestDate: Date?) -> (Date, inGracePeriod: Bool) {
+        guard let requestDate = requestDate else { return (Date(), true) }
+
+        if Date().timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
+            return (requestDate, true)
+        } else {
+
+            return (Date(), false)
+        }
     }
 
 }
