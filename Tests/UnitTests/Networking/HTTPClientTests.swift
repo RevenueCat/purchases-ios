@@ -1553,7 +1553,9 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
             statusCode: .success,
-            responseHeaders: [:],
+            responseHeaders: [
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(newRequestDate.millisecondsSince1970)
+            ],
             body: encodedCachedResponse,
             verificationResult: .notVerified
         )
@@ -1579,6 +1581,49 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response).to(beSuccess())
         expect(response?.value?.body.requestDate).to(beCloseTo(cachedResponse.requestDate, within: 1))
         expect(response?.value?.verificationResult) == .failed
+    }
+
+    func testCachedResponseUpdatesRequestDateIfNewResponseIsVerified() throws {
+        try self.changeClient(.informational)
+
+        let path: HTTPRequest.Path = .mockPath
+        let eTag = "etag"
+        let cachedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-30000000))
+        let encodedCachedResponse = try cachedResponse.asJSONEncodedData()
+        let newRequestDate = Date().addingTimeInterval(-1000000)
+
+        self.eTagManager.stubResponseEtag(eTag)
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
+            statusCode: .success,
+            responseHeaders: [
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(newRequestDate.millisecondsSince1970)
+            ],
+            body: encodedCachedResponse,
+            verificationResult: .verified
+        )
+
+        MockSigning.stubbedVerificationResult = true
+
+        stub(condition: isPath(path)) { _ in
+            return HTTPStubsResponse(
+                data: .init(),
+                statusCode: .notModified,
+                headers: [
+                    HTTPClient.ResponseHeader.signature.rawValue: self.sampleSignature,
+                    HTTPClient.ResponseHeader.requestDate.rawValue: String(newRequestDate.millisecondsSince1970)
+                ]
+            )
+        }
+
+        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: path),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body.requestDate).to(beCloseTo(newRequestDate, within: 1))
+        expect(response?.value?.verificationResult) == .verified
     }
 
     // MARK: - Private

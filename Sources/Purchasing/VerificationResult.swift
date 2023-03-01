@@ -81,14 +81,15 @@ extension VerificationResult {
             (.failed, .failed):
             return cachedResult
 
-        // These shouldn't happen because `ETagManager` will ignore not verified cached responses
-        // if verification is enabled
-        case (.notVerified, .verified): return .notVerified
-        case (.notVerified, .failed): return .failed
-
         case (.verified, .notVerified): return .notVerified
         case (.verified, .failed): return .failed
 
+        // These shouldn't happen because `ETagManager` will ignore not verified cached responses
+        // if verification is enabled.
+        case (.notVerified, .verified): return .notVerified
+        case (.notVerified, .failed): return .failed
+
+        // These shouldn't happen because `ETagManager` won't store responses with failed verification.
         case (.failed, .notVerified): return .failed
         case (.failed, .verified): return .failed
         }
