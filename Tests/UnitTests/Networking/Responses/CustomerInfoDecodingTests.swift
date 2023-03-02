@@ -225,8 +225,8 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
     func testDecodingDefaultsToEntitlementsNotValidated() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        expect(self.customerInfo.entitlementVerification) == .notVerified
-        expect(self.customerInfo.entitlements.verification) == .notVerified
+        expect(self.customerInfo.entitlementVerification) == .notRequested
+        expect(self.customerInfo.entitlements.verification) == .notRequested
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

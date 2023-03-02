@@ -15,7 +15,7 @@
     const __unused RCVerificationResult result = RCVerificationResultVerified;
 
     switch (result) {
-        case RCVerificationResultNotVerified:
+        case RCVerificationResultNotRequested:
         case RCVerificationResultVerified:
         case RCVerificationResultFailed:
             break;

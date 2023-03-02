@@ -821,9 +821,9 @@ class BasicCustomerInfoTests: TestCase {
                         onlyModifiesEntitlementVerification: .failed)
     }
 
-    func testCopyWithVerificationResultNotVerified() throws {
+    func testCopyWithVerificationResultNotRequested() throws {
         self.verifyCopy(of: self.customerInfo.copy(with: .verified),
-                        onlyModifiesEntitlementVerification: .notVerified)
+                        onlyModifiesEntitlementVerification: .notRequested)
     }
 
     func testCopyWithNewRequestDateModifiesOnlyRequestDate() throws {

@@ -141,7 +141,7 @@ class ETagManagerTests: TestCase {
                 body: responseObject,
                 eTag: eTag,
                 statusCode: .success,
-                verificationResult: .notVerified
+                verificationResult: .notRequested
             ),
             request: request,
             retried: false
@@ -303,7 +303,7 @@ class ETagManagerTests: TestCase {
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .notModified
         expect(response?.body) == actualResponse
-        expect(response?.verificationResult) == .notVerified
+        expect(response?.verificationResult) == .notRequested
     }
 
     func testETagHeaderIsNotFoundIfItsMissingResponseVerificationAndVerificationEnabled() {
@@ -379,7 +379,7 @@ class ETagManagerTests: TestCase {
             eTag: eTag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .notVerified
+            verificationResult: .notRequested
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, signatureVerificationEnabled: true)
@@ -418,7 +418,7 @@ class ETagManagerTests: TestCase {
             eTag: eTag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .notVerified
+            verificationResult: .notRequested
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request,
@@ -479,7 +479,7 @@ class ETagManagerTests: TestCase {
             request: request,
             retried: false
         )
-        expect(response?.verificationResult) == .notVerified
+        expect(response?.verificationResult) == .notRequested
         expect(response?.body) == actualResponse
     }
 
@@ -495,7 +495,7 @@ class ETagManagerTests: TestCase {
             eTag: eTag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .notVerified
+            verificationResult: .notRequested
         ).asData()
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
@@ -509,7 +509,7 @@ class ETagManagerTests: TestCase {
         expect(response).toNot(beNil())
         expect(response?.statusCode) == .success
         expect(response?.body) == actualResponse
-        expect(response?.verificationResult) == .notVerified
+        expect(response?.verificationResult) == .notRequested
     }
 
     func testCachedResponseIsFoundIfVerificationSucceeded() {

@@ -947,7 +947,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
             responseHeaders: [:],
             body: mockedCachedResponse,
             requestDate: requestDate,
-            verificationResult: .notVerified
+            verificationResult: .notRequested
         )
 
         stub(condition: isPath(path)) { response in
@@ -968,7 +968,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(response?.value?.statusCode) == .success
         expect(response?.value?.body) == mockedCachedResponse
         expect(response?.value?.requestDate) == requestDate
-        expect(response?.value?.verificationResult) == .notVerified
+        expect(response?.value?.verificationResult) == .notRequested
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
         expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == false
@@ -1191,7 +1191,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
             responseHeaders: [:],
             body: encodedResponse,
             requestDate: requestDate,
-            verificationResult: .notVerified
+            verificationResult: .notRequested
         )
 
         stub(condition: isPath(path)) { _ in
@@ -1210,7 +1210,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
         expect(response).to(beSuccess())
         expect(response?.value?.body.requestDate).to(beCloseTo(requestDate, within: 1))
-        expect(response?.value?.verificationResult) == .notVerified
+        expect(response?.value?.verificationResult) == .notRequested
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
     }
@@ -1405,7 +1405,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .notVerified
+        expect(response?.value?.verificationResult) == .notRequested
 
         expect(MockSigning.requests).to(beEmpty())
     }
@@ -1540,7 +1540,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response?.value?.verificationResult) == .verified
     }
 
-    func testCachedResponseDoesNotUpdateRequestDateIfNewResponseIsNotVerified() throws {
+    func testCachedResponseDoesNotUpdateRequestDateIfNewResponseVerificationIsNotRequested() throws {
         try self.changeClient(.informational)
 
         let path: HTTPRequest.Path = .mockPath
@@ -1557,7 +1557,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(newRequestDate.millisecondsSince1970)
             ],
             body: encodedCachedResponse,
-            verificationResult: .notVerified
+            verificationResult: .notRequested
         )
 
         MockSigning.stubbedVerificationResult = false
