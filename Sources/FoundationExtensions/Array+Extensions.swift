@@ -26,7 +26,7 @@ extension Array {
 
 extension Collection {
 
-    /// - Returns: an element iff it's the only one in the collection
+    /// - Returns: an element if and only if it's the only one in the collection
     var onlyElement: Element? {
         guard self.count == 1, let first = self.first else {
             return nil
