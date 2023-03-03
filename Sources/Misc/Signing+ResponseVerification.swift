@@ -66,7 +66,7 @@ extension HTTPResponse where Body == Data {
         guard let nonce = request.nonce,
               let publicKey = publicKey,
               #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
-            return .notVerified
+            return .notRequested
         }
 
         guard let signature = HTTPResponse.value(

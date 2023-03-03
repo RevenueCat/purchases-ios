@@ -50,7 +50,7 @@ public enum VerificationResult: Int {
     ///  1. Verification is not enabled in ``Configuration``
     ///  2. Verification can't be performed prior to iOS 13.0
     ///  3. Data was cached in an older version of the SDK not supporting verification
-    case notVerified = 0
+    case notRequested = 0
 
     /// Entitlements were verified with our server.
     case verified = 1
@@ -66,7 +66,7 @@ extension VerificationResult: Sendable, Codable {}
 
 extension VerificationResult: DefaultValueProvider {
 
-    static let defaultValue: Self = .notVerified
+    static let defaultValue: Self = .notRequested
 
 }
 
@@ -76,21 +76,21 @@ extension VerificationResult {
     /// the response verification.
     static func from(cache cachedResult: Self, response responseResult: Self) -> Self {
         switch (cachedResult, responseResult) {
-        case (.notVerified, .notVerified),
+        case (.notRequested, .notRequested),
             (.verified, .verified),
             (.failed, .failed):
             return cachedResult
 
-        case (.verified, .notVerified): return .notVerified
+        case (.verified, .notRequested): return .notRequested
         case (.verified, .failed): return .failed
 
         // These shouldn't happen because `ETagManager` will ignore not verified cached responses
         // if verification is enabled.
-        case (.notVerified, .verified): return .notVerified
-        case (.notVerified, .failed): return .failed
+        case (.notRequested, .verified): return .notRequested
+        case (.notRequested, .failed): return .failed
 
         // These shouldn't happen because `ETagManager` won't store responses with failed verification.
-        case (.failed, .notVerified): return .failed
+        case (.failed, .notRequested): return .failed
         case (.failed, .verified): return .failed
         }
     }

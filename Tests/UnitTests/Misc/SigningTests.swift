@@ -209,7 +209,7 @@ class SigningTests: TestCase {
                                            request: request,
                                            publicKey: nil)
 
-        expect(response.verificationResult) == .notVerified
+        expect(response.verificationResult) == .notRequested
     }
 
     func testResponseVerificationWithNoSignatureInResponse() throws {
@@ -295,28 +295,28 @@ class SigningTests: TestCase {
     }
 
     func testVerificationResultWithSameCachedAndResponseResult() {
-        expect(VerificationResult.from(cache: .notVerified, response: .notVerified)) == .notVerified
+        expect(VerificationResult.from(cache: .notRequested, response: .notRequested)) == .notRequested
         expect(VerificationResult.from(cache: .verified, response: .verified)) == .verified
         expect(VerificationResult.from(cache: .failed, response: .failed)) == .failed
     }
 
-    func testNotVerifiedCachedResult() {
-        expect(VerificationResult.from(cache: .notVerified,
-                                       response: .verified)) == .notVerified
-        expect(VerificationResult.from(cache: .notVerified,
+    func testVerificationNotRequestedCachedResult() {
+        expect(VerificationResult.from(cache: .notRequested,
+                                       response: .verified)) == .notRequested
+        expect(VerificationResult.from(cache: .notRequested,
                                        response: .failed)) == .failed
     }
 
     func testVerifiedCachedResult() {
         expect(VerificationResult.from(cache: .verified,
-                                       response: .notVerified)) == .notVerified
+                                       response: .notRequested)) == .notRequested
         expect(VerificationResult.from(cache: .verified,
                                        response: .failed)) == .failed
     }
 
     func testFailedVerificationCachedResult() {
         expect(VerificationResult.from(cache: .failed,
-                                       response: .notVerified)) == .failed
+                                       response: .notRequested)) == .failed
         expect(VerificationResult.from(cache: .failed,
                                        response: .verified)) == .failed
     }

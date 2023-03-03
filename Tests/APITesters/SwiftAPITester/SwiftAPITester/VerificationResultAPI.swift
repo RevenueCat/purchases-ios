@@ -9,7 +9,7 @@ import Foundation
 import RevenueCat
 
 func checkVerificationResultAPI(_ mode: EntitlementVerificationMode = .disabled,
-                                _ result: VerificationResult = .notVerified) {
+                                _ result: VerificationResult = .notRequested) {
     switch mode {
     case .disabled,
             .informational,
@@ -20,7 +20,7 @@ func checkVerificationResultAPI(_ mode: EntitlementVerificationMode = .disabled,
     }
 
     switch result {
-    case .notVerified,
+    case .notRequested,
             .verified,
             .failed:
         break

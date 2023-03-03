@@ -27,7 +27,7 @@ class HTTPResponseTests: TestCase {
                                            request: request,
                                            publicKey: nil)
 
-        expect(response.verificationResult) == .notVerified
+        expect(response.verificationResult) == .notRequested
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -43,7 +43,7 @@ class HTTPResponseTests: TestCase {
                                            request: request,
                                            publicKey: key)
 
-        expect(response.verificationResult) == .notVerified
+        expect(response.verificationResult) == .notRequested
     }
 
     func testValueForHeaderFieldWithNonExistingField() {
@@ -85,7 +85,7 @@ private extension HTTPResponse where Body == HTTPEmptyResponseBody {
         return .init(statusCode: .success,
                      responseHeaders: headers,
                      body: .init(),
-                     verificationResult: .notVerified)
+                     verificationResult: .notRequested)
     }
 
 }

@@ -355,7 +355,7 @@ extension CustomerInfo.Contents: Codable {
         self.entitlementVerification = try container.decodeIfPresent(
             VerificationResult.self,
             forKey: .entitlementVerification
-        ) ?? .notVerified
+        ) ?? .notRequested
         self.schemaVersion = try container.decodeIfPresent(String.self, forKey: .schemaVersion)
     }
 
