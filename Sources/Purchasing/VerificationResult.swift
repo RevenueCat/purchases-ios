@@ -31,7 +31,7 @@ import Foundation
 /// )
 ///
 /// let customerInfo = try await purchases.customerInfo()
-/// if customerInfo.entitlementVerification != .verified {
+/// if customerInfo.entitlements.verification != .verified {
 ///   print("Entitlements could not be verified")
 /// }
 /// ```
@@ -39,7 +39,6 @@ import Foundation
 /// ### Related Symbols
 /// - ``Configuration/EntitlementVerificationMode``
 /// - ``Configuration/Builder/with(entitlementVerificationMode:)``
-/// - ``CustomerInfo/entitlementVerification``
 /// - ``EntitlementInfos/verification``
 @objc(RCVerificationResult)
 public enum VerificationResult: Int {

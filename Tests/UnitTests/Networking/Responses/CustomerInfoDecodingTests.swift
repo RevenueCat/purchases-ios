@@ -225,7 +225,6 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
     func testDecodingDefaultsToEntitlementsNotValidated() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        expect(self.customerInfo.entitlementVerification) == .notRequested
         expect(self.customerInfo.entitlements.verification) == .notRequested
     }
 
@@ -235,7 +234,6 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
 
         let reencoded = try self.customerInfo.copy(with: .verified).encodeAndDecode()
 
-        expect(reencoded.entitlementVerification) == .verified
         expect(reencoded.entitlements.verification) == .verified
     }
 
@@ -245,7 +243,6 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
 
         let reencoded = try self.customerInfo.copy(with: .failed).encodeAndDecode()
 
-        expect(reencoded.entitlementVerification) == .failed
         expect(reencoded.entitlements.verification) == .failed
     }
 

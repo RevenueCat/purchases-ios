@@ -70,7 +70,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(customerInfo).to(beSuccess())
 
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(customerInfo?.value?.entitlementVerification) == .notRequested
             expect(customerInfo?.value?.entitlements.verification) == .notRequested
         }
     }
@@ -168,7 +167,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         }
 
         expect(customerInfo).to(beSuccess())
-        expect(customerInfo?.value?.entitlementVerification) == .verified
         expect(customerInfo?.value?.entitlements.verification) == .verified
     }
 
@@ -188,7 +186,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         }
 
         expect(customerInfo).to(beSuccess())
-        expect(customerInfo?.value?.entitlementVerification) == .failed
         expect(customerInfo?.value?.entitlements.verification) == .failed
     }
 
