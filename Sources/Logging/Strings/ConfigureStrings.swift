@@ -45,6 +45,10 @@ enum ConfigureStrings {
 
     case bundle_id(String)
 
+    case system_version(String)
+
+    case is_simulator(Bool)
+
     case legacyAPIKey
 
     case invalidAPIKey
@@ -103,6 +107,14 @@ extension ConfigureStrings: CustomStringConvertible {
             return "SDK Version - \(sdkVersion)"
         case let .bundle_id(bundleID):
             return "Bundle ID - \(bundleID)"
+        case let .system_version(osVersion):
+            return "System Version - \(osVersion)"
+        case let .is_simulator(isSimulator):
+            return isSimulator
+                ? "Using a simulator. Ensure you have a StoreKit Config " +
+                "file set up before trying to fetch products or make purchases.\n" +
+                "See https://errors.rev.cat/testing-in-simulator for more details."
+                : "Not using a simulator."
         case .legacyAPIKey:
             return "Looks like you're using a legacy API key.\n" +
             "This is still supported, but it's recommended to migrate to using platform-specific API key, " +
