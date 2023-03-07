@@ -220,7 +220,7 @@ extension PeriodType: DefaultValueProvider {
         subscription: CustomerInfoResponse.Subscription,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector,
         verification: VerificationResult,
-        requestDate: Date?
+        requestDate: Date
     ) {
         self.contents = .init(
             identifier: identifier,
@@ -297,7 +297,7 @@ extension EntitlementInfo {
 
 private extension EntitlementInfo {
 
-    static func isDateActive(expirationDate: Date?, for requestDate: Date?) -> Bool {
+    static func isDateActive(expirationDate: Date?, for requestDate: Date) -> Bool {
         guard let expirationDate = expirationDate else {
             return true
         }
@@ -307,7 +307,7 @@ private extension EntitlementInfo {
 
         if !inGracePeriod && !isActive {
             Logger.warn(Strings.purchase.entitlement_expired_outside_grace_period(expiration: expirationDate,
-                                                                                  reference: requestDate ?? Date()))
+                                                                                  reference: requestDate))
         }
 
         return isActive
@@ -325,13 +325,10 @@ private extension EntitlementInfo {
         return !(isPromo || isLifetime || hasUnsubscribed || hasBillingIssues)
     }
 
-    private static func referenceDate(for requestDate: Date?) -> (Date, inGracePeriod: Bool) {
-        guard let requestDate = requestDate else { return (Date(), true) }
-
+    private static func referenceDate(for requestDate: Date) -> (Date, inGracePeriod: Bool) {
         if Date().timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {
             return (requestDate, true)
         } else {
-
             return (Date(), false)
         }
     }
