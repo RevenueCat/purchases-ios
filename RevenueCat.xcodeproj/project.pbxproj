@@ -1386,6 +1386,7 @@
 				2DDA3E4524DB0B4500EDFE5B /* Misc */,
 				35D832CB262A5B3400E60AC5 /* Networking */,
 				354235D524C11138008C84EE /* Purchasing */,
+				57F3C0C929B7A04D0004FD7E /* Security */,
 				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
 				35E840C1270FB45600899AE2 /* Support */,
 				2DC5621924EC63430031F69B /* Info.plist */,
@@ -1408,6 +1409,7 @@
 				354235D624C11160008C84EE /* Purchasing */,
 				5759B403296DF68D002472D5 /* ReceiptParserTests */,
 				2DDE559824C8B5D100DCB087 /* Resources */,
+				57F3C0CD29B7A1440004FD7E /* Security */,
 				F591492426B994A100D32E58 /* StoreKitExtensions */,
 				B36824BB268FBB9B00957E4C /* SubscriberAttributes */,
 				37E35A5970D1604E8C8011FC /* TestHelpers */,
@@ -1440,35 +1442,21 @@
 		2DDA3E4524DB0B4500EDFE5B /* Misc */ = {
 			isa = PBXGroup;
 			children = (
-				574A2EE6282C3F0800150D40 /* AnyDecodable.swift */,
-				576C8A8A27CFCB150058FA6E /* AnyEncodable.swift */,
-				57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */,
-				57CCC6EB2984496D001CE9B6 /* Box.swift */,
+				57F3C0CA29B7A08F0004FD7E /* Codable */,
+				57F3C0CB29B7A0B10004FD7E /* Concurrency */,
 				352B7D7827BD919B002A47DD /* DangerousSettings.swift */,
-				37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */,
-				0313FD40268A506400168386 /* DateProvider.swift */,
+				57F3C0CC29B7A0F30004FD7E /* DateAndTime */,
+				57CCC6EB2984496D001CE9B6 /* Box.swift */,
 				5796A3A827D7C43500653165 /* Deprecations.swift */,
+				57ABA76C28F08DDA003D9181 /* Either.swift */,
 				2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */,
-				5766AA55283D4C5400FA6091 /* IgnoreHashable.swift */,
-				B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */,
-				57EAE526274324C60060EB74 /* Lock.swift */,
 				F530E4FE275646EF001AF6BD /* MacDevice.swift */,
 				57EAE52A274332830060EB74 /* Obsoletions.swift */,
-				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
 				2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */,
 				F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */,
-				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
-				5721360E28B4602C006C46BE /* Purchases+nonasync.swift */,
-				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
-				57E6C27B29723A94001AFE98 /* Signing.swift */,
-				5791FE492994453500F1FEDA /* Signing+ResponseVerification.swift */,
-				57CFB98327FE2258002A6730 /* StoreKit2Setting.swift */,
-				57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */,
-				B3AA6237268B926F00894871 /* SystemInfo.swift */,
 				57FDAAB9284937A0009A48F1 /* SandboxEnvironmentDetector.swift */,
-				57ABA76C28F08DDA003D9181 /* Either.swift */,
-				5712BE8F29241EB500A83F15 /* TimingUtil.swift */,
-				578DAA472948EEAD001700FD /* Clock.swift */,
+				57CFB98327FE2258002A6730 /* StoreKit2Setting.swift */,
+				B3AA6237268B926F00894871 /* SystemInfo.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -1692,7 +1680,6 @@
 				57ACB12328174B9F000DCC9F /* CustomerInfo+TestExtensions.swift */,
 				57FDAABD28493A29009A48F1 /* SandboxEnvironmentDetectorTests.swift */,
 				579189E828F47E8D00BF4963 /* PurchasesDiagnosticsTests.swift */,
-				57E6C27D29723F9E001AFE98 /* SigningTests.swift */,
 				57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */,
 				5712BE9129241F7900A83F15 /* TimingUtilTests.swift */,
 			);
@@ -1722,7 +1709,6 @@
 				2D1DB44A26EA61AB00DDE736 /* StoreKit1 */,
 				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
 				2D1015DC275A57DB0086173F /* StoreKitAbstractions */,
-				5766AAAF283D8CDC00FA6091 /* CacheFetchPolicy.swift */,
 				B325543B2825C81800DA62EA /* Configuration.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
@@ -1747,7 +1733,6 @@
 				359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */,
 				57BB070D28D27A2B007F5DF0 /* CachingProductsManager.swift */,
 				57E9CF0E290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift */,
-				5740FCD22996CE5E00E049F9 /* VerificationResult.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
@@ -2085,6 +2070,60 @@
 			path = public_keys;
 			sourceTree = "<group>";
 		};
+		57F3C0C929B7A04D0004FD7E /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				57E6C27B29723A94001AFE98 /* Signing.swift */,
+				5791FE492994453500F1FEDA /* Signing+ResponseVerification.swift */,
+				5740FCD22996CE5E00E049F9 /* VerificationResult.swift */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
+		57F3C0CA29B7A08F0004FD7E /* Codable */ = {
+			isa = PBXGroup;
+			children = (
+				574A2EE6282C3F0800150D40 /* AnyDecodable.swift */,
+				576C8A8A27CFCB150058FA6E /* AnyEncodable.swift */,
+				5766AA55283D4C5400FA6091 /* IgnoreHashable.swift */,
+				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
+			);
+			path = Codable;
+			sourceTree = "<group>";
+		};
+		57F3C0CB29B7A0B10004FD7E /* Concurrency */ = {
+			isa = PBXGroup;
+			children = (
+				57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */,
+				57EAE526274324C60060EB74 /* Lock.swift */,
+				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
+				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
+				5721360E28B4602C006C46BE /* Purchases+nonasync.swift */,
+				57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */,
+			);
+			path = Concurrency;
+			sourceTree = "<group>";
+		};
+		57F3C0CC29B7A0F30004FD7E /* DateAndTime */ = {
+			isa = PBXGroup;
+			children = (
+				578DAA472948EEAD001700FD /* Clock.swift */,
+				37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */,
+				0313FD40268A506400168386 /* DateProvider.swift */,
+				B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */,
+				5712BE8F29241EB500A83F15 /* TimingUtil.swift */,
+			);
+			path = DateAndTime;
+			sourceTree = "<group>";
+		};
+		57F3C0CD29B7A1440004FD7E /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				57E6C27D29723F9E001AFE98 /* SigningTests.swift */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
 		B324DC482720C15300103EE9 /* Error Handling */ = {
 			isa = PBXGroup;
 			children = (
@@ -2104,6 +2143,7 @@
 		B34605A1279A6E380031CA74 /* Caching */ = {
 			isa = PBXGroup;
 			children = (
+				5766AAAF283D8CDC00FA6091 /* CacheFetchPolicy.swift */,
 				B34605A3279A6E380031CA74 /* CallbackCache.swift */,
 				B34605A4279A6E380031CA74 /* CallbackCacheStatus.swift */,
 				B34605A7279A6E380031CA74 /* CustomerInfoCallback.swift */,
