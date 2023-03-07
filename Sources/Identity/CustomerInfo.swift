@@ -353,28 +353,3 @@ extension CustomerInfo.Contents: Codable {
     }
 
 }
-
-private extension CustomerInfo {
-
-    func activeKeys(dates: [String: Date?]) -> Set<String> {
-        return Set(
-            dates
-                .lazy
-                .filter { self.isDateActive($1) }
-                .map { key, _ in key }
-        )
-    }
-
-    private func isDateActive(_ date: Date?) -> Bool {
-        return EntitlementInfo.isDateActive(expirationDate: date, for: self.requestDate)
-    }
-
-    static func extractExpirationDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        return subscriber.subscriptions.mapValues { $0.expiresDate }
-    }
-
-    static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        return subscriber.allTransactionsByProductId.mapValues { $0.purchaseDate }
-    }
-
-}
