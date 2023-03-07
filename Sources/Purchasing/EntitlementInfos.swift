@@ -116,7 +116,7 @@ extension EntitlementInfos {
     convenience init(
         entitlements: [String: CustomerInfoResponse.Entitlement],
         purchases: [String: CustomerInfoResponse.Subscription],
-        requestDate: Date?,
+        requestDate: Date,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
         verification: VerificationResult
     ) {
