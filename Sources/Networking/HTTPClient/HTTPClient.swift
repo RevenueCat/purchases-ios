@@ -68,6 +68,10 @@ class HTTPClient {
         self.eTagManager.clearCaches()
     }
 
+    var signatureVerificationEnabled: Bool {
+        return self.systemInfo.responseVerificationMode.isEnabled
+    }
+
 }
 
 extension HTTPClient {

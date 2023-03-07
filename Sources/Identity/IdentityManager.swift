@@ -59,10 +59,11 @@ class IdentityManager: CurrentUserProvider {
 
         deviceCache.cache(appUserID: appUserID)
         deviceCache.cleanupSubscriberAttributes()
+        self.invalidateCachesIfNeeded(appUserID: appUserID)
     }
 
     var currentAppUserID: String {
-        guard let appUserID = deviceCache.cachedAppUserID else {
+        guard let appUserID = self.deviceCache.cachedAppUserID else {
             fatalError(Strings.identity.null_currentappuserid.description)
         }
 
@@ -71,7 +72,7 @@ class IdentityManager: CurrentUserProvider {
 
     var currentUserIsAnonymous: Bool {
         let currentAppUserIDLooksAnonymous = Self.userIsAnonymous(self.currentAppUserID)
-        let isLegacyAnonymousAppUserID = self.currentAppUserID == deviceCache.cachedLegacyAppUserID
+        let isLegacyAnonymousAppUserID = self.currentAppUserID == self.deviceCache.cachedLegacyAppUserID
 
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
@@ -161,9 +162,10 @@ extension IdentityManager: @unchecked Sendable {}
 private extension IdentityManager {
 
     func resetUserIDCache() {
-        deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: Self.generateRandomID())
-        deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
-        backend.clearHTTPClientCaches()
+        self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID,
+                                     andSaveWithNewUserID: Self.generateRandomID())
+        self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: self.currentAppUserID)
+        self.backend.clearHTTPClientCaches()
     }
 
     func copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: String, newAppUserID: String) {
@@ -171,6 +173,24 @@ private extension IdentityManager {
             return
         }
         self.deviceCache.copySubscriberAttributes(oldAppUserID: oldAppUserID, newAppUserID: newAppUserID)
+    }
+
+    func invalidateCachesIfNeeded(appUserID: String) {
+        if self.shouldInvalidateCaches(for: appUserID) {
+            Logger.info(Strings.identity.invalidating_cached_customer_info)
+            self.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
+            self.backend.clearHTTPClientCaches()
+        }
+    }
+
+    private func shouldInvalidateCaches(for appUserID: String) -> Bool {
+        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
+              self.backend.signatureVerificationEnabled,
+              let info = self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID) else {
+            return false
+        }
+
+        return info.entitlements.verification == .notRequested
     }
 
 }

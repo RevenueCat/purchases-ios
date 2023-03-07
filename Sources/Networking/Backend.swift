@@ -143,6 +143,21 @@ extension Backend {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension Backend: @unchecked Sendable {}
 
+// MARK: - Internal
+
+extension Backend {
+
+    // For testing
+    var networkTimeout: TimeInterval {
+        return self.config.httpClient.timeout
+    }
+
+    @objc var signatureVerificationEnabled: Bool {
+        return self.config.httpClient.signatureVerificationEnabled
+    }
+
+}
+
 extension Backend {
 
     enum QueueProvider {
@@ -154,15 +169,6 @@ extension Backend {
             return operationQueue
         }
 
-    }
-
-}
-
-// Testing extension
-extension Backend {
-
-    var networkTimeout: TimeInterval {
-        return self.config.httpClient.timeout
     }
 
 }

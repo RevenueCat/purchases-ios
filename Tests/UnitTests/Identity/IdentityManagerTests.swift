@@ -18,6 +18,7 @@ class IdentityManagerTests: TestCase {
     private var mockIdentityAPI: MockIdentityAPI!
     private var mockCustomerInfo: CustomerInfo!
 
+    @discardableResult
     private func create(appUserID: String?) -> IdentityManager {
         return IdentityManager(deviceCache: self.mockDeviceCache,
                                backend: self.mockBackend,
@@ -66,12 +67,69 @@ class IdentityManagerTests: TestCase {
     }
 
     func testConfigureCleansUpSubscriberAttributes() {
-        _ = create(appUserID: "andy")
+        self.create(appUserID: "andy")
         expect(self.mockDeviceCache.invokedCleanupSubscriberAttributesCount) == 1
     }
 
+    func testConfigureDoesNotInvalidateCachesIfNoCachedUserID() {
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = nil
+        self.create(appUserID: "nacho")
+
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == false
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
+        expect(self.mockBackend.invokedClearHTTPClientCaches) == false
+    }
+
+    func testConfigureDoesNotInvalidateCachesIfVerificationIsDisabled() {
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .notRequested)
+        self.mockBackend.stubbedSignatureVerificationEnabled = false
+        self.create(appUserID: "nacho")
+
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == false
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
+        expect(self.mockBackend.invokedClearHTTPClientCaches) == false
+    }
+
+    func testConfigureDoesNotInvalidateCachesIfNoCachedUserIDAndVerificationIsEnabled() {
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = nil
+        self.mockBackend.stubbedSignatureVerificationEnabled = true
+        self.create(appUserID: "nacho")
+
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == false
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
+        expect(self.mockBackend.invokedClearHTTPClientCaches) == false
+    }
+
+    func testConfigureDoesNotInvalidateCachesIfCachedUserIsVerified() {
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .verified)
+        self.mockBackend.stubbedSignatureVerificationEnabled = true
+        self.create(appUserID: "nacho")
+
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == false
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
+        expect(self.mockBackend.invokedClearHTTPClientCaches) == false
+    }
+
+    func testConfigureInvalidesCacheIfVerificationIsEnabledButCachedUserIsNotVerified() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let logger = TestLogHandler()
+
+        self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .notRequested)
+        self.mockBackend.stubbedSignatureVerificationEnabled = true
+        self.create(appUserID: "nacho")
+
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
+        expect(self.mockBackend.invokedClearHTTPClientCaches) == true
+        expect(self.mockBackend.invokedClearHTTPClientCachesCount) == 1
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == true
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCacheParameters?.appUserID) == "nacho"
+
+        logger.verifyMessageWasLogged(Strings.identity.invalidating_cached_customer_info, level: .info)
+    }
+
     func testIdentifyingCorrectlyIdentifies() {
-        _ = create(appUserID: "appUserToBeReplaced")
+        self.create(appUserID: "appUserToBeReplaced")
 
         let newAppUserID = "cesar"
         let newManager = create(appUserID: newAppUserID)
@@ -275,6 +333,7 @@ class IdentityManagerTests: TestCase {
 
         expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == true
         expect(self.mockDeviceCache.invokedClearLatestNetworkAndAdvertisingIdsSent) == true
+        expect(self.mockBackend.invokedClearHTTPClientCachesCount) == 1
     }
 
     func testLogInSyncsAttributes() {
