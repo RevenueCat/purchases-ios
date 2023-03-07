@@ -65,6 +65,7 @@ extension HTTPResponse where Body == Data {
     ) -> VerificationResult {
         guard let nonce = request.nonce,
               let publicKey = publicKey,
+              statusCode.isSuccessfulResponse,
               #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
             return .notRequested
         }

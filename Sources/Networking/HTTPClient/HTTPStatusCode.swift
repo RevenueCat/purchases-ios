@@ -78,7 +78,7 @@ extension HTTPStatusCode: Codable {}
 extension HTTPStatusCode {
 
     var isSuccessfulResponse: Bool {
-        return 200...299 ~= self.rawValue
+        return 200...399 ~= self.rawValue
     }
 
     var isServerError: Bool {
