@@ -75,7 +75,7 @@ extension VerificationResult: CustomStringConvertible {
 
     public var description: String {
         switch self {
-        case .notVerified: return "Not verified"
+        case .notRequested: return "Not requested"
         case .verified: return "Verified"
         case .failed: return "Failed verification"
         }

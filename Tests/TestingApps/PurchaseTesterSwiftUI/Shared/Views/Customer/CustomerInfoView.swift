@@ -41,7 +41,7 @@ private extension CustomerInfoView {
             ("Original Purchase Date", self.date(customerInfo.originalPurchaseDate) ?? "-"),
             ("Latest Expiration Date", self.date(customerInfo.latestExpirationDate) ?? "-"),
             ("Request Date", self.date(customerInfo.requestDate) ?? "-"),
-            ("Entitlement Verification", self.customerInfo.entitlementVerification.description),
+            ("Entitlement Verification", self.customerInfo.entitlements.verification.description),
         ]
     }
 
