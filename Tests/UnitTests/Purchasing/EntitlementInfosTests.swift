@@ -152,7 +152,7 @@ class EntitlementInfosTests: TestCase {
         let logger = TestLogHandler()
 
         let expirationAndRequestDate = Self.formatter.string(
-            from: Date().addingTimeInterval(EntitlementInfo.requestDateGracePeriod.seconds / -2)
+            from: Date().addingTimeInterval(CustomerInfo.requestDateGracePeriod.seconds / -2)
         )
         self.stubResponse(
                 entitlements: [
@@ -183,13 +183,13 @@ class EntitlementInfosTests: TestCase {
     }
 
     func testRequestDateGracePeriodIsLongerThanOneDay() {
-        expect(EntitlementInfo.requestDateGracePeriod.days) > 1
+        expect(CustomerInfo.requestDateGracePeriod.days) > 1
     }
 
     func testSubscriptionActiveIfExpiresDateAfterRequestDateAndRequestDateWithinGracePeriod() throws {
         let logger = TestLogHandler()
 
-        let requestDate = Date().addingTimeInterval(EntitlementInfo.requestDateGracePeriod.seconds / -2)
+        let requestDate = Date().addingTimeInterval(CustomerInfo.requestDateGracePeriod.seconds / -2)
         let expirationDate = requestDate.addingTimeInterval(100)
 
         self.stubResponse(
@@ -223,7 +223,7 @@ class EntitlementInfosTests: TestCase {
     func testSubscriptionNotActiveIfExpiresDateAfterRequestDateButRequestDateIsOlderThanGracePeriod() throws {
         let logger = TestLogHandler()
 
-        let requestDate = Date().addingTimeInterval(EntitlementInfo.requestDateGracePeriod.seconds * -1)
+        let requestDate = Date().addingTimeInterval(CustomerInfo.requestDateGracePeriod.seconds * -1)
         let expirationDate = requestDate.addingTimeInterval(100)
 
         self.stubResponse(

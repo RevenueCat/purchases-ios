@@ -24,7 +24,7 @@ import Foundation
     @objc public let entitlements: EntitlementInfos
 
     /// All *subscription* product identifiers with expiration dates in the future.
-    @objc public var activeSubscriptions: Set<String> { self.activeKeys(dates: expirationDatesByProductId) }
+    @objc public var activeSubscriptions: Set<String> { self.activeKeys(dates: self.expirationDatesByProductId) }
 
     /// All product identifiers purchases by the user regardless of expiration.
     @objc public let allPurchasedProductIdentifiers: Set<String>
@@ -350,32 +350,6 @@ extension CustomerInfo.Contents: Codable {
             forKey: .entitlementVerification
         ) ?? .notRequested
         self.schemaVersion = try container.decodeIfPresent(String.self, forKey: .schemaVersion)
-    }
-
-}
-
-private extension CustomerInfo {
-
-    func activeKeys(dates: [String: Date?]) -> Set<String> {
-        return Set(
-            dates
-                .lazy
-                .filter {
-                    guard let date = $1 else { return true }
-                    return self.isAfterReferenceDate(date: date)
-                }
-                .map { key, _ in key }
-        )
-    }
-
-    func isAfterReferenceDate(date: Date) -> Bool { date.timeIntervalSince(self.requestDate) > 0 }
-
-    static func extractExpirationDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        return subscriber.subscriptions.mapValues { $0.expiresDate }
-    }
-
-    static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        return subscriber.allTransactionsByProductId.mapValues { $0.purchaseDate }
     }
 
 }
