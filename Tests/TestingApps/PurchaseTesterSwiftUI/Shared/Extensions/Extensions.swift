@@ -59,8 +59,9 @@ extension Configuration.EntitlementVerificationMode {
 
     static let all: [Self] = [
         .disabled,
-        .informational,
-        .enforced
+        .informational
+        // Disabled for now:
+        // .enforced
     ]
 
 }
