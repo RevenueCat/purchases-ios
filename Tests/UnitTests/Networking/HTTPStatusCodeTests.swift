@@ -46,14 +46,15 @@ class HTTPStatusCodeTests: TestCase {
     func testIsSuccessfulResponse() {
         expect(HTTPStatusCode.success.isSuccessfulResponse) == true
         expect(HTTPStatusCode.createdSuccess.isSuccessfulResponse) == true
+        expect(HTTPStatusCode.redirect.isSuccessfulResponse) == true
+        expect(HTTPStatusCode.notModified.isSuccessfulResponse) == true
         expect(status(202).isSuccessfulResponse) == true
         expect(status(226).isSuccessfulResponse) == true
         expect(status(299).isSuccessfulResponse) == true
+        expect(status(399).isSuccessfulResponse) == true
     }
 
-    func testIsNotValidResponse() {
-        expect(HTTPStatusCode.redirect.isSuccessfulResponse) == false
-        expect(HTTPStatusCode.notModified.isSuccessfulResponse) == false
+    func testIsNotSuccessfulResponse() {
         expect(HTTPStatusCode.invalidRequest.isSuccessfulResponse) == false
         expect(HTTPStatusCode.notFoundError.isSuccessfulResponse) == false
         expect(HTTPStatusCode.internalServerError.isSuccessfulResponse) == false

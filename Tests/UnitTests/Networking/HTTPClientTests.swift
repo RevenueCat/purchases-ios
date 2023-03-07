@@ -336,6 +336,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
                   message: "something is broken up in the cloud"),
             HTTPStatusCode(rawValue: errorCode)
         )
+
+        expect(MockSigning.requests).to(beEmpty())
     }
 
     func testServerSide500s() throws {
@@ -367,6 +369,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
                   message: "something is broken up in the cloud"),
             HTTPStatusCode(rawValue: errorCode)
         )
+
+        expect(MockSigning.requests).to(beEmpty())
     }
 
     func testInvalidJSONAsDataDoesNotFail() {
