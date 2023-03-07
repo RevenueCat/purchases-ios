@@ -295,7 +295,7 @@ extension EntitlementInfo {
 
 // MARK: - Private
 
-private extension EntitlementInfo {
+extension EntitlementInfo {
 
     static func isDateActive(expirationDate: Date?, for requestDate: Date) -> Bool {
         guard let expirationDate = expirationDate else {
@@ -312,6 +312,10 @@ private extension EntitlementInfo {
 
         return isActive
     }
+
+}
+
+private extension EntitlementInfo {
 
     static func willRenewWithExpirationDate(expirationDate: Date?,
                                             store: Store,
