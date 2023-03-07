@@ -377,12 +377,11 @@ class BackendSubscriberAttributesTests: TestCase {
     }
 
     final func createClient(_ file: StaticString) -> MockHTTPClient {
-        let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
-        self.mockETagManager = eTagManager
+        self.mockETagManager = MockETagManager()
 
         return MockHTTPClient(apiKey: Self.apiKey,
                               systemInfo: self.systemInfo,
-                              eTagManager: eTagManager,
+                              eTagManager: self.mockETagManager,
                               sourceTestFile: file)
     }
 

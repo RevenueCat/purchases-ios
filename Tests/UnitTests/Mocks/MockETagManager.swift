@@ -13,10 +13,14 @@ import Foundation
 // swiftlint:disable type_name
 class MockETagManager: ETagManager {
 
+    init() {
+        super.init(userDefaults: MockUserDefaults(), verificationMode: .default)
+    }
+
     struct ETagHeaderRequest {
         var urlRequest: URLRequest
+        var withSignatureVerification: Bool
         var refreshETag: Bool
-        var signatureVerificationEnabled: Bool
     }
 
     var invokedETagHeader = false
@@ -31,13 +35,13 @@ class MockETagManager: ETagManager {
 
     override func eTagHeader(
         for urlRequest: URLRequest,
-        refreshETag: Bool = false,
-        signatureVerificationEnabled: Bool
+        withSignatureVerification: Bool,
+        refreshETag: Bool = false
     ) -> [String: String] {
         return self.lock.perform {
             let request: ETagHeaderRequest = .init(urlRequest: urlRequest,
-                                                   refreshETag: refreshETag,
-                                                   signatureVerificationEnabled: signatureVerificationEnabled)
+                                                   withSignatureVerification: withSignatureVerification,
+                                                   refreshETag: refreshETag)
 
             self.invokedETagHeader = true
             self.invokedETagHeaderCount += 1

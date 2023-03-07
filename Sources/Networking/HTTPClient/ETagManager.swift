@@ -20,33 +20,43 @@ class ETagManager {
     static let eTagResponseHeaderName = HTTPClient.ResponseHeader.eTag.rawValue
 
     private let userDefaults: SynchronizedUserDefaults
+    private let verificationMode: Signing.ResponseVerificationMode
 
-    convenience init() {
+    convenience init(verificationMode: Signing.ResponseVerificationMode) {
         self.init(
             userDefaults: UserDefaults(suiteName: Self.suiteName)
             // This should never return `nil` for this known `suiteName`,
             // but `.standard` is a good fallback anyway.
-            ?? UserDefaults.standard
+            ?? UserDefaults.standard,
+            verificationMode: verificationMode
         )
     }
 
-    init(userDefaults: UserDefaults) {
+    init(userDefaults: UserDefaults, verificationMode: Signing.ResponseVerificationMode) {
         self.userDefaults = .init(userDefaults: userDefaults)
+        self.verificationMode = verificationMode
     }
 
+    /// - Parameter withSignatureVerification: whether the request contains a nonce.
     func eTagHeader(
         for urlRequest: URLRequest,
-        refreshETag: Bool = false,
-        signatureVerificationEnabled: Bool
+        withSignatureVerification: Bool,
+        refreshETag: Bool = false
     ) -> [String: String] {
-        var storedETag = ""
-        if !refreshETag, let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest) {
-            if !signatureVerificationEnabled || storedETagAndResponse.verificationResult == .verified {
-                storedETag = storedETagAndResponse.eTag
-            }
+        func eTag() -> String? {
+            if refreshETag { return nil }
+            guard let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest) else { return nil }
+
+            let shouldUseETag = (
+                !withSignatureVerification ||
+                self.shouldIgnoreVerificationErrors ||
+                storedETagAndResponse.verificationResult == .verified
+            )
+
+            return shouldUseETag ? storedETagAndResponse.eTag : nil
         }
 
-        return [HTTPClient.RequestHeader.eTag.rawValue: storedETag]
+        return [HTTPClient.RequestHeader.eTag.rawValue: eTag() ?? ""]
     }
 
     func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
@@ -58,6 +68,7 @@ class ETagManager {
         let eTagInResponse = response.value(forHeaderField: HTTPClient.ResponseHeader.eTag.rawValue)
 
         guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
+
         if self.shouldUseCachedVersion(responseCode: statusCode) {
             if let storedResponse = self.storedHTTPResponse(for: request, withRequestDate: response.requestDate) {
                 return storedResponse
@@ -74,9 +85,9 @@ class ETagManager {
         }
 
         self.storeStatusCodeAndResponseIfNoError(
-                for: request,
-                response: response,
-                eTag: eTagInResponse
+            for: request,
+            response: response,
+            eTag: eTagInResponse
         )
         return resultFromBackend
     }
@@ -115,7 +126,7 @@ private extension ETagManager {
                                              response: HTTPResponse<Data?>,
                                              eTag: String) {
         if let data = response.body,
-           response.shouldStore,
+           response.shouldStore(ignoreVerificationErrors: self.shouldIgnoreVerificationErrors),
            let cacheKey = self.eTagDefaultCacheKey(for: request) {
             let eTagAndResponse = Response(
                 eTag: eTag,
@@ -133,6 +144,10 @@ private extension ETagManager {
 
     func eTagDefaultCacheKey(for request: URLRequest) -> String? {
         return request.url?.absoluteString
+    }
+
+    var shouldIgnoreVerificationErrors: Bool {
+        return !self.verificationMode.isEnforced
     }
 
     static let suiteNameBase: String  = "revenuecat.etags"
@@ -201,11 +216,11 @@ extension ETagManager.Response {
 
 private extension HTTPResponse {
 
-    var shouldStore: Bool {
+    func shouldStore(ignoreVerificationErrors: Bool) -> Bool {
         return (
             self.statusCode != .notModified &&
             !self.statusCode.isServerError &&
-            self.verificationResult != .failed
+            (ignoreVerificationErrors || self.verificationResult != .failed)
         )
     }
 

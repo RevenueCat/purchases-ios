@@ -264,7 +264,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
-        let eTagManager = ETagManager()
+        let eTagManager = ETagManager(verificationMode: systemInfo.responseVerificationMode)
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let backend = Backend(apiKey: apiKey,

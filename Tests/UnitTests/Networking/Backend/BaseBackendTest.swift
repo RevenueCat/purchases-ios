@@ -75,7 +75,7 @@ class BaseBackendTests: TestCase {
 extension BaseBackendTests {
 
     final func createClient(_ file: StaticString) -> MockHTTPClient {
-        let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
+        let eTagManager = MockETagManager()
 
         return MockHTTPClient(apiKey: Self.apiKey,
                               systemInfo: self.systemInfo,
