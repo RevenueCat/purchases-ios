@@ -94,6 +94,13 @@ enum Signing: SigningType {
         }
     }
 
+    /// - Returns: `ResponseVerificationMode.enforced`
+    /// This is useful while ``Configuration.EntitlementVerificationMode`` is unavailable.
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    static func enforcedVerificationMode() -> ResponseVerificationMode {
+        return .enforced(Self.loadPublicKey())
+    }
+
     // MARK: -
 
     private static let publicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="

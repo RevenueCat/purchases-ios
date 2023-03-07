@@ -20,7 +20,7 @@ func checkConfigurationAPI() {
         .with(networkTimeout: 1)
         .with(storeKit1Timeout: 1)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
-        .with(entitlementVerificationMode: .enforced)
+        .with(entitlementVerificationMode: .informational)
         .build()
     print(configuration)
 }
