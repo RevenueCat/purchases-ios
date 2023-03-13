@@ -316,9 +316,9 @@ class SigningTests: TestCase {
 
     func testFailedVerificationCachedResult() {
         expect(VerificationResult.from(cache: .failed,
-                                       response: .notRequested)) == .failed
+                                       response: .notRequested)) == .notRequested
         expect(VerificationResult.from(cache: .failed,
-                                       response: .verified)) == .failed
+                                       response: .verified)) == .verified
     }
 
 }
