@@ -107,8 +107,7 @@ extension AppleReceipt {
         return self.inAppPurchases
             .lazy
             .filter { $0.isActiveSubscription }
-            .sorted { $0.purchaseDate > $1.purchaseDate }
-            .first
+            .min { $0.purchaseDate > $1.purchaseDate }
     }
 
 }
