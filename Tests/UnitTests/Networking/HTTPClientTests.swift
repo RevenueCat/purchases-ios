@@ -20,15 +20,13 @@ class BaseHTTPClientTests: TestCase {
     fileprivate let apiKey = "MockAPIKey"
     fileprivate var systemInfo = MockSystemInfo(finishTransactions: true)
     fileprivate var client: HTTPClient!
-    fileprivate var userDefaults: UserDefaults!
     fileprivate var eTagManager: MockETagManager!
     fileprivate var operationDispatcher: OperationDispatcher!
 
     override func setUp() {
         super.setUp()
 
-        self.userDefaults = MockUserDefaults()
-        self.eTagManager = MockETagManager(userDefaults: self.userDefaults)
+        self.eTagManager = MockETagManager()
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
         MockSigning.resetData()
@@ -975,7 +973,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(response?.value?.verificationResult) == .notRequested
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
-        expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == false
+        expect(self.eTagManager.invokedETagHeaderParameters?.withSignatureVerification) == false
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
@@ -1536,8 +1534,8 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
+        expect(self.eTagManager.invokedETagHeaderParameters?.withSignatureVerification) == true
         expect(self.eTagManager.invokedETagHeaderParameters?.refreshETag) == false
-        expect(self.eTagManager.invokedETagHeaderParameters?.signatureVerificationEnabled) == true
 
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success

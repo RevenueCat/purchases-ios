@@ -369,8 +369,8 @@ private extension HTTPClient {
         if request.httpRequest.path.shouldSendEtag {
             let eTagHeader = self.eTagManager.eTagHeader(
                 for: urlRequest,
-                refreshETag: request.retried,
-                signatureVerificationEnabled: request.httpRequest.nonce != nil
+                withSignatureVerification: request.httpRequest.nonce != nil,
+                refreshETag: request.retried
             )
             return request.headers.merging(eTagHeader)
         } else {
