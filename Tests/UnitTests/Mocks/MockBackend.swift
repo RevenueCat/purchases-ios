@@ -173,6 +173,20 @@ class MockBackend: Backend {
         let appUserID: String?
     }
 
+    var invokedClearHTTPClientCaches = false
+    var invokedClearHTTPClientCachesCount = 0
+
+    override func clearHTTPClientCaches() {
+        self.invokedClearHTTPClientCaches = true
+        self.invokedClearHTTPClientCachesCount += 1
+    }
+
+    var stubbedSignatureVerificationEnabled: Bool?
+
+    override var signatureVerificationEnabled: Bool {
+        return self.stubbedSignatureVerificationEnabled ?? super.signatureVerificationEnabled
+    }
+
     static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
 
 }

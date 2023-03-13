@@ -34,6 +34,8 @@ enum IdentityStrings {
 
     case deleting_attributes_none_found
 
+    case invalidating_cached_customer_info
+
 }
 
 extension IdentityStrings: CustomStringConvertible {
@@ -62,6 +64,8 @@ extension IdentityStrings: CustomStringConvertible {
             return "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared."
         case .deleting_attributes_none_found:
             return "Attempt to delete attributes for user, but there were none to delete"
+        case .invalidating_cached_customer_info:
+            return "Detected unverified cached CustomerInfo but verification is enabled. Invalidating cache."
         }
     }
 

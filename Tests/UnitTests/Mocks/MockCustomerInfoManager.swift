@@ -86,9 +86,9 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var invokedCachedCustomerInfoCount = 0
     var invokedCachedCustomerInfoParameters: (appUserID: String, Void)?
     var invokedCachedCustomerInfoParametersList = [(appUserID: String, Void)]()
-    var stubbedCachedCustomerInfoResult: CustomerInfo!
+    var stubbedCachedCustomerInfoResult: CustomerInfo?
 
-    override func cachedCustomerInfo(appUserID: String) -> CustomerInfo {
+    override func cachedCustomerInfo(appUserID: String) -> CustomerInfo? {
         self.invokedCachedCustomerInfo = true
         self.invokedCachedCustomerInfoCount += 1
         self.invokedCachedCustomerInfoParameters = (appUserID, ())
