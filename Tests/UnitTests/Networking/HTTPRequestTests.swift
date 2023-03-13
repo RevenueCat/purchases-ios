@@ -119,7 +119,7 @@ class HTTPRequestTests: TestCase {
 
         let existingNonce = Data.randomNonce()
         let request: HTTPRequest = .init(method: .get, path: .health, nonce: existingNonce)
-        let mode = Signing.verificationMode(with: .enforced)
+        let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce) == existingNonce
     }
@@ -134,7 +134,7 @@ class HTTPRequestTests: TestCase {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
-        let mode = Signing.verificationMode(with: .enforced)
+        let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
     }
@@ -144,7 +144,7 @@ class HTTPRequestTests: TestCase {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
-        let mode = Signing.verificationMode(with: .enforced)
+        let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }

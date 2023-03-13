@@ -1415,7 +1415,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testValidSignatureWithVerificationModeEnforced() throws {
-        try self.changeClient(.enforced)
+        try self.changeClientToEnforced()
         self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = true
@@ -1447,7 +1447,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testIncorrectSignatureWithVerificationModeEnforcedReturnsError() throws {
-        try self.changeClient(.enforced)
+        try self.changeClientToEnforced()
         self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
@@ -1462,14 +1462,14 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testPerformRequestWithEnforcedModeOverridesIt() throws {
-        try self.changeClient(.disabled)
+        try self.changeClientToEnforced()
         self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
 
         let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
-                                with: Signing.verificationMode(with: .enforced),
+                                with: Signing.enforcedVerificationMode(),
                                 completionHandler: completion)
         }
 
@@ -1478,7 +1478,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testPerformRequestWithInformationalModeOverridesIt() throws {
-        try self.changeClient(.disabled)
+        try self.changeClientToEnforced()
         self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
@@ -1494,7 +1494,7 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
     }
 
     func testPerformRequestWithDisabledModeOverridesIt() throws {
-        try self.changeClient(.enforced)
+        try self.changeClientToEnforced()
         self.mockResponse(signature: self.sampleSignature, requestDate: self.requestDate)
 
         MockSigning.stubbedVerificationResult = false
@@ -1630,22 +1630,33 @@ final class SignatureVerificationHTTPClientTests: BaseHTTPClientTests {
         expect(response?.value?.verificationResult) == .verified
     }
 
-    // MARK: - Private
+}
 
-    private func changeClient(_ verificationMode: Configuration.EntitlementVerificationMode) throws {
-        let mode = Signing.verificationMode(with: verificationMode)
+// MARK: - Private
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+private extension SignatureVerificationHTTPClientTests {
+
+    func changeClient(_ verificationMode: Configuration.EntitlementVerificationMode) throws {
+        try self.createClient(Signing.verificationMode(with: verificationMode))
+    }
+
+    func changeClientToEnforced() throws {
+        try self.createClient(Signing.enforcedVerificationMode())
+    }
+
+    private func createClient(_ mode: Signing.ResponseVerificationMode) throws {
         self.systemInfo = try MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
                                              responseVerificationMode: mode)
         self.client = self.createClient()
     }
 
-    private func mockResponse() {
+    func mockResponse() {
         self.mockResponse(signature: nil, requestDate: nil)
     }
 
-    private func mockResponse(
+    func mockResponse(
         signature: String?,
         requestDate: Int?,
         eTag: String? = nil,
