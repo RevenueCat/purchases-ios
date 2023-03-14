@@ -230,6 +230,7 @@
 		5744D8AB28E3B86600646735 /* AppleReceiptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5744D8AA28E3B86600646735 /* AppleReceiptTests.swift */; };
 		5746508C27586B2E0053AB09 /* Result+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5746508B27586B2E0053AB09 /* Result+Extensions.swift */; };
 		5746508E275949F20053AB09 /* DispatchTimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5746508D275949F20053AB09 /* DispatchTimeInterval+Extensions.swift */; };
+		5748008C29BFC6660032F001 /* SignatureVerificationHTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5748008B29BFC6660032F001 /* SignatureVerificationHTTPClientTests.swift */; };
 		574A2EE7282C3F0800150D40 /* AnyDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574A2EE6282C3F0800150D40 /* AnyDecodable.swift */; };
 		574A2EE9282C403800150D40 /* AnyDecodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574A2EE8282C403800150D40 /* AnyDecodableTests.swift */; };
 		574A2F3F282D75E300150D40 /* OfferingsDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574A2F3E282D75E300150D40 /* OfferingsDecodingTests.swift */; };
@@ -853,6 +854,7 @@
 		5744D8AA28E3B86600646735 /* AppleReceiptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleReceiptTests.swift; sourceTree = "<group>"; };
 		5746508B27586B2E0053AB09 /* Result+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+Extensions.swift"; sourceTree = "<group>"; };
 		5746508D275949F20053AB09 /* DispatchTimeInterval+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DispatchTimeInterval+Extensions.swift"; sourceTree = "<group>"; };
+		5748008B29BFC6660032F001 /* SignatureVerificationHTTPClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignatureVerificationHTTPClientTests.swift; sourceTree = "<group>"; };
 		574A2EE6282C3F0800150D40 /* AnyDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyDecodable.swift; sourceTree = "<group>"; };
 		574A2EE8282C403800150D40 /* AnyDecodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyDecodableTests.swift; sourceTree = "<group>"; };
 		574A2F3E282D75E300150D40 /* OfferingsDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsDecodingTests.swift; sourceTree = "<group>"; };
@@ -1808,6 +1810,7 @@
 				5796A38427D6B83C00653165 /* Backend */,
 				5774F9BF2805EA1200997128 /* Responses */,
 				37E353CBE9CF2572A72A347F /* HTTPClientTests.swift */,
+				5748008B29BFC6660032F001 /* SignatureVerificationHTTPClientTests.swift */,
 				35D832FF262FAD8000E60AC5 /* ETagManagerTests.swift */,
 				B380D69A27726AB500984578 /* DNSCheckerTests.swift */,
 				576C8AD827D2BCB90058FA6E /* HTTPRequestTests.swift */,
@@ -3107,6 +3110,7 @@
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,
 				5796A38127D6B78500653165 /* BaseBackendTest.swift in Sources */,
 				351B516226D44BEE00BD2BD7 /* CustomerInfoManagerTests.swift in Sources */,
+				5748008C29BFC6660032F001 /* SignatureVerificationHTTPClientTests.swift in Sources */,
 				351B51A326D450BC00BD2BD7 /* DictionaryExtensionsTests.swift in Sources */,
 				573A10D92800ADCD00F976E5 /* StoreKitErrorTests.swift in Sources */,
 				5766AABF283E80B500FA6091 /* BasePurchasesTests.swift in Sources */,
