@@ -48,7 +48,6 @@ public enum VerificationResult: Int {
     /// This can happen for multiple reasons:
     ///  1. Verification is not enabled in ``Configuration``
     ///  2. Verification can't be performed prior to iOS 13.0
-    ///  3. Data was cached in an older version of the SDK not supporting verification
     case notRequested = 0
 
     /// Entitlements were verified with our server.
