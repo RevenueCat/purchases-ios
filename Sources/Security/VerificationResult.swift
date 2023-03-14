@@ -83,7 +83,7 @@ extension VerificationResult {
         case (.verified, .notRequested): return .notRequested
         case (.verified, .failed): return .failed
 
-        case (.notRequested, .verified): return .notRequested
+        case (.notRequested, .verified): return .verified
         case (.notRequested, .failed): return .failed
 
         case (.failed, .notRequested): return .notRequested

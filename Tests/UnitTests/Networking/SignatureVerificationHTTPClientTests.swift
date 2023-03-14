@@ -317,6 +317,26 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response?.value?.verificationResult) == .failed
     }
 
+    func testCachedResponseWithoutVerificationAndVerifiedResponse() throws {
+        let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
+
+        try self.mockETagCache(response: cachedResponse,
+                               requestDate: Self.date2,
+                               verificationResult: .notRequested)
+        self.mockPath(statusCode: .notModified, requestDate: Self.date2)
+        MockSigning.stubbedVerificationResult = true
+
+        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body.data) == cachedResponse.data
+        expect(response?.value?.body.requestDate).to(beCloseTo(Self.date2, within: 1))
+        expect(response?.value?.verificationResult) == .verified
+    }
+
     func testNotModifiedResponseFailedVerification() throws {
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
