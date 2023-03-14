@@ -166,7 +166,16 @@ import Foundation
 
         /// Set ``Configuration/EntitlementVerificationMode``.
         /// Defaults to ``Configuration/EntitlementVerificationMode/disabled``.
-        /// - Note: This requires iOS 13+
+        ///
+        /// The result of the verification can be obtained from ``EntitlementInfos/verification`` or
+        /// ``EntitlementInfo/verification``.
+        ///
+        /// - Note: This requires iOS 13+.
+        /// - Important: This feature is currently in beta.
+        /// - Warning:  When changing from ``Configuration/EntitlementVerificationMode/disabled``
+        /// to ``Configuration/EntitlementVerificationMode/informational``
+        /// the SDK will clear the ``CustomerInfo`` cache.
+        /// This means that users will need to connect to the internet to get back their entitlements.
         ///
         /// ### Related Symbols
         /// - ``Configuration/EntitlementVerificationMode``
