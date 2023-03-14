@@ -532,6 +532,91 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCAttributionNetwork, "AttributionNetwork", 
   RCAttributionNetworkAdServices = 7,
 };
 
+@class NSUserDefaults;
+@class RCDangerousSettings;
+@class RCPlatformInfo;
+enum RCEntitlementVerificationMode : NSInteger;
+@class RCConfiguration;
+
+/// The Builder for <code>Configuration</code>.
+SWIFT_CLASS_NAMED("Builder")
+@interface RCConfigurationBuilder : NSObject
+/// Create a new builder with your API key.
+/// \param apiKey The API Key generated for your app from https://app.revenuecat.com/
+///
+- (nonnull instancetype)initWithAPIKey:(NSString * _Nonnull)apiKey OBJC_DESIGNATED_INITIALIZER;
+/// Update your API key.
+- (RCConfigurationBuilder * _Nonnull)withApiKey:(NSString * _Nonnull)apiKey SWIFT_WARN_UNUSED_RESULT;
+/// Set an <code>appUserID</code>.
+/// note:
+/// Best practice is to use a salted hash of your unique app user ids.
+/// important:
+/// Set this property if you have your own user identifiers that you manage.
+/// \param appUserID The unique app user id for this user. This user id will allow users to share their
+/// purchases and subscriptions across devices. Pass <code>nil</code> or an empty string if you want <code>Purchases</code>
+/// to generate this for you.
+///
+- (RCConfigurationBuilder * _Nonnull)withAppUserID:(NSString * _Nullable)appUserID SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>observerMode</code>.
+/// \param observerMode Set this to <code>true</code> if you have your own IAP implementation and want to use only
+/// RevenueCat’s backend. Default is <code>false</code>.
+///
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>userDefaults</code>.
+/// \param userDefaults Custom <code>UserDefaults</code> to use
+///
+- (RCConfigurationBuilder * _Nonnull)withUserDefaults:(NSUserDefaults * _Nonnull)userDefaults SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>dangerousSettings</code>.
+/// \param dangerousSettings Only use if suggested by RevenueCat support team.
+///
+- (RCConfigurationBuilder * _Nonnull)withDangerousSettings:(RCDangerousSettings * _Nonnull)dangerousSettings SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>networkTimeout</code>.
+- (RCConfigurationBuilder * _Nonnull)withNetworkTimeout:(NSTimeInterval)networkTimeout SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>storeKit1Timeout</code>.
+- (RCConfigurationBuilder * _Nonnull)withStoreKit1Timeout:(NSTimeInterval)storeKit1Timeout SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>platformInfo</code>.
+- (RCConfigurationBuilder * _Nonnull)withPlatformInfo:(RCPlatformInfo * _Nonnull)platformInfo SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>Configuration/EntitlementVerificationMode</code>.
+/// Defaults to <code>Configuration/EntitlementVerificationMode/disabled</code>.
+/// The result of the verification can be obtained from <code>EntitlementInfos/verification</code> or
+/// <code>EntitlementInfo/verification</code>.
+/// note:
+/// This requires iOS 13+.
+/// important:
+/// This feature is currently in beta.
+/// warning:
+/// When changing from <code>Configuration/EntitlementVerificationMode/disabled</code>
+/// to <code>Configuration/EntitlementVerificationMode/informational</code>
+/// the SDK will clear the <code>CustomerInfo</code> cache.
+/// This means that users will need to connect to the internet to get back their entitlements.
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>Configuration/EntitlementVerificationMode</code>
+///   </li>
+///   <li>
+///     <code>VerificationResult</code>
+///   </li>
+/// </ul>
+- (RCConfigurationBuilder * _Nonnull)withEntitlementVerificationMode:(enum RCEntitlementVerificationMode)mode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
+/// Generate a <code>Configuration</code> object given the values configured by this builder.
+- (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
+
+@interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
+/// Set <code>usesStoreKit2IfAvailable</code>. If <code>true</code>, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
+/// important:
+/// This configuration flag has been deprecated, and will be replaced by automatic remote configuration in the future.
+/// However, apps using it should work correctly.
+/// \param usesStoreKit2IfAvailable enable StoreKit 2 on devices that support it.
+/// Defaults to  <code>false</code>.
+///
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("\n    RevenueCat currently uses StoreKit 1 for purchases, as its stability in production scenarios has\n    proven to be more performant than StoreKit 2.\n\n    We're collecting more data on the best approach, but StoreKit 1 vs StoreKit 2 is an implementation detail\n    that you shouldn't need to care about.\n\n    Simply remove this method call to let RevenueCat decide for you which StoreKit implementation to use.\n    ");
+@end
+
 /// Specifies the behavior for a caching API.
 typedef SWIFT_ENUM_NAMED(NSInteger, RCCacheFetchPolicy, "CacheFetchPolicy", open) {
 /// Returns values from the cache, or throws an error if not available.
@@ -565,7 +650,6 @@ SWIFT_CLASS("_TtC10RevenueCat25CacheableNetworkOperation")
 @interface CacheableNetworkOperation : NetworkOperation
 @end
 
-@class RCConfigurationBuilder;
 
 /// <code>Configuration</code> can be used when configuring the <code>Purchases</code> instance. It is not required to be used, but
 /// highly recommended. This class follows a builder pattern.
@@ -591,7 +675,6 @@ SWIFT_CLASS("_TtC10RevenueCat25CacheableNetworkOperation")
 ///                                  .with(userDefaults: myUserDefaults)
 ///                                  .with(networkTimeout: 15)
 ///                                  .with(storeKit1Timeout: 15)
-///                                  .with(usesStoreKit2IfAvailable: true)
 ///                                  .build()
 ///  Purchases.configure(with: configuration)
 ///
@@ -604,81 +687,38 @@ SWIFT_CLASS_NAMED("Configuration")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-@class NSUserDefaults;
-@class RCDangerousSettings;
-@class RCPlatformInfo;
-enum RCEntitlementVerificationLevel : NSInteger;
 
-/// The Builder for <code>Configuration</code>.
-SWIFT_CLASS_NAMED("Builder")
-@interface RCConfigurationBuilder : NSObject
-/// Create a new builder with your API key.
-/// \param apiKey The API Key generated for your app from https://app.revenuecat.com/
-///
-- (nonnull instancetype)initWithAPIKey:(NSString * _Nonnull)apiKey OBJC_DESIGNATED_INITIALIZER;
-/// Update your API key.
-- (RCConfigurationBuilder * _Nonnull)withApiKey:(NSString * _Nonnull)apiKey SWIFT_WARN_UNUSED_RESULT;
-/// Set an <code>appUserID</code>.
-/// note:
-/// Best practice is to use a salted hash of your unique app user ids.
-/// important:
-/// Set this property if you have your own user identifiers that you manage.
-/// \param appUserID The unique app user id for this user. This user id will allow users to share their
-/// purchases and subscriptions across devices. Pass <code>nil</code> or an empty string if you want <code>Purchases</code>
-/// to generate this for you.
-///
-- (RCConfigurationBuilder * _Nonnull)withAppUserID:(NSString * _Nullable)appUserID SWIFT_WARN_UNUSED_RESULT;
-/// Set <code>observerMode</code>.
-/// \param observerMode Set this to <code>true</code> if you have your own IAP implementation and want to use only
-/// RevenueCat’s backend. Default is <code>false</code>.
-///
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT;
-/// Set <code>userDefaults</code>.
-/// \param userDefaults Custom <code>UserDefaults</code> to use
-///
-- (RCConfigurationBuilder * _Nonnull)withUserDefaults:(NSUserDefaults * _Nonnull)userDefaults SWIFT_WARN_UNUSED_RESULT;
-/// Set <code>usesStoreKit2IfAvailable</code>.
-/// \param usesStoreKit2IfAvailable opt in using StoreKit 2 on devices that support it.
-/// Defaults to  <code>false</code>.
-///
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT;
-/// Set <code>dangerousSettings</code>.
-/// \param dangerousSettings Only use if suggested by RevenueCat support team.
-///
-- (RCConfigurationBuilder * _Nonnull)withDangerousSettings:(RCDangerousSettings * _Nonnull)dangerousSettings SWIFT_WARN_UNUSED_RESULT;
-/// Set <code>networkTimeout</code>.
-- (RCConfigurationBuilder * _Nonnull)withNetworkTimeout:(NSTimeInterval)networkTimeout SWIFT_WARN_UNUSED_RESULT;
-/// Set <code>storeKit1Timeout</code>.
-- (RCConfigurationBuilder * _Nonnull)withStoreKit1Timeout:(NSTimeInterval)storeKit1Timeout SWIFT_WARN_UNUSED_RESULT;
-/// Set <code>platformInfo</code>.
-- (RCConfigurationBuilder * _Nonnull)withPlatformInfo:(RCPlatformInfo * _Nonnull)platformInfo SWIFT_WARN_UNUSED_RESULT;
-/// Set <code>Configuration/EntitlementVerificationLevel</code>
-/// note:
-/// this requires iOS 13+
-///
-/// throws:
-/// <code>ErrorCode/configurationError</code> if the key cannot be loaded
-- (RCConfigurationBuilder * _Nullable)withEntitlementVerificationLevel:(enum RCEntitlementVerificationLevel)level error:(NSError * _Nullable * _Nullable)error SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
-/// Generate a <code>Configuration</code> object given the values configured by this builder.
-- (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
-- (nonnull instancetype)init SWIFT_UNAVAILABLE;
-+ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
-@end
 
 
 @interface RCConfiguration (SWIFT_EXTENSION(RevenueCat))
 @end
 
 /// Defines how strict <code>EntitlementInfo</code> verification ought to be.
-typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationLevel, "EntitlementVerificationLevel", closed) {
-/// The SDK will perform no entitlement verification.
-  RCEntitlementVerificationLevelDisabled = 0,
-/// The SDK will verify entitlements, but will not fail to parse them if verification failed.
-  RCEntitlementVerificationLevelInformationOnly = 1,
-/// The SDK will verify entitlements, and it will throw an error if verification failed.
-  RCEntitlementVerificationLevelEnforced = 2,
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>VerificationResult</code>
+///   </li>
+///   <li>
+///     <code>Configuration/Builder/with(entitlementVerificationMode:)</code>
+///   </li>
+///   <li>
+///     <code>EntitlementInfos/verification</code>
+///   </li>
+/// </ul>
+typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementVerificationMode", open) {
+/// The SDK will not perform any entitlement verification.
+  RCEntitlementVerificationModeDisabled = 0,
+/// Enable entitlement verification.
+/// If verification fails, this will be indicated with <code>VerificationResult/failed</code>
+/// but parsing will not fail.
+/// This can be useful if you want to handle validation failures but still grant access.
+  RCEntitlementVerificationModeInformational = 1,
+/// Enable entitlement verification.
+/// If verification fails when fetching <code>CustomerInfo</code> and/or <code>EntitlementInfos</code>
+/// <code>ErrorCode/signatureVerificationFailed</code> will be thrown.
+  RCEntitlementVerificationModeEnforced = 2,
 };
-
 
 
 @class RCEntitlementInfos;
@@ -775,10 +815,11 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 
 
 
+
+
 @interface RCCustomerInfo (SWIFT_EXTENSION(RevenueCat))
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @end
-
 
 @class RCStoreTransaction;
 
@@ -789,6 +830,7 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 /// The purchases are ordered by purchase date in ascending order.
 @property (nonatomic, readonly, copy) NSArray<RCStoreTransaction *> * _Nonnull nonSubscriptionTransactions SWIFT_DEPRECATED_MSG("", "nonSubscriptions");
 @end
+
 
 
 
@@ -816,6 +858,7 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 enum RCPeriodType : NSInteger;
 enum RCStore : NSInteger;
 enum RCPurchaseOwnershipType : NSInteger;
+enum RCVerificationResult : NSInteger;
 
 /// The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
 SWIFT_CLASS_NAMED("EntitlementInfo")
@@ -866,6 +909,14 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 /// or shared to them by a family member. This can be useful for onboarding users who have had
 /// an entitlement shared with them, but might not be entirely aware of the benefits they now have.
 @property (nonatomic, readonly) enum RCPurchaseOwnershipType ownershipType;
+/// Whether this entitlement was verified.
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>VerificationResult</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly) enum RCVerificationResult verification SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
@@ -911,6 +962,14 @@ SWIFT_CLASS_NAMED("EntitlementInfos")
 /// <code>entitlementInfos["pro_entitlement_id"]</code>.
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull all;
 - (RCEntitlementInfo * _Nullable)objectForKeyedSubscript:(NSString * _Nonnull)key SWIFT_WARN_UNUSED_RESULT;
+/// Whether these entitlements were verified.
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>VerificationResult</code>
+///   </li>
+/// </ul>
+@property (nonatomic, readonly) enum RCVerificationResult verification SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -991,6 +1050,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
   RCAPIEndpointBlocked SWIFT_COMPILE_NAME("apiEndpointBlockedError") = 33,
   RCInvalidPromotionalOfferError SWIFT_COMPILE_NAME("invalidPromotionalOfferError") = 34,
   RCOfflineConnectionError SWIFT_COMPILE_NAME("offlineConnectionError") = 35,
+  RCSignatureVerificationFailed SWIFT_COMPILE_NAME("signatureVerificationFailed") = 36,
 };
 static NSString * _Nonnull const RCPurchasesErrorCodeDomain = @"RevenueCat.ErrorCode";
 
@@ -1875,6 +1935,10 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// This may force your users to enter the App Store password so should only be performed on request of
 /// the user. Typically with a button in settings or near your purchase UI. Use
 /// <code>Purchases/syncPurchases(completion:)</code> if you need to restore transactions programmatically.
+/// warning:
+/// Receiving a <code>CustomerInfo</code> instead of an error does not imply that the user has any
+/// entitlements, simply that the process was successful. You must verify the <code>CustomerInfo/entitlements</code>
+/// to confirm that they are active.
 - (void)restorePurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// This method will post all purchases associated with the current App Store account to RevenueCat and become
 /// associated with the current <code>appUserID</code>. If the receipt is being used by an existing user, the current
@@ -1886,6 +1950,10 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// This may force your users to enter the App Store password so should only be performed on request of
 /// the user. Typically with a button in settings or near your purchase UI. Use
 /// <code>Purchases/syncPurchases(completion:)</code> if you need to restore transactions programmatically.
+/// warning:
+/// Receiving a <code>CustomerInfo</code> instead of an error does not imply that the user has any
+/// entitlements, simply that the process was successful. You must verify the <code>CustomerInfo/entitlements</code>
+/// to confirm that they are active.
 - (void)restorePurchasesWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 /// This method will post all purchases associated with the current App Store account to RevenueCat and
 /// become associated with the current <code>appUserID</code>.
@@ -2297,6 +2365,33 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+/// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
++ (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
++ (void)setDebugLogsEnabled:(BOOL)newValue;
+/// Deprecated
+@property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("Configure behavior through the RevenueCat dashboard instead");
+/// Deprecated
++ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
+/// Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
+/// <h4>Related articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
+///   </li>
+/// </ul>
+/// \param data Dictionary provided by the network.
+///
+/// \param network Enum for the network the data is coming from, see <code>AttributionNetwork</code> for supported
+/// networks.
+///
+/// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
+///
++ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
+@end
+
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Configures an instance of the Purchases SDK with a specified <code>Configuration</code>.
 /// The instance will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
@@ -2306,7 +2401,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 /// \code
 ///  Purchases.configure(
 ///      with: Configuration.Builder(withAPIKey: Constants.apiKey)
-///               .with(usesStoreKit2IfAvailable: true)
 ///               .with(observerMode: false)
 ///               .with(appUserID: "<app_user_id>")
 ///               .build()
@@ -2327,7 +2421,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 /// \code
 ///  Purchases.configure(
 ///      with: .init(withAPIKey: Constants.apiKey)
-///               .with(usesStoreKit2IfAvailable: true)
 ///               .with(observerMode: false)
 ///               .with(appUserID: "<app_user_id>")
 ///      )
@@ -2386,33 +2479,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode;
-@end
-
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-/// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
-+ (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
-+ (void)setDebugLogsEnabled:(BOOL)newValue;
-/// Deprecated
-@property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("Configure behavior through the RevenueCat dashboard instead");
-/// Deprecated
-+ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
-/// Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
-/// <h4>Related articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
-///   </li>
-/// </ul>
-/// \param data Dictionary provided by the network.
-///
-/// \param network Enum for the network the data is coming from, see <code>AttributionNetwork</code> for supported
-/// networks.
-///
-/// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
-///
-+ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
 @end
 
 
@@ -2743,7 +2809,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 @end
 
 
-
 SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0)
 @interface RCPurchasesDiagnostics (SWIFT_EXTENSION(RevenueCat))
 /// Perform tests to ensure SDK is configured correctly.
@@ -2754,6 +2819,7 @@ SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13
 /// </ul>
 - (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler;
 @end
+
 
 
 
@@ -2774,10 +2840,10 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
+
 
 
 
@@ -2946,6 +3012,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 @property (nonatomic, readonly, copy) NSLocale * _Nonnull priceLocale SWIFT_AVAILABILITY(macos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(watchos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(tvos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(ios,unavailable,message="Use localizedPriceString instead");
 @end
 
+
+@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
+- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
+/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
+@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
+@end
+
 @class NSDecimalNumber;
 
 @interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
@@ -2970,13 +3043,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryPrice</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
-@end
-
-
-@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
-- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
-/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
-@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
 @end
 
 enum RCPaymentMode : NSInteger;
@@ -3162,6 +3228,65 @@ SWIFT_CLASS_NAMED("Transaction") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'
 
 
 
+
+/// The result of data verification process.
+/// This is accomplished by preventing MiTM attacks between the SDK and the RevenueCat server.
+/// With verification enabled, the SDK ensures that the response created by the server was not
+/// modified by a third-party, and the entitlements received are exactly what was sent.
+/// note:
+/// Entitlements are only verified if enabled using
+/// <code>Configuration/Builder/with(entitlementVerificationMode:)</code>, which is disabled by default.
+/// <h3>Example:</h3>
+/// \code
+/// let purchases = Purchases.configure(
+///   with: Configuration
+///     .builder(withAPIKey: "")
+///     .with(entitlementVerificationMode: .informational)
+/// )
+///
+/// let customerInfo = try await purchases.customerInfo()
+/// if customerInfo.entitlements.verification != .verified {
+///   print("Entitlements could not be verified")
+/// }
+///
+/// \endcode<h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>Configuration/EntitlementVerificationMode</code>
+///   </li>
+///   <li>
+///     <code>Configuration/Builder/with(entitlementVerificationMode:)</code>
+///   </li>
+///   <li>
+///     <code>EntitlementInfos/verification</code>
+///   </li>
+/// </ul>
+typedef SWIFT_ENUM_NAMED(NSInteger, RCVerificationResult, "VerificationResult", open) {
+/// No verification was done.
+/// This can happen for multiple reasons:
+/// <ol>
+///   <li>
+///     Verification is not enabled in <code>Configuration</code>
+///   </li>
+///   <li>
+///     Verification can’t be performed prior to iOS 13.0
+///   </li>
+///   <li>
+///     Data was cached in an older version of the SDK not supporting verification
+///   </li>
+/// </ol>
+  RCVerificationResultNotRequested = 0,
+/// Entitlements were verified with our server.
+  RCVerificationResultVerified = 1,
+/// Entitlement verification failed, possibly due to a MiTM attack.
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>ErrorCode/signatureVerificationFailed</code>
+///   </li>
+/// </ul>
+  RCVerificationResultFailed = 2,
+};
 
 #endif
 #if defined(__cplusplus)
