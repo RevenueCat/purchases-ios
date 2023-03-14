@@ -1,17 +1,36 @@
-### Bugfixes
-* `DispatchTimeInterval` & `Date`: avoid 32-bit overflows, fix `watchOS` crashes (#2342) via NachoSoto (@NachoSoto)
-* Fix issue with missing subscriber attributes if set after login but before login callback (#2313) via @tonidero
+### New Features
+* Introduced `Configuration.EntitlementVerificationMode` and `VerificationResult` (#2277) via NachoSoto (@NachoSoto)
+* `PurchasesDiagnostics`: added step to verify signature verification (#2267) via NachoSoto (@NachoSoto)
+* `HTTPClient`: added signature verification and introduced `ErrorCode.signatureVerificationFailed` (#2272) via NachoSoto (@NachoSoto)
 
-### Performance Improvements
-* `AppleReceipt.mostRecentActiveSubscription`: performance optimization (#2332) via NachoSoto (@NachoSoto)
+#### Introducing Trusted Entitlements (beta):
+
+Fixes #1900.
+
+This new feature prevents MitM attacks between the SDK and the RevenueCat server.
+With verification enabled, the SDK ensures that the response created by the server was not modified by a third-party, and the entitlements received are exactly what was sent.
+This is 100% opt-in. `EntitlementInfos` have a new `VerificationResult` property, which will indicate the validity of the responses when this feature is enabled.
+
+```swift
+let purchases = Purchases.configure(
+  with: Configuration
+    .builder(withAPIKey: "")
+    .with(entitlementVerificationMode: .informational)
+)
+let customerInfo = try await purchases.customerInfo()
+if customerInfo.entitlements.verification != .verified {
+  print("Entitlements could not be verified")
+}
+```
 
 ### Other Changes
-* `CI`: also run tests on `watchOS` (#2340) via NachoSoto (@NachoSoto)
-* `RELEASING.md`: added GitHub rate limiting parameter (#2336) via NachoSoto (@NachoSoto)
-* Add additional logging on init (#2324) via Cody Kerns (@codykerns)
-* Replace `iff` with `if and only if` (#2323) via @aboedo
-* Fix typo in log (#2315) via @nickkohrn
-* `Purchases.restorePurchases`: added docstring about successful results (#2316) via NachoSoto (@NachoSoto)
-* `RELEASING.md`: fixed hotfix instructions (#2304) via NachoSoto (@NachoSoto)
-* `PurchaseTester`: fixed leak when reconfiguring `Purchases` (#2311) via NachoSoto (@NachoSoto)
-* `ProductsFetcherSK2`: add underlying error to description (#2281) via Chris Vasselli (@chrisvasselli)
+* Refactor: reorganized files in new Security and Misc folders (#2326) via NachoSoto (@NachoSoto)
+* `CustomerInfo`: use same grace period logic for active subscriptions (#2327) via NachoSoto (@NachoSoto)
+* `EntitlementInfo`: request date is not optional (#2325) via NachoSoto (@NachoSoto)
+* `EntitlementInfo`: add a grace period limit to outdated entitlements (#2288) via NachoSoto (@NachoSoto)
+* Update `CustomerInfo.requestDate` from 304 responses (#2310) via NachoSoto (@NachoSoto)
+* `HTTPClient`: changed header search to be case-insensitive (#2308) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: added ability to reload `CustomerInfo` with a custom `CacheFetchPolicy` (#2312) via NachoSoto (@NachoSoto)
+* SwiftUI: Paywall View should respond to changes on the UserView model (#2297) via ConfusedVorlon (@ConfusedVorlon)
+* Deprecate `usesStoreKit2IfAvailable` (#2293) via Andy Boedo (@aboedo)
+* Clarifies error messages for storekit 1 bugs (#2294) via Andy Boedo (@aboedo)
