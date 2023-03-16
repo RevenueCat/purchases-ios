@@ -57,7 +57,7 @@ extension StoreKitConfigTestCase {
 
 }
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 extension StoreKitConfigTestCase {
 
     /// Updates `SKTestSession.storefront` and waits for `Storefront.current` to reflect the change
@@ -80,7 +80,7 @@ extension StoreKitConfigTestCase {
 
 }
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 extension StoreKitConfigTestCase {
 
     static let productID = "com.revenuecat.monthly_4.99.1_week_intro"
@@ -88,7 +88,7 @@ extension StoreKitConfigTestCase {
 
 }
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 fileprivate extension StoreKitConfigTestCase {
 
     enum Error: Swift.Error {
@@ -100,7 +100,7 @@ fileprivate extension StoreKitConfigTestCase {
 
 }
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 extension ProductsFetcherSK1 {
 
     func product(withIdentifier identifier: String) async throws -> StoreProduct {

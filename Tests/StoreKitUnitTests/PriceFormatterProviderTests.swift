@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     private var priceFormatterProvider: PriceFormatterProvider!

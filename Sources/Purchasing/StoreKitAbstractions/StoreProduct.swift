@@ -78,7 +78,7 @@ public typealias SK2Product = StoreKit.Product
 
     @objc public var productIdentifier: String { self.product.productIdentifier }
 
-    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     @objc public var isFamilyShareable: Bool { self.product.isFamilyShareable }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
@@ -151,7 +151,7 @@ internal protocol StoreProductType: Sendable {
     ///
     /// #### Related Articles
     /// - https://support.apple.com/en-us/HT201079
-    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     var isFamilyShareable: Bool { get }
 
     /// The identifier of the subscription group to which the subscription belongs.

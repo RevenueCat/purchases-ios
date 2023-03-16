@@ -27,6 +27,11 @@ class BaseHTTPClientTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        #if os(watchOS)
+        // See https://github.com/AliSoftware/OHHTTPStubs/issues/287
+        try XCTSkipIf(true, "OHHTTPStubs does not currently support watchOS")
+        #endif
+
         self.eTagManager = MockETagManager()
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()

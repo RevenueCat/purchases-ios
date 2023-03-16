@@ -16,7 +16,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 class ProductsManagerTests: StoreKitConfigTestCase {
 
     func testFetchProductsWithIdentifiersSK1() throws {
@@ -36,7 +36,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testFetchProductsWithIdentifiersSK2() throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) else {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 
