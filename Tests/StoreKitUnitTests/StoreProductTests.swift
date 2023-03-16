@@ -107,16 +107,13 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.priceDecimalNumber).to(beCloseTo(4.99))
         expect(storeProduct.localizedPriceString) == "$4.99"
+        expect(storeProduct.isFamilyShareable) == true
         expect(storeProduct.localizedTitle) == "Monthly Free Trial"
         // open the StoreKit Config file as source code to see the expected value
         expect(storeProduct.subscriptionGroupIdentifier) == "7096FF06"
 
         expect(storeProduct.subscriptionPeriod?.unit) == .month
         expect(storeProduct.subscriptionPeriod?.value) == 1
-
-        if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *) {
-            expect(storeProduct.isFamilyShareable) == true
-        }
 
         let intro = try XCTUnwrap(storeProduct.introductoryDiscount)
 
@@ -357,12 +354,9 @@ private extension StoreProductTests {
         expect(productA.price) == productB.price
         expect(productA.localizedPriceString) == productB.localizedPriceString
         expect(productA.productIdentifier) == productB.productIdentifier
+        expect(productA.isFamilyShareable) == productB.isFamilyShareable
         expect(productA.localizedTitle) == productB.localizedTitle
         expect(productA.discounts) == productB.discounts
-
-        if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *) {
-            expect(productA.isFamilyShareable) == productB.isFamilyShareable
-        }
 
         if productA.subscriptionPeriod == nil {
             expect(productB.subscriptionPeriod).to(beNil())
