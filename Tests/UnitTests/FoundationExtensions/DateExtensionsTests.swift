@@ -12,7 +12,7 @@ class DateExtensionsTests: TestCase {
 
     func testMillisecondsSince1970ConvertsCorrectlyWithCurrentTime() {
         let date = Date()
-        expect(date.millisecondsSince1970) == UInt64(date.timeIntervalSince1970) * 1000
+        expect(date.millisecondsSince1970) == UInt64(date.timeIntervalSince1970 * 1000)
     }
 
     func testMillisecondsSince1970ConvertsCorrectlyWithFixedTime() {
