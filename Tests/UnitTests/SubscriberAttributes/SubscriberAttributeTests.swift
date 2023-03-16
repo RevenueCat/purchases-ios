@@ -40,7 +40,7 @@ class SubscriberAttributeTests: TestCase {
 
         expect(receivedDictionary["value"] as? String) == Self.mockAttribute.value
         expect((receivedDictionary["updated_at_ms"] as? NSNumber)?.uint64Value)
-        == Self.mockAttribute.setTime.millisecondsSince1970AsUInt64()
+        == Self.mockAttribute.setTime.millisecondsSince1970
     }
 
     func testInitWithDictionarySetsRightValues() throws {

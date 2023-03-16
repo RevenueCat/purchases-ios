@@ -23,12 +23,25 @@ extension DispatchTimeInterval {
 
     /// `DispatchTimeInterval` can only be used by specifying a unit of time.
     /// This allows us to easily convert any `DispatchTimeInterval` into nanoseconds.
-    var nanoseconds: Int {
+    /// - Important: It's likely that `x * 1_000_000_000` can't be represented in 32 bits.
+    var nanoseconds: UInt64 {
         switch self {
-        case let .seconds(s): return s * 1_000_000_000
-        case let .milliseconds(ms): return ms * 1_000_000
-        case let .microseconds(ms): return ms * 1000
-        case let .nanoseconds(ns): return ns
+        case let .seconds(s): return UInt64(s) * UInt64(1_000_000_000)
+        case let .milliseconds(ms): return UInt64(ms) * UInt64(1_000_000)
+        case let .microseconds(ms): return UInt64(ms) * UInt64(1000)
+        case let .nanoseconds(ns): return UInt64(ns)
+        case .never: return 0
+        @unknown default: fatalError("Unknown value: \(self)")
+        }
+    }
+
+    /// - Note: this returns `Int`, so it might lose precision for `.milliseconds` and `.microseconds`.
+    var milliseconds: Int {
+        switch self {
+        case let .seconds(s): return s * 1_000
+        case let .milliseconds(ms): return ms
+        case let .microseconds(ms): return Int((Double(ms) / 1_000).rounded())
+        case let .nanoseconds(ns): return Int((Double(ns) / 1_000_000).rounded())
         case .never: return 0
         @unknown default: fatalError("Unknown value: \(self)")
         }
@@ -39,7 +52,7 @@ extension DispatchTimeInterval {
     var seconds: Double {
         switch self {
         case let .seconds(seconds): return Double(seconds)
-        case let .milliseconds(ms): return Double(ms) / 1000
+        case let .milliseconds(ms): return Double(ms) / 1_000
         case let .microseconds(ms): return Double(ms) / 1_000_000
         case let .nanoseconds(ns): return Double(ns) / 1_000_000_000
         case .never: return 0
@@ -52,11 +65,15 @@ extension DispatchTimeInterval {
 // swiftlint:enable identifier_name
 
 func + (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInterval {
-    return .nanoseconds(lhs.nanoseconds + rhs.nanoseconds)
+    // Note: `DispatchTimeInterval` uses `Int` for nanoseconds, which might overflow in 32 bits
+    // This loses some precision by using milliseconds, but avoids potential overflows.
+    return .milliseconds(lhs.milliseconds + rhs.milliseconds)
 }
 
 func - (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInterval {
-    return .nanoseconds(lhs.nanoseconds - rhs.nanoseconds)
+    // Note: `DispatchTimeInterval` uses `Int` for nanoseconds, which might overflow in 32 bits
+    // This loses some precision by using milliseconds, but avoids potential overflows.
+    return .milliseconds(lhs.milliseconds - rhs.milliseconds)
 }
 
 extension DispatchTimeInterval: Comparable {

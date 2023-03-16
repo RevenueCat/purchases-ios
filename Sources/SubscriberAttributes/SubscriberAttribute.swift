@@ -57,7 +57,7 @@ extension SubscriberAttribute {
 
     func asBackendDictionary() -> [String: Any] {
         return [BackendKey.value.rawValue: self.value,
-                BackendKey.timestamp.rawValue: self.setTime.millisecondsSince1970AsUInt64()]
+                BackendKey.timestamp.rawValue: self.setTime.millisecondsSince1970]
     }
 
 }
