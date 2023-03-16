@@ -68,7 +68,7 @@ class SigningTests: TestCase {
 
         let message = "Hello World"
         let nonce = "nonce"
-        let requestDate = 1677005916012
+        let requestDate: UInt64 = 1677005916012
         let signature = "this is not a signature"
 
         expect(Signing.verify(
@@ -113,7 +113,7 @@ class SigningTests: TestCase {
     func testVerifySignatureWithValidSignature() throws {
         let message = "Hello World"
         let nonce = "nonce"
-        let requestDate = 1677005916012
+        let requestDate: UInt64 = 1677005916012
         let salt = Self.createSalt()
 
         let signature = try self.sign(
@@ -155,7 +155,7 @@ class SigningTests: TestCase {
         // swiftlint:enable line_length
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
-        let requestDate = 1677005916012
+        let requestDate: UInt64 = 1677005916012
 
         expect(
             Signing.verify(
@@ -182,7 +182,7 @@ class SigningTests: TestCase {
          */
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
-        let requestDate = 1677013582768
+        let requestDate: UInt64 = 1677013582768
         let eTag = "b7bd9a697c7fd1a2"
 
         // swiftlint:disable:next line_length
