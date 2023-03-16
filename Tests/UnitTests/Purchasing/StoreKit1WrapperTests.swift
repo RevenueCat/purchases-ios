@@ -110,25 +110,27 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadCount) == 1
     }
 
+    #if !os(watchOS)
     func testCallsDelegateWhenPromoPurchaseIsAvailable() {
         let product = SK1Product()
-        let payment = SKPayment.init(product: product)
+        let payment = SKPayment(product: product)
 
-        _ = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
+        _ = self.wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
         expect(self.promoPayment).to(be(payment))
         expect(self.promoProduct).to(be(product))
     }
 
     func testPromoDelegateMethodPassesBackReturnValueFromOwnDelegate() {
         let product = SK1Product()
-        let payment = SKPayment.init(product: product)
+        let payment = SKPayment(product: product)
 
-        shouldAddPromo = Bool.random()
+        self.shouldAddPromo = Bool.random()
 
-        let result = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
+        let result = self.wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
 
         expect(result).to(equal(self.shouldAddPromo))
     }
+    #endif
 
     func testCallsDelegateOncePerTransaction() {
         let payment1 = SKPayment.init(product: SK1Product())

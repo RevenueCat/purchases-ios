@@ -365,6 +365,24 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  run-test-watchos:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_watchos
+          no_output_timeout: 5m
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/watchos
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
   run-test-ios-14:
     <<: *base-job
     steps:
@@ -732,6 +750,8 @@ workflows:
       - run-test-ios-16:
           xcode_version: '14.2.0'
       - run-test-ios-15:
+          xcode_version: '14.2.0'
+      - run-test-watchos:
           xcode_version: '14.2.0'
       - run-test-tvos:
           xcode_version: '14.2.0'

@@ -154,6 +154,24 @@ platform :ios do
     )
   end
 
+  desc "Runs all the watchOS tests"
+  lane :test_watchos do |options|
+    scan(
+      step_name: "scan - watchOS",
+      device: ENV['SCAN_DEVICE'] || "Apple Watch",
+      ensure_devices_found: true,
+      scheme: "RevenueCat",
+      prelaunch_simulator: true,
+      output_types: 'junit',
+      number_of_retries: 5,
+      result_bundle: true,
+      # Host app isn't available on watchOS
+      testplan: "CI-RevenueCat",
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/watchos"
+    )
+  end
+
   desc "Release checks"
   lane :release_checks do |options|
     version_number = current_version_number

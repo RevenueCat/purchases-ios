@@ -11,7 +11,15 @@
 //
 //  Created by Andrés Boedo on 9/13/21.
 
-import UIKit
+import SwiftUI
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {}
+struct TestApp: App {
+
+    var body: some Scene {
+        WindowGroup {
+            Text("Hello World")
+        }
+    }
+
+}

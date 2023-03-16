@@ -72,7 +72,7 @@ func checkAttributionAPI() {
 
     attribution.collectDeviceIdentifiers()
 
-    #if !os(tvOS)
+    #if !os(tvOS) && !os(watchOS)
     attribution.enableAdServicesAttributionTokenCollection()
     #endif
 }

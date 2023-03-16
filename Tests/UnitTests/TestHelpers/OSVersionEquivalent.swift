@@ -36,6 +36,10 @@ extension OSVersionEquivalent {
         // Not currently supported
         // Must convert e.g.: macOS 10.15 to iOS 13
         fatalError(Error.unknownOS().localizedDescription)
+        #elseif os(watchOS)
+        // The feature set on watchOS is currently equivalent to iOS 13.
+        // For example, FakeTrackingManagerAuthorizationStatus isn't available.
+        return .iOS13
         #else
         // Note: this is either iOS/tvOS/macCatalyst
         // They all share equivalent versions
@@ -52,6 +56,10 @@ extension OSVersionEquivalent {
 
 }
 
+#if os(watchOS)
+import WatchKit
+#endif
+
 private extension OSVersionEquivalent {
 
     private enum Error: Swift.Error {
@@ -59,9 +67,15 @@ private extension OSVersionEquivalent {
         case unknownOS(systemName: String, version: String)
 
         static func unknownOS() -> Self {
+            #if os(watchOS)
+            let device = WKInterfaceDevice.current()
+
+            return .unknownOS(systemName: device.systemName, version: device.systemVersion)
+            #else
             let device = UIDevice.current
 
             return .unknownOS(systemName: device.systemName, version: device.systemVersion)
+            #endif
         }
 
     }

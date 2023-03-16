@@ -15,7 +15,7 @@ import Foundation
 @testable import RevenueCat
 import StoreKit
 
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *)
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
 
     convenience init() {

@@ -38,10 +38,17 @@ class MockAdClientProxy: AfficheClientProxy {
 @available(iOS 14, macOS 11, tvOS 14, *)
 class MockTrackingManagerProxy: TrackingManagerProxy {
 
+    #if !os(watchOS)
+    @available(iOS 14, macOS 11, tvOS 14, *)
     static var mockAuthorizationStatus: ATTrackingManager.AuthorizationStatus = .authorized
+    #endif
 
     override func trackingAuthorizationStatus() -> Int {
+        #if os(watchOS)
+        return 0
+        #else
         Int(Self.mockAuthorizationStatus.rawValue)
+        #endif
     }
 
 }
