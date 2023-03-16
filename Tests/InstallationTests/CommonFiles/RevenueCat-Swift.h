@@ -666,6 +666,7 @@ SWIFT_CLASS_NAMED("Builder")
 @end
 
 
+
 @interface RCConfiguration (SWIFT_EXTENSION(RevenueCat))
 @end
 
@@ -678,7 +679,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationLevel, "Entitlement
 /// The SDK will verify entitlements, and it will throw an error if verification failed.
   RCEntitlementVerificationLevelEnforced = 2,
 };
-
 
 
 @class RCEntitlementInfos;
@@ -1114,7 +1114,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCLogLevel, "LogLevel", open) {
 
 
 
-
 /// Information that represents a non-subscription purchase made by a user.
 SWIFT_CLASS_NAMED("NonSubscriptionTransaction")
 @interface RCNonSubscriptionTransaction : NSObject
@@ -1261,13 +1260,6 @@ SWIFT_CLASS_NAMED("Package")
 
 
 
-@class SKProduct;
-
-@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
-/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
-@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
-@end
-
 
 @interface RCPackage (SWIFT_EXTENSION(RevenueCat))
 /// \param packageType A <code>PackageType</code>.
@@ -1282,6 +1274,13 @@ SWIFT_CLASS_NAMED("Package")
 /// returns:
 /// a <code>PackageType</code> for the given string.
 + (enum RCPackageType)packageTypeFrom:(NSString * _Nonnull)string SWIFT_WARN_UNUSED_RESULT;
+@end
+
+@class SKProduct;
+
+@interface RCPackage (SWIFT_EXTENSION(RevenueCat))
+/// <code>SKProduct</code> assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
+@property (nonatomic, readonly, strong) SKProduct * _Nonnull product SWIFT_AVAILABILITY(maccatalyst,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'product' has been renamed to 'storeProduct': Use StoreProduct instead");
 @end
 
 
@@ -1875,6 +1874,10 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// This may force your users to enter the App Store password so should only be performed on request of
 /// the user. Typically with a button in settings or near your purchase UI. Use
 /// <code>Purchases/syncPurchases(completion:)</code> if you need to restore transactions programmatically.
+/// warning:
+/// Receiving a <code>CustomerInfo</code> instead of an error does not imply that the user has any
+/// entitlements, simply that the process was successful. You must verify the <code>CustomerInfo/entitlements</code>
+/// to confirm that they are active.
 - (void)restorePurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 /// This method will post all purchases associated with the current App Store account to RevenueCat and become
 /// associated with the current <code>appUserID</code>. If the receipt is being used by an existing user, the current
@@ -1886,6 +1889,10 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// This may force your users to enter the App Store password so should only be performed on request of
 /// the user. Typically with a button in settings or near your purchase UI. Use
 /// <code>Purchases/syncPurchases(completion:)</code> if you need to restore transactions programmatically.
+/// warning:
+/// Receiving a <code>CustomerInfo</code> instead of an error does not imply that the user has any
+/// entitlements, simply that the process was successful. You must verify the <code>CustomerInfo/entitlements</code>
+/// to confirm that they are active.
 - (void)restorePurchasesWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 /// This method will post all purchases associated with the current App Store account to RevenueCat and
 /// become associated with the current <code>appUserID</code>.
@@ -2297,6 +2304,33 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+/// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
++ (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
++ (void)setDebugLogsEnabled:(BOOL)newValue;
+/// Deprecated
+@property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("Configure behavior through the RevenueCat dashboard instead");
+/// Deprecated
++ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
+/// Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
+/// <h4>Related articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
+///   </li>
+/// </ul>
+/// \param data Dictionary provided by the network.
+///
+/// \param network Enum for the network the data is coming from, see <code>AttributionNetwork</code> for supported
+/// networks.
+///
+/// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
+///
++ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
+@end
+
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Configures an instance of the Purchases SDK with a specified <code>Configuration</code>.
 /// The instance will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
@@ -2390,33 +2424,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-/// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
-+ (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
-+ (void)setDebugLogsEnabled:(BOOL)newValue;
-/// Deprecated
-@property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("Configure behavior through the RevenueCat dashboard instead");
-/// Deprecated
-+ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
-/// Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
-/// <h4>Related articles</h4>
-/// <ul>
-///   <li>
-///     <a href="https://docs.revenuecat.com/docs/attribution">Attribution</a>
-///   </li>
-/// </ul>
-/// \param data Dictionary provided by the network.
-///
-/// \param network Enum for the network the data is coming from, see <code>AttributionNetwork</code> for supported
-/// networks.
-///
-/// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
-///
-+ (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
-@end
-
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable dangerousSettings:(RCDangerousSettings * _Nullable)dangerousSettings SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
@@ -2425,7 +2432,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 + (BOOL)automaticAppleSearchAdsAttributionCollection SWIFT_WARN_UNUSED_RESULT;
 + (void)setAutomaticAppleSearchAdsAttributionCollection:(BOOL)value;
 @end
-
 
 
 
@@ -2439,6 +2445,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)getOfferingsWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
 - (void)offeringsWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 @end
+
 
 
 
@@ -2743,7 +2750,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 @end
 
 
-
 SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0)
 @interface RCPurchasesDiagnostics (SWIFT_EXTENSION(RevenueCat))
 /// Perform tests to ensure SDK is configured correctly.
@@ -2754,6 +2760,7 @@ SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13
 /// </ul>
 - (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler;
 @end
+
 
 
 
@@ -2774,7 +2781,6 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
@@ -2787,6 +2793,7 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=default) PurchasesReceiptParser * _Nonnull default_;)
 + (PurchasesReceiptParser * _Nonnull)default SWIFT_WARN_UNUSED_RESULT;
 @end
+
 
 
 
@@ -2889,7 +2896,7 @@ SWIFT_CLASS_NAMED("StoreProduct")
 @property (nonatomic, readonly, copy) NSString * _Nullable currencyCode;
 @property (nonatomic, readonly, copy) NSString * _Nonnull localizedPriceString;
 @property (nonatomic, readonly, copy) NSString * _Nonnull productIdentifier;
-@property (nonatomic, readonly) BOOL isFamilyShareable SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(tvos,introduced=14.0) SWIFT_AVAILABILITY(macos,introduced=11.0) SWIFT_AVAILABILITY(ios,introduced=14.0);
+@property (nonatomic, readonly) BOOL isFamilyShareable SWIFT_AVAILABILITY(watchos,introduced=7.0) SWIFT_AVAILABILITY(tvos,introduced=14.0) SWIFT_AVAILABILITY(macos,introduced=11.0) SWIFT_AVAILABILITY(ios,introduced=14.0);
 @property (nonatomic, readonly, copy) NSString * _Nullable subscriptionGroupIdentifier SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.14) SWIFT_AVAILABILITY(tvos,introduced=12.0) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(ios,introduced=12.0);
 @property (nonatomic, readonly, strong) NSNumberFormatter * _Nullable priceFormatter;
 @property (nonatomic, readonly, strong) RCSubscriptionPeriod * _Nullable subscriptionPeriod SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=11.2) SWIFT_AVAILABILITY(macos,introduced=10.13.2) SWIFT_AVAILABILITY(ios,introduced=11.2);
@@ -2946,6 +2953,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 @property (nonatomic, readonly, copy) NSLocale * _Nonnull priceLocale SWIFT_AVAILABILITY(macos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(watchos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(tvos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(ios,unavailable,message="Use localizedPriceString instead");
 @end
 
+
+@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
+- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
+/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
+@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
+@end
+
 @class NSDecimalNumber;
 
 @interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
@@ -2970,13 +2984,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryPrice</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
-@end
-
-
-@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
-- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
-/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
-@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
 @end
 
 enum RCPaymentMode : NSInteger;
@@ -3136,13 +3143,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 
