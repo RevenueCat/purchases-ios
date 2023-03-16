@@ -36,7 +36,7 @@ enum Signing: SigningType {
 
         let message: Data
         let nonce: Data
-        let requestDate: Int
+        let requestDate: UInt64
 
     }
 
