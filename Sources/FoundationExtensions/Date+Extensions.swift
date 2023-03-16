@@ -14,26 +14,15 @@
 
 import Foundation
 
-extension NSDate {
-
-    func millisecondsSince1970AsUInt64() -> UInt64 {
-        return (self as Date).millisecondsSince1970AsUInt64()
-    }
-
-}
-
 extension Date {
 
-    init(millisecondsSince1970: Int) {
+    init(millisecondsSince1970: UInt64) {
         self.init(timeIntervalSince1970: TimeInterval(millisecondsSince1970) / 1000)
     }
 
-    var millisecondsSince1970: Int {
-        return Int(self.timeIntervalSince1970 * 1000.0)
-    }
-
-    func millisecondsSince1970AsUInt64() -> UInt64 {
-        return UInt64(self.millisecondsSince1970)
+    /// - Important: this needs to be 64 bits because `Int` is 32 bits in watchOS
+    var millisecondsSince1970: UInt64 {
+        return UInt64(self.timeIntervalSince1970) * 1000
     }
 
 }

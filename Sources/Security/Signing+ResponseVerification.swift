@@ -156,7 +156,7 @@ extension HTTPResponse {
             forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.requestDate.rawValue,
             in: headers
         ),
-              let intValue = Int(stringValue) else { return nil }
+              let intValue = UInt64(stringValue) else { return nil }
 
         return .init(millisecondsSince1970: intValue)
     }
