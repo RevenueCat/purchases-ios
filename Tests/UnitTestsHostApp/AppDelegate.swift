@@ -13,6 +13,8 @@
 
 import SwiftUI
 
+#if os(watchOS) || os(tvOS)
+
 @main
 struct TestApp: App {
 
@@ -23,3 +25,12 @@ struct TestApp: App {
     }
 
 }
+
+#else
+
+// Scene isn't available until iOS 14.0, so this is for backwards compatibility.
+
+@main
+class AppDelegate: UIResponder, UIApplicationDelegate {}
+
+#endif
