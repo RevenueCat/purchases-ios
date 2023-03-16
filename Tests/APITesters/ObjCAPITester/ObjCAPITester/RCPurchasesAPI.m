@@ -182,7 +182,7 @@ BOOL isAnonymous;
 
     }];
 
-#if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV
+#if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV && !TARGET_OS_WATCH
     [p beginRefundRequestForProduct:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
     [p beginRefundRequestForEntitlement:@"" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
     [p beginRefundRequestForActiveEntitlementWithCompletion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
@@ -190,7 +190,7 @@ BOOL isAnonymous;
     BOOL consent __unused = [p.delegate shouldShowPriceConsent];
 #endif
 
-#if TARGET_OS_IPHONE && !TARGET_OS_TV
+#if TARGET_OS_IPHONE && !TARGET_OS_TV && !TARGET_OS_WATCH
     [p presentCodeRedemptionSheet];
 #endif
 }

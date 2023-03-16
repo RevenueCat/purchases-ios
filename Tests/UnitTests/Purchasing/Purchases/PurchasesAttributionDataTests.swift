@@ -119,7 +119,7 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
-    #if !os(tvOS)
+    #if !os(tvOS) && !os(watchOS)
 
     @available(*, deprecated)
     func testAdClientAttributionDataIsAutomaticallyCollected() throws {

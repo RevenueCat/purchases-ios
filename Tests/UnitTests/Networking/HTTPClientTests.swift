@@ -24,8 +24,13 @@ class HTTPClientTests: TestCase {
     private var eTagManager: MockETagManager!
     private var operationDispatcher: OperationDispatcher!
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        #if os(watchOS)
+        // See https://github.com/AliSoftware/OHHTTPStubs/issues/287
+        try XCTSkipIf(true, "OHHTTPStubs does not currently support watchOS")
+        #endif
 
         self.userDefaults = MockUserDefaults()
         self.eTagManager = MockETagManager(userDefaults: self.userDefaults)

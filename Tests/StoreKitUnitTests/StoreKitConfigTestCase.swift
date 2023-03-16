@@ -17,8 +17,8 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-/// Available from iOS 14.0 because that's when `SKTestSession was introduced`.
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+/// Available from iOS 14.0 because that's when `SKTestSession` was introduced.
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 class StoreKitConfigTestCase: TestCase {
 
     static var requestTimeout: TimeInterval = 60
@@ -86,7 +86,7 @@ class StoreKitConfigTestCase: TestCase {
 
 }
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension StoreKitConfigTestCase {
 
     func waitForStoreKitTestIfNeeded() {

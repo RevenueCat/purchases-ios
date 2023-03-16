@@ -50,7 +50,7 @@ internal struct SK1StoreProduct: StoreProductType {
 
     var productIdentifier: String { return underlyingSK1Product.productIdentifier }
 
-    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
 
     var localizedTitle: String { underlyingSK1Product.localizedTitle }

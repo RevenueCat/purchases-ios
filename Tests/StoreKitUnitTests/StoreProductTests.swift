@@ -16,7 +16,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 class StoreProductTests: StoreKitConfigTestCase {
 
     private var sk1Fetcher: ProductsFetcherSK1!
@@ -343,7 +343,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
 }
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension StoreProductTests {
 
     func expectEqualProducts(_ productA: StoreProductType, _ productB: StoreProductType) {
@@ -356,9 +356,6 @@ private extension StoreProductTests {
         expect(productA.productIdentifier) == productB.productIdentifier
         expect(productA.isFamilyShareable) == productB.isFamilyShareable
         expect(productA.localizedTitle) == productB.localizedTitle
-
-        expect(productA.isFamilyShareable) == productB.isFamilyShareable
-
         expect(productA.discounts) == productB.discounts
 
         if productA.subscriptionPeriod == nil {

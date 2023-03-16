@@ -18,7 +18,7 @@ import XCTest
 
 // swiftlint:disable type_name
 
-@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
     private var receiptFetcher: MockReceiptFetcher!

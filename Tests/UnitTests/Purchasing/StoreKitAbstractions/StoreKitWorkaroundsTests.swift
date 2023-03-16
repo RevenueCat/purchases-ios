@@ -94,9 +94,9 @@ class StoreKitWorkaroundsReceiptURLTests: TestCase {
     }
 
     func testReceiptURLIsUnchangedInSandboxOnOlderVersionsIfNotWatchOS() throws {
-#if os(watchOS)
-        throw XCTSkip("Test designed for any platform but watchOS")
-#endif
+        #if os(watchOS)
+        try XCTSkipIf(true, "Test designed for any platform but watchOS")
+        #endif
 
         self.mockBundle.receiptURLResult = .sandboxReceipt
         self.mockSystemInfo.stubbedIsSandbox = true
