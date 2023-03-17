@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 3/22/23.
 
 import Foundation
+import StoreKit
 
 // swiftlint:disable identifier_name
 
@@ -21,6 +22,7 @@ enum OfflineEntitlementsStrings {
     case product_entitlement_mapping_stale_updating
     case product_entitlement_mapping_updated_from_network
     case product_entitlement_mapping_fetching_error(BackendError)
+    case found_unverified_transactions_in_sk2(StoreKit.Transaction, Error)
 
 }
 
@@ -37,6 +39,15 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
 
         case let .product_entitlement_mapping_fetching_error(error):
             return "Failed updating ProductEntitlementMapping from network: \(error.localizedDescription)"
+
+        case let .found_unverified_transactions_in_sk2(transaction, error):
+            return """
+                Found an unverified transaction. It will be ignored and will not be a part of CustomerInfo.
+                Details:
+                Error: \(error.localizedDescription)
+                Transaction: \(transaction.debugDescription)
+            """
+
         }
     }
 

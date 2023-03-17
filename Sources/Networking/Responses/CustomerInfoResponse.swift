@@ -87,7 +87,7 @@ extension CustomerInfoResponse {
 
 }
 
-// MARK: -
+// MARK: - Codable
 
 extension CustomerInfoResponse.Subscriber: Codable, Hashable {}
 extension CustomerInfoResponse.Subscription: Codable, Hashable {}
@@ -140,6 +140,32 @@ extension CustomerInfoResponse: Codable {
 }
 
 extension CustomerInfoResponse: Equatable, Hashable {}
+
+// MARK: - Extensions
+
+extension CustomerInfoResponse.Subscriber {
+
+    init(
+        originalAppUserId: String,
+        managementUrl: URL? = nil,
+        originalApplicationVersion: String? = nil,
+        originalPurchaseDate: Date? = nil,
+        firstSeen: Date,
+        subscriptions: [String: CustomerInfoResponse.Subscription],
+        nonSubscriptions: [String: [CustomerInfoResponse.Transaction]],
+        entitlements: [String: CustomerInfoResponse.Entitlement]
+    ) {
+        self.originalAppUserId = originalAppUserId
+        self.managementUrl = managementUrl
+        self.originalApplicationVersion = originalApplicationVersion
+        self.originalPurchaseDate = originalPurchaseDate
+        self.firstSeen = firstSeen
+        self.subscriptions = subscriptions
+        self.nonSubscriptions = nonSubscriptions
+        self.entitlements = entitlements
+    }
+
+}
 
 extension CustomerInfoResponse.Transaction {
 

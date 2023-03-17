@@ -22,7 +22,7 @@ extension StoreKitConfigTestCase {
     @MainActor
     @discardableResult
     func simulateAnyPurchase() async throws -> SK2Product {
-        let product = try await fetchSk2Product()
+        let product = try await self.fetchSk2Product()
         _ = try await product.purchase()
 
         return product
