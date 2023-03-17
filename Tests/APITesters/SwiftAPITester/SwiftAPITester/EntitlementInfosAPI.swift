@@ -21,7 +21,8 @@ func checkEntitlementInfosAPI() {
     let activeInAnyEnvironment: [String: EntitlementInfo] = eis.activeInAnyEnvironment
     let activeInCurrentEnvironment: [String: EntitlementInfo] = eis.activeInCurrentEnvironment
     let enti: EntitlementInfo? = eis[""]
-    let evr: VerificationResult = eis.verification
+    // Trusted Entitlements: internal until ready to be made public.
+    // let _: VerificationResult = eis.verification
 
-    print(eis!, all, active, activeInAnyEnvironment, activeInCurrentEnvironment, enti!, evr)
+    print(eis!, all, active, activeInAnyEnvironment, activeInCurrentEnvironment, enti!)
 }
