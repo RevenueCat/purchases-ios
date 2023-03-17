@@ -9,10 +9,27 @@ import Foundation
 import SwiftUI
 import RevenueCat
 
+struct DynamicCustomerView: View {
+
+    @Binding
+    var customerInfo: CustomerInfo?
+    
+    var body: some View {
+        Group {
+            if let customerInfo = self.customerInfo {
+                CustomerView(customerInfo: customerInfo)
+            } else {
+                Text("No CustomerInfo")
+            }
+        }
+    }
+
+}
+
 struct CustomerView: View {
 
-    let customerInfo: CustomerInfo
-    
+    var customerInfo: CustomerInfo
+
     var body: some View {
         TabView {
             CustomerInfoView(customerInfo: self.customerInfo)
@@ -37,6 +54,7 @@ struct CustomerView: View {
                 }
         }
         .navigationTitle("Customer Info")
+        .padding(.top)
     }
 
 }

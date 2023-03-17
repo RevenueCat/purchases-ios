@@ -33,6 +33,8 @@ public final class ConfiguredPurchases {
 
         if let proxyURL {
             Purchases.proxyURL = URL(string: proxyURL)!
+        } else {
+            Purchases.proxyURL = nil
         }
 
         let purchases = Purchases.configure(

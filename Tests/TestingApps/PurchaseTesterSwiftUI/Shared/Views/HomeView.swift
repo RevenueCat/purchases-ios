@@ -29,7 +29,7 @@ struct HomeView: View {
             CustomerInfoHeaderView() { action in
                 switch action {
                 case .login: self.showLogin()
-                case .logout: await self.logout()
+                case .logout: await self.logOut()
                 }
             }.padding(.horizontal, 20)
             
@@ -84,7 +84,7 @@ struct HomeView: View {
                                 do {
                                     _ = try await Purchases.shared.customerInfo(fetchPolicy: self.cacheFetchPolicy)
                                 } catch {
-                                    print("🚀 Info 💁‍♂️ - Error: \(error)")
+                                    self.error = error
                                 }
                             }
                         } label: {
@@ -180,7 +180,7 @@ struct HomeView: View {
         self.showingAlert = true
     }
     
-    private func logout() async {
+    private func logOut() async {
         do {
             let customerInfo = try await Purchases.shared.logOut()
             print("🚀 Info 💁‍♂️ - Customer Info: \(customerInfo)")
@@ -189,6 +189,7 @@ struct HomeView: View {
             self.error = error
         }
     }
+
 }
 
 private struct CustomerInfoHeaderView: View {
@@ -206,16 +207,13 @@ private struct CustomerInfoHeaderView: View {
         self.completion = completion
     }
     
-    var customerInfo: RevenueCat.CustomerInfo? {
-        return self.revenueCatCustomerData.customerInfo
-    }
-    
     var appUserID: String? {
-        return self.revenueCatCustomerData.appUserID ?? self.customerInfo?.originalAppUserId
+        return self.revenueCatCustomerData.appUserID
+        ?? self.revenueCatCustomerData.customerInfo?.originalAppUserId
     }
     
     var activeEntitlementInfos: [RevenueCat.EntitlementInfo] {
-        guard let customerInfo = customerInfo else {
+        guard let customerInfo = self.revenueCatCustomerData.customerInfo else {
             return []
         }
         return Array(customerInfo.entitlements.all.values)
@@ -228,16 +226,14 @@ private struct CustomerInfoHeaderView: View {
             if activeEntitlementInfos.isEmpty {
                 Text("No active entitlements")
             } else {
-                Text(activeEntitlementInfos.map({$0.identifier}).joined(separator: ", "))
+                Text(activeEntitlementInfos.map(\.identifier).joined(separator: ", "))
             }
             
             HStack {
                 Spacer()
-                
-                if let customerInfo = self.customerInfo {
-                    NavigationLink(destination: CustomerView(customerInfo: customerInfo)) {
-                        Text("View Info")
-                    }
+
+                NavigationLink(value: self.revenueCatCustomerData.customerInfo) {
+                    Text("View Info")
                 }
                 
                 Spacer()
@@ -284,7 +280,11 @@ private struct CustomerInfoHeaderView: View {
 
             }.padding(.top, 20)
         }
+        .navigationDestination(for: CustomerInfo.self) {
+            CustomerView(customerInfo: $0)
+        }
     }
+    
 }
 
 private struct OfferingItemView: View {
