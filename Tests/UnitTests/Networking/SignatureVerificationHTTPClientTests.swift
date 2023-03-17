@@ -397,10 +397,12 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testCachedResponseWithFailedVerificationAndVerifiedResponse() throws {
+        // This won't happen in practice because the ETag won't be used if its verification failed.
+
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
         try self.mockETagCache(response: cachedResponse,
-                               requestDate: Self.date2,
+                               requestDate: Self.date1,
                                verificationResult: .failed)
         self.mockPath(statusCode: .notModified, requestDate: Self.date2)
         MockSigning.stubbedVerificationResult = true
@@ -412,7 +414,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
         expect(MockSigning.requests).to(haveCount(1))
         expect(response).to(beSuccess())
-        expect(response?.value?.body.requestDate).to(beCloseTo(Self.date2, within: 1))
+        expect(response?.value?.body.requestDate).to(beCloseTo(Self.date1, within: 1))
         expect(response?.value?.verificationResult) == .verified
     }
 
