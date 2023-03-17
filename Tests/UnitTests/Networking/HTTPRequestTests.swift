@@ -32,13 +32,15 @@ class HTTPRequestTests: TestCase {
         .postOfferForSigning,
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
-        .health
+        .health,
+        .getProductEntitlementMapping
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
-        .health
+        .health,
+        .getProductEntitlementMapping
     ]
     private static let pathsWithSignatureValidation: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),

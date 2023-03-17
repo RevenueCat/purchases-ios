@@ -15,16 +15,21 @@ import Foundation
 
 class OfferingsAPI {
 
+    typealias ResponseHandler<Response> = (Result<Response, BackendError>) -> Void
+
     typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
-    typealias OfferSigningResponseHandler = (Result<PostOfferForSigningOperation.SigningData, BackendError>) -> Void
-    typealias OfferingsResponseHandler = (Result<OfferingsResponse, BackendError>) -> Void
+    typealias OfferSigningResponseHandler = ResponseHandler<PostOfferForSigningOperation.SigningData>
+    typealias OfferingsResponseHandler = ResponseHandler<OfferingsResponse>
+    typealias ProductEntitlementMappingResponseHandler = ResponseHandler<ProductEntitlementMappingResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
+    private let productEntitlementMappingCallbacksCache: CallbackCache<ProductEntitlementMappingCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
-        self.offeringsCallbacksCache = CallbackCache<OfferingsCallback>()
+        self.offeringsCallbacksCache = .init()
+        self.productEntitlementMappingCallbacksCache = .init()
     }
 
     func getOfferings(appUserID: String,
@@ -78,6 +83,23 @@ class OfferingsAPI {
                                                                         postOfferForSigningData: postOfferData,
                                                                         responseHandler: completion)
         self.backendConfig.operationQueue.addOperation(postOfferForSigningOperation)
+    }
+
+    func getProductEntitlementMapping(withRandomDelay randomDelay: Bool,
+                                      completion: @escaping ProductEntitlementMappingResponseHandler) {
+        let factory = GetProductEntitlementMappingOperation.createFactory(
+            configuration: self.backendConfig,
+            callbackCache: self.productEntitlementMappingCallbacksCache
+        )
+
+        let callback = ProductEntitlementMappingCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.productEntitlementMappingCallbacksCache.add(callback)
+
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            withRandomDelay: randomDelay,
+            cacheStatus: cacheStatus
+        )
     }
 
 }
