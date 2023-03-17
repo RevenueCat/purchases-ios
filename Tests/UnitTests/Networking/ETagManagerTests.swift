@@ -10,11 +10,11 @@ class ETagManagerTests: TestCase {
     private var eTagManager: ETagManager!
     private let baseURL = URL(string: "https://api.revenuecat.com")!
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
 
         self.mockUserDefaults = MockUserDefaults()
-        self.eTagManager = self.create()
+        self.eTagManager = try self.create()
     }
 
     override func tearDown() {
@@ -222,7 +222,7 @@ class ETagManagerTests: TestCase {
     }
 
     func testResponseIsNotStoredIfVerificationFailedWithInformationalMode() throws {
-        self.eTagManager = self.create(with: .informational)
+        self.eTagManager = try self.create(with: .informational)
 
         let eTag = "an_etag"
         let url = self.urlForTest()
@@ -354,8 +354,8 @@ class ETagManagerTests: TestCase {
         expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
-    func testETagHeaderIsNotFoundIfItsMissingResponseVerificationAndVerificationInformational() {
-        self.eTagManager = self.create(with: .informational)
+    func testETagHeaderIsNotFoundIfItsMissingResponseVerificationAndVerificationInformational() throws {
+        self.eTagManager = try self.create(with: .informational)
 
         let eTag = "the_etag"
         let url = self.urlForTest()
@@ -419,8 +419,8 @@ class ETagManagerTests: TestCase {
         expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
-    func testETagHeaderIsIgnoredIfVerificationFailedAndModeInformational() {
-        self.eTagManager = self.create(with: .informational)
+    func testETagHeaderIsIgnoredIfVerificationFailedAndModeInformational() throws {
+        self.eTagManager = try self.create(with: .informational)
 
         let eTag = "the_etag"
         let url = self.urlForTest()
@@ -440,8 +440,8 @@ class ETagManagerTests: TestCase {
         expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
-    func testETagHeaderIsIgnoredIfVerificationWasNotEnabledAndModeInformational() {
-        self.eTagManager = self.create(with: .informational)
+    func testETagHeaderIsIgnoredIfVerificationWasNotEnabledAndModeInformational() throws {
+        self.eTagManager = try self.create(with: .informational)
 
         let eTag = "the_etag"
         let url = self.urlForTest()
@@ -675,13 +675,16 @@ class ETagManagerTests: TestCase {
 
 private extension ETagManagerTests {
 
-    func create(with verificationMode: Configuration.EntitlementVerificationMode = .disabled) -> ETagManager {
+    /// - Throws: `XCTSkip` prior to iOS 13
+    func create(with verificationMode: Configuration.EntitlementVerificationMode = .disabled) throws -> ETagManager {
         let mode: Signing.ResponseVerificationMode
 
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
             mode = Signing.verificationMode(with: verificationMode)
-        } else {
+        } else if verificationMode == .disabled {
             mode = .disabled
+        } else {
+            throw XCTSkip("Response verification not available")
         }
 
         return self.create(mode)
