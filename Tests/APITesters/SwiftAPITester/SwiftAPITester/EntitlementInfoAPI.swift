@@ -31,12 +31,13 @@ func checkEntitlementInfoAPI() {
     let uda: Date? = entitlementInfo.unsubscribeDetectedAt
     let bida: Date? = entitlementInfo.billingIssueDetectedAt
     let oType: PurchaseOwnershipType = entitlementInfo.ownershipType
-    let ver: VerificationResult = entitlementInfo.verification
+    // Trusted Entitlements: internal until ready to be made public.
+    // let _: VerificationResult = entitlementInfo.verification
 
     let rawData: [String: Any] = entitlementInfo.rawData
 
     print(entitlementInfo!, ident, isActive, isActiveInAnyEnvironment, isActiveInCurrentEnvironment,
-          willRenew, pType, lpd!, opd!, eDate!, store, pId, iss, uda!, bida!, oType, ver, rawData)
+          willRenew, pType, lpd!, opd!, eDate!, store, pId, iss, uda!, bida!, oType, rawData)
 }
 
 var store: Store!
