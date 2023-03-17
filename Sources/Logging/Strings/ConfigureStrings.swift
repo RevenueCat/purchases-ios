@@ -85,7 +85,7 @@ extension ConfigureStrings: CustomStringConvertible {
             return "applicationDidBecomeActive"
         case .configuring_purchases_proxy_url_set(let url):
             return "Purchases is being configured using a proxy for RevenueCat " +
-                " with URL: \(url)"
+                "with URL: \(url)"
         case .debug_enabled:
             return "Debug logging enabled"
         case .store_kit_2_enabled:
