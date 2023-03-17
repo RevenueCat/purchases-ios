@@ -25,7 +25,7 @@ class DeviceCache {
             $0.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
         }
     }
-    var cachedOfferings: Offerings? { self.offeringsCachedObject.cachedInstance() }
+    var cachedOfferings: Offerings? { self.offeringsCachedObject.cachedInstance }
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let userDefaults: SynchronizedUserDefaults
@@ -38,21 +38,13 @@ class DeviceCache {
 
     private var userDefaultsObserver: NSObjectProtocol?
 
-    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
-                     userDefaults: UserDefaults) {
-        self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
-                  userDefaults: userDefaults,
-                  offeringsCachedObject: nil,
-                  notificationCenter: nil)
-    }
-
     init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
          userDefaults: UserDefaults,
-         offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
-         notificationCenter: NotificationCenter? = NotificationCenter.default) {
+         offeringsCachedObject: InMemoryCachedObject<Offerings> = .init(),
+         notificationCenter: NotificationCenter = .default) {
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
-        self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
-        self.notificationCenter = notificationCenter ?? NotificationCenter.default
+        self.offeringsCachedObject = offeringsCachedObject
+        self.notificationCenter = notificationCenter
         self.userDefaults = .init(userDefaults: userDefaults)
         self.appUserIDHasBeenSet.value = userDefaults.string(forKey: .appUserDefaults) != nil
 

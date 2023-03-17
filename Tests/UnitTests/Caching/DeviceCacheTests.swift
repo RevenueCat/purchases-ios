@@ -157,8 +157,7 @@ class DeviceCacheTests: TestCase {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: mockCachedObject,
-                                       notificationCenter: nil)
+                                       offeringsCachedObject: mockCachedObject)
         let offerings = Offerings(offerings: [:], currentOfferingID: "")
         self.deviceCache.cache(offerings: offerings)
         let isAppBackgrounded = false
@@ -226,7 +225,6 @@ class DeviceCacheTests: TestCase {
 
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
         expectNoFatalError { mockNotificationCenter.fireNotifications() }
@@ -246,7 +244,6 @@ class DeviceCacheTests: TestCase {
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
         expectNoFatalError { mockNotificationCenter.fireNotifications() }
@@ -260,7 +257,6 @@ class DeviceCacheTests: TestCase {
 
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: userDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
         userDefaults.set(nil, forKey: "com.revenuecat.userdefaults.appUserID.new")
@@ -276,7 +272,6 @@ class DeviceCacheTests: TestCase {
         mockUserDefaults.mockValues[cackeKey] = fourMinutesAgo
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
@@ -290,7 +285,6 @@ class DeviceCacheTests: TestCase {
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"] = fourDaysAgo
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
@@ -302,7 +296,6 @@ class DeviceCacheTests: TestCase {
         let appUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
@@ -314,7 +307,6 @@ class DeviceCacheTests: TestCase {
         let appUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
         let outdatedCacheDateForBackground = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: outdatedCacheDateForBackground, appUserID: appUserID)
@@ -334,7 +326,6 @@ class DeviceCacheTests: TestCase {
         let appUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
         let outdatedCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -25, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: outdatedCacheDateForForeground, appUserID: appUserID)
@@ -354,7 +345,6 @@ class DeviceCacheTests: TestCase {
         let appUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
         let data = Data()
@@ -374,7 +364,6 @@ class DeviceCacheTests: TestCase {
         let currentAppUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
         let validCacheDate = Calendar.current.date(byAdding: .minute, value: -3, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: validCacheDate, appUserID: otherAppUserID)
@@ -412,8 +401,7 @@ class DeviceCacheTests: TestCase {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: mockCachedObject,
-                                       notificationCenter: nil)
+                                       offeringsCachedObject: mockCachedObject)
 
         self.deviceCache.clearCachedOfferings()
 
