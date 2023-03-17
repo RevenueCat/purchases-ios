@@ -86,6 +86,9 @@ extension VerificationResult {
         case (.notRequested, .failed): return .failed
 
         case (.failed, .notRequested): return .notRequested
+        // If the cache verification failed, the etag won't be used
+        // so the response would only be a 200 and not 304.
+        // Therefore the cache verification error can be ignored
         case (.failed, .verified): return .verified
         }
     }

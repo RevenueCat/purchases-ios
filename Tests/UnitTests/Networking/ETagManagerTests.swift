@@ -221,7 +221,7 @@ class ETagManagerTests: TestCase {
         expect(self.mockUserDefaults.mockValues[cacheKey]).to(beNil())
     }
 
-    func testResponseIsStoredIfVerificationFailedWithInformationalMode() throws {
+    func testResponseIsNotStoredIfVerificationFailedWithInformationalMode() throws {
         self.eTagManager = self.create(with: .informational)
 
         let eTag = "an_etag"
@@ -242,19 +242,8 @@ class ETagManagerTests: TestCase {
         )
 
         expect(response).toNot(beNil())
-        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
-
-        let cacheKey = url.absoluteString
-        expect(self.mockUserDefaults.mockValues[cacheKey]).toNot(beNil())
-        let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
-
-        expect(setData).toNot(beNil())
-        let expectedCachedValue = "https://api.revenuecat.com/v1/subscribers/appUserID"
-        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedCachedValue
-
-        let eTagResponse = try ETagManager.Response.with(setData)
-        expect(eTagResponse.eTag) == eTag
-        expect(eTagResponse.data) == responseObject
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
+        expect(self.mockUserDefaults.mockValues[url.absoluteString]).to(beNil())
     }
 
     func testResponseIsNotStoredIfVerificationFailedWithEnforcedMode() throws {
@@ -365,7 +354,7 @@ class ETagManagerTests: TestCase {
         expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
-    func testETagHeaderIsFoundIfItsMissingResponseVerificationAndVerificationInformational() {
+    func testETagHeaderIsNotFoundIfItsMissingResponseVerificationAndVerificationInformational() {
         self.eTagManager = self.create(with: .informational)
 
         let eTag = "the_etag"
@@ -385,7 +374,7 @@ class ETagManagerTests: TestCase {
 
         let response = self.eTagManager.eTagHeader(for: request,
                                                    withSignatureVerification: true)
-        expect(response[ETagManager.eTagResponseHeaderName]).toNot(beEmpty())
+        expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
     func testETagHeaderIsFoundIfItsMissingResponseVerificationAndVerificationIsDisabled() {
@@ -430,7 +419,7 @@ class ETagManagerTests: TestCase {
         expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
-    func testETagHeaderIsNotIgnoredIfVerificationFailedAndModeInformational() {
+    func testETagHeaderIsIgnoredIfVerificationFailedAndModeInformational() {
         self.eTagManager = self.create(with: .informational)
 
         let eTag = "the_etag"
@@ -448,10 +437,10 @@ class ETagManagerTests: TestCase {
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: true)
-        expect(response[ETagManager.eTagResponseHeaderName]).toNot(beEmpty())
+        expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
-    func testETagHeaderIsNotIgnoredIfVerificationWasNotEnabledAndModeInformational() {
+    func testETagHeaderIsIgnoredIfVerificationWasNotEnabledAndModeInformational() {
         self.eTagManager = self.create(with: .informational)
 
         let eTag = "the_etag"
@@ -469,7 +458,7 @@ class ETagManagerTests: TestCase {
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: true)
-        expect(response[ETagManager.eTagResponseHeaderName]).toNot(beEmpty())
+        expect(response[ETagManager.eTagResponseHeaderName]).to(beEmpty())
     }
 
     func testETagHeaderIsIgnoredIfVerificationWasNotEnabledAndModeEnforced() throws {

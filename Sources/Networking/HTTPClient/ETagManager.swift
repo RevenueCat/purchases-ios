@@ -147,7 +147,7 @@ private extension ETagManager {
     }
 
     var shouldIgnoreVerificationErrors: Bool {
-        return !self.verificationMode.isEnforced
+        return !self.verificationMode.isEnabled
     }
 
     static let suiteNameBase: String  = "revenuecat.etags"
