@@ -51,8 +51,10 @@ struct PurchasedSK2Product {
 struct PurchasedProductsManager {
 
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
+        // todo: call force sync on sk2 before doing this
         var purchasedProductIdentifiers: [PurchasedSK2Product] = []
 
+        // todo: filter out pending and unfinished transactions
         for await transaction in StoreKit.Transaction.all {
             switch transaction {
             case .unverified:
