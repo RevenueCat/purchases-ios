@@ -328,6 +328,29 @@ class DeviceCache {
                                       environment: .init(sandbox: isSandbox))
     }
 
+    // MARK: - Products Entitlements
+
+    var isProductEntitlementMappingCacheStale: Bool {
+        return self.userDefaults.read {
+            guard let cacheLastUpdated = Self.productEntitlementMappingLastUpdated($0) else {
+                return true
+            }
+
+            let cacheAge = Date().timeIntervalSince(cacheLastUpdated)
+            return cacheAge > DeviceCache.productEntitlementMappingCacheDuration.seconds
+        }
+    }
+
+    func store(productEntitlementMapping: ProductEntitlementMapping) {
+        self.userDefaults.write {
+            Self.store($0, productEntitlementMapping: productEntitlementMapping)
+        }
+    }
+
+    var cachedProductEntitlementMapping: ProductEntitlementMapping? {
+        return self.userDefaults.read(Self.productEntitlementMapping)
+    }
+
     // MARK: - Helper functions
 
     internal enum CacheKeys: String {
@@ -335,6 +358,8 @@ class DeviceCache {
         case legacyGeneratedAppUserDefaults = "com.revenuecat.userdefaults.appUserID"
         case appUserDefaults = "com.revenuecat.userdefaults.appUserID.new"
         case subscriberAttributes = "com.revenuecat.userdefaults.subscriberAttributes"
+        case productEntitlementMapping = "com.revenuecat.userdefaults.productEntitlementMapping"
+        case productEntitlementMappingLastUpdated = "com.revenuecat.userdefaults.productEntitlementMappingLastUpdated"
 
     }
 
@@ -524,9 +549,37 @@ private extension DeviceCache {
         userDefaults.setValue(filteredAttributes, forKey: .subscriberAttributes)
     }
 
+    static func productEntitlementMappingLastUpdated(_ userDefaults: UserDefaults) -> Date? {
+        return userDefaults.date(forKey: .productEntitlementMappingLastUpdated)
+    }
+
+    static func productEntitlementMapping(_ userDefaults: UserDefaults) -> ProductEntitlementMapping? {
+        return userDefaults.value(forKey: .productEntitlementMapping)
+    }
+
+    static func store(
+        _ userDefaults: UserDefaults,
+        productEntitlementMapping mapping: ProductEntitlementMapping
+    ) {
+        guard let data = try? JSONEncoder.default.encode(value: mapping, logErrors: true) else {
+            return
+        }
+
+        userDefaults.setValue(data, forKey: .productEntitlementMapping)
+        userDefaults.setValue(Date(), forKey: .productEntitlementMappingLastUpdated)
+    }
+
 }
 
 fileprivate extension UserDefaults {
+
+    func value<T: Decodable>(forKey key: DeviceCache.CacheKeys) -> T? {
+        guard let data = self.data(forKey: key.rawValue) else {
+            return nil
+        }
+
+        return try? JSONDecoder.default.decode(jsonData: data)
+    }
 
     func setValue(_ value: Any?, forKey key: DeviceCache.CacheKeys) {
         self.setValue(value, forKey: key.rawValue)
@@ -537,11 +590,15 @@ fileprivate extension UserDefaults {
     }
 
     func removeObject(forKey defaultName: DeviceCache.CacheKeys) {
-        removeObject(forKey: defaultName.rawValue)
+        self.removeObject(forKey: defaultName.rawValue)
     }
 
     func dictionary(forKey defaultName: DeviceCache.CacheKeys) -> [String: Any]? {
-        return dictionary(forKey: defaultName.rawValue)
+        return self.dictionary(forKey: defaultName.rawValue)
+    }
+
+    func date(forKey defaultName: DeviceCache.CacheKeys) -> Date? {
+        return self.object(forKey: defaultName.rawValue) as? Date
     }
 
 }
@@ -585,6 +642,8 @@ private extension DeviceCache {
         }
 
     }
+
+    static let productEntitlementMappingCacheDuration: DispatchTimeInterval = .days(1)
 
 }
 

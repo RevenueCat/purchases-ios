@@ -963,4 +963,7 @@ internal protocol InternalPurchasesType: AnyObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func productEntitlementMapping() async throws -> ProductEntitlementMapping
+
 }

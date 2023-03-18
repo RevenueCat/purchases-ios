@@ -41,6 +41,10 @@ final class MockPurchases {
     var mockedHealthRequestResponse: Result<Void, PublicError> = .success(())
     var mockedHealthRequestWithSignatureVerificationResponse: Result<Void, PublicError> = .success(())
 
+    var mockedProductEntitlementMapping: Result<ProductEntitlementMapping, PublicError> = .failure(
+        ErrorUtils.unknownError().asPublicError
+    )
+
 }
 
 extension MockPurchases: InternalPurchasesType {
@@ -52,6 +56,10 @@ extension MockPurchases: InternalPurchasesType {
         } else {
             return try self.mockedHealthRequestResponse.get()
         }
+    }
+
+    func productEntitlementMapping() async throws -> ProductEntitlementMapping {
+        return try self.mockedProductEntitlementMapping.get()
     }
 
 }

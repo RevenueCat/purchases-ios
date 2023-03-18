@@ -82,6 +82,32 @@ extension JSONDecoder {
 
 }
 
+extension JSONEncoder {
+
+    /// Encodes a top-level value containing a JSON representation of `type`
+    ///
+    /// - Parameters:
+    ///   - type: The type of the value to encode. The default is `T.self`.
+    ///   - data: The data to encode.
+    /// - Returns: The encoded `Data`
+    /// - throws: `CodableError` or `EncodableError` if the data is invalid or can't be deserialized.
+    func encode<T: Encodable>(
+        _ type: T.Type = T.self,
+        value: T,
+        logErrors: Bool = true
+    ) throws -> Data {
+        do {
+            return try self.encode(value)
+        } catch {
+            if logErrors {
+                ErrorUtils.logEncodingError(error, type: type)
+            }
+            throw error
+        }
+    }
+
+}
+
 // MARK: Decoding Error handling
 
 extension ErrorUtils {
@@ -105,7 +131,21 @@ extension ErrorUtils {
         @unknown default:
             Logger.error("Unhandled DecodingError: \(decodingError)\n\(Strings.codable.decoding_error(decodingError))")
         }
-     }
+    }
+
+    static func logEncodingError(_ error: Error, type: Any.Type) {
+        guard let encodingError = error as? EncodingError else {
+            Logger.error(Strings.codable.encoding_error(error))
+            return
+        }
+
+        switch encodingError {
+        case .invalidValue:
+            Logger.error(Strings.codable.encoding_error(encodingError))
+        @unknown default:
+            Logger.error("Unhandled EncodingError: \(encodingError)\n\(Strings.codable.encoding_error(encodingError))")
+        }
+    }
 
 }
 

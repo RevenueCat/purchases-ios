@@ -472,4 +472,51 @@ class DeviceCacheTests: TestCase {
         expect(storedAttributes as? [String: [String: [String: NSObject]]]) == expectedAttributesSet
     }
 
+    func testCacheEmptyProductEntitlementMapping() {
+        let data = ProductEntitlementMapping(entitlementsByProduct: [:])
+
+        self.deviceCache.store(productEntitlementMapping: data)
+        expect(self.deviceCache.cachedProductEntitlementMapping) == data
+    }
+
+    func testCacheProductEntitlementMapping() {
+        let data = ProductEntitlementMapping(entitlementsByProduct: [
+            "1": ["pro_1"],
+            "2": ["pro_2"],
+            "3": ["pro_1", "pro_2"]
+        ])
+
+        self.deviceCache.store(productEntitlementMapping: data)
+        expect(self.deviceCache.cachedProductEntitlementMapping) == data
+    }
+
+    func testIsProductEntitlementMappingCacheStaleWithNoDate() {
+        expect(self.deviceCache.isProductEntitlementMappingCacheStale) == true
+    }
+
+    func testCacheProductEntitlementMappingUpdatesLastUpdatedDate() throws {
+        self.deviceCache.store(productEntitlementMapping: .init(entitlementsByProduct: [:]))
+
+        let key = DeviceCache.CacheKeys.productEntitlementMappingLastUpdated.rawValue
+        let lastUpdated = try XCTUnwrap(self.mockUserDefaults.mockValues[key] as? Date)
+
+        expect(lastUpdated).to(beCloseTo(Date(), within: 1))
+    }
+
+    func testIsProductEntitlementMappingCacheStaleWithRecentUpdate() {
+        self.mockUserDefaults.mockValues[DeviceCache.CacheKeys.productEntitlementMappingLastUpdated.rawValue] = Date()
+            .addingTimeInterval(DispatchTimeInterval.days(1).seconds * -1) // 1 day ago
+            .addingTimeInterval(5) // 5 seconds later
+
+        expect(self.deviceCache.isProductEntitlementMappingCacheStale) == false
+    }
+
+    func testIsProductEntitlementMappingCacheStaleWithStaleDate() {
+        self.mockUserDefaults.mockValues[DeviceCache.CacheKeys.productEntitlementMappingLastUpdated.rawValue] = Date()
+            .addingTimeInterval(DispatchTimeInterval.days(1).seconds * -1) // 1 day ago
+            .addingTimeInterval(-5) // 5 seconds before
+
+        expect(self.deviceCache.isProductEntitlementMappingCacheStale) == true
+    }
+
 }

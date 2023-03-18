@@ -222,6 +222,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let notificationCenter: NotificationCenter
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
+    private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
@@ -319,6 +320,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 backend: backend,
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager)
+        let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
+                                                                    operationDispatcher: operationDispatcher,
+                                                                    api: backend.offlineEntitlements)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -393,6 +397,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   customerInfoManager: customerInfoManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
+                  offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
@@ -415,6 +420,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          customerInfoManager: CustomerInfoManager,
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
+         offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
     ) {
@@ -448,6 +454,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.customerInfoManager = customerInfoManager
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
+        self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.trialOrIntroPriceEligibilityChecker = .create(with: trialOrIntroPriceEligibilityChecker)
 
@@ -1163,6 +1170,16 @@ extension Purchases: InternalPurchasesType {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func productEntitlementMapping() async throws -> ProductEntitlementMapping {
+        let response = try await Async.call { completion in
+            self.backend.offlineEntitlements.getProductEntitlementMapping(withRandomDelay: false,
+                                                                          completion: completion)
+        }
+
+        return response.toMapping()
+    }
+
 }
 
 /// Necessary because `ErrorUtils` inside of `Purchases` finds the obsoleted type.
@@ -1289,17 +1306,15 @@ private extension Purchases {
     }
 
     func updateAllCachesIfNeeded() {
-        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
                                                                       isAppBackgrounded: isAppBackgrounded,
                                                                       completion: nil)
-            guard self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) else {
-                return
+            if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
+                self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                           isAppBackgrounded: isAppBackgrounded,
+                                                           completion: nil)
             }
-
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isAppBackgrounded,
-                                                       completion: nil)
         }
     }
 
@@ -1314,6 +1329,8 @@ private extension Purchases {
         isAppBackgrounded: Bool,
         completion: ((Result<CustomerInfo, PublicError>) -> Void)?
     ) {
+        Logger.verbose(Strings.purchase.updating_all_caches)
+
         self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
                                                            isAppBackgrounded: isAppBackgrounded) { @Sendable in
             completion?($0.mapError { $0.asPublicError })
@@ -1322,6 +1339,11 @@ private extension Purchases {
         self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
                                                    isAppBackgrounded: isAppBackgrounded,
                                                    completion: nil)
+
+        self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
+            isAppBackgrounded: isAppBackgrounded,
+            completion: nil
+        )
     }
 
     // Used when delegate is being set

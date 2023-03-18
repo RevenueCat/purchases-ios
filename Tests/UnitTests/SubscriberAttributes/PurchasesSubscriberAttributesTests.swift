@@ -55,6 +55,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         ]]
 
     var mockOfferingsManager: MockOfferingsManager!
+    var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
@@ -106,12 +107,17 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                        deviceCache: mockDeviceCache,
                                                        backend: mockBackend,
                                                        systemInfo: systemInfo)
-        mockOfferingsManager = MockOfferingsManager(deviceCache: mockDeviceCache,
-                                                    operationDispatcher: mockOperationDispatcher,
-                                                    systemInfo: systemInfo,
-                                                    backend: mockBackend,
-                                                    offeringsFactory: MockOfferingsFactory(),
-                                                    productsManager: mockProductsManager)
+        self.mockOfferingsManager = MockOfferingsManager(deviceCache: mockDeviceCache,
+                                                         operationDispatcher: mockOperationDispatcher,
+                                                         systemInfo: systemInfo,
+                                                         backend: mockBackend,
+                                                         offeringsFactory: MockOfferingsFactory(),
+                                                         productsManager: mockProductsManager)
+        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager(
+            deviceCache: mockDeviceCache,
+            operationDispatcher: mockOperationDispatcher,
+            api: mockBackend.offlineEntitlements
+        )
         self.mockReceiptFetcher = MockReceiptFetcher(
             requestFetcher: mockRequestFetcher,
             systemInfo: systemInfoAttribution
@@ -181,6 +187,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
+                              offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               trialOrIntroPriceEligibilityChecker: trialOrIntroductoryPriceEligibilityChecker)
         purchasesOrchestrator.delegate = purchases

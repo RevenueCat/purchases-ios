@@ -16,12 +16,21 @@ import Foundation
 
 class MockOfflineEntitlementsAPI: OfflineEntitlementsAPI {
 
-    var stubbedProductEntitlementMappingResponse: Result<ProductEntitlementMappingResponse, BackendError> =
-        .failure(.missingAppUserID())
+    var invokedGetProductEntitlementMapping = false
+    var invokedGetProductEntitlementMappingCount = 0
+    var invokedGetProductEntitlementMappingParameter: Bool?
 
-    override func getProductEntitlementMapping(withRandomDelay randomDelay: Bool,
-                                               completion: @escaping ProductEntitlementMappingResponseHandler) {
-        completion(self.stubbedProductEntitlementMappingResponse)
+    var stubbedGetProductEntitlementMappingResult: Result<ProductEntitlementMappingResponse, BackendError>?
+
+    override func getProductEntitlementMapping(
+        withRandomDelay randomDelay: Bool,
+        completion: @escaping ProductEntitlementMappingResponseHandler
+    ) {
+        self.invokedGetProductEntitlementMapping = true
+        self.invokedGetProductEntitlementMappingCount += 1
+        self.invokedGetProductEntitlementMappingParameter = randomDelay
+
+        completion(self.stubbedGetProductEntitlementMappingResult ?? .failure(.missingAppUserID()))
     }
 
 }

@@ -26,4 +26,9 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await Purchases.shared.healthRequest(signatureVerification: true)
     }
 
+    func testProductEntitlementMapping() async throws {
+        let result = try await Purchases.shared.productEntitlementMapping()
+        expect(result.products).toNot(beEmpty())
+    }
+
 }

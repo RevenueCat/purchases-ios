@@ -237,9 +237,13 @@
 		57488B7F29CB70E50000EE7E /* ProductEntitlementMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488B7E29CB70E50000EE7E /* ProductEntitlementMapping.swift */; };
 		57488B8B29CB756A0000EE7E /* ProductEntitlementMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488B8A29CB756A0000EE7E /* ProductEntitlementMappingTests.swift */; };
 		57488BC629CB7BDC0000EE7E /* OfflineEntitlementsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488BC529CB7BDC0000EE7E /* OfflineEntitlementsAPI.swift */; };
+		57488BD429CB7E2D0000EE7E /* OfflineEntitlementsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488BD329CB7E2D0000EE7E /* OfflineEntitlementsManager.swift */; };
+		57488BE829CB7FB60000EE7E /* OfflineEntitlementsStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488BE729CB7FB60000EE7E /* OfflineEntitlementsStrings.swift */; };
+		57488BEA29CB83540000EE7E /* MockOfflineEntitlementsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488BE929CB83540000EE7E /* MockOfflineEntitlementsManager.swift */; };
 		57488BF229CB84D40000EE7E /* BackendOfflineEntitlementsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488BF129CB84D40000EE7E /* BackendOfflineEntitlementsTests.swift */; };
 		57488C0029CB85BE0000EE7E /* MockOfflineEntitlementsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488BFF29CB85BE0000EE7E /* MockOfflineEntitlementsAPI.swift */; };
 		57488C0129CB85BE0000EE7E /* MockOfflineEntitlementsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488BFF29CB85BE0000EE7E /* MockOfflineEntitlementsAPI.swift */; };
+		57488C2329CB89CC0000EE7E /* OfflineEntitlementsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488C2229CB89CC0000EE7E /* OfflineEntitlementsManagerTests.swift */; };
 		574A2EE7282C3F0800150D40 /* AnyDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574A2EE6282C3F0800150D40 /* AnyDecodable.swift */; };
 		574A2EE9282C403800150D40 /* AnyDecodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574A2EE8282C403800150D40 /* AnyDecodableTests.swift */; };
 		574A2F3F282D75E300150D40 /* OfferingsDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574A2F3E282D75E300150D40 /* OfferingsDecodingTests.swift */; };
@@ -871,8 +875,12 @@
 		57488B7E29CB70E50000EE7E /* ProductEntitlementMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMapping.swift; sourceTree = "<group>"; };
 		57488B8A29CB756A0000EE7E /* ProductEntitlementMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingTests.swift; sourceTree = "<group>"; };
 		57488BC529CB7BDC0000EE7E /* OfflineEntitlementsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineEntitlementsAPI.swift; sourceTree = "<group>"; };
+		57488BD329CB7E2D0000EE7E /* OfflineEntitlementsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineEntitlementsManager.swift; sourceTree = "<group>"; };
+		57488BE729CB7FB60000EE7E /* OfflineEntitlementsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineEntitlementsStrings.swift; sourceTree = "<group>"; };
+		57488BE929CB83540000EE7E /* MockOfflineEntitlementsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockOfflineEntitlementsManager.swift; sourceTree = "<group>"; };
 		57488BF129CB84D40000EE7E /* BackendOfflineEntitlementsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendOfflineEntitlementsTests.swift; sourceTree = "<group>"; };
 		57488BFF29CB85BE0000EE7E /* MockOfflineEntitlementsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockOfflineEntitlementsAPI.swift; sourceTree = "<group>"; };
+		57488C2229CB89CC0000EE7E /* OfflineEntitlementsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineEntitlementsManagerTests.swift; sourceTree = "<group>"; };
 		574A2EE6282C3F0800150D40 /* AnyDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyDecodable.swift; sourceTree = "<group>"; };
 		574A2EE8282C403800150D40 /* AnyDecodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyDecodableTests.swift; sourceTree = "<group>"; };
 		574A2F3E282D75E300150D40 /* OfferingsDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsDecodingTests.swift; sourceTree = "<group>"; };
@@ -1317,6 +1325,7 @@
 				2D00A41C2767C08300FC3DD8 /* ManageSubscriptionsStrings.swift */,
 				9A65E07A2591977500DE00B0 /* NetworkStrings.swift */,
 				9A65E09F2591A23200DE00B0 /* OfferingStrings.swift */,
+				57488BE729CB7FB60000EE7E /* OfflineEntitlementsStrings.swift */,
 				9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */,
 				9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */,
 				5791FCF22992D3EC00F1FEDA /* SigningStrings.swift */,
@@ -1581,6 +1590,7 @@
 				57488BFF29CB85BE0000EE7E /* MockOfflineEntitlementsAPI.swift */,
 				351B515726D44B3E00BD2BD7 /* MockOfferingsFactory.swift */,
 				F575858E26C0893600C12B97 /* MockOfferingsManager.swift */,
+				57488BE929CB83540000EE7E /* MockOfflineEntitlementsManager.swift */,
 				351B514A26D44A4A00BD2BD7 /* MockOperationDispatcher.swift */,
 				351B517326D44F4B00BD2BD7 /* MockPaymentDiscount.swift */,
 				5733D00828CFA7A4008638D8 /* MockPaymentQueueWrapper.swift */,
@@ -1969,6 +1979,7 @@
 			isa = PBXGroup;
 			children = (
 				57488B7E29CB70E50000EE7E /* ProductEntitlementMapping.swift */,
+				57488BD329CB7E2D0000EE7E /* OfflineEntitlementsManager.swift */,
 			);
 			path = OfflineEntitlements;
 			sourceTree = "<group>";
@@ -1977,6 +1988,7 @@
 			isa = PBXGroup;
 			children = (
 				57488B8A29CB756A0000EE7E /* ProductEntitlementMappingTests.swift */,
+				57488C2229CB89CC0000EE7E /* OfflineEntitlementsManagerTests.swift */,
 			);
 			path = OfflineEntitlements;
 			sourceTree = "<group>";
@@ -2847,6 +2859,7 @@
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,
 				57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */,
 				F5714EE526DC2F1D00635477 /* CodableStrings.swift in Sources */,
+				57488BE829CB7FB60000EE7E /* OfflineEntitlementsStrings.swift in Sources */,
 				57E6C27C29723A94001AFE98 /* Signing.swift in Sources */,
 				57C381DC27961547009E3940 /* SK2StoreProductDiscount.swift in Sources */,
 				B34605CA279A6E380031CA74 /* GetCustomerInfoOperation.swift in Sources */,
@@ -2886,6 +2899,7 @@
 				B32B750126868C1D005647BF /* EntitlementInfo.swift in Sources */,
 				57ABA76D28F08DDA003D9181 /* Either.swift in Sources */,
 				35F82BB426A9A74D0051DF03 /* HTTPClient.swift in Sources */,
+				57488BD429CB7E2D0000EE7E /* OfflineEntitlementsManager.swift in Sources */,
 				B3A55B7D26C452A7007EFC56 /* AttributionPoster.swift in Sources */,
 				5791FE4A2994453500F1FEDA /* Signing+ResponseVerification.swift in Sources */,
 				2DC19195255F36D10039389A /* Logger.swift in Sources */,
@@ -3047,6 +3061,7 @@
 				57057FF828B0048900995F21 /* TestLogHandler.swift in Sources */,
 				57E415F12846997B00EA5460 /* PurchasesAttributionDataTests.swift in Sources */,
 				2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */,
+				57488C2329CB89CC0000EE7E /* OfflineEntitlementsManagerTests.swift in Sources */,
 				57FDAA962846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift in Sources */,
 				575A17AB2773A59300AA6F22 /* CurrentTestCaseTracker.swift in Sources */,
 				351B514326D449C100BD2BD7 /* MockSubscriberAttributesManager.swift in Sources */,
@@ -3177,6 +3192,7 @@
 				57BA943128330ACA00CD5FC5 /* ConfigurationTests.swift in Sources */,
 				2D4D6AF424F717B800B656BE /* ASN1ObjectIdentifierEncoder.swift in Sources */,
 				5774F9C22805EA6900997128 /* CustomerInfoDecodingTests.swift in Sources */,
+				57488BEA29CB83540000EE7E /* MockOfflineEntitlementsManager.swift in Sources */,
 				F5BE444726985E7B00254A30 /* AttributionTypeFactoryTests.swift in Sources */,
 				2DDF41EA24F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				351B517A26D44FF000BD2BD7 /* MockRequestFetcher.swift in Sources */,
