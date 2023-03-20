@@ -14,25 +14,28 @@
 import Foundation
 import StoreKit
 
-
-/// This struct should have all the information we need from StoreKit  to create EntitlementInfo from a StoreKit 2 transaction.
+/// This struct should have all the information we need from StoreKit
+/// to create EntitlementInfo from a StoreKit 2 transaction.
 /// Other fields from other places might be needed.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 struct PurchasedSK2Product {
     let productIdentifier: String
-    let expirationDate: Date?
     let periodType: PeriodType
     let isActive: Bool
     let willRenew: Bool
-    let latestPurchaseDate
-    let originalPurchaseDate
-    let expirationDate
+    let latestPurchaseDate: Date?
+    let originalPurchaseDate: Date?
+    let expirationDate: Date?
     let store = Store.appStore
-    // etc etc
+    let isSandbox: Bool
+    let unsubscribeDetectedAt: Date?
+    let billingIssueDetectedAt: Date?
+    let ownershipType: PurchaseOwnershipType
+    let verification: VerificationResult = .verified
 
-
-
-    init(from transaction: StoreKit.Transaction) {
+    init(from transaction: StoreKit.Transaction,
+         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+    ) {
         self.productIdentifier = transaction.productID
         self.expirationDate = transaction.expirationDate
         if let offerType = transaction.offerType {
@@ -52,6 +55,19 @@ struct PurchasedSK2Product {
             self.periodType = .normal
         }
 
+        self.isActive = expirationDate == nil || expirationDate! > Date() // todo: check what we usually do for non-subs
+        self.willRenew = true // best guess, StoreKit.Transaction does not provide this info.
+        self.latestPurchaseDate = transaction.purchaseDate
+        self.originalPurchaseDate = transaction.originalPurchaseDate
+        self.isSandbox = sandboxEnvironmentDetector.isSandbox
+        self.unsubscribeDetectedAt = nil // best guess, StoreKit.Transaction does not provide this info.
+        self.billingIssueDetectedAt = nil // best guess, StoreKit.Transaction does not provide this info.
+        switch transaction.ownershipType {
+        case .familyShared:
+            self.ownershipType = .familyShared
+        default:
+            self.ownershipType = .purchased
+        }
     }
 }
 
@@ -63,7 +79,7 @@ struct PurchasedProductsManager {
         var purchasedProductIdentifiers: [PurchasedSK2Product] = []
 
         // todo: filter out pending and unfinished transactions
-        for await transaction in StoreKit.Transaction.all {
+        for await transaction in StoreKit.Transaction.currentEntitlements {
             switch transaction {
             case .unverified:
                 print("unverified!")
@@ -84,8 +100,9 @@ struct PurchasedProductsManager {
     }
 }
 
-extension EntitlementInfo {
-    convenience init(from: PurchasedSK2Product, entitlementID: String, ... ) {
-        // set all the relevant fields here
-    }
-}
+//@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+//extension EntitlementInfo {
+//    convenience init(from: PurchasedSK2Product, entitlementID: String, ... ) {
+//        // set all the relevant fields here
+//    }
+//}
