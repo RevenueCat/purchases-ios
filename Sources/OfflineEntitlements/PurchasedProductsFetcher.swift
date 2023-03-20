@@ -17,13 +17,20 @@ import StoreKit
 
 /// This struct should have all the information we need from StoreKit  to create EntitlementInfo from a StoreKit 2 transaction.
 /// Other fields from other places might be needed.
-/// If not, then consider just having a constructor that creates EntitlementInfo from a Storekit.Transaction instead and using
-/// a Factory pattern to store the logic in one place
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 struct PurchasedSK2Product {
     let productIdentifier: String
     let expirationDate: Date?
     let periodType: PeriodType
+    let isActive: Bool
+    let willRenew: Bool
+    let latestPurchaseDate
+    let originalPurchaseDate
+    let expirationDate
+    let store = Store.appStore
+    // etc etc
+
+
 
     init(from transaction: StoreKit.Transaction) {
         self.productIdentifier = transaction.productID
@@ -33,7 +40,7 @@ struct PurchasedSK2Product {
             case .code, .promotional:
                 self.periodType = .intro
             case .introductory:
-                // note: this isn't necessarily accurate, but there's no field in SK2 to
+                // note: this isn't entirely accurate, but there's no field in SK2 to
                 // tell us whether this is a free trial after all, so it's a best guess.
                 // since free trials are much more common than intro pricing, we're going with
                 // trial
@@ -44,6 +51,7 @@ struct PurchasedSK2Product {
         } else {
             self.periodType = .normal
         }
+
     }
 }
 
@@ -73,5 +81,11 @@ struct PurchasedProductsManager {
         }
 
         return purchasedProductIdentifiers
+    }
+}
+
+extension EntitlementInfo {
+    convenience init(from: PurchasedSK2Product, entitlementID: String, ... ) {
+        // set all the relevant fields here
     }
 }
