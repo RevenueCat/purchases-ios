@@ -19,6 +19,7 @@ import StoreKit
 /// Other fields from other places might be needed.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 struct PurchasedSK2Product {
+
     let productIdentifier: String
     let periodType: PeriodType
     let isActive: Bool
@@ -100,9 +101,23 @@ struct PurchasedProductsManager {
     }
 }
 
-//@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-//extension EntitlementInfo {
-//    convenience init(from: PurchasedSK2Product, entitlementID: String, ... ) {
-//        // set all the relevant fields here
-//    }
-//}
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension EntitlementInfo {
+    convenience init(from purchasedSK2Product: PurchasedSK2Product, entitlementID: String) {
+        self.init(contents: .init(identifier: entitlementID,
+                                  isActive: purchasedSK2Product.isActive,
+                                  willRenew: purchasedSK2Product.willRenew,
+                                  periodType: purchasedSK2Product.periodType,
+                                  latestPurchaseDate: purchasedSK2Product.latestPurchaseDate,
+                                  originalPurchaseDate: purchasedSK2Product.originalPurchaseDate,
+                                  expirationDate: purchasedSK2Product.expirationDate,
+                                  store: purchasedSK2Product.store,
+                                  productIdentifier: purchasedSK2Product.productIdentifier,
+                                  isSandbox: purchasedSK2Product.isSandbox,
+                                  unsubscribeDetectedAt: purchasedSK2Product.unsubscribeDetectedAt,
+                                  billingIssueDetectedAt: purchasedSK2Product.billingIssueDetectedAt,
+                                  ownershipType: purchasedSK2Product.ownershipType,
+                                  verification: purchasedSK2Product.verification),
+                  rawData: [:]) // todo: should we just have the data be the transaction's raw data?
+    }
+}

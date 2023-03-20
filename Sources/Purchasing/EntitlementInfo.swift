@@ -246,6 +246,14 @@ extension PeriodType: DefaultValueProvider {
         self.rawData = entitlement.rawData
     }
 
+    init(contents: EntitlementInfo.Contents,
+         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+         rawData: [String: Any]) {
+        self.contents = contents
+        self.rawData = rawData
+        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
+    }
+
     // MARK: -
 
     private let contents: Contents
@@ -307,7 +315,7 @@ extension EntitlementInfo: Identifiable {
 
 }
 
-private extension EntitlementInfo {
+extension EntitlementInfo {
 
     struct Contents: Equatable, Hashable {
 
