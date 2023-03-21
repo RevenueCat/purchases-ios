@@ -17,12 +17,16 @@ struct PurchaseTesterApp: App {
     @State
     private var configuration: ConfiguredPurchases?
     
+    @StateObject
+    private var revenueCatCustomerData: RevenueCatCustomerData = .init()
+
     var body: some Scene {
         WindowGroup(id: Windows.default.rawValue) {
             Group {
                 if let configuration {
-                    NavigationView {
+                    NavigationSplitView {
                         ContentView(configuration: configuration)
+                            .environmentObject(self.revenueCatCustomerData)
                             .toolbar {
                                 ToolbarItem(placement: .principal) {
                                     Button {
@@ -32,6 +36,20 @@ struct PurchaseTesterApp: App {
                                     }
                                 }
                             }
+                    } detail: {
+                        DynamicCustomerView(customerInfo: self.$revenueCatCustomerData.customerInfo)
+                    }
+                    .navigationSplitViewStyle(.balanced)
+                    .navigationSplitViewColumnWidth(100)
+                    .task(id: self.configuration?.purchases) {
+                        self.revenueCatCustomerData.customerInfo = nil
+
+                        if let configuration = self.configuration {
+                            for await customerInfo in configuration.purchases.customerInfoStream {
+                                self.revenueCatCustomerData.customerInfo = customerInfo
+                                self.revenueCatCustomerData.appUserID = configuration.purchases.appUserID
+                            }
+                        }
                     }
                 } else {
                     #if os(macOS)

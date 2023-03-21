@@ -85,6 +85,7 @@ struct ConfigurationView: View {
                 } label: {
                     Text("Continue")
                 }
+                .keyboardShortcut(.return)
                 .disabled(!self.contentIsValid)
             }
         }

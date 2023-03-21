@@ -15,14 +15,10 @@ struct ContentView: View {
     let configuration: ConfiguredPurchases
 
     @StateObject
-    private var revenueCatCustomerData: RevenueCatCustomerData
-
-    @StateObject
     private var observerModeManager: ObserverModeManager
 
     init(configuration: ConfiguredPurchases) {
         self.configuration = configuration
-        self._revenueCatCustomerData = .init(wrappedValue: .init())
         self._observerModeManager = .init(
             wrappedValue: .init(observerModeEnabled: !configuration.purchases.finishTransactions)
         )
@@ -30,14 +26,7 @@ struct ContentView: View {
 
     var body: some View {
         HomeView()
-            .environmentObject(self.revenueCatCustomerData)
             .environmentObject(self.observerModeManager)
-            .task(id: self.configuration.purchases) {
-                for await customerInfo in self.configuration.purchases.customerInfoStream {
-                    self.revenueCatCustomerData.customerInfo = customerInfo
-                    self.revenueCatCustomerData.appUserID = self.configuration.purchases.appUserID
-                }
-            }
     }
 
 }
