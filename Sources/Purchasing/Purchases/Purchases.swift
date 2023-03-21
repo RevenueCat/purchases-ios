@@ -1297,7 +1297,6 @@ private extension Purchases {
                 return
             }
 
-            Logger.debug("Offerings cache is stale, updating caches")
             self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
                                                        isAppBackgrounded: isAppBackgrounded,
                                                        completion: nil)
