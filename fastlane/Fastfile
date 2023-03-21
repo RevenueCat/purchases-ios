@@ -247,6 +247,13 @@ platform :ios do
         './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
       ]
     )
+    replace_text_in_files(
+      previous_text: "REVENUECAT_LOAD_SHEDDER_API_KEY",
+      new_text: ENV["REVENUECAT_LOAD_SHEDDER_API_KEY"],
+      paths_of_files_to_update: [
+        './Tests/BackendIntegrationTests/Constants.swift'
+      ]
+    )
 
     replace_text_in_files(
       previous_text: "REVENUECAT_PROXY_URL",
