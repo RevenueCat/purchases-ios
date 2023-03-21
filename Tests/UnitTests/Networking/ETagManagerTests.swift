@@ -86,6 +86,30 @@ class ETagManagerTests: TestCase {
         expect(response?.requestDate) == requestDate
     }
 
+    func testStoredResponseIsNotUsedIfResponseCodeIs304ButContainsNoETag() throws {
+        let eTag = "an_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        _ = self.mockStoredETagResponse(for: url, statusCode: .success, eTag: eTag)
+        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+        let requestDate = Date().addingTimeInterval(-100000)
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: responseObject,
+                                       eTag: nil,
+                                       statusCode: .notModified,
+                                       requestDate: requestDate),
+            request: request,
+            retried: false
+        )
+
+        expect(response).toNot(beNil())
+        expect(response?.statusCode) == .notModified
+        expect(response?.body) == responseObject
+        expect(response?.requestDate) == requestDate
+    }
+
     func testBackendResponseIsReturnedIf304AndCantFindCachedAndItHasAlreadyRetried() throws {
         let eTag = "an_etag"
         let url = urlForTest()
@@ -703,7 +727,7 @@ private extension ETagManagerTests {
         return .init(userDefaults: self.mockUserDefaults, verificationMode: mode)
     }
 
-    func getHeaders(eTag: String) -> [String: String] {
+    func getHeaders(eTag: String?) -> [String: String] {
         return [
             "Content-Type": "application/json",
             "X-Platform": "android",
@@ -715,6 +739,7 @@ private extension ETagManagerTests {
             "X-Observer-Mode-Enabled": "false",
             ETagManager.eTagRequestHeaderName: eTag
         ]
+            .compactMapValues { $0 }
             .merging(HTTPClient.authorizationHeader(withAPIKey: "apikey"))
     }
 
@@ -747,7 +772,7 @@ private extension ETagManagerTests {
     func responseForTest(
         url: URL,
         body: Data?,
-        eTag: String,
+        eTag: String?,
         statusCode: HTTPStatusCode,
         requestDate: Date? = nil,
         verificationResult: RevenueCat.VerificationResult = .defaultValue
