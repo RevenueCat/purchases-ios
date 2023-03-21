@@ -34,6 +34,10 @@ struct PurchasedSK2Product {
     let ownershipType: PurchaseOwnershipType
     let verification: VerificationResult = .verified
 
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension PurchasedSK2Product {
     init(from transaction: StoreKit.Transaction,
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
@@ -56,7 +60,7 @@ struct PurchasedSK2Product {
             self.periodType = .normal
         }
 
-        self.isActive = expirationDate == nil || expirationDate! > Date() // todo: check what we usually do for non-subs
+        self.isActive = expirationDate.map { $0 > Date() } ?? false // todo: check what we usually do for non-subs
         self.willRenew = true // best guess, StoreKit.Transaction does not provide this info.
         self.latestPurchaseDate = transaction.purchaseDate
         self.originalPurchaseDate = transaction.originalPurchaseDate
@@ -84,8 +88,8 @@ struct PurchasedProductsManager {
             switch transaction {
             case .unverified(let unverifiedTransaction, let verificationError):
                 Logger.appleWarning(
-                    Strings.offlineEntitlements.found_unverified_transactions_in_sk2(
-                        transaction: unverifiedTransaction, error: verificationError)
+                    Strings.offlineEntitlements.found_unverified_transactions_in_sk2(unverifiedTransaction,
+                                                                                     verificationError)
                 )
             case let .verified(verifiedTransaction):
                 purchasedProductIdentifiers.append(PurchasedSK2Product(from: verifiedTransaction))
