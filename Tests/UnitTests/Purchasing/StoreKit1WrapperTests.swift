@@ -308,7 +308,7 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     }
 
     func testUpdatedTransactionsLogsWarningWhenSendingTooManyTransactions() {
-        let logger = TestLogHandler(capacity: 150)
+        let logger = TestLogHandler()
 
         let payment = SKPayment(product: .init())
         let transactions = (0..<110).map { _ in
