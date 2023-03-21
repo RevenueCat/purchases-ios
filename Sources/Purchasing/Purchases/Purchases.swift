@@ -490,7 +490,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.paymentQueueWrapper.sk2Wrapper?.delegate = nil
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
-        Self.proxyURL = nil
     }
 
     static func clearSingleton() {
