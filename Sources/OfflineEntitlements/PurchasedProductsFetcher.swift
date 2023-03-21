@@ -76,28 +76,27 @@ struct PurchasedSK2Product {
 struct PurchasedProductsManager {
 
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
-        // todo: call force sync on sk2 before doing this
         var purchasedProductIdentifiers: [PurchasedSK2Product] = []
 
-        // todo: filter out pending and unfinished transactions
+        try await forceSyncToEnsureAllTransactionsAreAccountedFor()
+
         for await transaction in StoreKit.Transaction.currentEntitlements {
             switch transaction {
-            case .unverified:
-                print("unverified!")
-                // todo: log
-                //                throw ErrorUtils.storeProblemError(
-                //                    withMessage: Strings.purchase.transaction_unverified(
-                //                        productID: unverifiedTransaction.productID,
-                //                        errorMessage: verificationError.localizedDescription
-                //                    ).description,
-                //                    error: verificationError
-                //                )
+            case .unverified(let unverifiedTransaction, let verificationError):
+                Logger.appleWarning(
+                    Strings.offlineEntitlements.found_unverified_transactions_in_sk2(
+                        transaction: unverifiedTransaction, error: verificationError)
+                )
             case let .verified(verifiedTransaction):
                 purchasedProductIdentifiers.append(PurchasedSK2Product(from: verifiedTransaction))
             }
         }
 
         return purchasedProductIdentifiers
+    }
+
+    private func forceSyncToEnsureAllTransactionsAreAccountedFor() async throws {
+        try await AppStore.sync()
     }
 }
 
