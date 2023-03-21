@@ -60,10 +60,9 @@ class OfferingsManager {
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
-                                          fetchPolicy: fetchPolicy,
-                                          completion: nil)
-
-                Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
+                                          fetchPolicy: fetchPolicy) { _ in
+                    Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
+                }
             }
         }
     }
