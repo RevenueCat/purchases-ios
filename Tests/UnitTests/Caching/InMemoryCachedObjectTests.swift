@@ -58,11 +58,11 @@ class InMemoryCachedObjectTests: TestCase {
         let cachedObject = InMemoryCachedObject<NSString>()
         cachedObject.cache(instance: "myString")
         expect(cachedObject.lastUpdatedAt).toNot(beNil())
-        expect(cachedObject.cachedInstance()).toNot(beNil())
+        expect(cachedObject.cachedInstance).toNot(beNil())
 
         cachedObject.clearCacheTimestamp()
         expect(cachedObject.lastUpdatedAt).to(beNil())
-        expect(cachedObject.cachedInstance()).toNot(beNil())
+        expect(cachedObject.cachedInstance).toNot(beNil())
     }
 
     // MARK: clearCache
@@ -72,12 +72,12 @@ class InMemoryCachedObjectTests: TestCase {
         cachedObject.cache(instance: "myString")
 
         expect(cachedObject.lastUpdatedAt).toNot(beNil())
-        expect(cachedObject.cachedInstance()).toNot(beNil())
+        expect(cachedObject.cachedInstance).toNot(beNil())
 
         cachedObject.clearCache()
 
         expect(cachedObject.lastUpdatedAt).to(beNil())
-        expect(cachedObject.cachedInstance()).to(beNil())
+        expect(cachedObject.cachedInstance).to(beNil())
     }
 
     // MARK: updateCacheTimestampWithDate
@@ -104,7 +104,7 @@ class InMemoryCachedObjectTests: TestCase {
         let cachedObject = InMemoryCachedObject<NSString>()
         cachedObject.cache(instance: myString)
 
-        expect(cachedObject.cachedInstance()) == myString
+        expect(cachedObject.cachedInstance) == myString
     }
 
     func testCacheInstanceWithDateSetsDateCorrectly() {

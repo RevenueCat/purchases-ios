@@ -59,7 +59,7 @@ class InMemoryCachedObject<T> {
         }
     }
 
-    func cachedInstance() -> T? {
+    var cachedInstance: T? {
         return self.content.value.cachedObject
     }
 }

@@ -61,9 +61,10 @@ class MockInMemoryCachedOfferings<T: Offerings>: InMemoryCachedObject<Offerings>
     var invokedCachedInstanceCount = 0
     var stubbedCachedInstanceResult: Offerings!
 
-    override func cachedInstance() -> Offerings? {
-        invokedCachedInstance = true
-        invokedCachedInstanceCount += 1
-        return stubbedCachedInstanceResult
+    override var cachedInstance: Offerings? {
+        self.invokedCachedInstance = true
+        self.invokedCachedInstanceCount += 1
+        return self.stubbedCachedInstanceResult
     }
+
 }
