@@ -460,6 +460,35 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(result?.value?.body) == responseData
     }
 
+    func testServerSide200WithETagInRequest() {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
+        let eTag = "etag"
+
+        self.eTagManager.stubResponseEtag(eTag)
+
+        stub(condition: isPath(request.path)) { request in
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName]) == eTag
+
+            return HTTPStubsResponse(data: responseData,
+                                     statusCode: .success,
+                                     headers: nil)
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.body) == responseData
+
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackend) == true
+        expect(self.eTagManager.invokedHTTPResultFromCacheOrBackendCount) == 1
+    }
+
     func testResponseDeserialization() throws {
         struct CustomResponse: Codable, Equatable, HTTPResponseBody {
             let message: String
