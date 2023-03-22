@@ -182,7 +182,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
         expect(info.managementURL).to(beNil())
         expect(info.originalAppUserId).toNot(beEmpty())
         expect(IdentityManager.userIsAnonymous(info.originalAppUserId)) == true
-        expect(info.originalApplicationVersion).to(beNil()) // TODO
+        expect(info.originalApplicationVersion) == SystemInfo.buildVersion
         expect(info.originalPurchaseDate).to(beCloseToNow())
     }
 

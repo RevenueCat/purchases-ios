@@ -24,7 +24,7 @@ extension CustomerInfo {
         let subscriber = CustomerInfoResponse.Subscriber(
             originalAppUserId: IdentityManager.generateRandomID(),
             managementUrl: nil,
-            originalApplicationVersion: nil,
+            originalApplicationVersion: SystemInfo.buildVersion,
             originalPurchaseDate: Date(),
             firstSeen: Date(),
             subscriptions: purchasedSK2Products
