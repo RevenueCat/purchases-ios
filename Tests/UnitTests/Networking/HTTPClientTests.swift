@@ -526,7 +526,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.stubResponseEtag(eTag)
 
         stub(condition: isPath(request.path)) { request in
-            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagResponseHeaderName] == eTag
+            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName] == eTag
             return .emptySuccessResponse()
         }
 
@@ -543,7 +543,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         let headerPresent: Atomic<Bool?> = nil
 
         stub(condition: isPath(request.path)) { request in
-            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(ETagManager.eTagResponseHeaderName) == true
+            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(ETagManager.eTagRequestHeaderName) == true
             return .emptySuccessResponse()
         }
 
@@ -988,7 +988,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         )
 
         stub(condition: isPath(path)) { response in
-            expect(response.allHTTPHeaderFields?[ETagManager.eTagResponseHeaderName]) == eTag
+            expect(response.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName]) == eTag
 
             return .init(data: Data(),
                          statusCode: .notModified,

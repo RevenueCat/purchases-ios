@@ -65,9 +65,9 @@ class ETagManager {
         let statusCode: HTTPStatusCode = response.statusCode
         let resultFromBackend = response.asOptionalResponse
 
-        let eTagInResponse = response.value(forHeaderField: HTTPClient.ResponseHeader.eTag.rawValue)
-
-        guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
+        guard let eTagInResponse = response.value(forHeaderField: Self.eTagResponseHeaderName) else {
+            return resultFromBackend
+        }
 
         if self.shouldUseCachedVersion(responseCode: statusCode) {
             if let storedResponse = self.storedHTTPResponse(for: request, withRequestDate: response.requestDate) {

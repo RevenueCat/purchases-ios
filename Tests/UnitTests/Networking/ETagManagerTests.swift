@@ -86,6 +86,22 @@ class ETagManagerTests: TestCase {
         expect(response?.requestDate) == requestDate
     }
 
+    func testResultIsNilIfResponseCodeIs304ButContainsNoETag() throws {
+        let url = self.urlForTest()
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: url,
+                                       body: nil,
+                                       eTag: nil,
+                                       statusCode: .notModified,
+                                       requestDate: Date()),
+            request: URLRequest(url: url),
+            retried: false
+        )
+
+        expect(response).to(beNil())
+    }
+
     func testBackendResponseIsReturnedIf304AndCantFindCachedAndItHasAlreadyRetried() throws {
         let eTag = "an_etag"
         let url = urlForTest()
@@ -703,7 +719,7 @@ private extension ETagManagerTests {
         return .init(userDefaults: self.mockUserDefaults, verificationMode: mode)
     }
 
-    func getHeaders(eTag: String) -> [String: String] {
+    func getHeaders(eTag: String?) -> [String: String] {
         return [
             "Content-Type": "application/json",
             "X-Platform": "android",
@@ -715,6 +731,7 @@ private extension ETagManagerTests {
             "X-Observer-Mode-Enabled": "false",
             ETagManager.eTagRequestHeaderName: eTag
         ]
+            .compactMapValues { $0 }
             .merging(HTTPClient.authorizationHeader(withAPIKey: "apikey"))
     }
 
@@ -747,7 +764,7 @@ private extension ETagManagerTests {
     func responseForTest(
         url: URL,
         body: Data?,
-        eTag: String,
+        eTag: String?,
         statusCode: HTTPStatusCode,
         requestDate: Date? = nil,
         verificationResult: RevenueCat.VerificationResult = .defaultValue
