@@ -19,10 +19,11 @@ extension CustomerInfo {
     convenience init(
         from purchasedSK2Products: [PurchasedSK2Product],
         mapping: ProductEntitlementMapping,
+        userID: String,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
         let subscriber = CustomerInfoResponse.Subscriber(
-            originalAppUserId: IdentityManager.generateRandomID(),
+            originalAppUserId: userID,
             managementUrl: nil,
             originalApplicationVersion: SystemInfo.buildVersion,
             originalPurchaseDate: Date(),

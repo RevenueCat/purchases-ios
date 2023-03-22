@@ -24,6 +24,8 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
 
     private var sandboxDetector: SandboxEnvironmentDetector!
 
+    private static let userID: String = IdentityManager.generateRandomID()
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -173,6 +175,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
                 PurchasedSK2Product(from: $0, sandboxEnvironmentDetector: self.sandboxDetector)
             },
             mapping: mapping,
+            userID: Self.userID,
             sandboxEnvironmentDetector: self.sandboxDetector
         )
     }
@@ -181,7 +184,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
         expect(info.firstSeen).to(beCloseToNow())
         expect(info.managementURL).to(beNil())
         expect(info.originalAppUserId).toNot(beEmpty())
-        expect(IdentityManager.userIsAnonymous(info.originalAppUserId)) == true
+        expect(info.originalAppUserId) == Self.userID
         expect(info.originalApplicationVersion) == SystemInfo.buildVersion
         expect(info.originalPurchaseDate).to(beCloseToNow())
     }
