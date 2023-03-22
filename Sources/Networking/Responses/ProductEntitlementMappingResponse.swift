@@ -13,6 +13,8 @@
 
 import Foundation
 
+/// Response from product entitlement mapping endpoint
+/// - Seealso: `ProductEntitlementMapping`
 struct ProductEntitlementMappingResponse {
 
     var products: [Product]
