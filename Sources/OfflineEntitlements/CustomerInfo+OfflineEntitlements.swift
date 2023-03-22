@@ -21,13 +21,6 @@ extension CustomerInfo {
         mapping: ProductEntitlementMapping,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
-        // TODO: ?
-        let verification: VerificationResult = .verified
-
-        let entitlements: [String: CustomerInfoResponse.Entitlement] = purchasedSK2Products
-            .dictionaryWithKeys { mapping.entitlements(for: $0.productIdentifier).first! } // TODO: 
-            .mapValues { $0.entitlement }
-
         let content: CustomerInfoResponse = .init(
             subscriber: .init(
                 originalAppUserId: IdentityManager.generateRandomID(),
@@ -36,10 +29,10 @@ extension CustomerInfo {
                 originalPurchaseDate: Date(),
                 firstSeen: Date(),
                 subscriptions: purchasedSK2Products
-                    .dictionaryWithKeys { $0.productIdentifier }
+                    .dictionaryAllowingDuplicateKeys { $0.productIdentifier }
                     .mapValues { $0.subscription },
                 nonSubscriptions: [:], // TODO:
-                entitlements: entitlements
+                entitlements: Self.createEntitlements(with: purchasedSK2Products, mapping: mapping)
             ),
             requestDate: Date(), // TODO: ?
             rawData: [:] // TODO: ?
@@ -47,9 +40,27 @@ extension CustomerInfo {
 
         self.init(
             response: content,
-            entitlementVerification: verification,
+            entitlementVerification: Self.verification,
             sandboxEnvironmentDetector: sandboxEnvironmentDetector
         )
     }
+
+    private static func createEntitlements(
+        with products: [PurchasedSK2Product],
+        mapping: ProductEntitlementMapping
+    ) -> [String: CustomerInfoResponse.Entitlement] {
+        var result: [String: CustomerInfoResponse.Entitlement] = .init(minimumCapacity: products.count)
+
+        for product in products {
+            for entitlement in mapping.entitlements(for: product.productIdentifier) {
+                result[entitlement] = product.entitlement
+            }
+        }
+
+        return result
+    }
+
+    /// Purchases are verified with StoreKit 2.
+    private static let verification: VerificationResult = .verified
 
 }

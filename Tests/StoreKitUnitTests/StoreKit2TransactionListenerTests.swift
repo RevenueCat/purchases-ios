@@ -55,7 +55,7 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
     func testVerifiedTransactionReturnsOriginalTransaction() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let fakeTransaction = try await self.createTransactionWithPurchase()
+        let fakeTransaction = try await self.simulateAnyPurchase()
 
         let (isCancelled, transaction) = try await self.listener.handle(
             purchaseResult: .success(.verified(fakeTransaction))
@@ -88,7 +88,7 @@ class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
     func testUnverifiedTransactionsReturnStoreProblemError() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let transaction = try await self.createTransactionWithPurchase()
+        let transaction = try await self.simulateAnyPurchase()
         let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
         let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction, error)
 
