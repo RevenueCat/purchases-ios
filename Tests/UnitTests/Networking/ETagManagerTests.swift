@@ -86,28 +86,20 @@ class ETagManagerTests: TestCase {
         expect(response?.requestDate) == requestDate
     }
 
-    func testStoredResponseIsNotUsedIfResponseCodeIs304ButContainsNoETag() throws {
-        let eTag = "an_etag"
+    func testResultIsNilIfResponseCodeIs304ButContainsNoETag() throws {
         let url = self.urlForTest()
-        let request = URLRequest(url: url)
-        _ = self.mockStoredETagResponse(for: url, statusCode: .success, eTag: eTag)
-        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
-        let requestDate = Date().addingTimeInterval(-100000)
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: url,
-                                       body: responseObject,
+                                       body: nil,
                                        eTag: nil,
                                        statusCode: .notModified,
-                                       requestDate: requestDate),
-            request: request,
+                                       requestDate: Date()),
+            request: URLRequest(url: url),
             retried: false
         )
 
-        expect(response).toNot(beNil())
-        expect(response?.statusCode) == .notModified
-        expect(response?.body) == responseObject
-        expect(response?.requestDate) == requestDate
+        expect(response).to(beNil())
     }
 
     func testBackendResponseIsReturnedIf304AndCantFindCachedAndItHasAlreadyRetried() throws {
