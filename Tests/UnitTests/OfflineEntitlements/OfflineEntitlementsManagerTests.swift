@@ -64,7 +64,7 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == false
     }
 
-    func testUpdateProductsEntitlementsCacheDoesNotUpdateIfStaleSuccess() {
+    func testUpdateProductEntitlementMappingCacheUpdatesIfStaleSuccess() {
         let mapping: ProductEntitlementMappingResponse = .init(products: [
             .init(identifier: "a", entitlements: ["pro_1", "pro_2"])
         ])
@@ -85,7 +85,7 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMappingParameter) == isAppBackgrounded
     }
 
-    func testUpdateProductsEntitlementsCacheDoesNotUpdateIfStaleFailure() {
+    func testUpdateProductEntitlementMappingCacheDoesNotUpdateIfStaleFailure() {
         let expectedError: BackendError = .missingAppUserID()
 
         self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
