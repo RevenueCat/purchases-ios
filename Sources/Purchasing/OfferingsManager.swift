@@ -58,16 +58,11 @@ class OfferingsManager {
 
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
-                Logger.debug(isAppBackgrounded
-                             ? Strings.offering.offerings_stale_updating_in_background
-                             : Strings.offering.offerings_stale_updating_in_foreground)
-
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
-                                          fetchPolicy: fetchPolicy,
-                                          completion: nil)
-
-                Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
+                                          fetchPolicy: fetchPolicy) { _ in
+                    Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
+                }
             }
         }
     }
@@ -78,6 +73,10 @@ class OfferingsManager {
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
+        Logger.debug(isAppBackgrounded
+                     ? Strings.offering.offerings_stale_updating_in_background
+                     : Strings.offering.offerings_stale_updating_in_foreground)
+
         self.backend.offerings.getOfferings(appUserID: appUserID, withRandomDelay: isAppBackgrounded) { result in
             switch result {
             case let .success(response):
