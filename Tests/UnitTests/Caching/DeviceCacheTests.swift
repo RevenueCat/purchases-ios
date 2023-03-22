@@ -506,14 +506,13 @@ class DeviceCacheTests: TestCase {
     func testIsProductEntitlementMappingCacheStaleWithRecentUpdate() {
         self.mockUserDefaults.mockValues[DeviceCache.CacheKeys.productEntitlementMappingLastUpdated.rawValue] = Date()
             .addingTimeInterval(DispatchTimeInterval.days(1).seconds * -1) // 1 day ago
-            .addingTimeInterval(5) // 5 seconds later
 
         expect(self.deviceCache.isProductEntitlementMappingCacheStale) == false
     }
 
     func testIsProductEntitlementMappingCacheStaleWithStaleDate() {
         self.mockUserDefaults.mockValues[DeviceCache.CacheKeys.productEntitlementMappingLastUpdated.rawValue] = Date()
-            .addingTimeInterval(DispatchTimeInterval.days(1).seconds * -1) // 1 day ago
+            .addingTimeInterval(DispatchTimeInterval.hours(25).seconds * -1)
             .addingTimeInterval(-5) // 5 seconds before
 
         expect(self.deviceCache.isProductEntitlementMappingCacheStale) == true

@@ -643,7 +643,7 @@ private extension DeviceCache {
 
     }
 
-    static let productEntitlementMappingCacheDuration: DispatchTimeInterval = .days(1)
+    static let productEntitlementMappingCacheDuration: DispatchTimeInterval = .hours(25)
 
 }
 
