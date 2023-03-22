@@ -178,42 +178,6 @@ class BackendGetOfferingsTests: BaseBackendTests {
         expect(receivedError) == .missingAppUserID()
     }
 
-    func testGetProductEntitlementMapping() {
-        let randomDelay: Bool = .random()
-
-        self.httpClient.mock(
-            requestPath: .getProductEntitlementMapping,
-            response: .init(statusCode: .success, response: Self.productsEntitlements as [String: Any])
-        )
-
-        let result = waitUntilValue { completed in
-            self.offerings.getProductEntitlementMapping(withRandomDelay: randomDelay, completion: completed)
-        }
-
-        expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == randomDelay
-
-        expect(result).to(beSuccess())
-        expect(result?.value?.products).to(haveCount(2))
-    }
-
-    func testGetProductEntitlementMappingCachesForSameUserID() {
-        self.httpClient.mock(
-            requestPath: .getProductEntitlementMapping,
-            response: .init(statusCode: .success,
-                            response: Self.noProductsEntitlements as [String: Any],
-                            delay: .milliseconds(10))
-        )
-
-        let responses: Atomic<Int> = .init(0)
-
-        self.offerings.getProductEntitlementMapping(withRandomDelay: false) { _ in responses.value += 1 }
-        self.offerings.getProductEntitlementMapping(withRandomDelay: false) { _ in responses.value += 1 }
-
-        expect(responses.value).toEventually(equal(2))
-        expect(self.httpClient.calls).to(haveCount(1))
-    }
-
 }
 
 private extension BackendGetOfferingsTests {
@@ -241,28 +205,6 @@ private extension BackendGetOfferingsTests {
             ]
         ],
         "current_offering_id": "offering_a"
-    ]
-
-    static let noProductsEntitlements: [String: Any?] = [
-        "products": []
-    ]
-
-    static let productsEntitlements: [String: Any?] = [
-        "products": [
-            [
-                "id": "com.revenuecat.foo_1",
-                "entitlements": [
-                    "pro_1"
-                ]
-            ],
-            [
-                "id": "com.revenuecat.foo_2",
-                "entitlements": [
-                    "pro_1",
-                    "pro_2"
-                ]
-            ]
-        ]
     ]
 
 }

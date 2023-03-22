@@ -15,7 +15,7 @@ import Foundation
 
 final class CustomerAPI {
 
-    typealias CustomerInfoResponseHandler = (Result<CustomerInfo, BackendError>) -> Void
+    typealias CustomerInfoResponseHandler = Backend.ResponseHandler<CustomerInfo>
     typealias SimpleResponseHandler = (BackendError?) -> Void
 
     private let backendConfig: BackendConfiguration

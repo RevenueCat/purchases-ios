@@ -17,6 +17,7 @@ class Backend {
 
     let identity: IdentityAPI
     let offerings: OfferingsAPI
+    let offlineEntitlements: OfflineEntitlementsAPI
     let customer: CustomerAPI
     let internalAPI: InternalAPI
 
@@ -44,12 +45,14 @@ class Backend {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
+        let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
                   offeringsAPI: offerings,
+                  offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI)
     }
 
@@ -57,12 +60,14 @@ class Backend {
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,
                   offeringsAPI: OfferingsAPI,
+                  offlineEntitlements: OfflineEntitlementsAPI,
                   internalAPI: InternalAPI) {
         self.config = backendConfig
 
         self.customer = customerAPI
         self.identity = identityAPI
         self.offerings = offeringsAPI
+        self.offlineEntitlements = offlineEntitlements
         self.internalAPI = internalAPI
     }
 
@@ -144,6 +149,12 @@ extension Backend {
 extension Backend: @unchecked Sendable {}
 
 // MARK: - Internal
+
+extension Backend {
+
+    typealias ResponseHandler<Response> = (Swift.Result<Response, BackendError>) -> Void
+
+}
 
 extension Backend {
 
