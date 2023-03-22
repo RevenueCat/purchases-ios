@@ -21,21 +21,23 @@ extension CustomerInfo {
         mapping: ProductEntitlementMapping,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
+        let subscriber = CustomerInfoResponse.Subscriber(
+            originalAppUserId: IdentityManager.generateRandomID(),
+            managementUrl: nil,
+            originalApplicationVersion: nil,
+            originalPurchaseDate: Date(),
+            firstSeen: Date(),
+            subscriptions: purchasedSK2Products
+                .dictionaryAllowingDuplicateKeys { $0.productIdentifier }
+                .mapValues { $0.subscription },
+            nonSubscriptions: [:],
+            entitlements: Self.createEntitlements(with: purchasedSK2Products, mapping: mapping)
+        )
+
         let content: CustomerInfoResponse = .init(
-            subscriber: .init(
-                originalAppUserId: IdentityManager.generateRandomID(),
-                managementUrl: nil,
-                originalApplicationVersion: nil,
-                originalPurchaseDate: Date(),
-                firstSeen: Date(),
-                subscriptions: purchasedSK2Products
-                    .dictionaryAllowingDuplicateKeys { $0.productIdentifier }
-                    .mapValues { $0.subscription },
-                nonSubscriptions: [:], // TODO:
-                entitlements: Self.createEntitlements(with: purchasedSK2Products, mapping: mapping)
-            ),
-            requestDate: Date(), // TODO: ?
-            rawData: [:] // TODO: ?
+            subscriber: subscriber,
+            requestDate: Date(),
+            rawData: (try? subscriber.asDictionary()) ?? [:]
         )
 
         self.init(

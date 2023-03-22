@@ -47,7 +47,7 @@ extension PurchasedSK2Product {
             expiresDate: expiration,
             productIdentifier: transaction.productID,
             purchaseDate: Date(),
-            rawData: [:] // TODO
+            rawData: (try? transaction.jsonRepresentation.asJSONDictionary()) ?? [:]
         )
     }
 

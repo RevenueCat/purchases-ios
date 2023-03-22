@@ -152,8 +152,18 @@ extension ErrorUtils {
 extension Encodable {
 
     func asDictionary() throws -> [String: Any] {
-        let data = try JSONEncoder.default.encode(self)
-        let result = try JSONSerialization.jsonObject(with: data, options: [])
+        return try JSONEncoder.default
+            .encode(self)
+            .asJSONDictionary()
+
+    }
+
+}
+
+extension Data {
+
+    func asJSONDictionary() throws -> [String: Any] {
+        let result = try JSONSerialization.jsonObject(with: self, options: [])
 
         guard let result = result as? [String: Any] else {
             throw CodableError.unexpectedValue(type(of: result), result)

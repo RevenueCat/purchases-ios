@@ -57,6 +57,26 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
                                    periodType: .trial)
     }
 
+    func testRawData() async throws {
+        let transaction = try await self.createTransactionWithPurchase()
+        let entitlementID = "pro_1"
+
+        let mapping: ProductEntitlementMapping = .init(
+            entitlementsByProduct: [
+                transaction.productID: [entitlementID]
+            ]
+        )
+
+        let info = self.create(with: [transaction], mapping: mapping)
+        expect(info.rawData).toNot(beEmpty())
+        expect(info.rawData["entitlements"] as? [String: Any]).to(haveCount(1))
+        expect(info.rawData["subscriptions"] as? [String: Any]).to(haveCount(1))
+
+        let entitlement = try XCTUnwrap(info.entitlements.all.values.onlyElement)
+        expect(entitlement.rawData).toNot(beEmpty())
+        expect(Data.encodeJSON(entitlement.rawData)).to(matchJSONData(transaction.jsonRepresentation))
+    }
+
     func testProductWithMultipleEntitlements() async throws {
         let transaction = try await self.createTransactionWithPurchase()
         let entitlement1 = "pro_1"
@@ -204,4 +224,25 @@ private func beCloseToNow() -> Predicate<Date> {
 
 private func beCloseToDate(_ expectedValue: Date) -> Predicate<Date> {
     return beCloseTo(expectedValue, within: 1)
+}
+
+private extension Data {
+
+    static func encodeJSON(_ value: Any) -> Data? {
+        return try? JSONSerialization.data(withJSONObject: value, options: [.sortedKeys, .prettyPrinted])
+    }
+
+    /// Decodes and encodes the data to obtain a sorted and pretty printed JSON
+    /// This allows comparing 2 different JSON to verify that their contents are equal
+    var serialized: Data? {
+        guard let json = try? JSONSerialization.jsonObject(with: self) else {
+            return nil
+        }
+        return Self.encodeJSON(json)
+    }
+
+}
+
+private func matchJSONData(_ other: Data) -> Predicate<Data> {
+    return equal(other.serialized)
 }
