@@ -1315,6 +1315,11 @@ private extension Purchases {
                                                            isAppBackgrounded: isAppBackgrounded,
                                                            completion: nil)
             }
+
+            self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
+                isAppBackgrounded: isAppBackgrounded,
+                completion: nil
+            )
         }
     }
 
