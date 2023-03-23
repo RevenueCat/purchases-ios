@@ -190,7 +190,8 @@ class NetworkErrorTests: TestCase {
             error(Self.unableToCreateRequestError),
             error(Self.unexpectedResponseError),
             error(Self.responseError(.notFoundError)),
-            error(Self.responseError(.internalServerError))
+            error(Self.responseError(.internalServerError)),
+            error(Self.signatureVerificationFailed)
         ]
 
         for error in errors {
@@ -227,13 +228,51 @@ class NetworkErrorTests: TestCase {
             error(Self.dnsError),
             error(Self.unableToCreateRequestError),
             error(Self.unexpectedResponseError),
-            error(Self.responseError(.internalServerError))
+            error(Self.responseError(.internalServerError)),
+            error(Self.signatureVerificationFailed)
         ]
 
         for error in errors {
             check(error.0.finishable,
                   condition: beFalse(),
                   descrition: "Expected error to not be finishable",
+                  file: error.1,
+                  line: error.2)
+        }
+    }
+
+    func testServerDownTrue() {
+        let errors = [
+            error(Self.responseError(.internalServerError)),
+            error(Self.responseError(.networkConnectTimeoutError))
+        ]
+
+        for error in errors {
+            check(error.0.isServerDown,
+                  condition: beTrue(),
+                  descrition: "Expected error to be server down",
+                  file: error.1,
+                  line: error.2)
+        }
+    }
+
+    func testServerDownFalse() {
+        let errors = [
+            error(Self.decodingError),
+            error(Self.offlineError),
+            error(Self.networkError),
+            error(Self.dnsError),
+            error(Self.unableToCreateRequestError),
+            error(Self.unexpectedResponseError),
+            error(Self.responseError(.notFoundError)),
+            error(Self.responseError(.invalidRequest)),
+            error(Self.signatureVerificationFailed)
+        ]
+
+        for error in errors {
+            check(error.0.isServerDown,
+                  condition: beFalse(),
+                  descrition: "Expected error to not be server down",
                   file: error.1,
                   line: error.2)
         }
@@ -272,6 +311,8 @@ class NetworkErrorTests: TestCase {
     )
 
     private static let unexpectedResponseError: NetworkError = .unexpectedResponse(nil)
+
+    private static let signatureVerificationFailed: NetworkError = .signatureVerificationFailed(path: .health)
 
     private static func responseError(_ statusCode: HTTPStatusCode) -> NetworkError {
         return .errorResponse(

@@ -301,6 +301,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         expect(receivedError).toNot(beNil())
+        expect(receivedError?.isServerDown) == false
 
         switch receivedError {
         case let .networkError(actualError, _):
@@ -340,18 +341,19 @@ final class HTTPClientTests: BaseHTTPClientTests {
                   message: "something is broken up in the cloud"),
             HTTPStatusCode(rawValue: errorCode)
         )
+        expect(error.isServerDown) == false
 
         expect(MockSigning.requests).to(beEmpty())
     }
 
-    func testServerSide500s() throws {
+    func testServerSide500sWithErrorResponse() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let errorCode = 500 + Int.random(in: 0..<50)
 
         stub(condition: isPath(request.path)) { _ in
             let json = "{\"code\": 5000,\"message\": \"something is broken up in the cloud\"}"
             return HTTPStubsResponse(
-                data: json.data(using: String.Encoding.utf8)!,
+                data: json.asData,
                 statusCode: Int32(errorCode),
                 headers: nil
             )
@@ -373,6 +375,41 @@ final class HTTPClientTests: BaseHTTPClientTests {
                   message: "something is broken up in the cloud"),
             HTTPStatusCode(rawValue: errorCode)
         )
+        expect(error.isServerDown) == true
+
+        expect(MockSigning.requests).to(beEmpty())
+    }
+
+    func testServerSide500sWithUnknownBody() throws {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let errorCode = 500 + Int.random(in: 0..<50)
+
+        stub(condition: isPath(request.path)) { _ in
+            let json = "The server is broken"
+            return HTTPStubsResponse(
+                data: json.asData,
+                statusCode: Int32(errorCode),
+                headers: nil
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beFailure())
+
+        let error = try XCTUnwrap(result?.error)
+        expect(error) == .errorResponse(
+            .init(code: .unknownError,
+                  originalCode: BackendErrorCode.unknownError.rawValue,
+                  message: nil),
+            HTTPStatusCode(rawValue: errorCode)
+        )
+        expect(error.isServerDown) == true
 
         expect(MockSigning.requests).to(beEmpty())
     }
