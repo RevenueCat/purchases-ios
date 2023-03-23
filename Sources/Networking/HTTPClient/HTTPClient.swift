@@ -42,7 +42,9 @@ class HTTPClient {
         config.httpMaximumConnectionsPerHost = 1
         config.timeoutIntervalForRequest = requestTimeout
         config.timeoutIntervalForResource = requestTimeout
-        self.session = URLSession(configuration: config)
+        self.session = URLSession(configuration: config,
+                                  delegate: RedirectLoggerSessionDelegate(),
+                                  delegateQueue: nil)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
         self.dnsChecker = dnsChecker
@@ -96,6 +98,7 @@ extension HTTPClient {
     enum RequestHeader: String {
 
         case authorization = "Authorization"
+        case location = "Location"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
 
@@ -348,7 +351,7 @@ private extension HTTPClient {
 
         Logger.debug(Strings.network.api_request_started(request.httpRequest))
 
-        let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
+        let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,
                         request: request,
                         urlRequest: urlRequest,

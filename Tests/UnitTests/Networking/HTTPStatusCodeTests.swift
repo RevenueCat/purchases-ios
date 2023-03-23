@@ -48,6 +48,7 @@ class HTTPStatusCodeTests: TestCase {
         expect(HTTPStatusCode.createdSuccess.isSuccessfulResponse) == true
         expect(HTTPStatusCode.redirect.isSuccessfulResponse) == true
         expect(HTTPStatusCode.notModified.isSuccessfulResponse) == true
+        expect(HTTPStatusCode.temporaryRedirect.isSuccessfulResponse) == true
         expect(status(202).isSuccessfulResponse) == true
         expect(status(226).isSuccessfulResponse) == true
         expect(status(299).isSuccessfulResponse) == true
@@ -73,6 +74,7 @@ class HTTPStatusCodeTests: TestCase {
         expect(HTTPStatusCode.createdSuccess.isServerError) == false
         expect(HTTPStatusCode.redirect.isServerError) == false
         expect(HTTPStatusCode.notModified.isServerError) == false
+        expect(HTTPStatusCode.temporaryRedirect.isServerError) == false
         expect(HTTPStatusCode.invalidRequest.isServerError) == false
         expect(HTTPStatusCode.notFoundError.isServerError) == false
         expect(status(100).isServerError) == false
@@ -87,6 +89,7 @@ class HTTPStatusCodeTests: TestCase {
         expect(HTTPStatusCode.createdSuccess.isSuccessfullySynced) == true
         expect(HTTPStatusCode.redirect.isSuccessfullySynced) == true
         expect(HTTPStatusCode.notModified.isSuccessfullySynced) == true
+        expect(HTTPStatusCode.temporaryRedirect.isSuccessfullySynced) == true
         expect(HTTPStatusCode.invalidRequest.isSuccessfullySynced) == true
         expect(status(100).isSuccessfullySynced) == true
         expect(status(202).isSuccessfullySynced) == true

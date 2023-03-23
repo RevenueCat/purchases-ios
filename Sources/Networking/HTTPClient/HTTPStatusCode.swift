@@ -20,6 +20,7 @@ enum HTTPStatusCode {
     case createdSuccess
     case redirect
     case notModified
+    case temporaryRedirect
     case invalidRequest
     case notFoundError
     case internalServerError
@@ -32,6 +33,7 @@ enum HTTPStatusCode {
         .createdSuccess,
         .redirect,
         .notModified,
+        .temporaryRedirect,
         .invalidRequest,
         .notFoundError,
         .internalServerError,
@@ -52,6 +54,7 @@ extension HTTPStatusCode: RawRepresentable {
         case .createdSuccess: return 201
         case .redirect: return 300
         case .notModified: return 304
+        case .temporaryRedirect: return 307
         case .invalidRequest: return 400
         case .notFoundError: return 404
         case .internalServerError: return 500
