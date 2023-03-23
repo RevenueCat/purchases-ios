@@ -411,7 +411,7 @@ class ETagManagerTests: TestCase {
 
         let response = self.eTagManager.eTagHeader(for: request,
                                                    withSignatureVerification: false)
-        expect(response[ETagManager.eTagResponseHeaderName]) == eTag
+        expect(response[ETagManager.eTagRequestHeaderName]) == eTag
     }
 
     func testETagHeaderIsIgnoredIfVerificationFailedAndModeEnforced() throws {
@@ -536,6 +536,30 @@ class ETagManagerTests: TestCase {
         let response = self.eTagManager.eTagHeader(for: request,
                                                    withSignatureVerification: false)
         expect(response[ETagManager.eTagResponseHeaderName]) == eTag
+    }
+
+    func testETagHeaderContainsCreationTime() {
+        let eTag = "the_etag"
+        let url = self.urlForTest()
+        let request = URLRequest(url: url)
+        let cacheKey = url.absoluteString
+        let creationTime = Date(timeIntervalSince1970: 800000)
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = ETagManager.Response(
+            eTag: eTag,
+            statusCode: .success,
+            data: actualResponse,
+            lastUsed: creationTime,
+            verificationResult: .notRequested
+        ).asData()
+
+        let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
+        expect(response) == [
+            ETagManager.eTagRequestHeaderName: eTag,
+            ETagManager.eTagCreationTimeRequestHeaderName: creationTime.millisecondsSince1970.description
+        ]
     }
 
     func testResponseReturnsRequestDateFromServer() {

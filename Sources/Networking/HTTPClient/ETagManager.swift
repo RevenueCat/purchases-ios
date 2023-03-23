@@ -17,6 +17,7 @@ import Foundation
 class ETagManager {
 
     static let eTagRequestHeaderName = HTTPClient.RequestHeader.eTag.rawValue
+    static let eTagCreationTimeRequestHeaderName = HTTPClient.RequestHeader.eTagCreationTime.rawValue
     static let eTagResponseHeaderName = HTTPClient.ResponseHeader.eTag.rawValue
 
     private let userDefaults: SynchronizedUserDefaults
@@ -43,7 +44,7 @@ class ETagManager {
         withSignatureVerification: Bool,
         refreshETag: Bool = false
     ) -> [String: String] {
-        func eTag() -> String? {
+        func eTag() -> (tag: String, date: String)? {
             if refreshETag { return nil }
             guard let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest) else { return nil }
 
@@ -53,10 +54,20 @@ class ETagManager {
                 storedETagAndResponse.verificationResult == .verified
             )
 
-            return shouldUseETag ? storedETagAndResponse.eTag : nil
+            if shouldUseETag {
+                return (tag: storedETagAndResponse.eTag,
+                        date: storedETagAndResponse.lastUsed.millisecondsSince1970.description)
+            } else {
+                return nil
+            }
         }
 
-        return [HTTPClient.RequestHeader.eTag.rawValue: eTag() ?? ""]
+        let (etag, date) = eTag() ?? ("", "")
+
+        return [
+            HTTPClient.RequestHeader.eTag.rawValue: etag,
+            HTTPClient.RequestHeader.eTagCreationTime.rawValue: date
+        ]
     }
 
     func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
@@ -173,6 +184,8 @@ extension ETagManager {
         var eTag: String
         var statusCode: HTTPStatusCode
         var data: Data
+        @DefaultDecodable.Now
+        var lastUsed: Date
         @DefaultValue<VerificationResult>
         var verificationResult: VerificationResult
 
@@ -180,11 +193,13 @@ extension ETagManager {
             eTag: String,
             statusCode: HTTPStatusCode,
             data: Data,
+            lastUsed: Date = Date(),
             verificationResult: VerificationResult
         ) {
             self.eTag = eTag
             self.statusCode = statusCode
             self.data = data
+            self.lastUsed = lastUsed
             self.verificationResult = verificationResult
         }
 
