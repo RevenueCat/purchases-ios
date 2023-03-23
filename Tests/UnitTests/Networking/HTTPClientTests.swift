@@ -1289,6 +1289,36 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
     }
 
+    func testFakeServerErrors() throws {
+        let path: HTTPRequest.Path = .mockPath
+
+        stub(condition: isPath(path)) { _ in
+            fail("Should not perform request")
+            return .emptySuccessResponse()
+        }
+
+        self.systemInfo = try .init(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: .init(
+                autoSyncPurchases: true,
+                internalSettings: .init(forceServerErrors: true)
+            )
+        )
+        self.client = self.createClient()
+
+        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error).to(matchError(NetworkError.errorResponse(
+            ErrorResponse(code: .internalServerError,
+                          originalCode: BackendErrorCode.unknownBackendError.rawValue),
+            .internalServerError)
+        ))
+    }
+
 }
 
 func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
