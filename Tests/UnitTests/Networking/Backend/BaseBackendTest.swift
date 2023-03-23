@@ -25,6 +25,7 @@ class BaseBackendTests: TestCase {
     private(set) var operationDispatcher: MockOperationDispatcher!
     private(set) var backend: Backend!
     private(set) var offerings: OfferingsAPI!
+    private(set) var offlineEntitlements: OfflineEntitlementsAPI!
     private(set) var identity: IdentityAPI!
     private(set) var internalAPI: InternalAPI!
 
@@ -52,12 +53,14 @@ class BaseBackendTests: TestCase {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
+        self.offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         self.internalAPI = InternalAPI(backendConfig: backendConfig)
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
                                identityAPI: self.identity,
                                offeringsAPI: self.offerings,
+                               offlineEntitlements: self.offlineEntitlements,
                                internalAPI: self.internalAPI)
     }
 

@@ -58,7 +58,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success,
                             response: Self.noOfferingsResponse as [String: Any],
-                            delay: .seconds(2))
+                            delay: .milliseconds(10))
         )
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
@@ -73,7 +73,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success,
                             response: Self.noOfferingsResponse as [String: Any],
-                            delay: .seconds(2))
+                            delay: .milliseconds(10))
         )
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }

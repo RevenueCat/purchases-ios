@@ -37,6 +37,8 @@ final class BackendConfiguration {
 
 }
 
+extension BackendConfiguration: NetworkConfiguration {}
+
 extension BackendConfiguration {
 
     /// Adds the `operation` to the `OperationQueue` (based on `CallbackCacheStatus`) potentially adding a random delay.

@@ -40,6 +40,7 @@ class MockBackend: Backend {
                                                  dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
+        let offlineEntitlements = MockOfflineEntitlementsAPI(backendConfig: backendConfig)
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
 
@@ -47,6 +48,7 @@ class MockBackend: Backend {
                   customerAPI: customer,
                   identityAPI: identity,
                   offeringsAPI: offerings,
+                  offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI)
     }
 
