@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RedirectLoggerTaskDelegate.swift
+//  RedirectLoggerSessionDelegate.swift
 //
 //  Created by Nacho Soto on 3/23/23.
 
 import Foundation
 
 /// Implementation of `URLSessionTaskDelegate` that logs when the task will perform a redirection.
-final class RedirectLoggerTaskDelegate: NSObject, URLSessionTaskDelegate {
+final class RedirectLoggerSessionDelegate: NSObject, URLSessionTaskDelegate {
 
     func urlSession(_ session: URLSession,
                     task: URLSessionTask,

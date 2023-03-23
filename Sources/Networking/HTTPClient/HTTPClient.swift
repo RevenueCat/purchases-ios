@@ -42,7 +42,9 @@ class HTTPClient {
         config.httpMaximumConnectionsPerHost = 1
         config.timeoutIntervalForRequest = requestTimeout
         config.timeoutIntervalForResource = requestTimeout
-        self.session = URLSession(configuration: config)
+        self.session = URLSession(configuration: config,
+                                  delegate: RedirectLoggerSessionDelegate(),
+                                  delegateQueue: nil)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
         self.dnsChecker = dnsChecker
@@ -355,10 +357,6 @@ private extension HTTPClient {
                         urlRequest: urlRequest,
                         data: data,
                         error: error)
-        }
-
-        if #available(iOS 15.0, *) {
-            task.delegate = RedirectLoggerTaskDelegate()
         }
         task.resume()
     }
