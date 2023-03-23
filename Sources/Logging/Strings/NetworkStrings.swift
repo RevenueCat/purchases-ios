@@ -33,6 +33,7 @@ enum NetworkStrings {
     case could_not_find_cached_response_in_already_retried(response: String)
     case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
+    case api_request_redirect(from: URL, to: URL)
 
 }
 
@@ -94,6 +95,9 @@ extension NetworkStrings: CustomStringConvertible {
             return "It looks like requests to RevenueCat are being blocked. Context: We're attempting to connect " +
             "to \(url.absoluteString) host: (\(newHost ?? "<unable to resolve>")), " +
             "see: https://rev.cat/dnsBlocking for more info."
+
+        case let .api_request_redirect(from, to):
+            return "Performing redirect from '\(from.absoluteString)' to '\(to.absoluteString)'"
         }
     }
 

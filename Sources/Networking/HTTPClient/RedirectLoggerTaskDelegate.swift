@@ -1,0 +1,32 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RedirectLoggerTaskDelegate.swift
+//
+//  Created by Nacho Soto on 3/23/23.
+
+import Foundation
+
+/// Implementation of `URLSessionTaskDelegate` that logs when the task will perform a redirection.
+final class RedirectLoggerTaskDelegate: NSObject, URLSessionTaskDelegate {
+
+    func urlSession(_ session: URLSession,
+                    task: URLSessionTask,
+                    willPerformHTTPRedirection response: HTTPURLResponse,
+                    newRequest request: URLRequest
+    ) async -> URLRequest? {
+        if let responseURL = response.url, let requestURL = request.url {
+            Logger.debug(Strings.network.api_request_redirect(from: responseURL,
+                                                              to: requestURL))
+        }
+
+        return request
+    }
+
+}

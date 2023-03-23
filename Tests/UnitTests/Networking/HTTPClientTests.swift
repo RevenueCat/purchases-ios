@@ -1319,6 +1319,47 @@ final class HTTPClientTests: BaseHTTPClientTests {
         ))
     }
 
+    func testRedirectIsLogged() throws {
+        // Task delegate is only available after iOS 15.
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let pathA: HTTPRequest.Path = .logIn
+        let pathB: HTTPRequest.Path = .health
+
+        let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
+
+        stub(condition: isPath(pathA)) { _ in
+            return HTTPStubsResponse(
+                data: .init(),
+                statusCode: .temporaryRedirect,
+                headers: [
+                    HTTPClient.RequestHeader.location.rawValue: pathB.url!.absoluteString
+                ]
+            )
+        }
+        stub(condition: isPath(pathB)) { _ in
+            return HTTPStubsResponse(
+                data: responseData,
+                statusCode: .success,
+                headers: nil
+            )
+        }
+
+        let logger = TestLogHandler()
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: pathA), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body) == responseData
+
+        logger.verifyMessageWasLogged(
+            "Performing redirect from '\(pathA.url!.absoluteString)' to '\(pathB.url!.absoluteString)'",
+            level: .debug
+        )
+    }
+
 }
 
 func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {

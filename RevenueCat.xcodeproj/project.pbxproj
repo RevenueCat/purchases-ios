@@ -367,6 +367,7 @@
 		57C381DC27961547009E3940 /* SK2StoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381DB27961547009E3940 /* SK2StoreProductDiscount.swift */; };
 		57C381E2279627B7009E3940 /* MockStoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381E1279627B7009E3940 /* MockStoreProductDiscount.swift */; };
 		57C381E3279627B7009E3940 /* MockStoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381E1279627B7009E3940 /* MockStoreProductDiscount.swift */; };
+		57CB2AD429CCF21A00C91439 /* RedirectLoggerTaskDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57CB2AD329CCF21900C91439 /* RedirectLoggerTaskDelegate.swift */; };
 		57CCC6EC2984496D001CE9B6 /* Box.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57CCC6EB2984496D001CE9B6 /* Box.swift */; };
 		57CD86DA291C1E2300768DE1 /* UserDefaults+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57CD86D9291C1E2300768DE1 /* UserDefaults+Extensions.swift */; };
 		57CD86E6291C344000768DE1 /* UserDefaultsDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57CD86E5291C344000768DE1 /* UserDefaultsDefaultTests.swift */; };
@@ -995,6 +996,7 @@
 		57C381D92796153D009E3940 /* SK1StoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1StoreProductDiscount.swift; sourceTree = "<group>"; };
 		57C381DB27961547009E3940 /* SK2StoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2StoreProductDiscount.swift; sourceTree = "<group>"; };
 		57C381E1279627B7009E3940 /* MockStoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreProductDiscount.swift; sourceTree = "<group>"; };
+		57CB2AD329CCF21900C91439 /* RedirectLoggerTaskDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RedirectLoggerTaskDelegate.swift; sourceTree = "<group>"; };
 		57CCC6EB2984496D001CE9B6 /* Box.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Box.swift; sourceTree = "<group>"; };
 		57CD86D9291C1E2300768DE1 /* UserDefaults+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+Extensions.swift"; sourceTree = "<group>"; };
 		57CD86E5291C344000768DE1 /* UserDefaultsDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsDefaultTests.swift; sourceTree = "<group>"; };
@@ -2263,6 +2265,7 @@
 				B3F3E8D9277158FE0047A5B9 /* DNSChecker.swift */,
 				35D832CC262A5B7500E60AC5 /* ETagManager.swift */,
 				35F82BB326A9A74D0051DF03 /* HTTPClient.swift */,
+				57CB2AD329CCF21900C91439 /* RedirectLoggerTaskDelegate.swift */,
 				57DC9F4527CC2E4900DA6AF9 /* HTTPRequest.swift */,
 				35D832F3262E606500E60AC5 /* HTTPResponse.swift */,
 				575137CE27F50D2F0064AB2C /* HTTPResponseBody.swift */,
@@ -2861,6 +2864,7 @@
 				F5714EE526DC2F1D00635477 /* CodableStrings.swift in Sources */,
 				57488BE829CB7FB60000EE7E /* OfflineEntitlementsStrings.swift in Sources */,
 				57E6C27C29723A94001AFE98 /* Signing.swift in Sources */,
+				57CB2AD429CCF21A00C91439 /* RedirectLoggerTaskDelegate.swift in Sources */,
 				57C381DC27961547009E3940 /* SK2StoreProductDiscount.swift in Sources */,
 				B34605CA279A6E380031CA74 /* GetCustomerInfoOperation.swift in Sources */,
 				5751379527F4C4D80064AB2C /* Optional+Extensions.swift in Sources */,
