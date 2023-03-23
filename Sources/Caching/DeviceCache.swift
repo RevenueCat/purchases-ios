@@ -372,6 +372,16 @@ class DeviceCache {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension DeviceCache: @unchecked Sendable {}
 
+// MARK: -
+
+extension DeviceCache: ProductEntitlementMappingFetcher {
+
+    var productEntitlementMapping: ProductEntitlementMapping? {
+        return self.cachedProductEntitlementMapping
+    }
+
+}
+
 // MARK: - Private
 
 // All methods that modify or read from the UserDefaults data source but require external mechanisms for ensuring

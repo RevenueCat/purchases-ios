@@ -36,7 +36,26 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
     static func createFactory(
         configuration: UserSpecificConfiguration,
         postData: PostData,
-        customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
+        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
+        purchasedProductsFetcher: PurchasedProductsFetcherType,
+        productEntitlementMapping: ProductEntitlementMapping?
+    ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
+        return Self.createFactory(
+            configuration: configuration,
+            postData: postData,
+            customerInfoResponseHandler: .init(
+                purchasedProductsFetcher: purchasedProductsFetcher,
+                productEntitlementMapping: productEntitlementMapping,
+                userID: configuration.appUserID
+            ),
+            customerInfoCallbackCache: customerInfoCallbackCache
+        )
+    }
+
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        postData: PostData,
+        customerInfoResponseHandler: CustomerInfoResponseHandler,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
         /// Cache key comprises of the following:

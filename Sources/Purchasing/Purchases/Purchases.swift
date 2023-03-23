@@ -277,20 +277,21 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let eTagManager = ETagManager(verificationMode: systemInfo.responseVerificationMode)
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
+        let userDefaults = userDefaults ?? UserDefaults.computeDefault()
+        let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
         let backend = Backend(apiKey: apiKey,
                               systemInfo: systemInfo,
                               httpClientTimeout: networkTimeout,
                               eTagManager: eTagManager,
                               operationDispatcher: operationDispatcher,
-                              attributionFetcher: attributionFetcher)
+                              attributionFetcher: attributionFetcher,
+                              productEntitlementMappingFetcher: deviceCache)
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
             ? .right(.init())
             : .left(.init(operationDispatcher: operationDispatcher, sandboxEnvironmentDetector: systemInfo))
 
         let offeringsFactory = OfferingsFactory()
-        let userDefaults = userDefaults ?? UserDefaults.computeDefault()
-        let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,

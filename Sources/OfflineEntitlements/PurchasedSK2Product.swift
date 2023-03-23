@@ -15,7 +15,6 @@ import Foundation
 import StoreKit
 
 /// Contains all information from a StoreKit 2 transaction necessary to create an ``EntitlementInfo``.
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 struct PurchasedSK2Product {
 
     let productIdentifier: String
@@ -23,6 +22,8 @@ struct PurchasedSK2Product {
     let entitlement: CustomerInfoResponse.Entitlement
 
 }
+
+extension PurchasedSK2Product: Equatable {}
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 extension PurchasedSK2Product {

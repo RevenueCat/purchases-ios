@@ -24,6 +24,10 @@ enum OfflineEntitlementsStrings {
     case product_entitlement_mapping_fetching_error(BackendError)
     case found_unverified_transactions_in_sk2(transactionID: UInt64, Error)
 
+    case computing_offline_customer_info_with_no_entitlement_mapping
+    case computing_offline_customer_info
+    case computing_offline_customer_info_failed(Error)
+
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -48,6 +52,16 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
                 Transaction ID: \(transactionID)
             """
 
+        case .computing_offline_customer_info_with_no_entitlement_mapping:
+            return "Attempting to compute offline CustomerInfo with no product entitlement mapping. " +
+            "Will use empty mapping."
+
+        case .computing_offline_customer_info:
+            return "Encountered a server error. Will attempt to compute an offline CustomerInfo from local purchases."
+
+        case let .computing_offline_customer_info_failed(error):
+            return "Error computing offline CustomerInfo. Will return original error.\n" +
+            "Creation error: \(error.localizedDescription)"
         }
     }
 

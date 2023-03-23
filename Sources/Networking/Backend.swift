@@ -23,13 +23,17 @@ class Backend {
 
     private let config: BackendConfiguration
 
-    convenience init(apiKey: String,
-                     systemInfo: SystemInfo,
-                     httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
-                     eTagManager: ETagManager,
-                     operationDispatcher: OperationDispatcher,
-                     attributionFetcher: AttributionFetcher,
-                     dateProvider: DateProvider = DateProvider()) {
+    convenience init(
+        apiKey: String,
+        systemInfo: SystemInfo,
+        httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+        eTagManager: ETagManager,
+        operationDispatcher: OperationDispatcher,
+        attributionFetcher: AttributionFetcher,
+        productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
+        purchasedProductsFetcher: PurchasedProductsFetcherType = Backend.createDefaultProductFetcher(),
+        dateProvider: DateProvider = DateProvider()
+    ) {
         let httpClient = HTTPClient(apiKey: apiKey,
                                     systemInfo: systemInfo,
                                     eTagManager: eTagManager,
@@ -37,8 +41,10 @@ class Backend {
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
-                                          dateProvider: dateProvider,
-                                          systemInfo: systemInfo)
+                                          systemInfo: systemInfo,
+                                          productEntitlementMappingFetcher: productEntitlementMappingFetcher,
+                                          purchasedProductsFetcher: purchasedProductsFetcher,
+                                          dateProvider: dateProvider)
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
     }
 
@@ -181,6 +187,14 @@ extension Backend {
             return operationQueue
         }
 
+    }
+
+    static func createDefaultProductFetcher() -> PurchasedProductsFetcherType {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            return PurchasedProductsFetcher()
+        } else {
+            return VoidPurchasedProductsFetcher()
+        }
     }
 
 }

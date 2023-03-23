@@ -24,11 +24,15 @@ class MockIdentityAPI: IdentityAPI {
                                         systemInfo: systemInfo,
                                         eTagManager: MockETagManager(),
                                         requestTimeout: 7)
-        let backendConfig = BackendConfiguration(httpClient: httpClient,
-                                                 operationDispatcher: MockOperationDispatcher(),
-                                                 operationQueue: Backend.QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
-                                                 systemInfo: systemInfo)
+        let backendConfig = BackendConfiguration(
+            httpClient: httpClient,
+            operationDispatcher: MockOperationDispatcher(),
+            operationQueue: Backend.QueueProvider.createBackendQueue(),
+            systemInfo: systemInfo,
+            productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
+            purchasedProductsFetcher: MockPurchasedProductsFetcher(),
+            dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
+        )
         self.init(backendConfig: backendConfig)
     }
 

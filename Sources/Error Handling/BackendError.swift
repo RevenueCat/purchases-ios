@@ -134,6 +134,11 @@ extension BackendError {
         return self.networkError?.finishable ?? false
     }
 
+    /// Whether the error represents a `NetworkError` from the server being down.
+    var isServerDown: Bool {
+        return self.networkError?.isServerDown == true
+    }
+
     private var networkError: NetworkError? {
         switch self {
         case let .networkError(networkError):
