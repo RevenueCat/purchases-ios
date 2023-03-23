@@ -23,7 +23,7 @@ class MockOfflineEntitlementsManager: OfflineEntitlementsManager {
 
     override func updateProductsEntitlementsCacheIfStale(
         isAppBackgrounded: Bool,
-        completion: (@MainActor (Result<(), OfflineEntitlementsManager.Error>) -> Void)?
+        completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
     ) {
         self.invokedUpdateProductsEntitlementsCacheIfStale = true
         self.invokedUpdateProductsEntitlementsCacheIfStaleCount += 1
