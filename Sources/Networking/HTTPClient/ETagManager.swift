@@ -81,8 +81,11 @@ class ETagManager {
         }
 
         if self.shouldUseCachedVersion(responseCode: statusCode) {
-            if let storedResponse = self.storedHTTPResponse(for: request, withRequestDate: response.requestDate) {
-                return storedResponse
+            if let storedResponse = self.storedETagAndResponse(for: request) {
+                let newResponse = storedResponse.withUpdatedDate()
+
+                self.store(newResponse, for: request)
+                return newResponse.asResponse(withRequestDate: response.requestDate)
             }
             if retried {
                 Logger.warn(
@@ -119,7 +122,7 @@ private extension ETagManager {
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
         return self.userDefaults.read {
-            if let cacheKey = eTagDefaultCacheKey(for: request),
+            if let cacheKey = self.eTagDefaultCacheKey(for: request),
                let value = $0.object(forKey: cacheKey),
                let data = value as? Data {
                 return try? JSONDecoder.default.decode(Response.self, jsonData: data)
@@ -137,18 +140,24 @@ private extension ETagManager {
                                              response: HTTPResponse<Data?>,
                                              eTag: String) {
         if let data = response.body,
-           response.shouldStore(ignoreVerificationErrors: self.shouldIgnoreVerificationErrors),
-           let cacheKey = self.eTagDefaultCacheKey(for: request) {
-            let eTagAndResponse = Response(
-                eTag: eTag,
-                statusCode: response.statusCode,
-                data: data,
-                verificationResult: response.verificationResult
+           response.shouldStore(ignoreVerificationErrors: self.shouldIgnoreVerificationErrors) {
+            self.store(
+                Response(
+                    eTag: eTag,
+                    statusCode: response.statusCode,
+                    data: data,
+                    verificationResult: response.verificationResult
+                ),
+                for: request
             )
-            if let dataToStore = eTagAndResponse.asData() {
-                self.userDefaults.write {
-                    $0.set(dataToStore, forKey: cacheKey)
-                }
+        }
+    }
+
+    func store(_ response: Response, for request: URLRequest) {
+        if let cacheKey = self.eTagDefaultCacheKey(for: request),
+           let dataToStore = response.asData() {
+            self.userDefaults.write {
+                $0.set(dataToStore, forKey: cacheKey)
             }
         }
     }
@@ -223,6 +232,13 @@ extension ETagManager.Response {
             requestDate: requestDate,
             verificationResult: self.verificationResult
         )
+    }
+
+    fileprivate func withUpdatedDate() -> Self {
+        var copy = self
+        copy.lastUsed = Date()
+
+        return copy
     }
 
 }
