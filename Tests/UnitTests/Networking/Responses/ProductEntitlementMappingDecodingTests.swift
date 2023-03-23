@@ -40,4 +40,21 @@ class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
         expect(products[2].entitlements) == ["pro_2"]
     }
 
+    func testConversionToMapping() {
+        let mapping = self.response.toMapping()
+
+        expect(mapping.entitlementsByProduct) == [
+            "com.revenuecat.foo_1": [
+                "pro_1"
+            ],
+            "com.revenuecat.foo_2": [
+                "pro_1",
+                "pro_2"
+            ],
+            "com.revenuecat.foo_3": [
+                "pro_2"
+            ]
+        ]
+    }
+
 }
