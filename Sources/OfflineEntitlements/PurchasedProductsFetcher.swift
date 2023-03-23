@@ -16,12 +16,12 @@ import StoreKit
 
 /// A type that can fetch purchased products from StoreKit 2.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-enum PurchasedProductsFetcher {
+class PurchasedProductsFetcher {
 
-    static func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
+    func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         var result: [PurchasedSK2Product] = []
 
-        try await self.forceSyncToEnsureAllTransactionsAreAccountedFor()
+        try await Self.forceSyncToEnsureAllTransactionsAreAccountedFor()
 
         for await transaction in StoreKit.Transaction.currentEntitlements {
             switch transaction {
