@@ -26,9 +26,12 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await Purchases.shared.healthRequest(signatureVerification: true)
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testProductEntitlementMapping() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         let result = try await Purchases.shared.productEntitlementMapping()
-        expect(result.products).toNot(beEmpty())
+        expect(result.entitlementsByProduct).toNot(beEmpty())
     }
 
 }
