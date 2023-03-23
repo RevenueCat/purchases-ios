@@ -140,9 +140,10 @@ extension HTTPRequest.Path {
                 .postOfferForSigning,
                 .postReceiptData,
                 .postSubscriberAttributes,
-                .postAdServicesToken:
+                .postAdServicesToken,
+                .getProductEntitlementMapping:
             return true
-        case .health, .getProductEntitlementMapping:
+        case .health:
             return false
         }
     }

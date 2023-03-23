@@ -39,8 +39,7 @@ class HTTPRequestTests: TestCase {
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
-        .health,
-        .getProductEntitlementMapping
+        .health
     ]
     private static let pathsWithSignatureValidation: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
