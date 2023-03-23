@@ -29,6 +29,12 @@ extension ProductEntitlementMapping {
 
 }
 
+extension ProductEntitlementMapping {
+
+    static let empty: Self = .init(entitlementsByProduct: [:])
+
+}
+
 extension ProductEntitlementMappingResponse {
 
     func toMapping() -> ProductEntitlementMapping {
