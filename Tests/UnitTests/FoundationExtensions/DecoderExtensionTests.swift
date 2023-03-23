@@ -123,24 +123,32 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
         @DefaultDecodable.EmptyString var string: String
         @DefaultDecodable.EmptyArray var array: [String]
         @DefaultDecodable.EmptyDictionary var dictionary: [String: Int]
+        @DefaultDecodable.Now var date: Date
 
         init(
             bool1: Bool,
             bool2: Bool,
             string: String,
             array: [String],
-            dictionary: [String: Int]
+            dictionary: [String: Int],
+            date: Date
         ) {
             self.bool1 = bool1
             self.bool2 = bool2
             self.string = string
             self.array = array
             self.dictionary = dictionary
+            self.date = date
         }
     }
 
     func testDecodesActualValues() throws {
-        let data = Data(bool1: false, bool2: true, string: "test", array: ["a", "b"], dictionary: ["a": 1])
+        let data = Data(bool1: false,
+                        bool2: true,
+                        string: "test",
+                        array: ["a", "b"],
+                        dictionary: ["a": 1],
+                        date: Date(timeIntervalSince1970: 200000))
         let decodedData = try data.encodeAndDecode()
 
         expect(decodedData) == data
@@ -164,6 +172,10 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
 
     func testDecodesDefaultDictionary() throws {
         expect(try Data.decodeEmptyData().dictionary) == [:]
+    }
+
+    func testDecodesDateAsNow() throws {
+        expect(try Data.decodeEmptyData().date).to(beCloseTo(Date()))
     }
 
     func testDoesNotIgnoreErrorsIfNotArray() throws {
