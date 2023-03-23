@@ -16,17 +16,19 @@ import Foundation
 /// Implementation of `URLSessionTaskDelegate` that logs when the task will perform a redirection.
 final class RedirectLoggerSessionDelegate: NSObject, URLSessionTaskDelegate {
 
-    func urlSession(_ session: URLSession,
-                    task: URLSessionTask,
-                    willPerformHTTPRedirection response: HTTPURLResponse,
-                    newRequest request: URLRequest
-    ) async -> URLRequest? {
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
         if let responseURL = response.url, let requestURL = request.url {
             Logger.debug(Strings.network.api_request_redirect(from: responseURL,
                                                               to: requestURL))
         }
 
-        return request
+        completionHandler(request)
     }
 
 }
