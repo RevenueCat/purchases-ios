@@ -797,8 +797,7 @@ private extension ETagManagerTests {
                      verificationResult: verificationResult)
     }
 
-    private static let baseURL = URL(string: "https://api.revenuecat.com")!
-    private static let testURL = URL(string: "/v1/subscribers/appUserID", relativeTo: ETagManagerTests.baseURL)!
+    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url!
 
 }
 
