@@ -21,10 +21,16 @@ extension DispatchTimeInterval {
         self = .milliseconds(Int(timeInterval * 1000))
     }
 
+    static func hours(_ hours: Int) -> Self {
+        precondition(hours >= 0, "Hours must be positive: \(hours)")
+
+        return .seconds(hours * 60 * 60)
+    }
+
     static func days(_ days: Int) -> Self {
         precondition(days >= 0, "Days must be positive: \(days)")
 
-        return .seconds(days * 60 * 60 * 24)
+        return Self.hours(days * 24)
     }
 
     /// `DispatchTimeInterval` can only be used by specifying a unit of time.

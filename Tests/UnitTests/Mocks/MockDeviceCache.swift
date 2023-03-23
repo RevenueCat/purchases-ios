@@ -264,4 +264,10 @@ class MockDeviceCache: DeviceCache {
         invokedCopySubscriberAttributesParametersList.append((oldAppUserID, newAppUserID))
     }
 
+    var stubbedIsProductEntitlementMappingCacheStale = false
+
+    override var isProductEntitlementMappingCacheStale: Bool {
+        return self.stubbedIsProductEntitlementMappingCacheStale
+    }
+
 }

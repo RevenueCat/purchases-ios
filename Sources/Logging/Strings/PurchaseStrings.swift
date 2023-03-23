@@ -23,6 +23,7 @@ enum PurchaseStrings {
     case storekit1_wrapper_deinit(StoreKit1Wrapper)
     case device_cache_init(DeviceCache)
     case device_cache_deinit(DeviceCache)
+    case updating_all_caches
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
     case entitlement_expired_outside_grace_period(expiration: Date, reference: Date)
@@ -88,6 +89,9 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case let .device_cache_deinit(instance):
             return "DeviceCache.deinit: \(Strings.objectDescription(instance))"
+
+        case .updating_all_caches:
+            return "Updating all caches"
 
         case .cannot_purchase_product_appstore_configuration_error:
             return "Could not purchase SKProduct. " +

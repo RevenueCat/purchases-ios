@@ -26,11 +26,20 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
     }
 
-    func testFirstInitializationDoesntFetchOfferingsIfAppBackgrounded() {
+    func testFirstInitializationGetsOfflineEntitlementsIfAppActive() {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.setupPurchases()
+
+        expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStaleCount)
+            .toEventually(equal(1))
+    }
+
+    func testFirstInitializationDoesntFetchOfferingsOrOfflineEntitlementsIfAppBackgrounded() {
         self.systemInfo.stubbedIsApplicationBackgrounded = true
         self.setupPurchases()
 
-        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCache) == false
+        expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStale) == false
     }
 
     func testProductDataIsCachedForOfferings() throws {

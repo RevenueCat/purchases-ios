@@ -82,6 +82,11 @@ class BasePurchasesTests: TestCase {
                                                          backend: self.backend,
                                                          offeringsFactory: self.offeringsFactory,
                                                          productsManager: self.mockProductsManager)
+        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager(
+            deviceCache: self.deviceCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            api: self.backend.offlineEntitlements
+        )
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.identityManager)
@@ -136,6 +141,7 @@ class BasePurchasesTests: TestCase {
             self.customerInfoManager = nil
             self.identityManager = nil
             self.mockOfferingsManager = nil
+            self.mockOfflineEntitlementsManager = nil
             self.mockManageSubsHelper = nil
             self.mockBeginRefundRequestHelper = nil
             self.purchasesOrchestrator = nil
@@ -172,6 +178,7 @@ class BasePurchasesTests: TestCase {
     var attributionPoster: AttributionPoster!
     var customerInfoManager: CustomerInfoManager!
     var mockOfferingsManager: MockOfferingsManager!
+    var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
     var purchasesOrchestrator: PurchasesOrchestrator!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     var cachingTrialOrIntroPriceEligibilityChecker: MockCachingTrialOrIntroPriceEligibilityChecker!
@@ -258,6 +265,7 @@ class BasePurchasesTests: TestCase {
                                    customerInfoManager: self.customerInfoManager,
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
+                                   offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker)
 
