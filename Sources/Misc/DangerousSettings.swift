@@ -19,7 +19,15 @@ import Foundation
         /// Whether `ReceiptFetcher` can retry fetching receipts.
         let enableReceiptFetchRetry: Bool
 
-        static let `default`: Self = .init(enableReceiptFetchRetry: false)
+        /// Whether `HTTPClient` will fake server errors
+        let forceServerErrors: Bool
+
+        init(enableReceiptFetchRetry: Bool = false, forceServerErrors: Bool = false) {
+            self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.forceServerErrors = forceServerErrors
+        }
+
+        static let `default`: Self = .init()
     }
 
     /**

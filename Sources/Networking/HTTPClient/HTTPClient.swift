@@ -58,6 +58,15 @@ class HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
+        #if DEBUG
+        if self.systemInfo.dangerousSettings.internalSettings.forceServerErrors {
+            completionHandler?(
+                .failure(.errorResponse(Self.serverErrorResponse, .internalServerError))
+            )
+            return
+        }
+        #endif
+
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
@@ -198,6 +207,9 @@ private extension HTTPClient {
         }
         return headers
     }
+
+    static let serverErrorResponse: ErrorResponse = .init(code: .internalServerError,
+                                                          originalCode: BackendErrorCode.unknownBackendError.rawValue)
 
     func perform(request: Request) {
         if !request.retried {
