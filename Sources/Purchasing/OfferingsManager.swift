@@ -60,9 +60,8 @@ class OfferingsManager {
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
-                                          fetchPolicy: fetchPolicy) { _ in
-                    Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
-                }
+                                          fetchPolicy: fetchPolicy,
+                                          completion: nil)
             }
         }
     }
@@ -159,6 +158,8 @@ private extension OfferingsManager {
             }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, data: response) {
+                Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
+
                 self.deviceCache.cache(offerings: createdOfferings)
                 self.dispatchCompletionOnMainThreadIfPossible(completion, result: .success(createdOfferings))
             } else {
