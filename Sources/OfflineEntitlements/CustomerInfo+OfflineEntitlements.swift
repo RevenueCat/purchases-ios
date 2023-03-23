@@ -24,7 +24,7 @@ extension CustomerInfo {
     ) {
         let subscriber = CustomerInfoResponse.Subscriber(
             originalAppUserId: userID,
-            managementUrl: nil,
+            managementUrl: Self.defaultManagementURL,
             originalApplicationVersion: SystemInfo.buildVersion,
             originalPurchaseDate: Date(),
             firstSeen: Date(),
@@ -65,5 +65,7 @@ extension CustomerInfo {
 
     /// Purchases are verified with StoreKit 2.
     private static let verification: VerificationResult = .verified
+
+    static let defaultManagementURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 
 }
