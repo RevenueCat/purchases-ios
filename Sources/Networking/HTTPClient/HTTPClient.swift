@@ -59,7 +59,7 @@ class HTTPClient {
         completionHandler: Completion<Value>?
     ) {
         #if DEBUG
-        if self.systemInfo.dangerousSettings.internalSettings.forceServerErrors {
+        guard !self.systemInfo.dangerousSettings.internalSettings.forceServerErrors else {
             completionHandler?(
                 .failure(.errorResponse(Self.serverErrorResponse, .internalServerError))
             )
