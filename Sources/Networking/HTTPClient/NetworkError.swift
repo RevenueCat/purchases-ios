@@ -208,6 +208,10 @@ extension NetworkError {
         }
     }
 
+    var isServerDown: Bool {
+        return self.errorStatusCode?.isServerError == true
+    }
+
 }
 
 extension NetworkError {
