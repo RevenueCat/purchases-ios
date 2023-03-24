@@ -19,20 +19,29 @@ class DeviceCacheTests: TestCase {
     override func setUp() {
         self.sandboxEnvironmentDetector = MockSandboxEnvironmentDetector(isSandbox: false)
         self.mockUserDefaults = MockUserDefaults()
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults)
+        self.deviceCache = self.create()
     }
 
     func testLegacyCachedUserIDUsesRightKey() {
         self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "cesar"
-        let userID: String? = self.deviceCache.cachedLegacyAppUserID
-        expect(userID).to(equal("cesar"))
+
+        // `DeviceCache` caches the ID in memory.
+        // Modifying the data under the hood won't be detected
+        // so re-create `DeviceCache` to force it to read it again.
+        let deviceCache = self.create()
+
+        expect(deviceCache.cachedLegacyAppUserID) == "cesar"
     }
 
     func testCachedUserIDUsesRightKey() {
         self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "cesar"
-        let userID: String? = self.deviceCache.cachedAppUserID
-        expect(userID).to(equal("cesar"))
+
+        // `DeviceCache` caches the user ID in memory.
+        // Modifying the data under the hood won't be detected
+        // so re-create `DeviceCache` to force it to read it again.
+        let deviceCache = self.create()
+
+        expect(deviceCache.cachedAppUserID) == "cesar"
     }
 
     func testCacheUserIDUsesRightKey() {
@@ -40,6 +49,12 @@ class DeviceCacheTests: TestCase {
         self.deviceCache.cache(appUserID: userID)
         expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String)
             .to(equal(userID))
+    }
+
+    func testCacheUserIDUpdatesCache() {
+        let userID = "cesar"
+        self.deviceCache.cache(appUserID: userID)
+        expect(self.deviceCache.cachedAppUserID) == userID
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedCustomerInfo() {
@@ -67,6 +82,16 @@ class DeviceCacheTests: TestCase {
         self.deviceCache.clearCaches(oldAppUserID: "cesar", andSaveWithNewUserID: "newUser")
         expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String) == "newUser"
         expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"]).to(beNil())
+    }
+
+    func testClearCachesForAppUserIDAndSaveNewUserIDUpdatesCaches() {
+        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "cesar"
+        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "cesar"
+
+        self.deviceCache.clearCaches(oldAppUserID: "cesar", andSaveWithNewUserID: "newUser")
+
+        expect(self.deviceCache.cachedAppUserID) == "newUser"
+        expect(self.deviceCache.cachedLegacyAppUserID).to(beNil())
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDDoesntRemoveCachedSubscriberAttributesIfUnsynced() {
@@ -516,6 +541,15 @@ class DeviceCacheTests: TestCase {
             .addingTimeInterval(-5) // 5 seconds before
 
         expect(self.deviceCache.isProductEntitlementMappingCacheStale) == true
+    }
+
+}
+
+private extension DeviceCacheTests {
+
+    func create() -> DeviceCache {
+        return DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+                           userDefaults: self.mockUserDefaults)
     }
 
 }

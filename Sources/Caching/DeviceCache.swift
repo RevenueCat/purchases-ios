@@ -17,14 +17,8 @@ import Foundation
 // swiftlint:disable file_length type_body_length
 class DeviceCache {
 
-    var cachedAppUserID: String? {
-        self.userDefaults.read(Self.cachedAppUserID)
-    }
-    var cachedLegacyAppUserID: String? {
-        self.userDefaults.read {
-            $0.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
-        }
-    }
+    var cachedAppUserID: String? { return self._cachedAppUserID.value }
+    var cachedLegacyAppUserID: String? { return self._cachedLegacyAppUserID.value }
     var cachedOfferings: Offerings? { self.offeringsCachedObject.cachedInstance }
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
@@ -32,9 +26,8 @@ class DeviceCache {
     private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
 
-    /// Keeps track of whether user ID has been set to detect users clearing `UserDefaults`
-    /// cleared from under the SDK
-    private let appUserIDHasBeenSet: Atomic<Bool> = false
+    private let _cachedAppUserID: Atomic<String?>
+    private let _cachedLegacyAppUserID: Atomic<String?>
 
     private var userDefaultsObserver: NSObjectProtocol?
 
@@ -46,7 +39,8 @@ class DeviceCache {
         self.offeringsCachedObject = offeringsCachedObject
         self.notificationCenter = notificationCenter
         self.userDefaults = .init(userDefaults: userDefaults)
-        self.appUserIDHasBeenSet.value = userDefaults.string(forKey: .appUserDefaults) != nil
+        self._cachedAppUserID = .init(userDefaults.string(forKey: .appUserDefaults))
+        self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: .legacyGeneratedAppUserDefaults))
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
 
@@ -74,7 +68,7 @@ class DeviceCache {
 
         // Note: this should never use `self.userDefaults` directly because this method
         // might be synchronized, and `Atomic` is not reentrant.
-        if self.appUserIDHasBeenSet.value && Self.cachedAppUserID(userDefaults) == nil {
+        if self.cachedAppUserID != nil && Self.cachedAppUserID(userDefaults) == nil {
             fatalError(Strings.purchase.cached_app_user_id_deleted.description)
         }
     }
@@ -92,8 +86,8 @@ class DeviceCache {
     func cache(appUserID: String) {
         self.userDefaults.write {
             $0.setValue(appUserID, forKey: CacheKeys.appUserDefaults)
-            self.appUserIDHasBeenSet.value = true
         }
+        self._cachedAppUserID.value = appUserID
     }
 
     func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
@@ -118,7 +112,8 @@ class DeviceCache {
 
             // Cache new appUserID.
             userDefaults.setValue(newUserID, forKey: CacheKeys.appUserDefaults)
-            self.appUserIDHasBeenSet.value = true
+            self._cachedAppUserID.value = newUserID
+            self._cachedLegacyAppUserID.value = nil
         }
     }
 
