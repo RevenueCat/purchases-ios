@@ -127,7 +127,9 @@ struct HomeView: View {
                     #endif
                 }
             }
+            #if os(macOS)
                 .padding()
+            #endif
                 .task {
                     await self.fetchData()
                 }
@@ -232,8 +234,10 @@ private struct CustomerInfoHeaderView: View {
             HStack {
                 Spacer()
 
-                NavigationLink(value: self.revenueCatCustomerData.customerInfo) {
-                    Text("View Info")
+                if let customerInfo = self.revenueCatCustomerData.customerInfo {
+                    NavigationLink(destination: CustomerView(customerInfo: customerInfo)) {
+                        Text("View Info")
+                    }
                 }
                 
                 Spacer()
@@ -279,9 +283,6 @@ private struct CustomerInfoHeaderView: View {
                 Spacer()
 
             }.padding(.top, 20)
-        }
-        .navigationDestination(for: CustomerInfo.self) {
-            CustomerView(customerInfo: $0)
         }
     }
     
