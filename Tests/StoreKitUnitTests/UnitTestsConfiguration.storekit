@@ -58,7 +58,7 @@
       "localizations" : [
 
       ],
-      "name" : "subscription_group",
+      "name" : "subscription_group_1",
       "subscriptions" : [
         {
           "adHocOffers" : [
@@ -126,6 +126,40 @@
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "annual free trial",
           "subscriptionGroupID" : "7096FF06",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    },
+    {
+      "id" : "4BB746BD",
+      "localizations" : [
+
+      ],
+      "name" : "subscription_group_2",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "04E81966",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Annual Subscription",
+              "displayName" : "Annual Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.annual_39.99_no_trial",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "annual no trial",
+          "subscriptionGroupID" : "4BB746BD",
           "type" : "RecurringSubscription"
         }
       ]

@@ -19,28 +19,34 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension StoreKitConfigTestCase {
 
+    /// - Returns: `SK2Transaction` ater the purchase succeeded.
     @MainActor
     @discardableResult
-    func simulateAnyPurchase() async throws -> SK2Product {
-        let product = try await fetchSk2Product()
-        _ = try await product.purchase()
+    func simulateAnyPurchase(
+        product: SK2Product? = nil,
+        finishTransaction: Bool = false
+    ) async throws -> SK2Transaction {
+        let productToPurchase: SK2Product
+        if let product = product {
+            productToPurchase = product
+        } else {
+            productToPurchase = try await self.fetchSk2Product()
+        }
 
-        return product
+        let result = try await productToPurchase.purchase()
+        let verificationResult = try XCTUnwrap(result.verificationResult, "Purchase did not succeed: \(result)")
+
+        if finishTransaction {
+            await verificationResult.underlyingTransaction.finish()
+        }
+
+        return verificationResult.underlyingTransaction
     }
 
+    /// - Returns: `SK2Transaction` after the purchase succeeded. This transaction is automatically finished.
     @MainActor
-    func createTransactionWithPurchase() async throws -> Transaction {
-        let product = try await self.simulateAnyPurchase()
-
-        let transaction = try await XCTAsyncUnwrap(await product.latestTransaction)
-
-        switch transaction {
-        case let .verified(transaction):
-            return transaction
-        default:
-            XCTFail("Invalid transaction: \(transaction)")
-            fatalError("Unreachable")
-        }
+    func createTransactionWithPurchase(product: SK2Product? = nil) async throws -> Transaction {
+        return try await self.simulateAnyPurchase(product: product, finishTransaction: true)
     }
 
     @MainActor
