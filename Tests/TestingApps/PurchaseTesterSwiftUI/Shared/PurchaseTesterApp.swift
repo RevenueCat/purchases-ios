@@ -24,23 +24,21 @@ struct PurchaseTesterApp: App {
         WindowGroup(id: Windows.default.rawValue) {
             Group {
                 if let configuration {
-                    NavigationSplitView {
-                        ContentView(configuration: configuration)
-                            .environmentObject(self.revenueCatCustomerData)
-                            .toolbar {
-                                ToolbarItem(placement: .principal) {
-                                    Button {
-                                        self.configuration = nil
-                                    } label: {
-                                        Text("Reconfigure")
-                                    }
-                                }
-                            }
-                    } detail: {
-                        DynamicCustomerView(customerInfo: self.$revenueCatCustomerData.customerInfo)
+                    Group {
+                        #if os(macOS)
+                        NavigationSplitView {
+                            self.content(configuration)
+                        } detail: {
+                            DynamicCustomerView(customerInfo: self.$revenueCatCustomerData.customerInfo)
+                        }
+                        .navigationSplitViewStyle(.balanced)
+                        .navigationSplitViewColumnWidth(100)
+                        #else
+                        NavigationView {
+                            self.content(configuration)
+                        }
+                        #endif
                     }
-                    .navigationSplitViewStyle(.balanced)
-                    .navigationSplitViewColumnWidth(100)
                     .task(id: self.configuration?.purchases) {
                         self.revenueCatCustomerData.customerInfo = nil
 
@@ -100,6 +98,20 @@ struct PurchaseTesterApp: App {
                 entitlementVerificationMode: data.verificationMode
             )
         }
+    }
+
+    private func content(_ configuration: ConfiguredPurchases) -> some View {
+        ContentView(configuration: configuration)
+            .environmentObject(self.revenueCatCustomerData)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Button {
+                        self.configuration = nil
+                    } label: {
+                        Text("Reconfigure")
+                    }
+                }
+            }
     }
 
     private var isConfigured: Bool {
