@@ -31,14 +31,14 @@ extension PurchasedSK2Product {
         from transaction: StoreKit.Transaction,
         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
     ) {
-        let expiration = Date().addingTimeInterval(DispatchTimeInterval.days(1).seconds)
+        let expiration = transaction.expirationDate
 
         self.productIdentifier = transaction.productID
         self.subscription = .init(
             periodType: transaction.offerType?.periodType ?? .normal,
             purchaseDate: transaction.purchaseDate,
             originalPurchaseDate: transaction.purchaseDate,
-            expiresDate: expiration,
+            expiresDate: transaction.expirationDate,
             store: .appStore,
             isSandbox: sandboxEnvironmentDetector.isSandbox,
             ownershipType: transaction.ownershipType.type

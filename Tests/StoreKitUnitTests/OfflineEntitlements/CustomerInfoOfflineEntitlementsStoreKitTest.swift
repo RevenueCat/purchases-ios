@@ -56,7 +56,8 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
         try self.verifyEntitlement(entitlement,
                                    productID: transaction.productID,
                                    entitlementID: entitlementID,
-                                   periodType: .trial)
+                                   periodType: .trial,
+                                   expiration: transaction.expirationDate)
     }
 
     func testRawData() async throws {
@@ -100,11 +101,13 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
         try self.verifyEntitlement(info.entitlements[entitlement1],
                                    productID: transaction.productID,
                                    entitlementID: entitlement1,
-                                   periodType: .trial)
+                                   periodType: .trial,
+                                   expiration: transaction.expirationDate)
         try self.verifyEntitlement(info.entitlements[entitlement2],
                                    productID: transaction.productID,
                                    entitlementID: entitlement2,
-                                   periodType: .trial)
+                                   periodType: .trial,
+                                   expiration: transaction.expirationDate)
     }
 
     func testProductNotFoundInMapping() async throws {
@@ -150,15 +153,18 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
         try self.verifyEntitlement(info.entitlements[entitlement1],
                                    productID: product1.id,
                                    entitlementID: entitlement1,
-                                   periodType: .trial)
+                                   periodType: .trial,
+                                   expiration: transaction1.expirationDate)
         try self.verifyEntitlement(info.entitlements[entitlement2],
                                    productID: product2.id,
                                    entitlementID: entitlement2,
-                                   periodType: .normal)
+                                   periodType: .normal,
+                                   expiration: transaction2.expirationDate)
         try self.verifyEntitlement(info.entitlements[entitlement3],
                                    productID: product2.id,
                                    entitlementID: entitlement3,
-                                   periodType: .normal)
+                                   periodType: .normal,
+                                   expiration: transaction2.expirationDate)
     }
 
 }
@@ -194,6 +200,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
         productID: String,
         entitlementID: String,
         periodType: PeriodType,
+        expiration: Date?,
         file: FileString = #file,
         line: UInt = #line
     ) throws {
@@ -203,10 +210,11 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
         expect(entitlement.identifier) == entitlementID
         expect(entitlement.productIdentifier) == productID
         expect(entitlement.billingIssueDetectedAt).to(beNil())
-        expect(entitlement.expirationDate)
-            .to(beCloseToDate(
-                Date().addingTimeInterval(DispatchTimeInterval.days(1).seconds)
-            ))
+        if let expiration = expiration {
+            expect(entitlement.expirationDate).to(beCloseToDate(expiration))
+        } else {
+            expect(entitlement.expirationDate).to(beNil())
+        }
         expect(entitlement.isSandbox) == self.sandboxDetector.isSandbox
         expect(entitlement.originalPurchaseDate).to(beCloseToNow())
         expect(entitlement.latestPurchaseDate).to(beCloseToNow())
@@ -221,11 +229,11 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
 
 // MARK: -
 
-private func beCloseToNow() -> Predicate<Date> {
+func beCloseToNow() -> Predicate<Date> {
     return beCloseToDate(Date())
 }
 
-private func beCloseToDate(_ expectedValue: Date) -> Predicate<Date> {
+func beCloseToDate(_ expectedValue: Date) -> Predicate<Date> {
     return beCloseTo(expectedValue, within: 1)
 }
 
