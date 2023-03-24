@@ -131,7 +131,7 @@ private extension CustomerInfoResponseHandler {
             self.userID
         )
 
-        // TODO: merge with existing one?
+        // Fixme: merge with existing one?
 
         return offlineCustomerInfo
     }
