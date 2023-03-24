@@ -54,6 +54,9 @@ internal enum VerificationResult: Int {
     /// Entitlements were verified with our server.
     case verified = 1
 
+    /// Entitlements were created and verified on device through `StoreKit 2`.
+    case verifiedOnDevice = 3
+
     /// Entitlement verification failed, possibly due to a MiTM attack.
     /// ### Related Symbols
     /// - ``ErrorCode/signatureVerificationFailed``
@@ -77,20 +80,23 @@ extension VerificationResult {
         switch (cachedResult, responseResult) {
         case (.notRequested, .notRequested),
             (.verified, .verified),
+            (.verifiedOnDevice, .verifiedOnDevice),
             (.failed, .failed):
             return cachedResult
 
-        case (.verified, .notRequested): return .notRequested
-        case (.verified, .failed): return .failed
+        case (.verified, .notRequested), (.verifiedOnDevice, .notRequested): return .notRequested
+        case (.verified, .failed), (.verifiedOnDevice, .failed): return .failed
 
-        case (.notRequested, .verified): return .verified
+        case (.notRequested, .verified), (.notRequested, .verifiedOnDevice): return responseResult
         case (.notRequested, .failed): return .failed
 
         case (.failed, .notRequested): return .notRequested
         // If the cache verification failed, the etag won't be used
         // so the response would only be a 200 and not 304.
         // Therefore the cache verification error can be ignored
-        case (.failed, .verified): return .verified
+        case (.failed, .verified), (.failed, .verifiedOnDevice): return responseResult
+
+        case (.verifiedOnDevice, .verified), (.verified, .verifiedOnDevice): return responseResult
         }
     }
 

@@ -17,6 +17,7 @@
     switch (result) {
         case RCVerificationResultNotRequested:
         case RCVerificationResultVerified:
+        case RCVerificationResultVerifiedOnDevice:
         case RCVerificationResultFailed:
             break;
     }
