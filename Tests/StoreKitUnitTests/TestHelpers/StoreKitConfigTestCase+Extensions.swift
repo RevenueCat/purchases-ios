@@ -43,7 +43,7 @@ extension StoreKitConfigTestCase {
         return verificationResult.underlyingTransaction
     }
 
-    /// - Returns: `SK2Transaction` after the purchase succeedsed. This transaction is automatically finished.
+    /// - Returns: `SK2Transaction` after the purchase succeeded. This transaction is automatically finished.
     @MainActor
     func createTransactionWithPurchase(product: SK2Product? = nil) async throws -> Transaction {
         return try await self.simulateAnyPurchase(product: product, finishTransaction: true)
