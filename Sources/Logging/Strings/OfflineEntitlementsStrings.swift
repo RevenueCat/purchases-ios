@@ -54,8 +54,7 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
             """
 
         case .computing_offline_customer_info_with_no_entitlement_mapping:
-            return "Attempting to compute offline CustomerInfo with no product entitlement mapping. " +
-            "Will use empty mapping."
+            return "Unable to compute offline CustomerInfo with no product entitlement mapping."
 
         case .computing_offline_customer_info:
             return "Encountered a server error. Will attempt to compute an offline CustomerInfo from local purchases."

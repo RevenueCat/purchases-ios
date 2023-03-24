@@ -145,18 +145,21 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
         let error: NetworkError = .errorResponse(.default, .internalServerError)
+        let logger = TestLogHandler()
 
         let result = await self.handle(.failure(error), nil)
-        expect(result).to(beSuccess())
-        expect(result.value) == Self.offlineCustomerInfo
+        expect(result).to(beFailure())
+        expect(result.error).to(matchError(BackendError.networkError(error)))
 
-        expect(self.factory.createRequested) == true
-        expect(self.factory.createRequestParameters?.products) == []
-        expect(self.factory.createRequestParameters?.mapping) == .empty
-        expect(self.factory.createRequestParameters?.userID) == self.userID
+        expect(self.factory.createRequested) == false
+
+        logger.verifyMessageWasLogged(
+            Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping,
+            level: .warn
+        )
     }
 
-    func testServerErrorLogsWarningIfCreatingOfflineCustomerInfoWithNoMapping() async {
+    func testServerErrorFailsWhenCreatingOfflineCustomerInfoWithNoMapping() async {
         self.fetcher.stubbedResult = .success([])
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
@@ -164,7 +167,29 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         let logger = TestLogHandler()
 
         let result = await self.handle(.failure(error), nil)
-        expect(result).to(beSuccess())
+        expect(result).to(beFailure())
+        expect(result.error).to(matchError(BackendError.networkError(error)))
+
+        expect(self.factory.createRequested) == false
+
+        logger.verifyMessageWasLogged(
+            Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping,
+            level: .warn
+        )
+    }
+
+    func testServerErrorFailsWhenCreatingOfflineCustomerInfoWithEmptyMapping() async {
+        self.fetcher.stubbedResult = .success([])
+        self.factory.stubbedResult = Self.offlineCustomerInfo
+
+        let error: NetworkError = .errorResponse(.default, .internalServerError)
+        let logger = TestLogHandler()
+
+        let result = await self.handle(.failure(error), .empty)
+        expect(result).to(beFailure())
+        expect(result.error).to(matchError(BackendError.networkError(error)))
+
+        expect(self.factory.createRequested) == false
 
         logger.verifyMessageWasLogged(
             Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping,

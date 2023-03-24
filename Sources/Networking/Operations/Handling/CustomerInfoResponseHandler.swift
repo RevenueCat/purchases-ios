@@ -116,26 +116,48 @@ extension CustomerInfoResponseHandler {
 private extension CustomerInfoResponseHandler {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    enum Error: Swift.Error {
+
+        case noEntitlementMappingAvailable
+
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func computeOfflineCustomerInfo() async throws -> CustomerInfo {
         Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
 
-        let products = try await self.purchasedProductsFetcher.fetchPurchasedProducts()
-
-        if self.productEntitlementMapping == nil {
+        guard let mapping = self.productEntitlementMapping, !mapping.entitlementsByProduct.isEmpty else {
             Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
+            throw Error.noEntitlementMappingAvailable
         }
 
-        let offlineCustomerInfo = self.customerInfoCreator(
-            products,
-            self.productEntitlementMapping ?? .empty,
-            self.userID
-        )
+        let products = try await self.purchasedProductsFetcher.fetchPurchasedProducts()
+
+        let offlineCustomerInfo = self.customerInfoCreator(products, mapping, self.userID)
 
         // Fixme: merge with existing one?
 
         Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(offlineCustomerInfo.entitlements))
 
         return offlineCustomerInfo
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension CustomerInfoResponseHandler.Error: DescribableError, CustomNSError {
+
+    var description: String {
+        switch self {
+        case .noEntitlementMappingAvailable:
+            return Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping.description
+        }
+    }
+
+    var errorUserInfo: [String: Any] {
+        return [
+            NSLocalizedDescriptionKey: self.description
+        ]
     }
 
 }
