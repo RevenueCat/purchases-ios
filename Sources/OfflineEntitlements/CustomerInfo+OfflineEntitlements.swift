@@ -52,10 +52,30 @@ extension CustomerInfo {
         with products: [PurchasedSK2Product],
         mapping: ProductEntitlementMapping
     ) -> [String: CustomerInfoResponse.Entitlement] {
+        func shouldOverride(prior: CustomerInfoResponse.Entitlement,
+                            new: CustomerInfoResponse.Entitlement) -> Bool {
+            guard let priorExpiration = prior.expiresDate else {
+                // Prior entitlement is lifetime
+                return false
+            }
+
+            guard let newExpiration = new.expiresDate else {
+                // New entitlement is lifetime
+                return true
+            }
+
+            return newExpiration > priorExpiration
+        }
+
         var result: [String: CustomerInfoResponse.Entitlement] = .init(minimumCapacity: products.count)
 
         for product in products {
             for entitlement in mapping.entitlements(for: product.productIdentifier) {
+                if let priorEntitlement = result[entitlement],
+                   !shouldOverride(prior: priorEntitlement, new: product.entitlement) {
+                    continue
+                }
+
                 result[entitlement] = product.entitlement
             }
         }

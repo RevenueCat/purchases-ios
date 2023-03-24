@@ -167,6 +167,35 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
                                    expiration: transaction2.expirationDate)
     }
 
+    func testOverlappingEntitlementsPrioritizeLongestExpiration() async throws {
+        let product1 = try await self.fetchSk2Product("com.revenuecat.monthly_4.99.1_week_intro")
+        let product2 = try await self.fetchSk2Product("com.revenuecat.annual_39.99_no_trial")
+        let entitlementID = "pro"
+
+        let transaction1 = try await self.createTransactionWithPurchase(product: product1)
+        let transaction2 = try await self.createTransactionWithPurchase(product: product2)
+        // Shuffle to avoid false positives, order should not matter
+        let transactions = [transaction1, transaction2].shuffled()
+
+        let mapping: ProductEntitlementMapping = .init(entitlementsByProduct: [
+            product1.id: [entitlementID],
+            product2.id: [entitlementID]
+        ])
+
+        let info = self.create(with: transactions, mapping: mapping)
+
+        self.verifyInfo(info)
+        expect(info.activeSubscriptions) == [product1.id, product2.id]
+        expect(info.nonSubscriptions).to(beEmpty())
+        expect(info.entitlements.all).to(haveCount(1))
+
+        try self.verifyEntitlement(info.entitlements[entitlementID],
+                                   productID: product2.id,
+                                   entitlementID: entitlementID,
+                                   periodType: .normal,
+                                   expiration: transaction2.expirationDate)
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
