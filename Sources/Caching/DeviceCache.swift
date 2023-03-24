@@ -17,14 +17,8 @@ import Foundation
 // swiftlint:disable file_length type_body_length
 class DeviceCache {
 
-    var cachedAppUserID: String? {
-        return self._cachedAppUserID.value
-    }
-    var cachedLegacyAppUserID: String? {
-        self.userDefaults.read {
-            $0.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
-        }
-    }
+    var cachedAppUserID: String? { return self._cachedAppUserID.value }
+    var cachedLegacyAppUserID: String? { return self._cachedLegacyAppUserID.value }
     var cachedOfferings: Offerings? { self.offeringsCachedObject.cachedInstance }
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
@@ -32,8 +26,8 @@ class DeviceCache {
     private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
 
-    /// Keeps track of the last set user ID
-    private let _cachedAppUserID: Atomic<String?> = nil
+    private let _cachedAppUserID: Atomic<String?>
+    private let _cachedLegacyAppUserID: Atomic<String?>
 
     private var userDefaultsObserver: NSObjectProtocol?
 
@@ -45,7 +39,8 @@ class DeviceCache {
         self.offeringsCachedObject = offeringsCachedObject
         self.notificationCenter = notificationCenter
         self.userDefaults = .init(userDefaults: userDefaults)
-        self._cachedAppUserID.value = userDefaults.string(forKey: .appUserDefaults)
+        self._cachedAppUserID = .init(userDefaults.string(forKey: .appUserDefaults))
+        self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: .legacyGeneratedAppUserDefaults))
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
 
@@ -118,6 +113,7 @@ class DeviceCache {
             // Cache new appUserID.
             userDefaults.setValue(newUserID, forKey: CacheKeys.appUserDefaults)
             self._cachedAppUserID.value = newUserID
+            self._cachedLegacyAppUserID.value = nil
         }
     }
 
