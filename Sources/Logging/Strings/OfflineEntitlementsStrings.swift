@@ -27,6 +27,7 @@ enum OfflineEntitlementsStrings {
     case computing_offline_customer_info_with_no_entitlement_mapping
     case computing_offline_customer_info
     case computing_offline_customer_info_failed(Error)
+    case computed_offline_customer_info(EntitlementInfos)
 
 }
 
@@ -62,6 +63,9 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
         case let .computing_offline_customer_info_failed(error):
             return "Error computing offline CustomerInfo. Will return original error.\n" +
             "Creation error: \(error.localizedDescription)"
+
+        case let .computed_offline_customer_info(entitlements):
+            return "Computed offline CustomerInfo with \(entitlements.active) active entitlements."
         }
     }
 

@@ -192,6 +192,10 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         expect(self.factory.createRequestParameters?.userID) == self.userID
 
         logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
+        logger.verifyMessageWasLogged(
+            Strings.offlineEntitlements.computed_offline_customer_info(Self.offlineCustomerInfo.entitlements),
+            level: .info
+        )
     }
 
     func testServerErrorWithFailingPurchasedProductsFetcher() async {

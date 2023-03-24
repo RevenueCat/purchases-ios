@@ -133,6 +133,8 @@ private extension CustomerInfoResponseHandler {
 
         // Fixme: merge with existing one?
 
+        Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(offlineCustomerInfo.entitlements))
+
         return offlineCustomerInfo
     }
 
