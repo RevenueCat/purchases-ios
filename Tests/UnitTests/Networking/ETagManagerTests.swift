@@ -560,7 +560,7 @@ class ETagManagerTests: TestCase {
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
         expect(response) == [
             ETagManager.eTagRequestHeaderName: eTag,
-            ETagManager.eTagCreationTimeRequestHeaderName: creationTime.millisecondsSince1970.description
+            ETagManager.eTagValidationTimeRequestHeaderName: creationTime.millisecondsSince1970.description
         ]
     }
 

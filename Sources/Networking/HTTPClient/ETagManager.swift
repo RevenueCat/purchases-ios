@@ -17,7 +17,7 @@ import Foundation
 class ETagManager {
 
     static let eTagRequestHeaderName = HTTPClient.RequestHeader.eTag.rawValue
-    static let eTagCreationTimeRequestHeaderName = HTTPClient.RequestHeader.eTagCreationTime.rawValue
+    static let eTagValidationTimeRequestHeaderName = HTTPClient.RequestHeader.eTagValidationTime.rawValue
     static let eTagResponseHeaderName = HTTPClient.ResponseHeader.eTag.rawValue
 
     private let userDefaults: SynchronizedUserDefaults
@@ -66,7 +66,7 @@ class ETagManager {
 
         return [
             HTTPClient.RequestHeader.eTag.rawValue: etag,
-            HTTPClient.RequestHeader.eTagCreationTime.rawValue: date
+            HTTPClient.RequestHeader.eTagValidationTime.rawValue: date
         ]
     }
 

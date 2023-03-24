@@ -507,7 +507,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
         stub(condition: isPath(request.path)) { request in
             expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName]) == eTag
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagCreationTimeRequestHeaderName])
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeaderName])
             == eTagCreation.millisecondsSince1970.description
 
             return HTTPStubsResponse(data: responseData,

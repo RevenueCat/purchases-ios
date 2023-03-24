@@ -32,7 +32,7 @@ class MockETagManager: ETagManager {
     func stubResponseEtag(_ tag: String, creationTime: Date = Date()) {
         self.stubbedETagHeaderResult = [
             ETagManager.eTagRequestHeaderName: tag,
-            ETagManager.eTagCreationTimeRequestHeaderName: creationTime.millisecondsSince1970.description
+            ETagManager.eTagValidationTimeRequestHeaderName: creationTime.millisecondsSince1970.description
         ]
     }
 
