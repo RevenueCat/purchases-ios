@@ -68,10 +68,11 @@ private extension GetCustomerInfoOperation {
         let request = HTTPRequest(method: .get,
                                   path: .getCustomerInfo(appUserID: appUserID))
 
-        httpClient.perform(request) { (response: HTTPResponse<CustomerInfoResponseHandler.Response>.Result) in
-            self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                self.customerInfoResponseHandler.handle(customerInfoResponse: response,
-                                                        completion: callback.completion)
+        self.httpClient.perform(request) { (response: HTTPResponse<CustomerInfoResponseHandler.Response>.Result) in
+            self.customerInfoResponseHandler.handle(customerInfoResponse: response) { result in
+                self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+                    callback.completion(result)
+                }
             }
 
             completion()
