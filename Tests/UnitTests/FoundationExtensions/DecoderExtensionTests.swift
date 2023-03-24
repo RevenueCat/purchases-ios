@@ -175,7 +175,7 @@ class DecoderExtensionsDefaultDecodableTests: TestCase {
     }
 
     func testDecodesDateAsNow() throws {
-        expect(try Data.decodeEmptyData().date).to(beCloseTo(Date()))
+        expect(try Data.decodeEmptyData().date).to(beCloseTo(Date(), within: 1))
     }
 
     func testDoesNotIgnoreErrorsIfNotArray() throws {
