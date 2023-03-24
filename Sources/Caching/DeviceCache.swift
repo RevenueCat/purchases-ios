@@ -18,7 +18,7 @@ import Foundation
 class DeviceCache {
 
     var cachedAppUserID: String? {
-        self.userDefaults.read(Self.cachedAppUserID)
+        return self._cachedAppUserID.value
     }
     var cachedLegacyAppUserID: String? {
         self.userDefaults.read {
@@ -32,9 +32,8 @@ class DeviceCache {
     private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
 
-    /// Keeps track of whether user ID has been set to detect users clearing `UserDefaults`
-    /// cleared from under the SDK
-    private let appUserIDHasBeenSet: Atomic<Bool> = false
+    /// Keeps track of the last set user ID
+    private let _cachedAppUserID: Atomic<String?> = nil
 
     private var userDefaultsObserver: NSObjectProtocol?
 
@@ -46,7 +45,7 @@ class DeviceCache {
         self.offeringsCachedObject = offeringsCachedObject
         self.notificationCenter = notificationCenter
         self.userDefaults = .init(userDefaults: userDefaults)
-        self.appUserIDHasBeenSet.value = userDefaults.string(forKey: .appUserDefaults) != nil
+        self._cachedAppUserID.value = userDefaults.string(forKey: .appUserDefaults)
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
 
@@ -74,7 +73,7 @@ class DeviceCache {
 
         // Note: this should never use `self.userDefaults` directly because this method
         // might be synchronized, and `Atomic` is not reentrant.
-        if self.appUserIDHasBeenSet.value && Self.cachedAppUserID(userDefaults) == nil {
+        if self.cachedAppUserID != nil && Self.cachedAppUserID(userDefaults) == nil {
             fatalError(Strings.purchase.cached_app_user_id_deleted.description)
         }
     }
@@ -92,8 +91,8 @@ class DeviceCache {
     func cache(appUserID: String) {
         self.userDefaults.write {
             $0.setValue(appUserID, forKey: CacheKeys.appUserDefaults)
-            self.appUserIDHasBeenSet.value = true
         }
+        self._cachedAppUserID.value = appUserID
     }
 
     func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
@@ -118,7 +117,7 @@ class DeviceCache {
 
             // Cache new appUserID.
             userDefaults.setValue(newUserID, forKey: CacheKeys.appUserDefaults)
-            self.appUserIDHasBeenSet.value = true
+            self._cachedAppUserID.value = newUserID
         }
     }
 

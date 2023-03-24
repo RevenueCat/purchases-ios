@@ -31,8 +31,14 @@ class DeviceCacheTests: TestCase {
 
     func testCachedUserIDUsesRightKey() {
         self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "cesar"
-        let userID: String? = self.deviceCache.cachedAppUserID
-        expect(userID).to(equal("cesar"))
+
+        // `DeviceCache` caches the user ID in memory.
+        // Modifying the data under the hood won't be detected
+        // so re-create `DeviceCache` to force it to read it again.
+        let deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+                                      userDefaults: self.mockUserDefaults)
+
+        expect(deviceCache.cachedAppUserID) == "cesar"
     }
 
     func testCacheUserIDUsesRightKey() {
