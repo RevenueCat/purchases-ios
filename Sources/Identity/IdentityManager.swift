@@ -71,8 +71,10 @@ class IdentityManager: CurrentUserProvider {
     }
 
     var currentUserIsAnonymous: Bool {
-        lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(self.currentAppUserID)
-        lazy var isLegacyAnonymousAppUserID = self.currentAppUserID == self.deviceCache.cachedLegacyAppUserID
+        let userID = self.currentAppUserID
+
+        lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
+        lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
 
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
