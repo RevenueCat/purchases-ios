@@ -23,6 +23,7 @@ enum CustomerInfoStrings {
     case checking_intro_eligibility_locally_from_receipt(AppleReceipt)
     case invalidating_customerinfo_cache
     case no_cached_customerinfo
+    case not_caching_offline_customer_info
     case customerinfo_stale_updating_in_background
     case customerinfo_stale_updating_in_foreground
     case customerinfo_updated_from_network
@@ -51,6 +52,8 @@ extension CustomerInfoStrings: CustomStringConvertible {
             return "Invalidating CustomerInfo cache."
         case .no_cached_customerinfo:
             return "No cached CustomerInfo, fetching from network."
+        case .not_caching_offline_customer_info:
+            return "CustomerInfo was computed offline. Won't be stored in cache."
         case .customerinfo_stale_updating_in_background:
             return "CustomerInfo cache is stale, updating from network in background."
         case .customerinfo_stale_updating_in_foreground:

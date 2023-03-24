@@ -388,10 +388,65 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
-    func testCachePurchaserSendsToDelegateIfChanged() {
-        self.customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: "myUser")
+    func testCachesCustomerInfoWithVerifiedEntitlements() {
+        let appUserID = "myUser"
+        let info = self.mockCustomerInfo.copy(with: .verified)
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
+
+        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+    }
+
+    func testCachesCustomerInfoWithEntitlementVerificationNotRequested() {
+        let appUserID = "myUser"
+        let info = self.mockCustomerInfo.copy(with: .notRequested)
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
+
+        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+    }
+
+    func testCachesCustomerInfoWithFailedVerification() {
+        let appUserID = "myUser"
+        let info = self.mockCustomerInfo.copy(with: .failed)
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
+
+        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+    }
+
+    func testDoesNotCacheCustomerInfoWithLocalEntitlements() throws {
+        // Entitlement verification not available prior
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let logger = TestLogHandler()
+
+        let appUserID = "myUser"
+        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
+
+        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)).to(beNil())
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 0
+
+        logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_offline_customer_info, level: .debug)
+    }
+
+    func testCacheCustomerInfoSendsToDelegateIfChanged() {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
         expect(self.customerInfoManagerLastCustomerInfo) == self.mockCustomerInfo
+    }
+
+    func testCacheCustomerInfoSendsToDelegateWhenComputedOnDevice() {
+        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: "myUser")
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
+        expect(self.customerInfoManagerLastCustomerInfo) == info
     }
 
     func testClearCustomerInfoCacheClearsCorrectly() {
