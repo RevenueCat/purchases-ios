@@ -32,12 +32,6 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
         // (and transactions has been cleared), to avoid the SDK posting receipts from
         // a previous test.
         try await super.setUp()
-
-        // SDK initialization begins with an initial request to offerings
-        // Which results in a get-create of the initial anonymous user.
-        // To avoid race conditions with when this request finishes and make all tests deterministic
-        // this waits for that request to finish.
-        _ = try await Purchases.shared.offerings()
     }
 
     override func tearDown() {
