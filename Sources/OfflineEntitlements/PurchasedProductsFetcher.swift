@@ -18,6 +18,12 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class PurchasedProductsFetcher {
 
+    private let sandboxDetector: SandboxEnvironmentDetector
+
+    init(sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()) {
+        self.sandboxDetector = sandboxDetector
+    }
+
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         var result: [PurchasedSK2Product] = []
 
@@ -31,7 +37,8 @@ class PurchasedProductsFetcher {
                                                                                      verificationError)
                 )
             case let .verified(verifiedTransaction):
-                result.append(.init(from: verifiedTransaction))
+                result.append(.init(from: verifiedTransaction,
+                                    sandboxEnvironmentDetector: self.sandboxDetector))
             }
         }
 
