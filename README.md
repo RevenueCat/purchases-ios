@@ -25,7 +25,7 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 *RevenueCat* is the client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It's 100% `Swift` and compatible with `Objective-C`.
 
 ## Migrating from Purchases v3
-- See our [Migration guide](https://revenuecat.github.io/purchases-ios-docs/4.17.8/documentation/revenuecat/v4_api_migration_guide)
+- See our [Migration guide](https://revenuecat.github.io/purchases-ios-docs/migration.html)
 
 ## RevenueCat SDK Features
 |   | RevenueCat |
