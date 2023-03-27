@@ -18,7 +18,7 @@ files_with_version_number = [
   './.jazzy.yaml',
   './.version',
   './scripts/docs/index.html',
-  './scripts/docs/migration.html',
+  './scripts/docs/v4_api_migration_guide.html',
   './Sources/Misc/SystemInfo.swift'
 ]
 files_with_version_number_without_prerelease_modifiers = [
@@ -484,7 +484,7 @@ platform :ios do
            "--additional-symbol-graph-dir", ".build")
            
         docs_index_path = File.join(Dir.pwd, "scripts/docs/index.html")
-        docs_migration_guide_path = File.join(Dir.pwd, "scripts/docs/migration.html")
+        docs_migration_guide_path = File.join(Dir.pwd, "scripts/docs/v4_api_migration_guide.html")
         # clone docs repo
         Dir.mktmpdir do |docs_repo_clone_dir|
           Dir.chdir(docs_repo_clone_dir) do
@@ -494,7 +494,7 @@ platform :ios do
               # and push the changes
               docs_destination_folder = "docs/#{version_number}"
               index_destination_path = "docs/index.html"
-              migration_guide_destination_path = "docs/migration.html"
+              migration_guide_destination_path = "docs/v4_api_migration_guide.html"
               FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
               FileUtils.cp docs_index_path, index_destination_path
               FileUtils.cp docs_migration_guide_path, migration_guide_destination_path
