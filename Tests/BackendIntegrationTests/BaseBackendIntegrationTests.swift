@@ -64,6 +64,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.clearReceiptIfExists()
         self.configurePurchases()
         self.verifyPurchasesDoesNotLeak()
+        try await self.waitForAnonymousUser()
     }
 
 }
@@ -113,6 +114,14 @@ private extension BaseBackendIntegrationTests {
             Purchases.shared.delegate = nil
             Purchases.clearSingleton()
         }
+    }
+
+    func waitForAnonymousUser() async throws {
+        // SDK initialization begins with an initial request to offerings,
+        // which results in a get-create of the initial anonymous user.
+        // To avoid race conditions with when this request finishes and make all tests deterministic
+        // this waits for that request to finish.
+        _ = try await Purchases.shared.offerings()
     }
 
     private var dangerousSettings: DangerousSettings {
