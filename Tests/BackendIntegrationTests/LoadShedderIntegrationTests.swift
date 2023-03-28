@@ -32,6 +32,12 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         return .disabled
     }
 
+    // temporarily disabling signature verification for load shedder until signing is
+    // supported in it.
+    override class var responseVerificationMode: Signing.ResponseVerificationMode {
+        return .disabled
+    }
+
     func testCanGetOfferings() async throws {
         let receivedOfferings = try await Purchases.shared.offerings()
         expect(receivedOfferings.all).toNot(beEmpty())

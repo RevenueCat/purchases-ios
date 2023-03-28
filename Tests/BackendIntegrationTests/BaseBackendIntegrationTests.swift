@@ -36,6 +36,9 @@ class BaseBackendIntegrationTests: XCTestCase {
 
     class var storeKit2Setting: StoreKit2Setting { return .default }
     class var observerMode: Bool { return false }
+    class var responseVerificationMode: Signing.ResponseVerificationMode {
+        return .enforced(Signing.loadPublicKey())
+    }
 
     @MainActor
     override func setUp() async throws {
@@ -104,7 +107,7 @@ private extension BaseBackendIntegrationTests {
                             observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
                             platformInfo: nil,
-                            responseVerificationMode: .enforced(Signing.loadPublicKey()),
+                            responseVerificationMode: Self.responseVerificationMode,
                             storeKit2Setting: Self.storeKit2Setting,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
                             networkTimeout: Configuration.networkTimeoutDefault,
