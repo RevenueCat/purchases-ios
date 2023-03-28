@@ -351,8 +351,8 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "loadshedder monthly",
+              "displayName" : "loadshedder monthly",
               "locale" : "en_US"
             }
           ],
