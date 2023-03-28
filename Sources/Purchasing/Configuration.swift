@@ -122,7 +122,7 @@ import Foundation
         // swiftlint:disable:next missing_docs
         public func with(appUserID: StaticString) -> Configuration.Builder {
             Logger.warn(Strings.identity.logging_in_with_static_string)
-            self.appUserID = "\(appUserID)"
+            return self.with(appUserID: "\(appUserID)")
             return self
         }
 
