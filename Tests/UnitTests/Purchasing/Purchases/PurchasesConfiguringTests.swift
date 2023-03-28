@@ -158,6 +158,29 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.appUserID) == Self.appUserID
     }
 
+    func testStaticUserIdSringLogsMessage() {
+        let logger = TestLogHandler()
+
+        _ = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(appUserID: "Static string")
+        )
+
+        logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string)
+    }
+
+    func testUserIdSringDoesNotLogMessage() {
+        let appUserID = "user ID"
+        let logger = TestLogHandler()
+
+        _ = Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(appUserID: appUserID)
+        )
+
+        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
+    }
+
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testEntitlementVerificationModeDisabledDoesNotSetPublicKey() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()

@@ -113,9 +113,16 @@ import Foundation
          *
          * - Important: Set this property if you have your own user identifiers that you manage.
          */
+        @_disfavoredOverload
         @objc public func with(appUserID: String?) -> Builder {
             self.appUserID = appUserID
             return self
+        }
+
+        // swiftlint:disable:next missing_docs
+        public func with(appUserID: StaticString) -> Configuration.Builder {
+            Logger.warn(Strings.identity.logging_in_with_static_string)
+            return self.with(appUserID: "\(appUserID)")
         }
 
         /**
