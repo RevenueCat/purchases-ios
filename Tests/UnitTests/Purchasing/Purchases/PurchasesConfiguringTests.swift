@@ -166,7 +166,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                 .with(appUserID: "Static string")
         )
 
-        logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+        logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string)
     }
 
     func testUserIdSringDoesNotLogMessage() {
