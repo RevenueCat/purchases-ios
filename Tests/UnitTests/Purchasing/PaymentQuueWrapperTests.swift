@@ -23,7 +23,7 @@ class PaymentQueueWrapperTests: TestCase {
 
     private var paymentQueue: MockPaymentQueue!
     private var wrapper: PaymentQueueWrapper!
-    private var delegate: WrapperDelegate!
+    private weak var delegate: WrapperDelegate!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
