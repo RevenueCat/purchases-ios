@@ -622,13 +622,6 @@
 			remoteGlobalIDString = 2D9E3C9B29D4D60500DB4730;
 			remoteInfo = v3LoadShedderIntegrationTests;
 		};
-		2D9E3CC229D4D60600DB4730 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D9E3CB829D4D60500DB4730 /* v3LoadShedderIntegration.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2D9E3CA529D4D60500DB4730;
-			remoteInfo = v3LoadShedderIntegrationUITests;
-		};
 		2DAC5F7626F13C9800C5258F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -1418,7 +1411,6 @@
 			children = (
 				2D9E3CBF29D4D60600DB4730 /* v3LoadShedderIntegration.app */,
 				2D9E3CC129D4D60600DB4730 /* v3LoadShedderIntegrationTests.xctest */,
-				2D9E3CC329D4D60600DB4730 /* v3LoadShedderIntegrationUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2715,13 +2707,6 @@
 			fileType = wrapper.cfbundle;
 			path = v3LoadShedderIntegrationTests.xctest;
 			remoteRef = 2D9E3CC029D4D60600DB4730 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2D9E3CC329D4D60600DB4730 /* v3LoadShedderIntegrationUITests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = v3LoadShedderIntegrationUITests.xctest;
-			remoteRef = 2D9E3CC229D4D60600DB4730 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		578BB35F2936BA9400E8AA8A /* ReceiptParserAPITester.app */ = {

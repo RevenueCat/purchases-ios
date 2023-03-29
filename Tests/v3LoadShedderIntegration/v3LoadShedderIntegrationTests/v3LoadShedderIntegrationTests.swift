@@ -36,17 +36,15 @@ final class v3LoadShedderIntegrationTests: XCTestCase {
                             observerMode: false,
                             userDefaults: userDefaults)
         clearReceiptIfExists()
+    }
 
+    func configureTestSession() throws {
+        assert(self.testSession == nil, "Attempted to configure session multiple times")
 
-        func configureTestSession() throws {
-            assert(self.testSession == nil, "Attempted to configure session multiple times")
-
-            self.testSession = try SKTestSession(configurationFileNamed: skConfigFileName)
-            self.testSession.resetToDefaultState()
-            self.testSession.disableDialogs = true
-            self.testSession.clearTransactions()
-        }
-
+        self.testSession = try SKTestSession(configurationFileNamed: skConfigFileName)
+        self.testSession.resetToDefaultState()
+        self.testSession.disableDialogs = true
+        self.testSession.clearTransactions()
     }
 
     func clearReceiptIfExists() {
@@ -65,8 +63,11 @@ final class v3LoadShedderIntegrationTests: XCTestCase {
     override func tearDownWithError() throws {
     }
 
-    func testExample() throws {
-
+    func testGetOfferings() async throws {
+        let offerings = try await Purchases.shared.offerings()
+        let offering = try XCTUnwrap(offerings.current)
+        let package = try XCTUnwrap(offering.availablePackages.first)
+        XCTAssert(package.product.productIdentifier == "com.revenuecat.loadShedder.monthly")
     }
 
 }
