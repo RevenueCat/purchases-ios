@@ -1316,10 +1316,11 @@ private extension Purchases {
                                                            completion: nil)
             }
 
-            self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
-                isAppBackgrounded: isAppBackgrounded,
-                completion: nil
-            )
+//            disabled temporarily, until the backend side is ready
+//            self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
+//                isAppBackgrounded: isAppBackgrounded,
+//                completion: nil
+//            )
         }
     }
 
@@ -1345,10 +1346,11 @@ private extension Purchases {
                                                    isAppBackgrounded: isAppBackgrounded,
                                                    completion: nil)
 
-        self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
-            isAppBackgrounded: isAppBackgrounded,
-            completion: nil
-        )
+//            disabled temporarily, until the backend side is ready
+//        self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
+//            isAppBackgrounded: isAppBackgrounded,
+//            completion: nil
+//        )
     }
 
     // Used when delegate is being set

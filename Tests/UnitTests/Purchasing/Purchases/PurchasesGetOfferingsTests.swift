@@ -30,8 +30,11 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
 
+//        temporarily disabled until the backend side is ready
+//        expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStaleCount)
+//            .toEventually(equal(1))
         expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStaleCount)
-            .toEventually(equal(1))
+            .toEventually(equal(0))
     }
 
     func testFirstInitializationDoesntFetchOfferingsOrOfflineEntitlementsIfAppBackgrounded() {
