@@ -14,6 +14,7 @@
 		2D9E3C9229D4D60500DB4730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9129D4D60500DB4730 /* Assets.xcassets */; };
 		2D9E3C9529D4D60500DB4730 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9329D4D60500DB4730 /* LaunchScreen.storyboard */; };
 		2D9E3CA029D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9F29D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift */; };
+		2D9E3CC629D4D67900DB4730 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D9E3CC529D4D67900DB4730 /* Purchases */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,8 +38,6 @@
 		2D9E3C9629D4D60500DB4730 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D9E3C9B29D4D60500DB4730 /* v3LoadShedderIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = v3LoadShedderIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D9E3C9F29D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = v3LoadShedderIntegrationTests.swift; sourceTree = "<group>"; };
-		2D9E3CA929D4D60500DB4730 /* v3LoadShedderIntegrationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = v3LoadShedderIntegrationUITests.swift; sourceTree = "<group>"; };
-		2D9E3CAB29D4D60500DB4730 /* v3LoadShedderIntegrationUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = v3LoadShedderIntegrationUITestsLaunchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +45,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D9E3CC629D4D67900DB4730 /* Purchases in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,7 +64,6 @@
 			children = (
 				2D9E3C8729D4D60400DB4730 /* v3LoadShedderIntegration */,
 				2D9E3C9E29D4D60500DB4730 /* v3LoadShedderIntegrationTests */,
-				2D9E3CA829D4D60500DB4730 /* v3LoadShedderIntegrationUITests */,
 				2D9E3C8629D4D60400DB4730 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -100,15 +99,6 @@
 			path = v3LoadShedderIntegrationTests;
 			sourceTree = "<group>";
 		};
-		2D9E3CA829D4D60500DB4730 /* v3LoadShedderIntegrationUITests */ = {
-			isa = PBXGroup;
-			children = (
-				2D9E3CA929D4D60500DB4730 /* v3LoadShedderIntegrationUITests.swift */,
-				2D9E3CAB29D4D60500DB4730 /* v3LoadShedderIntegrationUITestsLaunchTests.swift */,
-			);
-			path = v3LoadShedderIntegrationUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -125,6 +115,9 @@
 			dependencies = (
 			);
 			name = v3LoadShedderIntegration;
+			packageProductDependencies = (
+				2D9E3CC529D4D67900DB4730 /* Purchases */,
+			);
 			productName = v3LoadShedderIntegration;
 			productReference = 2D9E3C8529D4D60400DB4730 /* v3LoadShedderIntegration.app */;
 			productType = "com.apple.product-type.application";
@@ -175,6 +168,9 @@
 				Base,
 			);
 			mainGroup = 2D9E3C7C29D4D60400DB4730;
+			packageReferences = (
+				2D9E3CC429D4D67900DB4730 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+			);
 			productRefGroup = 2D9E3C8629D4D60400DB4730 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -495,6 +491,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2D9E3CC429D4D67900DB4730 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2D9E3CC529D4D67900DB4730 /* Purchases */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2D9E3CC429D4D67900DB4730 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = Purchases;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2D9E3C7D29D4D60400DB4730 /* Project object */;
 }
