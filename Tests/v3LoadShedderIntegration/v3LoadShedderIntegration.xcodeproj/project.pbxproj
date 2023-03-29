@@ -15,6 +15,9 @@
 		2D9E3C9529D4D60500DB4730 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9329D4D60500DB4730 /* LaunchScreen.storyboard */; };
 		2D9E3CA029D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9F29D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift */; };
 		2D9E3CC629D4D67900DB4730 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D9E3CC529D4D67900DB4730 /* Purchases */; };
+		2D9E3CCF29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3CCE29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit */; };
+		2D9E3CD229D4D9D900DB4730 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D9E3CD129D4D9D900DB4730 /* Purchases */; };
+		2D9E3CD429D4D9DF00DB4730 /* StoreKitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D9E3CD329D4D9DF00DB4730 /* StoreKitTest.framework */; platformFilter = ios; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +41,8 @@
 		2D9E3C9629D4D60500DB4730 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D9E3C9B29D4D60500DB4730 /* v3LoadShedderIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = v3LoadShedderIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D9E3C9F29D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = v3LoadShedderIntegrationTests.swift; sourceTree = "<group>"; };
+		2D9E3CCE29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = v3LoadShedderIntegrationTestsConfiguration.storekit; sourceTree = "<group>"; };
+		2D9E3CD329D4D9DF00DB4730 /* StoreKitTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKitTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/StoreKitTest.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +58,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D9E3CD429D4D9DF00DB4730 /* StoreKitTest.framework in Frameworks */,
+				2D9E3CD229D4D9D900DB4730 /* Purchases in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,7 @@
 				2D9E3C8729D4D60400DB4730 /* v3LoadShedderIntegration */,
 				2D9E3C9E29D4D60500DB4730 /* v3LoadShedderIntegrationTests */,
 				2D9E3C8629D4D60400DB4730 /* Products */,
+				2D9E3CD029D4D9D900DB4730 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -94,9 +102,18 @@
 		2D9E3C9E29D4D60500DB4730 /* v3LoadShedderIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
+				2D9E3CCE29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit */,
 				2D9E3C9F29D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift */,
 			);
 			path = v3LoadShedderIntegrationTests;
+			sourceTree = "<group>";
+		};
+		2D9E3CD029D4D9D900DB4730 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2D9E3CD329D4D9DF00DB4730 /* StoreKitTest.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -136,6 +153,9 @@
 				2D9E3C9D29D4D60500DB4730 /* PBXTargetDependency */,
 			);
 			name = v3LoadShedderIntegrationTests;
+			packageProductDependencies = (
+				2D9E3CD129D4D9D900DB4730 /* Purchases */,
+			);
 			productName = v3LoadShedderIntegrationTests;
 			productReference = 2D9E3C9B29D4D60500DB4730 /* v3LoadShedderIntegrationTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -196,6 +216,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D9E3CCF29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -505,6 +526,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		2D9E3CC529D4D67900DB4730 /* Purchases */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2D9E3CC429D4D67900DB4730 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = Purchases;
+		};
+		2D9E3CD129D4D9D900DB4730 /* Purchases */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2D9E3CC429D4D67900DB4730 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = Purchases;
