@@ -21,6 +21,7 @@ final class v3LoadShedderIntegrationTests: XCTestCase {
     let apiKey = "API_KEY"
 
     let skConfigFileName = "v3LoadShedderIntegrationTestsConfiguration"
+    let entitlementIdentifier = "premium"
 
     var testSession: SKTestSession!
 
@@ -71,6 +72,21 @@ final class v3LoadShedderIntegrationTests: XCTestCase {
         let package = try XCTUnwrap(offering.availablePackages[0])
         XCTAssert(package.product.productIdentifier == "com.revenuecat.loadShedder.monthly")
         XCTAssert(offering.identifier == "default")
+    }
+
+    func testPurchasePackage() async throws {
+        let offerings = try await Purchases.shared.offerings()
+        let offering = try XCTUnwrap(offerings.current)
+        XCTAssert(offering.availablePackages.count > 0)
+        let package = try XCTUnwrap(offering.availablePackages[0])
+
+        let (_, nullablePurchaserInfo, userCancelled) = try await Purchases.shared.purchasePackage(package)
+
+        XCTAssert(!userCancelled)
+
+        let purchaserInfo = try XCTUnwrap(nullablePurchaserInfo)
+        let activeEntitlements = purchaserInfo.entitlements.active
+        XCTAssert(activeEntitlements[self.entitlementIdentifier] != nil)
     }
 
 }
