@@ -11,11 +11,11 @@
 //
 //  Created by Andrés Boedo on 3/29/23.
 
-import XCTest
-@testable import v3LoadShedderIntegration
+@testable import Purchases
 import StoreKit
 import StoreKitTest
-@testable import Purchases
+@testable import v3LoadShedderIntegration
+import XCTest
 
 final class v3LoadShedderIntegrationTests: XCTestCase {
     let apiKey = "API_KEY"
