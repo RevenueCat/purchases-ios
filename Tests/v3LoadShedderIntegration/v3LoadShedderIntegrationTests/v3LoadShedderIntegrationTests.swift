@@ -61,13 +61,16 @@ final class v3LoadShedderIntegrationTests: XCTestCase {
     }
 
     override func tearDownWithError() throws {
+        // unused for now
     }
 
     func testGetOfferings() async throws {
         let offerings = try await Purchases.shared.offerings()
         let offering = try XCTUnwrap(offerings.current)
-        let package = try XCTUnwrap(offering.availablePackages.first)
+        XCTAssert(offering.availablePackages.count > 0)
+        let package = try XCTUnwrap(offering.availablePackages[0])
         XCTAssert(package.product.productIdentifier == "com.revenuecat.loadShedder.monthly")
+        XCTAssert(offering.identifier == "default")
     }
 
 }
