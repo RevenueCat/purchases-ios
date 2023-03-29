@@ -18,10 +18,20 @@ import StoreKitTest
 @testable import Purchases
 
 final class v3LoadShedderIntegrationTests: XCTestCase {
+    let apiKey = "API_KEY"
 
     override func setUpWithError() throws {
         Purchases.logLevel = .debug
-        Purchases.configure(withAPIKey: "API_KEY")
+        let userDefaultsSuite = "v3LoadShedderIntegrationTests"
+        let userDefaults = UserDefaults(suiteName: userDefaultsSuite)!
+        userDefaults.removePersistentDomain(forName: userDefaultsSuite)
+        Purchases.configure(withAPIKey: self.apiKey,
+                            appUserID: nil,
+                            observerMode: false,
+                            userDefaults: userDefaults)
+
+
+
     }
 
     override func tearDownWithError() throws {
