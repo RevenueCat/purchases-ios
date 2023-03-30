@@ -17,7 +17,7 @@ import StoreKitTest
 @testable import v3LoadShedderIntegration
 import XCTest
 
-final class v3LoadShedderIntegrationTests: XCTestCase {
+final class V3LoadShedderIntegrationTests: XCTestCase {
     let apiKey = "API_KEY"
 
     let skConfigFileName = "v3LoadShedderIntegrationTestsConfiguration"
