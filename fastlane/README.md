@@ -82,6 +82,14 @@ Runs all the iOS tests
 
 Runs all the tvOS tests
 
+### ios test_watchos
+
+```sh
+[bundle exec] fastlane ios test_watchos
+```
+
+Runs all the watchOS tests
+
 ### ios release_checks
 
 ```sh
@@ -201,6 +209,14 @@ Export XCFramework
 ```
 
 Run BackendIntegrationTests
+
+### ios v3_loadshedder_integration_tests
+
+```sh
+[bundle exec] fastlane ios v3_loadshedder_integration_tests
+```
+
+Run LoadShedder tests
 
 ### ios update_swift_package_commit
 
