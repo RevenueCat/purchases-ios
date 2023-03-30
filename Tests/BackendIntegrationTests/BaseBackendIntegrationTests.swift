@@ -36,6 +36,9 @@ class BaseBackendIntegrationTests: XCTestCase {
 
     class var storeKit2Setting: StoreKit2Setting { return .default }
     class var observerMode: Bool { return false }
+    class var responseVerificationMode: Signing.ResponseVerificationMode {
+        return .enforced(Signing.loadPublicKey())
+    }
 
     @MainActor
     override func setUp() async throws {
@@ -44,7 +47,12 @@ class BaseBackendIntegrationTests: XCTestCase {
         // Avoid continuing with potentially bad data after a failed assertion
         self.continueAfterFailure = false
 
-        guard Constants.apiKey != "REVENUECAT_API_KEY", Constants.proxyURL != "REVENUECAT_PROXY_URL" else {
+        let apiKey = self.apiKey
+        let proxyURL = self.proxyURL
+
+        guard apiKey != "REVENUECAT_API_KEY",
+                apiKey != "REVENUECAT_LOAD_SHEDDER_API_KEY",
+                proxyURL != "REVENUECAT_PROXY_URL" else {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
 
@@ -62,10 +70,15 @@ class BaseBackendIntegrationTests: XCTestCase {
         }
 
         self.clearReceiptIfExists()
-        self.configurePurchases()
+        self.configurePurchases(apiKey: apiKey, proxyURL: proxyURL)
         self.verifyPurchasesDoesNotLeak()
         try await self.waitForAnonymousUser()
     }
+
+    // MARK: - Configuration
+
+    var apiKey: String { return Constants.apiKey }
+    var proxyURL: String? { return Constants.proxyURL }
 
 }
 
@@ -84,17 +97,18 @@ private extension BaseBackendIntegrationTests {
         }
     }
 
-    func configurePurchases() {
+    func configurePurchases(apiKey: String, proxyURL: String?) {
         self.purchasesDelegate = TestPurchaseDelegate()
 
+        Purchases.proxyURL = proxyURL.flatMap(URL.init(string:))
         Purchases.logLevel = .verbose
 
-        Purchases.configure(withAPIKey: Constants.apiKey,
+        Purchases.configure(withAPIKey: apiKey,
                             appUserID: nil,
                             observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
                             platformInfo: nil,
-                            responseVerificationMode: .enforced(Signing.loadPublicKey()),
+                            responseVerificationMode: Self.responseVerificationMode,
                             storeKit2Setting: Self.storeKit2Setting,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
                             networkTimeout: Configuration.networkTimeoutDefault,
