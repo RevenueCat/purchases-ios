@@ -22,7 +22,7 @@ import XCTest
 class StoreKit2TransactionListenerTests: StoreKitConfigTestCase {
 
     private var listener: StoreKit2TransactionListener! = nil
-    private weak var delegate: MockStoreKit2TransactionListenerDelegate! = nil
+    private var delegate: MockStoreKit2TransactionListenerDelegate! = nil
 
     override func setUpWithError() throws {
         try super.setUpWithError()

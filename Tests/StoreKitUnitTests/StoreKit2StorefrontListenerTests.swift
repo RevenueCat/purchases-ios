@@ -19,7 +19,7 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2StorefrontListenerTests: TestCase {
 
-    private weak var delegate: MockStoreKit2StorefrontListenerDelegate! = nil
+    private var delegate: MockStoreKit2StorefrontListenerDelegate! = nil
     private var listener: StoreKit2StorefrontListener! = nil
 
     private static let storefronts = [
