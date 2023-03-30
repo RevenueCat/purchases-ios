@@ -1,0 +1,56 @@
+{
+  "identifier" : "B495CDA2",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_timeRate" : 6
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "ADE6FE00",
+      "localizations" : [
+
+      ],
+      "name" : "loadShedder_group",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "3.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "BB2908CD",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "loadshedder monthly",
+              "displayName" : "loadshedder monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.loadShedder.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "loadShedder monthly",
+          "subscriptionGroupID" : "ADE6FE00",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "subscriptionOffersKeyPair" : {
+    "id" : "C815358F",
+    "privateKey" : "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgMpw0LScUC+8o+WsEAM20KOMzZOMSWKFjUixtwDidPMugCgYIKoZIzj0DAQehRANCAAQIMw4YEVZrDPrk/1dx5WV3hpkuy8enQs+yDAuJRtsrOnzRH6EFgTyiydprKlgUOHW6xBocrRNTMZXioCBQtchg"
+  },
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}
