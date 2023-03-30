@@ -675,6 +675,20 @@ jobs:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
+  loadshedder-integration-tests:
+    <<: *base-job
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - run:
+          name: V3 LoadShedder integration tests
+          command: bundle exec fastlane v3_loadshedder_integration_tests
+      - run:
+          name: Backend and LoadShedder integration tests
+          command: bundle exec fastlane backend_integration_tests
+  
   deploy-purchase-tester:
     <<: *base-job
     steps:
@@ -855,6 +869,15 @@ workflows:
         - equal: [ "release-train", << pipeline.schedule.name >> ]
     jobs:
       - release-train:
+          xcode_version: '14.2.0'
+
+  daily-loadshedder-integration-tests:
+    when:
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ "load_shedder_integration_tests", << pipeline.schedule.name >> ]
+    jobs:
+      - loadshedder-integration-tests:
           xcode_version: '14.2.0'
   
   manual-trigger-bump:
