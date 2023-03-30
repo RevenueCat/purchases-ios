@@ -82,7 +82,7 @@ class ETagManager {
 
         if self.shouldUseCachedVersion(responseCode: statusCode) {
             if let storedResponse = self.storedETagAndResponse(for: request) {
-                let newResponse = storedResponse.withUpdatedDate()
+                let newResponse = storedResponse.withUpdatedLastUsedDate()
 
                 self.store(newResponse, for: request)
                 return newResponse.asResponse(withRequestDate: response.requestDate)
@@ -193,6 +193,7 @@ extension ETagManager {
         var eTag: String
         var statusCode: HTTPStatusCode
         var data: Data
+        /// Used by the backend for advanced load shedding techniques.
         @DefaultDecodable.Now
         var lastUsed: Date
         @DefaultValue<VerificationResult>
@@ -234,7 +235,7 @@ extension ETagManager.Response {
         )
     }
 
-    fileprivate func withUpdatedDate() -> Self {
+    fileprivate func withUpdatedLastUsedDate() -> Self {
         var copy = self
         copy.lastUsed = Date()
 
