@@ -252,7 +252,8 @@ platform :ios do
       previous_text: "REVENUECAT_LOAD_SHEDDER_API_KEY",
       new_text: ENV["REVENUECAT_LOAD_SHEDDER_API_KEY"],
       paths_of_files_to_update: [
-        './Tests/BackendIntegrationTests/Constants.swift'
+        './Tests/BackendIntegrationTests/Constants.swift',
+        './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift'
       ]
     )
 
@@ -385,6 +386,24 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/ios"
     )
   end
+
+  desc "Run LoadShedder tests"
+  lane :v3_loadshedder_integration_tests do |options|
+    replace_api_key_integration_tests
+    scan(
+      project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
+      scheme: "v3LoadShedderIntegration",
+      derived_data_path: "scan_derived_data",
+      output_types: 'junit',
+      output_style: 'raw',
+      number_of_retries: 3,
+      result_bundle: true,
+      testplan: "CI-BackendIntegration",
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/ios"
+    )
+  end
+  
 
   desc "Update swift package commit"
   lane :update_swift_package_commit do
