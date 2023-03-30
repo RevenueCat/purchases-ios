@@ -17,10 +17,11 @@ import StoreKitTest
 @testable import v3LoadShedderIntegration
 import XCTest
 
+// swiftlint:disable xctestcase_superclass
 final class V3LoadShedderIntegrationTests: XCTestCase {
     let apiKey = "API_KEY"
 
-    let skConfigFileName = "v3LoadShedderIntegrationTestsConfiguration"
+    let skConfigFileName = "V3LoadShedderIntegrationTestsConfiguration"
     let entitlementIdentifier = "premium"
 
     var testSession: SKTestSession!

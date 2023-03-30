@@ -13,9 +13,9 @@
 		2D9E3C9029D4D60400DB4730 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3C8E29D4D60400DB4730 /* Main.storyboard */; };
 		2D9E3C9229D4D60500DB4730 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9129D4D60500DB4730 /* Assets.xcassets */; };
 		2D9E3C9529D4D60500DB4730 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9329D4D60500DB4730 /* LaunchScreen.storyboard */; };
-		2D9E3CA029D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9F29D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift */; };
+		2D9E3CA029D4D60500DB4730 /* V3LoadShedderIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9E3C9F29D4D60500DB4730 /* V3LoadShedderIntegrationTests.swift */; };
 		2D9E3CC629D4D67900DB4730 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D9E3CC529D4D67900DB4730 /* Purchases */; };
-		2D9E3CCF29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3CCE29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit */; };
+		2D9E3CCF29D4D89D00DB4730 /* V3LoadShedderIntegrationTestsConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2D9E3CCE29D4D89D00DB4730 /* V3LoadShedderIntegrationTestsConfiguration.storekit */; };
 		2D9E3CD229D4D9D900DB4730 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D9E3CD129D4D9D900DB4730 /* Purchases */; };
 		2D9E3CD429D4D9DF00DB4730 /* StoreKitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D9E3CD329D4D9DF00DB4730 /* StoreKitTest.framework */; platformFilter = ios; };
 /* End PBXBuildFile section */
@@ -40,8 +40,8 @@
 		2D9E3C9429D4D60500DB4730 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2D9E3C9629D4D60500DB4730 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D9E3C9B29D4D60500DB4730 /* v3LoadShedderIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = v3LoadShedderIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		2D9E3C9F29D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = v3LoadShedderIntegrationTests.swift; sourceTree = "<group>"; };
-		2D9E3CCE29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = v3LoadShedderIntegrationTestsConfiguration.storekit; sourceTree = "<group>"; };
+		2D9E3C9F29D4D60500DB4730 /* V3LoadShedderIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = V3LoadShedderIntegrationTests.swift; sourceTree = "<group>"; };
+		2D9E3CCE29D4D89D00DB4730 /* V3LoadShedderIntegrationTestsConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = V3LoadShedderIntegrationTestsConfiguration.storekit; sourceTree = "<group>"; };
 		2D9E3CD329D4D9DF00DB4730 /* StoreKitTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKitTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/StoreKitTest.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
@@ -102,8 +102,8 @@
 		2D9E3C9E29D4D60500DB4730 /* v3LoadShedderIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
-				2D9E3CCE29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit */,
-				2D9E3C9F29D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift */,
+				2D9E3CCE29D4D89D00DB4730 /* V3LoadShedderIntegrationTestsConfiguration.storekit */,
+				2D9E3C9F29D4D60500DB4730 /* V3LoadShedderIntegrationTests.swift */,
 			);
 			path = v3LoadShedderIntegrationTests;
 			sourceTree = "<group>";
@@ -216,7 +216,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D9E3CCF29D4D89D00DB4730 /* v3LoadShedderIntegrationTestsConfiguration.storekit in Resources */,
+				2D9E3CCF29D4D89D00DB4730 /* V3LoadShedderIntegrationTestsConfiguration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,7 +237,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D9E3CA029D4D60500DB4730 /* v3LoadShedderIntegrationTests.swift in Sources */,
+				2D9E3CA029D4D60500DB4730 /* V3LoadShedderIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
