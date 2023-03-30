@@ -39,6 +39,11 @@ final class V3LoadShedderIntegrationTests: XCTestCase {
         clearReceiptIfExists()
     }
 
+    override func tearDownWithError() throws {
+        self.testSession = nil
+        try super.tearDownWithError()
+    }
+
     func configureTestSession() throws {
         assert(self.testSession == nil, "Attempted to configure session multiple times")
 
@@ -59,10 +64,6 @@ final class V3LoadShedderIntegrationTests: XCTestCase {
         } catch {
             print("Error attempting to remove receipt URL '\(url)': \(error)")
         }
-    }
-
-    override func tearDownWithError() throws {
-        // unused for now
     }
 
     func testGetOfferings() async throws {
