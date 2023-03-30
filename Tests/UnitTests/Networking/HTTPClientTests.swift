@@ -501,14 +501,14 @@ final class HTTPClientTests: BaseHTTPClientTests {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
         let eTag = "etag"
-        let eTagCreation = Date(timeIntervalSince1970: 1234567)
+        let eTagValidationTime = Date(timeIntervalSince1970: 1234567)
 
-        self.eTagManager.stubResponseEtag(eTag, creationTime: eTagCreation)
+        self.eTagManager.stubResponseEtag(eTag, validationTime: eTagValidationTime)
 
         stub(condition: isPath(request.path)) { request in
             expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName]) == eTag
             expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeaderName])
-            == eTagCreation.millisecondsSince1970.description
+            == eTagValidationTime.millisecondsSince1970.description
 
             return HTTPStubsResponse(data: responseData,
                                      statusCode: .success,

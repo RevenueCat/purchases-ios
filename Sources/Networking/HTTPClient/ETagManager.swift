@@ -84,7 +84,7 @@ class ETagManager {
             if let storedResponse = self.storedETagAndResponse(for: request) {
                 let newResponse = storedResponse.withUpdatedLastUsedDate()
 
-                self.store(newResponse, for: request)
+                self.storeIfPossible(newResponse, for: request)
                 return newResponse.asResponse(withRequestDate: response.requestDate)
             }
             if retried {
@@ -141,7 +141,7 @@ private extension ETagManager {
                                              eTag: String) {
         if let data = response.body,
            response.shouldStore(ignoreVerificationErrors: self.shouldIgnoreVerificationErrors) {
-            self.store(
+            self.storeIfPossible(
                 Response(
                     eTag: eTag,
                     statusCode: response.statusCode,
@@ -153,7 +153,7 @@ private extension ETagManager {
         }
     }
 
-    func store(_ response: Response, for request: URLRequest) {
+    func storeIfPossible(_ response: Response, for request: URLRequest) {
         if let cacheKey = self.eTagDefaultCacheKey(for: request),
            let dataToStore = response.asData() {
             self.userDefaults.write {
