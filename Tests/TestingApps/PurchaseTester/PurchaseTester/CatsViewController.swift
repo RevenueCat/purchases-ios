@@ -29,8 +29,10 @@ class CatsViewController: UIViewController {
         beginRefundButton.addTarget(self, action: #selector(beginRefundButtonTapped), for: .touchUpInside)
         restorePurchasesButton.addTarget(self, action: #selector(restorePurchasesButtonTapped), for: .touchUpInside)
 
-        self.customerInfoObservation = Task {
+        self.customerInfoObservation = Task { [weak self] in
             for await customerInfo in Purchases.shared.customerInfoStream {
+                guard let self else { return }
+
                 self.configureCatContentFor(customerInfo: customerInfo)
             }
         }
