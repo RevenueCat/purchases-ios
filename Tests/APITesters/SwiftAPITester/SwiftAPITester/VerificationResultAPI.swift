@@ -24,6 +24,7 @@ func checkVerificationResultAPI(_ mode: EntitlementVerificationMode = .disabled,
     switch result {
     case .notRequested,
             .verified,
+            .verifiedOnDevice,
             .failed:
         break
 

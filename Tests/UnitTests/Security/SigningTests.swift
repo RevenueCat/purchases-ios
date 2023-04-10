@@ -297,6 +297,7 @@ class SigningTests: TestCase {
     func testVerificationResultWithSameCachedAndResponseResult() {
         expect(VerificationResult.from(cache: .notRequested, response: .notRequested)) == .notRequested
         expect(VerificationResult.from(cache: .verified, response: .verified)) == .verified
+        expect(VerificationResult.from(cache: .verifiedOnDevice, response: .verifiedOnDevice)) == .verifiedOnDevice
         expect(VerificationResult.from(cache: .failed, response: .failed)) == .failed
     }
 
@@ -304,13 +305,19 @@ class SigningTests: TestCase {
         expect(VerificationResult.from(cache: .notRequested,
                                        response: .verified)) == .verified
         expect(VerificationResult.from(cache: .notRequested,
+                                       response: .verifiedOnDevice)) == .verifiedOnDevice
+        expect(VerificationResult.from(cache: .notRequested,
                                        response: .failed)) == .failed
     }
 
     func testVerifiedCachedResult() {
         expect(VerificationResult.from(cache: .verified,
                                        response: .notRequested)) == .notRequested
+        expect(VerificationResult.from(cache: .verifiedOnDevice,
+                                       response: .notRequested)) == .notRequested
         expect(VerificationResult.from(cache: .verified,
+                                       response: .failed)) == .failed
+        expect(VerificationResult.from(cache: .verifiedOnDevice,
                                        response: .failed)) == .failed
     }
 
@@ -319,6 +326,8 @@ class SigningTests: TestCase {
                                        response: .notRequested)) == .notRequested
         expect(VerificationResult.from(cache: .failed,
                                        response: .verified)) == .verified
+        expect(VerificationResult.from(cache: .failed,
+                                       response: .verifiedOnDevice)) == .verifiedOnDevice
     }
 
 }
