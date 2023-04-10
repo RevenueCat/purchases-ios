@@ -235,7 +235,7 @@ class DictionaryExtensionsMapKeysTests: TestCase {
     }
 
     func testCompactMapDictionaryResultingInEmptyDictionary() {
-        expect([1: "test"].compactMapKeys { _ in nil }) == [:]
+        expect([1: "test"].compactMapKeys { _ in Optional<String>.none }).to(beEmpty())
     }
 
     func testCompactMapKeys() {

@@ -31,16 +31,7 @@ class PurchasesDiagnosticsTests: TestCase {
         self.diagnostics = .init(purchases: self.purchases)
 
         self.purchases.mockedHealthRequestResponse = .success(())
-        self.purchases.mockedCustomerInfoResponse = .success(
-            try CustomerInfo(data: [
-                "request_date": "2019-08-16T10:30:42Z",
-                "subscriber": [
-                    "first_seen": "2019-07-17T00:05:54Z",
-                    "original_app_user_id": "",
-                    "subscriptions": [:],
-                    "other_purchases": [:]
-                ]])
-        )
+        self.purchases.mockedCustomerInfoResponse = .success(.emptyInfo)
         self.purchases.mockedOfferingsResponse = .success(.init(offerings: [:], currentOfferingID: nil))
     }
 

@@ -38,6 +38,22 @@ extension CustomerInfo {
 
 extension CustomerInfo {
 
+    // swiftlint:disable:next force_try
+    static let emptyInfo: CustomerInfo = try! .init(data: [
+        "request_date": "2019-08-16T10:30:42Z",
+        "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "app_user_id",
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
+            "original_application_version": "1.0"
+        ] as [String: Any]
+    ])
+
+}
+
+extension CustomerInfo {
+
     func asData(withNewSchemaVersion version: Any?) throws -> Data {
         var dictionary = try XCTUnwrap(
             JSONSerialization.jsonObject(with: try self.asJSONEncodedData()) as? [String: Any]

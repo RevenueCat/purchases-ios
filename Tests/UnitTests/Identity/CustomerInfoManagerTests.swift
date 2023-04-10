@@ -29,10 +29,11 @@ class BaseCustomerInfoManagerTests: TestCase {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:]  as [String: Any],
+                "other_purchases": [:]  as [String: Any],
                 "original_application_version": NSNull()
-            ]])
+            ]  as [String: Any]
+        ])
 
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
         self.customerInfoManagerChangesCallCount = 0
@@ -187,14 +188,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfNeverSent() throws {
-        let info = try CustomerInfo(data: [
-        "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "original_app_user_id": Self.appUserID,
-                "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+        let info: CustomerInfo = .emptyInfo
 
         let object = try info.asJSONEncodedData()
         self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
@@ -205,14 +199,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfDifferent() throws {
-        let oldInfo = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "original_app_user_id": Self.appUserID,
-                "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+        let oldInfo: CustomerInfo = .emptyInfo
 
         var object = try oldInfo.asJSONEncodedData()
 
@@ -226,8 +213,9 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
-                "other_purchases": [:]
-            ]])
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
 
         object = try newInfo.asJSONEncodedData()
         mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
@@ -237,14 +225,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsOnMainThread() throws {
-        let oldInfo = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "original_app_user_id": Self.appUserID,
-                "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+        let oldInfo: CustomerInfo = .emptyInfo
 
         let object = try oldInfo.asJSONEncodedData()
         mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
@@ -306,9 +287,10 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                     "ProductC": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
                     "Pro": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
                     "ProductD": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]
-                ],
-                "other_purchases": [:]
-            ]])
+                ]  as [String: Any],
+                "other_purchases": [:]  as [String: Any]
+            ]  as [String: Any]
+        ])
 
         let object = try info.asJSONEncodedData()
         self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
@@ -337,8 +319,9 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
-                "other_purchases": [:]
-            ]])
+                "other_purchases": [:]  as [String: Any]
+            ]  as [String: Any]
+        ])
 
         let object = try info.asJSONEncodedData()
         mockDeviceCache.cachedCustomerInfo["firstUser"] = object
@@ -365,8 +348,8 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
-                "other_purchases": [:]
-            ]
+                "other_purchases": [:]  as [String: Any]
+            ] as [String: Any]
         ]
 
         let object = try JSONSerialization.data(withJSONObject: data, options: [])
@@ -386,8 +369,8 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
-                "other_purchases": [:]
-            ]
+                "other_purchases": [:]  as [String: Any]
+            ]  as [String: Any]
         ]
 
         let object = try JSONSerialization.data(withJSONObject: data, options: [])
@@ -447,10 +430,11 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2020-06-17T16:05:33Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:]  as [String: Any],
+                "other_purchases": [:]  as [String: Any],
                 "original_application_version": "1.0"
-            ]])
+            ]  as [String: Any]
+        ])
     }
 
     // MARK: - CacheFetchPolicy.fromCacheOnly
