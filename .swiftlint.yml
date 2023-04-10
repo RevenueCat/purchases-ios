@@ -18,6 +18,7 @@ opt_in_rules:
 
 disabled_rules:
   - orphaned_doc_comment
+  - blanket_disable_command
 
 custom_rules:
   xctestcase_superclass:
