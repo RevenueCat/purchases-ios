@@ -288,7 +288,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.2)
+            SCAN_DEVICE: iPhone 14 (16.3)
       - codecov/upload:
           xtra_args: "-v --xc --xp fastlane/test_output/xctest/ios/RevenueCat.xcresult"
       - compress_result_bundle:
@@ -472,7 +472,7 @@ jobs:
           command: bundle exec fastlane backend_integration_tests
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.2)
+            SCAN_DEVICE: iPhone 14 (16.3)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -756,19 +756,19 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - lint:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
       - spm-release-build:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
       - spm-receipt-parser:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
       - run-test-ios-16:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
       - run-test-ios-15:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
       - run-test-watchos:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
       - run-test-tvos:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
       - run-test-ios-14:
           # Simulator fails to install on Xcode 14
           xcode_version: '13.4.1'
@@ -781,14 +781,14 @@ workflows:
           xcode_version: '13.4.1'
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
       # To ensure we don't break compilation with Xcode 13.2.1
       - compile-xcode-13-2:
           name: xcode-13.2.1
           xcode_version: '13.2.1'
           <<: *release-branches-and-main
       - backend-integration-tests:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
@@ -799,22 +799,22 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - release-checks:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-cocoapods:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-swift-package-manager:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-receipt-parser:
           xcode_version: '14.1.0'
           <<: *release-branches
       - installation-tests-carthage:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-xcode-direct-integration:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-branches
       - hold:
           type: approval
@@ -831,7 +831,7 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-tags
       - push-pods:
           # Xcode 14 not supported until https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
@@ -841,10 +841,10 @@ workflows:
             - make-release
           <<: *release-tags
       - docs-deploy:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-tags
       - deploy-purchase-tester:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-tags
       - notify-on-non-patch-release-branches:
           requires:
@@ -857,7 +857,7 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - prepare-next-version:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *only-main-branch
   danger:
     jobs:
@@ -869,7 +869,7 @@ workflows:
         - equal: [ "release-train", << pipeline.schedule.name >> ]
     jobs:
       - release-train:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
 
   daily-loadshedder-integration-tests:
     when:
@@ -878,11 +878,11 @@ workflows:
         - equal: [ "load_shedder_integration_tests", << pipeline.schedule.name >> ]
     jobs:
       - loadshedder-integration-tests:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
   
   manual-trigger-bump:
     when:
       equal: [ bump, << pipeline.parameters.action >> ]
     jobs:
       - release-train:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
