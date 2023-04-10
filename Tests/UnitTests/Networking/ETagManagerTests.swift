@@ -58,16 +58,16 @@ class ETagManagerTests: TestCase {
         expect(response?.body) == cachedResponse
     }
 
-    func testLastValidationDateIsUpdatedWhenUsingStoredResponse() throws {
+    func testValidationTimeIsUpdatedWhenUsingStoredResponse() throws {
         let eTag = "an_etag"
         let request = URLRequest(url: Self.testURL)
-        let lastUsed = Date(timeIntervalSince1970: 10000)
+        let validationTime = Date(timeIntervalSince1970: 10000)
 
         let cachedResponse = self.mockStoredETagResponse(for: Self.testURL,
                                                          statusCode: .success,
                                                          eTag: eTag,
-                                                         lastUsed: lastUsed)
-        expect(try self.getCachedResponse(url: Self.testURL).lastUsed).to(beCloseTo(lastUsed, within: 1))
+                                                         validationTime: validationTime)
+        expect(try self.getCachedResponse(url: Self.testURL).validationTime).to(beCloseTo(validationTime, within: 1))
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(url: Self.testURL,
@@ -82,8 +82,8 @@ class ETagManagerTests: TestCase {
         expect(response?.body) == cachedResponse
 
         let newCachedResponse = try self.getCachedResponse(url: Self.testURL)
-        expect(newCachedResponse.lastUsed).toNot(beCloseTo(lastUsed, within: 1))
-        expect(newCachedResponse.lastUsed).to(beCloseTo(Date(), within: 1))
+        expect(newCachedResponse.validationTime).toNot(beCloseTo(validationTime, within: 1))
+        expect(newCachedResponse.validationTime).to(beCloseTo(Date(), within: 1))
     }
 
     func testStoredResponseIsNotUsedIfResponseCodeIs200() throws {
@@ -545,7 +545,7 @@ class ETagManagerTests: TestCase {
         let eTag = "the_etag"
         let request = URLRequest(url: Self.testURL)
         let cacheKey = Self.testURL.absoluteString
-        let creationTime = Date(timeIntervalSince1970: 800000)
+        let validationTime = Date(timeIntervalSince1970: 800000)
 
         let actualResponse = "response".asData
 
@@ -553,14 +553,14 @@ class ETagManagerTests: TestCase {
             eTag: eTag,
             statusCode: .success,
             data: actualResponse,
-            lastUsed: creationTime,
+            validationTime: validationTime,
             verificationResult: .notRequested
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
         expect(response) == [
             ETagManager.eTagRequestHeaderName: eTag,
-            ETagManager.eTagValidationTimeRequestHeaderName: creationTime.millisecondsSince1970.description
+            ETagManager.eTagValidationTimeRequestHeaderName: validationTime.millisecondsSince1970.description
         ]
     }
 
@@ -759,7 +759,7 @@ private extension ETagManagerTests {
     func mockStoredETagResponse(for url: URL,
                                 statusCode: HTTPStatusCode = .success,
                                 eTag: String = "an_etag",
-                                lastUsed: Date = Date(),
+                                validationTime: Date = Date(),
                                 verificationResult: RevenueCat.VerificationResult = .defaultValue) -> Data {
         // swiftlint:disable:next force_try
         let data = try! JSONSerialization.data(withJSONObject: ["arg": "value"])
@@ -768,7 +768,7 @@ private extension ETagManagerTests {
             eTag: eTag,
             statusCode: statusCode,
             data: data,
-            lastUsed: lastUsed,
+            validationTime: validationTime,
             verificationResult: verificationResult
         )
         let cacheKey = url.absoluteString

@@ -56,7 +56,7 @@ class ETagManager {
 
             if shouldUseETag {
                 return (tag: storedETagAndResponse.eTag,
-                        date: storedETagAndResponse.lastUsed.millisecondsSince1970.description)
+                        date: storedETagAndResponse.validationTime.millisecondsSince1970.description)
             } else {
                 return nil
             }
@@ -82,7 +82,7 @@ class ETagManager {
 
         if self.shouldUseCachedVersion(responseCode: statusCode) {
             if let storedResponse = self.storedETagAndResponse(for: request) {
-                let newResponse = storedResponse.withUpdatedLastUsedDate()
+                let newResponse = storedResponse.withUpdatedValidationTime()
 
                 self.storeIfPossible(newResponse, for: request)
                 return newResponse.asResponse(withRequestDate: response.requestDate)
@@ -195,7 +195,7 @@ extension ETagManager {
         var data: Data
         /// Used by the backend for advanced load shedding techniques.
         @DefaultDecodable.Now
-        var lastUsed: Date
+        var validationTime: Date
         @DefaultValue<VerificationResult>
         var verificationResult: VerificationResult
 
@@ -203,13 +203,13 @@ extension ETagManager {
             eTag: String,
             statusCode: HTTPStatusCode,
             data: Data,
-            lastUsed: Date = Date(),
+            validationTime: Date = Date(),
             verificationResult: VerificationResult
         ) {
             self.eTag = eTag
             self.statusCode = statusCode
             self.data = data
-            self.lastUsed = lastUsed
+            self.validationTime = validationTime
             self.verificationResult = verificationResult
         }
 
@@ -235,9 +235,9 @@ extension ETagManager.Response {
         )
     }
 
-    fileprivate func withUpdatedLastUsedDate() -> Self {
+    fileprivate func withUpdatedValidationTime() -> Self {
         var copy = self
-        copy.lastUsed = Date()
+        copy.validationTime = Date()
 
         return copy
     }
