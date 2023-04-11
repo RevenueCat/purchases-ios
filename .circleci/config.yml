@@ -288,7 +288,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.3)
+            SCAN_DEVICE: iPhone 14 (16.4)
       - codecov/upload:
           xtra_args: "-v --xc --xp fastlane/test_output/xctest/ios/RevenueCat.xcresult"
       - compress_result_bundle:
@@ -472,7 +472,7 @@ jobs:
           command: bundle exec fastlane backend_integration_tests
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.3)
+            SCAN_DEVICE: iPhone 14 (16.4)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
