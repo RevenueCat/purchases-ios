@@ -23,10 +23,10 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
         "subscriber": [
             "first_seen": "2020-07-17T00:05:54Z",
             "original_app_user_id": BasePurchasesTests.appUserID,
-            "subscriptions": [:],
-            "other_purchases": [:],
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
             "original_application_version": "1.0"
-        ]
+        ] as [String: Any]
     ]
 
     func testCachedCustomerInfoHasSchemaVersion() throws {

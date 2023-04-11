@@ -45,14 +45,14 @@ class EntitlementInfosTests: TestCase {
                         "original_purchase_date": "2019-07-26T22:10:27Z",
                         "purchase_date": "2019-07-26T22:10:27Z",
                         "store": "app_store"
-                    ],
+                    ] as [String: Any],
                     [
                         "id": "ea820afcc4",
                         "is_sandbox": false,
                         "original_purchase_date": "2019-07-26T23:45:40Z",
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store"
-                    ]
+                    ] as [String: Any]
                 ]
             ],
             subscriptions: [
@@ -65,7 +65,7 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "app_store",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ]
         )
 
@@ -112,37 +112,37 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "1999-07-26T23:30:41Z",
                     "store": "app_store",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ]
         )
 
         let subscriberInfo = try CustomerInfo(data: response)
-
+        
         expect(subscriberInfo.entitlements["pro_cat"]).toNot(beNil())
         expect(subscriberInfo.entitlements.active["pro_cat"]).toNot(beNil())
     }
-
+    
     func testActiveSubscription() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "1999-07-26T23:30:41Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "1999-07-26T23:30:41Z",
-                        "period_type": "normal",
-                        "purchase_date": "1999-07-26T23:30:41Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ]
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "1999-07-26T23:30:41Z"
+                ]  as [String: Any?]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "1999-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "1999-07-26T23:30:41Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ]  as [String: Any?]
+            ]
         )
 
         try verifyEntitlementActive()
@@ -169,7 +169,7 @@ class EntitlementInfosTests: TestCase {
                         "purchase_date": "1999-07-26T23:30:41Z",
                         "store": "app_store",
                         "unsubscribe_detected_at": nil
-                    ]
+                    ] as [String: Any?]
                 ],
                 requestDate: expirationAndRequestDate
         )
@@ -179,25 +179,25 @@ class EntitlementInfosTests: TestCase {
 
     func testInactiveSubscription() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2000-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "1999-07-26T23:30:41Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2000-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "1999-07-26T23:30:41Z",
-                        "period_type": "normal",
-                        "purchase_date": "1999-07-26T23:30:41Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2000-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "1999-07-26T23:30:41Z"
                 ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2000-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "1999-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "1999-07-26T23:30:41Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ]  as [String: Any?]
+            ]
         )
 
         try verifyEntitlementActive(false)
@@ -213,25 +213,26 @@ class EntitlementInfosTests: TestCase {
 
     func testCreatesEntitlementInfos() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "normal",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
 
         try verifySubscriberInfo()
         try verifyEntitlementActive()
@@ -259,14 +260,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [
@@ -279,7 +280,7 @@ class EntitlementInfosTests: TestCase {
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store",
                         "unsubscribe_detected_at": nil
-                    ]
+                    ] as [String: Any?]
                 ]
         )
 
@@ -314,7 +315,7 @@ class EntitlementInfosTests: TestCase {
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store",
                         "unsubscribe_detected_at": nil
-                    ]
+                    ] as [String: Any?]
                 ])
 
         try verifySubscriberInfo()
@@ -328,25 +329,26 @@ class EntitlementInfosTests: TestCase {
 
     func testSubscriptionWontRenewBillingError() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": "2019-07-27T23:30:41Z",
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "normal",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": "2019-07-27T23:30:41Z",
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
 
         try verifySubscriberInfo()
         try verifyEntitlementActive()
@@ -359,25 +361,26 @@ class EntitlementInfosTests: TestCase {
 
     func testSubscriptionWontRenewCancelled() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "normal",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": "2019-07-27T23:30:41Z"
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": "2019-07-27T23:30:41Z"
+                ] as [String: Any?]
+            ]
+        )
 
         try verifySubscriberInfo()
         try verifyEntitlementActive()
@@ -390,25 +393,26 @@ class EntitlementInfosTests: TestCase {
 
     func testSubscriptionWontRenewBillingErrorAndCancelled() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": "2019-07-27T22:30:41Z",
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "normal",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": "2019-07-27T23:30:41Z"
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": "2019-07-27T22:30:41Z",
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": "2019-07-27T23:30:41Z"
+                ] as [String: Any]
+            ]
+        )
 
         try verifySubscriberInfo()
         try verifyEntitlementActive()
@@ -425,25 +429,26 @@ class EntitlementInfosTests: TestCase {
 
     func testSubscriptionIsSandboxInteger() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": true,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "normal",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": true,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
 
         try verifySubscriberInfo()
         try verifyEntitlementActive()
@@ -540,14 +545,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [:]
@@ -585,7 +590,7 @@ class EntitlementInfosTests: TestCase {
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store",
                         "unsubscribe_detected_at": nil
-                    ]
+                    ] as [String: Any?]
                 ])
 
         try verifyStore(.appStore)
@@ -608,7 +613,7 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "mac_app_store",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ])
         try verifyStore(.macAppStore)
 
@@ -630,7 +635,7 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "play_store",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ])
         try verifyStore(.playStore)
 
@@ -652,7 +657,7 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "promotional",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ])
         try verifyStore(.promotional)
 
@@ -674,7 +679,7 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "stripe",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ])
         try verifyStore(.stripe)
 
@@ -696,7 +701,7 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "amazon",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ])
         try verifyStore(.amazon)
 
@@ -718,7 +723,7 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "tienda",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ])
         try verifyStore(.unknownStore)
     }
@@ -740,14 +745,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [:]
@@ -770,14 +775,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "mac_app_store"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [:]
@@ -800,14 +805,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "play_store"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [:]
@@ -830,14 +835,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "promotional"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [:]
@@ -860,14 +865,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "stripe"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [:]
@@ -890,14 +895,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "amazon"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [:]
@@ -920,14 +925,14 @@ class EntitlementInfosTests: TestCase {
                             "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
                             "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "tienda"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 subscriptions: [:]
@@ -937,92 +942,96 @@ class EntitlementInfosTests: TestCase {
 
     func testParsePeriod() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "normal",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
 
         try verifyPeriodType(.normal)
 
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "intro",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "intro",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
         try verifyPeriodType(.intro)
 
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "trial",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "trial",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
         try verifyPeriodType(.trial)
 
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "product_identifier": "monthly_freetrial",
-                        "purchase_date": "2019-07-26T23:45:40Z"
-                    ]
-                ],
-                subscriptions: [
-                    "monthly_freetrial": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2200-07-26T23:50:40Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2019-07-26T23:30:41Z",
-                        "period_type": "period",
-                        "purchase_date": "2019-07-26T23:45:40Z",
-                        "store": "app_store",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "period",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
         try verifyPeriodType(.normal)
     }
 
@@ -1043,42 +1052,43 @@ class EntitlementInfosTests: TestCase {
                         "original_purchase_date": "2019-07-26T22:10:27Z",
                         "purchase_date": "2019-07-26T22:10:27Z",
                         "store": "app_store"
-                    ],
+                    ] as [String: Any],
                     [
                         "id": "ea820afcc4",
                         "is_sandbox": false,
                         "original_purchase_date": "2019-07-26T23:45:40Z",
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store"
-                    ]
+                    ] as [String: Any]
                 ]
             ],
-            subscriptions: [:]
+            subscriptions: [:] as [String: Any]
         )
         try verifyPeriodType(.normal)
     }
 
     func testPromoWillRenew() throws {
         stubResponse(
-                entitlements: [
-                    "pro_cat": [
-                        "expires_date": "2221-01-10T02:35:25Z",
-                        "product_identifier": "rc_promo_pro_cat_lifetime",
-                        "purchase_date": "2021-02-27T02:35:25Z"
-                    ]
-                ],
-                subscriptions: [
-                    "rc_promo_pro_cat_lifetime": [
-                        "billing_issues_detected_at": nil,
-                        "expires_date": "2221-01-10T02:35:25Z",
-                        "is_sandbox": false,
-                        "original_purchase_date": "2021-02-27T02:35:25Z",
-                        "period_type": "normal",
-                        "purchase_date": "2021-02-27T02:35:25Z",
-                        "store": "promotional",
-                        "unsubscribe_detected_at": nil
-                    ]
-                ])
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2221-01-10T02:35:25Z",
+                    "product_identifier": "rc_promo_pro_cat_lifetime",
+                    "purchase_date": "2021-02-27T02:35:25Z"
+                ]
+            ],
+            subscriptions: [
+                "rc_promo_pro_cat_lifetime": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2221-01-10T02:35:25Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2021-02-27T02:35:25Z",
+                    "period_type": "normal",
+                    "purchase_date": "2021-02-27T02:35:25Z",
+                    "store": "promotional",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
 
         try verifyRenewal(false)
     }
@@ -1109,8 +1119,9 @@ class EntitlementInfosTests: TestCase {
                     "purchase_date": "2021-02-27T02:35:25Z",
                     "store": "promotional",
                     "unsubscribe_detected_at": nil
-                ]
-            ])
+                ] as [String: Any?]
+            ]
+        )
     }
 
     func testActiveInAnyEnvironmentIncludesSandboxInSandbox() throws {
@@ -1180,7 +1191,7 @@ private extension EntitlementInfosTests {
                 "original_app_user_id": "cesarsandbox1",
                 "original_application_version": "1.0",
                 "subscriptions": subscriptions
-            ]
+            ] as [String: Any]
         ]
     }
 

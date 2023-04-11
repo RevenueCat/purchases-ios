@@ -44,7 +44,7 @@ class TransactionsFactoryTests: TestCase {
 
 private extension TransactionsFactoryTests {
 
-    static let sampleTransactions = [
+    static let sampleTransactions: [String: [[String: Any]]] = [
         "100_coins": [
             [
                 "id": "72c26cc69c",
@@ -52,13 +52,15 @@ private extension TransactionsFactoryTests {
                 "original_purchase_date": "1990-08-30T02:40:36Z",
                 "purchase_date": "2019-07-11T18:36:20Z",
                 "store": "app_store"
-            ], [
+            ],
+            [
                 "id": "6229b0bef1",
                 "is_sandbox": true,
                 "original_purchase_date": "2019-11-06T03:26:15Z",
                 "purchase_date": "2019-11-06T03:26:15Z",
                 "store": "play_store"
-            ]],
+            ]
+        ],
         "500_coins": [
             [
                 "id": "d6c007ba74",
@@ -66,13 +68,15 @@ private extension TransactionsFactoryTests {
                 "original_purchase_date": "2019-07-11T18:36:20Z",
                 "purchase_date": "2019-07-11T18:36:20Z",
                 "store": "play_store"
-            ], [
+            ],
+            [
                 "id": "5b9ba226bc",
                 "is_sandbox": true,
                 "original_purchase_date": "2019-07-26T22:10:27Z",
                 "purchase_date": "2019-07-26T22:10:27Z",
                 "store": "app_store"
-            ]],
+            ]
+        ],
         "lifetime_access": [
             [
                 "id": "d6c097ba74",
@@ -80,7 +84,8 @@ private extension TransactionsFactoryTests {
                 "original_purchase_date": "2018-07-11T18:36:20Z",
                 "purchase_date": "2018-07-11T18:36:20Z",
                 "store": "app_store"
-            ]]
+            ]
+        ]
     ]
 
 }

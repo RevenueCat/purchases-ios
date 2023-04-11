@@ -49,10 +49,11 @@ class PurchasesSubscriberAttributesTests: TestCase {
         "subscriber": [
             "first_seen": "2019-07-17T00:05:54Z",
             "original_app_user_id": "",
-            "subscriptions": [:],
-            "other_purchases": [:],
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
             "original_application_version": NSNull()
-        ]]
+        ] as [String: Any]
+    ]
 
     var mockOfferingsManager: MockOfferingsManager!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
@@ -217,21 +218,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
     }
 
     func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() throws {
-        mockBackend.stubbedGetCustomerInfoResult = .success(
-            try CustomerInfo(data: [
-                "request_date": "2019-08-16T10:30:42Z",
-                "subscriber": [
-                    "first_seen": "2019-07-17T00:05:54Z",
-                    "original_app_user_id": "app_user_id",
-                    "subscriptions": [:],
-                    "other_purchases": [:],
-                    "original_application_version": "1.0",
-                    "original_purchase_date": "2018-10-26T23:17:53Z"
-                ]
-            ])
-        )
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
 
-        setupPurchases()
+        self.setupPurchases()
 
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1

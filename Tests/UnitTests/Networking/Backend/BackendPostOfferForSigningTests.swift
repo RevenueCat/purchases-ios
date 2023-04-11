@@ -34,9 +34,9 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                         "signature": "Base64 encoded signature",
                         "nonce": "A UUID",
                         "timestamp": Int64(123413232131)
-                    ],
+                    ]  as [String: Any],
                     "signature_error": nil
-                ]
+                ]  as [String: Any?]
             ]
         ]
 
@@ -91,7 +91,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
 
     func testOfferForSigningEmptyOffersResponse() {
         let validSigningResponse: [String: Any] = [
-            "offers": []
+            "offers": [] as [Any]
         ]
 
         self.httpClient.mock(
@@ -132,8 +132,8 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
                     "signature_error": [
                         "message": errorResponse.message!,
                         "code": errorResponse.code.rawValue
-                    ]
-                ]
+                    ] as [String: Any]
+                ] as [String: Any?]
             ]
         ]
 

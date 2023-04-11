@@ -224,11 +224,11 @@ class PurchasesRestoreTests: BasePurchasesTests {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": Self.appUserID,
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_application_version": "1.0",
                 "original_purchase_date": "2018-10-26T23:17:53Z"
-            ]
+            ] as [String: Any]
         ]))
 
         let receivedCustomerInfo = waitUntilValue { completed in
@@ -253,11 +253,12 @@ class PurchasesRestoreNoSetupTests: BasePurchasesTests {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_application_version": "1.0",
                 "original_purchase_date": "2018-10-26T23:17:53Z"
-            ]])
+            ] as [String: Any]
+        ])
 
         let object = try info.asData()
 

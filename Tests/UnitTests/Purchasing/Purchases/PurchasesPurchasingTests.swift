@@ -574,17 +574,19 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "non_subscriptions": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         let customerInfoAfterPurchase = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "non_subscriptions": [product.productIdentifier: []]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [product.productIdentifier: [] as [Any]]
+            ] as [String: Any]
+        ])
         self.backend.overrideCustomerInfoResult = .success(customerInfoBeforePurchase)
         self.backend.postReceiptResult = .success(customerInfoAfterPurchase)
 
@@ -677,14 +679,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     func testCachesCustomerInfoOnPurchase() throws {
         expect(self.deviceCache.cachedCustomerInfo.count).toEventually(equal(1))
 
-        self.backend.postReceiptResult = .success(try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]]))
+        self.backend.postReceiptResult = .success(.emptyInfo)
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }

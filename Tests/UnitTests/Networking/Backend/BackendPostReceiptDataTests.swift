@@ -376,7 +376,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                         "expires_date": futureDateString
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ]
 
         let validUpdatedCustomerResponse: [String: Any] = [
@@ -392,7 +392,7 @@ class BackendPostReceiptDataTests: BaseBackendTests {
                         "expires_date": futureDateString
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ]
         let initialCustomerInfoResponse = MockHTTPClient.Response(statusCode: .success,
                                                                   response: validCustomerResponse)
