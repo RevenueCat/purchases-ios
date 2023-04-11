@@ -30,14 +30,7 @@ class IdentityManagerTests: TestCase {
         try super.setUpWithError()
 
         self.mockIdentityAPI = try XCTUnwrap(mockBackend.identity as? MockIdentityAPI)
-        self.mockCustomerInfo = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+        self.mockCustomerInfo = .emptyInfo
 
         let systemInfo = MockSystemInfo(finishTransactions: false)
 

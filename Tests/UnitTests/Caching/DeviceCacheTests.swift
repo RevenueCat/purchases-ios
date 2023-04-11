@@ -182,8 +182,7 @@ class DeviceCacheTests: TestCase {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: mockCachedObject,
-                                       notificationCenter: nil)
+                                       offeringsCachedObject: mockCachedObject)
         let offerings = Offerings(offerings: [:], currentOfferingID: "")
         self.deviceCache.cache(offerings: offerings)
         let isAppBackgrounded = false
@@ -366,8 +365,7 @@ class DeviceCacheTests: TestCase {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: mockCachedObject,
-                                       notificationCenter: nil)
+                                       offeringsCachedObject: mockCachedObject)
 
         self.deviceCache.clearCachedOfferings()
 

@@ -388,14 +388,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(transaction?.sk2Transaction) == mockTransaction
         expect(userCancelled) == false
 
-        let expectedCustomerInfo = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+        let expectedCustomerInfo: CustomerInfo = .emptyInfo
         expect(customerInfo) == expectedCustomerInfo
     }
 
@@ -996,16 +989,6 @@ private extension PurchasesOrchestratorTests {
         return try await SK1StoreProduct(sk1Product: fetchSk1Product())
     }
 
-    var mockCustomerInfo: CustomerInfo {
-        // swiftlint:disable:next force_try
-        try! CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
-    }
+    var mockCustomerInfo: CustomerInfo { .emptyInfo }
 
 }

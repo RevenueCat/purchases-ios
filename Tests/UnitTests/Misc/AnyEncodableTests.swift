@@ -54,10 +54,10 @@ class AnyEncodableTests: TestCase {
                 "b2": [
                     "b21": 1,
                     "b22": URL(string: "https://google.com")!
-                ],
+                ] as [String: Any],
                 "b3": [20.2, 19.99, 5],
                 "b4": Date(timeIntervalSinceReferenceDate: 50000)
-            ],
+            ] as [String: Any],
             "c": "3",
             "d": nil
         ]
