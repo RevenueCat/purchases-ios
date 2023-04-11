@@ -233,9 +233,9 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
-                    "onemonth_freetrial": [:]
+                    "onemonth_freetrial": [:] as [String: Any]
                 ],
                 "entitlements": [
                     "\(mockEntitlementID)": [
@@ -244,7 +244,7 @@ private extension BeginRefundRequestHelperTests {
                         "purchase_date": "2018-10-26T23:17:53Z"
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ]
     }
 
@@ -255,10 +255,10 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
-                    "onemonth_freetrial": [:],
-                    "onemonth_freetrial2": [:]
+                    "onemonth_freetrial": [:] as [String: Any],
+                    "onemonth_freetrial2": [:] as [String: Any]
                 ],
                 "entitlements": [
                     "\(mockEntitlementID)": [
@@ -272,7 +272,7 @@ private extension BeginRefundRequestHelperTests {
                         "purchase_date": "2018-10-26T23:17:53Z"
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ]
     }
 
@@ -283,8 +283,8 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [:],
-                "subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
+                "subscriptions": [:] as [String: Any],
                 "entitlements": [
                     "\(mockEntitlementID)": [
                         "expires_date": "2000-08-30T02:40:36Z",
@@ -292,7 +292,7 @@ private extension BeginRefundRequestHelperTests {
                         "purchase_date": "2018-10-26T23:17:53Z"
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ]
     }
 
@@ -303,8 +303,8 @@ private extension BeginRefundRequestHelperTests {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [:],
-                "subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
+                "subscriptions": [:] as [String: Any],
                 "entitlements": [
                     "pro": [
                         "expires_date": "2100-08-30T02:40:36Z",
@@ -312,7 +312,7 @@ private extension BeginRefundRequestHelperTests {
                         "purchase_date": "2018-10-26T23:17:53Z"
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ]
     }
 

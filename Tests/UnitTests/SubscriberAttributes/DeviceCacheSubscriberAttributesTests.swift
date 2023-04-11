@@ -351,7 +351,7 @@ class DeviceCacheSubscriberAttributesTests: TestCase {
                 userID2: userID2Attributes
             ],
             appUserIDKey: userID1
-        ] as [String: AnyObject]
+        ] as [String: Any]
         mockUserDefaults.mockValues = valuesBeforeMigration
 
         deviceCache.cleanupSubscriberAttributes()

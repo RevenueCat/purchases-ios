@@ -225,10 +225,10 @@ private extension PurchasesLogInTests {
         "subscriber": [
             "first_seen": "2019-07-17T00:05:54Z",
             "original_app_user_id": "user",
-            "subscriptions": [:],
-            "other_purchases": [:],
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
             "original_application_version": NSNull()
-        ]
+        ] as [String: Any]
     ]
 
     private static let loggedOutCustomerInfoData: [String: Any] = [
@@ -236,10 +236,10 @@ private extension PurchasesLogInTests {
         "subscriber": [
             "first_seen": "2019-07-17T00:05:54Z",
             "original_app_user_id": "$RCAnonymousID:5b6fdbad3a0c4f879e43d269ecdf9ba1",
-            "subscriptions": [:],
-            "other_purchases": [:],
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
             "original_application_version": NSNull()
-        ]
+        ] as [String: Any]
     ]
 
     /// Converts the result of `Purchases.logIn` into `LogInResult`

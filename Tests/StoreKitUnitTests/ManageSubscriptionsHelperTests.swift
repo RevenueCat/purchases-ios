@@ -30,10 +30,10 @@ class ManageSubscriptionsHelperTests: TestCase {
         "subscriber": [
             "original_app_user_id": "app_user_id",
             "first_seen": "2019-06-17T16:05:33Z",
-            "subscriptions": [:],
-            "other_purchases": [:],
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
             "original_application_version": NSNull()
-        ],
+        ] as [String: Any],
         "managementURL": NSNull()
     ]
 

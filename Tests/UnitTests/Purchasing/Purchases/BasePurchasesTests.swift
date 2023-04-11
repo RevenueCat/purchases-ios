@@ -308,10 +308,10 @@ extension BasePurchasesTests {
         "subscriber": [
             "first_seen": "2019-07-17T00:05:54Z",
             "original_app_user_id": BasePurchasesTests.appUserID,
-            "subscriptions": [:],
-            "other_purchases": [:],
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
             "original_application_version": NSNull()
-        ]
+        ] as [String: Any]
     ]
 
 }

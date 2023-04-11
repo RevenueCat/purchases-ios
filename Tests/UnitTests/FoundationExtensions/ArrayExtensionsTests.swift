@@ -46,7 +46,7 @@ class ArrayExtensionsTests: TestCase {
     // MARK: - onlyElement
 
     func testOnlyElementWithEmptyArray() {
-        expect([].onlyElement).to(beNil())
+        expect([Any]().onlyElement).to(beNil())
     }
 
     func testOnlyElementWithMultipleElements() {

@@ -46,17 +46,19 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "non_subscriptions": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         let customerInfoAfterPurchase = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "non_subscriptions": [self.product.mockProductIdentifier: []]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [self.product.mockProductIdentifier: [] as [Any]]
+            ] as [String: Any]
+        ])
         self.backend.overrideCustomerInfoResult = .success(customerInfoBeforePurchase)
         self.backend.postReceiptResult = .success(customerInfoAfterPurchase)
 
@@ -75,16 +77,7 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
     }
 
     func testDelegateIsOnlyCalledOnceIfCustomerInfoTheSame() throws {
-        let customerInfo1 = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": "1.0"
-            ]
-        ])
+        let customerInfo1: CustomerInfo = .emptyInfo
 
         let customerInfo2 = customerInfo1
 
@@ -114,10 +107,10 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_application_version": "1.0"
-            ]
+            ] as [String: Any]
         ])
 
         let customerInfo2 = try CustomerInfo(data: [
@@ -125,10 +118,10 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_application_version": "2.0"
-            ]
+            ] as [String: Any]
         ])
 
         let payment = SKPayment(product: self.product)
@@ -174,17 +167,19 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "non_subscriptions": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         let customerInfoAfterPurchase = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
-                "subscriptions": [:],
-                "non_subscriptions": [self.product.mockProductIdentifier: []]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [self.product.mockProductIdentifier: [] as [Any]]
+            ] as [String: Any]
+        ])
         self.backend.overrideCustomerInfoResult = .success(customerInfoBeforePurchase)
         self.backend.postReceiptResult = .success(customerInfoAfterPurchase)
 

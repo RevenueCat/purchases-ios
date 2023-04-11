@@ -113,7 +113,7 @@ extension BaseBackendTests {
                     "expires_date": "2017-08-30T02:40:36Z"
                 ]
             ]
-        ]
+        ] as [String: Any]
     ]
 
 }

@@ -45,15 +45,15 @@ class BasicCustomerInfoTests: TestCase {
                         "original_purchase_date": "1990-08-30T02:40:36Z",
                         "purchase_date": "1990-08-30T02:40:36Z",
                         "store": "play_store"
-                    ]
+                    ] as [String: Any]
                 ]
-            ],
+            ] as [String: Any],
             "subscriptions": [
                 "onemonth_freetrial": [
                     "expires_date": "2100-08-30T02:40:36Z",
                     "period_type": "normal",
                     "is_sandbox": false
-                ],
+                ] as [String: Any],
                 "onemonth": [
                     "expires_date": BasicCustomerInfoTests.expiredSubscriptionDate,
                     "period_type": "normal",
@@ -87,7 +87,7 @@ class BasicCustomerInfoTests: TestCase {
                     "purchase_date": "1990-08-30T02:40:36Z"
                 ]
             ]
-        ]
+        ] as [String: Any]
     ]
 
     static let validTwoProductsJSON = "{" +
@@ -167,9 +167,10 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "original_app_user_id": "app_user_id",
                 "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         expect(customerInfo.originalApplicationVersion).to(beNil())
     }
 
@@ -179,10 +180,11 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "original_app_user_id": "app_user_id",
                 "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_application_version": NSNull()
-            ]])
+            ] as [String: Any]
+        ])
         expect(customerInfo.originalApplicationVersion).to(beNil())
     }
 
@@ -193,9 +195,10 @@ class BasicCustomerInfoTests: TestCase {
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "1.0",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         expect(customerInfo.originalApplicationVersion) == "1.0"
     }
 
@@ -207,9 +210,10 @@ class BasicCustomerInfoTests: TestCase {
                 "original_application_version": "1.0",
                 "original_app_user_id": "app_user_id",
                 "original_purchase_date": "2018-10-26T23:17:53Z",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         expect(customerInfo.originalPurchaseDate) == Date(timeIntervalSinceReferenceDate: 562288673)
     }
 
@@ -219,9 +223,10 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         expect(customerInfo.managementURL).to(beNil())
     }
 
@@ -232,9 +237,10 @@ class BasicCustomerInfoTests: TestCase {
                 "first_seen": "2019-07-17T00:05:54Z",
                 "management_url": "https://apple.com/manage_subscription",
                 "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         expect(customerInfo.managementURL?.absoluteString) == "https://apple.com/manage_subscription"
     }
 
@@ -244,10 +250,11 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "management_url": "",
                 "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_app_user_id": ""
-            ]])
+            ] as [String: Any]
+        ])
         expect(customerInfo.managementURL).to(beNil())
 
         customerInfo = try CustomerInfo(data: [
@@ -255,10 +262,11 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "management_url": true,
                 "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_app_user_id": ""
-            ]])
+            ] as [String: Any]
+        ])
         expect(customerInfo.managementURL).to(beNil())
 
         customerInfo = try CustomerInfo(data: [
@@ -266,10 +274,11 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "management_url": nil,
                 "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_app_user_id": ""
-            ]])
+            ] as [String: Any?]
+        ])
         expect(customerInfo.managementURL).to(beNil())
 
         customerInfo = try CustomerInfo(data: [
@@ -277,10 +286,11 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "management_url": "this isnt' a URL!",
                 "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_app_user_id": ""
-            ]])
+            ] as [String: Any]
+        ])
         expect(customerInfo.managementURL).to(beNil())
 
         customerInfo = try CustomerInfo(data: [
@@ -289,9 +299,10 @@ class BasicCustomerInfoTests: TestCase {
                 "management_url": 68546984,
                 "original_app_user_id": "",
                 "first_seen": "2019-07-17T00:05:54Z",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         expect(customerInfo.managementURL).to(beNil())
 
     }
@@ -357,7 +368,7 @@ class BasicCustomerInfoTests: TestCase {
                             "purchase_date": "1990-08-30T02:40:36Z",
                             "is_sandbox": true,
                             "store": "play_store"
-                        ]
+                        ] as [String: Any]
                     ],
                     "pro.3": [
                         [
@@ -366,7 +377,7 @@ class BasicCustomerInfoTests: TestCase {
                             "purchase_date": "1990-08-30T02:40:36Z",
                             "is_sandbox": true,
                             "store": "play_store"
-                        ]
+                        ] as [String: Any]
                     ]
                 ],
                 "subscriptions": [
@@ -404,7 +415,7 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "1990-08-30T02:40:36Z"
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ] as [String: Any]
 
         let customerInfoWithoutRequestData = try CustomerInfo(data: response)
@@ -456,8 +467,8 @@ class BasicCustomerInfoTests: TestCase {
                         "product_identifier": "threemonth_freetrial",
                         "expires_date": nil
                     ]
-                ]
-            ]
+                ] as [String: Any]
+            ] as [String: Any]
         ] as [String: Any]
         let customerInfoWithoutRequestData = try CustomerInfo(data: response)
         let purchaseDate = customerInfoWithoutRequestData.purchaseDate(forEntitlement: "pro")
@@ -470,17 +481,19 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         let info2 = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         expect(info1) == info2
     }
 
@@ -490,17 +503,19 @@ class BasicCustomerInfoTests: TestCase {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         let info2 = try CustomerInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "",
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any]
+            ] as [String: Any]
+        ])
         expect(info1) == info2
     }
 
@@ -514,14 +529,15 @@ class BasicCustomerInfoTests: TestCase {
                     "pro.1": [
                         "expires_date": "2018-12-19T02:40:36Z"
                     ]],
-                "other_purchases": [:],
+                "other_purchases": [:] as [String: Any],
                 "entitlements": [
                     "pro": [
                         "expires_date": "2018-12-19T02:40:36Z",
                         "product_identifier": "pro.1"
                     ]
                 ]
-            ]])
+            ] as [String: Any]
+        ])
         let info2 = try CustomerInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
@@ -532,14 +548,15 @@ class BasicCustomerInfoTests: TestCase {
                         "expires_date": "2018-12-19T02:40:36Z"
                     ]
                 ],
-                "other_purchases": [:],
+                "other_purchases": [:] as [String: Any],
                 "entitlements": [
                     "pro": [
                         "expires_date": "2018-12-29T02:40:36Z",
                         "product_identifier": "pro.1"
                     ]
                 ]
-            ]])
+            ] as [String: Any]
+        ])
         expect(info1) != info2
     }
 
@@ -559,9 +576,9 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store",
                         "unsubscribe_detected_at": nil
-                    ]
+                    ] as [String: Any?]
                 ],
-                "non_subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
                 "entitlements": [
                     "pro": [
                         "product_identifier": "monthly_freetrial",
@@ -569,7 +586,8 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "2018-07-26T23:30:41Z"
                     ]
                 ]
-            ]])
+            ] as [String: Any]
+        ])
         let info2 = try CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
@@ -585,9 +603,9 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store",
                         "unsubscribe_detected_at": nil
-                    ]
+                    ] as [String: Any?]
                 ],
-                "non_subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
                 "entitlements": [
                     "pro": [
                         "product_identifier": "monthly_freetrial",
@@ -595,7 +613,8 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "2018-07-26T23:30:41Z"
                     ]
                 ]
-            ]])
+            ] as [String: Any]
+        ])
         expect(info1) != info2
     }
 
@@ -615,9 +634,9 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store",
                         "unsubscribe_detected_at": nil
-                    ]
+                    ] as [String: Any?]
                 ],
-                "non_subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
                 "entitlements": [
                     "pro": [
                         "product_identifier": "monthly_freetrial",
@@ -625,7 +644,8 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "2018-07-26T23:30:41Z"
                     ]
                 ]
-            ]])
+            ] as [String: Any]
+        ])
         let info2 = try CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
@@ -641,9 +661,9 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store",
                         "unsubscribe_detected_at": nil
-                    ]
+                    ] as [String: Any?]
                 ],
-                "non_subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
                 "entitlements": [
                     "pro": [
                         "product_identifier": "monthly_freetrial",
@@ -651,7 +671,8 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "2018-07-26T23:30:41Z"
                     ]
                 ]
-            ]])
+            ] as [String: Any]
+        ])
         expect(info1) == info2
     }
 
@@ -662,9 +683,10 @@ class BasicCustomerInfoTests: TestCase {
                     "first_seen": "2019-07-17T00:05:54Z",
                     "management_url": "https://apple.com/manage_subscription",
                     "original_app_user_id": "",
-                    "subscriptions": [:],
-                    "other_purchases": [:]
-                ]])
+                    "subscriptions": [:] as [String: Any],
+                    "other_purchases": [:] as [String: Any]
+                ] as [String: Any]
+            ])
         ).to(throwError())
     }
 
@@ -675,9 +697,10 @@ class BasicCustomerInfoTests: TestCase {
                 "subscriber": [
                     "first_seen": "2019-07-17T00:05:54Z",
                     "management_url": "https://apple.com/manage_subscription",
-                    "subscriptions": [:],
-                    "other_purchases": [:]
-                ]])
+                    "subscriptions": [:] as [String: Any],
+                    "other_purchases": [:] as [String: Any]
+                ] as [String: Any]
+            ])
         ).to(throwError())
     }
 
@@ -696,9 +719,10 @@ class BasicCustomerInfoTests: TestCase {
                 "subscriber": [
                     "management_url": "https://apple.com/manage_subscription",
                     "original_app_user_id": "",
-                    "subscriptions": [:],
-                    "other_purchases": [:]
-                ]])
+                    "subscriptions": [:] as [String: Any],
+                    "other_purchases": [:] as [String: Any]
+                ] as [String: Any]
+            ])
         ).to(throwError())
     }
 
@@ -709,9 +733,10 @@ class BasicCustomerInfoTests: TestCase {
                 "subscriber": [
                     "original_app_user_id": "app_user_id",
                     "first_seen": "2019-07-17T00:05:54Z",
-                    "subscriptions": [:],
-                    "other_purchases": [:]
-                ]])
+                    "subscriptions": [:] as [String: Any],
+                    "other_purchases": [:] as [String: Any]
+                ] as [String: Any]
+            ])
         ).to(throwError())
     }
 
@@ -722,9 +747,10 @@ class BasicCustomerInfoTests: TestCase {
                 "subscriber": [
                     "original_app_user_id": "app_user_id",
                     "first_seen": "2019-07-",
-                    "subscriptions": [:],
-                    "other_purchases": [:]
-                ]])
+                    "subscriptions": [:] as [String: Any],
+                    "other_purchases": [:] as [String: Any]
+                ] as [String: Any]
+            ])
         ).to(throwError())
     }
 
@@ -735,7 +761,7 @@ class BasicCustomerInfoTests: TestCase {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
                     "onemonth_freetrial": [
                         "expires_date": "2100-08-30T02:40:36Z",
@@ -765,7 +791,7 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "1990-08-30T02:40:36Z"
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ] as [String: Any]
 
         let info = try CustomerInfo(data: response)
@@ -779,7 +805,7 @@ class BasicCustomerInfoTests: TestCase {
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
                 "first_seen": "2019-06-17T16:05:33Z",
-                "non_subscriptions": [:],
+                "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
                     "onemonth_freetrial": [
                         "expires_date": "2100-08-30T02:40:36Z",
@@ -809,7 +835,7 @@ class BasicCustomerInfoTests: TestCase {
                         "purchase_date": "1990-08-30T02:40:36Z"
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ] as [String: Any]
 
         let info = try CustomerInfo(data: response)
@@ -914,9 +940,9 @@ private extension BasicCustomerInfoTests {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "app_store",
                     "unsubscribe_detected_at": nil
-                ]
+                ] as [String: Any?]
             ],
-            "non_subscriptions": [:],
+            "non_subscriptions": [:] as [String: Any],
             "entitlements": [
                 "pro": [
                     "product_identifier": "monthly_freetrial",
@@ -924,7 +950,7 @@ private extension BasicCustomerInfoTests {
                     "purchase_date": "2018-07-26T23:30:41Z"
                 ]
             ]
-        ]
+        ] as [String: Any]
     ]
 
 }

@@ -183,7 +183,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 private extension BackendGetOfferingsTests {
 
     static let noOfferingsResponse: [String: Any?] = [
-        "offerings": [],
+        "offerings": [] as [Any],
         "current_offering_id": nil
     ]
 
@@ -202,7 +202,7 @@ private extension BackendGetOfferingsTests {
                         "platform_product_identifier": "annual_freetrial"
                     ]
                 ]
-            ]
+            ] as [String: Any]
         ],
         "current_offering_id": "offering_a"
     ]
