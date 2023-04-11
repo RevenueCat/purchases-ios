@@ -17,7 +17,6 @@ import StoreKitTest
 @testable import v3LoadShedderIntegration
 import XCTest
 
-// swiftlint:disable xctestcase_superclass
 final class V3LoadShedderIntegrationTests: XCTestCase {
     let apiKey = "REVENUECAT_LOAD_SHEDDER_API_KEY"
 
