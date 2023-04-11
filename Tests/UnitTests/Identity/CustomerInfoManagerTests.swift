@@ -29,8 +29,8 @@ class BaseCustomerInfoManagerTests: TestCase {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": [:]  as [String: Any],
-                "other_purchases": [:]  as [String: Any],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_application_version": NSNull()
             ]  as [String: Any]
         ])
@@ -288,7 +288,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                     "Pro": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
                     "ProductD": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]
                 ]  as [String: Any],
-                "other_purchases": [:]  as [String: Any]
+                "other_purchases": [:] as [String: Any]
             ]  as [String: Any]
         ])
 
@@ -319,7 +319,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
-                "other_purchases": [:]  as [String: Any]
+                "other_purchases": [:] as [String: Any]
             ]  as [String: Any]
         ])
 
@@ -348,7 +348,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
-                "other_purchases": [:]  as [String: Any]
+                "other_purchases": [:] as [String: Any]
             ] as [String: Any]
         ]
 
@@ -369,7 +369,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
-                "other_purchases": [:]  as [String: Any]
+                "other_purchases": [:] as [String: Any]
             ]  as [String: Any]
         ]
 
@@ -430,8 +430,8 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2020-06-17T16:05:33Z",
-                "subscriptions": [:]  as [String: Any],
-                "other_purchases": [:]  as [String: Any],
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
                 "original_application_version": "1.0"
             ]  as [String: Any]
         ])
