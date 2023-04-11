@@ -31,9 +31,9 @@ class PurchasedProductsFetcher {
 
         for await transaction in StoreKit.Transaction.currentEntitlements {
             switch transaction {
-            case let .unverified(unverifiedTransaction, verificationError):
+            case let .unverified(transaction, verificationError):
                 Logger.appleWarning(
-                    Strings.offlineEntitlements.found_unverified_transactions_in_sk2(unverifiedTransaction,
+                    Strings.offlineEntitlements.found_unverified_transactions_in_sk2(transactionID: transaction.id,
                                                                                      verificationError)
                 )
             case let .verified(verifiedTransaction):
