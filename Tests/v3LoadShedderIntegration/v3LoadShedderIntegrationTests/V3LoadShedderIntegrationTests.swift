@@ -26,7 +26,7 @@ final class V3LoadShedderIntegrationTests: XCTestCase {
     var testSession: SKTestSession!
 
     override func setUpWithError() throws {
-        super.setUpWithError()
+        try super.setUpWithError()
         Purchases.logLevel = .debug
         let userDefaultsSuite = "v3LoadShedderIntegrationTests"
         let userDefaults = UserDefaults(suiteName: userDefaultsSuite)!
