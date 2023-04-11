@@ -85,8 +85,9 @@ extension DispatchTimeInterval: Comparable {
 
 }
 
-#if swift(<5.8)
-// `DispatchTimeInterval` is not `Sendable` as of Swift 5.7.
+#if swift(<5.9)
+// `DispatchTimeInterval` is not `Sendable` as of Swift 5.8.
 // Its conformance is safe since it only represents data
+// See https://github.com/apple/swift/issues/65044
 extension DispatchTimeInterval: @unchecked Sendable {}
 #endif
