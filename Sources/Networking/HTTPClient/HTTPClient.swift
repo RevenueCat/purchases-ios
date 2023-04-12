@@ -101,7 +101,7 @@ extension HTTPClient {
         case location = "Location"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
-        case eTagValidationTime = "X-ETag-Validation-Time"
+        case eTagValidationTime = "X-RC-Last-Refresh-Time"
 
     }
 
