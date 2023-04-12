@@ -26,6 +26,7 @@ custom_rules:
     excluded:
       - Tests/BackendIntegrationTests
       - Tests/ReceiptParserTests
+      - Tests/v3LoadShedderIntegration
     regex: "\\: XCTestCase \\{"
     name: "XCTestCase Superclass"
     message: "Test classes must inherit `TestCase` instead."

@@ -17,7 +17,6 @@ import StoreKitTest
 @testable import v3LoadShedderIntegration
 import XCTest
 
-// swiftlint:disable xctestcase_superclass
 final class V3LoadShedderIntegrationTests: XCTestCase {
     let apiKey = "REVENUECAT_LOAD_SHEDDER_API_KEY"
 
@@ -27,6 +26,7 @@ final class V3LoadShedderIntegrationTests: XCTestCase {
     var testSession: SKTestSession!
 
     override func setUpWithError() throws {
+        try super.setUpWithError()
         Purchases.logLevel = .debug
         let userDefaultsSuite = "v3LoadShedderIntegrationTests"
         let userDefaults = UserDefaults(suiteName: userDefaultsSuite)!
@@ -72,8 +72,8 @@ final class V3LoadShedderIntegrationTests: XCTestCase {
         let offering = try XCTUnwrap(offerings.current)
         XCTAssert(offering.availablePackages.count > 0)
         let package = try XCTUnwrap(offering.availablePackages[0])
-        XCTAssert(package.product.productIdentifier == "com.revenuecat.loadShedder.monthly")
-        XCTAssert(offering.identifier == "default")
+        XCTAssertEqual(package.product.productIdentifier, "com.revenuecat.loadShedder.monthly")
+        XCTAssertEqual(offering.identifier, "default")
     }
 
     func testPurchasePackage() async throws {
