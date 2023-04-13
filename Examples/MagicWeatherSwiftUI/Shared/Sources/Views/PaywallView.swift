@@ -123,7 +123,7 @@ struct PackageCellView: View {
                     Spacer()
                 }
                 HStack {
-                    Text(package.terms(for: package))
+                    Text(package.terms)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     Spacer()
