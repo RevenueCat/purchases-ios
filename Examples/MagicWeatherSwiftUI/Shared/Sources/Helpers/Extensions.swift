@@ -12,12 +12,12 @@ import StoreKit
 /* Some methods to make displaying subscription terms easier */
 
 extension Package {
-    func terms(for package: Package) -> String {
-        if let intro = package.storeProduct.introductoryDiscount {
+    var terms: String {
+        if let intro = self.storeProduct.introductoryDiscount {
             if intro.price == 0 {
                 return "\(intro.subscriptionPeriod.periodTitle) free trial"
             } else {
-                return "\(package.localizedIntroductoryPriceString!) for \(intro.subscriptionPeriod.periodTitle)"
+                return "\(self.localizedIntroductoryPriceString!) for \(intro.subscriptionPeriod.periodTitle)"
             }
         } else {
             return "Unlocks Premium"
